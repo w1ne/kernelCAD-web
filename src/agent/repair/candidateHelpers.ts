@@ -4,7 +4,7 @@
 // Shared plumbing for the repair candidate generators (candidates.ts and the
 // per-code generator modules it dispatches to).
 
-import * as ts from 'typescript';
+import type * as TS from 'typescript';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ShapeBackend } from '../../kernel/backends/backend';
@@ -22,7 +22,7 @@ export interface CandidateContext {
   shapes: ReadonlyMap<string, ShapeBackend>;
 }
 
-export function callOf(ctx: CandidateContext): ts.CallExpression | undefined {
+export function callOf(ctx: CandidateContext): TS.CallExpression | undefined {
   const location = ctx.record.scriptLocation;
   if (location === undefined) return undefined;
   return ctx.spans.callNodeAt(location);

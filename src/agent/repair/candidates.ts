@@ -10,7 +10,8 @@
 // caller reports `no-automatic-candidate` — an honest gap beats a plausible
 // patch that quietly changes the design.
 
-import * as ts from 'typescript';
+import type * as TS from 'typescript';
+import { lazyTs as ts } from '../../shared/runtime/lazyTypescript';
 import type { DiagnosticCode } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
@@ -491,11 +492,11 @@ function declaredLabels(ctx: CandidateContext): string[] {
 
 function findUnknownLabelLiteral(
   spans: ScriptSpanIndex,
-  call: ts.CallExpression,
+  call: TS.CallExpression,
   known: readonly string[],
 ): { chars: CharRange; value: string; quoteChar: string } | undefined {
   let found: { chars: CharRange; value: string; quoteChar: string } | undefined;
-  const visit = (node: ts.Node): void => {
+  const visit = (node: TS.Node): void => {
     if (found !== undefined) return;
     if (ts.isStringLiteralLike(node) && !known.includes(node.text)) {
       const text = spans.text.slice(node.getStart(), node.getEnd());
@@ -605,7 +606,7 @@ function clampRevolveProfileX(ctx: CandidateContext): RepairCandidate[] {
 
   const edits: Array<{ chars: CharRange; replacement: string }> = [];
   const requested: number[] = [];
-  const visit = (node: ts.Node): void => {
+  const visit = (node: TS.Node): void => {
     if (ts.isCallExpression(node) && PATH_X_CALLEES.has(calleeName(node))) {
       const chars = spans.argumentChars(node, 0);
       if (chars !== undefined) {
@@ -719,7 +720,7 @@ function circleCircleMinOutsideRadiusMm(
 function tangentCircleCall(
   spans: ScriptSpanIndex,
   record: FeatureRecord,
-): ts.CallExpression | undefined {
+): TS.CallExpression | undefined {
   if (record.scriptLocation === undefined) return undefined;
   const seed = spans.callNodeAt(record.scriptLocation);
   if (seed === undefined) return undefined;
@@ -813,15 +814,15 @@ function recentreEmbossAnchor(ctx: CandidateContext): RepairCandidate[] {
 // --- shared helpers -----------------------------------------------------------
 
 
-function calleeName(call: ts.CallExpression): string {
+function calleeName(call: TS.CallExpression): string {
   const expr = call.expression;
   if (ts.isIdentifier(expr)) return expr.text;
   if (ts.isPropertyAccessExpression(expr)) return expr.name.text;
   return '';
 }
 
-function outermostCall(call: ts.CallExpression): ts.CallExpression {
-  let current: ts.Node = call;
+function outermostCall(call: TS.CallExpression): TS.CallExpression {
+  let current: TS.Node = call;
   while (current.parent !== undefined) {
     if (ts.isCallExpression(current.parent)) {
       current = current.parent;
@@ -845,7 +846,7 @@ function outermostCall(call: ts.CallExpression): ts.CallExpression {
  *  selectors and feature options ride in different argument slots per API. */
 function findOptionInAnyArgument(
   spans: ScriptSpanIndex,
-  call: ts.CallExpression,
+  call: TS.CallExpression,
   name: string,
 ): CharRange | undefined {
   for (let index = 0; index < call.arguments.length; index++) {

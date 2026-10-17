@@ -36,6 +36,7 @@ import { RecomputeEngine } from '../modeling/compute/recomputeEngine';
 import { solveMates } from '../modeling/mates/solver';
 import { parseConnectorRef, type MateRecord } from '../modeling/mates/mate';
 import { partAtFor, sceneMotion } from '../modeling/mates/partFrame';
+import { rememberedRestScene } from '../modeling/mates/loweredAssemblyScene';
 import { resolveConnectorOrigin } from '../modeling/mates/connector';
 import { sampleTrackAt } from '../modeling/animation/animationSampler';
 import type { NormalizedAnimationTrack } from '../shared/intent/animationViewRecord';
@@ -160,8 +161,35 @@ const LIMITATIONS = [
 
 export type SupportStationSource = 'actuator' | 'connector' | 'contact';
 
-interface PartFrameSample { readonly comM: V3; readonly rot: M3 }
-interface Sample { readonly tMs?: number; readonly pose: NumericPoses; readonly placements: ReadonlyMap<string, Transform>; readonly frames: Map<string, PartFrameSample> }
+/** One sampled pose, packed: thousands of samples × every part as objects
+ *  cost ~150 MB of JS heap on a 69-part model (DRAW 01 v8). Part `i` of
+ *  `PartIndex.names` owns `placements[16i..16i+16)` (column-major mate
+ *  placement, NaN when the solver did not place it) and, for parts with
+ *  mass, `frames[12j..12j+12)` (world CoM in m, then the world rotation
+ *  row-major) where `j` is its index in `PartIndex.massNames`. */
+interface Sample { readonly tMs?: number; readonly pose: NumericPoses; readonly placements: Float64Array; readonly frames: Float64Array }
+
+interface PartIndex {
+  /** Every assembly part, placement order. */
+  readonly names: readonly string[];
+  readonly index: ReadonlyMap<string, number>;
+  /** Parts with mass properties, frame order. */
+  readonly massNames: readonly string[];
+  readonly massIndex: ReadonlyMap<string, number>;
+}
+
+const FRAME = 12;
+const KIN = 9;
+
+function comAt(s: Sample, j: number): V3 {
+  const f = s.frames, o = j * FRAME;
+  return [f[o]!, f[o + 1]!, f[o + 2]!];
+}
+
+function rotAt(s: Sample, j: number): M3 {
+  const f = s.frames, o = j * FRAME + 3;
+  return [[f[o]!, f[o + 1]!, f[o + 2]!], [f[o + 3]!, f[o + 4]!, f[o + 5]!], [f[o + 6]!, f[o + 7]!, f[o + 8]!]];
+}
 
 /** Run the motion-load study on one assembly. */
 export async function checkMotionLoad(arm: Assembly, opts: MotionLoadOpts = {}): Promise<MotionLoadResult> {
@@ -170,9 +198,9 @@ export async function checkMotionLoad(arm: Assembly, opts: MotionLoadOpts = {}):
   const diagnostics: KinematicDiagnostic[] = [];
   const prepared = await prepareStudy(arm, opts, mode);
   if (typeof prepared === 'string') return emptyResult(mode, quasiStatic, prepared, diagnostics);
-  const { intents, masses, samples, scene, restPlacements } = prepared;
-  const kin = quasiStatic ? undefined : finiteDifferences(samples, masses, stepSeconds(samples, opts.sampleMs));
-  const ctx: JointCtx = { arm, masses, samples, kin, gravity: (opts.gravity ?? DEFAULT_GRAVITY) as V3, loads: opts.loads ?? [], mode, scene, restPlacements };
+  const { intents, masses, samples, scene, restPlacements, parts } = prepared;
+  const kin = quasiStatic ? undefined : finiteDifferences(samples, parts, stepSeconds(samples, opts.sampleMs));
+  const ctx: JointCtx = { arm, masses, samples, kin, parts, gravity: (opts.gravity ?? DEFAULT_GRAVITY) as V3, loads: opts.loads ?? [], mode, scene, restPlacements };
   const joints: MotionLoadJointResult[] = [];
   for (const intent of intents) {
     const r = await studyJoint(ctx, intent, opts.supports?.[intent.name] ?? intent.supports, diagnostics);
@@ -185,6 +213,7 @@ interface PreparedStudy {
   readonly intents: MechanicalJointIntentRecord[];
   readonly masses: Map<string, PartMassLocal>;
   readonly samples: Sample[];
+  readonly parts: PartIndex;
   /** The lowered rest scene and the rest-pose mate placements. */
   readonly scene: SceneBackend;
   readonly restPlacements: ReadonlyMap<string, Transform>;
@@ -198,7 +227,8 @@ async function prepareStudy(arm: Assembly, opts: MotionLoadOpts, mode: 'tracks' 
   if (scene === undefined) return 'Loads not checked: the assembly did not lower to a scene.';
   const masses = partMasses(arm, scene);
   const poses = mode === 'range' ? rangePoses(arm, intents, opts.rangeSamples) : trackPoses(arm, opts.sampleMs);
-  const samples = await solveSamples(arm, scene, masses, poses);
+  const parts = partIndex(arm, masses);
+  const samples = await solveSamples(arm, scene, masses, parts, poses);
   if (samples.length === 0) return 'Loads not checked: the mates did not solve at any sampled pose.';
   let restPlacements: ReadonlyMap<string, Transform>;
   try {
@@ -206,7 +236,7 @@ async function prepareStudy(arm: Assembly, opts: MotionLoadOpts, mode: 'tracks' 
   } catch {
     return 'Loads not checked: the mates did not solve at the rest pose.';
   }
-  return { intents, masses, samples, scene, restPlacements };
+  return { intents, masses, samples, scene, restPlacements, parts };
 }
 
 /** Timeline step between the first two samples, s. */
@@ -224,6 +254,9 @@ function drivenIntents(arm: Assembly): MechanicalJointIntentRecord[] {
 }
 
 async function lowerRestScene(arm: Assembly): Promise<SceneBackend | undefined> {
+  // The mechanism probe's rest scene, when it ran first (evaluate_script).
+  const remembered = rememberedRestScene(arm);
+  if (remembered !== undefined) return remembered;
   await initOcct();
   const jointDefaults: Record<string, number | [number, number, number]> = {};
   for (const j of arm.__joints()) {
@@ -316,32 +349,41 @@ function rotationOf(t: Transform): M3 {
   return [[x[0], y[0], z[0]], [x[1], y[1], z[1]], [x[2], y[2], z[2]]];
 }
 
-async function solveSamples(arm: Assembly, scene: SceneBackend, masses: Map<string, PartMassLocal>, poses: readonly PoseAt[]): Promise<Sample[]> {
+function partIndex(arm: Assembly, masses: ReadonlyMap<string, PartMassLocal>): PartIndex {
+  const names = arm.__parts().map((p) => p.name);
+  const massNames = [...masses.keys()];
+  return { names, index: new Map(names.map((n, i) => [n, i])), massNames, massIndex: new Map(massNames.map((n, i) => [n, i])) };
+}
+
+async function solveSamples(arm: Assembly, scene: SceneBackend, masses: Map<string, PartMassLocal>, parts: PartIndex, poses: readonly PoseAt[]): Promise<Sample[]> {
   const atOf = partAtFor(arm.__mates(), arm.__parts(), arm.__session().paramTable);
   const restT = new Map(scene.parts.map((p) => [p.name, p.worldTransform]));
   const out: Sample[] = [];
   for (const p of poses) {
-    let placements: Map<string, Transform>;
+    let solved: ReadonlyMap<string, Transform>;
     try {
       const r = await solveMates(arm, p.pose);
       if (r.status !== 'solved' && r.status !== 'redundant-ok') continue;
-      placements = r.poses;
+      solved = r.poses;
     } catch {
       continue;
     }
-    const frames = new Map<string, PartFrameSample>();
-    for (const [name, m] of masses) {
-      const placement = placements.get(name);
+    const placements = new Float64Array(parts.names.length * 16).fill(Number.NaN);
+    parts.names.forEach((name, i) => solved.get(name)?.writeTo(placements, i * 16));
+    const frames = new Float64Array(parts.massNames.length * FRAME);
+    parts.massNames.forEach((name, j) => {
+      const m = masses.get(name)!;
+      const placement = solved.get(name);
       const at = atOf(name);
       const world = placement === undefined ? restT.get(name) ?? Transform.identity() : at === undefined ? placement : sceneMotion(placement, at);
-      frames.set(name, { comM: scale(world.point(m.comLocalMm), MM), rot: rotationOf(world) });
-    }
+      const c = scale(world.point(m.comLocalMm), MM);
+      const r = rotationOf(world);
+      frames.set([c[0], c[1], c[2], r[0][0], r[0][1], r[0][2], r[1][0], r[1][1], r[1][2], r[2][0], r[2][1], r[2][2]], j * FRAME);
+    });
     out.push({ ...(p.tMs !== undefined ? { tMs: p.tMs } : {}), pose: p.pose, placements, frames });
   }
   return out;
 }
-
-interface Kin { readonly acc: V3; readonly omega: V3; readonly alpha: V3 }
 
 /** Angular velocity from R(t-dt) -> R(t+dt). Rp·Rmᵀ ≈ I + [θ]x with
  *  θ = 2·dt·ω, and (Q - Qᵀ)/2 = [θ]x, so ω = vee(Q - Qᵀ) / (4·dt). */
@@ -351,29 +393,35 @@ function omegaBetween(rm: M3, rp: M3, dt: number): V3 {
   return [(q(2, 1) - q(1, 2)) / d, (q(0, 2) - q(2, 0)) / d, (q(1, 0) - q(0, 1)) / d];
 }
 
-function finiteDifferences(samples: readonly Sample[], masses: Map<string, PartMassLocal>, h: number): Array<Map<string, Kin>> {
+/** Per sample: part `j`'s CoM acceleration, angular velocity and angular
+ *  acceleration at `kin[k][9j..9j+9)`, by central differences. */
+function finiteDifferences(samples: readonly Sample[], parts: PartIndex, h: number): Float64Array[] {
   const n = samples.length;
-  const at = (k: number): Sample => samples[Math.min(n - 1, Math.max(0, k))];
-  const omegas: Array<Map<string, V3>> = samples.map((_, k) => {
-    const m = new Map<string, V3>();
-    for (const name of masses.keys()) {
-      const a = at(k - 1).frames.get(name)!, b = at(k + 1).frames.get(name)!;
-      const span = (Math.min(n - 1, k + 1) - Math.max(0, k - 1)) * h;
-      m.set(name, span > 0 ? omegaBetween(a.rot, b.rot, span / 2) : [0, 0, 0]);
+  const nm = parts.massNames.length;
+  const at = (k: number): Sample => samples[Math.min(n - 1, Math.max(0, k))]!;
+  const omegas: Float64Array[] = samples.map((_, k) => {
+    const w = new Float64Array(nm * 3);
+    const span = (Math.min(n - 1, k + 1) - Math.max(0, k - 1)) * h;
+    if (span > 0) {
+      for (let j = 0; j < nm; j++) w.set(omegaBetween(rotAt(at(k - 1), j), rotAt(at(k + 1), j), span / 2), j * 3);
     }
-    return m;
+    return w;
   });
   return samples.map((_, k) => {
-    const m = new Map<string, Kin>();
-    for (const name of masses.keys()) {
-      const p0 = at(k - 1).frames.get(name)!.comM, p1 = samples[k].frames.get(name)!.comM, p2 = at(k + 1).frames.get(name)!.comM;
-      const interior = k > 0 && k < n - 1;
-      const acc = interior ? scale(add(sub(p2, p1), sub(p0, p1)), 1 / (h * h)) : [0, 0, 0] as V3;
-      const w0 = omegas[Math.max(0, k - 1)].get(name)!, w2 = omegas[Math.min(n - 1, k + 1)].get(name)!;
-      const alpha = interior ? scale(sub(w2, w0), 1 / (2 * h)) : [0, 0, 0] as V3;
-      m.set(name, { acc, omega: omegas[k].get(name)!, alpha });
+    const out = new Float64Array(nm * KIN);
+    const interior = k > 0 && k < n - 1;
+    const w0 = omegas[Math.max(0, k - 1)]!, w1 = omegas[k]!, w2 = omegas[Math.min(n - 1, k + 1)]!;
+    for (let j = 0; j < nm; j++) {
+      const o = j * KIN;
+      if (interior) {
+        const p0 = comAt(at(k - 1), j), p1 = comAt(samples[k]!, j), p2 = comAt(at(k + 1), j);
+        const acc = scale(add(sub(p2, p1), sub(p0, p1)), 1 / (h * h));
+        out[o] = acc[0]; out[o + 1] = acc[1]; out[o + 2] = acc[2];
+        for (let c = 0; c < 3; c++) out[o + 6 + c] = (w2[j * 3 + c]! - w0[j * 3 + c]!) / (2 * h);
+      }
+      out[o + 3] = w1[j * 3]!; out[o + 4] = w1[j * 3 + 1]!; out[o + 5] = w1[j * 3 + 2]!;
     }
-    return m;
+    return out;
   });
 }
 
@@ -383,7 +431,8 @@ interface JointCtx {
   readonly arm: Assembly;
   readonly masses: Map<string, PartMassLocal>;
   readonly samples: readonly Sample[];
-  readonly kin: Array<Map<string, Kin>> | undefined;
+  readonly kin: Float64Array[] | undefined;
+  readonly parts: PartIndex;
   readonly gravity: V3;
   readonly loads: readonly MotionLoadExternalLoad[];
   readonly mode: 'tracks' | 'range';
@@ -440,22 +489,26 @@ async function jointFrame(arm: Assembly, mate: MateRecord, parentPart: string): 
 }
 
 function bodiesAt(ctx: JointCtx, k: number, names: ReadonlySet<string>): BodyLoadState[] {
-  const s = ctx.samples[k];
+  const s = ctx.samples[k]!;
   const out: BodyLoadState[] = [];
   for (const name of names) {
-    const m = ctx.masses.get(name), f = s.frames.get(name);
-    if (m === undefined || f === undefined) continue;
-    const kin = ctx.kin?.[k].get(name);
+    const m = ctx.masses.get(name), j = ctx.parts.massIndex.get(name);
+    if (m === undefined || j === undefined) continue;
+    const kin = ctx.kin?.[k];
+    const o = j * KIN;
     out.push({
-      massKg: m.mass, comM: f.comM, inertiaWorld: rotateInertia(f.rot, m.inertiaLocal),
-      ...(kin !== undefined ? { accM: kin.acc, omega: kin.omega, alpha: kin.alpha } : {}),
+      massKg: m.mass, comM: comAt(s, j), inertiaWorld: rotateInertia(rotAt(s, j), m.inertiaLocal),
+      ...(kin !== undefined ? { accM: [kin[o]!, kin[o + 1]!, kin[o + 2]!] as V3, omega: [kin[o + 3]!, kin[o + 4]!, kin[o + 5]!] as V3, alpha: [kin[o + 6]!, kin[o + 7]!, kin[o + 8]!] as V3 } : {}),
     });
   }
   return out;
 }
 
 function placementOf(ctx: JointCtx, k: number, part: string): Transform {
-  return ctx.samples[k].placements.get(part) ?? Transform.identity();
+  const i = ctx.parts.index.get(part);
+  const pl = ctx.samples[k]!.placements;
+  if (i === undefined || Number.isNaN(pl[i * 16]!)) return Transform.identity();
+  return Transform.fromColumnMajor(pl, i * 16);
 }
 
 function loadsAt(ctx: JointCtx, k: number, names: ReadonlySet<string>): PointLoad[] {
