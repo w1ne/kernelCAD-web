@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useContext, useRef, useState, useSyncExternalStore } from 'react';
+import { useRef, useState, useSyncExternalStore } from 'react';
 import type { JSX, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import { TabPanel } from '../ui';
 import type { TabId } from './types';
@@ -18,7 +18,6 @@ import {
 } from './logic/inspectorWidth';
 import { InspectorTabs } from './InspectorTabs';
 import { LoadsPanel } from './components/motion/LoadsPanel';
-import { WorkbenchContext } from './context/WorkbenchContext';
 import { useInspectorTabRequests } from './hooks/studioNavigation';
 
 interface InspectorProps {
@@ -27,7 +26,6 @@ interface InspectorProps {
 
 export function Inspector({ tabSlots }: InspectorProps): JSX.Element {
     const result = useRecomputeResult();
-    const scriptReview = useContext(WorkbenchContext)?.scriptReview;
     const { inspectorOpen } = useShellStore();
     const visibleTabs = getVisibleTabs(result);
 
@@ -67,7 +65,7 @@ export function Inspector({ tabSlots }: InspectorProps): JSX.Element {
                 />
                 <div className="min-h-0 flex-1 overflow-auto" data-testid="inspector-body">
                     <div className="px-3 pt-2">
-                        <LoadsPanel loads={scriptReview?.mechanismSummary?.loads} />
+                        <LoadsPanel loads={result.mechanismLoads} />
                     </div>
                     <TabPanel tabsId={INSPECTOR_TABS_ID} id={effectiveTab} value={effectiveTab} className="h-full">
                         {tabSlots[effectiveTab] ?? null}
