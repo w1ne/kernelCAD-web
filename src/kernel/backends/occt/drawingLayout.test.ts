@@ -13,7 +13,9 @@ import {
   dedupPolylineClasses,
   dimensionToSvg,
   formatDimValue,
+  edgeDimensionSvg,
   pointOnViewPlane,
+  signedEdgeGap,
   straightSpans,
   pickDrawingScale,
   scaleLabel,
@@ -270,6 +272,15 @@ describe('clickable drawing edges', () => {
       circle.push([6 * Math.cos(angle), 6 * Math.sin(angle)]);
     }
     expect(straightSpans(circle)).toEqual([]);
+  });
+
+  it('draws a dimension beside the edge on the side of the pointer', () => {
+    expect(signedEdgeGap([10, 15], [50, 15], [30, 15])).toBe(8);
+    expect(signedEdgeGap([10, 15], [50, 15], [30, 40])).toBe(25);
+    const svg = edgeDimensionSvg([10, 15], [50, 15], '40', 8);
+    expect(svg).toContain('y1="23"');
+    expect(svg).toContain('>40</text>');
+    expect(edgeDimensionSvg([0, 0], [0, 30], '30', -8)).toContain('x1="8"');
   });
 
   it('lifts model-2D points onto the orthographic view planes', () => {

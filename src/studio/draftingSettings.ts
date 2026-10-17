@@ -16,6 +16,7 @@ export interface StudioDrawingOptions extends DrawingReviewOptions {
     view: 'front' | 'top' | 'left';
     from: [number, number, number];
     to: [number, number, number];
+    edgeGap?: number;
   }>;
 }
 
@@ -46,6 +47,7 @@ export function draftingOptionsForSource(settings: DraftingSettings | undefined,
     ...(matches && settings.placedDimensions?.length ? {
       placedAnnotations: settings.placedDimensions.map((dimension) => ({
         id: dimension.id, kind: 'linear' as const, view: dimension.view, from: dimension.from, to: dimension.to,
+        edgeGap: dimension.gap ?? 8,
       })),
     } : {}),
   };

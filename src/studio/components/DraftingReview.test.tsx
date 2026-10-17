@@ -108,11 +108,12 @@ describe('drafting review', () => {
     svg.getBoundingClientRect = () => ({ x: 0, y: 0, left: 0, top: 0, right: 200, bottom: 100, width: 200, height: 100, toJSON: () => ({}) });
     fireEvent.click(sheet, { clientX: 30, clientY: 15 });
     expect(changed).toHaveBeenCalledWith(expect.objectContaining({
-      placedDimensions: [expect.objectContaining({ view: 'front', from: [0, 0, 5], to: [40, 0, 5] })],
+      placedDimensions: [expect.objectContaining({ view: 'front', from: [0, 0, 5], to: [40, 0, 5], gap: 8 })],
     }));
+    expect(sheet.innerHTML).toContain('>40</text>');
     fireEvent.click(screen.getByRole('button', { name: 'Refresh preview' }));
     await waitFor(() => expect(exporter.previewDrawingViaServer).toHaveBeenLastCalledWith('model', expect.objectContaining({
-      placedAnnotations: [expect.objectContaining({ kind: 'linear', view: 'front', from: [0, 0, 5], to: [40, 0, 5] })],
+      placedAnnotations: [expect.objectContaining({ kind: 'linear', view: 'front', from: [0, 0, 5], to: [40, 0, 5], edgeGap: 8 })],
     }), expect.anything()));
   });
   it('downloads a PDF without generating or marking a preview', async () => {
