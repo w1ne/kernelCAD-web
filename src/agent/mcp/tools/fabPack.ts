@@ -23,9 +23,8 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { bomToCsv } from '../../script-runtime/bom';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
 import { buildVendorLink, referralDisclosure } from '../../../shared/links/referral';
-
-export type FabPackFormat = 'step' | 'stl' | '3mf' | 'pdf-drawing' | 'bom-csv' | 'dxf';
-export type FabProcess = '3d-print' | 'cnc' | 'sheet-cut';
+import { FAB_PROCESSES, type FabPackFormat, type FabProcess } from '../../../shared/fab';
+export type { FabPackFormat, FabProcess } from '../../../shared/fab';
 
 export const FAB_PACK_DEFAULT_FORMATS: readonly FabPackFormat[] = ['step', 'stl', '3mf', 'pdf-drawing', 'bom-csv'];
 
@@ -161,7 +160,7 @@ async function singlePartBom(input: FabPackInput, name: string, out: string): Pr
   return { ok: true, output_path: out, byte_count: Buffer.byteLength(csv), format: 'bom-csv', diagnostics: evaluation.diagnostics };
 }
 
-const PROCESSES: readonly FabProcess[] = ['3d-print', 'cnc', 'sheet-cut'];
+const PROCESSES: readonly FabProcess[] = FAB_PROCESSES;
 
 function isFormatList(v: unknown): v is FabPackFormat[] {
   return Array.isArray(v) && v.length > 0 && v.every(f => typeof f === 'string' && Object.hasOwn(EXT, f));
