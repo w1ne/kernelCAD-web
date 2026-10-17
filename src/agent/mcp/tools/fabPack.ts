@@ -25,45 +25,15 @@ import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
 import { buildVendorLink, referralDisclosure } from '../../../shared/links/referral';
 import { FAB_PROCESSES, type FabPackFormat, type FabProcess } from '../../../shared/fab';
 export type { FabPackFormat, FabProcess } from '../../../shared/fab';
+import { FAB_SERVICES, type FabService } from '../../../kernel/export/order/fabServices';
+export { FAB_SERVICES, servicesForProcess } from '../../../kernel/export/order/fabServices';
+export type { FabService } from '../../../kernel/export/order/fabServices';
 
 export const FAB_PACK_DEFAULT_FORMATS: readonly FabPackFormat[] = ['step', 'stl', '3mf', 'pdf-drawing', 'bom-csv'];
 
 const EXT: Record<FabPackFormat, string> = {
   step: 'step', stl: 'stl', '3mf': '3mf', 'pdf-drawing': 'pdf', 'bom-csv': 'bom.csv', dxf: 'dxf',
 };
-
-export interface FabService {
-  service: string;
-  processes: FabProcess[];
-  /** Public instant-quote / upload page (no API; the user uploads by hand). */
-  url: string;
-  /** File formats the service accepts, in our pack's terms, preferred first. */
-  accepts: FabPackFormat[];
-}
-
-interface FabServiceEntry extends Omit<FabService, 'url'> {
-  /** Quote page as host + path. Outbound URLs are only ever built through
-   *  buildVendorLink (referral.ts), the single vendor-URL emitter. */
-  host: string;
-  path: string;
-}
-
-/** Public quote pages, checked reachable 2026-10-13. Plain web pages only. */
-const FAB_SERVICE_ENTRIES: readonly FabServiceEntry[] = [
-  { service: 'JLC3DP (JLCPCB 3D printing)', processes: ['3d-print'], host: 'jlc3dp.com', path: '/3d-printing-quote', accepts: ['stl', 'step', '3mf'] },
-  { service: 'JLCCNC (JLCPCB CNC machining)', processes: ['cnc'], host: 'jlccnc.com', path: '/cnc-machining-quote', accepts: ['step'] },
-  { service: 'PCBWay 3D printing', processes: ['3d-print'], host: 'www.pcbway.com', path: '/rapid-prototyping/3D-Printing/', accepts: ['stl', 'step'] },
-  { service: 'PCBWay CNC / sheet metal', processes: ['cnc', 'sheet-cut'], host: 'www.pcbway.com', path: '/rapid-prototyping/manufacture/', accepts: ['step', 'dxf', 'pdf-drawing'] },
-  { service: 'Xometry', processes: ['cnc', '3d-print', 'sheet-cut'], host: 'www.xometry.com', path: '/quoting/home/', accepts: ['step', 'stl', 'dxf', 'pdf-drawing'] },
-  { service: 'SendCutSend', processes: ['sheet-cut'], host: 'app.sendcutsend.com', path: '/', accepts: ['dxf', 'step'] },
-  { service: 'Craftcloud', processes: ['3d-print'], host: 'craftcloud3d.com', path: '/', accepts: ['stl', '3mf'] },
-];
-
-/** The quote-service table with clean (untagged) https URLs. */
-export const FAB_SERVICES: readonly FabService[] = FAB_SERVICE_ENTRIES.map(({ host, path, ...rest }) => ({
-  ...rest,
-  url: new URL(path, `https://${host}`).toString(),
-}));
 
 export interface FabPackInput {
   file?: string;
