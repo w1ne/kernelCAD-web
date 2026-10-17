@@ -14,6 +14,7 @@ const mockSelectedFeatureId = { value: null as string | null };
 const mockGeometries = { value: [] as GeometryResult[] };
 const mockHiddenIds = { value: [] as string[] };
 const mockToggleVisibility = vi.fn();
+const mockCode = { value: '' };
 
 vi.mock('../../hooks/useRecomputeResult', () => ({
     useRecomputeResult: () => mockUseRecomputeResult(),
@@ -28,7 +29,7 @@ vi.mock('../../hooks/useFeatureSelection', () => ({
 
 vi.mock('../../context/WorkbenchContext', () => ({
     useWorkbench: () => ({
-        code: '',
+        code: mockCode.value,
         setCode: vi.fn(),
         planes: [],
         selectedItemId: null,
@@ -109,9 +110,18 @@ beforeEach(() => {
     mockGeometries.value = [];
     mockHiddenIds.value = [];
     mockToggleVisibility.mockReset();
+    mockCode.value = '';
 });
 
 describe('SceneTab', () => {
+    it('lists parameters declared in the script above the tree', () => {
+        mockCode.value = "const shoulderDeg = param('shoulderDeg', 3, { min: -12, max: 15 });\nconst liftDeg = param('liftDeg', 0);\nreturn box(1, 1, 1);";
+        mockUseRecomputeResult.mockReturnValue(baseResult({ features: [], validity: null }));
+        render(<SceneTab />);
+        expect(screen.getByTestId('tree-param-shoulderDeg').textContent).toContain('3');
+        expect(screen.getByTestId('tree-param-liftDeg')).toBeTruthy();
+    });
+
     it('renders an error-severity badge on a row matching a floating-part diagnostic', () => {
         mockUseRecomputeResult.mockReturnValue(
             baseResult({

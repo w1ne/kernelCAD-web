@@ -191,6 +191,37 @@ describe('ProjectSidePanel', () => {
         expect(screen.queryByTestId('panel-keep')).toBeNull();
     });
 
+    it('leaves the joint-loads window off the viewer', () => {
+        wb.value = {
+            ...wb.value,
+            scriptReview: {
+                ok: true,
+                diagnostics: [],
+                validator: { status: 'solved', partCount: 1, jointCount: 1 },
+                mechanismSummary: {
+                    verdict: 'verified',
+                    statement: 'Motion checked.',
+                    failures: [],
+                    skipped: [],
+                    loads: {
+                        maxLevel: 'ok',
+                        statement: 'loads: min torque margin 2.00x (shoulder).',
+                        joints: [{
+                            joint: 'shoulder',
+                            maxLevel: 'ok',
+                            peakTorqueNm: 0.1,
+                            peakBendingNmm: 1,
+                            supports: [],
+                            torque: [[0, 0], [1000, 0.1]],
+                        }],
+                    },
+                },
+            },
+        };
+        render(<Harness />);
+        expect(screen.queryByTestId('loads-panel')).toBeNull();
+    });
+
     it('copies the resume prompt for the chat', async () => {
         render(<Harness />);
         fireEvent.click(screen.getByTestId('resume-prompt-copy'));

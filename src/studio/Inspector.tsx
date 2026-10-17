@@ -17,6 +17,8 @@ import {
     writeStoredInspectorWidth,
 } from './logic/inspectorWidth';
 import { InspectorTabs } from './InspectorTabs';
+import { LoadsPanel } from './components/motion/LoadsPanel';
+import { useWorkbench } from './context/WorkbenchContext';
 import { useInspectorTabRequests } from './hooks/studioNavigation';
 
 interface InspectorProps {
@@ -25,6 +27,7 @@ interface InspectorProps {
 
 export function Inspector({ tabSlots }: InspectorProps): JSX.Element {
     const result = useRecomputeResult();
+    const { scriptReview } = useWorkbench();
     const { inspectorOpen } = useShellStore();
     const visibleTabs = getVisibleTabs(result);
 
@@ -63,6 +66,9 @@ export function Inspector({ tabSlots }: InspectorProps): JSX.Element {
                     width={width}
                 />
                 <div className="min-h-0 flex-1 overflow-auto" data-testid="inspector-body">
+                    <div className="px-3 pt-2">
+                        <LoadsPanel loads={scriptReview?.mechanismSummary?.loads} />
+                    </div>
                     <TabPanel tabsId={INSPECTOR_TABS_ID} id={effectiveTab} value={effectiveTab} className="h-full">
                         {tabSlots[effectiveTab] ?? null}
                     </TabPanel>

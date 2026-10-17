@@ -8,8 +8,8 @@ import { selectAnimationMetadata } from './animationRecord';
  * when the model has something for them. Reserved views (`sections`, `cut`,
  * `render`) are never shown: a tab strip is not a feature list.
  *
- * Scene is last. It stays in the inspector until the model tree has its own
- * pane, and at the default width it sits in the "More" menu.
+ * Scene is last. The model tree also has its own pane. Every view stays in
+ * the tab row; the row scrolls when the column is narrow.
  */
 export const INSPECTOR_TAB_ORDER: readonly TabId[] = [
     'code',

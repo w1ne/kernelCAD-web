@@ -2,7 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import type { GeometryResult, SketchGeometry } from "../../shared/worker/geometryEngine";
 import type { ViewMode3D, ViewportBackground } from "../../shared/types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
@@ -25,6 +26,7 @@ import type { MeshDimensionsInfo } from "./viewer/dimensions/boundsDimensions";
 import { selectionCodeStore } from "../selectionCode/selectionCodeStore";
 import { ExplodeButton } from "./viewer/explode/ExplodeButton";
 import { useExplodedView } from "./viewer/explode/useExplodedView";
+import { TOOL_DOCK_SLOT_ID } from "./viewer/cornerControls";
 
 // Extracted hooks
 import { useViewerGridPlacement } from "../hooks/viewer/useViewerGridPlacement";
@@ -149,6 +151,31 @@ function useViewerSetup(geometries: GeometryResult[]) {
     };
 }
 
+function useToolDock(): HTMLElement | null {
+    const [slot, setSlot] = useState<HTMLElement | null>(null);
+    useEffect(() => {
+        setSlot(document.getElementById(TOOL_DOCK_SLOT_ID));
+    }, []);
+    return slot;
+}
+
+function ViewerToolButtons({ measuring, setMeasuring, dims, explode }: {
+    measuring: boolean;
+    setMeasuring: (fn: (on: boolean) => boolean) => void;
+    dims: ReturnType<typeof useViewerDimensions>;
+    explode: ReturnType<typeof useExplodedView>;
+}): ReactNode {
+    const dock = useToolDock();
+    const buttons = (
+        <>
+            <MeasureButton docked={dock != null} active={measuring} onToggle={() => setMeasuring((on) => !on)} />
+            {dims.available ? <DimensionsButton docked={dock != null} on={dims.on} onToggle={dims.toggle} legacy={dims.legacy} /> : null}
+            {explode.available ? <ExplodeButton docked={dock != null} view={explode} left={dims.available ? 'left-[6.25rem]' : 'left-14'} /> : null}
+        </>
+    );
+    return dock ? createPortal(buttons, dock) : buttons;
+}
+
 export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background, meshDimensions, showOriginPlanes = true, canvasExtras, look = 'engineering' }: ViewerProps) {
     const {
         meshDimensions: workbenchDimensions, featureRecords, setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
@@ -246,9 +273,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 ) : null}
             </Canvas>
             <CodeLinkLabel />
-            <MeasureButton active={measuring} onToggle={() => setMeasuring((on) => !on)} />
-            {dims.available ? <DimensionsButton on={dims.on} onToggle={dims.toggle} legacy={dims.legacy} /> : null}
-            {explode.available ? <ExplodeButton view={explode} left={dims.available ? 'left-[6.25rem]' : 'left-14'} /> : null}
+            <ViewerToolButtons measuring={measuring} setMeasuring={setMeasuring} dims={dims} explode={explode} />
             <ViewGizmo
                 onNavigate={(target) => setNavigationRequest((prev) => ({
                     target,

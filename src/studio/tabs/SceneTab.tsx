@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useMemo } from 'react';
-import type { JSX } from 'react';
+import type { JSX, ReactNode } from 'react';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ValidatorDiagnostic } from '../../modeling/mates/validator';
 import { Eye, EyeOff } from 'lucide-react';
@@ -12,6 +12,8 @@ import { useWorkbench } from '../context/WorkbenchContext';
 import { useGeometry } from '../context/GeometryContext';
 import { extractHistoryItems } from '../../shared/codeGeneration/codeAnalysis';
 import { brokenRowReasons } from '../components/motion/motionBadgeModel';
+import { listDeclaredParams } from '../../modeling/edits/setParamValue';
+import type { JointPoseSnapshot } from '../adapters/featureRecordsToMates';
 
 /**
  * Adaptive scene tree for the Studio shell. Reads feature records + validity
@@ -248,8 +250,52 @@ function SceneTabFeatureRows({
     );
 }
 
+function TreeParameters({ code }: { code: string }): JSX.Element | null {
+    const params = useMemo(() => listDeclaredParams(code), [code]);
+    if (params.length === 0) return null;
+    return (
+        <section className="border-b border-border px-2 py-2" data-testid="tree-parameters">
+            <h3 className="px-1 text-2xs font-medium uppercase tracking-wide text-fg-3">Parameters</h3>
+            <ul>
+                {params.map((param) => (
+                    <li key={param.name} className="flex items-baseline justify-between gap-2 px-1 py-0.5 text-ui" data-testid={`tree-param-${param.name}`}>
+                        <span className="truncate">{param.name}</span>
+                        <span className="shrink-0 font-mono text-fg-3">{param.defaultText}</span>
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
+function TreeJoints({ joints }: { joints: readonly JointPoseSnapshot[] }): JSX.Element | null {
+    if (joints.length === 0) return null;
+    return (
+        <section className="border-b border-border px-2 py-2" data-testid="tree-joints">
+            <h3 className="px-1 text-2xs font-medium uppercase tracking-wide text-fg-3">Joints</h3>
+            <ul>
+                {joints.map((joint) => (
+                    <li key={joint.mate.name} className="truncate px-1 py-0.5 text-ui" data-testid={`tree-joint-${joint.mate.name}`}>
+                        {joint.mate.name}
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
+function ModelTree({ code, joints, children }: { code: string; joints: readonly JointPoseSnapshot[]; children: ReactNode }): JSX.Element {
+    return (
+        <div className="flex min-h-0 flex-col">
+            <TreeParameters code={code} />
+            <TreeJoints joints={joints} />
+            {children}
+        </div>
+    );
+}
+
 export function SceneTab(): JSX.Element {
-    const { features, validity } = useRecomputeResult();
+    const { features, validity, joints } = useRecomputeResult();
     const { selectedFeatureId, selectFeature } = useFeatureSelection();
     const workbench = useWorkbench();
     const { geometries } = useGeometry();
@@ -287,46 +333,53 @@ export function SceneTab(): JSX.Element {
         [adaptiveActive, workbench.code],
     );
 
+    const tree = { code: workbench.code ?? '', joints: joints ?? [] };
     if (partNames.length > 0) {
         return (
-            <SceneTabPartsPanel
-                partNames={partNames}
-                hiddenIds={workbench.hiddenIds ?? []}
-                selectedFeatureId={selectedFeatureId}
-                diagnostics={validity?.diagnostics ?? []}
-                broken={broken}
-                selectFeature={selectFeature}
-                toggleVisibility={workbench.toggleVisibility}
-            />
+            <ModelTree {...tree}>
+                <SceneTabPartsPanel
+                    partNames={partNames}
+                    hiddenIds={workbench.hiddenIds ?? []}
+                    selectedFeatureId={selectedFeatureId}
+                    diagnostics={validity?.diagnostics ?? []}
+                    broken={broken}
+                    selectFeature={selectFeature}
+                    toggleVisibility={workbench.toggleVisibility}
+                />
+            </ModelTree>
         );
     }
 
     if (!adaptiveActive) {
         return (
-            <div data-testid="scene-tab-fallback">
-                <SceneBrowser
-                    items={fallbackItems}
-                    planes={workbench.planes ?? []}
-                    selectedItemId={workbench.selectedItemId ?? null}
-                    hoveredItemId={workbench.hoveredItemId ?? null}
-                    hiddenIds={workbench.hiddenIds ?? []}
-                    onSelect={(item) => workbench.setSelectedItemId?.(item.id)}
-                    onHover={(id) => workbench.setHoveredItemId?.(id)}
-                    onToggleVisibility={(name) => workbench.toggleVisibility?.(name)}
-                    onTogglePlane={(id) => workbench.togglePlaneVisibility?.(id)}
-                />
-            </div>
+            <ModelTree {...tree}>
+                <div data-testid="scene-tab-fallback">
+                    <SceneBrowser
+                        items={fallbackItems}
+                        planes={workbench.planes ?? []}
+                        selectedItemId={workbench.selectedItemId ?? null}
+                        hoveredItemId={workbench.hoveredItemId ?? null}
+                        hiddenIds={workbench.hiddenIds ?? []}
+                        onSelect={(item) => workbench.setSelectedItemId?.(item.id)}
+                        onHover={(id) => workbench.setHoveredItemId?.(id)}
+                        onToggleVisibility={(name) => workbench.toggleVisibility?.(name)}
+                        onTogglePlane={(id) => workbench.togglePlaneVisibility?.(id)}
+                    />
+                </div>
+            </ModelTree>
         );
     }
 
     return (
-        <SceneTabFeatureRows
-            rows={rows}
-            diagnostics={validity!.diagnostics}
-            broken={broken}
-            selectedFeatureId={selectedFeatureId}
-            selectFeature={selectFeature}
-        />
+        <ModelTree {...tree}>
+            <SceneTabFeatureRows
+                rows={rows}
+                diagnostics={validity!.diagnostics}
+                broken={broken}
+                selectedFeatureId={selectedFeatureId}
+                selectFeature={selectFeature}
+            />
+        </ModelTree>
     );
 }
 

@@ -12,3 +12,6 @@ export const CORNER_TOP: CSSProperties = { top: `calc(var(${CORNER_INSET_VAR}, 0
 
 /** `top` for the line of text under the corner controls. */
 export const CORNER_BELOW_TOP: CSSProperties = { top: `calc(var(${CORNER_INSET_VAR}, 0px) + 3.5rem)` };
+
+/** The tool dock's slot. Viewer tools portal into it when the dock is mounted. */
+export const TOOL_DOCK_SLOT_ID = 'studio-toolbar-tools';

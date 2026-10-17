@@ -2,8 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
 // The /p/<slug> side panel (a bottom sheet on a phone). One story, top to
-// bottom: what the model is and whether it passed its checks, change it
-// (the customizer), download it, keep it, continue in chat, and the rest
+// bottom: what the model is and whether it passed its checks, download it,
+// keep it, continue in chat, and the rest
 // (share, remix, report or publish, revisions).
 //
 // Everything here reads the workbench the live model runs in, so it is
@@ -18,7 +18,6 @@ import { hasNonemptyGeometry } from '../components/viewer/hasNonemptyGeometry';
 import { downloadBlob, exportViaServer } from '../exportViaServer';
 import { exportProgressText, useExportTask, type ExportTaskState } from '../hooks/useExportTask';
 import { isActionableOverlap } from '../../modeling/runtime/jointContactCap';
-import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
 import { plainLine } from '../plainLine';
 import {
   CUSTOMIZER_FORMATS,
@@ -33,7 +32,6 @@ import { ProjectViewerActions } from './-ProjectViewerActions';
 import { ServerRevisionList } from './-ServerRevisionHistory';
 import { ResumePrompt } from './-ResumePrompt';
 import { MotionBadge } from '../components/motion/MotionBadge';
-import { LoadsPanel } from '../components/motion/LoadsPanel';
 import {
   FORMAT_HINTS,
   configuredSource,
@@ -254,7 +252,6 @@ function Summary({ project, ownership, now }: {
         )}
       </div>
       {size && <p className="font-mono text-code text-fg-2" data-testid="model-size">{size}</p>}
-      <LoadsPanel loads={scriptReview?.mechanismSummary?.loads} />
     </section>
   );
 }
@@ -300,15 +297,7 @@ export function ProjectSidePanel(props: ProjectSidePanelProps): JSX.Element {
       <div className="px-4 pb-5 pt-2 md:pt-5">
         <Summary project={project} ownership={props.ownership} now={props.now} />
       </div>
-      {/* The customizer renders nothing for a model without parameters. With
-          parameters, its own Download (the configured model) is the page's
-          Download on desktop; the panel's Download below stands in for a
-          model without parameters. On a phone the action bar holds the one
-          Download, so the customizer's is hidden there. */}
-      <div className="border-t border-border empty:hidden max-md:[&_[data-testid=customizer-download]]:hidden">
-        <StudioModelCustomizer slug={slug} hints={project.parameters} layout="panel" />
-      </div>
-      <div className="hidden md:block md:group-has-[[data-testid=model-customizer]]/panel:hidden">
+      <div className="hidden md:block">
         <Section testId="panel-download">
           <DownloadButton download={props.download} />
           <DownloadStatus download={props.download} />

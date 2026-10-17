@@ -3,7 +3,7 @@
 import type { JSX } from 'react';
 import { Tabs, type TabItem } from '../ui';
 import type { TabId } from './types';
-import { INSPECTOR_TABS_ID, INSPECTOR_TAB_LABEL, PRIMARY_INSPECTOR_TABS, fitTabCount } from './logic/adaptiveTabs';
+import { INSPECTOR_TABS_ID, INSPECTOR_TAB_LABEL } from './logic/adaptiveTabs';
 
 interface InspectorTabsProps {
     /** Available tabs in display order. Unavailable tabs are not passed. */
@@ -12,16 +12,16 @@ interface InspectorTabsProps {
     readonly onSelectTab: (id: TabId) => void;
     /** Count pills after a label ("Checks 2"). */
     readonly counts?: Partial<Record<TabId, number>>;
-    /** Inspector width in px; tabs that do not fit go to a "More" menu. */
-    readonly width: number;
+    /** Kept so callers can pass the column width. The row shows every view. */
+    readonly width?: number;
 }
 
 /**
  * The inspector tab strip: underline tabs with arrow-key navigation, only
- * the tabs the model has content for, and a "More" menu when they do not
- * fit the width.
+ * the tabs the model has content for. They stay in one row; a narrow column
+ * scrolls the row instead of folding views into More.
  */
-export function InspectorTabs({ tabs, activeTab, onSelectTab, counts, width }: InspectorTabsProps): JSX.Element {
+export function InspectorTabs({ tabs, activeTab, onSelectTab, counts }: InspectorTabsProps): JSX.Element {
     const items: TabItem[] = tabs.map((id) => ({
         id,
         label: INSPECTOR_TAB_LABEL[id] ?? id,
@@ -37,7 +37,6 @@ export function InspectorTabs({ tabs, activeTab, onSelectTab, counts, width }: I
                 items={items}
                 value={activeTab}
                 onChange={(id) => onSelectTab(id as TabId)}
-                maxVisible={fitTabCount(items, width, tabs.filter((id) => PRIMARY_INSPECTOR_TABS.includes(id)).length)}
             />
         </div>
     );
