@@ -1,0 +1,21 @@
+{
+  "analysis": "floating",
+  "gas": "nitrogen",
+  "tank": { "volumeM3": 0.02, "massKg": 1.5, "temperatureK": 288.15 },
+  "dryMassKg": 40,
+  "inertiaKgM2": [6, 18, 18],
+  "positionM": [0, 0, 0.4],
+  "durationS": 0.5,
+  "thrusters": [
+    { "name": "fl", "positionM": [0.35, 0.25, -0.08], "direction": [0, 0, 1], "maxThrustN": 250 },
+    { "name": "fr", "positionM": [0.35, -0.25, -0.08], "direction": [0, 0, 1], "maxThrustN": 250 },
+    { "name": "rl", "positionM": [-0.35, 0.25, -0.08], "direction": [0, 0, 1], "maxThrustN": 250 },
+    { "name": "rr", "positionM": [-0.35, -0.25, -0.08], "direction": [0, 0, 1], "maxThrustN": 250 }
+  ],
+  "command": {
+    "kind": "wrench",
+    "segments": [
+      { "untilS": 0.5, "forceN": [0, 0, 407] }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "source": "Side frame examples/roadster/reference/official-01.jpg (1260x840), the 2026-10-16 McGregor studio photo. Bright pixels are Rec.709 luminance > 48. Nose and tail are the first and last columns with a vertical run of at least 14 bright pixels. The ground row is the lowest bright pixel of the single-run nose and hood. z = (groundRow - pixelRow) * (assumed length / (tailX - noseX)). Nose and the pre-door hood (s=700) take that top and bottom. The open scissor door and the raised rear wing are separate bright runs and are not the body loft. Cabin roof, tail deck, rocker aft of the hood, length, and wheelbase are assumptions. Width 2006.6 mm is the published 79 in.",
+  "image": "examples/roadster/reference/official-01.jpg",
+  "widthMm": 2006.6,
+  "lengthMm": 4520,
+  "lengthStatus": "assumed",
+  "heightStatus": "assumed",
+  "wheelbaseStatus": "assumed",
+  "stations": [
+    { "s": 0, "zSill": 103, "halfBottom": 70, "zTop": 178, "halfTop": 50 },
+    { "s": 700, "zSill": 6, "halfBottom": 560, "zTop": 276, "halfTop": 500 },
+    { "s": 1500, "zSill": 160, "halfBottom": 580, "zTop": 810, "halfTop": 580 },
+    { "s": 2300, "zSill": 150, "halfBottom": 980, "zTop": 1020, "halfTop": 1003.3 },
+    { "s": 2950, "zSill": 160, "halfBottom": 560, "zTop": 900, "halfTop": 560 },
+    { "s": 3850, "zSill": 190, "halfBottom": 540, "zTop": 970, "halfTop": 540 },
+    { "s": 4520, "zSill": 320, "halfBottom": 200, "zTop": 720, "halfTop": 160 }
+  ]
+}

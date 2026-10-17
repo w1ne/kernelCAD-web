@@ -1,16 +1,35 @@
 // K-Spray K-Lift — spray workcell on a certified boom lift (pitch concept).
-// Z-up, millimetres. The lift is a generic Genie/Terex-class towable boom:
-// a certified access machine the crew already uses. Komatachi builds only the
-// compact workcell that mounts on its platform. Concept model, not a certified
-// lifting device — load limits and OEM approval come before any field use.
+// Z-up, millimetres. Proper kinematic build:
+//   - every rigid body is ONE part (no interpenetrating subassemblies)
+//   - the three boom/platform joints use the shared-pin hinge pattern:
+//     parent = beam end + stub + pin hub; child = collar (clearance bore)
+//     + cheek plates + flange. All clearances are rotation-invariant
+//     (surfaces of revolution about the joint axis, or Y-band plates),
+//     so the mechanism stays collision-free across every pose.
+//   - the gun carriage rides the workcell rail on a prismatic mate with a
+//     clearance fit
+//   - every part is mated: scene parts fastened, chain revolute, carriage
+//     prismatic — no floating parts
+//
+// The lift is a generic Genie/Terex-class boom — a certified access machine.
+// Komatachi builds only the workcell. Concept model, not a certified device.
 
-const upperBoomDeg = param('upperBoomDeg', 30, {
-  min: -60, max: 40,
-  description: 'Upper-boom elevation (deg). -50 = platform folded low, 30 = working pose.',
+// ---- pose parameters ------------------------------------------------------
+const lowerDeg = param('lowerDeg', 70, {
+  min: 60, max: 80,
+  description: 'Lower-boom elevation relative to the base (deg).',
+});
+const upperRelDeg = param('upperRelDeg', -40, {
+  min: -120, max: -40,
+  description: 'Upper-boom angle relative to the lower boom (deg). -40 = working pose, -120 = folded low.',
+});
+const platformRelDeg = param('platformRelDeg', -30, {
+  min: -60, max: 60,
+  description: 'Platform counter-rotation relative to the upper boom (deg). Kept at -(lowerDeg+upperRelDeg) so the deck stays level.',
 });
 const carriageMm = param('carriageMm', 450, {
-  min: 150, max: 750,
-  description: 'Gun carriage height above the platform deck (mm).',
+  min: 260, max: 760,
+  description: 'Gun carriage travel along the platform rail (mm above rail base).',
 });
 
 const C = {
@@ -18,181 +37,288 @@ const C = {
   gunBlue: '#1769aa', gunSilver: '#c5cdd1',
   ivory: '#e8e4d9', alu: '#aeb8bd', black: '#15191c', rubber: '#202326',
   red: '#d7222b', blue: '#315c72', glass: '#315c72',
-  wall: '#e9e0d4', wallLight: '#f5eee3', mask: '#cfe3ea', ground: '#d8d4cc',
+  wall: '#e9e0d4', wallFace: '#f2ebdf', mask: '#cfe3ea', ground: '#d8d4cc',
+  fork: '#7d8290', pin: '#262a31',
 };
 
-// --- Scene constants -------------------------------------------------------
-const WALL_X = 3420;
-const GROUND_Z = 0;
+// ---- scene constants ------------------------------------------------------
+const WALL_X = 3500;
+const P0: [number, number, number] = [-800, 0, 1100];   // base <-> lower boom
+const L1 = 2600;                                        // lower boom length
+const L2 = 2200;                                        // upper boom length
+const RAIL_X = 420;                                     // workcell rail x on the platform
+const RAIL_BASE_Z = -125;                               // rail base (deck top) in platform frame
 
-// Boom geometry. Lower boom is fixed at the working elevation; the upper boom
-// carries the platform and is the animated axis.
-const P0: [number, number, number] = [-800, 0, 1100];
-const L1 = 2600;
-const LOWER_DEG = 70;
-const L2 = 2200;
-const UPPER_DEG = upperBoomDeg.value ?? 30;
-
-const lowerRad = LOWER_DEG * Math.PI / 180;
-const upperRad = UPPER_DEG * Math.PI / 180;
-const P1: [number, number, number] = [
-  P0[0] + L1 * Math.cos(lowerRad),
-  P0[1],
-  P0[2] + L1 * Math.sin(lowerRad),
-];
-const P2: [number, number, number] = [
-  P1[0] + L2 * Math.cos(upperRad),
-  P1[1],
-  P1[2] + L2 * Math.sin(upperRad),
-];
-
-const deckZ = P2[2];
-const carriageZ = deckZ + 60 + (carriageMm.value ?? 450);
-const muzzleX = P2[0] + 990;
+// Shared hinge hardware. The pattern keeps 5 mm radial clearance between the
+// pin hub and the collar bore, and 5-25 mm Y-band clearance everywhere else.
+const HUB_R = 95;          // parent pin hub radius (contains the pivot point)
+const BORE_R = 100;        // child collar bore (joint clearance, declared to the mate)
+const COLLAR_R = 140;      // child collar outer radius
+const HUB_Y = 200;         // pin hub half-width (spans the cheek plates)
+const COLLAR_Y = 160;      // child collar half-width
+const PLATE_Y0 = 150;      // child cheek plates: y band inner
+const PLATE_Y1 = 175;      // child cheek plates: y band outer
+const PPLATE_Y = 185;      // parent side can carry plain washers at the pin ends
+const BEAM_GAP = 150;      // beam ends stop this far short of the pivot
+const STUB = 55;           // connecting stub half-section (beam end -> pivot)
 
 setCameraTarget(1100, 0, 2700);
 
-// --- Helpers ---------------------------------------------------------------
+// ---- shape helpers --------------------------------------------------------
 function zCylinder(h: number, r: number, x: number, y: number, z: number, color: string) {
-  return cylinder(h, r, 40).translate(x, y, z).color(color);
+  return cylinder(h, r, 40).translate(x, y, z - h / 2).color(color);
 }
 function yCylinder(h: number, r: number, x: number, y: number, z: number, color: string) {
-  return cylinder(h, r, 40).alongAxis([0, 1, 0]).translate(x, y, z).color(color);
+  return cylinder(h, r, 40).alongAxis([0, 1, 0]).translate(x, y - h / 2, z).color(color);
 }
 function xCylinder(h: number, r: number, x: number, y: number, z: number, color: string) {
-  return cylinder(h, r, 40).alongAxis([1, 0, 0]).translate(x, y, z).color(color);
+  return cylinder(h, r, 40).alongAxis([1, 0, 0]).translate(x - h / 2, y, z).color(color);
 }
 function roundedBox(x: number, y: number, z: number, r: number, cx: number, cy: number, cz: number, color: string) {
   return box(x, y, z, true).translate(cx, cy, cz).color(color);
 }
-function beam(
-  a: [number, number, number],
-  b: [number, number, number],
-  widthY: number,
-  heightZ: number,
-  color: string,
-) {
-  const dx = b[0] - a[0], dz = b[2] - a[2];
-  const len = Math.sqrt(dx * dx + dz * dz);
-  const tilt = Math.atan2(dz, dx) * 180 / Math.PI;
-  return roundedBox(len, widthY, heightZ, Math.min(widthY, heightZ) * 0.3,
-    0, 0, 0, color)
-    .rotate([0, 1, 0], -tilt)
-    .translate((a[0] + b[0]) / 2, a[1], (a[2] + b[2]) / 2);
+function frameConnector(origin: [number, number, number]) {
+  return { type: 'frame', origin: { kind: 'vec3', value: origin } };
+}
+function axisConnector(origin: [number, number, number], axis: [number, number, number]) {
+  return { type: 'axis', origin: { kind: 'vec3', value: origin }, axis };
+}
+// Child-side hinge hardware in the CHILD's part-local frame (origin = pivot,
+// beam along +X): collar + cheek plates + flange, all unioned with the body.
+function childHinge(body: ReturnType<typeof box>) {
+  return body
+    .union(yCylinder(COLLAR_Y * 2, COLLAR_R, 0, 0, 0, C.fork))
+    .union(roundedBox(65, PLATE_Y1 - PLATE_Y0, 420, 8, 132, (PLATE_Y0 + PLATE_Y1) / 2, 0, C.alu))
+    .union(roundedBox(65, PLATE_Y1 - PLATE_Y0, 420, 8, 132, -(PLATE_Y0 + PLATE_Y1) / 2, 0, C.alu))
+    .union(roundedBox(70, 55, 420, 8, 185, 150, 0, C.alu))
+    .union(roundedBox(70, 55, 420, 8, 185, -150, 0, C.alu))
+    .subtract(yCylinder(COLLAR_Y * 2 + 60, BORE_R, 0, 0, 0, C.dark));   // drilled clearance bore
 }
 
 const lift = assembly('K-Spray K-Lift boom workcell concept');
 
-// --- Ground and façade -----------------------------------------------------
-lift.part('ground', roundedBox(7600, 4400, 60, 30, 900, 0, GROUND_Z - 30, C.ground));
-lift.part('facade-wall', roundedBox(120, 3600, 5600, 6, WALL_X + 60, 0, 2800, C.wall)
-  .union(roundedBox(10, 3600, 5600, 2, WALL_X - 3, 0, 2800, C.wallLight)));
-for (const sy of [-1, 1]) {
-  const wy = sy * 850;
-  lift.part(`window-${sy > 0 ? 'right' : 'left'}-glass`,
-    roundedBox(26, 1000, 1400, 8, WALL_X - 16, wy, 1900, C.glass));
-  lift.part(`window-${sy > 0 ? 'right' : 'left'}-sprayed-mask-film`,
-    roundedBox(10, 1040, 1440, 6, WALL_X - 34, wy, 1900, C.mask)
-      .union(roundedBox(24, 120, 40, 6, WALL_X - 40, wy - 430, 1250, C.alu)));
-}
-
-// --- Chassis, wheels, outriggers ------------------------------------------
-lift.part('boom-lift-chassis',
-  roundedBox(3000, 1400, 420, 90, -100, 0, 470, C.frame)
-    .union(roundedBox(2860, 1280, 60, 20, -100, 0, 690, C.alu))
-    .union(roundedBox(600, 1200, 240, 40, 1050, 0, 590, C.dark)));
+// ===========================================================================
+// PART: base — chassis, wheels, outriggers, turret + shoulder pin hardware.
+// ===========================================================================
+let baseGeom = roundedBox(3000, 1400, 420, 90, -100, 0, 470, C.frame)
+  .union(roundedBox(2860, 1280, 60, 20, -100, 0, 690, C.alu))
+  .union(roundedBox(600, 1200, 240, 40, 1050, 0, 590, C.dark))
+  .union(roundedBox(720, 640, 280, 40, P0[0], 0, 840, C.frame))
+  .union(roundedBox(420, 520, 280, 30, P0[0] - 470, 0, 840, C.blue))
+  .union(zCylinder(120, 470, P0[0], 0, 740, C.dark))
+  // Shoulder pin boss: stub from the turret top to the pivot + the pin hub.
+  .union(roundedBox(STUB * 2, STUB * 2, 200, 10, P0[0], 0, P0[2] - 100, C.dark))
+  .union(yCylinder(HUB_Y * 2, HUB_R, P0[0], 0, P0[2], C.pin))
+  .union(yCylinder(30, HUB_R + 12, P0[0], HUB_Y + 15, P0[2], C.fork))
+  .union(yCylinder(30, HUB_R + 12, P0[0], -(HUB_Y + 15), P0[2], C.fork));
 for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
   const wx = sx > 0 ? 950 : -1150;
   const wy = sy * 700;
-  lift.part(`wheel-${sx > 0 ? 'front' : 'rear'}-${sy > 0 ? 'right' : 'left'}`,
-    yCylinder(280, 300, wx, wy, 300, C.rubber)
-      .union(yCylinder(300, 190, wx, wy, 300, C.dark))
-      .union(yCylinder(310, 120, wx, wy, 300, C.alu))
-      .union(yCylinder(316, 42, wx, wy, 300, C.orange)));
+  baseGeom = baseGeom
+    .union(yCylinder(280, 300, wx, wy, 300, C.rubber))
+    .union(yCylinder(300, 190, wx, wy, 300, C.dark))
+    .union(yCylinder(310, 120, wx, wy, 300, C.alu))
+    .union(yCylinder(316, 42, wx, wy, 300, C.orange));
   const ax = sx > 0 ? 1250 : -1450;
-  const anchor: [number, number, number] = [ax, sy * 560, 600];
-  const foot: [number, number, number] = [sx > 0 ? 1580 : -1780, sy * 1080, 80];
-  lift.part(`outrigger-${sx > 0 ? 'front' : 'rear'}-${sy > 0 ? 'right' : 'left'}`,
-    beam(anchor, foot, 90, 90, C.dark)
-      .union(roundedBox(260, 260, 50, 10, foot[0], foot[1], 50, C.dark))
-      .union(roundedBox(300, 300, 16, 4, foot[0], foot[1], 22, C.orange)));
+  const ay = sy * 560;
+  const fx = sx > 0 ? 1580 : -1780;
+  const fy = sy * 1080;
+  const dz = 80 - 600;
+  const dx = fx - ax, dy = fy - ay;
+  const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  const legAxis: [number, number, number] = [dx / len, dy / len, dz / len];
+  baseGeom = baseGeom
+    .union(cylinder(len, 45, 24).alongAxis(legAxis).translate(ax, ay, 600).color(C.dark))
+    .union(roundedBox(260, 260, 50, 10, fx, fy, 25, C.dark))
+    .union(roundedBox(300, 300, 16, 4, fx, fy, 12, C.orange));
 }
+const base = lift.part('base', baseGeom);
+base.connector('groundFace', frameConnector([0, 0, 0]));
+base.connector('lowerPivot', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: P0 },
+  axis: [0, -1, 0],
+  jointClearanceRadius: HUB_R,
+});
 
-// --- Turret and booms ------------------------------------------------------
-lift.part('turret-ring-and-body',
-  zCylinder(120, 470, P0[0], 0, 740, C.dark)
-    .union(roundedBox(720, 640, 280, 40, P0[0], 0, 960, C.frame))
-    .union(roundedBox(420, 520, 280, 30, P0[0] - 470, 0, 900, C.blue)));
-lift.part('lower-boom', beam(P0, P1, 250, 280, C.frame)
-  .union(yCylinder(340, 110, P0[0], 0, P0[2], C.dark))
-  .union(yCylinder(300, 90, P1[0], 0, P1[2], C.orange)));
-lift.part('upper-boom', beam(P1, P2, 210, 230, C.frame)
-  .union(yCylinder(300, 90, P1[0], 0, P1[2], C.dark)));
-lift.part('boom-hydraulic-ram',
-  beam([P0[0] + 300, 0, P0[2] + 120], [P1[0] - 120, 0, P1[2] - 60], 80, 80, C.gunSilver));
+// ===========================================================================
+// PART: lower-boom — child collar at P0, beam, parent pin hardware at tip.
+// ===========================================================================
+let lowerGeom = childHinge(
+  roundedBox(L1 - 2 * BEAM_GAP, 240, 260, 28, (L1) / 2, 0, 0, C.frame)
+    .union(roundedBox(500, 200, 60, 12, 520, 0, 160, C.alu)),
+);
+lowerGeom = lowerGeom
+  .union(roundedBox(STUB * 2, STUB * 2, 300, 10, L1 - 150, 0, 0, C.dark))
+  .union(yCylinder(HUB_Y * 2, HUB_R, L1, 0, 0, C.pin))
+  .union(yCylinder(30, HUB_R + 12, L1, HUB_Y + 15, 0, C.fork))
+  .union(yCylinder(30, HUB_R + 12, L1, -(HUB_Y + 15), 0, C.fork));
+const lowerBoom = lift.part('lower-boom', lowerGeom);
+lowerBoom.connector('basePivot', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, -1, 0],
+  jointClearanceRadius: BORE_R,
+});
+lowerBoom.connector('tipPivot', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [L1, 0, 0] },
+  axis: [0, -1, 0],
+  jointClearanceRadius: HUB_R,
+});
 
-// --- Platform and workcell -------------------------------------------------
-lift.part('platform-deck-and-rails',
-  roundedBox(1200, 800, 60, 16, P2[0], 0, deckZ + 30, C.alu)
-    .union(yCylinder(340, 60, P2[0], 0, deckZ, C.dark)));
-for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
-  lift.part(`platform-rail-post-${sx}_${sy}`,
-    zCylinder(900, 16, P2[0] + sx * 540, sy * 340, deckZ + 510, C.alu));
+// ===========================================================================
+// PART: upper-boom — child collar at P1, beam, parent pin hardware at tip.
+// ===========================================================================
+let upperGeom = childHinge(
+  roundedBox(L2 - 2 * BEAM_GAP, 240, 260, 28, L2 / 2, 0, 0, C.frame)
+    .union(roundedBox(420, 170, 50, 10, L2 - 460, 0, 130, C.alu)),
+);
+upperGeom = upperGeom
+  .union(roundedBox(STUB * 2, STUB * 2, 300, 10, L2 - 150, 0, 0, C.dark))
+  .union(yCylinder(HUB_Y * 2, HUB_R, L2, 0, 0, C.pin))
+  .union(yCylinder(30, HUB_R + 12, L2, HUB_Y + 15, 0, C.fork))
+  .union(yCylinder(30, HUB_R + 12, L2, -(HUB_Y + 15), 0, C.fork));
+const upperBoom = lift.part('upper-boom', upperGeom);
+upperBoom.connector('lowerPivot', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, -1, 0],
+  jointClearanceRadius: BORE_R,
+});
+upperBoom.connector('platformPivot', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [L2, 0, 0] },
+  axis: [0, -1, 0],
+  jointClearanceRadius: HUB_R,
+});
+
+// ===========================================================================
+// PART: platform — level basket + workcell structure, child collar at pivot.
+// ===========================================================================
+let platformGeom = childHinge(
+  roundedBox(1070, 800, 60, 16, 595, 0, -155, C.alu)
+    .union(roundedBox(1140, 36, 36, 10, 595, 0, -218, C.dark))
+    .union(roundedBox(90, 120, 1000, 12, RAIL_X, 0, 375, C.dark))
+    .union(roundedBox(290, 300, 300, 30, 205, -240, 25, C.blue))
+    .union(roundedBox(270, 280, 24, 8, 205, -240, 187, C.alu))
+    .union(zCylinder(24, 30, 350, -240, 187, C.red)),
+);
+for (const px of [150, 1050]) for (const sy of [-1, 1]) {
+  platformGeom = platformGeom.union(zCylinder(900, 16, px, sy * 340, -125 + 450, C.alu));
 }
-lift.part('platform-top-rails',
-  roundedBox(1140, 22, 22, 8, P2[0], -340, deckZ + 940, C.alu)
-    .union(roundedBox(1140, 22, 22, 8, P2[0], 340, deckZ + 940, C.alu))
-    .union(roundedBox(22, 700, 22, 8, P2[0] - 540, 0, deckZ + 940, C.alu)));
+platformGeom = platformGeom
+  .union(roundedBox(980, 22, 22, 8, 600, 340, 775, C.alu))
+  .union(roundedBox(980, 22, 22, 8, 600, -340, 775, C.alu))
+  .union(roundedBox(22, 700, 22, 8, 150, 0, 775, C.alu));
+const platform = lift.part('platform', platformGeom);
+platform.connector('platformPivot', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, -1, 0],
+  jointClearanceRadius: BORE_R,
+});
+platform.connector('railAxis', axisConnector([RAIL_X, 0, RAIL_BASE_Z], [0, 0, 1]));
 
-lift.part('workcell-control-box',
-  roundedBox(360, 300, 300, 30, P2[0] - 360, 0, deckZ + 210, C.blue)
-    .union(roundedBox(340, 280, 24, 8, P2[0] - 360, 0, deckZ + 372, C.alu))
-    .union(zCylinder(24, 30, P2[0] - 520, 0, deckZ + 372, C.red)));
+// ===========================================================================
+// PART: carriage — C-channel in a clearance fit on the rail, gun, wrist,
+// edge shield and sensors as one rigid body.
+// ===========================================================================
+const carriage = lift.part('carriage',
+  roundedBox(130, 25, 200, 6, 0, 72.5, 0, C.orange)
+    .union(roundedBox(130, 25, 200, 6, 0, -72.5, 0, C.orange))
+    .union(roundedBox(30, 300, 200, 6, 75, 0, 0, C.dark))
+    .union(xCylinder(120, 34, 110, 0, 0, C.gunSilver))
+    .union(roundedBox(300, 150, 130, 22, 260, 0, 0, C.gunBlue))
+    .union(roundedBox(90, 100, 90, 14, 410, 0, -30, C.gunSilver))
+    .union(xCylinder(200, 24, 510, 0, -40, C.dark))
+    .union(xCylinder(70, 34, 620, 0, -40, C.gunSilver))
+    .union(roundedBox(30, 460, 380, 10, 560, 0, -20, C.alu))
+    .union(roundedBox(110, 60, 380, 12, 500, 210, -20, C.alu))
+    .union(roundedBox(110, 60, 380, 12, 500, -210, -20, C.alu))
+    .union(roundedBox(26, 420, 90, 6, 600, 0, -210, C.black))
+    .union(roundedBox(90, 60, 50, 8, 300, 0, 110, C.dark))
+    .union(roundedBox(20, 40, 30, 4, 348, 0, 110, C.glass))
+    .union(roundedBox(60, 44, 40, 6, 160, 90, 90, C.dark)));
+carriage.connector('slideAxis', axisConnector([0, 0, 0], [0, 0, 1]));
 
-lift.part('workcell-vertical-rail',
-  roundedBox(90, 120, 1000, 12, P2[0] + 420, 0, deckZ + 560, C.dark));
-lift.part('gun-carriage',
-  roundedBox(170, 240, 150, 14, P2[0] + 420, 0, carriageZ, C.orange)
-    .union(yCylinder(260, 26, P2[0] + 420, 0, carriageZ, C.dark)));
-lift.part('spray-gun-body-and-wrist',
-  xCylinder(120, 34, P2[0] + 500, 0, carriageZ, C.gunSilver)
-    .union(roundedBox(300, 150, 130, 22, P2[0] + 650, 0, carriageZ, C.gunBlue))
-    .union(roundedBox(90, 100, 90, 14, P2[0] + 800, 0, carriageZ - 30, C.gunSilver))
-    .union(xCylinder(200, 24, P2[0] + 900, 0, carriageZ - 40, C.dark))
-    .union(xCylinder(70, 34, P2[0] + 1010, 0, carriageZ - 40, C.gunSilver)));
-lift.part('edge-shield-and-brush-skirt',
-  roundedBox(30, 460, 380, 10, muzzleX - 120, 0, carriageZ - 20, C.alu)
-    .union(roundedBox(110, 60, 380, 12, muzzleX - 60, -210, carriageZ - 20, C.alu))
-    .union(roundedBox(110, 60, 380, 12, muzzleX - 60, 210, carriageZ - 20, C.alu))
-    .union(roundedBox(26, 420, 90, 6, muzzleX - 30, 0, carriageZ - 190, C.black)));
-lift.part('standoff-and-depth-sensors',
-  roundedBox(90, 60, 50, 8, P2[0] + 700, 0, carriageZ + 110, C.dark)
-    .union(roundedBox(20, 40, 30, 4, P2[0] + 748, 0, carriageZ + 110, C.glass))
-    .union(roundedBox(60, 44, 40, 6, P2[0] + 560, 90, carriageZ + 90, C.dark)));
+// ===========================================================================
+// SCENE PARTS — ground and facade (wall + recessed windows + mask film).
+// ===========================================================================
+const ground = lift.part('ground', roundedBox(7600, 4400, 60, 30, 900, 0, -30, C.ground));
+ground.connector('baseFace', frameConnector([0, 0, 0]));
+ground.connector('wallFoot', frameConnector([WALL_X, 0, 0]));
 
-// --- Animation: lift into pose, two spray passes, lower for travel ---------
+let facadeGeom = roundedBox(120, 3600, 5600, 6, 60, 0, 2800, C.wall)
+  .union(roundedBox(100, 3560, 5480, 4, 50, 0, 2800, C.wallFace));
+for (const sy of [-1, 1]) {
+  const wy = sy * 850;
+  facadeGeom = facadeGeom
+    .union(roundedBox(30, 1000, 1400, 8, -15, wy, 4400, C.glass))
+    .union(roundedBox(10, 1040, 1440, 6, -35, wy, 4400, C.mask))
+    .union(roundedBox(24, 120, 40, 6, -47, wy - 430, 3840, C.alu));
+}
+const facade = lift.part('facade', facadeGeom);
+facade.connector('wallFoot', frameConnector([0, 0, 0]));
+
+// ===========================================================================
+// MATES — full kinematic graph.
+// ===========================================================================
+lift.mate('base-on-ground', 'base.groundFace', 'ground.baseFace', 'fastened');
+lift.mate('facade-on-ground', 'ground.wallFoot', 'facade.wallFoot', 'fastened');
+lift.mate('lower-boom-pivot', 'base.lowerPivot', 'lower-boom.basePivot', 'revolute', {
+  pose: lowerDeg,
+  limitsDeg: [60, 80],
+});
+lift.mate('upper-boom-pivot', 'lower-boom.tipPivot', 'upper-boom.lowerPivot', 'revolute', {
+  pose: upperRelDeg,
+  limitsDeg: [-120, -40],
+});
+lift.mate('platform-leveling', 'upper-boom.platformPivot', 'platform.platformPivot', 'revolute', {
+  pose: platformRelDeg,
+  limitsDeg: [-60, 60],
+});
+lift.mate('carriage-slide', 'platform.railAxis', 'carriage.slideAxis', 'prismatic', {
+  pose: carriageMm,
+  limitsMm: [260, 760],
+});
+
+// ===========================================================================
+// ANIMATION — working pose -> two spray passes -> stow low -> back to work.
+// platformRelDeg mirrors upperRelDeg so the deck stays level throughout.
+// ===========================================================================
 animationView({
   name: 'lift-and-spray-cycle',
   tracks: [
     {
-      param: 'upperBoomDeg',
+      param: 'upperRelDeg',
       keys: [
-        { atMs: 0, value: 30 },
-        { atMs: 3400, value: 30 },
-        { atMs: 5200, value: -50, ease: 'easeInOut' },
-        { atMs: 6400, value: -50 },
-        { atMs: 8000, value: 30, ease: 'easeInOut' },
+        { atMs: 0, value: -40 },
+        { atMs: 3400, value: -40 },
+        { atMs: 5200, value: -120, ease: 'easeInOut' },
+        { atMs: 6400, value: -120 },
+        { atMs: 8000, value: -40, ease: 'easeInOut' },
+      ],
+    },
+    {
+      param: 'platformRelDeg',
+      keys: [
+        { atMs: 0, value: -30 },
+        { atMs: 3400, value: -30 },
+        { atMs: 5200, value: 50, ease: 'easeInOut' },
+        { atMs: 6400, value: 50 },
+        { atMs: 8000, value: -30, ease: 'easeInOut' },
       ],
     },
     {
       param: 'carriageMm',
       keys: [
-        { atMs: 0, value: 150 },
-        { atMs: 300, value: 150 },
-        { atMs: 1600, value: 750, ease: 'easeInOut' },
-        { atMs: 2900, value: 150, ease: 'easeInOut' },
-        { atMs: 3400, value: 150 },
-        { atMs: 8000, value: 150 },
+        { atMs: 0, value: 260 },
+        { atMs: 300, value: 260 },
+        { atMs: 1600, value: 700, ease: 'easeInOut' },
+        { atMs: 2900, value: 260, ease: 'easeInOut' },
+        { atMs: 3400, value: 260 },
+        { atMs: 8000, value: 260 },
       ],
     },
   ],
