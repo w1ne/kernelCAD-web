@@ -13,6 +13,7 @@ import {
   checkMotionLoad,
   type MotionLoadExternalLoad,
   type MotionLoadJointResult,
+  type MotionLoadOpts,
   type MotionLoadResult,
 } from '../../../kinematic/motionLoad';
 
@@ -46,28 +47,22 @@ export async function checkMotionLoadTool(input: CheckMotionLoadInput): Promise<
   }
   const assemblies = model.session.assemblies as Map<string, Assembly>;
   const arm = input.assembly !== undefined ? assemblies.get(input.assembly) : assemblies.values().next().value;
-  if (!arm) {
-    return {
-      ok: false, source: 'local', errorCode: 'feature.invalid-args',
-      error: input.assembly ? `motion-load: assembly '${input.assembly}' not found.` : 'motion-load: no assembly captured by the script.',
-    };
-  }
-  const result = await checkMotionLoad(arm, {
-    ...(input.motion_mode !== undefined ? { mode: input.motion_mode } : {}),
-    ...(input.sample_ms !== undefined ? { sampleMs: input.sample_ms } : {}),
-    ...(input.range_samples !== undefined ? { rangeSamples: input.range_samples } : {}),
-    ...(input.quasi_static !== undefined ? { quasiStatic: input.quasi_static } : {}),
-    ...(input.gravity !== undefined ? { gravity: input.gravity } : {}),
-    ...(input.motion_loads !== undefined ? { loads: input.motion_loads } : {}),
-    ...(input.supports !== undefined ? { supports: input.supports } : {}),
-  });
+  if (!arm) return { ok: false, source: 'local', errorCode: 'feature.invalid-args', error: `motion-load: assembly '${input.assembly}' not found.` };
+  const result = await checkMotionLoad(arm, studyOpts(input));
   const points = input.series_points ?? DEFAULT_SERIES_POINTS;
-  const gateErrors = evaluation.exitCode !== 0 ? evaluation.diagnostics.filter((d) => d.severity === 'error').length : 0;
-  return {
-    ...result,
-    joints: result.joints.map((j) => thinSeries(j, points)),
-    ...(gateErrors > 0 ? { messages: [...result.messages, `The script has ${gateErrors} other error diagnostic(s) (run evaluate_script); loads were computed on the built geometry.`] } : {}),
-  };
+  const gateErrors = evaluation.diagnostics.filter((d) => d.severity === 'error').length;
+  const note = `The script has ${gateErrors} other error diagnostic(s) (run evaluate_script); loads were computed on the built geometry.`;
+  const messages = gateErrors > 0 ? [...result.messages, note] : result.messages;
+  return { ...result, messages, joints: result.joints.map((j) => thinSeries(j, points)) };
+}
+
+/** Map the snake_case tool input to the study options (unset stays unset). */
+function studyOpts(input: CheckMotionLoadInput): MotionLoadOpts {
+  const pairs: Array<[keyof MotionLoadOpts, unknown]> = [
+    ['mode', input.motion_mode], ['sampleMs', input.sample_ms], ['rangeSamples', input.range_samples],
+    ['quasiStatic', input.quasi_static], ['gravity', input.gravity], ['loads', input.motion_loads], ['supports', input.supports],
+  ];
+  return Object.fromEntries(pairs.filter(([, v]) => v !== undefined)) as MotionLoadOpts;
 }
 
 /** Keep at most `points` evenly spaced samples, always including the worst. */

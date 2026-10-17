@@ -161,24 +161,10 @@ export async function checkMotionLoad(arm: Assembly, opts: MotionLoadOpts = {}):
   const mode = opts.mode ?? 'tracks';
   const quasiStatic = opts.quasiStatic === true || mode === 'range';
   const diagnostics: KinematicDiagnostic[] = [];
-  const intents = drivenIntents(arm);
-  if (intents.length === 0) {
-    return emptyResult(mode, quasiStatic, 'Loads not checked: no mechanicalJoint drives a revolute mate.', diagnostics);
-  }
-  const scene = await lowerRestScene(arm);
-  if (scene === undefined) {
-    return emptyResult(mode, quasiStatic, 'Loads not checked: the assembly did not lower to a scene.', diagnostics);
-  }
-  const masses = partMasses(arm, scene);
-  const poses = mode === 'range' ? rangePoses(arm, intents, opts.rangeSamples) : trackPoses(arm, opts.sampleMs);
-  const samples = await solveSamples(arm, scene, masses, poses);
-  if (samples.length === 0) {
-    return emptyResult(mode, quasiStatic, 'Loads not checked: the mates did not solve at any sampled pose.', diagnostics);
-  }
-  const h = samples.length > 1 && samples[1].tMs !== undefined && samples[0].tMs !== undefined
-    ? (samples[1].tMs - samples[0].tMs) / 1000
-    : (opts.sampleMs ?? DEFAULT_SAMPLE_MS) / 1000;
-  const kin = quasiStatic ? undefined : finiteDifferences(samples, masses, h);
+  const prepared = await prepareStudy(arm, opts, mode);
+  if (typeof prepared === 'string') return emptyResult(mode, quasiStatic, prepared, diagnostics);
+  const { intents, masses, samples } = prepared;
+  const kin = quasiStatic ? undefined : finiteDifferences(samples, masses, stepSeconds(samples, opts.sampleMs));
   const ctx: JointCtx = { arm, masses, samples, kin, gravity: (opts.gravity ?? DEFAULT_GRAVITY) as V3, loads: opts.loads ?? [], mode };
   const joints: MotionLoadJointResult[] = [];
   for (const intent of intents) {
@@ -186,6 +172,32 @@ export async function checkMotionLoad(arm: Assembly, opts: MotionLoadOpts = {}):
     if (r !== undefined) joints.push(r);
   }
   return summarize(mode, quasiStatic, samples.length, masses, joints, diagnostics);
+}
+
+interface PreparedStudy {
+  readonly intents: MechanicalJointIntentRecord[];
+  readonly masses: Map<string, PartMassLocal>;
+  readonly samples: Sample[];
+}
+
+/** Lower, weigh and sample; a string is the reason the study cannot run. */
+async function prepareStudy(arm: Assembly, opts: MotionLoadOpts, mode: 'tracks' | 'range'): Promise<PreparedStudy | string> {
+  const intents = drivenIntents(arm);
+  if (intents.length === 0) return 'Loads not checked: no mechanicalJoint drives a revolute mate.';
+  const scene = await lowerRestScene(arm);
+  if (scene === undefined) return 'Loads not checked: the assembly did not lower to a scene.';
+  const masses = partMasses(arm, scene);
+  const poses = mode === 'range' ? rangePoses(arm, intents, opts.rangeSamples) : trackPoses(arm, opts.sampleMs);
+  const samples = await solveSamples(arm, scene, masses, poses);
+  if (samples.length === 0) return 'Loads not checked: the mates did not solve at any sampled pose.';
+  return { intents, masses, samples };
+}
+
+/** Timeline step between the first two samples, s. */
+function stepSeconds(samples: readonly Sample[], sampleMs: number | undefined): number {
+  const [a, b] = samples;
+  if (a?.tMs !== undefined && b?.tMs !== undefined) return (b.tMs - a.tMs) / 1000;
+  return (sampleMs ?? DEFAULT_SAMPLE_MS) / 1000;
 }
 
 // ─── Inputs ──────────────────────────────────────────────────────────────
@@ -361,28 +373,37 @@ interface JointCtx {
   readonly mode: 'tracks' | 'range';
 }
 
+/** Parts reachable from `start` without entering `blocked`. */
+function reach(adj: ReadonlyMap<string, string[]>, start: string, blocked: ReadonlySet<string>): Set<string> {
+  const seen = new Set<string>([start]);
+  const stack = [start];
+  while (stack.length > 0) {
+    for (const nb of adj.get(stack.pop()!) ?? []) {
+      if (seen.has(nb) || blocked.has(nb)) continue;
+      seen.add(nb);
+      stack.push(nb);
+    }
+  }
+  return seen;
+}
+
 /** Parts on the far side of `mate` from the grounded part. Undefined when
  *  the mate sits in a closed loop (cutting it leaves the graph connected). */
 export function downstreamOfMate(parts: readonly { name: string }[], mates: readonly MateRecord[], mateName: string, ground: string): { downstream: Set<string>; parentPart: string } | undefined {
+  const target = mates.find((m) => m.name === mateName);
+  if (target === undefined) return undefined;
   const adj = new Map<string, string[]>(parts.map((p) => [p.name, []]));
-  let target: MateRecord | undefined;
   for (const m of mates) {
-    if (m.name === mateName) { target = m; continue; }
+    if (m === target) continue;
     const a = parseConnectorRef(m.a).partName, b = parseConnectorRef(m.b).partName;
     adj.get(a)?.push(b);
     adj.get(b)?.push(a);
   }
-  if (target === undefined) return undefined;
-  const grounded = new Set<string>([ground]);
-  const stack = [ground];
-  while (stack.length > 0) for (const nb of adj.get(stack.pop()!) ?? []) if (!grounded.has(nb)) { grounded.add(nb); stack.push(nb); }
+  const grounded = reach(adj, ground, new Set());
   const a = parseConnectorRef(target.a).partName, b = parseConnectorRef(target.b).partName;
   if (grounded.has(a) === grounded.has(b)) return undefined;
-  const child = grounded.has(a) ? b : a;
-  const downstream = new Set<string>([child]);
-  const st = [child];
-  while (st.length > 0) for (const nb of adj.get(st.pop()!) ?? []) if (!downstream.has(nb) && !grounded.has(nb)) { downstream.add(nb); st.push(nb); }
-  return { downstream, parentPart: grounded.has(a) ? a : b };
+  const [parentPart, child] = grounded.has(a) ? [a, b] : [b, a];
+  return { downstream: reach(adj, child, grounded), parentPart };
 }
 
 function groundPart(arm: Assembly): string {

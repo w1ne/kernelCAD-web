@@ -202,10 +202,7 @@ export async function evaluateScriptTool(
   // recompute path (Studio's per-keystroke lower) deliberately does NOT run
   // this sweep and is untouched here.
   const { mechanism, mechanismFailures, coverage } = await probeSceneMechanism(model, buildSucceeded, input.skipMechanismCheck);
-  const loads = await sceneMotionLoads(model, buildSucceeded, mechanism);
-  const baseSummary = sceneMechanismSummary(model, buildSucceeded, { mechanism, mechanismFailures, coverage });
-  const mechanismSummary = baseSummary !== undefined && loads !== undefined ? withLoadsLine(baseSummary, loads.line) : baseSummary;
-  if (loads !== undefined) mechanismFailures.push(...loads.diagnostics);
+  const mechanismSummary = await summaryWithLoads(model, buildSucceeded, { mechanism, mechanismFailures, coverage });
 
   // Merge mechanism diagnostics into the surfaced list (de-duped against
   // what's already there by reference). Derive `ok` honestly: a 'broken'
@@ -371,6 +368,19 @@ async function probeSceneMechanism(
     mechanismFailures: [...probe.failures],
     ...(probe.coverage !== undefined ? { coverage: probe.coverage } : {}),
   };
+}
+
+/** The verdict plus the short loads line; load diagnostics join the probe's failures. */
+async function summaryWithLoads(
+  model: BuildOutcome['model'],
+  buildSucceeded: boolean,
+  probe: SceneMechanism,
+): Promise<MechanismVerdictSummary | undefined> {
+  const loads = await sceneMotionLoads(model, buildSucceeded, probe.mechanism);
+  const base = sceneMechanismSummary(model, buildSucceeded, probe);
+  if (loads === undefined) return base;
+  probe.mechanismFailures.push(...loads.diagnostics);
+  return base === undefined ? base : withLoadsLine(base, loads.line);
 }
 
 /** Motion-load line for the badge, only when a mechanicalJoint declares a
