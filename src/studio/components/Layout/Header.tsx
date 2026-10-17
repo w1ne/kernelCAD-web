@@ -128,6 +128,23 @@ function useHeaderFileActions(code: string, projectName: string | undefined) {
     return { publish, share, exportTask, lastFormat, onExport };
 }
 
+/** On a phone: the route's header controls and Send feedback, as rows of
+ *  the ⋯ menu. */
+function PhoneRouteControls({ headerRight }: { headerRight: ReactNode }) {
+    return (
+        <>
+            {headerRight && (
+                <MenuRow label="Project">
+                    <div className="flex flex-wrap items-center gap-1 [&>div]:flex-wrap">{headerRight}</div>
+                </MenuRow>
+            )}
+            <MenuRow label="Help">
+                <Button variant="secondary" size="sm" onClick={openFeedback} data-testid="header-overflow-feedback">Send feedback</Button>
+            </MenuRow>
+        </>
+    );
+}
+
 /** Share, Export and the inspector toggle: inline on a wide header, one
  *  overflow menu (with undo/redo and history) below `lg`. */
 function FileControls({ narrow, showShare, editControls, actions, routeControls }: {
@@ -193,6 +210,33 @@ function FileControls({ narrow, showShare, editControls, actions, routeControls 
     );
 }
 
+/** The left of the header: project, save state, the route's own chrome
+ *  (e.g. /p/:slug's title) and, when wide, undo/redo and history. */
+function HeaderStart({ name, narrow, headerLeft, saveState, editControls, onOpenProjects }: {
+    name: string;
+    narrow: boolean;
+    headerLeft: ReactNode;
+    saveState: ReactNode;
+    editControls: ReactNode;
+    onOpenProjects: () => void;
+}) {
+    return (
+        <div className="flex min-w-0 items-center gap-1.5 md:gap-2">
+            {/* A route that names the document itself (e.g. /p/:slug) keeps the
+                phone header for its own title. */}
+            <ProjectSwitcher name={name} hideName={narrow && !!headerLeft} onOpen={onOpenProjects} />
+            {!narrow && saveState}
+            {headerLeft && (
+                <>
+                    <div className="h-5 w-px shrink-0 bg-border" />
+                    <div className="flex min-w-0 items-center gap-2 overflow-hidden">{headerLeft}</div>
+                </>
+            )}
+            {!narrow && <div className="ml-1 flex shrink-0 items-center gap-0.5">{editControls}</div>}
+        </div>
+    );
+}
+
 /**
  * The Studio's one header row: project, save state, undo/redo and history
  * on the left; the route's chrome (the ⌘K search on Studio routes); Share,
@@ -228,23 +272,14 @@ export function Header() {
             className="relative z-30 flex h-11 shrink-0 select-none items-center gap-1.5 border-b border-border bg-surface-1 px-2 text-fg md:gap-2 md:px-3"
             data-testid="header"
         >
-            <div className="flex min-w-0 items-center gap-1.5 md:gap-2">
-                {/* A route that names the document itself (e.g. /p/:slug) keeps the
-                    phone header for its own title. */}
-                <ProjectSwitcher
-                    name={documentName || 'Untitled Project'}
-                    hideName={narrow && !!headerLeft}
-                    onOpen={() => setActiveDialog('projectManager')}
-                />
-                {activeProject && !sourceTitle && !viewerMode && !narrow && <SaveState modified={modified} />}
-                {headerLeft && (
-                    <>
-                        <div className="h-5 w-px shrink-0 bg-border" />
-                        <div className="flex min-w-0 items-center gap-2 overflow-hidden">{headerLeft}</div>
-                    </>
-                )}
-                {!narrow && <div className="ml-1 flex shrink-0 items-center gap-0.5">{editControls}</div>}
-            </div>
+            <HeaderStart
+                name={documentName || 'Untitled Project'}
+                narrow={narrow}
+                headerLeft={headerLeft}
+                saveState={activeProject && !sourceTitle && !viewerMode ? <SaveState modified={modified} /> : null}
+                editControls={editControls}
+                onOpenProjects={() => setActiveDialog('projectManager')}
+            />
 
             <div className="ml-auto flex min-w-0 items-center gap-1.5 md:gap-2">
                 {/* Route chrome scrolls sideways rather than overlap when a phone is too narrow. */}
@@ -254,14 +289,7 @@ export function Header() {
                     showShare={!viewerMode}
                     editControls={editControls}
                     actions={actions}
-                    routeControls={phone && (
-                        <>
-                            {headerRight && <MenuRow label="Project"><div className="flex flex-wrap items-center gap-1 [&>div]:flex-wrap">{headerRight}</div></MenuRow>}
-                            <MenuRow label="Help">
-                                <Button variant="secondary" size="sm" onClick={openFeedback} data-testid="header-overflow-feedback">Send feedback</Button>
-                            </MenuRow>
-                        </>
-                    )}
+                    routeControls={phone ? <PhoneRouteControls headerRight={headerRight} /> : undefined}
                 />
                 {isComputing && (
                     <Loader2 className="size-3.5 shrink-0 animate-spin text-fg-3" aria-label="Computing" />
