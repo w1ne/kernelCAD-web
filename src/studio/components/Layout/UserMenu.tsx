@@ -17,10 +17,13 @@ import { openFeedback } from './feedbackRequests';
  * be created. This keeps React hook rules clean — `UserMenuInner` always calls
  * its hooks unconditionally.
  */
-export default function UserMenu() {
+export default function UserMenu({ hideFeedback = false }: {
+    /** The phone header moves Send feedback into its ⋯ menu. */
+    hideFeedback?: boolean;
+} = {}) {
     // No accounts here (plain local dev): feedback is the only account-slot action.
-    if (!isAuthConfigured()) return <FeedbackButton />;
-    return <UserMenuInner />;
+    if (!isAuthConfigured()) return hideFeedback ? null : <FeedbackButton />;
+    return <UserMenuInner hideFeedback={hideFeedback} />;
 }
 
 /** The sign-in page, returning to this page afterwards. */
@@ -31,10 +34,10 @@ function signInHref(): string {
 
 /** Signed out there is no account menu, so Feedback stays an icon next to
  *  one neutral Sign in link (the provider buttons live on the sign-in page). */
-function SignInControl() {
+function SignInControl({ hideFeedback }: { hideFeedback: boolean }) {
     return (
         <>
-            <FeedbackButton />
+            {!hideFeedback && <FeedbackButton />}
             <a
                 href={signInHref()}
                 title="Sign in to use the agent and save projects"
@@ -97,7 +100,7 @@ function AccountDropdown({
     );
 }
 
-function UserMenuInner() {
+function UserMenuInner({ hideFeedback }: { hideFeedback: boolean }) {
     const { session, loading } = useSession();
     const [open, setOpen] = useState(false);
     const triggerRef = useRef<HTMLButtonElement>(null);
@@ -150,7 +153,7 @@ function UserMenuInner() {
     if (loading) return null;
 
     if (session === null) {
-        return <SignInControl />;
+        return <SignInControl hideFeedback={hideFeedback} />;
     }
 
     const email = session.user.email ?? '';

@@ -5,7 +5,7 @@ import { ChevronDown, Loader2 } from 'lucide-react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useStudioChrome } from '../../context/StudioChromeContext';
 import { useSourceTitle } from '../../sourceTitle';
-import { COMPACT_HEADER_QUERY, useIsNarrow } from '../../hooks/useIsNarrow';
+import { COMPACT_HEADER_QUERY, NARROW_QUERY, useIsNarrow } from '../../hooks/useIsNarrow';
 import { useRegisterCommands, type Command } from '../../hooks/useCommandRegistry';
 import { downloadBlob, exportViaServer, type StudioExportFormat } from '../../exportViaServer';
 import { hasPlanarSource } from '../../exportFormats';
@@ -16,6 +16,7 @@ import { ExportStatus } from '../Shared/ExportStatus';
 import { OverflowMenu } from './OverflowMenu';
 import UserMenu from './UserMenu';
 import { FeedbackHost } from './FeedbackButton';
+import { Button } from '../../../ui/Button';
 import { openFeedback } from './feedbackRequests';
 import { useHeaderHistory } from './useHeaderHistory';
 import {
@@ -31,7 +32,7 @@ function MenuRow({ label, children }: { label: string; children: ReactNode }) {
     return (
         <div className="flex flex-col gap-1.5 px-1 py-1.5">
             <span className="text-2xs font-medium uppercase tracking-wider text-fg-3">{label}</span>
-            <div className="flex flex-wrap items-center gap-1">{children}</div>
+            <div className="flex flex-wrap items-center gap-1 max-md:[&_a]:min-h-touch max-md:[&_button]:min-h-touch">{children}</div>
         </div>
     );
 }
@@ -99,7 +100,7 @@ function ProjectSwitcher({ name, hideName, onOpen }: { name: string; hideName: b
             onClick={onOpen}
             aria-label="Open project manager"
             title="Switch or manage projects"
-            className="focus-ring flex h-control-sm min-w-0 shrink items-center gap-2 rounded-control px-1.5 text-fg transition-colors duration-80 hover:bg-surface-2"
+            className="focus-ring flex h-control-sm min-w-0 shrink items-center gap-2 rounded-control px-1.5 text-fg transition-colors duration-80 hover:bg-surface-2 max-md:h-touch max-md:min-w-touch max-md:justify-center"
         >
             <KernelcadMark />
             {!hideName && <span className="max-w-[140px] truncate text-ui font-medium sm:max-w-[220px]">{name}</span>}
@@ -129,12 +130,15 @@ function useHeaderFileActions(code: string, projectName: string | undefined) {
 
 /** Share, Export and the inspector toggle: inline on a wide header, one
  *  overflow menu (with undo/redo and history) below `lg`. */
-function FileControls({ narrow, showShare, editControls, actions }: {
+function FileControls({ narrow, showShare, editControls, actions, routeControls }: {
     narrow: boolean;
     /** Off on review pages: the route has its own Share for that project. */
     showShare: boolean;
     editControls: ReactNode;
     actions: ReturnType<typeof useHeaderFileActions>;
+    /** On a phone: the route's own header controls and Send feedback, which
+     *  do not fit the header row. */
+    routeControls?: ReactNode;
 }) {
     const { isComputing, geometries } = useWorkbench();
     const { inspectorOpen } = useShellStore();
@@ -158,6 +162,7 @@ function FileControls({ narrow, showShare, editControls, actions }: {
         return (
             <OverflowMenu label="File and panel controls" testId="header-overflow">
                 <div data-theme="dark" className="flex w-64 flex-col">
+                    {routeControls}
                     <MenuRow label="Edit">{editControls}</MenuRow>
                     {showShare && (
                         <MenuRow label="Share">
@@ -204,6 +209,9 @@ export function Header() {
     const sourceTitle = useSourceTitle();
     const documentName = sourceTitle ?? activeProject?.name;
     const narrow = useIsNarrow(COMPACT_HEADER_QUERY);
+    // On a phone the row holds the project, the route's title, ⋯ and the
+    // account; the route's controls and Send feedback move into ⋯.
+    const phone = useIsNarrow(NARROW_QUERY);
     const actions = useHeaderFileActions(code, documentName);
     const modified = !viewerMode && activeProject != null && code !== activeProject.code;
 
@@ -240,8 +248,21 @@ export function Header() {
 
             <div className="ml-auto flex min-w-0 items-center gap-1.5 md:gap-2">
                 {/* Route chrome scrolls sideways rather than overlap when a phone is too narrow. */}
-                {headerRight && <div className="bar-scroll-x flex min-w-0 items-center gap-2">{headerRight}</div>}
-                <FileControls narrow={narrow} showShare={!viewerMode} editControls={editControls} actions={actions} />
+                {headerRight && !phone && <div className="bar-scroll-x flex min-w-0 items-center gap-2">{headerRight}</div>}
+                <FileControls
+                    narrow={narrow}
+                    showShare={!viewerMode}
+                    editControls={editControls}
+                    actions={actions}
+                    routeControls={phone && (
+                        <>
+                            {headerRight && <MenuRow label="Project"><div className="flex flex-wrap items-center gap-1 [&>div]:flex-wrap">{headerRight}</div></MenuRow>}
+                            <MenuRow label="Help">
+                                <Button variant="secondary" size="sm" onClick={openFeedback} data-testid="header-overflow-feedback">Send feedback</Button>
+                            </MenuRow>
+                        </>
+                    )}
+                />
                 {isComputing && (
                     <Loader2 className="size-3.5 shrink-0 animate-spin text-fg-3" aria-label="Computing" />
                 )}
@@ -250,7 +271,7 @@ export function Header() {
             {/* The account slot never scrolls or folds away: sign-in, sign-out,
                 billing and feedback must stay one tap away on every width. */}
             <div className="flex shrink-0 items-center gap-1.5 border-l border-border pl-2" data-testid="account-slot">
-                <UserMenu />
+                <UserMenu hideFeedback={phone} />
             </div>
             <FeedbackHost />
         </header>

@@ -58,11 +58,15 @@ describe('floating toolbar vs the viewer corner controls (phone)', () => {
         expect(host.style.getPropertyValue(CORNER_INSET_VAR)).toBe('0px');
     });
 
-    it('wraps instead of spilling past a narrow viewport, and compacts Order on phones', () => {
+    it('stays one row on a phone (no wrap, no grip) and compacts Order', () => {
         mountAt(12, true);
         const bar = screen.getByRole('toolbar');
-        expect(bar.className).toContain('flex-wrap');
         expect(bar.className).toContain('max-w-[calc(100%-1.5rem)]');
+        const row = screen.getByTestId('studio-toolbar-row');
+        expect(row.className).toContain('flex-nowrap');
+        expect(row.className).not.toContain('flex-wrap');
+        expect(screen.queryByTestId('toolbar-move')).toBeNull();
+        expect(screen.getByTestId('toolbar-more-tools')).toBeTruthy();
         expect(screen.getByTestId('toolbar-order').getAttribute('data-compact')).toBe('true');
     });
 
