@@ -297,8 +297,58 @@ function resolveReplicadPlaneXYDirs(planeObj: UnknownRecord): {
   return { xDir, yDir };
 }
 
+/** Same axis construction as replicad.makePlaneFromFace, without the surface probe. */
+function axesFromNormal(normal: [number, number, number]): {
+  xDir: [number, number, number];
+  yDir: [number, number, number];
+} {
+  const [nx, ny, nz] = normal;
+  let xx = -ny;
+  let xy = nx;
+  let xz = 0;
+  let len = Math.hypot(xx, xy, xz);
+  if (len < 1e-8) {
+    xx = 1;
+    xy = 0;
+    xz = 0;
+    len = 1;
+  }
+  xx /= len;
+  xy /= len;
+  xz /= len;
+  const yx = ny * xz - nz * xy;
+  const yy = nz * xx - nx * xz;
+  const yz = nx * xy - ny * xx;
+  const ylen = Math.hypot(yx, yy, yz) || 1;
+  return {
+    xDir: [xx, xy, xz],
+    yDir: [yx / ylen, yy / ylen, yz / ylen],
+  };
+}
+
+/** Real OCCT faces expose `wrapped`. Plain test stubs do not, and must keep
+ *  the centre/normalAt fallback the characterisation tests lock in. */
+function tryFastPlaneFromNormal(face: unknown): FaceGeometry['plane'] | undefined {
+  if (!isRecord(face) || !('wrapped' in face)) return undefined;
+  const normalFn = getFn(face, 'normalAt');
+  if (!normalFn) return undefined;
+  try {
+    const raw = tryVec3(normalFn.call(face));
+    if (!raw) return undefined;
+    const len = Math.hypot(raw[0], raw[1], raw[2]);
+    if (len < 1e-12) return undefined;
+    const normal: [number, number, number] = [raw[0] / len, raw[1] / len, raw[2] / len];
+    const { xDir, yDir } = axesFromNormal(normal);
+    return { origin: [0, 0, 0], normal, xDir, yDir };
+  } catch {
+    return undefined;
+  }
+}
+
 // Preferred strategy: use Replicad helper if available
 function tryExtractPlaneViaReplicadHelper(face: unknown): FaceGeometry['plane'] {
+  const fast = tryFastPlaneFromNormal(face);
+  if (fast) return fast;
   try {
     const makePlaneFromFaceFn = (replicad as unknown as { makePlaneFromFace?: (f: unknown) => unknown }).makePlaneFromFace;
     if (typeof makePlaneFromFaceFn === 'function') {
@@ -309,10 +359,9 @@ function tryExtractPlaneViaReplicadHelper(face: unknown): FaceGeometry['plane'] 
         const { xDir, yDir } = resolveReplicadPlaneXYDirs(planeObj);
 
         if (origin && norm) {
-          // Anchor plane to a point guaranteed to lie on the selected face.
-          // Some plane origins are generic/canonical and can shift committed sketches.
-          const anchoredOrigin = tryExtractFaceCenter(face) ?? origin;
-          return { origin: anchoredOrigin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
+          // meshFaceToGeometry moves this origin onto the vertex centroid.
+          // face.center() is a full surface mass-property pass and would be discarded.
+          return { origin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
         }
       }
     }
@@ -589,8 +638,63 @@ export function meshFaceToGeometry(
 
   const arrays = extractMeshArrays(mesh);
   if (!arrays) return null;
-  const { vertices, triangles, normals } = arrays;
+  return faceGeometryFromArrays(face, faceId, arrays.vertices, arrays.triangles, arrays.normals);
+}
 
+/** Read a triangulation that `shape._mesh` already wrote. Returns null when
+ *  the face has no triangulation, so the caller can fall back to `face.mesh()`. */
+/** One IncrementalMesh for the solid, then a read-back per face. */
+function collectFaceGeometries(shape: unknown, faces: unknown[], options: MeshOptions): FaceGeometry[] {
+  let meshedWhole = false;
+  if (faces.length > 1) {
+    const meshAll = getFn(shape, '_mesh');
+    if (meshAll) {
+      try {
+        meshAll.call(shape, {
+          tolerance: options.tolerance,
+          angularTolerance: options.angularTolerance,
+        });
+        meshedWhole = true;
+      } catch {
+        meshedWhole = false;
+      }
+    }
+  }
+
+  const faceGeometries: FaceGeometry[] = [];
+  for (let faceId = 0; faceId < faces.length; faceId++) {
+    const face = faces[faceId];
+    try {
+      const geometry = (meshedWhole ? meshFaceFromExistingTriangulation(face, faceId) : null)
+        ?? meshFaceToGeometry(face, faceId, options);
+      if (geometry) faceGeometries.push(geometry);
+    } catch {
+      // ignore per-face mesh errors — match worker behavior
+    }
+  }
+  return faceGeometries;
+}
+
+function meshFaceFromExistingTriangulation(face: unknown, faceId: number): FaceGeometry | null {
+  if (!isRecord(face)) return null;
+  const triFn = getFn(face, 'triangulation');
+  if (!triFn) return null;
+  const tri = triFn.call(face, 0);
+  if (!isRecord(tri)) return null;
+  const vertices = Array.isArray(tri.vertices) ? (tri.vertices as number[]) : null;
+  const triangles = Array.isArray(tri.trianglesIndexes) ? (tri.trianglesIndexes as number[]) : null;
+  const normals = Array.isArray(tri.verticesNormals) ? (tri.verticesNormals as number[]) : null;
+  if (!vertices || !triangles || !normals || vertices.length === 0 || triangles.length === 0) return null;
+  return faceGeometryFromArrays(face, faceId, vertices, triangles, normals);
+}
+
+function faceGeometryFromArrays(
+  face: unknown,
+  faceId: number,
+  vertices: number[],
+  triangles: number[],
+  normals: number[],
+): FaceGeometry {
   const plane = tryExtractPlaneFromFace(face);
   if (plane) {
     recenterPlaneOntoVertices(plane, vertices);
@@ -749,17 +853,9 @@ export function meshShape(
     return Array.from(facesRaw as unknown as ArrayLike<unknown>);
   })();
 
-  const faceGeometries: FaceGeometry[] = [];
-  if (Array.isArray(faces)) {
-    faces.forEach((face, faceId) => {
-      try {
-        const geometry = meshFaceToGeometry(face, faceId, options);
-        if (geometry) faceGeometries.push(geometry);
-      } catch {
-        // ignore per-face mesh errors — match worker behavior
-      }
-    });
-  }
+  const faceGeometries = Array.isArray(faces)
+    ? collectFaceGeometries(shape, faces, options)
+    : [];
   if (faceGeometries.length === 0) return null;
 
   const volume = tryGetVolume(shape);
