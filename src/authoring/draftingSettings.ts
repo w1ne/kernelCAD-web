@@ -4,12 +4,22 @@ import { drawingDecisionKey, type DrawingDecisionResolution } from '../shared/in
 import type { DraftingProfile, DraftingProfileId, DimensioningStyle, DrawingAnnotationOverride } from '../shared/intent/drafting';
 import type { DrawingDatumDecl } from '../shared/intent/drawingGdtRecord';
 
+/** A linear dimension placed by clicking an edge on the sheet. */
+export interface PlacedLinearDimension {
+  id: string;
+  view: 'front' | 'top' | 'left';
+  from: [number, number, number];
+  to: [number, number, number];
+}
+
 export interface DraftingSettings {
   sourceFingerprint: string;
   draftingProfile: DraftingProfileId | DraftingProfile;
   dimensioningStyle: DimensioningStyle;
   annotationOverrides: Record<string, DrawingAnnotationOverride>;
   datums?: DrawingDatumDecl[];
+  /** Edge dimensions placed in Drawing settings. Kept with this source. */
+  placedDimensions?: PlacedLinearDimension[];
   decisionResolutions?: Record<string, DrawingDecisionResolution>;
   decisionCriteriaFingerprint?: string;
 }
@@ -37,6 +47,12 @@ export const DraftingSettingsSchema = z.object({
   dimensioningStyle: z.enum(['baseline', 'chain', 'symmetry']),
   annotationOverrides: z.record(z.string(), z.object({ suppress: z.boolean().optional(), text: z.string().optional(),
     view: z.enum(['front', 'top', 'left', 'iso']).optional(), offset: z.number().finite().nonnegative().optional() })),
+  placedDimensions: z.array(z.object({
+    id: z.string().min(1),
+    view: z.enum(['front', 'top', 'left']),
+    from: z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]),
+    to: z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]),
+  })).optional(),
   datums: z.array(z.object({ label: z.string().regex(/^(?![IOQ])[A-Z](?![IOQ])[A-Z]?$/),
     face: z.record(z.string(), z.unknown()) })).optional(),
 });

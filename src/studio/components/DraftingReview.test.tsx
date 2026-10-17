@@ -94,6 +94,27 @@ describe('drafting review', () => {
     expect(screen.getByRole('button', { name: 'Zoom in' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'Fit sheet' })).toBeDefined();
   });
+  it('places a dimension from a clicked edge and sends it with the next preview', async () => {
+    const changed = vi.fn();
+    vi.mocked(exporter.previewDrawingViaServer).mockResolvedValueOnce({
+      svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><g data-view="front" data-kc-tx="10" data-kc-ty="20" data-kc-s="1"><g class="visible" data-kc-edges="0 5 40 5"/></g></g></svg>',
+      drawingReport: report, diagnostics: [],
+    });
+    render(<DraftingReview code="model" onChange={changed} onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
+    const sheet = await screen.findByRole('region', { name: 'Engineering drawing preview' });
+    fireEvent.click(screen.getByRole('button', { name: 'Dimension' }));
+    const svg = sheet.querySelector('svg')!;
+    svg.getBoundingClientRect = () => ({ x: 0, y: 0, left: 0, top: 0, right: 200, bottom: 100, width: 200, height: 100, toJSON: () => ({}) });
+    fireEvent.click(sheet, { clientX: 30, clientY: 15 });
+    expect(changed).toHaveBeenCalledWith(expect.objectContaining({
+      placedDimensions: [expect.objectContaining({ view: 'front', from: [0, 0, 5], to: [40, 0, 5] })],
+    }));
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh preview' }));
+    await waitFor(() => expect(exporter.previewDrawingViaServer).toHaveBeenLastCalledWith('model', expect.objectContaining({
+      placedAnnotations: [expect.objectContaining({ kind: 'linear', view: 'front', from: [0, 0, 5], to: [40, 0, 5] })],
+    }), expect.anything()));
+  });
   it('downloads a PDF without generating or marking a preview', async () => {
     render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: 'Download PDF' }));

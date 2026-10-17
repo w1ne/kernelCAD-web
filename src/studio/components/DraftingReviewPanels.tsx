@@ -19,7 +19,7 @@ export function DrawingPreviewPane({ state, sheetRef }: { state: DraftingReviewS
     </div>}
     {preview?.svg
       ? <div className="relative min-h-0 flex-1">
-          <DrawingSheetViewport ref={sheetRef} svg={preview.svg} selectedId={annotations.selected} onSelect={annotations.setSelected} />
+          <DrawingSheetViewport ref={sheetRef} svg={preview.svg} selectedId={annotations.selected} onSelect={annotations.setSelected} onPlaceEdge={state.placeEdge} />
           {annotations.annotation && <aside aria-label="Annotation" className="absolute right-3 top-3 z-10 max-h-[calc(100%-4.5rem)] w-72 overflow-auto rounded-panel border border-border bg-surface-1 p-3 text-fg shadow-2xl">
             <h3 className="font-medium">{annotations.annotation.kind} · {annotations.annotation.view}</h3>
             <p className="mb-2 text-2xs text-fg-3">Edits apply to the PDF now. Refresh the sheet to see the new placement.</p>
@@ -91,10 +91,23 @@ function AnnotationEditor({ state }: { state: DraftingReviewState['annotations']
   </div>;
 }
 
-export function AnnotationControls({ state, onShow }: { state: DraftingReviewState['annotations']; onShow?: (id: string) => void }) {
+export function AnnotationControls({ state, placed, onRemovePlaced, onShow }: {
+  state: DraftingReviewState['annotations'];
+  placed: DraftingReviewState['placed'];
+  onRemovePlaced: (id: string) => void;
+  onShow?: (id: string) => void;
+}) {
   return <div className="border-t border-border pt-3">
     <h3 className="mb-2 font-medium">Annotations</h3>
+    <p className="mb-2 text-2xs text-fg-3">Dimension, then click a straight edge in the front, top, or left view. Refresh the sheet to draw it.</p>
     <AnnotationList state={state} onShow={onShow} />
+    {placed.length > 0 && <ul className="mt-2 flex flex-col gap-1">
+      {placed.map((dimension) => <li key={dimension.id}>
+        <button type="button" className={`${BUTTON} w-full text-left`} onClick={() => onRemovePlaced(dimension.id)}>
+          {dimension.view} edge · remove
+        </button>
+      </li>)}
+    </ul>}
     {state.missing.length > 0 && <button type="button" className={`${BUTTON} mt-2`} onClick={state.clearMissing}>Clear missing overrides</button>}
   </div>;
 }

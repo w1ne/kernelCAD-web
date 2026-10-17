@@ -13,6 +13,8 @@ import {
   dedupPolylineClasses,
   dimensionToSvg,
   formatDimValue,
+  pointOnViewPlane,
+  straightSpans,
   pickDrawingScale,
   scaleLabel,
   SHEETS,
@@ -246,5 +248,33 @@ describe('formatDimValue', () => {
     expect(formatDimValue(40)).toBe('40');
     expect(formatDimValue(12.3456)).toBe('12.35');
     expect(formatDimValue(0.1)).toBe('0.1');
+  });
+});
+
+describe('clickable drawing edges', () => {
+  it('splits a rectangular outline into its four sides', () => {
+    expect(straightSpans([[0, 0], [0, 10], [60, 10], [60, 0], [0, 0]])).toEqual([
+      [[0, 0], [0, 10]],
+      [[0, 10], [60, 10]],
+      [[60, 10], [60, 0]],
+      [[60, 0], [0, 0]],
+    ]);
+  });
+
+  it('keeps a collinear run and a sharp corner, and drops a faceted circle', () => {
+    expect(straightSpans([[0, 0], [15, 0.02], [30, 0]])).toEqual([[[0, 0], [30, 0]]]);
+    expect(straightSpans([[0, 0], [5, 2], [10, 0]])).toEqual([[[0, 0], [5, 2]], [[5, 2], [10, 0]]]);
+    const circle: Polyline2 = [];
+    for (let i = 0; i <= 36; i++) {
+      const angle = (i / 36) * Math.PI * 2;
+      circle.push([6 * Math.cos(angle), 6 * Math.sin(angle)]);
+    }
+    expect(straightSpans(circle)).toEqual([]);
+  });
+
+  it('lifts model-2D points onto the orthographic view planes', () => {
+    expect(pointOnViewPlane('front', 12, -4)).toEqual([12, 0, -4]);
+    expect(pointOnViewPlane('top', 12, -4)).toEqual([12, -4, 0]);
+    expect(pointOnViewPlane('left', 12, -4)).toEqual([0, -12, -4]);
   });
 });

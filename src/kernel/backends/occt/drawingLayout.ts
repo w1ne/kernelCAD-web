@@ -16,6 +16,101 @@
 
 export type Pt2 = readonly [number, number];
 export type Polyline2 = Pt2[];
+export type Pt3 = readonly [number, number, number];
+
+/** Orthographic screen basis, matching `viewBasis` in the projector:
+ *  front +X/+Z, top +X/+Y, left −Y/+Z. Screen-up is `direction × xAxis`. */
+const ORTHO_BASIS: Record<'front' | 'top' | 'left', { x: Pt3; y: Pt3 }> = {
+  front: { x: [1, 0, 0], y: [0, 0, 1] },
+  top: { x: [1, 0, 0], y: [0, 1, 0] },
+  left: { x: [0, -1, 0], y: [0, 0, 1] },
+};
+
+/** Lift a model-2D point back onto the view plane through the origin. */
+export function pointOnViewPlane(view: 'front' | 'top' | 'left', mx: number, my: number): [number, number, number] {
+  const b = ORTHO_BASIS[view];
+  return [
+    b.x[0] * mx + b.y[0] * my,
+    b.x[1] * mx + b.y[1] * my,
+    b.x[2] * mx + b.y[2] * my,
+  ];
+}
+
+function continuesLine(start: Pt2, prev: Pt2, point: Pt2, tolerance: number): boolean {
+  const dx = prev[0] - start[0];
+  const dy = prev[1] - start[1];
+  const len = Math.hypot(dx, dy);
+  if (len < 1e-9) return false;
+  const deviation = Math.abs((point[0] - start[0]) * dy - (point[1] - start[1]) * dx) / len;
+  if (deviation > tolerance) return false;
+  const t = ((point[0] - start[0]) * dx + (point[1] - start[1]) * dy) / (len * len);
+  return t >= 1 - 1e-6;
+}
+
+/** Below this, a direction change is a curve facet, not a corner. */
+const GENTLE_TURN = 20 * Math.PI / 180;
+
+function turnAngle(a: Pt2, b: Pt2, c: Pt2): number {
+  const ux = b[0] - a[0];
+  const uy = b[1] - a[1];
+  const vx = c[0] - b[0];
+  const vy = c[1] - b[1];
+  const lu = Math.hypot(ux, uy);
+  const lv = Math.hypot(vx, vy);
+  if (lu < 1e-9 || lv < 1e-9) return Math.PI;
+  const cos = Math.min(1, Math.max(-1, (ux * vx + uy * vy) / (lu * lv)));
+  return Math.acos(cos);
+}
+
+/**
+ * Straight runs inside one projected polyline. A face outline is one closed
+ * path, so each side has to be split out before a click can dimension it.
+ * A single segment between two gentle turns is a curve facet and is dropped.
+ * A side that meets a corner, and a run confirmed by an interior point, stay.
+ */
+export function straightSpans(pl: Polyline2, tolerance = 0.08): [Pt2, Pt2][] {
+  const pts: Pt2[] = [];
+  for (const point of pl) {
+    const prev = pts[pts.length - 1];
+    if (!prev || Math.hypot(point[0] - prev[0], point[1] - prev[1]) > 1e-6) pts.push(point);
+  }
+  if (pts.length < 2) return [];
+  const closed = Math.hypot(pts[0][0] - pts[pts.length - 1][0], pts[0][1] - pts[pts.length - 1][1]) <= 1e-6;
+  const ring = closed ? pts.length - 1 : 0;
+  const turnAt = (index: number): number | null => {
+    if (closed) {
+      if (ring < 2) return null;
+      const i = index === pts.length - 1 ? 0 : index;
+      return turnAngle(pts[(i - 1 + ring) % ring], pts[i], pts[(i + 1) % ring]);
+    }
+    if (index <= 0 || index >= pts.length - 1) return null;
+    return turnAngle(pts[index - 1], pts[index], pts[index + 1]);
+  };
+  const runs: [number, number][] = [];
+  let start = 0;
+  let prev = 1;
+  const flush = (end: number) => { runs.push([start, end]); };
+  for (let i = 2; i < pts.length; i++) {
+    if (continuesLine(pts[start], pts[prev], pts[i], tolerance)) { prev = i; continue; }
+    flush(prev);
+    start = prev;
+    prev = i;
+  }
+  flush(prev);
+  const spans: [Pt2, Pt2][] = [];
+  for (const [a, b] of runs) {
+    const from = pts[a];
+    const to = pts[b];
+    if (Math.hypot(to[0] - from[0], to[1] - from[1]) < 0.5) continue;
+    if (b === a + 1) {
+      const entry = turnAt(a);
+      const exit = turnAt(b);
+      if (entry !== null && exit !== null && entry < GENTLE_TURN && exit < GENTLE_TURN) continue;
+    }
+    spans.push([from, to]);
+  }
+  return spans;
+}
 
 // ---------------------------------------------------------------------------
 // Segment dedup + re-chaining

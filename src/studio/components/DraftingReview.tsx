@@ -48,7 +48,7 @@ export function DraftingReview(props: DraftingReviewProps) {
           <div className="flex min-h-0 flex-col gap-3 overflow-auto border-l border-border p-4 text-ui">
             <ProfileControls state={state.profiles} />
             <FunctionalDrawingReviewPanel state={state} />
-            <AnnotationControls state={state.annotations} onShow={(id) => sheet.current?.show(id)} />
+            <AnnotationControls state={state.annotations} placed={state.placed} onRemovePlaced={state.removePlaced} onShow={(id) => sheet.current?.show(id)} />
           </div>
         </div>
         <ReviewFooter state={state} />

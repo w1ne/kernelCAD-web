@@ -274,9 +274,15 @@ describe('exportSvgDrawing annotations', () => {
       'utf8',
     );
     const opts = { format: 'svg-drawing' as const, modelName: 'plate' };
-    expect(decode(exportSvgDrawing(plate(), opts))).toBe(golden);
+    // `data-kc-edges` and the view transform mark straight edges for the
+    // dimension tool. They do not change the geometry the golden fixture records.
+    const geometry = (svg: string) => svg.replace(/ data-kc-(?:tx|ty|s|edges)="[^"]*"/g, '');
+    const raw = decode(exportSvgDrawing(plate(), opts));
+    expect(raw).toContain('data-view="front"');
+    expect(raw).toContain('data-kc-edges=');
+    expect(geometry(raw)).toBe(golden);
     // An explicitly empty array must take the same path as an absent one.
-    expect(decode(exportSvgDrawing(plate(), { ...opts, annotations: [] }))).toBe(golden);
+    expect(geometry(decode(exportSvgDrawing(plate(), { ...opts, annotations: [] })))).toBe(golden);
     // Sanity: the golden really does carry the three bbox dimensions.
     expect((golden.match(/class="dim"/g) ?? []).length).toBe(3);
     expect(golden).toContain('>60</text>');

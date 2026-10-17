@@ -123,6 +123,9 @@ export type ExportOptions =
       date?: string;
       /** Authored dimensions / notes; replaces the automatic bbox dimensions. */
       annotations?: readonly DrawingAnnotation[];
+      /** Dimensions placed from the drawing sheet. Added on top of authored
+       *  or declared dimensions; they do not turn automatic annotation off. */
+      placedAnnotations?: readonly DrawingAnnotation[];
       /** Cutting-plane section views — see the kernelcad-drawings skill. */
       sections?: readonly DrawingSectionSpec[];
       /** Exploded isometric cell. */
@@ -191,6 +194,9 @@ export interface PdfDrawingOptions extends DrawingReviewOptions {
   modelName?: string;
   /** Authored dimensions / notes; replaces the automatic dimensions. */
   annotations?: readonly DrawingAnnotation[];
+  /** Dimensions placed from the drawing sheet, drawn in addition to the
+   *  authored or declared set. */
+  placedAnnotations?: readonly DrawingAnnotation[];
   sections?: readonly DrawingSectionSpec[];
   exploded?: { factor: number; mode?: 'radial' | 'mate-axis' };
   balloons?: boolean;

@@ -107,6 +107,7 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
       decisionResolutions: pdf.decisionResolutions,
       requireCompleteReview: pdf.requireCompleteReview,
       annotations: pdf.annotations,
+      placedAnnotations: pdf.placedAnnotations,
       sections: pdf.sections,
       exploded: pdf.exploded as SvgDrawingOptions['exploded'],
       balloons: pdf.balloons,
@@ -239,15 +240,31 @@ function firstAssemblyOrUndefined(assemblies: Map<string, Assembly>): Assembly |
 }
 
 /** Authored export-option annotations win; declared dimensions are not
- *  merged on top of them. Declared ones resolve like the viewer's (see
- *  `declaredDrawingAnnotation`). */
+ *  merged on top of them. Dimensions placed on the sheet are appended
+ *  either way, and do not by themselves turn automatic annotation off.
+ *  Declared ones resolve like the viewer's (see `declaredDrawingAnnotation`). */
+export function drawingAnnotationsForSheet<T>(input: {
+  authored: readonly T[] | undefined;
+  declared: readonly T[];
+  placed: readonly T[] | undefined;
+}): readonly T[] | undefined {
+  const hasAuthored = (input.authored ?? []).length > 0;
+  const base = hasAuthored ? input.authored : (input.declared.length > 0 ? input.declared : input.authored);
+  const extra = input.placed ?? [];
+  if (extra.length === 0) return base;
+  return [...(base ?? []), ...extra];
+}
+
 function effectiveAnnotations(
   opts: SvgDrawingOptions,
   captured: ReturnType<typeof collectDrawingDeclarations>,
   parts: readonly WorldFramePart[],
 ): SvgDrawingOptions['annotations'] {
-  if ((opts.annotations ?? []).length > 0 || captured.dimensions.length === 0) return opts.annotations;
-  return captured.dimensions.map((d, i) => declaredDrawingAnnotation(parts, d, i));
+  const hasAuthored = (opts.annotations ?? []).length > 0;
+  const declared = hasAuthored || captured.dimensions.length === 0
+    ? []
+    : captured.dimensions.map((d, i) => declaredDrawingAnnotation(parts, d, i));
+  return drawingAnnotationsForSheet({ authored: opts.annotations, declared, placed: opts.placedAnnotations });
 }
 
 function mergeDrawingDeclarations(
