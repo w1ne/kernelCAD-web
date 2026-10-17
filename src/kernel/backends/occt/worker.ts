@@ -188,16 +188,17 @@ function collectReturnedGeometry(shapes: unknown[]): {
             ? `Worker: Shape ${shapeIndex} is marked as deleted!`
             : `Worker: Shape ${shapeIndex} has no valid face geometries`
         );
-      }
-
-      const wire = getWire(shape);
-      if (wire) {
-        if (DEBUG) console.log(`Worker: Shape ${shapeIndex} has wire, meshing to sketch...`);
-        try {
-          const sketchId = `return-sketch-${shapeIndex}-seq-${returnedSketchSeq++}`;
-          const sketch = meshWireToSketch(wire, sketchId, `sketch_ret_${shapeIndex + 1}`);
-          if (sketch) returnedSketches.push(sketch);
-        } catch (e) { console.warn(`Worker: Failed to mesh wire of shape ${shapeIndex}`, e); }
+        // A meshed solid's first boundary wire is not a sketch. Only shapes
+        // that produced no faces (a returned wire or sketch) are outlined here.
+        const wire = getWire(shape);
+        if (wire) {
+          if (DEBUG) console.log(`Worker: Shape ${shapeIndex} has wire, meshing to sketch...`);
+          try {
+            const sketchId = `return-sketch-${shapeIndex}-seq-${returnedSketchSeq++}`;
+            const sketch = meshWireToSketch(wire, sketchId, `sketch_ret_${shapeIndex + 1}`);
+            if (sketch) returnedSketches.push(sketch);
+          } catch (e) { console.warn(`Worker: Failed to mesh wire of shape ${shapeIndex}`, e); }
+        }
       }
     } catch (err) {
       console.error(`Worker: Fatal error processing shape ${shapeIndex}:`, err);
