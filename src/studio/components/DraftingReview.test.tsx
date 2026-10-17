@@ -67,7 +67,7 @@ describe('drafting review', () => {
     vi.mocked(exporter.previewDrawingViaServer).mockResolvedValueOnce({ svg: '<svg/>', diagnostics: [] });
     render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
-    await screen.findByRole('img', { name: 'Engineering drawing preview' });
+    await screen.findByRole('region', { name: 'Engineering drawing preview' });
     fireEvent.click(screen.getByRole('button', { name: 'Download PDF' }));
     await waitFor(() => expect(exporter.downloadBlob).toHaveBeenCalledOnce());
     expect(screen.getByText(/No annotation report/)).toBeDefined();
@@ -79,6 +79,20 @@ describe('drafting review', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
     fireEvent.click(await screen.findByRole('button', { name: /^A front/ }));
     expect((screen.getByLabelText('Annotation text') as HTMLInputElement).disabled).toBe(true);
+  });
+  it('opens the annotation window when a dimension on the sheet is clicked', async () => {
+    vi.mocked(exporter.previewDrawingViaServer).mockResolvedValueOnce({
+      svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><g data-kc-annotation-id="hole:1"><text x="10" y="20">dim</text></g></svg>',
+      drawingReport: report, diagnostics: [],
+    });
+    render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
+    const sheet = await screen.findByRole('region', { name: 'Engineering drawing preview' });
+    fireEvent.click(sheet.querySelector('[data-kc-annotation-id="hole:1"]')!);
+    expect(screen.getByRole('complementary', { name: 'Annotation' })).toBeDefined();
+    expect((screen.getByLabelText('Annotation text') as HTMLInputElement).value).toBe('⌀5 THRU');
+    expect(screen.getByRole('button', { name: 'Zoom in' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Fit sheet' })).toBeDefined();
   });
   it('downloads a PDF without generating or marking a preview', async () => {
     render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
