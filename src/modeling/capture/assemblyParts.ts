@@ -664,6 +664,14 @@ function resolvePartMaterialAndValidateOpts(
       );
     }
   }
+  if (opts.massKg !== undefined && (!Number.isFinite(opts.massKg) || opts.massKg <= 0)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly part '${name}': massKg must be a positive finite number; got ${formatScalarForError(opts.massKg)}.`,
+      shape.id,
+      'Pass massKg: <kg> (an SG90 servo is 0.009), or omit it to compute mass from volume and density.',
+    );
+  }
   // Named material: seeds a density default AND a default finish. Resolve it
   // FIRST — an unknown name throws here (naming the valid materials) before
   // any part record is minted, so a typo never silently produces a
@@ -781,6 +789,7 @@ export function recordPartInternal(
     ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
     ...(effectiveDensity !== undefined ? { density: effectiveDensity } : {}),
     ...(resolvedMaterial !== undefined ? { material: resolvedMaterial.name } : {}),
+    ...(opts.massKg !== undefined ? { massKg: opts.massKg } : {}),
     ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     ...(opts.role !== undefined ? { role: opts.role } : {}),
   };

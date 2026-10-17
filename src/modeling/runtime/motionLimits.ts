@@ -53,7 +53,8 @@ interface LimitedJoint {
   readonly dof: MateDof;
 }
 
-function exprOf(pose: unknown): ParamRefExpr | undefined {
+/** The param expression of a joint pose, or undefined for a fixed number. */
+export function exprOf(pose: unknown): ParamRefExpr | undefined {
   if (isParamRef(pose)) return pose._expr;
   const ref = (pose as { paramRef?: unknown } | null)?.paramRef;
   if (typeof ref === 'string') return { kind: 'param', name: ref };
@@ -61,7 +62,8 @@ function exprOf(pose: unknown): ParamRefExpr | undefined {
   return undefined;
 }
 
-function evaluate(expr: ParamRefExpr, valueOf: (name: string) => number): number {
+/** Evaluate a pose expression with the given param values. */
+export function evaluate(expr: ParamRefExpr, valueOf: (name: string) => number): number {
   switch (expr.kind) {
     case 'lit': return expr.value;
     case 'param': return valueOf(expr.name);
@@ -77,7 +79,8 @@ function evaluate(expr: ParamRefExpr, valueOf: (name: string) => number): number
   }
 }
 
-function currentValue(table: ParamTable, name: string): number {
+/** A numeric param's current value; NaN when it is missing or not numeric. */
+export function currentValue(table: ParamTable, name: string): number {
   if (!table.has(name)) return Number.NaN;
   const v = table.get(name).value;
   if (typeof v === 'number') return v;
@@ -85,7 +88,7 @@ function currentValue(table: ParamTable, name: string): number {
 }
 
 /** Key value as the timeline applies it: clamped to the param's own range. */
-function clampToParam(table: ParamTable, name: string, value: number): number {
+export function clampToParam(table: ParamTable, name: string, value: number): number {
   const meta = table.has(name) ? table.get(name).meta : undefined;
   return Math.min(meta?.max ?? Infinity, Math.max(meta?.min ?? -Infinity, value));
 }
