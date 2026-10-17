@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GeometryResult } from '../../../../shared/worker/geometryEngine';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
-import { explodedGeometries, explodeParts, layoutForView, poseSignature } from './explodeModel';
+import { explodedGeometries, explodeParts, layoutForView, poseSignature, type ExplodeSource } from './explodeModel';
 
 /** Slider at 100 % = the layout's full explode (factor 1). */
 export const EXPLODE_DEFAULT_AMOUNT = 0.6;
@@ -19,8 +19,9 @@ export interface ExplodedView {
   amount: number;
   setAmount: (amount: number) => void;
   toggle: () => void;
-  /** 'mates' when mate / joint links drive the layout, else 'radial'. */
-  mode: 'mates' | 'radial';
+  /** What drives the layout: mate / joint links, touching part boxes (a
+   *  stored mesh without mate data), or centre-out only. */
+  mode: ExplodeSource;
   /** The meshes to draw: the input itself when not exploded. */
   geometries: GeometryResult[];
 }
@@ -99,7 +100,7 @@ export function useExplodedView(
     amount,
     setAmount,
     toggle,
-    mode: view?.layout.mode ?? 'radial',
+    mode: view?.source ?? 'radial',
     geometries: shownGeometries,
   };
 }

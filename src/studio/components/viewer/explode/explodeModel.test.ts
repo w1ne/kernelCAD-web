@@ -84,17 +84,27 @@ describe('layoutForView + explodedGeometries', () => {
   );
 
   it('uses the mate graph when feature records carry mates', () => {
-    const { layout, partCount } = layoutForView([base, lid], records);
+    const { layout, partCount, source } = layoutForView([base, lid], records);
     expect(partCount).toBe(2);
-    expect(layout.mode).toBe('mates');
+    expect(source).toBe('mates');
     expect(layout.root).toBe('base');
     const o = layout.offsets.get('lid')!;
     expect(o[0]).toBeCloseTo(0, 9);
     expect(o[2]).toBeGreaterThan(0);
   });
 
-  it('falls back to radial without records (a stored mesh artifact)', () => {
-    expect(layoutForView([base, lid], []).layout.mode).toBe('radial');
+  it('infers links from touching boxes without records (a stored mesh artifact)', () => {
+    const { layout, source } = layoutForView([base, lid], []);
+    expect(source).toBe('contact');
+    expect(layout.root).toBe('base');
+    const o = layout.offsets.get('lid')!;
+    expect(o[0]).toBeCloseTo(0, 9);
+    expect(o[2]).toBeGreaterThan(0);
+  });
+
+  it('falls back to radial when nothing touches and there are no records', () => {
+    const far = mesh('far', [100, 0, 0], [102, 2, 2]);
+    expect(layoutForView([base, far], []).source).toBe('radial');
   });
 
   it('moves only the transform and keeps the mesh arrays', () => {

@@ -11,6 +11,7 @@ import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { parseConnectorRef } from '../../../../modeling/mates/mate';
 import {
   explodeLayout,
+  inferContactLinks,
   type ExplodeLayout,
   type ExplodeLayoutLink,
   type ExplodeLayoutPart,
@@ -241,12 +242,21 @@ export function explodeLinks(
   });
 }
 
+export type ExplodeSource = 'mates' | 'contact' | 'radial';
+
+/** The layout for the displayed meshes. Mate links come from the feature
+ *  records; a stored mesh artifact has none, so links are then inferred from
+ *  touching part boxes. */
 export function layoutForView(
   geometries: readonly GeometryResult[],
   records: readonly FeatureRecord[],
-): { layout: ExplodeLayout; partCount: number } {
+): { layout: ExplodeLayout; partCount: number; source: ExplodeSource } {
   const { parts, matrices } = explodeParts(geometries);
-  return { layout: explodeLayout(parts, explodeLinks(records, matrices)), partCount: parts.length };
+  const mated = explodeLinks(records, matrices);
+  const links = mated.length > 0 ? mated : inferContactLinks(parts);
+  const layout = explodeLayout(parts, links);
+  const source: ExplodeSource = layout.mode === 'radial' ? 'radial' : mated.length > 0 ? 'mates' : 'contact';
+  return { layout, partCount: parts.length, source };
 }
 
 const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
