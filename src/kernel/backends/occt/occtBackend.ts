@@ -1198,6 +1198,17 @@ export class OcctBackend implements ShapeBackend {
     return components;
   }
 
+  /**
+   * Mesh vertex positions (mm, flat xyz, duplicates possible) at a coarse
+   * tolerance, for collision proxies. MuJoCo convexifies every mesh geom, so
+   * a physics body needs only a vertex cloud whose hull matches the part;
+   * an export-grade tessellation costs far more memory for the same hull.
+   */
+  collisionVertices(tolerance = 0.5, angularTolerance = 0.6): Float32Array {
+    const meshed = this.shape.mesh({ tolerance, angularTolerance });
+    return new Float32Array(meshed.vertices);
+  }
+
   getMesh(): RuntimeMesh {
     // NOT the viewport mesh, despite what this comment used to say. The Studio
     // viewer renders `meshShape()` output from the worker; nothing in the render

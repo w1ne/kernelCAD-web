@@ -108,6 +108,11 @@ describe('assemblyToMjcf — thin plate with massKg', () => {
     const p = principal(lid!.i6);
     expect(p[0]).toBeGreaterThan(0);
     expect(p[0]! + p[1]!).toBeGreaterThanOrEqual(p[2]!);
+    // Collision geometry is a coarse vertex cloud (MuJoCo uses its convex
+    // hull), not the export-grade tessellation.
+    const lidMesh = /<mesh name="[^"]*lid[^"]*"[^>]*vertex="([^"]+)"/.exec(r.mjcf);
+    expect(lidMesh).not.toBeNull();
+    expect(lidMesh![1]!.trim().split(/\s+/).length / 3).toBeLessThan(300);
     const mj = await loadMujocoSession(r.mjcf, r.bodyOrder, r.jointOrder);
     mj.dispose();
   }, 120_000);

@@ -62,9 +62,11 @@ import { parseConnectorRef } from '../mates/mate';
 import type { Connector } from '../mates/connector';
 import { resolveConnectorOrigin } from '../mates/connector';
 import type { TendonRecord } from '../mates/tendon';
-import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import type { SceneBackend } from '../../kernel/backends/sceneBackend';
+import { partAtFor } from '../mates/partFrame';
 import type { Vec3 } from '../../shared/intent/types';
-import { stlToMjcfMesh } from './stlToMjcfMesh';
+import { verticesToMjcfMesh } from './stlToMjcfMesh';
 import { xmlAttributionComment } from '../../shared/links/attribution';
 
 const MM_TO_M = 1e-3;
@@ -107,7 +109,14 @@ export interface MjcfExportResult {
  * caller surfaces this as `mechanism: 'unverified'` so the legacy
  * diagnostics still drive the exit code).
  */
-export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
+export interface AssemblyToMjcfOptions {
+    /** The assembly's lowered rest scene. Its part BREPs are reused instead
+     *  of lowering every part again (each lower is a new OCCT shape that the
+     *  WASM heap keeps for the rest of the process). */
+    readonly scene?: SceneBackend;
+}
+
+export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions = {}): Promise<MjcfExportResult> {
     const parts = arm.__parts();
     const mates = arm.__mates();
     const tendons = arm.__tendons();
@@ -117,7 +126,14 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
 
     const { partByName, childrenByParent, roots } = buildMateTree(parts, mates);
 
-    const { inertials, collisionMeshes, inertiaNotes } = await buildPartAssets(parts);
+    const atOf = partAtFor(mates, parts, arm.__session().paramTable);
+    // A scene shape carries the part's `at`; only parts without one share the
+    // frame of `originalShape.lower()`, so only those reuse the scene BREP.
+    const sceneShapes = new Map<string, OcctBackend>();
+    for (const sp of opts.scene?.parts ?? []) {
+        if (sp.shape instanceof OcctBackend && atOf(sp.name) === undefined) sceneShapes.set(sp.name, sp.shape);
+    }
+    const { inertials, collisionMeshes, inertiaNotes } = await buildPartAssets(parts, sceneShapes);
 
     const resolvedMateAxes = await resolveMateFrames(mates, partByName);
 
@@ -234,7 +250,7 @@ function buildMateTree(parts: readonly AssemblyPartStored[], mates: readonly Mat
 // visual mesh stay byte-identical. Mesh-emission failures fall back
 // to "inertia only" with no geom — the part stays in the kinematic
 // tree but can't contact other bodies; criterion 6 will reflect that.
-async function buildPartAssets(parts: readonly AssemblyPartStored[]): Promise<{
+async function buildPartAssets(parts: readonly AssemblyPartStored[], sceneShapes: ReadonlyMap<string, OcctBackend> = new Map()): Promise<{
     inertials: Map<string, InertiaSpec>;
     collisionMeshes: Map<string, { vertex: string; assetName: string }>;
     inertiaNotes: string[];
@@ -243,9 +259,9 @@ async function buildPartAssets(parts: readonly AssemblyPartStored[]): Promise<{
     const collisionMeshes = new Map<string, { vertex: string; assetName: string }>();
     const inertiaNotes: string[] = [];
     for (const p of parts) {
-        let lowered: OcctBackend | undefined;
+        let lowered: OcctBackend | undefined = sceneShapes.get(p.name);
         try {
-            lowered = (await p.originalShape.lower()) as OcctBackend;
+            lowered ??= (await p.originalShape.lower()) as OcctBackend;
             const density = p.density ?? DEFAULT_DENSITY_KG_M3;
             const mp = lowered.massProperties(density);
             // A declared `massKg` (catalog / datasheet mass) wins over
@@ -284,16 +300,18 @@ async function buildPartAssets(parts: readonly AssemblyPartStored[]): Promise<{
         }
         if (lowered !== undefined) {
             try {
-                const stl = await lowered.exportSTLAsync();
-                const mesh = stlToMjcfMesh(stl);
+                // A coarse vertex cloud: MuJoCo collides with the convex hull
+                // of a mesh geom, so an export-grade tessellation only costs
+                // memory (it stays on the BREP and in the MJCF string).
+                const mesh = verticesToMjcfMesh(lowered.collisionVertices());
                 collisionMeshes.set(p.name, {
                     vertex: mesh.vertex,
                     assetName: mjcfMeshAssetName(p.name),
                 });
             } catch {
-                // STL export or parse failed (degenerate shape, empty
-                // tessellation, etc.). Skip the `<asset><mesh>` for this
-                // part — the body still emits inertia but won't contact.
+                // Meshing failed (degenerate shape, empty tessellation, etc.).
+                // Skip the `<asset><mesh>` for this part — the body still
+                // emits inertia but won't contact.
             }
         }
     }
