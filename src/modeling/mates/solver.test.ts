@@ -209,7 +209,6 @@ describe('solveMates — closed loop (Newton-Raphson)', () => {
   // pure fastened-only loop cannot trigger (zero free DOFs ⇒ no iteration).
   // For now, the iter-cap path is exercised indirectly via the
   // jacobian.test.ts unit suite (finite-difference Jacobian on non-linear f).
-  it.skip('reports did-not-converge when iteration cap hits (deferred to T9)', () => {});
 });
 
 describe('solveMates — pose-driven articulation', () => {

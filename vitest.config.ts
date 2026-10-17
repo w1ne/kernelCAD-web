@@ -34,7 +34,7 @@ export default defineConfig({
             'site/island/**/*.test.ts',
             'workers/**/*.test.ts',
         ],
-        exclude: ['**/node_modules/**', '**/dist/**', 'tests/playwright/**', 'playwright-report/**', 'test-results/**'],
+        exclude: ['**/node_modules/**', '**/dist/**', 'tests/playwright/**', 'playwright-report/**', 'test-results/**', ...(process.env.KCAD_CORPUS ? [] : ['eval/**/*.test.ts'])],
         deps: {
             // Force these ESM packages to be bundled (fixes jsdom ESM issues)
             optimizer: {

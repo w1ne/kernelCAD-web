@@ -77,7 +77,7 @@ async function buildWrappedHinge() {
     return arm;
 }
 
-describe('assemblyToMjcf — wrap-geom routing (P11 Slice 2)', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf — wrap-geom routing (P11 Slice 2)', () => {
     it('emits a contact-OFF wrap cylinder + spatial routing child, round-trips through MuJoCo', async () => {
         const arm = await buildWrappedHinge();
         const { mjcf } = await assemblyToMjcf(arm);

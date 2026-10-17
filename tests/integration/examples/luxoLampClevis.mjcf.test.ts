@@ -19,7 +19,7 @@ import type { Assembly } from '../../../src/modeling/capture/assembly';
 
 const LUXO_SCRIPT_PATH = 'examples/kinematic/luxo-lamp.kcad.ts';
 
-describe('Luxo lamp — passes the physics-grounded loop', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('Luxo lamp — passes the physics-grounded loop', () => {
   it('P11 Slice 1: emitted MJCF contains one <mesh> + one <geom type="mesh"> per part', async () => {
     // The lamp builds 4 parts via `arm.part('base' | 'lower-arm' |
     // 'upper-arm' | 'lamp-head', ...)`. Post-Slice 1, every part
