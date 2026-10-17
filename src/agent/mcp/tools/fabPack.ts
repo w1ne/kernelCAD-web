@@ -20,7 +20,7 @@ import type { ExportFormat } from '../../script-runtime/export';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { checkWritableDestination, safeWriteFile } from '../../script-runtime/safeWriteFile';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
-import { bomToCsv } from '../../script-runtime/bom';
+import { bomToCsv, inferredProcess } from '../../script-runtime/bom';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
 import { buildVendorLink, referralDisclosure } from '../../../shared/links/referral';
 import { FAB_PROCESSES, type FabPackFormat, type FabProcess } from '../../../shared/fab';
@@ -149,10 +149,14 @@ async function singlePartBom(input: FabPackInput, name: string, out: string): Pr
   const shape = model?.rootShape ?? model?.tailShape;
   if (shape === undefined) return undefined;
   const bb = shape.boundingBox();
+  // Same inference computeBom applies to an undeclared fabricated part, so
+  // the single-shape fallback row agrees with the assembly BOM on process.
+  const process = model?.rootId !== undefined ? inferredProcess(model.records, model.rootId) : '3d-print';
   const csv = bomToCsv([{
     item: 1, name, quantity: 1, kind: 'fabricated', material: null, density: null,
     massGPerUnit: null, massGTotal: null,
     bboxMm: { min: [...bb.min] as [number, number, number], max: [...bb.max] as [number, number, number] },
+    process, processSource: 'inferred',
     instancePaths: [name],
   }]);
   const err = await safeWriteFile(out, csv);
