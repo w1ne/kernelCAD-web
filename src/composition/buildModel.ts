@@ -13,6 +13,7 @@ import {
   buildModel as buildModelPrimitive,
   buildModelFromFile as buildModelFromFilePrimitive,
   rebuildModelIncremental as rebuildModelIncrementalPrimitive,
+  modelForEditedMesh as modelForEditedMeshPrimitive,
   type BuildModelFromFileInput,
   type BuildModelInput,
   type BuiltModel,
@@ -47,4 +48,11 @@ export async function rebuildModelIncremental(
   input: BuildModelInput,
 ): Promise<BuiltModel> {
   return rebuildModelIncrementalPrimitive(prevModel, input, { apiFactory: composedApiFactory });
+}
+
+export async function modelForEditedMesh(
+  prev: BuiltModel | undefined,
+  input: BuildModelInput,
+): Promise<BuiltModel> {
+  return modelForEditedMeshPrimitive(prev, input, { apiFactory: composedApiFactory });
 }

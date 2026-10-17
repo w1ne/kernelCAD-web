@@ -144,6 +144,37 @@ export async function buildModel(
  *
  * Slice 1 ships this alongside `buildModel`; existing callers are untouched.
  */
+/** Copy triangle meshes whose lowered shapes were reused object-identically.
+ *  A fresh session has empty mesh caches, so the next `meshFeaturesPerFeature`
+ *  would tessellate the whole prefix again. Identity is the proof the shape
+ *  was seeded, not rebuilt. */
+export function carryReusableMeshes(prev: BuiltModel, next: BuiltModel): void {
+  for (const [id, mesh] of prev.session.cachedFeatureMeshes) {
+    if (next.shapes.get(id) === prev.shapes.get(id)) {
+      next.session.cachedFeatureMeshes.set(id, mesh);
+    }
+  }
+  for (const [id, parts] of prev.session.cachedAssemblyPartMeshes) {
+    if (next.shapes.get(id) === prev.shapes.get(id)) {
+      next.session.cachedAssemblyPartMeshes.set(id, parts);
+    }
+  }
+}
+
+/** Full build on the first edit. On a later edit, reuse the previous model
+ *  when the new script is a proven append; otherwise `rebuildModelIncremental`
+ *  falls back to a full build and no mesh is carried. */
+export async function modelForEditedMesh(
+  prev: BuiltModel | undefined,
+  input: BuildModelInput,
+  opts?: RunScriptFacadeOptions,
+): Promise<BuiltModel> {
+  if (!prev) return buildModel(input, opts);
+  const next = await rebuildModelIncremental(prev, input, opts);
+  carryReusableMeshes(prev, next);
+  return next;
+}
+
 export async function rebuildModelIncremental(
   prevModel: BuiltModel,
   input: BuildModelInput,
