@@ -71,6 +71,7 @@ export interface BomRow {
    *  heuristic (`'inferred'`) manufacturing process. `null` on purchased
    *  rows (checked, not applicable — never omitted). */
   process: FabProcess | null;
+  /** Provenance of `process`: `declared` only when every instance in the group declared it, else `inferred`; `null` on purchased rows. */
   processSource: 'declared' | 'inferred' | null;
   catalog?: BomCatalogInfo;
   /** Every `assembly.part(name, ...)` name contributing to this group, in
