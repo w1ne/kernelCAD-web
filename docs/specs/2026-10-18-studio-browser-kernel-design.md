@@ -71,6 +71,7 @@ table   count × { featureIndex u32, metaLen u32, metaOffset u32,
                   bufferCount u32, bufferOffset u32 }  // offsets into payload
 meta    concatenated UTF-8 JSON blobs (all FeatureMeshSerialized fields
         EXCEPT the numeric arrays: ids, kinds, materials, transforms, names)
+        padded with zeros to the next 4-byte boundary
 buffers concatenated typed arrays, each 4-byte aligned:
         per face: vertices f32, normals f32, uv f32 (optional), indices u32
         per mesh: positions f32, normals f32, indices u32
@@ -84,9 +85,13 @@ buffers concatenated typed arrays, each 4-byte aligned:
   trailer (`unchangedIds`, `removedIds`) is carried as a reserved entry
   `__partial` in the meta blob, so a partial payload is a single
   self-describing container.
-- A per-feature **fingerprint**: FNV-1a 32 over the concatenated geometry
-  buffers + face ids (hex8). Stable across runs; metadata-only changes are not
-  fingerprint changes (they ride along when a feature is re-sent).
+- A per-feature **fingerprint**: a 64-bit fast hash (xxh64-style or two
+  independent FNV-1a lanes) over the concatenated geometry buffers, face ids,
+  and buffer lengths; hex16. 64-bit minimum because a collision silently
+  paints stale geometry. Stable across runs; metadata-only changes are not
+  fingerprint changes (they ride along when a feature is re-sent). Hashing
+  ~19 MB stays in the tens of ms with a synchronous fast hash; the worker and
+  server compute the same value from the same bytes (one shared module).
 
 ### 0b. Transport negotiation
 
@@ -97,8 +102,10 @@ buffers concatenated typed arrays, each 4-byte aligned:
   JSON in both modes (the client retry logic reads them).
 - Precompute: `site/scripts/build-gallery.ts` writes `<sha>.bin` next to the
   existing `<sha>.json` (one extra file per entry; `.json` kept for old
-  clients and embeds). Cloudflare serves brotli automatically; binary payloads
-  get immutable cache headers like the JSON.
+  clients and embeds). Because a custom binary content type is not on
+  Cloudflare's default auto-compression list, the build writes `<sha>.bin.br`
+  alongside and the client requests it with `Content-Encoding: br` handling
+  (fallback: uncompressed `.bin`); immutable cache headers like the JSON.
 - Client: `gallerySource.galleryPrecomputedMeshUrl` gains a binary variant;
   `meshSourceHosted` tries `.bin` first, falls back to `.json`, then server
   JSON (never a hard failure).
@@ -114,9 +121,13 @@ buffers concatenated typed arrays, each 4-byte aligned:
   - Server: fingerprints are computed from the freshly meshed `FeatureMesh`
     buffers; `have` is trusted only for ids present in the result.
   - Worker: same function, same fingerprints.
-- Client merge: replace changed `GeometryResult`s, drop removed, keep
-  unchanged; a `full: true` response (no `have`, or a fingerprint-format
-  upgrade) replaces everything.
+- Non-geometry channels (`params`, `featureRecords`, `bounds`, `review`) are
+  small JSON and ALWAYS ride the full, current response — only the geometry
+  buffers are partial.
+- Client merge: keyed by `featureId` in a map; unchanged ids keep their
+  existing `GeometryResult` and array position, changed ids are replaced in
+  place, new ids append, removed ids drop. A `full: true` response (no
+  `have`, or a fingerprint-format upgrade) replaces everything.
 - Fallback safety: if merge state is inconsistent (missing ids), the client
   re-requests once without `have` for a full payload.
 
@@ -137,6 +148,12 @@ drag-storm queue churn and the 5/min-limit collisions.
 - `src/studio/kernel/studioKernelWorker.ts` — worker entry, bundled by vite
   the same way `docs-worker.ts` is:
   - imports `replicad_single.wasm?url` and `initOcct({ locateFile })`;
+  - uses the composition entry `src/composition/browserRuntime`
+    (`runScriptInBrowser`) exactly like `docs-worker.ts` — NOT the lower-level
+    `modeling/runtime/browserRuntime`;
+  - `updateModelParams` is imported from `src/modeling/paramUpdate` (the
+    browser-safe module), never from `buildModel.ts` (statically imports
+    `node:fs`);
   - `build { source, fileName }` → `runScriptInBrowser` +
     `meshFeaturesPerFeature` → bin1 payload + `params` + `featureRecords`
     (same shapes as the server bridge result, so all downstream consumers are
@@ -144,7 +161,11 @@ drag-storm queue churn and the 5/min-limit collisions.
   - `params { edits }` → `updateModelParams` + re-mesh → **partial** bin1
     patch (fingerprints from the per-part mesh caches);
   - keeps the built model + session mesh caches alive between requests;
-  - transfers typed arrays (no copies).
+  - transfers typed arrays (no copies);
+  - the browser-graph guard test
+    (`src/modeling/runtime/browserGraphNodeFree.test.ts`) gains the studio
+    worker entry as a third graph to walk, so a future stray `node:` import
+    fails CI instead of production.
 - `src/studio/kernel/browserKernelClient.ts` — lifecycle:
   - capability gate and lazy spawn; `warm(source)` starts the background
     build on model open;
@@ -152,14 +173,19 @@ drag-storm queue churn and the 5/min-limit collisions.
   - request correlation, revision guard (superseded edits dropped);
   - crash/OOM detection (`worker.onerror`, `onmessageerror`, non-zero exit)
     → respawn once, then sticky server-only for that source + telemetry;
-  - 30 s script budget enforced by host-side `terminate()` + respawn
-    (`BROWSER_SCRIPT_TIMEOUT_MS` is the agreed parity value).
+  - the 30 s script budget (`BROWSER_SCRIPT_TIMEOUT_MS`) is a
+    **script-phase-only watchdog**: armed when `build` starts, disarmed by the
+    worker's `script-done` message, so heavy meshing is never killed by it.
+    A separate generous hard cap (300 s, server-budget parity) terminates a
+    pathological meshing run → fallback.
 
 ### Routing policy (GeometryContext)
 
 - Model open: paint CDN precompute immediately (unchanged); if the worker flag
-  is on, start `warm(source)` in the background. Identical geometry (both
-  paths run the same pipeline), so no visual jump.
+  is on, start `warm(source)` in the background (deferred until the tab is
+  visible; `visibilitychange` — never start a heavy build on a hidden tab).
+  Identical geometry (both paths run the same pipeline), so no visual jump.
+  Known cost: each open tab builds its own copy — accepted for now.
 - Param edits: worker when `warm`; otherwise the existing server path (which
   already handles pending/retry thanks to PR #315). When the worker becomes
   warm, subsequent edits switch over seamlessly — both paths feed the same
@@ -167,6 +193,11 @@ drag-storm queue churn and the 5/min-limit collisions.
 - Source change (code edit, new gallery model): `dispose` current model; warm
   the new source only if the model stays open (debounced), never for a
   one-shot preview.
+- Server-only sources: a cheap precheck marks sources that need materialized
+  assets (literal relative imports / `lib.fromSTEP`, `lib.fromSTL`, fonts) as
+  server-side before warming — the worker would throw
+  `cli.host-fs-unavailable` for them anyway; a worker-side diagnostic of that
+  class also flips the source sticky-server for the session.
 - Sessions/embeds: unchanged server path in v1 (flag applies to the stateless
   path first).
 
@@ -177,6 +208,10 @@ drag-storm queue churn and the 5/min-limit collisions.
   `auto` = hosted hostname + `WebAssembly` available + not a
   `navigator.deviceMemory < 4` device + not Safari-iOS (until measured).
 - `?kernel=off|force` query override for support/debugging.
+- The embed/studio-lib build (`vite.studio.config.ts`) must NOT ship the
+  kernel worker (it strips the legacy geometry worker today for the same
+  reason): spawn it through a lazy dynamic import so the ~11 MB worker chunk
+  never enters the embed bundle, and keep the flag `off` for embeds.
 
 ### Telemetry
 
@@ -211,9 +246,9 @@ slider edit ──► worker.params(edits, have)
 
 ## Testing
 
-- Unit: codec round-trip (all fields, optional arrays, empty meshes); FNV-1a
-  stability across runs; partial merge (changed/removed/unchanged +
-  fingerprint mismatch → full refetch); protocol parser; coalescer
+- Unit: codec round-trip (all fields, optional arrays, empty meshes);
+  fingerprint stability across runs; partial merge (changed/removed/unchanged
+  + fingerprint mismatch → full refetch); protocol parser; coalescer
   (one-in-flight + one-trailing).
 - Server: `Accept` negotiation (bin vs json vs missing), old-client JSON
   passthrough byte-compatible; partial responses honor `have`; pending/error
@@ -259,3 +294,7 @@ slider edit ──► worker.params(edits, have)
   gallery entry, acceptable; `.json` retires once old clients are gone.
 - The server fallback path is load-bearing until `auto` is proven — it keeps
   priority in tests.
+- Worker and CDN precompute share the web repo's kernel version; the server
+  fallback may run a different vendored pin, so falling back mid-session can
+  repaint microscopically differently — acceptable, and covered by a test that
+  only asserts geometry validity, not byte equality, across paths.
