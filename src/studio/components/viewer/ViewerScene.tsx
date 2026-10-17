@@ -74,6 +74,10 @@ interface ViewerSceneProps {
     /** 'publish' (embed): studio rig + contact shadow instead of the
      *  engineering lights, and no ground grid. */
     look?: ViewerLook;
+    /** What the camera frames. Default `geometries`. The exploded view draws
+     *  moved copies but keeps the camera on the assembled model, so the view
+     *  does not jump while parts fly apart. */
+    cameraGeometries?: GeometryResult[];
 }
 
 /**
@@ -109,6 +113,7 @@ export function ViewerScene({
     viewportBackground,
     planes,
     look = 'engineering',
+    cameraGeometries,
 }: ViewerSceneProps) {
     const publish = look === 'publish';
     return (
@@ -173,7 +178,7 @@ export function ViewerScene({
 
             <SceneControls
                 sketchActive={sketchActive}
-                geometries={geometries}
+                geometries={cameraGeometries ?? geometries}
                 navigationRequest={navigationRequest}
                 focusRequest={focusRequest}
             />

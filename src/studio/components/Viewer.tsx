@@ -23,6 +23,8 @@ import { DimensionsButton } from "./viewer/dimensions/DimensionsButton";
 import { useViewerDimensions } from "./viewer/dimensions/useViewerDimensions";
 import type { MeshDimensionsInfo } from "./viewer/dimensions/boundsDimensions";
 import { selectionCodeStore } from "../selectionCode/selectionCodeStore";
+import { ExplodeButton } from "./viewer/explode/ExplodeButton";
+import { useExplodedView } from "./viewer/explode/useExplodedView";
 
 // Extracted hooks
 import { useViewerGridPlacement } from "../hooks/viewer/useViewerGridPlacement";
@@ -74,6 +76,7 @@ function useViewerSetup(geometries: GeometryResult[]) {
         codeContext,
         setHoveredItemId,
         meshDimensions,
+        featureRecords,
     } = useWorkbench();
 
     const { setContextMenu, viewportBackground, gridVisible } = useUI();
@@ -118,6 +121,7 @@ function useViewerSetup(geometries: GeometryResult[]) {
 
     return {
         meshDimensions,
+        featureRecords,
         setSelectedFace,
         selectedSketchName,
         setSelectedSketchName,
@@ -147,7 +151,7 @@ function useViewerSetup(geometries: GeometryResult[]) {
 
 export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background, meshDimensions, showOriginPlanes = true, canvasExtras, look = 'engineering' }: ViewerProps) {
     const {
-        meshDimensions: workbenchDimensions, setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
+        meshDimensions: workbenchDimensions, featureRecords, setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
         selectedItemIds, setSelectedItemId, toggleSelection, setContextMenu, viewportBackground,
         gridVisible, gridPlacement, sectionKeepWhole, clippingPlanes, itemNames, hoveredItem,
         setHoveredItem, snapPoint, setSnapPoint, navigationRequest, setNavigationRequest,
@@ -155,6 +159,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
     } = useViewerSetup(geometries);
     const [measuring, setMeasuring] = useState(false);
     const dims = useViewerDimensions(meshDimensions ?? workbenchDimensions);
+    const explode = useExplodedView(geometries, featureRecords);
     const shownPlanes = useMemo(
         () => (showOriginPlanes ? planes : planes.filter((p) => p.type !== 'base')),
         [planes, showOriginPlanes],
@@ -203,7 +208,8 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 }}
             >
                 <ViewerScene
-                    geometries={geometries}
+                    geometries={explode.geometries}
+                    cameraGeometries={geometries}
                     previewGeometries={previewGeometries}
                     sketchesGeometries={sketchesGeometries}
                     showSketches={showSketches}
@@ -233,7 +239,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     look={look}
                 />
                 {dims.on ? <DimensionsOverlay dimensions={dims.dimensions} bounds={dims.bounds} /> : null}
-                {measuring ? <MeasureTool geometries={geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}
+                {measuring ? <MeasureTool geometries={explode.geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}
                 {canvasExtras}
                 {onDisplayReady ? (
                     <DisplayReadySensor geometries={geometries} onDisplayReady={onDisplayReady} />
@@ -242,6 +248,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
             <CodeLinkLabel />
             <MeasureButton active={measuring} onToggle={() => setMeasuring((on) => !on)} />
             {dims.available ? <DimensionsButton on={dims.on} onToggle={dims.toggle} legacy={dims.legacy} /> : null}
+            {explode.available ? <ExplodeButton view={explode} left={dims.available ? 'left-[6.25rem]' : 'left-14'} /> : null}
             <ViewGizmo
                 onNavigate={(target) => setNavigationRequest((prev) => ({
                     target,
