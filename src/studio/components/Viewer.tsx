@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { GeometryResult, SketchGeometry } from "../../shared/worker/geometryEngine";
 import type { ViewMode3D, ViewportBackground } from "../../shared/types/viewMode";
@@ -26,7 +26,7 @@ import type { MeshDimensionsInfo } from "./viewer/dimensions/boundsDimensions";
 import { selectionCodeStore } from "../selectionCode/selectionCodeStore";
 import { ExplodeButton } from "./viewer/explode/ExplodeButton";
 import { useExplodedView } from "./viewer/explode/useExplodedView";
-import { TOOL_DOCK_SLOT_ID } from "./viewer/cornerControls";
+import { currentToolDock, subscribeToolDock } from "./viewer/cornerControls";
 
 // Extracted hooks
 import { useViewerGridPlacement } from "../hooks/viewer/useViewerGridPlacement";
@@ -152,11 +152,7 @@ function useViewerSetup(geometries: GeometryResult[]) {
 }
 
 function useToolDock(): HTMLElement | null {
-    const [slot, setSlot] = useState<HTMLElement | null>(null);
-    useEffect(() => {
-        setSlot(document.getElementById(TOOL_DOCK_SLOT_ID));
-    }, []);
-    return slot;
+    return useSyncExternalStore(subscribeToolDock, currentToolDock, () => null);
 }
 
 function ViewerToolButtons({ measuring, setMeasuring, dims, explode }: {

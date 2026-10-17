@@ -21,7 +21,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { viewTargetRequests } from './hooks/studioNavigation';
 import { useIsNarrow } from './hooks/useIsNarrow';
 import { OrderButton } from './OrderButton';
-import { CORNER_INSET_VAR, TOOL_DOCK_SLOT_ID } from './components/viewer/cornerControls';
+import { CORNER_INSET_VAR, TOOL_DOCK_SLOT_ID, registerToolDock } from './components/viewer/cornerControls';
 
 const ICON = { className: 'size-4', strokeWidth: 1.75 } as const;
 
@@ -234,7 +234,6 @@ function useToolbarDrag(barRef: RefObject<HTMLDivElement | null>) {
         if (!bar || !host || event.button !== 0) return;
         event.preventDefault();
         const barBox = bar.getBoundingClientRect();
-        const hostBox = host.getBoundingClientRect();
         drag.current = { ox: event.clientX - barBox.left, oy: event.clientY - barBox.top };
         try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* not every test host implements capture */ }
         const move = (ev: PointerEvent) => {
@@ -339,7 +338,7 @@ export function ViewportToolbar(props: ViewportToolbarProps): JSX.Element {
             >
                 <GripVertical className="size-4" aria-hidden="true" />
             </button>
-            <div id={TOOL_DOCK_SLOT_ID} className="contents" data-testid="toolbar-viewer-tools" />
+            <div id={TOOL_DOCK_SLOT_ID} ref={registerToolDock} className="contents" data-testid="toolbar-viewer-tools" />
             <RunControl onRun={onRun} runNeeded={runNeeded} size={size} />
             <IconButton
                 label="Validate"
