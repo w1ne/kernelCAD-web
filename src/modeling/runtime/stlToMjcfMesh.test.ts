@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
-import { stlToMjcfMesh } from './stlToMjcfMesh';
+import { stlToMjcfMesh, verticesToMjcfMesh } from './stlToMjcfMesh';
 
 describe('stlToMjcfMesh', () => {
     it('parses two known triangles into the expected vertex string', () => {
@@ -89,3 +89,17 @@ describe('stlToMjcfMesh', () => {
 });
 
 const HEADER_PLUS_COUNT = 84;
+
+describe('verticesToMjcfMesh — collision vertex cloud', () => {
+    it('deduplicates a mesh vertex stream at 1e-4 mm', () => {
+        // Two triangles of a unit square share an edge: 6 vertices, 4 distinct.
+        const xyz = [0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1e-5];
+        const m = verticesToMjcfMesh(xyz);
+        expect(m.vertexCount).toBe(4);
+        expect(m.vertex.split(' ')).toHaveLength(12);
+    });
+
+    it('NEGATIVE CONTROL: refuses a cloud with no hull (fewer than 4 points)', () => {
+        expect(() => verticesToMjcfMesh([0, 0, 0, 1, 0, 0, 0, 0, 0])).toThrow(/fewer than 4/);
+    });
+});

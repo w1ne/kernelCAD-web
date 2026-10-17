@@ -392,7 +392,7 @@ export async function checkMechanismTruth(
   // session is shared between the two passes so the ~9 MB WASM module
   // and the MJCF compile only happen once per call.
   if (opts.physicsCheck === true) {
-    const physicsFailures = await runPhysicsCriteria(arm, solved);
+    const physicsFailures = await runPhysicsCriteria(arm, solved, loweredBase.scene);
     failures.push(...physicsFailures);
   }
 

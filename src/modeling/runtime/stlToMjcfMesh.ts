@@ -118,3 +118,23 @@ export function stlToMjcfMesh(stlBytes: Uint8Array): MjcfMeshData {
         vertexCount: uniqueCoords.length / 3,
     };
 }
+
+/**
+ * MJCF `<mesh vertex>` data from a flat xyz vertex cloud (mm), deduplicated
+ * at the same 1e-4 mm key as {@link stlToMjcfMesh}. MuJoCo builds the convex
+ * hull of the cloud for collision.
+ */
+export function verticesToMjcfMesh(xyz: ArrayLike<number>): MjcfMeshData {
+    const seen = new Set<string>();
+    const parts: string[] = [];
+    for (let i = 0; i + 2 < xyz.length; i += 3) {
+        const key = `${xyz[i]!.toFixed(4)} ${xyz[i + 1]!.toFixed(4)} ${xyz[i + 2]!.toFixed(4)}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        parts.push(key);
+    }
+    if (parts.length < 4) {
+        throw new Error('verticesToMjcfMesh: fewer than 4 distinct vertices — no collision hull.');
+    }
+    return { vertex: parts.join(' '), triangleCount: 0, vertexCount: parts.length };
+}

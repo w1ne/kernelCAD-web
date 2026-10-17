@@ -11,6 +11,7 @@ import { collectRegistryDrivenMates } from '../mates/mechanicalJointRegistry';
 import { collectFreePassiveMates } from '../mates/passiveJoints';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { assemblyToMjcf } from './mjcfExport';
+import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { loadMujocoSession } from './mujocoSession';
 import { makeFailure, type SolvedSample } from './mechanismTruthShared';
 
@@ -64,12 +65,13 @@ const DROP_TEST_DT_S = 0.001;
 export async function runPhysicsCriteria(
   arm: Assembly,
   solved: readonly SolvedSample[],
+  restScene?: SceneBackend,
 ): Promise<CompilerDiagnostic[]> {
   const out: CompilerDiagnostic[] = [];
 
   let mjcfResult: Awaited<ReturnType<typeof assemblyToMjcf>>;
   try {
-    mjcfResult = await assemblyToMjcf(arm);
+    mjcfResult = await assemblyToMjcf(arm, restScene === undefined ? {} : { scene: restScene });
   } catch (e) {
     // Closed-loop graphs or other emitter failures. The kinematic
     // criteria already surface their own failures; don't double-fail
@@ -82,7 +84,7 @@ export async function runPhysicsCriteria(
     return out;
   }
 
-  let session: Awaited<ReturnType<typeof loadMujocoSession>>;
+let session: Awaited<ReturnType<typeof loadMujocoSession>>;
   try {
     session = await loadMujocoSession(
       mjcfResult.mjcf,
