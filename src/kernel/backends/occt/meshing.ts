@@ -643,6 +643,38 @@ export function meshFaceToGeometry(
 
 /** Read a triangulation that `shape._mesh` already wrote. Returns null when
  *  the face has no triangulation, so the caller can fall back to `face.mesh()`. */
+/** One IncrementalMesh for the solid, then a read-back per face. */
+function collectFaceGeometries(shape: unknown, faces: unknown[], options: MeshOptions): FaceGeometry[] {
+  let meshedWhole = false;
+  if (faces.length > 1) {
+    const meshAll = getFn(shape, '_mesh');
+    if (meshAll) {
+      try {
+        meshAll.call(shape, {
+          tolerance: options.tolerance,
+          angularTolerance: options.angularTolerance,
+        });
+        meshedWhole = true;
+      } catch {
+        meshedWhole = false;
+      }
+    }
+  }
+
+  const faceGeometries: FaceGeometry[] = [];
+  for (let faceId = 0; faceId < faces.length; faceId++) {
+    const face = faces[faceId];
+    try {
+      const geometry = (meshedWhole ? meshFaceFromExistingTriangulation(face, faceId) : null)
+        ?? meshFaceToGeometry(face, faceId, options);
+      if (geometry) faceGeometries.push(geometry);
+    } catch {
+      // ignore per-face mesh errors — match worker behavior
+    }
+  }
+  return faceGeometries;
+}
+
 function meshFaceFromExistingTriangulation(face: unknown, faceId: number): FaceGeometry | null {
   if (!isRecord(face)) return null;
   const triFn = getFn(face, 'triangulation');
@@ -821,35 +853,9 @@ export function meshShape(
     return Array.from(facesRaw as unknown as ArrayLike<unknown>);
   })();
 
-  const faceGeometries: FaceGeometry[] = [];
-  if (Array.isArray(faces) && faces.length > 0) {
-    // One IncrementalMesh for the whole solid. face.mesh() repeats it per face.
-    let meshedWhole = false;
-    if (faces.length > 1) {
-      const meshAll = getFn(shape, '_mesh');
-      if (meshAll) {
-        try {
-          meshAll.call(shape, {
-            tolerance: options.tolerance,
-            angularTolerance: options.angularTolerance,
-          });
-          meshedWhole = true;
-        } catch {
-          meshedWhole = false;
-        }
-      }
-    }
-    for (let faceId = 0; faceId < faces.length; faceId++) {
-      const face = faces[faceId];
-      try {
-        const geometry = (meshedWhole ? meshFaceFromExistingTriangulation(face, faceId) : null)
-          ?? meshFaceToGeometry(face, faceId, options);
-        if (geometry) faceGeometries.push(geometry);
-      } catch {
-        // ignore per-face mesh errors — match worker behavior
-      }
-    }
-  }
+  const faceGeometries = Array.isArray(faces)
+    ? collectFaceGeometries(shape, faces, options)
+    : [];
   if (faceGeometries.length === 0) return null;
 
   const volume = tryGetVolume(shape);
