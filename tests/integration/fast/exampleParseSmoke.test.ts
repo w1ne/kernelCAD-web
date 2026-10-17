@@ -142,6 +142,7 @@ describe('examples evaluate through the kernel', () => {
     ['examples/gallery/roboto-01.kcad.ts', 30_000],
     ['examples/gallery/kspray-facade-robot.kcad.ts', 30_000],
     ['examples/gallery/kspray-klift.kcad.ts', 30_000],
+    ['examples/roadster/roadster.kcad.ts', 30_000],
   ]);
   const evaluationExamples = examples.filter(file => !HEAVY.has(relativeExample(file)) && !EVALUATION_EXEMPT.has(relativeExample(file)));
   for (const file of evaluationExamples) {
