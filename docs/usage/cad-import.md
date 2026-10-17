@@ -14,8 +14,8 @@ return robot.color('#a8b3bd');
 | `.step`, `.stp` | Native. Same as `lib.fromSTEP`. |
 | `.brep` | Native. Same as `lib.fromBREP`. |
 | `.FCStd` (FreeCAD) | Native. The document is read directly, with no FreeCAD install. |
+| `.x_t`, `.x_b`, `.xt` (Parasolid) | parasolid-kit. It must be on `PATH`, or `PARASOLID_KIT` names the executable. |
 | `.sldprt`, `.sldasm` (SolidWorks) | Through a converter you configure (below). |
-| `.x_t`, `.x_b`, `.xt` (Parasolid) | Through a converter you configure. |
 | `.igs`, `.iges` (IGES) | Through a converter you configure. |
 
 ## FreeCAD documents (`.FCStd`)
@@ -28,9 +28,23 @@ FreeCAD `Placement`. Bodies are combined into one compound.
   links to (a cut's base, for example) is treated as an input and skipped.
 - Sketches, datums and other shapeless objects are ignored.
 
-## SolidWorks, Parasolid and IGES (converter)
+## Parasolid (`.x_t`, `.x_b`)
 
-These formats are proprietary, so kernelCAD does not read them itself. Point
+`lib.fromCAD` runs [parasolid-kit](https://github.com/monozukuri-ai/parasolid-kit),
+which writes STEP. kernelCAD then reads that STEP. Pass the file's coordinate
+unit; the reader does not infer it. The default is millimetres.
+
+```ts
+const part = await lib.fromCAD('./parts/link.x_t', { sourceUnit: 'm' });
+```
+
+parasolid-kit accepts an exact built-in schema profile, or a Siemens catalog
+you pass it. It does not substitute a nearby profile. A file whose schema key
+is outside that set fails with the key named in the error.
+
+## SolidWorks and IGES (converter)
+
+These formats are not read by parasolid-kit. Point
 `KERNELCAD_CAD_CONVERTER` at any command that writes a STEP file:
 
 ```sh

@@ -11,10 +11,10 @@
 //   .fcstd                  FreeCAD document — read natively: the document is a zip,
 //                           each body's shape is an OCCT BREP member, and each
 //                           object's Placement is applied. No FreeCAD install needed.
-//   .sldprt .sldasm .x_t    SolidWorks, Parasolid, IGES: these formats are proprietary
-//   .x_b .xt .igs .iges     (or, for IGES, not worth a second reader). They go through
-//                           a converter you configure with KERNELCAD_CAD_CONVERTER.
-//                           See the converter section below.
+//   .x_t .x_b .xt           Parasolid transmit. Read by parasolid-kit (the maintained
+//                           Rust reader). It writes STEP, and that STEP is imported here.
+//   .sldprt .sldasm .igs    SolidWorks and IGES still go through KERNELCAD_CAD_CONVERTER.
+//   .iges                   See the converter section below.
 //
 // KERNELCAD_CAD_CONVERTER is a JSON array of strings, run without a shell. The
 // placeholders {input} and {output} are replaced with absolute paths. The command
@@ -37,8 +37,21 @@ import { fromBREP } from './fromMeshFormats';
 
 const execFileAsync = promisify(execFile);
 
+/** Parasolid transmit files. parasolid-kit reads these; kernelCAD does not shell a general converter. */
+const PARASOLID_EXTENSIONS = new Set(['.x_t', '.x_b', '.xt']);
+
+/** Length unit of the numbers stored in a Parasolid file. kernelCAD itself is millimetres. */
+export type ParasolidSourceUnit = 'm' | 'cm' | 'mm' | 'in' | 'ft';
+
+export interface FromCADOptions {
+  /** Physical unit of a Parasolid file. The reader never guesses. Default is millimetres. */
+  sourceUnit?: ParasolidSourceUnit;
+}
+
 /** Extensions that need an external converter (proprietary or not worth a native reader). */
-const CONVERTED_EXTENSIONS = new Set(['.sldprt', '.sldasm', '.x_t', '.x_b', '.xt', '.igs', '.iges']);
+const CONVERTED_EXTENSIONS = new Set(['.sldprt', '.sldasm', '.igs', '.iges']);
+
+const PARASOLID_KIT_ENV = 'PARASOLID_KIT';
 
 const CONVERTER_ENV = 'KERNELCAD_CAD_CONVERTER';
 const CONVERTER_TIMEOUT_MS = 15 * 60 * 1000;
@@ -55,7 +68,7 @@ interface FcstdObject {
   references: string[];
 }
 
-export async function fromCAD(ctx: FromSTEPContext, path: string): Promise<Shape> {
+export async function fromCAD(ctx: FromSTEPContext, path: string, opts?: FromCADOptions): Promise<Shape> {
   if (typeof path !== 'string' || path.length === 0) {
     throw new KernelError(
       'feature.invalid-args',
@@ -68,12 +81,13 @@ export async function fromCAD(ctx: FromSTEPContext, path: string): Promise<Shape
   if (ext === '.step' || ext === '.stp') return fromSTEP(ctx, path);
   if (ext === '.brep') return fromBREP(ctx, path);
   if (ext === '.fcstd') return fromFcstd(ctx, path);
+  if (PARASOLID_EXTENSIONS.has(ext)) return fromParasolid(ctx, path, opts?.sourceUnit ?? 'mm');
   if (CONVERTED_EXTENSIONS.has(ext)) return fromConverted(ctx, path, ext);
   throw new KernelError(
     'feature.invalid-args',
     `lib.fromCAD: unsupported file type '${ext || '(none)'}' for ${path}.`,
     undefined,
-    'invalid-args.lib.fromCAD.extension — supported: .step/.stp, .brep, .FCStd natively; .sldprt/.sldasm/.x_t/.x_b/.igs with KERNELCAD_CAD_CONVERTER set.',
+    'invalid-args.lib.fromCAD.extension — supported: .step/.stp, .brep, .FCStd natively; .x_t/.x_b via parasolid-kit; .sldprt/.sldasm/.igs with KERNELCAD_CAD_CONVERTER set.',
   );
 }
 
@@ -229,7 +243,71 @@ export function quaternionToAxisAngle(q: [number, number, number, number]): { ax
 }
 
 // ---------------------------------------------------------------------------
-// External converter (SolidWorks, Parasolid, IGES)
+// Parasolid (.x_t, .x_b) through parasolid-kit
+// ---------------------------------------------------------------------------
+
+/**
+ * Read one Parasolid transmit file by asking parasolid-kit to write STEP, then
+ * importing that STEP. `sourceUnit` is the unit of the file's coordinates.
+ */
+export async function readParasolidStep(absPath: string, sourceUnit: ParasolidSourceUnit): Promise<Buffer> {
+  const bin = process.env[PARASOLID_KIT_ENV] || 'parasolid-kit';
+  const workDir = await mkdtemp(join(tmpdir(), 'kernelcad-parasolid-'));
+  const outPath = join(workDir, 'converted.step');
+  try {
+    try {
+      await execFileAsync(
+        bin,
+        ['export-step', '--source-unit', sourceUnit, '--output-unit', 'mm', absPath, outPath],
+        { timeout: CONVERTER_TIMEOUT_MS, maxBuffer: 64 * 1024 * 1024 },
+      );
+    } catch (e) {
+      const err = e as { stderr?: string; stdout?: string; message?: string; code?: string };
+      const detail = [err.stderr, err.stdout, err.message].filter(Boolean).join('\n').trim().slice(0, 800);
+      if (err.code === 'ENOENT') {
+        throw new KernelError(
+          'feature.kernel-failed',
+          `lib.fromCAD: parasolid-kit is not installed, so ${absPath} cannot be read.`,
+          undefined,
+          `kernel-failed.lib.fromCAD.parasolid-kit — install parasolid-kit and put it on PATH, or set ${PARASOLID_KIT_ENV} to the executable.`,
+        );
+      }
+      const schemaKey = /SCH_[0-9_]+/.exec(detail)?.[0];
+      const baseSchema = /"schema":\s*"([0-9]+)"/.exec(detail)?.[1];
+      const schema = schemaKey ?? (baseSchema ? `sch_${baseSchema}` : undefined);
+      throw new KernelError(
+        'feature.kernel-failed',
+        `lib.fromCAD: parasolid-kit could not read ${absPath}${schema ? ` (${schema})` : ''}: ${detail}`,
+        undefined,
+        schema
+          ? `kernel-failed.lib.fromCAD.parasolid-schema — parasolid-kit has no built-in profile for ${schema}. It does not substitute a nearby schema.`
+          : 'kernel-failed.lib.fromCAD.parasolid-kit — parasolid-kit must write STEP to the path it is given.',
+      );
+    }
+    try {
+      return await readFile(outPath);
+    } catch {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `lib.fromCAD: parasolid-kit finished but wrote no STEP file for ${absPath}.`,
+        undefined,
+        'kernel-failed.lib.fromCAD.parasolid-output — export-step must write the STEP path it is given.',
+      );
+    }
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
+}
+
+async function fromParasolid(ctx: FromSTEPContext, path: string, sourceUnit: ParasolidSourceUnit): Promise<Shape> {
+  const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
+  await readBytes(absPath, path, 'fromCAD');
+  const stepBytes = await readParasolidStep(absPath, sourceUnit);
+  return fromStepBytes(ctx, stepBytes, absPath);
+}
+
+// ---------------------------------------------------------------------------
+// External converter (SolidWorks, IGES)
 // ---------------------------------------------------------------------------
 
 async function fromConverted(ctx: FromSTEPContext, path: string, ext: string): Promise<Shape> {

@@ -24,7 +24,7 @@ export function makePartsLib(ctx: ApiContext): Pick<KernelCadApi, 'lib'> {
     lib: {
       fromSTEP: (path) => fromSTEPViaHost({ session, scriptDir: ctx.scriptDir }, path),
       fromBREP: (path) => fromBREPViaHost({ session, scriptDir: ctx.scriptDir }, path),
-      fromCAD: (path) => fromCADViaHost({ session, scriptDir: ctx.scriptDir }, path),
+      fromCAD: (path, opts) => fromCADViaHost({ session, scriptDir: ctx.scriptDir }, path, opts),
       fromSTL: (path, opts) =>
         fromSTLViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
       meshFromSTL: (path) => meshFromSTLViaHost({ session, scriptDir: ctx.scriptDir }, path),

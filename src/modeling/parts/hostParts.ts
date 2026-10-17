@@ -48,10 +48,14 @@ export async function fromBREPViaHost(ctx: HostPartsCtx, path: string): Promise<
   return fromBREP(ctx, path);
 }
 
-export async function fromCADViaHost(ctx: HostPartsCtx, path: string): Promise<Shape> {
+export async function fromCADViaHost(
+  ctx: HostPartsCtx,
+  path: string,
+  opts?: { sourceUnit?: 'm' | 'cm' | 'mm' | 'in' | 'ft' },
+): Promise<Shape> {
   requireHostFs('lib.fromCAD()');
   const { fromCAD } = await import('./fromCad');
-  return fromCAD(ctx, path);
+  return fromCAD(ctx, path, opts);
 }
 
 export async function fromSTLViaHost(

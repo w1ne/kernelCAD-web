@@ -13,6 +13,7 @@ import {
   quaternionToAxisAngle,
   readFcstdBackend,
   convertToStep,
+  readParasolidStep,
 } from './fromCad';
 
 const Q_ZERO: [number, number, number, number] = [0, 0, 0, 1];
@@ -157,6 +158,47 @@ describe('fromCAD dispatch', () => {
     } finally {
       if (prev !== undefined) process.env.KERNELCAD_CAD_CONVERTER = prev;
     }
+  });
+});
+
+describe('readParasolidStep', () => {
+  const withKit = async (bin: string | undefined, run: () => Promise<unknown>) => {
+    const prev = process.env.PARASOLID_KIT;
+    if (bin === undefined) delete process.env.PARASOLID_KIT;
+    else process.env.PARASOLID_KIT = bin;
+    try {
+      return await run();
+    } finally {
+      if (prev === undefined) delete process.env.PARASOLID_KIT;
+      else process.env.PARASOLID_KIT = prev;
+    }
+  };
+
+  it('asks parasolid-kit to write STEP in millimetres and returns those bytes', async () => {
+    const input = join(dir, 'link.x_t');
+    const step = await boxStep(4, 5, 6);
+    writeFileSync(input, 'not-read-by-the-fake-kit');
+    const fake = join(dir, 'fake-parasolid-kit.sh');
+    // argv: export-step --source-unit <u> --output-unit mm <input> <output>
+    writeFileSync(fake, `#!/bin/sh\ncp ${JSON.stringify(join(dir, 'link-step.step'))} "$7"\n`);
+    writeFileSync(join(dir, 'link-step.step'), step);
+    const { chmodSync } = await import('node:fs');
+    chmodSync(fake, 0o755);
+    const out = await withKit(fake, () => readParasolidStep(input, 'mm'));
+    expect(Buffer.from(out as Buffer).toString('latin1')).toContain('ISO-10303-21');
+  });
+
+  it('names the schema when parasolid-kit rejects the file', async () => {
+    const input = join(dir, 'robot.x_t');
+    writeFileSync(input, 'x');
+    const fake = join(dir, 'fake-parasolid-reject.sh');
+    writeFileSync(
+      fake,
+      '#!/bin/sh\necho \'{"message":"schema.missing_base_schema","diagnostic":{"details":{"schema":"13006"}}}\' >&2\nexit 2\n',
+    );
+    const { chmodSync } = await import('node:fs');
+    chmodSync(fake, 0o755);
+    await expect(withKit(fake, () => readParasolidStep(input, 'm'))).rejects.toThrow(/sch_13006/);
   });
 });
 

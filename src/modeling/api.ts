@@ -87,12 +87,13 @@ export interface PartsLib {
   /**
    * Import a CAD file by extension. `.step`/`.stp` and `.brep` are read as
    * `fromSTEP`/`fromBREP` do. `.FCStd` (FreeCAD) is read natively: each body's
-   * shape is taken from the archive and its placement applied. SolidWorks
-   * (`.sldprt`, `.sldasm`), Parasolid (`.x_t`, `.x_b`) and IGES (`.igs`) go
-   * through the converter named by the `KERNELCAD_CAD_CONVERTER` environment
-   * variable, which must write STEP.
+   * shape is taken from the archive and its placement applied. Parasolid
+   * (`.x_t`, `.x_b`) is read by parasolid-kit. `opts.sourceUnit` is the unit
+   * of that file's coordinates (default millimetres); the reader does not
+   * guess. SolidWorks (`.sldprt`, `.sldasm`) and IGES (`.igs`) go through
+   * the converter named by `KERNELCAD_CAD_CONVERTER`, which must write STEP.
    */
-  fromCAD(path: string): Promise<Shape>;
+  fromCAD(path: string, opts?: { sourceUnit?: 'm' | 'cm' | 'mm' | 'in' | 'ft' }): Promise<Shape>;
   /**
    * Import an STL mesh (ASCII or binary). The triangles are sewn back into
    * topology and promoted to a solid when they close, so booleans, volume,
