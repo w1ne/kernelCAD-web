@@ -48,6 +48,21 @@ export interface MechanismLoadsLine {
   readonly maxLevel: MechanismMaxLevel;
   /** e.g. "loads: min torque margin 2.7x (shoulder)". */
   readonly statement: string;
+  /** Compact per-joint data for the Studio Loads panel. */
+  readonly joints?: readonly MechanismLoadsJoint[];
+}
+
+export interface MechanismLoadsJoint {
+  readonly joint: string;
+  readonly maxLevel: MechanismMaxLevel;
+  readonly peakTorqueNm: number;
+  readonly ratedTorqueNm?: number;
+  readonly torqueMargin?: number;
+  /** Peak bending moment about the joint origin, N·mm. */
+  readonly peakBendingNmm: number;
+  readonly supports: ReadonlyArray<{ readonly part: string; readonly peakRadialN: number }>;
+  /** [tMs, torqueNm] pairs along the timeline (thinned). */
+  readonly torque: ReadonlyArray<readonly [number, number]>;
 }
 
 /** Append the short loads line to the verdict (badge text). */

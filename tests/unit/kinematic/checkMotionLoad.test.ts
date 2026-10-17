@@ -17,6 +17,7 @@ import { checkMotionLoad } from '../../../src/kinematic/motionLoad';
 import { splitJointLoad, subtreeJointWrench } from '../../../src/kinematic/rigidBodyLoads';
 import type { Assembly } from '../../../src/modeling/capture/assembly';
 import { verifyTool } from '../../../src/agent/mcp/tools/verify';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
 
 const L = 0.3, W = 0.02, H = 0.01, RHO = 7850, G = 9.81;
 const M = RHO * L * W * H;
@@ -136,6 +137,21 @@ describe("verify({ check: 'motion-load' })", () => {
     expect(j.series).toContain(j.worst);
     expect(j.peakTorqueNm).toBeCloseTo(M * G * L / 2, 4);
   }, 120_000);
+});
+
+describe('evaluate_script mechanism verdict', () => {
+  beforeAll(async () => { await initOcct(); }, 60_000);
+
+  it('adds a short loads line only when a joint declares torqueNm', async () => {
+    const rated = await evaluateScriptTool({ code: script({ torqueNm: '2' }) });
+    const summary = rated.mechanismSummary!;
+    expect(summary.loads?.statement).toMatch(/^loads: min torque margin \d/);
+    expect(summary.statement).toContain(summary.loads!.statement);
+    expect(summary.loads?.joints?.[0].torque.length).toBeGreaterThan(2);
+
+    const unrated = await evaluateScriptTool({ code: script() });
+    expect(unrated.mechanismSummary?.loads).toBeUndefined();
+  }, 240_000);
 });
 
 describe('splitJointLoad — coaxial supports', () => {

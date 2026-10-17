@@ -82,6 +82,11 @@ export const MECHANISM_SUMMARY: Record<string, unknown> = {
       properties: {
         maxLevel: { type: 'string', enum: ['ok', 'warning', 'error'] },
         statement: { type: 'string' },
+        joints: {
+          type: 'array',
+          description: 'Compact per-joint loads for the Studio Loads panel: peaks, support radial loads, and [tMs, torqueNm] pairs.',
+          items: { type: 'object', additionalProperties: true, required: ['joint', 'peakTorqueNm'] },
+        },
       },
     },
   },

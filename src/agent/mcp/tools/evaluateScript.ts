@@ -22,6 +22,7 @@ import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
 import { checkMotionLoad } from '../../../kinematic/motionLoad';
+import { thinSeries } from './checkMotionLoad';
 import { withLoadsLine, type MechanismLoadsLine } from '../../../modeling/runtime/mechanismVerdict';
 import type { MechanismCoverage } from '../../../modeling/runtime/mechanismTruth';
 import {
@@ -388,7 +389,18 @@ async function sceneMotionLoads(
     const diagnostics = r.diagnostics
       .filter((d) => d.severity !== 'info')
       .map((d): CompilerDiagnostic => ({ target: 'export-occt', code: d.code, severity: d.severity, message: d.message, hint: d.hint, ...(d.nextAction !== undefined ? { nextAction: d.nextAction } : {}) } as CompilerDiagnostic));
-    return { line: { maxLevel: r.maxLevel, statement: r.statement.replace(/^Loads checked: /, 'loads: ') }, diagnostics };
+    const joints = r.joints.map((j) => {
+      const thin = thinSeries(j, 60);
+      return {
+        joint: j.joint, maxLevel: j.maxLevel, peakTorqueNm: j.peakTorqueNm,
+        ...(j.ratedTorqueNm !== undefined ? { ratedTorqueNm: j.ratedTorqueNm } : {}),
+        ...(j.torqueMargin !== undefined ? { torqueMargin: j.torqueMargin } : {}),
+        peakBendingNmm: j.peakBendingNmm,
+        supports: (j.supportLoads ?? []).map((s) => ({ part: s.part, peakRadialN: s.peakRadialN })),
+        torque: thin.series.map((s) => [s.tMs ?? 0, s.torqueNm] as const),
+      };
+    });
+    return { line: { maxLevel: r.maxLevel, statement: r.statement.replace(/^Loads checked: /, 'loads: '), joints }, diagnostics };
   } catch (e) {
     return { line: { maxLevel: 'warning', statement: `loads: not checked (${e instanceof Error ? e.message : String(e)}).` }, diagnostics: [] };
   }
