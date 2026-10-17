@@ -59,7 +59,7 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
 import { detectInterferences, pairKey } from './detectInterferences';
 import { describeOverlap, formatOverlapMm3, isActionableOverlap, overlapRuleText, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
-import { reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
+import { rememberRestScene, reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
 import { resolvedPartAt } from '../mates/partFrame';
 import { expandCoupledPoses } from '../mates/coupledPoses';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
@@ -274,6 +274,7 @@ async function checkRestCriteria(
   if (restSample !== undefined) {
     await lowerSceneForSample(arm, restSample, loweredBase);
   }
+  if (loweredBase.scene !== undefined) rememberRestScene(arm, loweredBase.scene);
   if (loweredBase.scene === undefined && arm.__mates().length > 0) {
     // A failed lower used to skip criterion 7 and leave the verdict
     // 'unverified'. That is a pass for a disconnected body. If the

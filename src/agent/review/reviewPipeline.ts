@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { withSharedAnalysisMeshes } from '../../kernel/backends/occt/analysisMeshScope';
 import { evaluateAndBuildScript, type EvaluateInput } from '../cli/commands/evaluate';
 import { failedOnlyOnUnionGuard } from '../../modeling/validation/unionIntegrity';
 import type { Assembly } from '../../modeling/capture/assembly';
@@ -280,12 +281,16 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
   if (!arm) return reviewWithoutAssembly(clock.report(), evaluation, model, input, missingAssemblyMessage);
 
   const defaultPoseGeometry = await clock.time('default-pose-geometry', async () => runDefaultPoseGeometryStage(model, input));
-  const mechanicalReview = await clock.time('mechanical-review', () => runMechanicalReviewStage(
+  // One analysis tessellation per part across the plausibility and
+  // transmission checks (both mesh every part at the same tolerance); the
+  // meshes are dropped when the stage ends, so they do not stay alive into
+  // the pose sweep and physics.
+  const mechanicalReview = await clock.time('mechanical-review', () => withSharedAnalysisMeshes(() => runMechanicalReviewStage(
     arm,
     input,
     defaultPoseGeometry.rawInterferencePairs,
     defaultPoseGeometry.wantInterference,
-  ));
+  )));
   const { poseEnvelope, physicalUseCases, mechanism, mechanismFailures, summary } =
     await runBudgetedStages(clock, arm, model, input, mechanicalReview.includePoseEnvelope);
   const diagnostics = collectReviewDiagnostics(evaluation, mechanicalReview, physicalUseCases, poseEnvelope);

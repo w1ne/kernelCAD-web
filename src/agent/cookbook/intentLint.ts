@@ -22,7 +22,8 @@
 // named API would replace. A word with nothing to convert is a hint the
 // agent "fixes" by changing the wrong thing, then retries.
 
-import * as ts from 'typescript';
+import type * as TS from 'typescript';
+import { lazyTs as ts } from '../../shared/runtime/lazyTypescript';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { DIAGNOSTIC_REGISTRY, NEXT_ACTIONS, type DiagnosticCode } from '../../shared/diagnostics/registry';
 
@@ -249,10 +250,10 @@ export function stripComments(src: string): string {
   return out + src.slice(at);
 }
 
-function commentRanges(src: string): ts.CommentRange[] {
+function commentRanges(src: string): TS.CommentRange[] {
   const sf = ts.createSourceFile('intent-lint.ts', src, ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
-  const byPos = new Map<number, ts.CommentRange>();
-  const visit = (node: ts.Node): void => {
+  const byPos = new Map<number, TS.CommentRange>();
+  const visit = (node: TS.Node): void => {
     if (ts.isJSDoc(node)) return; // its text is already a leading-trivia range of the next token
     const children = node.getChildren(sf);
     if (children.length > 0) {
