@@ -85,6 +85,15 @@ export interface PartsLib {
    */
   fromBREP(path: string): Promise<Shape>;
   /**
+   * Import a CAD file by extension. `.step`/`.stp` and `.brep` are read as
+   * `fromSTEP`/`fromBREP` do. `.FCStd` (FreeCAD) is read natively: each body's
+   * shape is taken from the archive and its placement applied. SolidWorks
+   * (`.sldprt`, `.sldasm`), Parasolid (`.x_t`, `.x_b`) and IGES (`.igs`) go
+   * through the converter named by the `KERNELCAD_CAD_CONVERTER` environment
+   * variable, which must write STEP.
+   */
+  fromCAD(path: string): Promise<Shape>;
+  /**
    * Import an STL mesh (ASCII or binary). The triangles are sewn back into
    * topology and promoted to a solid when they close, so booleans, volume,
    * bbox and export work — but the faces stay planar facets, so operations
