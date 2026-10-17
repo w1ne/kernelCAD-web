@@ -169,6 +169,22 @@ Export `RP1.3.4整机.SLDASM` from release `RP1_SolidWorks_Source.zip` to one ST
 AP214. Use `docs/usage/solidworks-export-step.bas` (set `ASM_PATH` and `STEP_OUT`)
 or File > Save As > STEP AP214. Import that file with `lib.fromCAD`.
 
+## Progress (2026-10-17, assembly poses)
+
+The whole-robot STEP was not produced by SolidWorks on this Mac. The poses were
+read from the public `RP1.3.4整机.SLDASM` instead. Each component `swTransform`
+is a rigid 4×4. Translation is metres.
+
+`examples/robots/rp1/rp1-7dof.kcad.ts` places 206 STEP instances from those
+poses. `evaluate --json` on the earlier 220-instance file returned `ok: true`,
+441 features, no diagnostics. Files that OCCT cannot read, and files whose
+point span is many metres, are left out. See the example README.
+
+A publish render of the feet, forearms, wrists, waist, and hip sides shows
+those parts apart in the assembly pose. It does not show a closed robot. The
+large body shells are in the omitted set. Revolute mates are not in the script
+yet.
+
 ## Open questions for the user
 
 - Can they run the SolidWorks macro on Windows and upload the whole-robot STEP?
