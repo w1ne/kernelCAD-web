@@ -72,8 +72,9 @@ function className(handle: { $$?: { ptrType?: { registeredClass?: { name?: strin
 }
 
 /** Standard_Transient subclasses inherit its reference-count methods. */
-function isTransientClass(ctor: { prototype?: object }): boolean {
-  return typeof (ctor.prototype as { DecrementRefCounter?: unknown } | undefined)?.DecrementRefCounter === 'function';
+function isTransientClass(ctor: unknown): boolean {
+  const proto = (ctor as { prototype?: { DecrementRefCounter?: unknown } }).prototype;
+  return typeof proto?.DecrementRefCounter === 'function';
 }
 
 function isEmbindClass(value: unknown): value is new (...args: unknown[]) => object {
