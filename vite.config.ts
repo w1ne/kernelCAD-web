@@ -876,9 +876,9 @@ function kernelCadMeshEndpoint(): Plugin {
 
           // POST { source } inspects ARBITRARY edited code (the Studio
           // Parts-tab candidate path) through the same inspectBomTool the
-          // GET path uses. The `script` query param is optional here: it
-          // only anchors relative asset resolution, so a missing/unknown
-          // script falls back to the examples root instead of 400ing.
+          // GET path uses. The `script` query param is not read on this
+          // path: inspectBomTool gets the raw source and no scriptDir, so
+          // relative asset paths resolve from the dev server's cwd.
           if ((req.method ?? 'GET').toUpperCase() === 'POST') {
             const { readBody } = await import('./src/server/middleware/httpUtil');
             let parsedBody: { source?: unknown };
