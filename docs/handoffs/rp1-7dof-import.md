@@ -121,9 +121,60 @@ seen:
 - If a step is blocked (no SolidWorks, no converter license, no FreeCAD), say so in the
   handoff notes and in your report, and finish every step that does not depend on it.
 
+## Progress (2026-10-17)
+
+Checked on this machine. The full robot is still blocked. The importer paths that
+do not need SolidWorks were run, and the results below are from that run.
+
+### Importer checks
+
+`npx vitest run src/modeling/parts/fromCad.test.ts`: 14 passed.
+
+CLI `evaluate --json`, scripts next to the files, not copied into git:
+
+| Script | Input | Result |
+| --- | --- | --- |
+| `lib.fromSTEP` | `YCL.M000312 小臂下本体.STEP` | `ok: true`, 1 feature, no diagnostics |
+| `lib.fromCAD` | the same STEP | `ok: true`, 1 feature, no diagnostics |
+| `lib.fromCAD` | `docs/demos/cad-import-freecad/rp1-parts.FCStd` | `ok: true`, 1 feature, no diagnostics |
+
+`render --preset publish --separate --no-watermark --pose 0,25` wrote front, right,
+top, iso, and pose-0-25 PNGs of that STEP. The front, top, and posed views show one
+machined forearm housing: a cylindrical shell open at one end, a thin seam along
+the shell, a fork under it, and a large bore with a bolt circle. That is one part
+in its own frame. It is not the robot.
+
+### Why the parts still cannot be assembled
+
+Five CNC STEP files (forearm lower body, wrist body, wrist end, waist yaw ring,
+waist body) are millimetres and sit near their own origins. Their extents are
+about 80 mm to 160 mm. They do not share one robot-sized frame. Sheet `总BOM` in
+`RP1_BOM_7DOF_MotionHead.xlsx` has no coordinate columns. Its columns are item,
+level, part number, name, quantity, material, and weight.
+
+### Blocked steps
+
+- This Mac has no SolidWorks and no FreeCAD. `KERNELCAD_CAD_CONVERTER` is unset.
+- Release `RP1_Parasolid_Model.zip` (v0.1.0) contains `RP1.3.4整机.x_t`, 1.20 GB,
+  text. Header: Parasolid 32.1, SOLIDWORKS 2021, schema `SCH_3201255_32001`.
+  That key is outside the built-in profiles of the open Parasolid parser, and
+  that parser does not apply assembly placement. The file was not converted.
+- The manufacturing tree has per-part STEP files only. No whole-assembly STEP.
+
+Acceptance items 1–5 for the full robot are not met. Do not invent placements.
+
+### What unblocks the model
+
+Export `RP1.3.4整机.SLDASM` from release `RP1_SolidWorks_Source.zip` to one STEP
+AP214. Use `docs/usage/solidworks-export-step.bas` (set `ASM_PATH` and `STEP_OUT`)
+or File > Save As > STEP AP214. Import that file with `lib.fromCAD`.
+
 ## Open questions for the user
 
 - Can they run the SolidWorks macro on Windows and upload the whole-robot STEP?
-- Do they have a converter license (CAD Exchanger, HOOPS, Datakit)? Which one?
-- Is the `rp1_hardware` STEP set the right one, or is there a newer revision of the
-  7-DoF arm? The BOM revision should be checked against the CAD revision.
+  That is the remaining blocker. This Mac cannot open the `.SLDASM`.
+- Do they have a converter license (CAD Exchanger, HOOPS, Datakit)? None is
+  configured here. The open Parasolid parser does not cover schema
+  `SCH_3201255_32001`.
+- The public manufacturing STEP set and BOM are revision RP1.3.4, 7-DoF plus
+  motion head. Confirm that this is the revision to build.
