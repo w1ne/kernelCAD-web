@@ -5,6 +5,8 @@ import { DraftingSettingsSchema } from '../../authoring/draftingSettings';
 import type { DrawingReportAnnotation } from '../../kernel/backends/occt/drawingAuto/contracts';
 import { draftingCriteriaFingerprint, effectiveDecisionResolutions, draftingOptionsForSource, loadDraftingProfiles, placedDimensionId, saveDraftingProfile, sourceFingerprint, type DraftingSettings, type StudioDrawingOptions } from '../draftingSettings';
 import type { PlacedLinearDimension } from '../../authoring/draftingSettings';
+import { drawingSheetCsv } from '../../kernel/export/drawing/drawingSheetCsv';
+import { svgSheetToDxf } from '../../kernel/export/drawing/svgSheetToDxf';
 import { svgSheetsToPdf } from '../../kernel/export/pdf/svgSheetToPdf';
 import { downloadBlob, exportErrorText, exportViaServer, isExportAbort, previewDrawingViaServer, type DrawingPreviewResult } from '../exportViaServer';
 import { injectEdgeDimensions } from './edgeDimensionSheet';
@@ -170,6 +172,21 @@ export function useDraftingReview({ code, settings, onChange }: DraftingReviewPr
     if (!functional.reviewed) return;
     return task.start('Reviewed drawing (PDF)', (transport) => exportViaServer('pdf-drawing', code, { ...transport, drawingOptions: { ...choiceState.options, requireCompleteReview: true } }), downloadBlob);
   };
+  const markedSheet = (): string | null => {
+    const svg = drawing.preview?.svg;
+    if (!svg) return null;
+    return injectEdgeDimensions(svg, choiceState.choices.placedDimensions ?? []);
+  };
+  const exportSheet = (kind: 'dxf' | 'svg' | 'csv') => {
+    const svg = markedSheet();
+    if (!svg) return;
+    const file = kind === 'dxf'
+      ? { name: 'drawing.dxf', type: 'application/dxf', body: svgSheetToDxf(svg) }
+      : kind === 'svg'
+        ? { name: 'drawing.svg', type: 'image/svg+xml', body: svg }
+        : { name: 'drawing.csv', type: 'text/csv', body: drawingSheetCsv(svg) };
+    downloadBlob(new Blob([file.body], { type: file.type }), file.name);
+  };
   const exportPdf = () => {
     const placed = choiceState.choices.placedDimensions ?? [];
     const svg = drawing.preview?.svg;
@@ -189,7 +206,7 @@ export function useDraftingReview({ code, settings, onChange }: DraftingReviewPr
   const removePlaced = (id: string) => {
     update({ ...choiceState.choices, placedDimensions: (choiceState.choices.placedDimensions ?? []).filter((d) => d.id !== id) });
   };
-  return { drawing, profiles, annotations, functional, task, stale, resetSourceChoices, error, exportPdf, exportReviewedPdf,
+  return { drawing, profiles, annotations, functional, task, stale, resetSourceChoices, error, exportPdf, exportSheet, exportReviewedPdf,
     placed: choiceState.choices.placedDimensions ?? [], placeEdge, removePlaced };
 }
 

@@ -63,6 +63,25 @@ describe('drafting review', () => {
     fireEvent.change(screen.getByLabelText('Extra offset (sheet mm)'), { target: { value: '-4' } });
     expect(changed).not.toHaveBeenCalled();
   });
+  it('downloads the preview as DXF, SVG, and CSV', async () => {
+    vi.mocked(exporter.previewDrawingViaServer).mockResolvedValueOnce({
+      svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"><g class="visible"><line x1="0" y1="10" x2="40" y2="10"/></g><text>60</text></svg>',
+      drawingReport: report, diagnostics: [],
+    });
+    render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
+    expect((screen.getByRole('button', { name: 'Download DXF' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
+    await screen.findByRole('region', { name: 'Engineering drawing preview' });
+    fireEvent.click(screen.getByRole('button', { name: 'Download DXF' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Download SVG' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
+    expect(exporter.downloadBlob).toHaveBeenCalledTimes(3);
+    const names = vi.mocked(exporter.downloadBlob).mock.calls.map((call) => call[1]);
+    expect(names).toEqual(['drawing.dxf', 'drawing.svg', 'drawing.csv']);
+    expect(await (vi.mocked(exporter.downloadBlob).mock.calls[0][0] as Blob).text()).toContain('ENTITIES');
+    expect(await (vi.mocked(exporter.downloadBlob).mock.calls[2][0] as Blob).text()).toContain('60');
+    expect(exporter.exportViaServer).not.toHaveBeenCalled();
+  });
   it('allows PDF download even when the optional preview report is absent', async () => {
     vi.mocked(exporter.previewDrawingViaServer).mockResolvedValueOnce({ svg: '<svg/>', diagnostics: [] });
     render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);

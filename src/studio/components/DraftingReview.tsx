@@ -18,6 +18,9 @@ function ReviewFooter({ state }: { state: DraftingReviewState }) {
     {error && <p role="alert" className="w-full text-ui text-danger">{error}</p>}
     <button type="button" className={BUTTON} disabled={busy || task.state.running !== null} onClick={() => void generatePreview()}>{busy ? 'Generating preview…' : preview ? 'Refresh preview' : 'Generate preview'}</button>
     <button type="button" className={`${BUTTON} ml-auto`} disabled={busy || task.state.running !== null} onClick={() => void exportPdf()}>Download PDF</button>
+    <button type="button" className={BUTTON} disabled={!preview || busy || task.state.running !== null} title="2D sheet for AutoCAD, Fusion, Onshape, and SolidWorks" onClick={() => state.exportSheet('dxf')}>Download DXF</button>
+    <button type="button" className={BUTTON} disabled={!preview || busy || task.state.running !== null} title="The vector sheet" onClick={() => state.exportSheet('svg')}>Download SVG</button>
+    <button type="button" className={BUTTON} disabled={!preview || busy || task.state.running !== null} title="Parts list, or the sheet text when there is no table" onClick={() => state.exportSheet('csv')}>Download CSV</button>
     {state.functional.declared && <>
       <button type="button" className={BUTTON} disabled={!state.functional.canMark} onClick={state.functional.markReviewed}>{state.functional.reviewed ? 'Reviewed' : 'Mark reviewed'}</button>
       <button type="button" className={BUTTON} disabled={!state.functional.reviewed} onClick={() => void state.exportReviewedPdf()}>Export reviewed PDF</button>
