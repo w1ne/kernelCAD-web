@@ -99,28 +99,28 @@ function AxisHotspots({ onNavigate }: ViewGizmoProps) {
             <Hotspot
                 label="View along X axis"
                 onClick={() => onNavigate('x')}
-                className="absolute right-[1px] top-[78px] flex h-7 w-7 items-center pointer-coarse:before:absolute pointer-coarse:before:-inset-2 pointer-coarse:before:content-[\'\'] justify-center rounded-full border border-red-200/50 bg-red-950/90 text-xs font-bold text-red-100 shadow-lg transition hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                className="absolute right-[1px] top-[78px] flex h-7 w-7 items-center pointer-coarse:before:absolute pointer-coarse:before:-inset-2.5 pointer-coarse:before:content-[''] justify-center rounded-full border border-red-200/50 bg-red-950/90 text-xs font-bold text-red-100 shadow-lg transition hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-cyan-300"
             >
                 X
             </Hotspot>
             <Hotspot
                 label="View along Y axis"
                 onClick={() => onNavigate('y')}
-                className="absolute left-1 top-[79px] flex h-7 w-7 items-center pointer-coarse:before:absolute pointer-coarse:before:-inset-2 pointer-coarse:before:content-[\'\'] justify-center rounded-full border border-emerald-200/50 bg-emerald-950/90 text-xs font-bold text-emerald-100 shadow-lg transition hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                className="absolute left-1 top-[79px] flex h-7 w-7 items-center pointer-coarse:before:absolute pointer-coarse:before:-inset-2.5 pointer-coarse:before:content-[''] justify-center rounded-full border border-emerald-200/50 bg-emerald-950/90 text-xs font-bold text-emerald-100 shadow-lg transition hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-cyan-300"
             >
                 Y
             </Hotspot>
             <Hotspot
                 label="View along Z axis"
                 onClick={() => onNavigate('z')}
-                className="absolute left-[58px] top-0 flex h-7 w-7 items-center pointer-coarse:before:absolute pointer-coarse:before:-inset-2 pointer-coarse:before:content-[\'\'] justify-center rounded-full border border-sky-200/50 bg-sky-950/90 text-xs font-bold text-sky-100 shadow-lg transition hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                className="absolute left-[58px] top-0 flex h-7 w-7 items-center pointer-coarse:before:absolute pointer-coarse:before:-inset-2.5 pointer-coarse:before:content-[''] justify-center rounded-full border border-sky-200/50 bg-sky-950/90 text-xs font-bold text-sky-100 shadow-lg transition hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-cyan-300"
             >
                 Z
             </Hotspot>
             <Hotspot
                 label="Fit model to view"
                 onClick={() => onNavigate('fit')}
-                className="absolute bottom-0 right-0 flex h-8 w-8 pointer-coarse:size-touch items-center justify-center rounded-md border border-white/20 bg-neutral-950/85 text-white shadow-lg backdrop-blur transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                className="absolute bottom-0 right-0 flex h-8 w-8 pointer-coarse:-bottom-4 pointer-coarse:size-touch items-center justify-center rounded-md border border-white/20 bg-neutral-950/85 text-white shadow-lg backdrop-blur transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-cyan-300"
             >
                 <Home size={15} aria-hidden="true" />
             </Hotspot>

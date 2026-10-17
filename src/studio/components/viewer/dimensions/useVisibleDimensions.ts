@@ -6,12 +6,8 @@ import * as THREE from 'three';
 import type { V3 } from '../../../../shared/intent/viewerDimension';
 import { overlapsKept, type PlacedLabel } from './labelCollisions';
 import type { PlacedDimension } from './placement';
+import { clampLabelCentre, compactLabels, labelBoxSize } from './labelFit';
 
-/** Approximate label pill size in CSS pixels (text-sm semibold + padding). */
-const CHAR_PX = 8;
-const PAD_X_PX = 18;
-const LINE_PX = 26;
-const SUBLINE_PX = 14;
 
 /** A dimension shorter than this on screen is hidden. */
 export const MIN_SCREEN_LENGTH_PX = 16;
@@ -38,18 +34,14 @@ export interface LabelPass {
     all: ReadonlyMap<string, number>;
 }
 
-export function prepareLabelPass(placed: readonly PlacedDimension[]): LabelPass {
+/** Label boxes are sized for the text drawn: compact on a phone. */
+export function prepareLabelPass(placed: readonly PlacedDimension[], compact = compactLabels()): LabelPass {
     return {
         placed,
         labels: placed.map((d) => ({
             id: d.id,
             priority: d.priority,
-            box: {
-                x: 0,
-                y: 0,
-                w: Math.max(d.label.length, d.sublabel?.length ?? 0) * CHAR_PX + PAD_X_PX,
-                h: LINE_PX + (d.sublabel ? SUBLINE_PX : 0),
-            },
+            box: { x: 0, y: 0, ...labelBoxSize(d.label, d.sublabel, compact) },
         })),
         anchors: placed.map((d) => [
             d.labelAt ?? [(d.a[0] + d.b[0]) / 2, (d.a[1] + d.b[1]) / 2, (d.a[2] + d.b[2]) / 2],
@@ -94,13 +86,16 @@ function projectSlot(pass: LabelPass, i: number, camera: THREE.Camera, size: Siz
     const wpp = worldPerPixel(camera, scratchC.set(anchor[0], anchor[1], anchor[2]), size.height);
     const screen = Math.hypot(b.x - a.x, b.y - a.y);
     pass.active[i] = screen >= MIN_SCREEN_LENGTH_PX && screen * wpp >= MIN_FORESHORTENING * pass.worldLengths[i];
-    centreBox(pass, i, toScreen(scratchC, camera, size));
+    centreBox(pass, i, toScreen(scratchC, camera, size), size);
 }
 
-function centreBox(pass: LabelPass, i: number, c: THREE.Vector3): void {
+/** Places slot i's box where the label is drawn: centred on `c`, slid
+ *  inside the canvas as the drawn label is. */
+function centreBox(pass: LabelPass, i: number, c: THREE.Vector3, size: Size): void {
     const box = pass.labels[i].box;
-    box.x = c.x - box.w / 2;
-    box.y = c.y - box.h / 2;
+    const [x, y] = clampLabelCentre(c.x, c.y, box.w, box.h, size.width, size.height);
+    box.x = x - box.w / 2;
+    box.y = y - box.h / 2;
 }
 
 /** Greedy in priority order: an active label is kept at the first of its
@@ -113,7 +108,7 @@ function markPlaced(pass: LabelPass, camera: THREE.Camera, size: Size): void {
         if (!pass.active[i]) continue;
         const anchors = pass.anchors[i];
         for (let k = 0; k < anchors.length; k++) {
-            if (k > 0) centreBox(pass, i, toScreen(scratchC.set(anchors[k][0], anchors[k][1], anchors[k][2]), camera, size));
+            if (k > 0) centreBox(pass, i, toScreen(scratchC.set(anchors[k][0], anchors[k][1], anchors[k][2]), camera, size), size);
             if (!overlapsKept(pass.labels, pass.next, i)) {
                 pass.next[i] = true;
                 pass.nextAnchor[i] = k;

@@ -233,6 +233,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 <ViewerScene
                     geometries={explode.geometries}
                     cameraGeometries={geometries}
+                    fitPoints={dims.on ? dims.fitPoints : undefined}
                     previewGeometries={previewGeometries}
                     sketchesGeometries={sketchesGeometries}
                     showSketches={showSketches}
