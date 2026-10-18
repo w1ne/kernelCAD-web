@@ -4,6 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { BomRow } from '../../../agent/script-runtime/bom';
+import { REFERRAL_DISCLOSURE } from '../../../shared/links/referral';
 
 const bbox: BomRow['bboxMm'] = { min: [0, 0, 0], max: [1, 1, 1] };
 
@@ -149,6 +150,7 @@ beforeEach(() => {
 
 afterEach(() => {
     cleanup();
+    vi.unstubAllEnvs();
 });
 
 async function renderSheet(): Promise<void> {
@@ -239,5 +241,26 @@ describe('OrderSheet', () => {
         expect(screen.queryByTestId('order-state-3')).toBeNull();
         expect(screen.queryByTestId('order-state-1')).toBeNull();
         expect(screen.queryByTestId('order-state-2')).toBeNull();
+    });
+
+    it('keeps quote links at the exact clean URL and shows no disclosure when no vendor tag is configured', async () => {
+        await renderSheet();
+        const sheetCut = screen.getByTestId('order-group-sheet-cut');
+        const link = within(sheetCut).getByText('SendCutSend');
+        expect(link.getAttribute('href')).toBe('https://app.sendcutsend.com/');
+        expect(link.getAttribute('target')).toBe('_blank');
+        expect(link.getAttribute('rel')).toBe('noreferrer');
+        expect(screen.queryByText(REFERRAL_DISCLOSURE)).toBeNull();
+    });
+
+    it('wraps quote links through buildVendorLink (surface export) and shows the disclosure when a tag is set', async () => {
+        vi.stubEnv('KERNELCAD_REFERRAL_SENDCUTSEND', 'sheet-test');
+        await renderSheet();
+        const sheetCut = screen.getByTestId('order-group-sheet-cut');
+        expect(within(sheetCut).getByText('SendCutSend').getAttribute('href')).toBe(
+            'https://app.sendcutsend.com/?ref=sheet-test&utm_source=kernelcad&utm_medium=export',
+        );
+        expect(within(sheetCut).getByText(REFERRAL_DISCLOSURE)).toBeTruthy();
+        expect(screen.queryByTestId('order-referral-3d-print')).toBeNull();
     });
 });

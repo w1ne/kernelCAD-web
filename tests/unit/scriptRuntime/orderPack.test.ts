@@ -47,6 +47,8 @@ describe('export order-pack', () => {
     const fabricated = manifest.parts.find((p: { kind: string }) => p.kind === 'fabricated');
     expect(fabricated.process).toBe('cnc');
     expect(fabricated.qty).toBe(1);
+    // The fetched fastener row has a part number, so no PN-less note fires.
+    expect(manifest.notes).toEqual([]);
     // bom.json carries the totals (the manifest is the file index).
     const bom = JSON.parse(strFromU8(zip['bom.json']));
     expect(bom.totals.partCount).toBe(3);

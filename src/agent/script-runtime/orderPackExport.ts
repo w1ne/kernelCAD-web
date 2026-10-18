@@ -115,6 +115,11 @@ export async function collectOrderPack(
 
   const opts = orderPackOptions(input);
   const notes: string[] = [];
+  for (const row of bom.rows) {
+    if (row.kind === 'purchased' && !row.catalog?.partNumber?.trim()) {
+      notes.push(`purchased '${row.name}' has no catalog part number — add it to the vendor list manually`);
+    }
+  }
   const files: OrderPackFileInput[] = [];
   const parts = arm.__parts();
   for (const row of selectOrderPackRows(bom.rows, opts)) {

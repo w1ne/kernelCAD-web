@@ -18,6 +18,7 @@ import type { BomRow } from '../../agent/script-runtime/bom';
 import { FAB_PROCESSES, type FabProcess } from '../../shared/fab';
 import { buildHandoffs, digikeyFastAddUrl, handoffItems } from '../../kernel/export/order/handoffs';
 import { servicesForProcess } from '../../kernel/export/order/fabServices';
+import { buildVendorLink, referralDisclosure } from '../../shared/links/referral';
 import { Sheet } from '../../ui/Sheet';
 import { useCode } from '../context/CodeContext';
 import { useBom } from '../hooks/useBom';
@@ -193,7 +194,11 @@ function MadeGroup({ process, rows, busy, onDownload }: {
     // One inferred row downgrades the group's process, so the whole group is
     // flagged: the shop quote below may be for the wrong process.
     const assumed = rows.some((row) => row.processSource === 'inferred');
-    const services = servicesForProcess(process);
+    const links = servicesForProcess(process).map((service) => ({
+        service,
+        link: buildVendorLink(service.url, { surface: 'export' }),
+    }));
+    const disclosure = referralDisclosure(links.map((entry) => entry.link));
     return (
         <section className="rounded border border-[#1f1f1f] p-2.5" data-testid={`order-group-${process}`}>
             <div className="flex items-center justify-between gap-2">
@@ -223,16 +228,23 @@ function MadeGroup({ process, rows, busy, onDownload }: {
                     </li>
                 ))}
             </ul>
-            {services.length > 0 && (
-                <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-2xs text-gray-500">
-                    <span>Quote:</span>
-                    {services.map((service) => (
-                        <a key={service.service} href={service.url} target="_blank" rel="noreferrer"
-                            className="text-blue-300/90 underline hover:text-blue-200">
-                            {service.service}
-                        </a>
-                    ))}
-                </div>
+            {links.length > 0 && (
+                <>
+                    <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-2xs text-gray-500">
+                        <span>Quote:</span>
+                        {links.map(({ service, link }) => (
+                            <a key={service.service} href={link.url} target="_blank" rel="noreferrer"
+                                className="text-blue-300/90 underline hover:text-blue-200">
+                                {service.service}
+                            </a>
+                        ))}
+                    </div>
+                    {disclosure !== undefined && (
+                        <p className="mt-1 text-2xs text-gray-500" data-testid={`order-referral-${process}`}>
+                            {disclosure}
+                        </p>
+                    )}
+                </>
             )}
         </section>
     );
