@@ -11,6 +11,8 @@ export default defineConfig({
     command: 'npm run site:dev',
     url: 'http://127.0.0.1:8000',
     reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
+    // site:dev runs the full marketing build before serving; a cold build
+    // takes ~11 min on a laptop and can be slower on CI runners.
+    timeout: 1_200_000,
   },
 });
