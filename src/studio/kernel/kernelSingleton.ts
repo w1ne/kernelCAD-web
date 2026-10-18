@@ -120,13 +120,14 @@ export function warmBrowserKernel(source: string, fileName: string): void {
 }
 
 /** Terminate the worker and forget the warmed source, dropping a pending
- *  swap with it. The client instance stays (the one singleton) and a later
- *  warm respawns its worker fresh — no state of the disposed model can leak
- *  into the new build. */
+ *  swap and any warm a hidden tab banked with it. The client instance stays
+ *  (the one singleton) and a later warm respawns its worker fresh — no state
+ *  of the disposed model can leak into the new build. */
 export function disposeBrowserKernel(): void {
   cancelPendingWarmSwap();
   instance?.dispose();
   warmedSource = null;
+  clearPendingHiddenWarm();
 }
 
 /** A warm a hidden tab is holding for the next `visibilitychange`: the latest
@@ -140,11 +141,27 @@ function flushPendingKernelWarm(): void {
   if (pending !== null) warmBrowserKernel(pending.source, pending.fileName);
 }
 
+function clearPendingHiddenWarm(): void {
+  pendingHiddenWarm = null;
+  if (visibilityListenerAttached && typeof document !== 'undefined') {
+    document.removeEventListener('visibilitychange', onVisibilityChangeForWarm);
+  }
+  visibilityListenerAttached = false;
+}
+
 /** Bank `(source, fileName)` for the first `visibilitychange` that makes the
  *  tab visible (latest wins, one listener). Both hidden entry points share
  *  this: `warmKernelOnOpen`'s hidden branch and a settle timer that fires
  *  after the tab went hidden. */
 function deferKernelWarmUntilVisible(source: string, fileName: string): void {
+  // A newer hidden apply supersedes any armed older swap: otherwise the older
+  // settle timer could still fire while hidden and re-bank its own source on
+  // top of this one, warming a source routing has already left behind. A
+  // no-op for the settle-timer caller, which popped its swap before deferring.
+  cancelPendingWarmSwap();
+  // The same server-only precheck the visible path runs: never bank a warm
+  // the worker cannot serve (the newest apply wins by dropping the stale one).
+  if (browserKernelSourceIsServerOnly(source)) return;
   pendingHiddenWarm = { source, fileName };
   if (visibilityListenerAttached) return;
   visibilityListenerAttached = true;
@@ -192,9 +209,5 @@ export function __resetBrowserKernelForTests(): void {
   instance?.dispose();
   instance = null;
   warmedSource = null;
-  pendingHiddenWarm = null;
-  if (visibilityListenerAttached && typeof document !== 'undefined') {
-    document.removeEventListener('visibilitychange', onVisibilityChangeForWarm);
-  }
-  visibilityListenerAttached = false;
+  clearPendingHiddenWarm();
 }

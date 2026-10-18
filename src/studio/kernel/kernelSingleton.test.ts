@@ -204,6 +204,67 @@ describe('warm swap settling with the hidden-tab deferral', () => {
     expect(h.warmMock).toHaveBeenCalledExactlyOnceWith('source-c', 'c.kcad.ts');
   });
 
+  it('warms the newest source when a newer hidden apply supersedes an older armed swap', () => {
+    const h = fakeKernel();
+    __setBrowserKernelForTests(h.kernel, 'source-a');
+    visibility = 'visible';
+
+    warmKernelOnOpen('source-b', 'b.kcad.ts');
+    visibility = 'hidden';
+    warmKernelOnOpen('source-c', 'c.kcad.ts');
+
+    // b's settle timer was superseded by the newer hidden apply: advancing
+    // past it must not fire it and re-bank b over c.
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+    expect(h.disposeMock).not.toHaveBeenCalled();
+    expect(h.warmMock).not.toHaveBeenCalled();
+
+    visibility = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
+    expect(h.disposeMock).toHaveBeenCalledTimes(1);
+    expect(h.warmMock).toHaveBeenCalledExactlyOnceWith('source-c', 'c.kcad.ts');
+    expect(browserKernelForSource('source-c')).toBe(h.kernel);
+  });
+
+  it('cancels the older armed swap and warms nothing when the newest hidden apply is server-only', () => {
+    const h = fakeKernel();
+    __setBrowserKernelForTests(h.kernel, 'source-a');
+    visibility = 'visible';
+
+    warmKernelOnOpen('source-b', 'b.kcad.ts');
+    visibility = 'hidden';
+    warmKernelOnOpen('const p = await lib.fromSTEP("part.step");', 'step.kcad.ts');
+
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
+    visibility = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
+    expect(h.disposeMock).not.toHaveBeenCalled();
+    expect(h.warmMock).not.toHaveBeenCalled();
+    expect(browserKernelForSource('source-a')).toBe(h.kernel);
+  });
+
+  it('disposeBrowserKernel clears a banked hidden warm and its listener', () => {
+    const h = fakeKernel();
+    __setBrowserKernelForTests(h.kernel, 'source-a');
+    const removeSpy = vi.spyOn(document, 'removeEventListener');
+
+    warmKernelOnOpen('source-c', 'c.kcad.ts');
+    disposeBrowserKernel();
+
+    expect(removeSpy).toHaveBeenCalledWith('visibilitychange', expect.any(Function));
+
+    visibility = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
+    expect(h.warmMock).not.toHaveBeenCalled();
+  });
+
   it('cancels a pending swap when the latest source is server-only', () => {
     const h = fakeKernel();
     __setBrowserKernelForTests(h.kernel, 'source-a');
