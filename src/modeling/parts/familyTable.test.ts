@@ -84,6 +84,6 @@ describe('fixture families', () => {
     const nut = resolvePart({ family: 'flange-nut', thread: 'M12' });
     expect(nut.id).toBe('flange-nut-m12');
     expect(nut.acrossFlatsMm).toBe(18);
-    expect(nut.dims?.flangeDiameterMm).toBe(26);
+    expect(nut.dims?.flangeDiameterMm).toBe(25); // DIN 6331 M12 d1
   });
 });

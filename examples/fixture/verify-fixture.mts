@@ -75,11 +75,11 @@ function expectSpan(name: string, zMin: number, zMax: number): void {
 
 expectSpan('table', 0, 24);
 expectSpan('workpiece', 24, 60);
-expectSpan('left-t-nut', 7.4, 23.4); // wing tops at 14.4 on the channel ceiling, base below
-expectSpan('left-stud', 14.4, 94.4); // M10 x 80 from the T-nut bore
+expectSpan('left-t-nut', 9.4, 23.4); // DIN 508 M10 h = 14; wing tops at 16.4, top 0.6 under the surface
+expectSpan('left-stud', 16.4, 96.4); // M10 x 80 from the channel ceiling
 expectSpan('left-clamp', 60, 72); // level with the 36 mm workpiece top
 expectSpan('left-step-block', 24, 72); // step-3 tread at 36 mm
-expectSpan('left-flange-nut', 72, 82);
+expectSpan('left-flange-nut', 72, 87); // DIN 6331 M10 m = 15
 
 // Mating faces meet at exactly the assembly heights the example documents.
 const workpiece = byName.get('workpiece')!;
@@ -115,7 +115,7 @@ const evidence = {
   set: {
     hardware: 'lib.fixture M10: tSlotNut, clampStud 80, strapClamp, stepBlock, flangeNut',
     tableMm: [400, 130, 24],
-    channel: { openingMm: 12.4, depthMm: 9.6, internalWidthMm: 18.6, internalHeightMm: 7.6 },
+    channel: { openingMm: 12, openingDepthMm: 7.6, internalWidthMm: 18.3, internalDepthMm: 7.4 },
     workpieceMm: [50, 70, 36],
     step3TreadMm: 36,
   },

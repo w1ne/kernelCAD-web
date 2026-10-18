@@ -158,32 +158,41 @@ const PART_EXAMPLE = "lib.part({ family: 'socket-head-cap-screw', thread: 'M5', 
 const STACK_EXAMPLE = "lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' })";
 
 /** Machining-fixture hardware, keyed by the thread its clamping parts use.
- *  Nominal envelope dimensions from the stock table; slot/thread pairing
- *  follows common machine-table practice. Check the supplier drawing before
+ *  Dimensions are the stock table's envelope values: T-slot nuts follow the
+ *  DIN 508 table (a/e/h/k; the envelope length is a stock choice, DIN 508
+ *  does not table it) and collar nuts follow the DIN 6331 table (s/m/d1/a),
+ *  both read 2026-10-18. Strap clamps and step blocks have no DIN table: their
+ *  values stay nominal kit dimensions. Check the supplier drawing before
  *  ordering. */
 const FIXTURES: Record<string, FixtureFamily> = {
   't-slot-nut': {
     idPrefix: 'tslot-nut',
     kind: 't-slot-nut',
+    // DIN 508: a (slot), e (nut width, min), h (height), k (head height).
+    // neckWidth = a min, baseWidth = e min, neck height = k, base = h - k.
     threads: {
-      M8: { slotMm: 10, baseWidthMm: 15.8, neckWidthMm: 9.7, baseHeightMm: 6, neckHeightMm: 8, lengthMm: 22 },
-      M10: { slotMm: 12, baseWidthMm: 17.8, neckWidthMm: 11.7, baseHeightMm: 7, neckHeightMm: 9, lengthMm: 26 },
-      M12: { slotMm: 14, baseWidthMm: 19.8, neckWidthMm: 13.7, baseHeightMm: 8, neckHeightMm: 10, lengthMm: 30 },
+      M8: { slotMm: 10, baseWidthMm: 14.5, neckWidthMm: 9.5, baseHeightMm: 6, neckHeightMm: 6, lengthMm: 22 },
+      M10: { slotMm: 12, baseWidthMm: 17.5, neckWidthMm: 11.4, baseHeightMm: 7, neckHeightMm: 7, lengthMm: 26 },
+      M12: { slotMm: 14, baseWidthMm: 21.5, neckWidthMm: 13.4, baseHeightMm: 8, neckHeightMm: 8, lengthMm: 30 },
     },
   },
   'clamping-stud': {
     idPrefix: 'clamp-stud',
     kind: 'stud',
+    // DIN 6379 length series (a stocked subset); the envelope is the nominal
+    // thread diameter over that length.
     threads: { M8: {}, M10: {}, M12: {} },
     lengths: { M8: [63, 100], M10: [80, 125], M12: [100, 160] },
   },
   'flange-nut': {
     idPrefix: 'flange-nut',
     kind: 'flange-nut',
+    // DIN 6331: s (across flats), m (height), d1 (collar diameter), a (collar
+    // height). flangeDiameter/thickness carry d1/a.
     threads: {
-      M8: { acrossFlatsMm: 13, heightMm: 8, flangeDiameterMm: 18, flangeThicknessMm: 1.6 },
-      M10: { acrossFlatsMm: 16, heightMm: 10, flangeDiameterMm: 22, flangeThicknessMm: 2 },
-      M12: { acrossFlatsMm: 18, heightMm: 12, flangeDiameterMm: 26, flangeThicknessMm: 2.4 },
+      M8: { acrossFlatsMm: 13, heightMm: 12, flangeDiameterMm: 18, flangeThicknessMm: 3.5 },
+      M10: { acrossFlatsMm: 16, heightMm: 15, flangeDiameterMm: 22, flangeThicknessMm: 4 },
+      M12: { acrossFlatsMm: 18, heightMm: 18, flangeDiameterMm: 25, flangeThicknessMm: 4 },
     },
   },
   'strap-clamp': {

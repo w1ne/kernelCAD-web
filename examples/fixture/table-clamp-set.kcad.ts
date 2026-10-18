@@ -9,16 +9,18 @@ const tableT = 24;
 const slot = 12; // channel opening for M10 T-slot nuts
 const clampT = 12; // M10 strap clamp thickness
 const workH = 36; // level with the M10 step block's step-3 tread
-const studBottom = tableT - 9.6; // wing tops against the channel ceiling
+const studBottom = tableT - 7.6; // wing tops (DIN 508 k = 7) 0.6 below the surface
 const clampZ = tableT + workH;
 const spacing = 80;
 
-// Table section with one T-slot channel along X (clearances 0.4-0.6 mm).
+// Table section with one T-slot channel along X. The channel follows the
+// DIN 508 M10 nut plus clearance: 11.4 + 0.6 opening, 17.5 + 0.8 internal,
+// 7 + 0.6 opening depth, 7 + 0.4 internal depth.
 const table = box(400, 130, tableT, true)
   .translate(0, 0, tableT / 2)
   .subtract(
-    box(400, slot + 0.4, 9.6, true).translate(0, 0, tableT - 4.8),
-    box(400, 18.6, 7.6, true).translate(0, 0, tableT - 9.6 - 3.8),
+    box(400, 12, 7.6, true).translate(0, 0, tableT - 3.8),
+    box(400, 18.3, 7.4, true).translate(0, 0, tableT - 7.6 - 3.7),
   )
   .finish('steel');
 const work = box(50, 70, workH, true)

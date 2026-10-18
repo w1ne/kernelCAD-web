@@ -22,7 +22,7 @@ describe('clamp-set planner', () => {
     ]);
     const at = (role: string) => plan.members.find((member) => member.role === role)!.at;
     expect(at('t-slot-nut')).toEqual([0, 0, -0.6]);
-    expect(at('stud')[2]).toBeCloseTo(-9.6, 6);
+    expect(at('stud')[2]).toBeCloseTo(-7.6, 6); // 0.6 clearance + DIN 508 k = 7
     expect(at('strap-clamp')).toEqual([0, 0, 36]);
     expect(at('step-block')[0]).toBeCloseTo(60, 6);
     expect(at('flange-nut')).toEqual([0, 0, 48]);
@@ -59,11 +59,11 @@ describe('clamp set placement', () => {
       return { minZ: bounds.min[2], maxZ: bounds.max[2], minX: bounds.min[0], maxX: bounds.max[0] };
     };
     const nut = await span('t-slot-nut');
-    expect(nut.minZ).toBeCloseTo(-16.6, 6); // 16 mm tall envelope, top 0.6 below the surface
+    expect(nut.minZ).toBeCloseTo(-14.6, 6); // 14 mm tall envelope, top 0.6 below the surface
     expect(nut.maxZ).toBeCloseTo(-0.6, 6);
     const stud = await span('stud');
-    expect(stud.minZ).toBeCloseTo(-9.6, 6);
-    expect(stud.maxZ).toBeCloseTo(70.4, 6);
+    expect(stud.minZ).toBeCloseTo(-7.6, 6);
+    expect(stud.maxZ).toBeCloseTo(72.4, 6);
     const clamp = await span('strap-clamp');
     expect(clamp.minZ).toBeCloseTo(36, 6);
     expect(clamp.maxX).toBeCloseTo(77, 6);
