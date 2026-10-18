@@ -36,39 +36,65 @@ import { kernelCadEditorTypingsPlugin } from './scripts/editorTypings';
 const repoRoot = fileURLToPath(new URL('.', import.meta.url));
 
 /**
- * Strip the in-browser geometry worker bootstrap before Vite's worker
- * scanner sees it. The standalone Studio app uses
- * `new Worker(new URL('../../kernel/backends/occt/worker.ts',
- *   import.meta.url), { type: 'module' })`
- * which Vite eagerly bundles — emitting a ~15 MB worker chunk plus a
- * ~10 MB WASM blob into `dist/studio/`. The embed never reaches that
- * code path (geometry routes through `StudioConfig.backendUrl`), so we
- * transform the source to throw before the `new URL(...)` constructor
- * is ever scanned. Result: no worker chunk, no WASM in the embed lib.
+ * Strip the in-browser worker bootstraps before Vite's worker scanner
+ * sees them. Two workers would otherwise be eagerly bundled into
+ * `dist/studio/`:
  *
- * Targets the exact line in `src/shared/worker/geometryEngine.ts`. If
- * that line ever moves, the build still works (`new Worker(...)` would
- * survive) — the worst-case symptom is the giant assets coming back.
+ *   - The geometry worker: the standalone Studio app uses
+ *     `new Worker(new URL('../../kernel/backends/occt/worker.ts',
+ *       import.meta.url), { type: 'module' })`
+ *     which Vite eagerly bundles — emitting a ~15 MB worker chunk plus a
+ *     ~10 MB WASM blob into `dist/studio/`. The embed never reaches that
+ *     code path (geometry routes through `StudioConfig.backendUrl`), so we
+ *     transform the source to throw before the `new URL(...)` constructor
+ *     is ever scanned. Result: no worker chunk, no WASM in the embed lib.
+ *
+ *   - The browser kernel worker: the spawn in
+ *     `src/studio/kernel/kernelSingleton.ts`
+ *     (`new Worker(new URL('./studioKernelWorker.ts', import.meta.url),
+ *       { type: 'module' })`)
+ *     would emit an ~11 MB worker chunk. We replace the spawn expression
+ *     with a throwing stub — `never`, so the `Worker` return type holds —
+ *     and `browserKernelEnabled()` keeps the embed off that path anyway.
+ *
+ * Both transforms target exact files and patterns. If a pattern ever
+ * moves, the build still works (`new Worker(...)` would survive) — the
+ * worst-case symptom is the giant assets coming back.
  */
-function stripGeometryWorkerForEmbed(): Plugin {
-    const targetPath = 'src/shared/worker/geometryEngine.ts';
+export function stripEmbedWorkers(): Plugin {
+    const geometryWorkerPath = 'src/shared/worker/geometryEngine.ts';
+    const kernelWorkerPath = 'src/studio/kernel/kernelSingleton.ts';
     return {
-        name: 'kernelcad-strip-geometry-worker-for-embed',
+        name: 'kernelcad-strip-workers-for-embed',
         enforce: 'pre',
         transform(code, id) {
-            if (!id.endsWith(targetPath)) return null;
-            const replaced = code.replace(
-                /this\.worker\s*=\s*new Worker\(new URL\([^)]*worker\.ts[^)]*\)[^)]*\);?/,
-                "throw new Error('kernelCAD in-browser geometry worker is disabled in the embed library; route geometry through StudioConfig.backendUrl.');",
-            );
-            if (replaced === code) {
-                // Tell the developer the worker pattern moved — better to
-                // fail loudly than silently re-bundle ~25 MB of assets.
-                this.warn(
-                    `${targetPath}: expected worker bootstrap pattern not found; embed build will still include the geometry worker.`,
+            if (id.endsWith(geometryWorkerPath)) {
+                const replaced = code.replace(
+                    /this\.worker\s*=\s*new Worker\(new URL\([^)]*worker\.ts[^)]*\)[^)]*\);?/,
+                    "throw new Error('kernelCAD in-browser geometry worker is disabled in the embed library; route geometry through StudioConfig.backendUrl.');",
                 );
+                if (replaced === code) {
+                    // Tell the developer the worker pattern moved — better to
+                    // fail loudly than silently re-bundle ~25 MB of assets.
+                    this.warn(
+                        `${geometryWorkerPath}: expected worker bootstrap pattern not found; embed build will still include the geometry worker.`,
+                    );
+                }
+                return replaced;
             }
-            return replaced;
+            if (id.endsWith(kernelWorkerPath)) {
+                const replaced = code.replace(
+                    /new Worker\(new URL\('\.\/studioKernelWorker\.ts', import\.meta\.url\), \{ type: 'module' \}\)/,
+                    "(() => { throw new Error('browser kernel is not available in the embed build'); })()",
+                );
+                if (replaced === code) {
+                    this.warn(
+                        `${kernelWorkerPath}: expected kernel spawn pattern not found; embed build will still include the kernel worker.`,
+                    );
+                }
+                return replaced;
+            }
+            return null;
         },
     };
 }
@@ -92,7 +118,7 @@ function getGitCommitHashShort(): string {
 
 export default defineConfig({
     plugins: [
-        stripGeometryWorkerForEmbed(),
+        stripEmbedWorkers(),
         kernelCadEditorTypingsPlugin(),
         react(),
         dts({
