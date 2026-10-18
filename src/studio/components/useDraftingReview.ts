@@ -8,7 +8,7 @@ import type { PlacedLinearDimension } from '../../authoring/draftingSettings';
 import { drawingSheetCsv } from '../../kernel/export/drawing/drawingSheetCsv';
 import { svgSheetToDxf } from '../../kernel/export/drawing/svgSheetToDxf';
 import { svgSheetsToPdf } from '../../kernel/export/pdf/svgSheetToPdf';
-import { downloadBlob, exportErrorText, exportViaServer, isExportAbort, previewDrawingViaServer, type DrawingPreviewResult } from '../exportViaServer';
+import { downloadBlob, exportErrorText, exportViaServer, isExportAbort, previewDrawingViaServer, type DrawingPreviewResult, type ExportProgress } from '../exportViaServer';
 import { injectEdgeDimensions } from './edgeDimensionSheet';
 import { useFunctionalDrawingReview } from './useFunctionalDrawingReview';
 import { useExportTask } from '../hooks/useExportTask';
@@ -68,6 +68,10 @@ function useDrawingPreview(code: string, options: StudioDrawingOptions, setError
   const [previewRequestId, setPreviewRequestId] = useState<number | null>(null);
   const [jobRevision, setJobRevision] = useState<number | null>(null);
   const [previewScopeRevision, setPreviewScopeRevision] = useState<number | null>(null);
+  // Live generation status for the preview pane: which phase the request is
+  // in, when the current run started (the pane ticks elapsed seconds off it),
+  // and how long a busy-server retry will wait. Cleared when the run ends.
+  const [progress, setProgress] = useState<(ExportProgress & { startedAt: number }) | null>(null);
   const scope = JSON.stringify([code, criteria]);
   // Source/criteria edits invalidate decision prompts even when values revert.
   // Decision-only edits leave this epoch intact so records can be batched.
@@ -89,14 +93,18 @@ function useDrawingPreview(code: string, options: StudioDrawingOptions, setError
     const abort = new AbortController(); controller.current = abort;
     const id = ++generation.current; setRequestId(id);
     setJobRevision(epoch.revision); setError(null);
+    setProgress({ phase: 'running', startedAt: Date.now() });
     try {
-      const result = await previewDrawingViaServer(code, options, { signal: abort.signal });
+      const result = await previewDrawingViaServer(code, options, {
+        signal: abort.signal,
+        onProgress: (p) => setProgress((prev) => ({ ...p, startedAt: prev?.startedAt ?? Date.now() })),
+      });
       if (id !== generation.current || abort.signal.aborted) return;
       setPreview(result); setPreviewRevision(epoch.revision); setPreviewRequestId(id); setPreviewScopeRevision(scopeEpoch.revision);
     } catch (err) { if (id === generation.current && !isExportAbort(err)) setError(exportErrorText(err).message); }
-    finally { if (id === generation.current) setJobRevision(null); }
+    finally { if (id === generation.current) { setJobRevision(null); setProgress(null); } }
   };
-  return { preview, previewUrl, current, busy, generatePreview, revision: `${epoch.revision}:${requestId}`, matchesCriteria: scopeEpoch.key === scope && previewScopeRevision === scopeEpoch.revision };
+  return { preview, previewUrl, current, busy, progress, generatePreview, revision: `${epoch.revision}:${requestId}`, matchesCriteria: scopeEpoch.key === scope && previewScopeRevision === scopeEpoch.revision };
 }
 
 function useProfileEditor(state: ReturnType<typeof useChoices>, setError: (error: string | null) => void) {
