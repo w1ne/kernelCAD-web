@@ -50,6 +50,13 @@ export function makePartsLib(ctx: ApiContext): Pick<KernelCadApi, 'lib'> {
           { session, ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}) },
           request,
         ),
+      // Hole detection and seat cuts run on OCCT alone, so `insert` is
+      // browser-safe; the dynamic import keeps the lowerer out of the static
+      // graph of every script API consumer.
+      insert: async (shape, request) => {
+        const { insertFasteners } = await import('./parts/holeInsert');
+        return insertFasteners({ session }, shape, request);
+      },
       fixture: createFixtureParts({
         session,
         ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}),

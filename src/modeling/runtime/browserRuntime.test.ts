@@ -173,11 +173,37 @@ describe('browser runtime — node-only features fail LOUDLY', () => {
     expect(result.returnValue).toBeDefined();
   });
 
+  it('lib.stack plans a stack without a filesystem', async () => {
+    const result = await runScriptInBrowser({
+      code: `const s = await lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
+             return s.screw;`,
+    });
+    expect(result.returnValue).toBeDefined();
+  });
+
   it('lib.fixture builds a T-slot nut envelope without a filesystem', async () => {
     const result = await runScriptInBrowser({
       code: `return await lib.fixture.tSlotNut({ thread: 'M10' });`,
     });
     expect(result.returnValue).toBeDefined();
+  });
+
+  it('lib.insert reads holes, cuts seats and places stacks without a filesystem', async () => {
+    const result = await runScriptInBrowser({
+      code: `const plate = box(40, 40, 8, true).holes('top', {
+               positions: [{ u: -10, v: 0 }, { u: 10, v: 0 }],
+               diameter: 5.5,
+               depth: 'through',
+             });
+             const fitted = await lib.insert(plate, {
+               diameterMm: 5.5,
+               family: 'flat-head-countersunk',
+               mode: 'bolt',
+             });
+             return fitted.holes[0].screw;`,
+    });
+    expect(result.returnValue).toBeDefined();
+    expect(result.records.length).toBeGreaterThan(3);
   });
 
   it('lib.fixture.clampStud rejects an unstocked length without a filesystem', async () => {

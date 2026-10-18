@@ -35,6 +35,7 @@ import type { FetchPartOpts } from './parts/fetchPart';
 import type { FindPartOpts, FindPartResult } from './parts/findPart';
 import type { StandardParts } from './parts/standardParts';
 import type { PartRequest, StackRequest } from './parts/familyTable';
+import type { InsertRequest, InsertResult } from './parts/holeInsert';
 import type { FixtureParts } from './parts/fixtureParts';
 import type { PlacedStack } from './parts/placePart';
 import type { FromDXFOptions, FromSVGOptions } from './parts/fromVectorFormats';
@@ -130,6 +131,13 @@ export interface PartsLib {
   part(request: PartRequest): Promise<Shape>;
   /** Socket head, washer under the head, and for mode 'bolt' a washer and nut on the far side. */
   stack(request: StackRequest): Promise<PlacedStack>;
+  /**
+   * Hole-driven fastening. Reads the bores that already exist in `shape`,
+   * sizes the thread from the hole diameter (ISO 273 clearance), covers every
+   * similar hole (patterns included) and cuts the seat the family needs.
+   * Returns the shape with seats applied plus one placed stack per hole.
+   */
+  insert(shape: Shape, request: InsertRequest): Promise<InsertResult>;
   /** Machining-fixture hardware: T-slot nuts, clamping studs, flange nuts, strap
    *  clamps and step blocks, keyed by the thread their clamping parts use. */
   fixture: FixtureParts;

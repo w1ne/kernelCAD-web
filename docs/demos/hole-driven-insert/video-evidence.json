@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-10-18T00:37:23.385975+00:00",
+  "video": "demo.mp4",
+  "videoSha256": "8da4387da169787c2cd0641a968fa33c50fabd18682882b2f5b68d270772d827",
+  "durationSec": 23.0,
+  "canvas": "1920x1080",
+  "slides": [
+    {
+      "image": null,
+      "durationSec": 4.0
+    },
+    {
+      "image": "insert.hero.png",
+      "durationSec": 5.0
+    },
+    {
+      "image": "insert-detail.png",
+      "durationSec": 5.0
+    },
+    {
+      "image": "insert-front.pose-0-0.png",
+      "durationSec": 5.0
+    },
+    {
+      "image": null,
+      "durationSec": 4.0
+    }
+  ],
+  "sourceModels": {
+    "hole-driven-insert.kcad.ts": "6ab63c5b1ed13ff3441183ca77239c370749a508ed6b466c91858b857a0070a2"
+  },
+  "inputSha256": {
+    "insert.hero.png": "01f6c98871239fc5459d812a99334bddc65091a1a885365f0c126cafabf6b20c",
+    "insert-detail.png": "521c57551bc72f1392f1d4dc8da5550a1189f802ebd8504656111a943a4540fc",
+    "insert-front.pose-0-0.png": "761aebb9110dd1b7773658367903de95ce7e3791c89cedb9f922af2bc94f7a68"
+  },
+  "invocations": [
+    "npx tsx src/agent/cli/index.ts render examples/parts/hole-driven-insert.kcad.ts --preset publish -o docs/demos/hole-driven-insert/insert.hero.png",
+    "npx tsx src/agent/cli/index.ts render examples/parts/hole-driven-insert.kcad.ts --preset publish --width 2048 --height 1536 --pose 0,0 -o docs/demos/hole-driven-insert/insert-front.png",
+    "convert insert.hero.png -crop 760x700+540+260 +repage insert-detail.png"
+  ],
+  "provenance": "Annotated still sequence composed from local kernelcad render --preset publish outputs of the committed example source. Not a screen recording, turntable, deployed platform capture, physical hardware or strength test."
+}

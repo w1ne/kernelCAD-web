@@ -577,31 +577,72 @@ function positiveGrip(gripMm: number): number {
   });
 }
 
-/** Screw, washer under the head, and for mode 'bolt' a washer and nut on the far side. */
+function requireScrewFamily(family: string): ScrewFamily {
+  const spec = requireFamily(family);
+  if (spec.kind !== 'screw') {
+    invalidArgs({
+      api: 'lib.stack({ thread, gripMm, mode })',
+      path: 'family',
+      got: family,
+      requires: `a stocked screw family for the stack: ${Object.entries(FAMILIES)
+        .filter(([, candidate]) => candidate.kind === 'screw')
+        .map(([name]) => name)
+        .join(', ')}`,
+      example: STACK_EXAMPLE,
+    });
+  }
+  return spec;
+}
+
+interface StackWear {
+  headWasher?: ResolvedPart;
+  tailWasher?: ResolvedPart;
+  nut?: ResolvedPart;
+}
+
+/** The washers and nut a stack mode adds; a flat head takes no head washer
+ *  because it seats inside its countersink. */
+function stackWear(family: string, mode: 'screw' | 'bolt', thread: string): StackWear {
+  if (mode !== 'bolt') return {};
+  return {
+    ...(family !== 'flat-head-countersunk'
+      ? { headWasher: resolvePart({ family: 'flat-washer', thread }) }
+      : {}),
+    tailWasher: resolvePart({ family: 'flat-washer', thread }),
+    nut: resolvePart({ family: 'hex-nut', thread }),
+  };
+}
+
+function stackMembersFor(wear: StackWear, screw: ResolvedPart, gripMm: number): StackMemberPlan[] {
+  const headT = wear.headWasher?.headHeightMm ?? 0;
+  const tailT = wear.tailWasher?.headHeightMm ?? 0;
+  const nutT = wear.nut?.headHeightMm ?? 0;
+  const members: StackMemberPlan[] = [];
+  if (wear.headWasher) members.push({ role: 'head-washer', part: wear.headWasher, offsetZ: 0 });
+  members.push({ role: 'screw', part: screw, offsetZ: headT });
+  if (wear.tailWasher && wear.nut) {
+    members.push({ role: 'tail-washer', part: wear.tailWasher, offsetZ: -(gripMm + tailT) });
+    members.push({ role: 'nut', part: wear.nut, offsetZ: -(gripMm + tailT + nutT) });
+  }
+  return members;
+}
+
+/** Screw, washer under the head, and for mode 'bolt' a washer and nut on the far side.
+ *  Socket-head is the `lib.stack` front door; `planStackFor` serves any stocked
+ *  screw family (a flat head takes no washer under its countersunk head). */
 export function planStack(request: StackRequest): StackPlan {
+  return planStackFor('socket-head-cap-screw', request);
+}
+
+export function planStackFor(family: string, request: StackRequest): StackPlan {
   const mode = stackMode(request.mode);
   const gripMm = positiveGrip(request.gripMm);
-  const washer = mode === 'bolt'
-    ? resolvePart({ family: 'flat-washer', thread: request.thread })
-    : undefined;
-  const nut = mode === 'bolt'
-    ? resolvePart({ family: 'hex-nut', thread: request.thread })
-    : undefined;
-  const washerT = washer?.headHeightMm ?? 0;
-  const nutT = nut?.headHeightMm ?? 0;
-  const needed = gripMm + (mode === 'bolt' ? washerT + nutT : 0);
-  const lengthMm = shortestAtLeast(SHCS_LENGTHS, needed, `socket-head-cap-screw ${request.thread}`);
-  const screw = resolvePart({
-    family: 'socket-head-cap-screw',
-    thread: request.thread,
-    lengthMm,
-  });
-  const members: StackMemberPlan[] = [];
-  if (washer) members.push({ role: 'head-washer', part: washer, offsetZ: 0 });
-  members.push({ role: 'screw', part: screw, offsetZ: washerT });
-  if (washer && nut) {
-    members.push({ role: 'tail-washer', part: washer, offsetZ: -(gripMm + washerT) });
-    members.push({ role: 'nut', part: nut, offsetZ: -(gripMm + washerT + nutT) });
-  }
-  return { lengthMm, members };
+  const spec = requireScrewFamily(family);
+  const wear = stackWear(family, mode, request.thread);
+  const tailT = wear.tailWasher?.headHeightMm ?? 0;
+  const nutT = wear.nut?.headHeightMm ?? 0;
+  const needed = gripMm + (wear.tailWasher ? tailT + nutT : 0);
+  const lengthMm = shortestAtLeast(spec.lengths, needed, `${family} ${request.thread}`);
+  const screw = resolvePart({ family, thread: request.thread, lengthMm });
+  return { lengthMm, members: stackMembersFor(wear, screw, gripMm) };
 }
