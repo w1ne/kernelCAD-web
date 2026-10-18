@@ -61,13 +61,40 @@ function useChoices(code: string, settings: DraftingSettings | undefined, onChan
   return { choices, options, profile, update, editProfile };
 }
 
+// Last successful preview per (source, options), kept for the life of the
+// studio session. Closing the dialog unmounts the hook, and regenerating a
+// sheet costs tens of seconds on a large assembly — reopening Drawing
+// settings now shows the sheet it already rendered instead of a blank pane.
+// Bounded to a few entries; the server caches the render itself, this only
+// saves the round trip and the click.
+const lastPreviews = new Map<string, DrawingPreviewResult>();
+const LAST_PREVIEWS_MAX = 4;
+
+/** Test hook: the cache is module-global. */
+export function __resetDraftingPreviewCacheForTests(): void {
+  lastPreviews.clear();
+}
+
+function rememberPreview(key: string, preview: DrawingPreviewResult): void {
+  lastPreviews.delete(key);
+  lastPreviews.set(key, preview);
+  while (lastPreviews.size > LAST_PREVIEWS_MAX) {
+    const oldest = lastPreviews.keys().next().value as string;
+    lastPreviews.delete(oldest);
+  }
+}
+
 function useDrawingPreview(code: string, options: StudioDrawingOptions, setError: (error: string | null) => void, criteria: string) {
-  const [preview, setPreview] = useState<DrawingPreviewResult | null>(null);
-  const [previewRevision, setPreviewRevision] = useState<number | null>(null);
+  const currentKey = JSON.stringify({ code, options });
+  const remembered = lastPreviews.get(currentKey) ?? null;
+  const [preview, setPreview] = useState<DrawingPreviewResult | null>(remembered);
+  // A remembered sheet is already the current revision: mark it as such so
+  // the pane reads "Preview up to date" without a regenerate.
+  const [previewRevision, setPreviewRevision] = useState<number | null>(remembered ? 0 : null);
   const [requestId, setRequestId] = useState(0);
-  const [previewRequestId, setPreviewRequestId] = useState<number | null>(null);
+  const [previewRequestId, setPreviewRequestId] = useState<number | null>(remembered ? 0 : null);
   const [jobRevision, setJobRevision] = useState<number | null>(null);
-  const [previewScopeRevision, setPreviewScopeRevision] = useState<number | null>(null);
+  const [previewScopeRevision, setPreviewScopeRevision] = useState<number | null>(remembered ? 0 : null);
   // Live generation status for the preview pane: which phase the request is
   // in, when the current run started (the pane ticks elapsed seconds off it),
   // and how long a busy-server retry will wait. Cleared when the run ends.
@@ -79,7 +106,6 @@ function useDrawingPreview(code: string, options: StudioDrawingOptions, setError
   if (scopeEpoch.key !== scope) setScopeEpoch({ key: scope, revision: scopeEpoch.revision + 1 });
   const controller = useRef<AbortController | null>(null);
   const generation = useRef(0);
-  const currentKey = JSON.stringify({ code, options });
   const [epoch, setEpoch] = useState({ key: currentKey, revision: 0 });
   if (epoch.key !== currentKey) setEpoch({ key: currentKey, revision: epoch.revision + 1 });
   const busy = jobRevision === epoch.revision;
@@ -101,6 +127,7 @@ function useDrawingPreview(code: string, options: StudioDrawingOptions, setError
       });
       if (id !== generation.current || abort.signal.aborted) return;
       setPreview(result); setPreviewRevision(epoch.revision); setPreviewRequestId(id); setPreviewScopeRevision(scopeEpoch.revision);
+      rememberPreview(currentKey, result);
     } catch (err) { if (id === generation.current && !isExportAbort(err)) setError(exportErrorText(err).message); }
     finally { if (id === generation.current) { setJobRevision(null); setProgress(null); } }
   };
