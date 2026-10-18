@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { TIERS } from '../../src/funnel/lib/pricingTiers';
+import { TIERS } from '../lib/pricing/pricingTiers';
 import { INDEX_HTML_PATH, injectPricing, renderPricingSection } from './build-pricing';
 
 const ISLAND_SRC = path.resolve(

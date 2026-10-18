@@ -28,8 +28,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "//include": "site/island is browser code (docs Run button) and belongs under the same DOM/erasableSyntaxOnly rules as src; without it, `tsc -b` never sees it.",
-  "include": ["src", "site/island"],
+  "//include": "site/island is browser code (docs Run button) and belongs under the same DOM/erasableSyntaxOnly rules as src; without it, `tsc -b` never sees it. site/lib is site-owned browser code (the pricing components the landing SSR's), and the build-pricing tsx run only applies this config's react-jsx transform to files it covers.",
+  "include": ["src", "site/island", "site/lib"],
   "exclude": [
     "src/**/*.test.*",
     "src/**/*.spec.*",

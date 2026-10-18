@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import type { BillingPeriod, PaidTier } from '../../src/funnel/lib/apiClient';
-import { PricingSection } from '../../src/funnel/components/PricingSection';
+import type { BillingPeriod, PaidTier } from '../lib/pricing/types';
+import { PricingSection } from '../lib/pricing/PricingSection';
 
 /** Where the landing routes buyers — straight into app checkout (auto-fires). */
 const APP_BASE = 'https://app.kernelcad.com';
