@@ -14,13 +14,23 @@ import {
 } from '../../scriptSource';
 import { featureMeshesToGeometries } from './types';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
+import type { ExecutionResult } from '../../../shared/worker/geometryEngine';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 
 /** Applies a stateless mesh-endpoint payload to context state for the
  *  explicit `executeGeometry` (Validate) action. Unlike the auto-run loop's
  *  `applyAutoRunPayload`, this path has no empty-build guard — it mirrors
- *  `executeGeometry`'s original inline apply blocks exactly. */
-function applyExecuteGeometryPayload(deps: ExecutionApplyDeps, revision: number, executionCount: number, payload: BackendMeshPayload): void {
+ *  `executeGeometry`'s original inline apply blocks exactly.
+ *  `provisional: true` (a coarse first paint that the display pass will
+ *  replace) skips the success bookkeeping: the run is recorded once, when the
+ *  display payload lands. */
+function applyExecuteGeometryPayload(
+    deps: ExecutionApplyDeps,
+    revision: number,
+    executionCount: number,
+    payload: BackendMeshPayload,
+    provisional = false,
+): void {
     deps.setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
     deps.setGeometryTransformOverrides({});
     deps.setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
@@ -30,6 +40,70 @@ function applyExecuteGeometryPayload(deps: ExecutionApplyDeps, revision: number,
     deps.setSketchesGeometries([]);
     deps.setPreviewGeometries([]);
     deps.setError(null);
+    if (!provisional) {
+        deps.setLastSuccessfulRevision(revision);
+        deps.pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+    }
+}
+
+/** Geometry state of one worker execution; the record/revision bookkeeping
+ *  stays with the caller (the preview frame is provisional). */
+function applyWorkerGeometry(
+    deps: ExecutionApplyDeps,
+    result: ExecutionResult,
+    codeToExecute: string,
+): void {
+    deps.setGeometries(result.geometries);
+    deps.setMeshDimensions(null);
+    deps.setGeometryTransformOverrides({});
+    deps.setSketchesGeometries(remapSketchNames(result.sketches, codeToExecute));
+    deps.setError(null);
+}
+
+/** Dev-kernel two-tier Validate: coarse preview first, display pass after —
+ *  the same shape as the auto-run loop's paint, without the debounce. */
+async function runDevKernelExecute(
+    deps: ExecutionApplyDeps,
+    codeToExecute: string,
+    revision: number,
+    executionCount: number,
+): Promise<void> {
+    const coarse = await meshSourceDev(codeToExecute, undefined, { quality: 'coarse' });
+    if (revision !== deps.mainRevisionRef.current) {
+        deps.setStaleMainResponsesDropped((prev) => prev + 1);
+        deps.pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
+        return;
+    }
+    applyExecuteGeometryPayload(deps, revision, executionCount, coarse, true);
+    const payload = await meshSourceDev(codeToExecute);
+    if (revision !== deps.mainRevisionRef.current) {
+        deps.setStaleMainResponsesDropped((prev) => prev + 1);
+        deps.pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
+        return;
+    }
+    applyExecuteGeometryPayload(deps, revision, executionCount, payload);
+}
+
+/** Worker two-tier Validate: one EXECUTE, coarse preview frame first. */
+async function runWorkerExecute(
+    deps: ExecutionApplyDeps,
+    codeToExecute: string,
+    revision: number,
+    executionCount: number,
+): Promise<void> {
+    const result = await deps.engine.executeCode(codeToExecute, {
+        quality: 'coarse',
+        onPreview: (preview) => {
+            if (revision !== deps.mainRevisionRef.current) return;
+            applyWorkerGeometry(deps, preview, codeToExecute);
+        },
+    });
+    if (revision !== deps.mainRevisionRef.current) {
+        deps.setStaleMainResponsesDropped((prev) => prev + 1);
+        deps.pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
+        return;
+    }
+    applyWorkerGeometry(deps, result, codeToExecute);
     deps.setLastSuccessfulRevision(revision);
     deps.pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
 }
@@ -84,27 +158,9 @@ async function runKernelOrWorkerExecuteGeometry(
     deps.setIsComputing(true);
     try {
         if (useDevKernel) {
-            const payload = await meshSourceDev(codeToExecute);
-            if (revision !== deps.mainRevisionRef.current) {
-                deps.setStaleMainResponsesDropped((prev) => prev + 1);
-                deps.pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
-                return;
-            }
-            applyExecuteGeometryPayload(deps, revision, executionCount, payload);
+            await runDevKernelExecute(deps, codeToExecute, revision, executionCount);
         } else {
-            const result = await deps.engine.executeCode(codeToExecute);
-            if (revision !== deps.mainRevisionRef.current) {
-                deps.setStaleMainResponsesDropped((prev) => prev + 1);
-                deps.pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
-                return;
-            }
-            deps.setGeometries(result.geometries);
-            deps.setMeshDimensions(null);
-            deps.setGeometryTransformOverrides({});
-            deps.setSketchesGeometries(remapSketchNames(result.sketches, codeToExecute));
-            deps.setError(null);
-            deps.setLastSuccessfulRevision(revision);
-            deps.pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+            await runWorkerExecute(deps, codeToExecute, revision, executionCount);
         }
     } catch (err: unknown) {
         if (revision !== deps.mainRevisionRef.current) {

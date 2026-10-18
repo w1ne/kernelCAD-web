@@ -1125,7 +1125,18 @@ and posts an `EXECUTE_PREVIEW` frame with the coarse tessellation before the
 display-quality `SUCCESS`, so its heavy geometry work is not paid twice.
 Measured on an r=20 sphere: display 48 ms / 2,556 triangles vs coarse 7 ms /
 306; a filleted box's coarse entry refines 628 → 1,380 triangles with zero
-lowering.
+lowering. Param sliders (SSE relower) and Validate use the same two-tier paint;
+the initial page load keeps its single request by design.
+
+**Export-grade tessellation stays off every interactive path.** The Studio
+mesh route renders `meshShape` output, the live review measures BREP booleans,
+and the coarse/display passes above use the edit-time presets.
+`meshShapeForExport` (relative deflection, vertex weld, crack stitch — ~1.2 s
+for an r=20 sphere, with its triangulation left stamped on the shape's faces in
+the WASM heap) runs only for explicit exports (STL/GLB/3MF/USD) and analysis
+tools (DFM, geometry quality, assembly-path checks). A new pass added to the
+edit path must take edit-time `meshShape` output or BREP booleans, not the
+export mesher.
 
 ### 9.3 Operation Batching
 
