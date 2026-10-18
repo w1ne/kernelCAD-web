@@ -51,7 +51,7 @@ export function buildHandoffs(rows: readonly HandoffBomRow[]): Handoffs {
 /** FastAdd pre-fill URL (official DigiKey bulk cart builder). Only
  *  meaningful with DigiKey part numbers; returns null otherwise so the
  *  caller falls back to the copy-list. */
-export function digikeyFastAddUrl(items: readonly { partNumber: string; quantity: number }[]): string | null {
+export function digikeyFastAddUrl(items: readonly HandoffItem[]): string | null {
   if (items.length === 0 || !items.every((i) => /-ND$/i.test(i.partNumber))) return null;
   const params = new URLSearchParams();
   items.forEach((item, n) => {
