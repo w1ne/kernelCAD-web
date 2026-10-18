@@ -28,6 +28,20 @@ Evidence:
   60 mm, flange nut at 72–82 mm), and the scope statement.
 - `video-evidence.json` — input image hashes, delivered video hash, slide
   durations and the exact render invocations.
+- `viewer-evidence.json` — the GLB the inline viewers consume (12 named
+  parts, one material per part) exported through the same CLI path as the
+  hosted `export` tool.
+
+## Hosted apps (Claude, ChatGPT, Studio)
+
+`lib.fixture` needs no filesystem: each call resolves the catalog id and
+falls back to the in-memory envelope, with a STEP loaded when the catalog is
+on disk. `src/modeling/runtime/browserRuntime.test.ts` covers the
+browser-shaped runtime without a host filesystem, the same runtime the
+hosted `evaluate_script` path uses, including the refusal of an unstocked
+stud length. `viewer-evidence.json` records the GLB payload for the inline
+viewer. The parts skill teaches Claude and ChatGPT agents the five calls and
+their connectors.
 
 Scope: nominal envelope solids from the stock table (slot/thread pairing
 follows common machine-table practice; check the supplier drawing before

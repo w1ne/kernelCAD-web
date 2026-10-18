@@ -173,6 +173,21 @@ describe('browser runtime — node-only features fail LOUDLY', () => {
     expect(result.returnValue).toBeDefined();
   });
 
+  it('lib.fixture builds a T-slot nut envelope without a filesystem', async () => {
+    const result = await runScriptInBrowser({
+      code: `return await lib.fixture.tSlotNut({ thread: 'M10' });`,
+    });
+    expect(result.returnValue).toBeDefined();
+  });
+
+  it('lib.fixture.clampStud rejects an unstocked length without a filesystem', async () => {
+    await expect(
+      runScriptInBrowser({
+        code: `return await lib.fixture.clampStud({ thread: 'M10', lengthMm: 90 });`,
+      }),
+    ).rejects.toThrow(/stocked length/);
+  });
+
   it('lib.standard.* fails the same way', async () => {
     await expect(
       runScriptInBrowser({ code: `return await lib.standard.boltSHCS({ thread: 'M3', lengthMm: 10 });` }),
