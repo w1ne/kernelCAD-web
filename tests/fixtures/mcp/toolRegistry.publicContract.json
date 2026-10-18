@@ -9301,10 +9301,18 @@
   },
   {
     "name": "fab_pack",
-    "description": "Use this when the user wants to get a part made: packages the fabrication files into one directory plus a zip, and returns links to public instant-quote pages. Pass { file | code } and output_dir; optional name (default 'part'), formats (default step, stl, 3mf, pdf-drawing, bom-csv; add 'dxf' for flat or sheet parts), and processes ('3d-print' | 'cnc' | 'sheet-cut') to filter the links. Each file is written by the export tool, so its gates apply; a format that fails is reported in files[] and the rest still ship. Also writes manifest.json and README.txt. quote_links lists JLC3DP, JLCCNC, PCBWay, Xometry, SendCutSend and Craftcloud with the pack file to upload to each. These are plain web pages: nothing is uploaded or ordered. The user opens the link and uploads the file. Run dfm_review first if you have not.",
+    "description": "Use this when the user wants to get a part made: packages the fabrication files into one directory plus a zip, and returns links to public instant-quote pages. Pass { file | code } and output_dir; optional scope ('part', default — one script's files; 'bom' — the whole assembly's BOM: per-part single-body files, per-part drawings, bom.csv/json and vendor handoff texts), name (default 'part'), formats (default step, stl, 3mf, pdf-drawing, bom-csv; add 'dxf' for flat or sheet parts), and processes ('3d-print' | 'cnc' | 'sheet-cut') to filter the links (bom: also narrows which fabricated rows are packed). Each file is written by the export tool, so its gates apply; a format that fails is reported in files[] and the rest still ship. Also writes manifest.json and README.txt. quote_links lists JLC3DP, JLCCNC, PCBWay, Xometry, SendCutSend and Craftcloud with the pack file to upload to each. One body per file: multi-body files are rejected by every shop. DXF is written only for flat or sheet-metal parts. The McMaster handoff text carries part numbers only, because McMaster quantities are packs and pack sizes are not in the catalog yet. These are plain web pages: nothing is uploaded or ordered. The user opens the link and uploads the file. Run dfm_review first if you have not.",
     "inputSchema": {
       "type": "object",
       "properties": {
+        "scope": {
+          "type": "string",
+          "enum": [
+            "part",
+            "bom"
+          ],
+          "description": "Default 'part' (a single-part pack). 'bom' packs the whole assembly's BOM: per-part single-body files, per-part drawings, bom.csv/json, vendor handoff texts, and per-process quote links."
+        },
         "file": {
           "type": "string",
           "description": "Path to a .kcad.ts script file."
@@ -9363,14 +9371,14 @@
       "properties": {
         "ok": {
           "type": "boolean",
-          "description": "True when every requested file was exported."
+          "description": "True when every requested file was exported. bom scope: true when the pack has entries."
         },
         "output_dir": {
           "type": "string"
         },
         "zip_path": {
           "type": "string",
-          "description": "Zip holding every written file, manifest.json and README.txt."
+          "description": "Zip holding every written file, manifest.json and README.txt. bom scope: '<name>-order-pack.zip' with the per-part files, BOM, handoffs, manifest and README."
         },
         "files": {
           "type": "array",
@@ -9378,7 +9386,7 @@
             "type": "object",
             "additionalProperties": true
           },
-          "description": "{ format, ok, path?, byte_count?, error? } per requested format."
+          "description": "{ format, ok, path?, byte_count?, error? } per requested format. bom scope: one { format: \"order-pack\", ok, path, byte_count, part_files } entry for the zip, part_files listing the per-part entry paths."
         },
         "quote_links": {
           "type": "array",
@@ -9386,10 +9394,11 @@
             "type": "object",
             "additionalProperties": true
           },
-          "description": "{ service, processes, url, accepts, upload_file? }: public instant-quote pages; nothing is uploaded."
+          "description": "{ service, processes, url, accepts, upload_file? }: public instant-quote pages; nothing is uploaded. bom scope: one link per service whose processes intersect the packed rows, upload_file naming an accepted part file when one was written."
         },
         "note": {
-          "type": "string"
+          "type": "string",
+          "description": "Plain-language summary; bom scope covers the pack contents, the public upload pages, and a note count when the manifest carries notes."
         },
         "diagnostics": {
           "type": "array",

@@ -26,7 +26,8 @@ import { buildVendorLink, referralDisclosure } from '../../../shared/links/refer
 import { FAB_PROCESSES, type FabPackFormat, type FabProcess } from '../../../shared/fab';
 export type { FabPackFormat, FabProcess } from '../../../shared/fab';
 import { FAB_SERVICES, type FabService } from '../../../kernel/export/order/fabServices';
-export { FAB_SERVICES, servicesForProcess } from '../../../kernel/export/order/fabServices';
+import { fabPackBomTool } from './fabPackBom';
+export { FAB_SERVICES } from '../../../kernel/export/order/fabServices';
 export type { FabService } from '../../../kernel/export/order/fabServices';
 
 export const FAB_PACK_DEFAULT_FORMATS: readonly FabPackFormat[] = ['step', 'stl', '3mf', 'pdf-drawing', 'bom-csv'];
@@ -36,22 +37,27 @@ const EXT: Record<FabPackFormat, string> = {
 };
 
 export interface FabPackInput {
+  /** Pack scope: 'part' (default) packs one script's files; 'bom' packs the
+   *  whole assembly's order pack (per-part files, BOM, handoffs, zip). */
+  scope?: 'part' | 'bom';
   file?: string;
   code?: string;
   /** Directory the pack is written into (created if missing). */
   output_dir: string;
-  /** Base file name, default 'part'. */
+  /** Base file name, default 'part'. bom scope: the zip file name. */
   name?: string;
-  /** Files to include. Default step, stl, 3mf, pdf-drawing, bom-csv. Add 'dxf' for flat / sheet parts. */
+  /** Files to include (part scope). Default step, stl, 3mf, pdf-drawing, bom-csv. Add 'dxf' for flat / sheet parts. */
   formats?: FabPackFormat[];
-  /** Filter the quote links to these processes. Default: all. */
+  /** Only return quote links for these processes. bom scope: also narrows which fabricated rows are packed. Default: all. */
   processes?: FabProcess[];
 }
 
 export interface FabPackFile {
-  format: FabPackFormat;
+  /** Requested single-part format; 'order-pack' for the bom scope's zip entry. */
+  format: FabPackFormat | 'order-pack';
   path?: string;
-  /** Companion files the export wrote next to `path` (per-part DXFs under parts/). */
+  /** Companion files the export wrote next to `path` (per-part DXFs under
+   *  parts/). bom scope: every per-part entry path inside the zip. */
   part_files?: string[];
   byte_count?: number;
   ok: boolean;
@@ -146,6 +152,9 @@ function isProcessList(v: unknown): v is FabProcess[] {
 
 /** Validate the call; returns the resolved output directory or an error message. */
 function validateInput(input: FabPackInput): { dir: string } | string {
+  // 'bom' never reaches here (dispatched before the single-part path); an
+  // unknown scope is a caller bug, not a part pack.
+  if (input.scope !== undefined && input.scope !== 'part' && input.scope !== 'bom') return "scope must be 'part' or 'bom'.";
   if (input.file === undefined && input.code === undefined) return 'Provide { file } or { code }.';
   if (typeof input.output_dir !== 'string' || input.output_dir.length === 0) return 'Required: output_dir';
   const dirCheck = validateOutputPath(input.output_dir);
@@ -266,6 +275,7 @@ async function writePack(dir: string, name: string, files: readonly FabPackFile[
 }
 
 export async function fabPackTool(input: FabPackInput): Promise<FabPackOutput> {
+  if (input.scope === 'bom') return fabPackBomTool(input);
   const checked = validateInput(input);
   if (typeof checked === 'string') return fail(checked);
   const { dir } = checked;
