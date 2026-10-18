@@ -25,7 +25,7 @@ export type { RenderView };
 // `page.evaluate(...)` callbacks execute inside the browser, where `window`
 // is the page's global. The CLI tsconfig (lib: ES2022 only, no DOM) doesn't
 // know that, so declare a narrow shim here. The full demo-player API lives
-// in src/components/demoPlayer/DemoPlayerPage.tsx (`DemoPlayerWindow`),
+// in src/player/DemoPlayerPage.tsx (`DemoPlayerWindow`),
 // which the CLI build deliberately excludes.
 declare const window: {
   __demoPlayer?: {

@@ -115,7 +115,7 @@ export default defineConfig({
                 'src/studio/routeTree.gen.ts',
                 'src/studio/devlab/**',
                 'src/studio/main.tsx',
-                'src/studio/headless-player/**',
+                'src/player/headless-player/**',
             ],
         }),
     ],
