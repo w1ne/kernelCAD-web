@@ -11,7 +11,7 @@ import { closeMcpViewer } from '../liveViewer';
 let dist: string;
 beforeAll(async () => {
   dist = await mkdtemp(join(tmpdir(), 'kcad-eval-viewer-'));
-  await writeFile(join(dist, 'index.html'), '<html>Studio</html>');
+  await writeFile(join(dist, 'index.html'), '<html>Player</html>');
   vi.stubEnv('KERNELCAD_VIEWER_DIST', dist);
 });
 afterAll(async () => { await closeMcpViewer(); vi.unstubAllEnvs(); await rm(dist, { recursive: true, force: true }); });
@@ -60,7 +60,7 @@ describe('evaluate_script live viewer', () => {
     const result = await evaluateScriptTool({ code: 'return box(10, 10, 10);' });
     expect(result.ok).toBe(true);
     expect(result.viewerUrl).toBeUndefined();
-    expect(result.viewerError).toContain('build:mcp-viewer');
+    expect(result.viewerError).toContain('build:player');
     vi.stubEnv('KERNELCAD_VIEWER_DIST', dist);
   });
   it('uses hosted Studio instead of provisioning a loopback viewer in hosted mode', async () => {

@@ -12,7 +12,7 @@ afterEach(async () => { await Promise.all(closers.splice(0).map(close => close()
 
 async function fixture() {
   const dist = await mkdtemp(join(tmpdir(), 'kcad-viewer-'));
-  await writeFile(join(dist, 'index.html'), '<html>Studio</html>');
+  await writeFile(join(dist, 'index.html'), '<html>Player</html>');
   const viewer = createLiveViewer({ dist, mesh: async model => ({ source: model.code, features: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } }) });
   closers.push(async () => { await viewer.close(); await rm(dist, { recursive: true, force: true }); });
   return viewer;
@@ -24,11 +24,11 @@ function endpoint(link: string, name: string) {
   return url;
 }
 
-describe('live MCP Studio viewer', () => {
+describe('live MCP player viewer', () => {
   it('returns a working first-build link and replaces source/mesh behind the same link', async () => {
     const viewer = await fixture();
     const first = await viewer.update(model('first'));
-    expect(await (await fetch(first)).text()).toContain('Studio');
+    expect(await (await fetch(first)).text()).toContain('Player');
     expect(await (await fetch(endpoint(first, 'source'))).json()).toEqual({ source: 'first' });
     expect(await viewer.update(model('second'))).toBe(first);
     expect(await (await fetch(endpoint(first, 'source'))).json()).toEqual({ source: 'second' });
@@ -82,9 +82,9 @@ describe('live MCP Studio viewer', () => {
     expect((await fetch(endpoint(link, 'source'), { headers: { Origin: 'https://evil.example' } })).status).toBe(403);
   });
 
-  it('fails clearly when the packaged Studio assets are absent', async () => {
+  it('fails clearly when the player bundle is absent', async () => {
     const viewer = createLiveViewer({ dist: '/does-not-exist' });
-    await expect(viewer.update(model('first'))).rejects.toThrow('build:mcp-viewer');
+    await expect(viewer.update(model('first'))).rejects.toThrow('build:player');
     await viewer.close();
   });
 });

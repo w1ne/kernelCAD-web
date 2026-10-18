@@ -11,8 +11,8 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
 
 /** Mechanism verdict from the evaluate_script run that built the model. The
- *  viewer serves it on `/__kernelcad/review` so Studio shows the badge and
- *  marks the failing joint; it never re-runs a check. */
+ *  viewer serves it on `/__kernelcad/review` so clients can show the badge and
+ *  mark the failing joint; it never re-runs a check. */
 export interface McpViewerReview {
   mechanism?: 'real' | 'broken' | 'unverified';
   mechanismFailures?: readonly CompilerDiagnostic[];
@@ -27,7 +27,7 @@ interface ViewerOptions {
 function findViewerDist(): string | undefined {
   if (process.env.KERNELCAD_VIEWER_DIST !== undefined) return process.env.KERNELCAD_VIEWER_DIST;
   const dir = fileURLToPath(new URL('.', import.meta.url));
-  return [process.env.KERNELCAD_VIEWER_DIST, resolve(dir, '../mcp-viewer'), resolve(dir, '../../../dist/mcp-viewer')]
+  return [process.env.KERNELCAD_VIEWER_DIST, resolve(dir, '../headless-player'), resolve(dir, '../../../dist/headless-player')]
     .find(candidate => candidate && existsSync(resolve(candidate, 'index.html')));
 }
 
@@ -163,7 +163,7 @@ export function createLiveViewer(options: ViewerOptions = {}) {
   async function start(): Promise<string> {
     const dist = options.dist ?? findViewerDist();
     if (!dist || !existsSync(resolve(dist, 'index.html'))) {
-      throw new Error('Studio viewer bundle missing. Run npm run build:mcp-viewer or reinstall kernelcad.');
+      throw new Error('Headless player bundle missing. Run npm run build:player or reinstall kernelcad.');
     }
     server = viewerServer(resolve(dist), token, state, options.mesh ?? meshModel, () => url);
     await new Promise<void>((done, fail) => {
@@ -171,7 +171,7 @@ export function createLiveViewer(options: ViewerOptions = {}) {
       server!.listen(0, '127.0.0.1', done);
     });
     const address = server.address();
-    if (!address || typeof address === 'string') throw new Error('Could not bind Studio viewer.');
+    if (!address || typeof address === 'string') throw new Error('Could not bind live viewer.');
     url = `http://127.0.0.1:${address.port}/?script=${token}&mcp=1`;
     server.unref();
     return url;
