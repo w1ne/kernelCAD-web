@@ -930,18 +930,14 @@ export default defineConfig(({ command }) => ({
     },
   },
   optimizeDeps: {
-    // ts-morph (13MB) and typescript (9.5MB) are heavy. The dep scanner pulls
-    // dynamic imports into the cold-start prebundle, which is what makes
-    // `npm run dev` saturate one core for ~60s. `typescript` is still excluded:
-    // it only reaches the graph through the rarely-hit rename codepath
-    // (`import('.../RefactoringManager')` in CodeContext), so deferring that
-    // work is fine. `ts-morph` can no longer be deferred — the direct-edit drag
-    // planner (planDrag) runs client-side on every staged drag (lazily imported
-    // by DirectEditGizmo). With `exclude`, Vite serves the raw CJS package to
-    // the browser, where named imports (`Node`, `Project`, ...) fail with
-    // "does not provide an export named 'Node'"; prebundling it is what makes
-    // that lazy chunk load in dev.
-    include: ['ts-morph'],
-    exclude: ['typescript'],
+    // ts-morph (13MB) and typescript (9.5MB) are heavy, and prebundling them
+    // costs one slow cold start (cached in node_modules/.vite afterwards). Both
+    // MUST be prebundled: with `exclude`, Vite serves the raw CJS package to
+    // the browser, where named imports fail ("does not provide an export named
+    // 'Node'"). `ts-morph` reaches the graph through the direct-edit drag
+    // planner (planDrag, lazily imported by DirectEditGizmo); `typescript`
+    // reaches it through the browser-kernel worker, which must transpile the
+    // Studio's TypeScript `.kcad.ts` sources.
+    include: ['ts-morph', 'typescript'],
   },
 }))

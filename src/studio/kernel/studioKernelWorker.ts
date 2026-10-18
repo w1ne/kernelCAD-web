@@ -15,6 +15,7 @@
 import wasmUrl from 'replicad-opencascadejs/src/replicad_single.wasm?url';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { runScriptInBrowser } from '../../composition/browserRuntime';
+import { transpileTsBrowser } from '../../modeling/runtime/transpileBrowser';
 import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
 import { resolveRootId } from '../../modeling/compute/resolveRootId';
 import { updateModelParams } from '../../modeling/paramUpdate';
@@ -33,7 +34,11 @@ const enginePromise = initOcct({
 const core = createKernelWorkerCore({
   async runScript({ code, fileName }) {
     await enginePromise;
-    const result = await runScriptInBrowser({ code, fileName });
+    // Gallery/Studio sources are TypeScript (.kcad.ts). The default browser
+    // transpiler is a JS pass-through that refuses TS syntax by name, so the
+    // worker opts into the real compiler via `transpileBrowser.ts` (the node
+    // `transpileTs` reaches `node:module` and cannot load in a browser).
+    const result = await runScriptInBrowser({ code, fileName, transpile: transpileTsBrowser });
     return {
       records: [...result.records],
       paramTable: result.paramTable,
