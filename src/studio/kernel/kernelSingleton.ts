@@ -107,6 +107,12 @@ export function warmBrowserKernel(source: string, fileName: string): void {
     dropPendingKernelWarms();
     return;
   }
+  // A newer eligible apply supersedes a banked hidden warm exactly like it
+  // cancels an armed swap: the bank is for a source routing has left behind,
+  // and its later flush would arm a swap that cancels this apply's. No-op for
+  // the flush caller (bank popped, listener already removed) and the
+  // settle-timer caller (dispose already cleared it).
+  clearPendingHiddenWarm();
   if (warmedSource !== null && warmedSource !== source) {
     scheduleWarmSwap(source, fileName);
     return;

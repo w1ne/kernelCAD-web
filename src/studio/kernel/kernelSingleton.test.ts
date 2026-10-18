@@ -269,6 +269,42 @@ describe('warm swap settling with the hidden-tab deferral', () => {
     expect(browserKernelForSource('source-a')).toBe(h.kernel);
   });
 
+  it('evicts a banked hidden warm when a newer eligible apply lands before the visibilitychange flush', () => {
+    const h = fakeKernel();
+    __setBrowserKernelForTests(h.kernel, 'source-a');
+
+    // Hidden apply banks c; the tab flips visible, but the queued
+    // `visibilitychange` task has not run yet when d is applied.
+    warmKernelOnOpen('source-c', 'c.kcad.ts');
+    visibility = 'visible';
+    warmKernelOnOpen('source-d', 'd.kcad.ts');
+
+    // d's swap is armed; the late flush of c must not cancel it.
+    document.dispatchEvent(new Event('visibilitychange'));
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
+    expect(h.disposeMock).toHaveBeenCalledTimes(1);
+    expect(h.warmMock).toHaveBeenCalledExactlyOnceWith('source-d', 'd.kcad.ts');
+    expect(browserKernelForSource('source-d')).toBe(h.kernel);
+  });
+
+  it('evicts a banked hidden warm when the eligible apply changes back to the current source', () => {
+    const h = fakeKernel();
+    __setBrowserKernelForTests(h.kernel, 'source-a');
+
+    warmKernelOnOpen('source-c', 'c.kcad.ts');
+    visibility = 'visible';
+    warmKernelOnOpen('source-a', 'a.kcad.ts');
+
+    // The current source is re-warmed; the late flush of c must warm nothing.
+    document.dispatchEvent(new Event('visibilitychange'));
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
+    expect(h.disposeMock).not.toHaveBeenCalled();
+    expect(h.warmMock).toHaveBeenCalledExactlyOnceWith('source-a', 'a.kcad.ts');
+    expect(browserKernelForSource('source-a')).toBe(h.kernel);
+  });
+
   it('disposeBrowserKernel clears a banked hidden warm and its listener', () => {
     const h = fakeKernel();
     __setBrowserKernelForTests(h.kernel, 'source-a');
