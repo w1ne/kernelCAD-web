@@ -346,7 +346,26 @@ export async function exportSceneBackend(
   featureCount: number,
 ): Promise<ExportResult | undefined> {
   if (format === 'step') {
-    return exportSceneStep(scene, manifestRequest, manifestScene, run, diagnostics, featureCount);
+    const result = await exportSceneStep(scene, manifestRequest, manifestScene, run, diagnostics, featureCount);
+    // STEP exports run the same mesh verify as STL (default-on; options.verify
+    // false skips). Downstream consumers tessellate the STEP and reject
+    // non-manifold meshes (e.g. exact coincident/tangent faces), so surface the
+    // defect at export time — the file is still written for inspection.
+    const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+    if (verify) {
+      const parts = sceneToWorldFrameParts(scene);
+      for (const p of parts) {
+        const mesh = meshShapeForExport(p.shape.getReplicadShape());
+        const report = verifyWatertight(mesh);
+        if (!report.ok) {
+          result.diagnostics.push(
+            stlNotWatertightDiagnostic(report, targetId, parts.length > 1 ? p.name : undefined, 'STEP mesh'),
+          );
+          break;
+        }
+      }
+    }
+    return result;
   }
   if (format === 'dxf') {
     return exportSceneDxf(scene, targetId, input.options, diagnostics, featureCount);
