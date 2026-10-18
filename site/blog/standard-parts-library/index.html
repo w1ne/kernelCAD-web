@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Script ISO metric screws, nuts and washers by family and size, and place a bolted stack that picks its own screw length." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Standard fasteners from one table with lib.part and lib.stack" />
+  <meta property="og:description" content="Script ISO metric screws, nuts and washers by family and size, and place a bolted stack that picks its own screw length." />
+  <meta property="og:image" content="https://kernelcad.com/blog/standard-parts-library/lineup.png" />
+  <meta property="og:url" content="https://kernelcad.com/blog/standard-parts-library/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Standard fasteners from one table with lib.part and lib.stack" />
+  <meta name="twitter:description" content="Script ISO metric screws, nuts and washers by family and size, and place a bolted stack that picks its own screw length." />
+  <meta name="twitter:image" content="https://kernelcad.com/blog/standard-parts-library/lineup.png" />
+  <link rel="canonical" href="https://kernelcad.com/blog/standard-parts-library/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>Standard fasteners from one table with lib.part and lib.stack</title>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
+  <style>
+    .legal { max-width: 760px; margin: 0 auto; padding: 1rem 0 4rem; }
+    .legal h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; line-height: 1.2; margin: 1.5rem 0 0.25rem; }
+    .legal .effective { color: var(--ink-faint, #8a8475); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 2rem; }
+    .legal h2 { font-family: 'Source Serif 4', serif; font-size: 1.35rem; margin: 2.2rem 0 0.5rem; }
+    .legal p, .legal li { font-family: 'Inter', sans-serif; line-height: 1.65; color: var(--ink-soft, #3a3a3a); }
+    .legal ul { padding-left: 1.25rem; }
+    .legal code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .legal a { color: var(--blueprint, #2f6df0); }
+    .legal strong { color: var(--ink, #1a1a1a); }
+    .legal .lede { font-size: 1.1rem; color: var(--ink); }
+    .legal figure { margin: 1.5rem 0; }
+    .legal figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal figcaption { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--ink-faint); margin-top: 0.5rem; }
+    .legal pre { background: var(--code-bg); color: var(--code-text); border-radius: 6px; padding: 16px 18px; overflow-x: auto; margin: 1.25rem 0; }
+    .legal pre code { font-size: 0.85rem; line-height: 1.6; color: inherit; }
+    .legal p code, .legal li code { background: var(--vellum-soft); padding: 1px 5px; border-radius: 3px; }
+    .post-list { list-style: none; padding: 0; margin: 2rem 0; }
+    .post-list li { padding: 1.25rem 0; border-top: 1px solid var(--rule); }
+    .post-list li:last-child { border-bottom: 1px solid var(--rule); }
+    .post-list a.post-title { font-family: 'Source Serif 4', serif; font-size: 1.4rem; text-decoration: none; }
+    .post-list a.post-title:hover { text-decoration: underline; }
+    .post-list .effective { margin: 0.25rem 0 0.5rem; }
+    .post-list p { margin: 0; }
+    .legal figure video { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal model-viewer { display: block; width: 100%; height: 440px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a class="nav-mark" href="/">
+        <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span class="cad">CAD</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="/blog/">blog</a>
+        <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">@kernelcad</a>
+      </div>
+    </nav>
+
+    <main class="legal">
+      <article>
+      <p class="effective"><a href="/blog/">Blog</a> · <time datetime="2026-10-17">2026-10-17</time> · Andrii Shylenko</p>
+      <h1>Standard fasteners from one table with lib.part and lib.stack</h1>
+
+      <p class="lede">kernelCAD ships a table of ISO metric fasteners. <code>lib.part</code> builds one part from it, and <code>lib.stack</code> builds a bolted joint around a grip thickness. Both return envelope solids, a head plus a shank, and the browser builds them in memory.</p>
+      <figure>
+        <video src="video.mp4" controls playsinline preload="metadata"></video>
+      </figure>
+      <figure>
+        <model-viewer src="model.glb" alt="The model built from examples/parts/bolt-stack.kcad.ts" camera-controls auto-rotate rotation-per-second="12deg" interaction-prompt="none" touch-action="pan-y" loading="lazy"></model-viewer>
+        <figcaption>The model, built from <code>examples/parts/bolt-stack.kcad.ts</code>. Drag to turn it.</figcaption>
+      </figure>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+      <h2>What the table stocks</h2>
+      <ul>
+        <li><code>socket-head-cap-screw</code> (ISO 4762): M2, M2.5, M3, M4, M5, M6</li>
+        <li><code>button-head-cap-screw</code> (ISO 7380): M3, M4, M5</li>
+        <li><code>flat-head-countersunk</code> (ISO 10642): M3, M4, M5</li>
+        <li><code>hex-nut</code> (ISO 4032): M2, M2.5, M3, M4, M5, M6</li>
+        <li><code>lock-nut</code> (DIN 985): M3, M4, M5</li>
+        <li><code>flat-washer</code> (ISO 7089): M2, M3, M4, M5, M6</li>
+        <li><code>lock-washer</code> (DIN 127B): M3, M4, M5</li>
+      </ul>
+      <p>Screws also take a stocked length: socket head 4 to 50 mm, button head 5 to 25 mm, countersunk 6 to 25 mm. An unknown family, thread or length fails with a diagnostic that names the stocked values.</p>
+      <figure>
+        <img src="lineup.png" alt="One envelope per family on a display base" width="1600" height="1200" loading="lazy" />
+        <figcaption>The lineup example: socket, button and countersunk heads, two nut styles and two washer styles.</figcaption>
+      </figure>
+      <p>The geometry is an envelope. A socket head is its cylinder, a countersunk head is the seated ISO 10642 frustum that fills its countersink, and the lock washer is a plain annulus without the split. That covers fit checks and assembly layout. It is not a threaded part, and it makes no claim about thread contact.</p>
+
+      <h2>Place one part</h2>
+      <p><code>lib.part({ family, thread, lengthMm })</code> resolves the row and returns the solid. Screws need a stocked length; nuts and washers take only a thread.</p>
+      <pre><code>const nut = await lib.part({ family: 'hex-nut', thread: 'M5' });
+const screw = await lib.part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 });
+const pair = assembly('pair');
+pair.part('screw', screw);
+pair.part('nut', nut.translate(0, 0, -20));
+return pair.model();</code></pre>
+      <p>The resolved ids are the catalog ids (<code>iso-4762-m5x16</code> and <code>iso-4032-m5</code> above), so <code>lib.part</code> resolves the same record as <code>lib.standard.boltSHCS</code>. <code>lib.fetchPart</code>, <code>lib.findPart</code> and <code>lib.standard.*</code> keep their behavior.</p>
+      <p>On a host with the catalog on disk, the STEP for that id is loaded instead of the in-memory envelope. The committed STEPs are exported from this same table, so both doors lead to the same geometry. To override records, point <code>KERNELCAD_PARTS_DIR</code> at a directory with an <code>index.json</code>, or place one in <code>~/.kernelcad/parts</code>. Those records win over the generated catalog.</p>
+
+      <h2>The stack, in one call</h2>
+      <p><code>lib.stack({ thread, gripMm, mode })</code> returns the chosen <code>lengthMm</code> and the members. Each member is positioned against a seat at z = 0, the grip's top face.</p>
+      <ul>
+        <li><code>mode: 'screw'</code> places the screw alone. The length is the shortest stocked one at or above the grip.</li>
+        <li><code>mode: 'bolt'</code> adds a flat washer under the head, and a flat washer plus a hex nut on the back. The length is the shortest stocked one at or above grip + washer + nut.</li>
+      </ul>
+      <pre><code>const stack = await lib.stack({ thread: 'M5', gripMm: 12, mode: 'bolt' });
+const placed = assembly('stack');
+placed.part('screw', stack.screw);
+placed.part('head-washer', stack.headWasher!);
+placed.part('tail-washer', stack.tailWasher!);
+placed.part('nut', stack.nut!);
+return placed.model();</code></pre>
+      <p>For the 12 mm grip in the example the sum is 17 mm and the shortest stocked socket-head length at or above it is 18 mm. The members come back placed: washer on the seat, screw head above it, tail washer and nut below the grip.</p>
+      <figure>
+        <img src="stack.png" alt="The lap joint with the M5 bolt stack" width="1600" height="1200" loading="lazy" />
+        <figcaption>Two 6 mm bars, one bolt-mode stack. The seat is the upper bar's top face.</figcaption>
+      </figure>
+      <figure>
+        <img src="stack-detail.png" alt="Front elevation of the stack" width="1400" height="1100" loading="lazy" />
+        <figcaption>Head washer on the seat, tail washer and hex nut under the lower bar. Cropped from the front-elevation render of examples/parts/bolt-stack.kcad.ts.</figcaption>
+      </figure>
+      <p>The <code>examples/parts/bolt-stack.kcad.ts</code> source places the stack like this:</p>
+      <pre><code>const seat = lift + gripMm;
+const stack = await lib.stack({ thread: 'M5', gripMm, mode: 'bolt' });</code></pre>
+
+      <h2>Limits and checks</h2>
+      <p>Envelopes carry no thread, so nothing here proves thread contact, engagement, strength, torque or preload. The committed STEP files and the in-memory envelope come from the same table and agree; neither is a strength model.</p>
+      <p><code>examples/parts/verify.mts</code> re-evaluates both examples and writes <code>docs/demos/standard-parts/geometry-evidence.json</code>: per-part bounds and volumes, pairwise interference (zero positive-volume overlaps), and the source hashes. The two examples evaluate with 0 diagnostics: <code>fastener-lineup.kcad.ts</code> reports 17 features and <code>bolt-stack.kcad.ts</code> reports 15.</p>
+
+      <h2>Reproduce</h2>
+      <p>From a repository checkout:</p>
+      <pre><code>npx tsx examples/parts/verify.mts</code></pre>
+      <p>The script prints a JSON summary and rewrites the evidence file. The demo bundle, its renders and the review video are in <code>docs/demos/standard-parts/</code>.</p>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div>kernelCAD · MIT</div>
+      <div class="footer-links">
+        <a href="/terms.html">terms</a>
+        <a href="/privacy.html">privacy</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">x</a>
+        <a href="https://app.kernelcad.com">app</a>
+      </div>
+    </footer>
+    <div class="footer-stack" style="border-top: 1px solid var(--stroke, rgba(255,255,255,0.08)); padding: 14px 0 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--mute, #888); font-size: 0.78rem;">
+      <span style="opacity: 0.7;">part of the engineer stack</span>
+      <nav style="display: flex; gap: 18px;">
+        <a href="https://labwired.com" style="color: inherit;">LabWired</a>
+        <a href="https://kernelcad.com" style="color: inherit;">kernelCAD</a>
+        <a href="https://koamtachi.com" style="color: inherit;">koamtachi</a>
+        <a href="https://shylenko.com" style="color: inherit;">shylenko.com</a>
+      </nav>
+    </div>
+  </div>
+</body>
+</html>
