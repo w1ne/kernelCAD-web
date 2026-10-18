@@ -5,6 +5,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
 import { Header } from './Header';
 import { WorkbenchProvider } from '../../context/WorkbenchContext';
+import { EXPORT_FORMATS } from '../../exportFormats';
 import * as exportViaServerMod from '../../exportViaServer';
 import { setSourceTitle } from '../../sourceTitle';
 
@@ -213,7 +214,7 @@ describe('Header', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'More export formats' }));
     const labels = screen.getAllByRole('menuitem').map((m) => m.textContent?.split(' — ')[0]);
-    expect(labels).toEqual(['STL', 'STEP', 'DXF', '3MF', 'GLB', 'OBJ', 'USD', 'Drawing (PDF)']);
+    expect(labels).toEqual(EXPORT_FORMATS.map((f) => f.label));
   });
 
   it('shows a failed export as the server message and hint, not an alert', async () => {
