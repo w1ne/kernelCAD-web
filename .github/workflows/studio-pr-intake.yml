@@ -15,15 +15,37 @@ jobs:
       - uses: actions/github-script@v7
         with:
           script: |
-            const patterns = [/^src\/studio\//, /^src\/funnel\//, /^src\/ui\//, /^src\/server\//,
-              /^tests\/funnel\//, /^tests\/unit\/server\//, /^tests\/integration\/studio\//,
-              /^index\.html$/, /^vite\.config\.ts$/, /^playwright\.config\.ts$/];
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const issue_number = context.issue.number;
-            const files = await github.paginate(github.rest.pulls.listFiles,
-              { owner, repo, pull_number: issue_number, per_page: 100 });
-            const hits = files.map(f => f.filename).filter(f => patterns.some(r => r.test(f)));
+
+            // Pre-split app paths: any of these in a PR means Studio code.
+            const APP_DIRS = ['src/studio/', 'src/funnel/', 'src/ui/', 'src/server/', 'functions/',
+              'tests/funnel/', 'tests/unit/studio/', 'tests/unit/server/', 'tests/unit/functions/',
+              'tests/integration/studio/', 'tests/integration/server/'];
+            const APP_FILES = new Set(['src/index.css', 'index.html', 'vite.config.ts',
+              'vite.studio.config.ts', 'vite.mcp-viewer.config.ts', 'playwright.config.ts',
+              'tsconfig.app.json', 'tsr.config.json']);
+            const SITE_SPECS = new Set(['gallery_smoke', 'gallery_lightbox', 'homepage_hero_prompt', 'landing_refresh']);
+            const isAppFile = (f) => {
+              if (APP_DIRS.some(d => f.startsWith(d))) return true;
+              if (APP_FILES.has(f)) return true;
+              const rootSpec = f.match(/^tests\/([^/]+)\.spec\.ts$/);
+              if (rootSpec) return !SITE_SPECS.has(rootSpec[1]);
+              return /^tests\/e2e\/[^/]+\.spec\.ts$/.test(f);
+            };
+
+            // A rate limit or transient API error must never turn an external
+            // PR red; log and bail out quietly instead.
+            let files;
+            try {
+              files = await github.paginate(github.rest.pulls.listFiles,
+                { owner, repo, pull_number: issue_number, per_page: 100 });
+            } catch (error) {
+              core.warning(`[studio-pr-intake] could not list PR files: ${error.message}`);
+              return;
+            }
+            const hits = files.map(f => f.filename).filter(isAppFile);
             if (!hits.length) return;
 
             // Apply the label; create it on first use if it does not exist yet.
@@ -37,18 +59,25 @@ jobs:
                 await github.rest.issues.createLabel({ owner, repo, name: label.name, color: label.color, description: label.description });
                 await github.rest.issues.addLabels({ owner, repo, issue_number, labels: [label.name] });
               } catch (retryError) {
-                console.log(`[studio-pr-intake] could not apply ${label.name} label: ${retryError.message}`);
+                core.warning(`[studio-pr-intake] could not apply ${label.name} label: ${retryError.message}`);
               }
             }
 
             // Post the guidance comment once; the marker dedupes synchronize runs.
             const marker = '<!-- studio-intake -->';
-            const comments = await github.paginate(github.rest.issues.listComments,
-              { owner, repo, issue_number });
+            let comments;
+            try {
+              comments = await github.paginate(github.rest.issues.listComments,
+                { owner, repo, issue_number });
+            } catch (error) {
+              core.warning(`[studio-pr-intake] could not list PR comments: ${error.message}`);
+              return;
+            }
             if (comments.some(c => (c.body || '').includes(marker))) return;
+            const touched = hits.slice(0, 12).map(f => '- \`' + f.replace(/[\`\r\n]/g, '') + '\`').join('\n');
             try {
               await github.rest.issues.createComment({ owner, repo, issue_number,
-                body: `${marker}\nThis PR touches Studio app files, which are proprietary and no longer live in this repository.\n\n- If the change is core-only, move the Studio hunks out and we can review the rest.\n- If the change is Studio-only, please open an issue describing the problem and a maintainer will consider porting it privately with attribution.\n\nTouched: \n${hits.slice(0, 12).map(f => '- \`' + f + '\`').join('\n')}` });
+                body: `${marker}\nThis PR touches Studio app files, which are proprietary and no longer live in this repository.\n\n- If the change is core-only, move the Studio hunks out and we can review the rest.\n- If the change is Studio-only, please open an issue describing the problem and a maintainer will consider porting it privately with attribution.\n\nTouched: \n${touched}` });
             } catch (error) {
-              console.log(`[studio-pr-intake] could not post intake comment: ${error.message}`);
+              core.warning(`[studio-pr-intake] could not post intake comment: ${error.message}`);
             }
