@@ -10,7 +10,7 @@ import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
-import { meshParamEdits, type ParamEditValues } from './paramEditsForMesh';
+import { meshParamEdits, takeParamEditPayload, type ParamEditValues } from './paramEditsForMesh';
 
 export interface ParamUpdateOptions {
     /** Stateless path only: write every value into the source and re-run the
@@ -119,9 +119,14 @@ export function useParamUpdate(
         deps.setCurrentCodeRevision(revision);
         deps.setIsComputing(true);
         try {
-            const payload = await meshParamEdits(code, overrides, options?.bakeIntoSource);
+            await meshParamEdits(code, overrides, options?.bakeIntoSource);
             // Superseded by a newer edit (code change or another param drag).
             if (revision !== deps.mainRevisionRef.current) return;
+            // The run this submit rode merges its payload into the geometry
+            // state store; take it here so the viewport applies it. Null when
+            // the batch was dropped by a queue replacement — nothing to paint.
+            const payload = takeParamEditPayload(code);
+            if (payload === null) return;
             applyBridgePayload(payload, revision);
         } catch (err) {
             if (revision !== deps.mainRevisionRef.current) return;

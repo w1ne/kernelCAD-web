@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { meshParamEdits, paramEditsForMesh } from './paramEditsForMesh';
+import {
+  __resetParamEditQueueForTests,
+  meshParamEdits,
+  paramEditsForMesh,
+  takeParamEditPayload,
+} from './paramEditsForMesh';
 import { __resetMeshMergeStatesForTests, mergeMeshPayload } from './meshMergeStore';
 
 const code = [
@@ -55,6 +60,7 @@ function postedBodyAt(fetchMock: ReturnType<typeof vi.spyOn>, callNumber: number
 
 describe('meshParamEdits partial payloads', () => {
   afterEach(() => {
+    __resetParamEditQueueForTests();
     __resetMeshMergeStatesForTests();
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
@@ -73,14 +79,14 @@ describe('meshParamEdits partial payloads', () => {
       }),
     } as Response);
 
-    const payload = await meshParamEdits(source, { Width: 60 });
+    await meshParamEdits(source, { Width: 60 });
 
     expect(postedBodyAt(fetchMock, 1)).toEqual({
       source,
       params: { Width: 60 },
       have: { base: HEX_A },
     });
-    expect(payload.features.map((f) => f.featureId)).toEqual(['base', 'patched']);
+    expect(takeParamEditPayload(source)?.features.map((f) => f.featureId)).toEqual(['base', 'patched']);
   });
 
   it('retries once without have when the trailer names an unknown unchanged id', async () => {
@@ -97,12 +103,12 @@ describe('meshParamEdits partial payloads', () => {
         json: async () => ({ features: [feature('fresh', HEX_B)] }),
       } as Response);
 
-    const payload = await meshParamEdits(source, { Width: 60 });
+    await meshParamEdits(source, { Width: 60 });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(postedBodyAt(fetchMock, 1).have).toEqual({ base: HEX_A });
     expect(postedBodyAt(fetchMock, 2)).not.toHaveProperty('have');
-    expect(payload.features.map((f) => f.featureId)).toEqual(['fresh']);
+    expect(takeParamEditPayload(source)?.features.map((f) => f.featureId)).toEqual(['fresh']);
   });
 
   it('omits have when the state holds no hex16 fingerprint to claim', async () => {
@@ -145,5 +151,56 @@ describe('meshParamEdits partial payloads', () => {
     await meshParamEdits(source, { Width: 60 });
 
     expect(postedBodyAt(fetchMock, 1).have).toEqual({ base: HEX_A });
+  });
+
+  /** A fetch mock whose responses are released one gate at a time, so
+   *  overlap between requests is observable. */
+  function gatedFetch(): { fetchMock: ReturnType<typeof vi.spyOn>; gates: Array<(body: unknown) => void> } {
+    const gates: Array<(body: unknown) => void> = [];
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      new Promise<Response>((resolve) => {
+        gates.push((body) => resolve({ ok: true, json: async () => body } as Response));
+      }));
+    return { fetchMock, gates };
+  }
+
+  it('coalesces overlapping edits into one trailing request that carries the merged params', async () => {
+    stubHostedApp();
+    const source = "const w = param('Width', 40); return box(w, 1, 1);";
+    mergeMeshPayload(source, { features: [feature('base', HEX_A)] });
+    const { fetchMock, gates } = gatedFetch();
+
+    const first = meshParamEdits(source, { Width: 60 });
+    const second = meshParamEdits(source, { Width: 61 });
+    const third = meshParamEdits(source, { Width: 62, Height: 9 });
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    gates[0]!({ features: [feature('patched', HEX_B)] });
+    await first;
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(postedBodyAt(fetchMock, 2).params).toEqual({ Width: 62, Height: 9 });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    gates[1]!({ features: [feature('final', HEX_B)] });
+    await Promise.all([second, third]);
+    expect(takeParamEditPayload(source)?.features.map((f) => f.featureId)).toEqual(['final']);
+  });
+
+  it('does not coalesce across codes: a different code starts its own request immediately', async () => {
+    stubHostedApp();
+    const sourceA = "const w = param('Width', 40); return box(w, 1, 1);";
+    const sourceB = "const w = param('Width', 41); return box(w, 1, 1);";
+    const { fetchMock, gates } = gatedFetch();
+
+    const first = meshParamEdits(sourceA, { Width: 60 });
+    const second = meshParamEdits(sourceB, { Width: 60 });
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    expect(postedBodyAt(fetchMock, 1).source).toBe(sourceA);
+    expect(postedBodyAt(fetchMock, 2).source).toBe(sourceB);
+
+    gates[0]!({ features: [feature('a', HEX_A)] });
+    gates[1]!({ features: [feature('b', HEX_B)] });
+    await Promise.all([first, second]);
   });
 });

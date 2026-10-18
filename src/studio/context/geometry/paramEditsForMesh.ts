@@ -11,6 +11,7 @@ import {
 } from '../../scriptSource';
 import { mergeMeshPayload, meshMergeStateFor } from './meshMergeStore';
 import { MESH_MERGE_UNKNOWN_ID_PREFIX, type MeshMergeState } from './mergeFeatureMeshes';
+import { createParamEditQueue, type ParamEditQueue } from './paramEditQueue';
 
 export type ParamEditValues = Record<string, number | boolean | string>;
 
@@ -75,11 +76,14 @@ function isMeshMergeMismatch(err: unknown): boolean {
  *  `mergeMeshPayload`). If the trailer names an unchanged id the state does
  *  not hold, the request is retried once without `have` for a full payload.
  *  The server schema strips unknown body fields, so sending `have` to an
- *  endpoint that predates the field is safe. */
-export async function meshParamEdits(
+ *  endpoint that predates the field is safe.
+ *
+ *  Internal: the one request `meshParamEdits`' queue runs per batch. Returns
+ *  the merged payload for the queue's handoff into `latestParamEditPayloads`. */
+async function runParamEditRequest(
   code: string,
   edits: ParamEditValues,
-  bakeAll = false,
+  bakeAll: boolean,
 ): Promise<BackendMeshPayload> {
   const { source, params } = paramEditsForMesh(code, edits, bakeAll);
   const state = meshMergeStateFor(code);
@@ -97,4 +101,58 @@ export async function meshParamEdits(
     if (have === undefined || !isMeshMergeMismatch(err)) throw err;
     return mergeMeshPayload(code, await send(undefined), state);
   }
+}
+
+/** The module-scoped coalescing queue for the active `(code, bakeAll)` pair.
+ *  A submit with a different key disposes this queue (its pending batch is
+ *  dropped; an in-flight run continues) and replaces it, so a code edit or a
+ *  bakeAll flip never coalesces onto the wrong request shape. */
+let currentQueue: { code: string; bakeAll: boolean; queue: ParamEditQueue } | null = null;
+
+/** Merged payload of the most recent completed run, per code. Coalescing
+ *  means a submit can ride a trailing batch that also carries other submits'
+ *  values, so the payload cannot meaningfully resolve the submit promise.
+ *  `meshParamEdits` therefore returns void and the apply path (the Studio's
+ *  `useParamUpdate`) takes the payload after its await. */
+const latestParamEditPayloads = new Map<string, BackendMeshPayload>();
+
+/** Consume the merged payload of the last completed param-edit run for
+ *  `code` (null when no run completed for it, e.g. the batch was dropped by
+ *  a queue replacement). Only the caller that awaited that run's submit may
+ *  call this. */
+export function takeParamEditPayload(code: string): BackendMeshPayload | null {
+  const payload = latestParamEditPayloads.get(code);
+  if (payload === undefined) return null;
+  latestParamEditPayloads.delete(code);
+  return payload;
+}
+
+function paramEditQueueFor(code: string, bakeAll: boolean): ParamEditQueue {
+  const active = currentQueue;
+  if (active !== null && active.code === code && active.bakeAll === bakeAll) return active.queue;
+  active?.queue.dispose();
+  const queue = createParamEditQueue(async (edits) => {
+    const payload = await runParamEditRequest(code, edits, bakeAll);
+    // A replaced queue's late run must not hand its payload to the new key.
+    if (currentQueue?.queue === queue) latestParamEditPayloads.set(code, payload);
+  });
+  currentQueue = { code, bakeAll, queue };
+  return queue;
+}
+
+/** Mesh the code with the accumulated edits, coalesced with any request
+ *  already in flight (one in-flight + one trailing per `(code, bakeAll)`;
+ *  see `paramEditQueue`). Resolves when the run carrying these values
+ *  settles; a failed run rejects it. `meshParamEdits` returns no payload:
+ *  a coalesced submit is carried by the trailing run, so callers apply the
+ *  merged payload via `takeParamEditPayload(code)` after the await. */
+export function meshParamEdits(code: string, edits: ParamEditValues, bakeAll = false): Promise<void> {
+  return paramEditQueueFor(code, bakeAll).submit(edits);
+}
+
+/** Test-only: dispose the active queue and drop every pending payload. */
+export function __resetParamEditQueueForTests(): void {
+  currentQueue?.queue.dispose();
+  currentQueue = null;
+  latestParamEditPayloads.clear();
 }
