@@ -236,7 +236,18 @@ function pick<C extends Candidate>(
     const r = c.render();
     const cost = ctx.obstacles.cost(r.boxes, owner) +
       r.segments.reduce((n, seg) => n + (ctx.obstacles.labelHits(seg, owner) + ctx.obstacles.runsAlong(seg, owner)) * 5, 0);
-    const crossings = r.segments.reduce((n, seg) => n + ctx.obstacles.crossings(seg, crossAnnotations), 0);
+    // Crossings and `inside` only ADD to the score, so a candidate whose
+    // base already reaches the best can never win. Skipping the crossing
+    // scan for it is exact, not an approximation — crowded sheets evaluate
+    // thousands of candidates and most cannot beat the incumbent (DRAW 01:
+    // crossing time 5.8 s -> 0.7 s, identical sheet).
+    const base = cost * 1000 + c.penalty;
+    if (best !== null && base >= best.score) continue;
+    let crossings = 0;
+    for (const seg of r.segments) {
+      crossings += ctx.obstacles.crossings(seg, crossAnnotations);
+      if (best !== null && base + crossings * 6 >= best.score) break;
+    }
     const inside = r.boxes.length > 0 && isEnclosed(ctx, r.boxes[0]) ? 25 : 0;
     const score = cost * 1000 + c.penalty + crossings * 6 + inside;
     if (best === null || score < best.score) best = { r, cost, score, candidate: c };

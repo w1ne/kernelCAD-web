@@ -30,8 +30,8 @@ diagnostic that names the stocked values.
 ![One envelope per family on a display base](standard-parts-library/lineup.png "The lineup example: socket, button and countersunk heads, two nut styles and two washer styles.")
 
 The geometry is an envelope. A socket head is its cylinder, a countersunk head
-is the flat-head cylinder, and the lock washer is a plain annulus without the
-split. That covers fit checks and assembly layout. It is not a threaded part,
+is the seated ISO 10642 frustum that fills its countersink, and the lock washer
+is a plain annulus without the split. That covers fit checks and assembly layout. It is not a threaded part,
 and it makes no claim about thread contact.
 
 ## Place one part

@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-10-17T16:38:37.137674+00:00",
+  "checkedAt": "2026-10-18T11:36:31.996336+00:00",
   "video": "demo.mp4",
-  "videoSha256": "ed34dae8531ea953ca1928c642cc7d4ffdedf04927a38bbae1efa96f8d5a6f64",
+  "videoSha256": "8ec488102c82d2dbc0fc95a963d615d15e22d66c8e6116aa28f797b5b1aca91a",
   "durationSec": 23.0,
   "canvas": "1920x1080",
   "slides": [
@@ -31,7 +31,7 @@
     "fastener-lineup.kcad.ts": "12de8a821a349ab7b5b2af9ce8905ca7252a21471ab667b6504eb38dc2924252"
   },
   "inputSha256": {
-    "lineup.hero.png": "6e4dc795f03db66088ae3a02655b62e4ffbee4b2f927a9a2425e5efe90c5cf86",
+    "lineup.hero.png": "d0f6d7523ef1849fd240c0466b41089813949c213e53a0e33ce9f7f21048cabc",
     "stack.hero.png": "ad32782c648c08ff9742e683a524ac57412020b9f943618c5cf94cbe642004f4",
     "stack-detail.png": "f8a413f91c23a8c6c0702ff5c755445d7abf36019fb71293e2e52beeb71379fa"
   },
