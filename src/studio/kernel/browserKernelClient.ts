@@ -10,14 +10,17 @@
 // Timing is enforced by two watchdogs over a build request:
 //   - script watchdog (scriptBudgetMs): armed when the build is sent, disarmed
 //     by `script-done`. It guards the script phase only — heavy meshing after
-//     the script ran is legitimate work, not a hang.
+//     the script ran is legitimate work, not a hang. A fire terminates the
+//     worker and retries the warm once on a fresh worker.
 //   - total watchdog (totalBudgetMs): armed for the whole request. It is the
-//     only detector of a silently dead worker (Workers have no 'exit').
-// A watchdog fire or a worker 'error'/'messageerror' terminates the worker; a
-// warm request is retried once on a fresh worker, then the source is failed.
+//     only detector of a silently dead worker (Workers have no 'exit'). A fire
+//     is terminal: the source fails immediately, with no respawn.
+// A worker 'error'/'messageerror' terminates the worker and retries the warm
+// once; a second such failure fails the source.
 //
 // Error taxonomy the callers act on: KernelNotWarmError (warm first),
 // KernelSupersededError (a later params replaced this one — no apply),
+// KernelDisposedError (dispose interrupted an in-flight warm/params),
 // KernelSourceError (this call produced no geometry; its `reason` says whether
 // the source is server-only for good or the worker merely crashed/timed out).
 
@@ -49,8 +52,9 @@ export type KernelEvent =
 
 export interface BrowserKernel {
   status(): KernelStatus;
-  /** Warm the worker for `source`; resolves when warm or failed. Idempotent
-   *  for the same source while warming/warm. A different source re-warms. */
+  /** Warm the worker for `source`; resolves when warm, rejects when the
+   *  source failed or the kernel was disposed. Idempotent for the same source
+   *  while warming/warm. A different source re-warms. */
   warm(source: string, fileName: string): Promise<void>;
   /** Apply param edits against the warm model. Throws KernelNotWarmError when
    *  not warm; throws KernelSourceError for host-fs/script-error sources. */
@@ -78,6 +82,14 @@ export class KernelSupersededError extends Error {
   constructor() {
     super('superseded by a later request');
     this.name = 'KernelSupersededError';
+  }
+}
+
+/** dispose() interrupted this in-flight warm/params request. */
+export class KernelDisposedError extends Error {
+  constructor() {
+    super('browser kernel disposed');
+    this.name = 'KernelDisposedError';
   }
 }
 
@@ -209,7 +221,7 @@ class BrowserKernelClient implements BrowserKernel {
   }
 
   dispose(): void {
-    const error = new Error('browser kernel disposed');
+    const error = new KernelDisposedError();
     this.clearTimers();
     if (this.pendingBuild !== null) {
       const build = this.pendingBuild;
@@ -295,7 +307,8 @@ class BrowserKernelClient implements BrowserKernel {
     this.disarmTotal();
     this.totalTimer = setTimeout(() => {
       this.totalTimer = null;
-      this.handleFailure('timeout');
+      // A total-watchdog fire is terminal: fail now, no respawn.
+      this.handleFailure('timeout', true);
     }, this.totalBudgetMs);
   }
 
@@ -316,10 +329,11 @@ class BrowserKernelClient implements BrowserKernel {
     this.handleFailure(reason);
   }
 
-  /** Dispatch a watchdog fire / worker crash to the request it interrupted. */
-  private handleFailure(reason: 'crash' | 'timeout'): void {
+  /** Dispatch a watchdog fire / worker crash to the request it interrupted.
+   *  `noRetry` marks a total-watchdog fire: fail the warm immediately. */
+  private handleFailure(reason: 'crash' | 'timeout', noRetry = false): void {
     if (this.pendingBuild !== null) {
-      this.failBuildAttempt(this.pendingBuild, reason);
+      this.failBuildAttempt(this.pendingBuild, reason, noRetry);
       return;
     }
     if (this.pendingParams !== null) {
@@ -378,6 +392,8 @@ class BrowserKernelClient implements BrowserKernel {
       build.reject(new KernelSourceError('host-fs', message.message, message.failedFeatureIds ?? []));
       return;
     }
+    // The host-fs branch above wins even if it carried failedFeatureIds (which
+    // today's core never sends); only script-error splits sticky vs per-call.
     if (message.code === 'script-error' && (message.failedFeatureIds?.length ?? 0) === 0) {
       this.markFailed('script-error');
       build.reject(new KernelSourceError('script-error', message.message));
@@ -397,10 +413,10 @@ class BrowserKernelClient implements BrowserKernel {
     build.reject(new KernelSourceError('crash', message.message));
   }
 
-  private failBuildAttempt(build: PendingBuild, reason: 'crash' | 'timeout'): void {
+  private failBuildAttempt(build: PendingBuild, reason: 'crash' | 'timeout', noRetry = false): void {
     this.clearTimers();
     this.terminateWorker();
-    if (!build.retried) {
+    if (!noRetry && !build.retried) {
       build.retried = true;
       this.spawnWorker();
       this.postBuildAttempt(build);

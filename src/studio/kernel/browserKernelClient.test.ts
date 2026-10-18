@@ -9,6 +9,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createBrowserKernel,
+  KernelDisposedError,
   KernelNotWarmError,
   KernelSourceError,
   KernelSupersededError,
@@ -38,6 +39,10 @@ class FakeWorker {
 
   crash(): void {
     this.onerror?.(new Error('boom'));
+  }
+
+  messageError(): void {
+    this.onmessageerror?.(new Error('uncloneable'));
   }
 }
 
@@ -200,6 +205,45 @@ describe('browserKernelClient: warm', () => {
     expect(h.events).toContainEqual({ type: 'fallback', reason: 'timeout' });
   });
 
+  it('fails immediately on the total watchdog, without a second spawn', async () => {
+    const h = harness();
+    const promise = h.kernel.warm('silent(1)', 'f.ts');
+    const rejection = rejectionOf(promise);
+    const worker = h.worker();
+    worker.reply(scriptDone(lastBuild(worker).id));
+
+    await vi.advanceTimersByTimeAsync(5_000);
+
+    const error = await rejection;
+    expect(error).toBeInstanceOf(KernelSourceError);
+    expect((error as KernelSourceError).reason).toBe('timeout');
+    expect(worker.terminated).toBe(true);
+    // A doomed 300s wait must not be doubled by a respawn.
+    expect(h.workers).toHaveLength(1);
+    expect(h.kernel.status()).toBe('failed');
+    expect(h.kernel.fallbackReason()).toBe('timeout');
+    expect(h.events).toContainEqual({ type: 'fallback', reason: 'timeout' });
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('goes warm on the second worker after one script-watchdog respawn', async () => {
+    const h = harness();
+    const promise = h.kernel.warm('slow(1)', 'f.ts');
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(h.workers).toHaveLength(2);
+
+    const worker = h.worker();
+    const build = lastBuild(worker);
+    worker.reply(scriptDone(build.id));
+    worker.reply(buildResult(build.id));
+    await promise;
+
+    expect(h.kernel.status()).toBe('warm');
+    expect(h.kernel.fallbackReason()).toBeNull();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it('retries the build once after a worker crash, then fails with crash', async () => {
     const h = harness();
     const promise = h.kernel.warm('s', 'f.ts');
@@ -221,6 +265,25 @@ describe('browserKernelClient: warm', () => {
     expect(h.kernel.fallbackReason()).toBe('crash');
     expect(h.workers).toHaveLength(2);
     expect(h.events).toContainEqual({ type: 'fallback', reason: 'crash' });
+  });
+
+  it('treats onmessageerror like onerror: one respawn, then crash', async () => {
+    const h = harness();
+    const promise = h.kernel.warm('s', 'f.ts');
+
+    const first = h.worker();
+    first.messageError();
+    expect(first.terminated).toBe(true);
+    expect(h.workers).toHaveLength(2);
+    expect(lastBuild(h.worker())).toMatchObject({ source: 's', fileName: 'f.ts' });
+
+    h.worker().crash();
+    const error = await rejectionOf(promise);
+    expect(error).toBeInstanceOf(KernelSourceError);
+    expect((error as KernelSourceError).reason).toBe('crash');
+    expect(h.kernel.status()).toBe('failed');
+    expect(h.kernel.fallbackReason()).toBe('crash');
+    expect(h.workers).toHaveLength(2);
   });
 
   it('is idempotent for the same source while warming and while warm', async () => {
@@ -315,6 +378,42 @@ describe('browserKernelClient: fallback reasons', () => {
     expect(h.events).toContainEqual({ type: 'fallback', reason: 'script-error' });
   });
 
+  it('marks crash on a worker-error response during warm, with no respawn', async () => {
+    const h = harness();
+    const promise = h.kernel.warm('s', 'f.ts');
+    const worker = h.worker();
+    worker.reply(errorResponse(lastBuild(worker).id, 'worker-error', { message: 'broken state' }));
+
+    const error = await rejectionOf(promise);
+    expect(error).toBeInstanceOf(KernelSourceError);
+    expect((error as KernelSourceError).reason).toBe('crash');
+    expect((error as KernelSourceError).message).toBe('broken state');
+    expect(worker.terminated).toBe(true);
+    expect(h.workers).toHaveLength(1);
+    expect(h.kernel.status()).toBe('failed');
+    expect(h.kernel.fallbackReason()).toBe('crash');
+    expect(h.events).toContainEqual({ type: 'fallback', reason: 'crash' });
+  });
+
+  it('rejects a script-error response carrying failedFeatureIds as per-call, not sticky', async () => {
+    const h = harness();
+    const promise = h.kernel.warm('s', 'f.ts');
+    const build = lastBuild(h.worker());
+    h.worker().reply(
+      errorResponse(build.id, 'script-error', {
+        message: 'feature failed',
+        failedFeatureIds: ['mover#1'],
+      }),
+    );
+
+    const error = await rejectionOf(promise);
+    expect(error).toBeInstanceOf(KernelSourceError);
+    expect((error as KernelSourceError).reason).toBe('script-error');
+    expect((error as KernelSourceError).failedFeatureIds).toEqual(['mover#1']);
+    expect(h.kernel.status()).toBe('failed');
+    expect(h.kernel.fallbackReason()).toBeNull();
+  });
+
   it('rejects a warm of the sticky source without spawning; a new source resets and retries', async () => {
     const h = harness();
     const first = h.kernel.warm('a', 'a.ts');
@@ -392,6 +491,31 @@ describe('browserKernelClient: params', () => {
     expect(h.kernel.status()).toBe('warm');
   });
 
+  it('ignores a late response for a superseded params id', async () => {
+    const h = harness();
+    const worker = await warm(h);
+
+    const p1 = h.kernel.params([{ name: 'w', value: 2 }]);
+    const first = lastParams(worker);
+    const p2 = h.kernel.params([{ name: 'w', value: 3 }]);
+    const second = lastParams(worker);
+    expect(await rejectionOf(p1)).toBeInstanceOf(KernelSupersededError);
+
+    const settled: string[] = [];
+    void p2.then(
+      () => settled.push('resolved'),
+      () => settled.push('rejected'),
+    );
+    worker.reply(buildResult(first.id));
+    await Promise.resolve();
+    expect(settled).toEqual([]);
+    expect(h.kernel.status()).toBe('warm');
+
+    worker.reply(buildResult(second.id));
+    await p2;
+    expect(settled).toEqual(['resolved']);
+  });
+
   it('fails immediately on a crash during params, without respawning', async () => {
     const h = harness();
     const worker = await warm(h);
@@ -452,7 +576,7 @@ describe('browserKernelClient: dispose', () => {
     expect(worker.terminated).toBe(true);
     expect(h.kernel.status()).toBe('idle');
     expect(h.kernel.fallbackReason()).toBeNull();
-    expect(await rejectionOf(promise)).toBeInstanceOf(Error);
+    expect(await rejectionOf(promise)).toBeInstanceOf(KernelDisposedError);
     expect(vi.getTimerCount()).toBe(0);
 
     await vi.advanceTimersByTimeAsync(60_000);
@@ -466,6 +590,19 @@ describe('browserKernelClient: dispose', () => {
     fresh.reply(buildResult(build.id));
     await again;
     expect(h.kernel.status()).toBe('warm');
+  });
+
+  it('rejects an in-flight params with KernelDisposedError and resets to idle', async () => {
+    const h = harness();
+    const worker = await warm(h);
+
+    const promise = h.kernel.params([{ name: 'w', value: 2 }]);
+    h.kernel.dispose();
+
+    expect(await rejectionOf(promise)).toBeInstanceOf(KernelDisposedError);
+    expect(worker.terminated).toBe(true);
+    expect(h.kernel.status()).toBe('idle');
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it('clears a sticky reason so the same source can be tried again', async () => {
