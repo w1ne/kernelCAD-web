@@ -10,7 +10,7 @@ import { getHostFs, hasHostFs } from '../../shared/runtime/hostFs';
 import type { Shape } from '../capture/proxy';
 import type { CaptureSession } from '../capture/captureSession';
 import {
-  planStack,
+  planStackFor,
   resolvePart,
   type PartRequest,
   type StackRequest,
@@ -50,7 +50,17 @@ export async function placePart(ctx: PlaceCtx, request: PartRequest): Promise<Sh
 }
 
 export async function placeStack(ctx: PlaceCtx, request: StackRequest): Promise<PlacedStack> {
-  const plan = planStack(request);
+  return placeStackFor(ctx, 'socket-head-cap-screw', request);
+}
+
+/** Any stocked screw family (lib.insert drives this with the family the hole
+ *  needs); `placeStack` is the socket-head front door. */
+export async function placeStackFor(
+  ctx: PlaceCtx,
+  family: string,
+  request: StackRequest,
+): Promise<PlacedStack> {
+  const plan = planStackFor(family, request);
   const placed: PlacedStack = {
     lengthMm: plan.lengthMm,
     screw: undefined as unknown as Shape,

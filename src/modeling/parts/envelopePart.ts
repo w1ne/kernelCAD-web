@@ -9,6 +9,7 @@ import type { Shape } from '../capture/proxy';
 import type { CaptureSession } from '../capture/captureSession';
 import { snapshotCatalogPart, type PartRecord } from '../../shared/parts/types';
 import type { ResolvedPart } from './familyTable';
+import { countersunkScrewSolid } from './headSolids';
 
 export interface EnvelopeCtx {
   session: CaptureSession;
@@ -31,6 +32,14 @@ function envelopeDigest(text: string): string {
 }
 
 function screwSolid(part: ResolvedPart): OcctBackend {
+  if (part.family === 'flat-head-countersunk') {
+    return countersunkScrewSolid(
+      part.nominalMm,
+      part.headDiameterMm,
+      part.headHeightMm,
+      part.lengthMm,
+    );
+  }
   const head = OcctBackend.cylinder(part.headHeightMm, part.headDiameterMm / 2);
   const shank = OcctBackend.cylinder(part.lengthMm, part.nominalMm / 2).translate(0, 0, -part.lengthMm);
   return head.union(shank);
