@@ -85,6 +85,13 @@ function packReadme(name: string, notes: readonly string[]): string {
   ].join('\n');
 }
 
+/** Assemble the order pack's entries: manifest, README, the caller's BOM CSV
+ *  plus a JSON copy, vendor handoff texts and the per-part files.
+ *
+ *  Invariants, checked loudly (throws `Error`):
+ *  - every `files[].row` (matched by `item`) must appear in `rows`;
+ *  - every entry path is unique, so a `(row, kind)` pair may appear at most
+ *    once in `files` (the four root paths are reserved for the pack itself). */
 export function buildOrderPack(args: {
   name: string;
   rows: readonly OrderPackBomRow[];
@@ -96,10 +103,21 @@ export function buildOrderPack(args: {
   const totals = args.totals ?? null;
   const notes = [...(args.notes ?? [])];
 
+  const rowItems = new Set(args.rows.map((r) => r.item));
+  const paths = new Set(['manifest.json', 'README.txt', 'bom.csv', 'bom.json']);
   const partFiles = new Map<number, string[]>();
   const fileEntries: OrderPackEntry[] = [];
   for (const f of args.files) {
+    if (!rowItems.has(f.row.item)) {
+      throw new Error(
+        `Order pack: unknown row "${f.row.name}" (item ${f.row.item}) for a packed file — every packed file must belong to a BOM row.`,
+      );
+    }
     const path = entryPath(partFolderName(f.row), f.kind);
+    if (paths.has(path)) {
+      throw new Error(`Order pack: duplicate entry path ${path} (row "${f.row.name}", kind ${f.kind}).`);
+    }
+    paths.add(path);
     fileEntries.push({ path, bytes: f.bytes });
     const list = partFiles.get(f.row.item);
     if (list === undefined) partFiles.set(f.row.item, [path]);
@@ -150,9 +168,6 @@ export function zipEntries(entries: readonly OrderPackEntry[]): Uint8Array {
   return zipSync(files);
 }
 
-/** The caller names the zip file itself; entry paths already carry the pack
- *  name via the manifest and README, so `name` changes nothing here. */
-export function zipOrderPack(pack: OrderPack, name: string): Uint8Array {
-  void name;
+export function zipOrderPack(pack: OrderPack): Uint8Array {
   return zipEntries(pack.entries);
 }
