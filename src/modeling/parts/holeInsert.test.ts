@@ -8,6 +8,7 @@ import { createModelingApi } from '../api';
 import { CaptureSession } from '../capture/captureSession';
 import {
   headFrameFor,
+  pilotForThread,
   planInserts,
   threadForHoleDiameter,
   type InsertRequest,
@@ -48,6 +49,15 @@ describe('lib.insert sizing', () => {
     expect(threadForHoleDiameter(5.8)).toBeUndefined();
     expect(threadForHoleDiameter(7.5)).toBeUndefined();
     expect(threadForHoleDiameter(9)).toBeUndefined();
+  });
+
+  it('reports a bore that sits exactly on a larger thread tap drill', () => {
+    expect(pilotForThread(3.3, 'M3')).toBe('M4'); // M4 tap drill vs M3 clearance
+    expect(pilotForThread(6.8, 'M6')).toBe('M8'); // outside the stocked range
+    expect(pilotForThread(2.5, 'M2')).toBe('M3');
+    expect(pilotForThread(5, 'M5')).toBe('M6');
+    expect(pilotForThread(3.4, 'M3')).toBeUndefined(); // M3 clearance, not a pilot
+    expect(pilotForThread(5.5, 'M5')).toBeUndefined();
   });
 
   it('takes the head end from the hint, else the larger-Z end', () => {
@@ -185,6 +195,42 @@ describe('lib.insert on modeled parts', () => {
     expectVec(hole.direction, [0, 0, 1]);
     const nutBounds = await (await hole.nut!.lower()).boundingBox();
     expect(nutBounds.min[2]).toBeGreaterThan(3); // nut now above the plate
+  }, 120000);
+
+  it('leaves an existing counterbore alone instead of cutting a seat into it', async () => {
+    const { kcad } = api();
+    const plate = kcad.box(40, 40, 8, true).hole('top', {
+      u: 0,
+      v: 0,
+      diameter: 5.5,
+      depth: 'through',
+      counterbore: { diameter: 11.2, depth: 3.1 },
+    });
+    const before = (await plate.lower()).volume();
+    const result = await kcad.lib.insert(plate, {
+      diameterMm: 5.5,
+      family: 'flat-head-countersunk',
+      mode: 'bolt',
+    });
+    const hole = result.holes[0]!;
+    expect(hole.existingSeatMm).toBeCloseTo(11.2, 6);
+    expect(hole.screw).toBeDefined();
+    // No new boolean: the returned shape is the input and the volume matches.
+    expect(result.shape.id).toBe(plate.id);
+    expect((await result.shape.lower()).volume()).toBeCloseTo(before, 6);
+  }, 120000);
+
+  it('flags a tap-drill bore without refusing it', async () => {
+    const { kcad } = api();
+    const plate = kcad.box(40, 40, 8, true).hole('top', { u: 0, v: 0, diameter: 3.3, depth: 'through' });
+    const result = await kcad.lib.insert(plate, {
+      diameterMm: 3.3,
+      family: 'socket-head-cap-screw',
+      mode: 'screw',
+    });
+    const hole = result.holes[0]!;
+    expect(hole.thread).toBe('M3'); // sized as clearance…
+    expect(hole.pilotFor).toBe('M4'); // …but reported as a possible M4 pilot
   }, 120000);
 
   it('refuses a diameter the shape does not have', async () => {

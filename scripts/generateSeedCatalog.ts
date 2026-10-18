@@ -152,11 +152,13 @@ async function hexNutStep(
   dims: { S: number; m: number },
 ): Promise<Uint8Array> {
   const tNum = parseFloat(thread.slice(1));
-  // Hex prism via extrudePolygon (six vertices around inscribed circle of S/2).
+  // Hex prism via extrudePolygon. The vertices start at 30 degrees so a FLAT
+  // faces +X, the same orientation the in-memory envelope builds (nutSolid);
+  // both doors must produce the same solid.
   const r = dims.S / Math.sqrt(3);
   const pts: [number, number][] = [];
   for (let i = 0; i < 6; i++) {
-    const a = (Math.PI / 3) * i;
+    const a = (Math.PI / 3) * i + Math.PI / 6;
     pts.push([r * Math.cos(a), r * Math.sin(a)]);
   }
   const prism = OcctBackend.extrudePolygon(pts, dims.m);

@@ -27,6 +27,21 @@ Evidence:
   scope statement.
 - `video-evidence.json` — input image hashes, delivered video hash, slide
   durations and the exact render invocations.
+- `viewer-evidence.json` — the GLB the inline viewers consume (part names,
+  one material per part) exported through the same CLI path as the hosted
+  `export` tool.
+
+## Hosted apps (Claude, ChatGPT, Studio)
+
+`lib.insert` needs no filesystem: hole detection, seat cuts and stack
+placement run on OCCT alone. `src/modeling/runtime/browserRuntime.test.ts`
+covers the browser-shaped runtime without a host filesystem
+("lib.insert reads holes, cuts seats and places stacks without a
+filesystem"), which is the same runtime the hosted `evaluate_script` and
+`render_preview` paths use. `viewer-evidence.json` records that the example
+exports to a GLB with named parts and per-part materials, the payload the
+inline viewer renders. The parts skill teaches Claude and ChatGPT agents the
+call and its two caveats (`pilotFor`, `existingSeatMm`).
 
 Scope: digital envelope geometry only. The bores are read from the lowered
 BREP (any `.hole()`, `.holes()`, pattern or imported hole behaves the same);

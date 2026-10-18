@@ -75,6 +75,12 @@ export interface InsertedHole {
   thread: string;
   /** Stocked screw length chosen for the grip. */
   lengthMm: number;
+  /** Set when the bore diameter sits exactly on a larger thread's tap drill
+   *  (ISO 2306): the bore may be a tapped pilot rather than clearance. */
+  pilotFor?: string;
+  /** Set when a coaxial larger bore already reaches this hole's mouth, so the
+   *  automatic seat was left alone. Carries that bore's diameter, mm. */
+  existingSeatMm?: number;
   screw: Shape;
   headWasher?: Shape;
   tailWasher?: Shape;
@@ -105,8 +111,23 @@ export const CLEARANCE_MM: Readonly<Record<string, number>> = {
 export const SIMILAR_DIAMETER_TOL_MM = 0.1;
 /** How far a bore diameter may sit from a stocked clearance bore, mm. */
 export const CLEARANCE_MATCH_TOL_MM = 0.2;
+/** Coarse-pitch ISO metric tap drills (ISO 2306), mm. A tapped pilot is not a
+ *  clearance bore: the detector reports the modeled pilot diameter, so these
+ *  are reported back as `pilotFor` rather than silently sized as clearance. */
+export const TAP_DRILL_MM: Readonly<Record<string, number>> = {
+  M3: 2.5,
+  M4: 3.3,
+  M5: 4.2,
+  M6: 5,
+  M8: 6.8,
+  M10: 8.5,
+};
+/** How close a bore must sit to a tap drill to be called out, mm. */
+export const TAP_DRILL_MATCH_TOL_MM = 0.02;
 /** Seat tools run this far past the mouth so the boolean has no coplanar face. */
 const SEAT_OVERSHOOT_MM = 0.2;
+/** How close a coaxial larger bore must sit to count as an existing seat. */
+export const EXISTING_SEAT_TOL_MM = 0.5;
 
 const INSERT_EXAMPLE =
   "lib.insert(plate, { diameterMm: 5.5, family: 'socket-head-cap-screw', mode: 'bolt', gripMm: 6 })";
@@ -148,6 +169,26 @@ export function threadForHoleDiameter(diameterMm: number): string | undefined {
     }
   }
   return best;
+}
+
+function nominalOf(thread: string): number {
+  return Number.parseFloat(thread.slice(1));
+}
+
+/** The larger stock thread whose tap drill this bore matches, if any. A bore
+ *  that sits exactly on a tap drill cannot be told from a tapped pilot, so the
+ *  caller gets the ambiguity instead of silence. Smaller-thread pilots are not
+ *  reported: the bore would then size to that thread's clearance anyway. */
+export function pilotForThread(diameterMm: number, sizedThread: string): string | undefined {
+  const sized = nominalOf(sizedThread);
+  return Object.entries(TAP_DRILL_MM)
+    .filter(
+      ([thread, drill]) =>
+        nominalOf(thread) > sized + 1e-9 &&
+        Math.abs(drill - diameterMm) <= TAP_DRILL_MATCH_TOL_MM + 1e-9,
+    )
+    .sort(([a], [b]) => nominalOf(a) - nominalOf(b))
+    .map(([thread]) => thread)[0];
 }
 
 /** A bore this API can put a fastener into: full, open, not an internal duct. */
@@ -319,6 +360,34 @@ export interface PlannedInsert {
   gripMm: number;
   lengthMm: number;
   seat: ResolvedInsert['seat'];
+  /** See {@link InsertedHole.pilotFor}. */
+  pilotFor?: string;
+  /** See {@link InsertedHole.existingSeatMm}; a seat already at the mouth. */
+  existingSeatMm?: number;
+}
+
+/** Does the bore's wall span the given point (within tolerance)? */
+function boreCoversPoint(bore: CylindricalHole, point: Vec3): boolean {
+  const t = dot(sub(point, bore.axisOrigin), bore.axisDirection);
+  return t >= -EXISTING_SEAT_TOL_MM && t <= bore.depthMm + EXISTING_SEAT_TOL_MM;
+}
+
+/** A coaxial larger bore already at this hole's head end: a counterbore (or a
+ *  spotface). Cutting the automatic seat into it would be wrong, so the seat
+ *  is skipped and the existing one reported. */
+export function existingSeatBoreFor(
+  bores: readonly CylindricalHole[],
+  bore: CylindricalHole,
+  centerMm: Vec3,
+): CylindricalHole | undefined {
+  return bores.find(
+    (candidate) =>
+      isUsableBore(candidate) &&
+      candidate.diameterMm >= bore.diameterMm + EXISTING_SEAT_TOL_MM &&
+      Math.abs(dot(candidate.axisDirection, bore.axisDirection)) >= 0.999 &&
+      distanceToAxisLine(candidate, centerMm) <= 0.05 &&
+      boreCoversPoint(candidate, centerMm),
+  );
 }
 
 function byCenter(a: PlannedInsert, b: PlannedInsert): number {
@@ -394,6 +463,11 @@ export function planInserts(
               gripMm,
               mode: resolved.mode,
             }).lengthMm;
+      const pilotFor = pilotForThread(bore.diameterMm, thread);
+      const existing =
+        (request.seat ?? 'auto') === 'auto' && resolved.seat !== 'none'
+          ? existingSeatBoreFor(bores, bore, frame.center)
+          : undefined;
       return {
         bore,
         centerMm: frame.center,
@@ -402,7 +476,9 @@ export function planInserts(
         family: resolved.family,
         gripMm,
         lengthMm,
-        seat: resolved.seat,
+        seat: existing === undefined ? resolved.seat : ('none' as const),
+        ...(pilotFor !== undefined ? { pilotFor } : {}),
+        ...(existing !== undefined ? { existingSeatMm: existing.diameterMm } : {}),
       };
     })
     .sort(byCenter);
@@ -489,6 +565,8 @@ export async function insertFasteners(
       depthMm: plan.bore.depthMm,
       thread: plan.thread,
       lengthMm: placed.lengthMm,
+      ...(plan.pilotFor !== undefined ? { pilotFor: plan.pilotFor } : {}),
+      ...(plan.existingSeatMm !== undefined ? { existingSeatMm: plan.existingSeatMm } : {}),
       screw: placeMember(placed.screw, plan),
       ...(placed.headWasher !== undefined ? { headWasher: placeMember(placed.headWasher, plan) } : {}),
       ...(placed.tailWasher !== undefined ? { tailWasher: placeMember(placed.tailWasher, plan) } : {}),

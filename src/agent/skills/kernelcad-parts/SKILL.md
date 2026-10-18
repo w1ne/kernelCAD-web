@@ -129,9 +129,16 @@ pattern. The seat follows the family: flat-head cuts a 90° countersink to
 the head diameter, cap heads cut nothing unless `seat: 'counterbore'`.
 Through holes take the head at the end nearest `near` (or the larger Z);
 `headAt` overrides. A blind hole takes `mode: 'screw'` and the longest
-stocked length that fits; `mode: 'bolt'` requires a through bore. Only
-clearance bores are sized — a tapped hole reports its modeled pilot
-diameter, so do not use `lib.insert` to classify a thread.
+stocked length that fits; `mode: 'bolt'` requires a through bore.
+
+Two bores need a second look:
+- A bore that sits exactly on a larger thread's tap drill (ISO 2306:
+  Ø2.5→M3, Ø3.3→M4, Ø4.2→M5, Ø5.0→M6, Ø6.8→M8) is reported on the hole as
+  `pilotFor: 'M4'`. The detector cannot tell a tapped pilot from clearance,
+  so check `pilotFor` before trusting the size.
+- A coaxial larger bore that already reaches the mouth (a counterbore) is
+  reported as `existingSeatMm`; `seat: 'auto'` then leaves the hole alone
+  instead of cutting a second seat into it.
 
 ## Pre-shipped connector convention
 
