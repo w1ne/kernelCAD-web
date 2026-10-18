@@ -61,6 +61,7 @@ import {
 } from './stressInfillExport';
 import type { Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { resolvePrinterProfile } from '../../kernel/export/gcode/printerProfiles';
+import type { FabProcess } from '../../shared/fab';
 export type { StressInfillExportOptions, StressInfillReport } from './stressInfillExport';
 export { stlNotWatertightDiagnostic } from './exportDiagnostics';
 
@@ -69,7 +70,7 @@ export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 export type ExportFormat =
   | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'obj' | 'usd' | 'svg-drawing' | 'pdf-drawing'
   | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode' | 'usd-isaac'
-  | 'bom-csv' | 'bom-json' | 'bend-table';
+  | 'bom-csv' | 'bom-json' | 'order-pack' | 'bend-table';
 
 /** Per-format option payloads. The union member is selected by `format`. */
 export type ExportOptions =
@@ -165,6 +166,15 @@ export type ExportOptions =
     }
   | { format: 'bom-csv' }
   | { format: 'bom-json' }
+  | {
+      format: 'order-pack';
+      /** Pack name carried by the manifest / README; default 'order'. */
+      name?: string;
+      /** Fabricated rows to pack, by declared/inferred process. Ignored when `items` is given. */
+      processes?: FabProcess[];
+      /** Fabricated rows to pack, by BOM item number; wins over `processes`. */
+      items?: number[];
+    }
   | { format: 'bend-table' };
 
 /**

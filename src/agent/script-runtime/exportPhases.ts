@@ -26,6 +26,7 @@ import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { sceneToConnectorManifest } from './connectorManifestExport';
+import { exportOrderPack } from './orderPackExport';
 import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
 import { exportSceneStlAsShells, freeformFuseOverBudget, meshPartsAsShells } from './sceneStlFuse';
 import {
@@ -144,13 +145,16 @@ export async function exportAssemblyFormat(
   if (format === 'bom-csv' || format === 'bom-json') {
     return exportBom(format, arm, run, diagnostics, featureCount);
   }
+  if (format === 'order-pack') {
+    return exportOrderPack(input, run, arm, diagnostics, featureCount);
+  }
   return exportUsdIsaac(input, arm, diagnostics, featureCount);
 }
 
-type AssemblyFormat = 'urdf' | 'srdf' | 'sdf-gazebo' | 'usd-isaac' | 'bom-csv' | 'bom-json';
+type AssemblyFormat = 'urdf' | 'srdf' | 'sdf-gazebo' | 'usd-isaac' | 'bom-csv' | 'bom-json' | 'order-pack';
 
 function isAssemblyFormat(format: ExportInput['format']): format is AssemblyFormat {
-  return format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo' || format === 'usd-isaac' || format === 'bom-csv' || format === 'bom-json';
+  return format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo' || format === 'usd-isaac' || format === 'bom-csv' || format === 'bom-json' || format === 'order-pack';
 }
 
 /** Resolve the captured Assembly for a pure-XML export: the returned Scene's
