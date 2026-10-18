@@ -9,8 +9,13 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { runScript } from '../../../../src/composition/runScript';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
+import { inspectStepBuffer } from '../../../../src/kernel/import/inspectStep';
+import { readStepOriginatingSystem } from '../../../../src/kernel/export/stepHeader';
 import type { Assembly } from '../../../../src/modeling/capture/assembly';
 import { partStepBytes, partStlBytes, partDxfBytes } from '../../../../src/kernel/backends/occt/partFileExport';
+
+// Same reader-side assertion attribution.test.ts uses for every stamped export.
+const GENERATOR = /^kernelCAD \S+ \(https:\/\/kernelcad\.com\)$/;
 
 beforeAll(async () => {
   const { initOcct } = await import('../../../../src/kernel/backends/occt/occtBackend');
@@ -38,12 +43,15 @@ function firstAssembly(r: Awaited<ReturnType<typeof runScript>>): Assembly {
 }
 
 describe('partFileExport', () => {
-  it('writes a single-body STEP for a part', async () => {
+  it('writes a stamped, single-body STEP for a part', async () => {
     const r = await runScript({ code: PLATE_ARM, fileName: 'a.kcad.ts' });
     const arm = firstAssembly(r);
     const part = arm.__parts()[0];
     const bytes = await partStepBytes(part.originalShape, part.name);
     expect(new TextDecoder().decode(bytes.slice(0, 12))).toBe('ISO-10303-21');
+    expect(readStepOriginatingSystem(bytes)).toMatch(GENERATOR);
+    const report = await inspectStepBuffer(bytes, 'plate.step');
+    expect(report.solidCount).toBe(1);
   }, 60000);
 
   it('writes binary STL bytes for a part', async () => {

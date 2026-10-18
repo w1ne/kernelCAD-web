@@ -4,25 +4,36 @@
 //
 // Single-part file bytes for the order pack: one body per file (the format
 // every instant-quote shop requires). STEP reuses the XCAF writer behind
-// exportSceneToSTEPAsync; STL reuses the exact production exportPartTool
-// already ships; DXF takes a holes-aware flattened sheet region straight to
-// the polyline writer.
+// exportSceneToSTEPAsync; STL reuses the exact byte production
+// `runAndExportParts` (behind the export_part MCP tool) already ships; DXF
+// takes a holes-aware flattened sheet region straight to the polyline writer.
 
+import type { Shape3D } from 'replicad';
 import { writeStepAssembly } from './stepAssemblyExport';
 import { exportDxf } from './exportDxf';
-import type { OcctBackend } from './occtBackend';
 import { meshShapeForExport } from './backendMesh';
 import { encodeBinaryStl, type MeshData } from './exportStlBinary';
+import { stampStepOriginatingSystem } from '../../export/stepHeader';
+import { attributionGenerator } from '../../../shared/links/attribution';
 import type { Region } from '../../../shared/intent/region';
 
 /**
+ * What this module needs from a lowered part backend: its replicad handle.
+ * Kernel modules may not import `modeling/capture/*` (layering: shared →
+ * kernel → modeling → …) and this module must not bind back to the concrete
+ * `OcctBackend` (it is imported BY occtBackend now), so both surfaces bind
+ * structurally — `OcctBackend` / `Shape.lower()`'s result satisfy this.
+ */
+export interface LoweredPartShape {
+  getReplicadShape(): Shape3D;
+}
+
+/**
  * The captured-Shape surface this module needs — modeling's `Shape` before
- * lowering. Kernel modules may not import `modeling/capture/*` (layering:
- * shared → kernel → modeling → …), so bind structurally: anything whose
- * `lower()` resolves to an OCCT backend, i.e. `Shape.lower()`.
+ * lowering, i.e. anything whose `lower()` resolves to a lowered backend.
  */
 export interface LowerablePartShape {
-  lower(): Promise<OcctBackend>;
+  lower(): Promise<LoweredPartShape>;
 }
 
 /**
@@ -30,13 +41,15 @@ export interface LowerablePartShape {
  * captured Shape (pre-assembly-placement), so the file ships the part in
  * local coordinates — what a quote shop quotes. `name` becomes the STEP
  * body name; the neutral gray keeps the body readable without implying a
- * material.
+ * material. The HEADER gets the same kernelCAD originating_system stamp
+ * every other STEP export path writes (ATTRIBUTION.md).
  */
 export async function partStepBytes(shape: LowerablePartShape, name: string): Promise<Uint8Array> {
   const lowered = await shape.lower();
-  return writeStepAssembly([
+  const bytes = writeStepAssembly([
     { shape: lowered.getReplicadShape().wrapped, name, color: '#b0b0b0' },
   ]);
+  return stampStepOriginatingSystem(bytes, attributionGenerator());
 }
 
 /**
@@ -46,7 +59,7 @@ export async function partStepBytes(shape: LowerablePartShape, name: string): Pr
  * `mesh` lets a caller that already meshed for the watertight report reuse
  * that mesh instead of tessellating twice.
  */
-export function partStlBytes(lowered: OcctBackend, mesh?: MeshData): Uint8Array {
+export function partStlBytes(lowered: LoweredPartShape, mesh?: MeshData): Uint8Array {
   const m = mesh ?? meshShapeForExport(lowered.getReplicadShape());
   return Uint8Array.from(encodeBinaryStl({ vertices: m.vertices, triangles: m.triangles }));
 }
