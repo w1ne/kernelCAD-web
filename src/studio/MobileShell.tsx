@@ -8,7 +8,7 @@
 // phone's width; its facts move into More → Status.
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type JSX, type KeyboardEvent, type ReactNode } from 'react';
 import {
-    Box, ChevronRight, Code2, Download, Film, FolderOpen, Info, Layers, Link2, MoreHorizontal, Plug, ShieldCheck,
+    Box, ChevronRight, Code2, Download, Film, FolderOpen, Info, Layers, Link2, MoreHorizontal, Package, Plug, ShieldCheck,
     SlidersHorizontal, Sparkles,
 } from 'lucide-react';
 import { Header } from './components/Layout/Header';
@@ -368,6 +368,9 @@ function MoreList({ visibleTabs, checks, summary, enableConnect, viewerMode, onO
                 />
                 {visibleTabs.includes('joints') && (
                     <MoreRow icon={<Link2 {...ICON} />} label="Joints" onClick={() => onOpen('joints')} testId="mobile-more-joints" />
+                )}
+                {visibleTabs.includes('parts') && (
+                    <MoreRow icon={<Package {...ICON} />} label="Parts" hint="Bill of materials and ordering" onClick={() => onOpen('parts')} testId="mobile-more-parts" />
                 )}
                 {visibleTabs.includes('animation') && (
                     <MoreRow icon={<Film {...ICON} />} label="Animation" onClick={() => onOpen('animation')} testId="mobile-more-animation" />

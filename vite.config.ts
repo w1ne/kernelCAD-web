@@ -440,7 +440,7 @@ function kernelCadMeshEndpoint(): Plugin {
           // follow-up slice; until then they fire export.<format>.not-implemented
           // from the runtime, which would surface as "export produced no bytes"
           // here.
-          const SUPPORTED_STUDIO_FORMATS = ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'pdf-drawing', 'order-pack'] as const;
+          const SUPPORTED_STUDIO_FORMATS = ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'pdf-drawing', 'order-pack', 'bom-csv'] as const;
           type StudioFormat = (typeof SUPPORTED_STUDIO_FORMATS)[number];
           if (!SUPPORTED_STUDIO_FORMATS.includes(formatParam as StudioFormat)) {
             res.statusCode = 400;
@@ -543,6 +543,7 @@ function kernelCadMeshEndpoint(): Plugin {
             'svg-drawing': 'image/svg+xml',
             'pdf-drawing': 'application/pdf',
             'order-pack': 'application/zip',
+            'bom-csv': 'text/csv',
           };
           if (url.searchParams.get('review') === '1' && formatParam === 'svg-drawing') {
             res.statusCode = 200;
@@ -551,7 +552,7 @@ function kernelCadMeshEndpoint(): Plugin {
             return;
           }
           const contentType = CONTENT_TYPES[formatParam as StudioFormat];
-          const extension = formatParam === 'pdf-drawing' ? 'pdf' : formatParam === 'svg-drawing' ? 'svg' : formatParam === 'order-pack' ? 'zip' : formatParam;
+          const extension = formatParam === 'pdf-drawing' ? 'pdf' : formatParam === 'svg-drawing' ? 'svg' : formatParam === 'order-pack' ? 'zip' : formatParam === 'bom-csv' ? 'csv' : formatParam;
           const downloadName = `${fileName.replace(/\.[^./]+$/, '')}.${extension}`;
           res.statusCode = 200;
           res.setHeader('content-type', contentType);

@@ -2,11 +2,11 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /** @vitest-environment happy-dom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { PartsTab } from '../../tabs/PartsTab';
-import type { BomRow } from '../../../agent/script-runtime/bom';
+import type { BomRow, BomTotals } from '../../../agent/script-runtime/bom';
 
-const rows: BomRow[] = [
+const baseRows: BomRow[] = [
     {
         item: 1,
         name: 'plate',
@@ -44,24 +44,30 @@ const rows: BomRow[] = [
     },
 ];
 
+interface MockBomState {
+    status: 'ready' | 'error';
+    rows: BomRow[];
+    totals: BomTotals | null;
+    diagnostics: unknown[];
+    error?: string;
+}
+
+let bomState: MockBomState;
 const bomCalls: unknown[][] = [];
 
 vi.mock('../../hooks/useBom', () => ({
     useBom: (...args: unknown[]) => {
         bomCalls.push(args);
-        return {
-            status: 'ready',
-            rows,
-            totals: { partCount: 6, uniquePartCount: 2, totalMassG: 200 },
-            diagnostics: [],
-        };
+        return bomState;
     },
 }));
 
-const features = [
+const baseFeatures = [
     { id: 'assemblyPart_1', kind: 'assemblyPart', metadata: { partName: 'plate_a' } },
     { id: 'assemblyPart_2', kind: 'assemblyPart', metadata: { partName: 'plate_b' } },
 ];
+
+let features = baseFeatures;
 
 vi.mock('../../hooks/useRecomputeResult', () => ({
     useRecomputeResult: () => ({ features }),
@@ -74,9 +80,42 @@ vi.mock('../../selectionCode/selectionCodeStore', () => ({
     selectionCodeStore: { highlightFromCode: (ids: string[]) => highlightFromCode(ids) },
 }));
 
+const exportViaServer = vi.fn(async () => ({ blob: new Blob(['pack']), downloadName: 'part.zip' }));
+const downloadBlob = vi.fn();
+vi.mock('../../exportViaServer', () => ({
+    exportViaServer: (...args: unknown[]) => exportViaServer(...args),
+    downloadBlob: (...args: unknown[]) => downloadBlob(...args),
+}));
+
+vi.mock('../../hooks/useExportTask', () => ({
+    useExportTask: () => ({
+        state: { running: null, elapsedSec: 0, progress: null, error: null, notice: null },
+        start: async (
+            _label: string,
+            run: (options: Record<string, never>) => Promise<{ blob: Blob; downloadName: string }>,
+            save: (blob: Blob, downloadName: string) => void,
+        ) => {
+            const file = await run({});
+            save(file.blob, file.downloadName);
+        },
+        cancel: () => undefined,
+        dismiss: () => undefined,
+    }),
+    exportProgressText: () => null,
+}));
+
 beforeEach(() => {
     highlightFromCode.mockClear();
+    exportViaServer.mockClear();
+    downloadBlob.mockClear();
     bomCalls.length = 0;
+    bomState = {
+        status: 'ready',
+        rows: baseRows,
+        totals: { partCount: 6, uniquePartCount: 2, totalMassG: 200 },
+        diagnostics: [],
+    };
+    features = baseFeatures;
     window.history.replaceState(null, '', '/?script=examples/foo.kcad.ts');
 });
 
@@ -100,8 +139,58 @@ describe('PartsTab', () => {
         expect(highlightFromCode).toHaveBeenCalledWith(['assemblyPart_1', 'assemblyPart_2']);
     });
 
+    it('highlights every feature when a part name is duplicated across assemblies', () => {
+        features = [...baseFeatures, { id: 'assemblyPart_3', kind: 'assemblyPart', metadata: { partName: 'plate_a' } }];
+        render(<PartsTab />);
+        fireEvent.click(screen.getByTestId('parts-row-1'));
+        expect(highlightFromCode).toHaveBeenCalledWith(['assemblyPart_1', 'assemblyPart_3', 'assemblyPart_2']);
+    });
+
     it('addresses the BOM by the current script context (viewport parity)', () => {
         render(<PartsTab />);
         expect(bomCalls.at(-1)).toEqual(['return 1;', true, 'examples/foo.kcad.ts']);
+    });
+
+    it('opens the Order sheet from the Order… button', () => {
+        render(<PartsTab />);
+        const opener = screen.getByTestId('parts-order-open');
+        expect(opener.getAttribute('aria-expanded')).toBe('false');
+        fireEvent.click(opener);
+        expect(screen.getByRole('dialog', { name: 'Order parts' })).toBeTruthy();
+    });
+
+    it('downloads the order pack of a fabricated row only', async () => {
+        render(<PartsTab />);
+        expect(screen.queryByTestId('parts-row-download-2')).toBeNull();
+        fireEvent.click(screen.getByTestId('parts-row-download-1'));
+        await waitFor(() => expect(exportViaServer).toHaveBeenCalledWith(
+            'order-pack',
+            'return 1;',
+            { exportOptions: { items: [1] } },
+        ));
+        expect(downloadBlob).toHaveBeenCalledOnce();
+    });
+
+    it('falls back to the computed sum when totals are missing', () => {
+        bomState = { ...bomState, totals: null };
+        render(<PartsTab />);
+        expect(screen.getByTestId('parts-totals').textContent).toContain('200 g');
+    });
+
+    it('shows mass unknown when totals are missing and no row has a mass', () => {
+        bomState = {
+            ...bomState,
+            totals: null,
+            rows: baseRows.map((row) => ({ ...row, massGPerUnit: null, massGTotal: null })),
+        };
+        render(<PartsTab />);
+        expect(screen.getByTestId('parts-totals').textContent).toContain('mass unknown');
+    });
+
+    it('renders BOM failures with the error styling', () => {
+        bomState = { status: 'error', rows: [], totals: null, diagnostics: [], error: 'BOM failed.' };
+        render(<PartsTab />);
+        expect(screen.getByTestId('parts-error').textContent).toContain('BOM failed.');
+        expect(screen.getByTestId('parts-error').className).toContain('text-red-200');
     });
 });
