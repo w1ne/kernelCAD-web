@@ -3,19 +3,33 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { CONNECT_CLIENTS, DEFAULT_CLIENT, STARTER_PROMPT, connectClient, emphasisSegments } from './connectClients';
-import { CODEX_ADD_CMD, CODEX_LOGIN_CMD, MCP_URL, claudeNewChatLink } from './connectLinks';
+import {
+  CLAUDE_PLUGIN_CMD,
+  CODEX_LOGIN_CMD,
+  CODEX_PLUGIN_INSTALL_CMD,
+  CODEX_PLUGIN_MARKETPLACE_CMD,
+  claudeNewChatLink,
+} from './connectLinks';
 import { findNewProject } from './firstModelWatch';
 
 describe('connect clients', () => {
-  it('covers the four agents people connect from, plus the editors', () => {
-    expect(CONNECT_CLIENTS.map((c) => c.id)).toEqual(['chatgpt', 'claude', 'claude-code', 'codex', 'cursor', 'vscode']);
+  it('covers every agent with a plugin or a hosted-MCP connection path', () => {
+    expect(CONNECT_CLIENTS.map((c) => c.id)).toEqual([
+      'chatgpt',
+      'claude',
+      'claude-code',
+      'codex',
+      'gemini',
+      'grok',
+      'cursor',
+      'vscode',
+    ]);
   });
 
-  it('gives every agent a way to add the server: the URL, a command or an install link', () => {
+  it('gives every agent a way to install: the URL, a command or an install link', () => {
     for (const c of CONNECT_CLIENTS) {
       expect(c.steps.length, c.id).toBeGreaterThan(0);
-      const commandHasUrl = c.commands?.some((cmd) => cmd.value.includes(MCP_URL)) ?? false;
-      expect(c.needsUrl || commandHasUrl || !!c.link, c.id).toBe(true);
+      expect(c.needsUrl || (c.commands?.length ?? 0) > 0 || !!c.link, c.id).toBe(true);
     }
   });
 
@@ -24,10 +38,24 @@ describe('connect clients', () => {
     expect(connectClient('claude').link?.href).toBe('https://claude.ai/settings/connectors');
   });
 
-  it('adds Codex over streamable HTTP and signs in with OAuth', () => {
-    expect(CODEX_ADD_CMD).toBe(`codex mcp add kernelcad --url ${MCP_URL}`);
-    expect(CODEX_LOGIN_CMD).toBe('codex mcp login kernelcad');
-    expect(connectClient('codex').commands?.map((c) => c.value)).toEqual([CODEX_ADD_CMD, CODEX_LOGIN_CMD]);
+  it('installs Claude Code from the plugin marketplace', () => {
+    expect(connectClient('claude-code').commands?.map((c) => c.value)).toEqual([CLAUDE_PLUGIN_CMD]);
+  });
+
+  it('installs Codex from the plugin marketplace and signs in with OAuth', () => {
+    expect(connectClient('codex').commands?.map((c) => c.value)).toEqual([
+      CODEX_PLUGIN_MARKETPLACE_CMD,
+      CODEX_PLUGIN_INSTALL_CMD,
+      CODEX_LOGIN_CMD,
+    ]);
+  });
+
+  it('installs the Gemini extension and the Grok Build plugin', () => {
+    expect(connectClient('gemini').commands?.length).toBe(1);
+    expect(connectClient('grok').commands?.map((c) => c.value)).toEqual([
+      'grok plugin marketplace add w1ne/kernelCAD-web',
+      'grok plugin install kernelcad --trust',
+    ]);
   });
 
   it('falls back to the default agent for unknown ?client= values', () => {
