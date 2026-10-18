@@ -10,7 +10,7 @@
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { DemoPlayerPage } from '../components/demoPlayer/DemoPlayerPage';
+import { DemoPlayerPage } from '../../player/DemoPlayerPage';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

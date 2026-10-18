@@ -12,7 +12,7 @@
 
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { ROOM_ENVIRONMENT_INTENSITY, ROOM_ENVIRONMENT_ROTATION_X } from '../viewer/viewerLighting';
+import { ROOM_ENVIRONMENT_INTENSITY, ROOM_ENVIRONMENT_ROTATION_X } from './viewerLighting';
 
 const owned = new WeakMap<THREE.Scene, THREE.Texture>();
 

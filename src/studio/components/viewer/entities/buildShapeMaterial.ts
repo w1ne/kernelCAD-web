@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import type { GeometryResult } from '../../../../shared/worker/geometryEngine';
 import type { ViewMode3D } from '../../../../shared/types/viewMode';
-import { buildMaterialFromPBR } from '../../demoPlayer/buildMaterialFromPBR';
+import { buildMaterialFromPBR } from '../../../../player/buildMaterialFromPBR';
 import { PUBLISH_DEFAULT_MATERIAL, type ViewerLook } from '../publishLook';
 
 /**

@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import type { GeometryResult } from '../../../shared/worker/geometryEngine';
 import type { ViewportBackground } from '../../../shared/types/viewMode';
-import { buildContactShadow, type ContactShadow } from '../demoPlayer/contactShadow';
+import { buildContactShadow, type ContactShadow } from '../../../player/contactShadow';
 import { CAPTURE_HIDDEN_FLAG } from './captureViewerPng';
 import {
     DARK_BACKDROP_SHADOW_GAIN,

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment jsdom
-// src/components/demoPlayer/DemoPlayerPage.test.tsx
+// src/player/DemoPlayerPage.test.tsx
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Mock WebGLRenderer since jsdom has no WebGL support.
@@ -44,18 +44,12 @@ vi.mock('three', async () => {
   return { ...actual, WebGLRenderer: FakeWebGLRenderer };
 });
 
-// S1: DemoPlayerPage's mesh fetches route through the apiBase helper now,
-// which calls supabase.auth.getSession(). Stub it so the test stays
-// behavior-equivalent to today (unsigned-in → relative URLs).
-vi.mock('../../../funnel/lib/supabaseClient', () => ({
-  getSupabase: () => ({
-    auth: { getSession: async () => ({ data: { session: null } }) },
-  }),
-}));
+// The player's mesh fetches route through ./apiBase, the auth-free shim:
+// unsigned-in → relative URLs, no Supabase session involved.
 
 import { cleanup, render, waitFor } from '@testing-library/react';
 import { DemoPlayerPage } from './DemoPlayerPage';
-import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
+import type { FeatureMeshSerialized } from '../modeling/capture/featureMeshSerialize';
 
 describe('DemoPlayerPage.loadFeatureMeshes', () => {
   beforeEach(() => {

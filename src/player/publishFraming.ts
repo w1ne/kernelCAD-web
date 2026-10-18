@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/studio/components/demoPlayer/publishFraming.ts
+// src/player/publishFraming.ts
 //
 // Auto-framing for the 'publish' render preset — pure math over the model's
 // world-space vertices (no scene, no renderer; unit-tested directly).
@@ -17,7 +17,7 @@
 // frame (no zoom pumping) and frames the model at every azimuth.
 
 import { fitDistanceForPoints } from './cameraFit';
-import { poseCameraDir, type PublishFrameRequest } from '../../../shared/render/publishPreset';
+import { poseCameraDir, type PublishFrameRequest } from '../shared/render/publishPreset';
 
 export type Vec3 = [number, number, number];
 

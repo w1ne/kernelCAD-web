@@ -9,7 +9,7 @@
 // tests/integration/render/finishBrightnessLive.test.ts).
 
 import { describe, expect, it } from 'vitest';
-import { FINISHES } from '../../../shared/render/finishes';
+import { FINISHES } from '../shared/render/finishes';
 
 /** Relative luminance of an sRGB hex colour (0 black .. 1 white). */
 function luminance(hex: string): number {

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/studio/components/demoPlayer/demoPlayerDiagnostics.ts
+// src/player/demoPlayerDiagnostics.ts
 //
 // Read-only scene snapshot for the demo player's `dumpScene` bridge call.
 

@@ -4,7 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Suspense, lazy } from 'react';
 
 const LazyDemoPlayerPage = lazy(() =>
-  import('../components/demoPlayer/DemoPlayerPage').then(({ DemoPlayerPage }) => ({
+  import('../../player/DemoPlayerPage').then(({ DemoPlayerPage }) => ({
     default: DemoPlayerPage,
   })),
 );

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/studio/components/demoPlayer/sectionParam.test.ts
+// src/player/sectionParam.test.ts
 //
 // Unit tests for the demo-player `?section=<axis>:<pos>` / `?sectionflip=1`
 // URL-param parser used by the headless render path.

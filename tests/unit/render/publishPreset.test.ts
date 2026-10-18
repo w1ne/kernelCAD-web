@@ -16,8 +16,8 @@ import {
   publishSupersample,
   turntableAzimuths,
 } from '../../../src/shared/render/publishPreset';
-import { PUBLISH_FOV_DEG } from '../../../src/studio/components/demoPlayer/publishStage';
-import { frameForRequest } from '../../../src/studio/components/demoPlayer/publishFraming';
+import { PUBLISH_FOV_DEG } from '../../../src/player/publishStage';
+import { frameForRequest } from '../../../src/player/publishFraming';
 
 describe('publish preset — parameters', () => {
   it('normalises backdrops: named, hex, short hex, transparent; rejects junk', () => {

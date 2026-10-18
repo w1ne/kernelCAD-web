@@ -11,7 +11,7 @@ import {
     featureEdgePositions,
     publishEdgeColor,
 } from './publishLook';
-import { CONTACT_SHADOW_LAYERS } from '../demoPlayer/contactShadow';
+import { CONTACT_SHADOW_LAYERS } from '../../../player/contactShadow';
 
 function face(faceId: number, vertices: number[], normal: [number, number, number]): FaceGeometry {
     const normals: number[] = [];

@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { ROOM_ENVIRONMENT_INTENSITY, ROOM_ENVIRONMENT_ROTATION_X } from './viewerLighting';
+import { ROOM_ENVIRONMENT_INTENSITY, ROOM_ENVIRONMENT_ROTATION_X } from '../../../player/viewerLighting';
 
 /** Metals only reflect the environment. Without one, a face with metalness
  *  near 1 is solid black except where a directional specular lobe goes white.

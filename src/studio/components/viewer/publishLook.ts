@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from 'three';
-import type { ContactShadowLayer } from '../demoPlayer/contactShadow';
+import type { ContactShadowLayer } from '../../../player/contactShadow';
 import type { FaceGeometry } from '../../../shared/worker/geometryEngine';
 
 /**

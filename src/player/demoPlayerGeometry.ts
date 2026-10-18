@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from 'three';
-import type { FaceGeometry } from '../../../shared/worker/workerTypes';
-import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
-import type { RenderEnvironmentSpec } from '../../../shared/intent/renderEnvironmentRecord';
-import type { PublishFrameCapture, PublishFrameRequest, PublishStageSpec } from '../../../shared/render/publishPreset';
+import type { FaceGeometry } from '../shared/worker/workerTypes';
+import type { FeatureMeshSerialized } from '../modeling/capture/featureMeshSerialize';
+import type { RenderEnvironmentSpec } from '../shared/intent/renderEnvironmentRecord';
+import type { PublishFrameCapture, PublishFrameRequest, PublishStageSpec } from '../shared/render/publishPreset';
 import { disposeMaterialDeep } from './buildMaterialFromPBR';
 import { fitDistanceForBounds } from './cameraFit';
-import type { RenderView } from '../../../shared/render/views';
+import type { RenderView } from '../shared/render/views';
 export type { RenderView };
 
 export const KCAD_FEATURE_GROUP_KEY = 'kCadFeatureGroup';
@@ -115,7 +115,7 @@ export interface BuildRecord {
 
 export interface DemoPlayerWindow {
   isFrameReady(): boolean;
-  onEvent(event: import('../../../modeling/compute/featureEvents').FeatureEvent): void;
+  onEvent(event: import('../modeling/compute/featureEvents').FeatureEvent): void;
   setRotatePhase(durationMs: number): void;
   setTerminalLines(lines: readonly import('./TerminalPane').TerminalLine[]): void;
   startTerminalClock(originMs: number): void;

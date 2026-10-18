@@ -6,7 +6,7 @@ import { useThree } from "@react-three/fiber";
 import { Grid } from "@react-three/drei/core/Grid";
 import { OrbitControls } from "@react-three/drei/core/OrbitControls";
 import { installRoomEnvironment } from "./roomEnvironment";
-import { VIEWER_FILL_LIGHT, VIEWER_HEMISPHERE, VIEWER_KEY_LIGHT } from "./viewerLighting";
+import { VIEWER_FILL_LIGHT, VIEWER_HEMISPHERE, VIEWER_KEY_LIGHT } from "../../../player/viewerLighting";
 import type { GeometryResult, SketchGeometry } from "../../../shared/worker/geometryEngine";
 import type { SketchPlaneEntity } from "../../../shared/types/plane";
 import type { ViewMode3D, ViewportBackground } from "../../../shared/types/viewMode";

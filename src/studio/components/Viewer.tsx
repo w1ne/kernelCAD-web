@@ -12,7 +12,7 @@ import { useShellStore } from "../store/useShellStore";
 
 // Extracted Components
 import { ViewerScene } from "./viewer/ViewerScene";
-import { VIEWER_TONE_MAPPING, VIEWER_TONE_MAPPING_EXPOSURE } from "./viewer/viewerLighting";
+import { VIEWER_TONE_MAPPING, VIEWER_TONE_MAPPING_EXPOSURE } from "../../player/viewerLighting";
 import { PUBLISH_LOOK_EXPOSURE, PUBLISH_LOOK_TONE_MAPPING, type ViewerLook } from "./viewer/publishLook";
 import { DisplayReadySensor } from "./viewer/DisplayReadySensor";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";

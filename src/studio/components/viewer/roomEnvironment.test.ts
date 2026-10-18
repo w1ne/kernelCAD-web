@@ -8,7 +8,7 @@ import {
     registerRoomForTest,
     roomEnvironmentFor,
 } from './roomEnvironment';
-import { ROOM_ENVIRONMENT_INTENSITY, ROOM_ENVIRONMENT_ROTATION_X } from './viewerLighting';
+import { ROOM_ENVIRONMENT_INTENSITY, ROOM_ENVIRONMENT_ROTATION_X } from '../../../player/viewerLighting';
 
 describe('installRoomEnvironment', () => {
     it('does nothing when the renderer cannot build a PMREM map', () => {

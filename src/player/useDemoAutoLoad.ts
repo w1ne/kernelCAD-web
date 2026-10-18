@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { apiCall, rewritePath } from '../../api/apiBase';
+import { apiCall, rewritePath } from './apiBase';
 import type { TerminalLine } from './TerminalPane';
 import type { BuildRecord, BuildRecordStep, DevMeshPayload } from './demoPlayerGeometry';
 

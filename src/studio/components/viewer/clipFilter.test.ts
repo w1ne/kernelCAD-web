@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import { filterClippedIntersections } from './clipFilter';
-import { sectionPlaneFromState, cutawayPlanesFromState } from './sectionPlane';
+import { sectionPlaneFromState, cutawayPlanesFromState } from '../../../player/sectionPlane';
 
 // A minimal fake intersection carrying just what the filter reads.
 function hit(

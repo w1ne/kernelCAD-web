@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from "three";
 import { useEffect, useMemo } from "react";
-import { cutawayPlanesFromState } from "../../components/viewer/sectionPlane";
+import { cutawayPlanesFromState } from "../../../player/sectionPlane";
 
 // Stable empty array so keep-whole shapes never re-memo their materials.
 export const NO_PLANES: THREE.Plane[] = [];

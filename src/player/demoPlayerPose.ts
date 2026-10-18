@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/studio/components/demoPlayer/demoPlayerPose.ts
+// src/player/demoPlayerPose.ts
 //
 // Transform-only re-pose for already-loaded feature groups. Animation frames
 // whose mesh buffers did not change call this instead of re-sending geometry.

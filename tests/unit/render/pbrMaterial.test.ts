@@ -1,7 +1,7 @@
 // tests/unit/render/pbrMaterial.test.ts
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { buildMaterialFromPBR } from '../../../src/studio/components/demoPlayer/buildMaterialFromPBR';
+import { buildMaterialFromPBR } from '../../../src/player/buildMaterialFromPBR';
 
 describe('buildMaterialFromPBR', () => {
   it('builds MeshPhysicalMaterial with all PBR fields', () => {

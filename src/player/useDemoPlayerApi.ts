@@ -5,7 +5,7 @@ import { AnimationEngine } from './AnimationEngine';
 import { CameraController } from './CameraController';
 import type { TerminalLine } from './TerminalPane';
 import { parseSectionParam } from './sectionParam';
-import { sectionPlaneFromState } from '../viewer/sectionPlane';
+import { sectionPlaneFromState } from './sectionPlane';
 import { createDemoPlayerWindowApi, type DemoPlayerSceneContext } from './demoPlayerApiFactory';
 
 /**

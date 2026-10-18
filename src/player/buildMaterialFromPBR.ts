@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from 'three';
-import { resolveColor } from '../../../shared/render/palette';
-import type { PBRMaterial } from '../../../shared/intent/material';
-import type { TextureRef, TextureSet } from '../../../shared/intent/textureRef';
+import { resolveColor } from '../shared/render/palette';
+import type { PBRMaterial } from '../shared/intent/material';
+import type { TextureRef, TextureSet } from '../shared/intent/textureRef';
 
 /** Default mesh color when a feature has no .color() metadata. Held as a
  *  number for THREE; mirrors the long-standing "neutral CAD silver" tone the

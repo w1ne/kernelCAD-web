@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/studio/components/demoPlayer/publishStage.ts
+// src/player/publishStage.ts
 //
 // Page half of the 'publish' render preset (src/shared/render/publishPreset.ts):
 // a studio stage for product shots. applyPublishStage() swaps the
@@ -22,8 +22,8 @@
 
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import type { PublishFrameCapture, PublishFrameRequest, PublishStageSpec } from '../../../shared/render/publishPreset';
-import { poseCameraDir } from '../../../shared/render/publishPreset';
+import type { PublishFrameCapture, PublishFrameRequest, PublishStageSpec } from '../shared/render/publishPreset';
+import { poseCameraDir } from '../shared/render/publishPreset';
 import { CONTACT_SHADOW_LAYERS, buildContactShadow, type ContactShadow } from './contactShadow';
 import { frameForRequest, type Vec3 } from './publishFraming';
 import { fitCameraToBounds, isInsideFeatureGroup, isVisibleInScene } from './demoPlayerGeometry';

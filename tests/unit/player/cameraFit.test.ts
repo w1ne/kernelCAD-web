@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fitDistanceForBounds } from '../../../src/studio/components/demoPlayer/cameraFit';
+import { fitDistanceForBounds } from '../../../src/player/cameraFit';
 
 describe('fitDistanceForBounds', () => {
   // Tall 30×10×100 box centered at origin, front view (camera toward -Y),

@@ -6,7 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import sharp from 'sharp';
-import { fitCameraToBounds } from '../../../src/studio/components/demoPlayer/demoPlayerGeometry';
+import { fitCameraToBounds } from '../../../src/player/demoPlayerGeometry';
 import { compositeSheet } from '../../../src/agent/render/headlessRender';
 import { SHEET_VIEWS, isRenderView, type RenderView } from '../../../src/shared/render/views';
 

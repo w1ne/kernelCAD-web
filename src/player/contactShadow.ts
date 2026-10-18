@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/studio/components/demoPlayer/contactShadow.ts
+// src/player/contactShadow.ts
 //
 // Soft contact shadow for the 'publish' render preset (publishStage.ts).
 // The model is rendered from BELOW its footprint by an orthographic camera

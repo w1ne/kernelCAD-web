@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from 'three';
-import type { ReferenceImageMetadata } from '../../../shared/intent/referenceImageRecord';
+import type { ReferenceImageMetadata } from '../shared/intent/referenceImageRecord';
 
 /**
  * Apply a PlaneSpec orientation to a THREE.Mesh. This sets the mesh rotation

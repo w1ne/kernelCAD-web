@@ -29,14 +29,14 @@ describe('Initial Studio bundle import sentinels', () => {
   it('keeps route-only Studio surfaces out of App module imports', () => {
     expect(appSource).not.toMatch(/import\s+\{\s*DevLab\s*\}\s+from\s+['"]\.\/devlab\/DevLab['"]/);
     expect(appSource).not.toMatch(/import\s+\{\s*devLabScenarios\s*\}\s+from\s+['"]\.\/devlab\/scenarios['"]/);
-    expect(appSource).not.toMatch(/import\s+\{\s*DemoPlayerPage\s*\}\s+from\s+['"]\.\/components\/demoPlayer\/DemoPlayerPage['"]/);
+    expect(appSource).not.toMatch(/import\s+\{\s*DemoPlayerPage\s*\}\s+from\s+['"](?:\.\.\/)+player\/DemoPlayerPage['"]/);
     expect(appSource).toContain("import('./devlab/DevLab')");
     expect(appSource).toContain("import('./devlab/scenarios')");
   });
 
   it('lazy-loads the demo-player page from its route', () => {
-    expect(demoPlayerRouteSource).not.toMatch(/import\s+\{\s*DemoPlayerPage\s*\}\s+from\s+['"]\.\.\/components\/demoPlayer\/DemoPlayerPage['"]/);
-    expect(demoPlayerRouteSource).toContain("import('../components/demoPlayer/DemoPlayerPage')");
+    expect(demoPlayerRouteSource).not.toMatch(/import\s+\{\s*DemoPlayerPage\s*\}\s+from\s+['"]\.\.\/\.\.\/player\/DemoPlayerPage['"]/);
+    expect(demoPlayerRouteSource).toContain("import('../../player/DemoPlayerPage')");
   });
 
   it('keeps AI and refactoring services behind dynamic imports', () => {

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/studio/components/demoPlayer/sectionParam.ts
+// src/player/sectionParam.ts
 //
 // Parser for the demo-player section-plane URL params. The headless render
 // path (`kernelcad render --section <axis>=<pos>`) forwards the validated
 // flag as `?section=<axis>:<pos>` (+ `?sectionflip=1`); DemoPlayerPage turns
 // the parsed state into a global renderer clipping plane via
-// sectionPlaneFromState (../viewer/sectionPlane).
+// sectionPlaneFromState (./sectionPlane).
 
 export interface SectionParamState {
   axis: 'x' | 'y' | 'z';
