@@ -51,3 +51,47 @@ describe('fixture envelope solids', () => {
     expect(b.max[1] - b.min[1]).toBeCloseTo(28, 6);
   });
 });
+
+describe('fixture catalog STEPs match the envelope', () => {
+  // The generated catalog (assets/parts) is gitignored and built by `pretest`;
+  // when it is present, prove the STEP and the in-memory envelope agree.
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  function expectedZ(family: string, dims: Record<string, number>, lengthMm: number): number {
+    if (family === 't-slot-nut') return (dims.neckHeightMm ?? 0) + (dims.baseHeightMm ?? 0);
+    if (family === 'clamping-stud') return lengthMm;
+    if (family === 'flange-nut') return dims.heightMm ?? 0;
+    if (family === 'strap-clamp') return dims.thicknessMm ?? 0;
+    return (dims.steps ?? 0) * (dims.riseMm ?? 0);
+  }
+
+  it('emits one non-degenerate STEP per fixture variant with the stock z size', async () => {
+    const { existsSync, readFileSync } = await import('node:fs');
+    const { inspectStepBuffer } = await import('../../kernel/import/inspectStep');
+    const { FIXTURE_FAMILY_NAMES, fixtureVariants } = await import('./familyTable');
+    let checked = 0;
+    for (const family of FIXTURE_FAMILY_NAMES) {
+      for (const variant of fixtureVariants(family)) {
+        const part = resolvePart({
+          family,
+          thread: variant.thread,
+          ...(variant.lengthMm !== undefined ? { lengthMm: variant.lengthMm } : {}),
+        });
+        const path = `assets/parts/${family}/${part.id}.step`;
+        if (!existsSync(path)) continue; // catalog not generated in this checkout
+        const report = await inspectStepBuffer(readFileSync(path), part.id);
+        const solid = report.solids[0];
+        expect(solid, `${part.id} has no solid`).toBeDefined();
+        expect(solid!.volumeMm3).toBeGreaterThan(1);
+        const zSize = solid!.bboxExact.max[2] - solid!.bboxExact.min[2];
+        expect(zSize, part.id).toBeCloseTo(expectedZ(family, part.dims ?? {}, part.lengthMm), 3);
+        checked++;
+      }
+    }
+    // A checkout without the generated catalog skips silently; one with it
+    // must have checked every fixture.
+    if (checked > 0) expect(checked).toBe(18);
+  }, 120000);
+});
