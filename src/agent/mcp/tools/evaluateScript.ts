@@ -62,7 +62,7 @@ export interface EvaluateScriptInput {
 }
 
 export interface EvaluateScriptOutput extends McpViewerResult {
-  /** Loopback Studio link, stable across full builds in this MCP process. */
+  /** Loopback live viewer link, stable across full builds in this MCP process. */
   viewerUrl?: string;
   /** Viewer provisioning failed; the CAD build result is still valid. */
   viewerError?: string;
@@ -160,7 +160,7 @@ async function publishBuiltViewer(model: BuildOutcome['model'], buildSucceeded: 
  * produce lowered shapes, so the active MCP session is left untouched —
  * session-dependent tools keep whatever full evaluation ran last.
  *
- * Full builds update a process-local Studio viewer; no files are written.
+ * Full builds update a process-local live viewer; no files are written.
  * Full evaluations retain step snapshot artifacts in a temporary directory.
  */
 export async function evaluateScriptTool(

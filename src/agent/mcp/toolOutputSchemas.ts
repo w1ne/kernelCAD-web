@@ -58,7 +58,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     properties: {
       sceneSummary: SCENE_SUMMARY_SCHEMA,
       ok: { type: 'boolean', description: 'Whether the script compiled and lowered cleanly.' },
-      viewerUrl: { type: 'string', description: 'Live loopback Studio URL; reused on later full builds in the same local MCP process.' },
+      viewerUrl: { type: 'string', description: 'Live loopback viewer URL; reused on later full builds in the same local MCP process.' },
       viewerError: { type: 'string', description: 'Viewer provisioning error; separate from the CAD build result.' },
       viewerMode: { type: 'string', enum: ['hosted'], description: 'Hosted mode uses open_in_studio instead of a process-local viewer.' },
       viewerHint: { type: 'string', description: 'How to view the built model in hosted Studio.' },

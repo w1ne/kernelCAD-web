@@ -16,7 +16,7 @@ export const SOURCE_EDIT: JSONSchemaObject = {
   type: 'object',
   properties: {
     ok: { type: 'boolean', description: 'Whether the edit applied and re-evaluated cleanly.' },
-    viewerUrl: { type: 'string', description: 'Same live Studio link when this edit built a replacement model.' },
+    viewerUrl: { type: 'string', description: 'Same live viewer link when this edit built a replacement model.' },
     viewerError: { type: 'string', description: 'Viewer provisioning error, independent of edit diagnostics.' },
     viewerMode: { type: 'string', enum: ['hosted'], description: 'Hosted mode uses open_in_studio instead of a process-local viewer.' },
     viewerHint: { type: 'string', description: 'How to view the built model in hosted Studio.' },

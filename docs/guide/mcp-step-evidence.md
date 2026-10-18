@@ -32,7 +32,7 @@ For a numeric comparison, subtract the volume in consecutive results. For a
 visual comparison, read both PNGs with the recorded frame. Refrain from calling a
 step visually verified until its images have been inspected.
 
-Local full evaluations also return a reusable loopback Studio `viewerUrl`.
+Local full evaluations also return a reusable loopback viewer `viewerUrl`.
 Hosted servers set `KERNELCAD_MCP_MODE=hosted`: evaluation returns
 `viewerMode: "hosted"` and a `viewerHint` directing clients to `open_in_studio`.
 They do not start a loopback viewer. A missing browser attachment can make
