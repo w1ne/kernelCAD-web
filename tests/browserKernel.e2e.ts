@@ -66,7 +66,14 @@ test.describe('browser kernel routing', () => {
     await page.getByRole('tab', { name: 'Params', exact: true }).click();
     await page.getByTestId('param-row-w').waitFor({ timeout: 120_000 });
 
-    await waitFor(() => kernelEvents.some((event) => event.type === 'build'), 240_000, 'kernel warm build');
+    // The starter (3 feature records) can warm before the gallery source
+    // arrives and is swapped in; wait for the FIXTURE's own build (1 record)
+    // so the edit under test is dispatched against a warm gallery kernel.
+    await waitFor(
+      () => kernelEvents.some((event) => event.type === 'build' && event.featureCount === 1),
+      240_000,
+      'fixture kernel warm build',
+    );
     const postsBeforeEdit = meshPosts;
 
     const input = page.getByTestId('scrub-input-w');
