@@ -21,10 +21,12 @@ const PLATE_ARM = "const arm = assembly('a'); arm.part('plate', box(10, 10, 2));
 
 // Single-bend bracket whose part chain roots at the sheetMetal(...) record,
 // mirroring tests/fixtures/shopcheck/passing-bracket.kcad.ts — the
-// flattenPattern walk needs a sheetMetal root.
+// flattenPattern walk needs a sheetMetal root. One Ø5 through-hole on the
+// flat blank (before the bend) exercises the holes-aware region path.
 const SHEET_ARM = `
 const s = path().moveTo(0, 0).lineTo(50, 0).lineTo(50, 25).lineTo(0, 25).close();
 let blank = sheetMetal(s, { thickness: 3.175, kFactor: 0.38 });
+blank = blank.holes({ byNormal: 'Z' }, { positions: [{ u: -15, v: 0 }], diameter: 5, depth: 'through' });
 blank = blank.bend({ atX: 25 }, 90, 3);
 const arm = assembly('a');
 arm.part('bracket', blank);
@@ -53,7 +55,7 @@ describe('partFileExport', () => {
     expect(bytes.byteLength).toBeGreaterThan(84);
   }, 60000);
 
-  it('writes DXF bytes for a flat sheet part', async () => {
+  it('writes DXF bytes for a flat sheet part with a cutout hole', async () => {
     const r = await runScript({ code: SHEET_ARM, fileName: 'bracket.kcad.ts' });
     // flattenPattern reads the bendRecord metadata that the
     // sheetMetalBend lowerer persists — lower before exporting.
@@ -61,13 +63,22 @@ describe('partFileExport', () => {
     await engine.run(r.records);
     const arm = firstAssembly(r);
     const part = arm.__parts()[0];
-    const bytes = partDxfBytes(r.records, part.originalShape.id);
+    // Holes-aware region (same wrapper the whole-model DXF path uses at
+    // exportPhases.ts:573): outline + the Ø5 cutout + bend lines.
+    const { flattenPatternWithHoles } = await import('../../../../src/modeling/sheetMetalFlatPattern');
+    const region = await flattenPatternWithHoles(r.records, part.originalShape.id, undefined, r.paramTable);
+    expect(region.holes).toHaveLength(1);
+    const bytes = partDxfBytes(region);
     const text = new TextDecoder().decode(bytes);
     // Observed from exportDxf's writer: a `999` provenance comment leads,
     // then the standard 0/SECTION/2/HEADER pair.
     expect(text.startsWith('999\n')).toBe(true);
     expect(text).toContain('0\nSECTION\n2\nHEADER');
-    // Outer cut loop + the single bend line on the BEND layer.
-    expect((text.match(/LWPOLYLINE/g) ?? []).length).toBeGreaterThanOrEqual(2);
+    // The Ø5 hole survives: a closed 48-vertex loop on the cut layer whose
+    // leftmost vertex is the hole's west point (10 - 2.5, 12.5).
+    expect(text).toContain('0\nLWPOLYLINE\n8\ncut\n90\n48\n70\n1');
+    expect(text).toContain('10\n7.500000\n20\n12.500000');
+    // Outer cut loop + the hole loop + the single bend line on the BEND layer.
+    expect((text.match(/LWPOLYLINE/g) ?? []).length).toBeGreaterThanOrEqual(3);
   }, 60000);
 });
