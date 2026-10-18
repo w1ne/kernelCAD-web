@@ -15,6 +15,36 @@ import { browserKernelEnabled } from './flag';
 
 let instance: BrowserKernel | null = null;
 let warmedSource: string | null = null;
+let swapTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingSwap: { source: string; fileName: string } | null = null;
+
+/** Trailing delay before a warm for a different source replaces the running
+ *  worker. Hosted code edits apply on a debounce; swapping on every apply
+ *  would dispose the worker mid-download and re-warm for each keystroke-scale
+ *  edit. The old worker keeps serving until this fires; a newer swap or a
+ *  change back to the current source replaces/cancels it. */
+export const WARM_SETTLE_MS = 1500;
+
+function cancelPendingWarmSwap(): void {
+  if (swapTimer !== null) {
+    clearTimeout(swapTimer);
+    swapTimer = null;
+  }
+  pendingSwap = null;
+}
+
+function scheduleWarmSwap(source: string, fileName: string): void {
+  cancelPendingWarmSwap();
+  pendingSwap = { source, fileName };
+  swapTimer = setTimeout(() => {
+    swapTimer = null;
+    const swap = pendingSwap;
+    pendingSwap = null;
+    if (swap === null) return;
+    disposeBrowserKernel();
+    warmBrowserKernel(swap.source, swap.fileName);
+  }, WARM_SETTLE_MS);
+}
 
 /** Sources the worker cannot build: `lib.fromSTEP` reads the host filesystem,
  *  and a literal relative import needs the server's asset manifest. The
@@ -58,19 +88,30 @@ export function browserKernelForSource(source: string): BrowserKernel | null {
 /** Warm the kernel for `(source, fileName)` in the background. Fire-and-
  *  forget: warm rejects on failure/dispose (see the client's typed errors) and
  *  no caller can act on that — routing simply sees a not-warm kernel. A new
- *  source disposes the old worker first so no state leaks across models. */
+ *  source swaps the old worker only after `WARM_SETTLE_MS` (latest swap wins,
+ *  a change back to the current source cancels it) so no state leaks across
+ *  models without churning the worker on every debounced code edit. */
 export function warmBrowserKernel(source: string, fileName: string): void {
+  // Intentionally skips the capability flag check; `warmKernelOnOpen` is the production entry.
   if (browserKernelSourceIsServerOnly(source)) return;
-  if (warmedSource !== null && warmedSource !== source) disposeBrowserKernel();
+  if (warmedSource !== null && warmedSource !== source) {
+    scheduleWarmSwap(source, fileName);
+    return;
+  }
+  // Same source (or nothing warmed yet): any scheduled swap is stale — the
+  // source about to be warm is the one it was going to swap away from.
+  cancelPendingWarmSwap();
   const kernel = browserKernelInstance();
   warmedSource = source;
   void kernel.warm(source, fileName).catch(() => {});
 }
 
-/** Terminate the worker and forget the warmed source. The client instance
- *  stays (the one singleton) and a later warm respawns its worker fresh — no
- *  state of the disposed model can leak into the new build. */
+/** Terminate the worker and forget the warmed source, dropping a pending
+ *  swap with it. The client instance stays (the one singleton) and a later
+ *  warm respawns its worker fresh — no state of the disposed model can leak
+ *  into the new build. */
 export function disposeBrowserKernel(): void {
+  cancelPendingWarmSwap();
   instance?.dispose();
   warmedSource = null;
 }
@@ -123,8 +164,10 @@ export function __setBrowserKernelForTests(kernel: BrowserKernel | null, source:
 }
 
 /** Test-only: dispose, drop the singleton, and clear any warm a hidden tab is
- *  still holding (including its `visibilitychange` listener). */
+ *  still holding (including its `visibilitychange` listener) or swap still
+ *  scheduled. */
 export function __resetBrowserKernelForTests(): void {
+  cancelPendingWarmSwap();
   instance?.dispose();
   instance = null;
   warmedSource = null;

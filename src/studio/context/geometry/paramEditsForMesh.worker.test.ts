@@ -22,12 +22,16 @@ import { __resetMeshMergeStatesForTests, mergeMeshPayload } from './meshMergeSto
 import { useMeshFetch } from './useMeshFetch';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import {
+  KernelDisposedError,
+  KernelNotWarmError,
   KernelSourceError,
+  KernelSupersededError,
   type BrowserKernel,
   type KernelParamsResult,
   type KernelStatus,
 } from '../../kernel/browserKernelClient';
 import {
+  WARM_SETTLE_MS,
   __resetBrowserKernelForTests,
   __setBrowserKernelForTests,
 } from '../../kernel/kernelSingleton';
@@ -106,6 +110,7 @@ afterEach(() => {
   __resetParamEditQueueForTests();
   __resetMeshMergeStatesForTests();
   __resetBrowserKernelForTests();
+  vi.useRealTimers();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -244,6 +249,63 @@ describe('meshParamEdits kernel fallback', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it('falls back to the server on a KernelNotWarmError, keeping the kernel eligible', async () => {
+    stubKernelEnv();
+    const source = "const w = param('Width', 40); return box(w, 1, 1);";
+    const h = fakeKernel();
+    h.paramsMock.mockImplementation(async () => {
+      throw new KernelNotWarmError('warming');
+    });
+    __setBrowserKernelForTests(h.kernel, source);
+    const fetchMock = stubServerFetch();
+
+    const first = await meshParamEdits(source, { Width: 60 });
+    expect(h.paramsMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(first?.features.map((f) => f.featureId)).toEqual(['server']);
+
+    // Not sticky: the next edit consults the kernel again (still not warm,
+    // so the server answers it too).
+    const second = await meshParamEdits(source, { Width: 61 });
+    expect(h.paramsMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(second?.features.map((f) => f.featureId)).toEqual(['server']);
+  });
+
+  it('falls back to the server on a KernelSupersededError', async () => {
+    stubKernelEnv();
+    const source = "const w = param('Width', 40); return box(w, 1, 1);";
+    const h = fakeKernel();
+    h.paramsMock.mockImplementation(async () => {
+      throw new KernelSupersededError();
+    });
+    __setBrowserKernelForTests(h.kernel, source);
+    const fetchMock = stubServerFetch();
+
+    const payload = await meshParamEdits(source, { Width: 60 });
+
+    expect(h.paramsMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(payload?.features.map((f) => f.featureId)).toEqual(['server']);
+  });
+
+  it('falls back to the server on a KernelDisposedError', async () => {
+    stubKernelEnv();
+    const source = "const w = param('Width', 40); return box(w, 1, 1);";
+    const h = fakeKernel();
+    h.paramsMock.mockImplementation(async () => {
+      throw new KernelDisposedError();
+    });
+    __setBrowserKernelForTests(h.kernel, source);
+    const fetchMock = stubServerFetch();
+
+    const payload = await meshParamEdits(source, { Width: 60 });
+
+    expect(h.paramsMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(payload?.features.map((f) => f.featureId)).toEqual(['server']);
+  });
+
   it('surfaces a script-error instead of falling back within the edit', async () => {
     stubKernelEnv();
     const source = "const w = param('Width', 40); return box(w, 1, 1);";
@@ -353,7 +415,7 @@ describe('kernel warm on the hosted apply', () => {
     expect(h.warmMock).toHaveBeenCalledTimes(1);
   });
 
-  it('disposes the previous model and warms the new source on source change', async () => {
+  it('keeps the old worker through the settle window, then swaps to the new source', async () => {
     stubKernelEnv();
     stubHostedFetch();
     const h = fakeKernel({ status: 'idle' });
@@ -365,8 +427,14 @@ describe('kernel warm on the hosted apply', () => {
 
     const secondCode = 'return box(2, 2, 2);';
     const second = renderFetch(secondCode);
+    // Fake timers from here so the settle delay elapses without real waiting.
+    vi.useFakeTimers();
     await applyHosted(second.result, second.deps, 'gallery/b.kcad.ts');
 
+    expect(h.disposeMock).not.toHaveBeenCalled();
+    expect(h.warmMock).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
     expect(h.disposeMock).toHaveBeenCalledTimes(1);
     expect(h.warmMock).toHaveBeenCalledTimes(2);
     expect(h.warmMock).toHaveBeenLastCalledWith(secondCode, 'gallery/b.kcad.ts');

@@ -13,12 +13,15 @@ const DESKTOP_CHROME_UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 const SAFARI_IOS_UA =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
+const IPADOS_DESKTOP_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15';
 
 function stubBrowser(opts: {
   hostname?: string;
   search?: string;
   userAgent?: string;
   deviceMemory?: number;
+  maxTouchPoints?: number;
 } = {}): void {
   vi.stubGlobal('window', {
     location: { hostname: opts.hostname ?? 'app.kernelcad.com', search: opts.search ?? '', pathname: '/' },
@@ -26,6 +29,7 @@ function stubBrowser(opts: {
   vi.stubGlobal('navigator', {
     userAgent: opts.userAgent ?? DESKTOP_CHROME_UA,
     ...(opts.deviceMemory !== undefined ? { deviceMemory: opts.deviceMemory } : {}),
+    ...(opts.maxTouchPoints !== undefined ? { maxTouchPoints: opts.maxTouchPoints } : {}),
   });
 }
 
@@ -116,6 +120,13 @@ describe('browserKernelEnabled: auto gate', () => {
     stubAuto({ userAgent: DESKTOP_CHROME_UA });
     expect(browserKernelEnabled()).toBe(true);
   });
+
+  it('is off on an iPadOS desktop-mode UA (touch-capable Macintosh), on for a real Mac', () => {
+    stubAuto({ userAgent: IPADOS_DESKTOP_UA, maxTouchPoints: 5 });
+    expect(browserKernelEnabled()).toBe(false);
+    stubAuto({ userAgent: IPADOS_DESKTOP_UA, maxTouchPoints: 0 });
+    expect(browserKernelEnabled()).toBe(true);
+  });
 });
 
 describe('browserKernelEnabled: off and force', () => {
@@ -168,6 +179,17 @@ describe('isSafariIos', () => {
     expect(isSafariIos()).toBe(false);
 
     vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 (Android 14; Mobile; rv:126.0) Gecko/126.0 Firefox/126.0' });
+    expect(isSafariIos()).toBe(false);
+  });
+
+  it('treats a touch-capable Macintosh UA as iPadOS desktop mode', () => {
+    vi.stubGlobal('navigator', { userAgent: IPADOS_DESKTOP_UA, maxTouchPoints: 5 });
+    expect(isSafariIos()).toBe(true);
+
+    vi.stubGlobal('navigator', { userAgent: IPADOS_DESKTOP_UA, maxTouchPoints: 0 });
+    expect(isSafariIos()).toBe(false);
+
+    vi.stubGlobal('navigator', { userAgent: IPADOS_DESKTOP_UA.replace('Version/17.5 Safari/605.1.15', 'CriOS/126.0.0.0 Safari/605.1.15'), maxTouchPoints: 5 });
     expect(isSafariIos()).toBe(false);
   });
 

@@ -49,13 +49,17 @@ export function browserKernelEnabled(): boolean {
   return shouldUseHostedMesh() && !isSafariIos() && !isLowMemoryDevice();
 }
 
-/** Safari on iPhone/iPad/iPod. Chrome/Firefox on iOS (CriOS/FxiOS UAs) are
- *  excluded — their engines are WebKit but they are wrappers we have not
- *  measured; only the app users actually browse with is gated here. */
+/** Safari on iPhone/iPad/iPod, including iPadOS 13+ in desktop mode (a
+ *  `Macintosh` UA with multi-touch, which the classic `iPad` token misses).
+ *  Chrome/Firefox on iOS (CriOS/FxiOS UAs) are excluded — their engines are
+ *  WebKit but they are wrappers we have not measured; only the app users
+ *  actually browse with is gated here. */
 export function isSafariIos(): boolean {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent ?? '';
-  return /iP(hone|ad|od)/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS/.test(ua);
+  const maxTouchPoints = (navigator as Navigator & { maxTouchPoints?: number }).maxTouchPoints ?? 0;
+  return (/iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && maxTouchPoints > 1))
+    && !/CriOS|FxiOS/.test(ua);
 }
 
 /** The auto gate's low-memory skip: a device that declared `deviceMemory`
