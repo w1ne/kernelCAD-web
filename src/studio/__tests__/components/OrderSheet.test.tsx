@@ -7,7 +7,7 @@ import type { BomRow } from '../../../agent/script-runtime/bom';
 
 const bbox: BomRow['bboxMm'] = { min: [0, 0, 0], max: [1, 1, 1] };
 
-const rows: BomRow[] = [
+const defaultRows: BomRow[] = [
     {
         item: 1,
         name: 'plate',
@@ -94,6 +94,8 @@ const rows: BomRow[] = [
     },
 ];
 
+let rows: BomRow[] = defaultRows;
+
 vi.mock('../../context/CodeContext', () => ({ useCode: () => ({ code: 'return 1;' }) }));
 
 vi.mock('../../hooks/useBom', () => ({
@@ -135,6 +137,7 @@ vi.mock('../../hooks/useExportTask', () => ({
 const writeText = vi.fn(async () => undefined);
 
 beforeEach(() => {
+    rows = defaultRows;
     exportViaServer.mockClear();
     downloadBlob.mockClear();
     writeText.mockClear();
@@ -194,6 +197,39 @@ describe('OrderSheet', () => {
         await renderSheet();
         fireEvent.click(screen.getByTestId('order-bom-csv'));
         await waitFor(() => expect(exportViaServer).toHaveBeenCalledWith('bom-csv', 'return 1;', {}));
+    });
+
+    it('builds the all-parts order pack with no process or item filters', async () => {
+        await renderSheet();
+        fireEvent.click(screen.getByTestId('order-pack-all'));
+        await waitFor(() => expect(exportViaServer).toHaveBeenCalledWith('order-pack', 'return 1;', {}));
+    });
+
+    it('offers the exact DigiKey FastAdd cart link when every vendor PN is a DigiKey PN', async () => {
+        const digikeyRow: BomRow = {
+            ...defaultRows[2]!,
+            name: 'digikey_screw',
+            catalog: {
+                id: 'digikey-296-1234-1-ND',
+                vendor: 'DigiKey',
+                partNumber: '296-1234-1-ND',
+                source: null,
+                license: 'MIT',
+            },
+        };
+        rows = [defaultRows[0]!, digikeyRow];
+        await renderSheet();
+        const link = screen.getByText('Open DigiKey cart');
+        expect(link.getAttribute('href')).toBe(
+            'https://www.digikey.com/classic/ordering/fastadd.aspx?part1=296-1234-1-ND&qty1=4',
+        );
+        expect(link.getAttribute('target')).toBe('_blank');
+        expect(link.getAttribute('rel')).toBe('noreferrer');
+    });
+
+    it('hides the DigiKey cart link when a vendor PN is not a DigiKey PN', async () => {
+        await renderSheet();
+        expect(screen.queryByText('Open DigiKey cart')).toBeNull();
     });
 
     it('flags a purchased row without a part number and a fabricated row without a mass source', async () => {

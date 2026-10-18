@@ -82,27 +82,16 @@ vi.mock('../../selectionCode/selectionCodeStore', () => ({
 
 const exportViaServer = vi.fn(async () => ({ blob: new Blob(['pack']), downloadName: 'part.zip' }));
 const downloadBlob = vi.fn();
-vi.mock('../../exportViaServer', () => ({
-    exportViaServer: (...args: unknown[]) => exportViaServer(...args),
-    downloadBlob: (...args: unknown[]) => downloadBlob(...args),
-}));
-
-vi.mock('../../hooks/useExportTask', () => ({
-    useExportTask: () => ({
-        state: { running: null, elapsedSec: 0, progress: null, error: null, notice: null },
-        start: async (
-            _label: string,
-            run: (options: Record<string, never>) => Promise<{ blob: Blob; downloadName: string }>,
-            save: (blob: Blob, downloadName: string) => void,
-        ) => {
-            const file = await run({});
-            save(file.blob, file.downloadName);
-        },
-        cancel: () => undefined,
-        dismiss: () => undefined,
-    }),
-    exportProgressText: () => null,
-}));
+// Keep the real error helpers (useExportTask reads them) and mock only the
+// transport + download side effects.
+vi.mock('../../exportViaServer', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('../../exportViaServer')>();
+    return {
+        ...actual,
+        exportViaServer: (...args: unknown[]) => exportViaServer(...args),
+        downloadBlob: (...args: unknown[]) => downloadBlob(...args),
+    };
+});
 
 beforeEach(() => {
     highlightFromCode.mockClear();
@@ -166,9 +155,17 @@ describe('PartsTab', () => {
         await waitFor(() => expect(exportViaServer).toHaveBeenCalledWith(
             'order-pack',
             'return 1;',
-            { exportOptions: { items: [1] } },
+            expect.objectContaining({ exportOptions: { items: [1] } }),
         ));
         expect(downloadBlob).toHaveBeenCalledOnce();
+    });
+
+    it('shows a failed per-row download in the status region by the totals', async () => {
+        exportViaServer.mockRejectedValueOnce(new Error('order pack failed on the server'));
+        render(<PartsTab />);
+        fireEvent.click(screen.getByTestId('parts-row-download-1'));
+        await waitFor(() => expect(screen.getByTestId('parts-status-error')).toBeTruthy());
+        expect(screen.getByTestId('parts-status-error').textContent).toContain('order pack failed on the server');
     });
 
     it('falls back to the computed sum when totals are missing', () => {

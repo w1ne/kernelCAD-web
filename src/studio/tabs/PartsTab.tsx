@@ -3,15 +3,17 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { JSX } from 'react';
 import { Download, ShoppingCart } from 'lucide-react';
-import type { BomRow, BomTotals } from '../../agent/script-runtime/bom';
+import type { BomRow } from '../../agent/script-runtime/bom';
 import { useCode } from '../context/CodeContext';
 import { useBom } from '../hooks/useBom';
 import { useExportTask } from '../hooks/useExportTask';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { downloadBlob, exportViaServer } from '../exportViaServer';
+import { formatMass, totalsFromRows } from '../logic/bomFormat';
 import { currentStudioScript } from '../scriptSource';
 import { selectionCodeStore } from '../selectionCode/selectionCodeStore';
 import { OrderSheet } from '../components/OrderSheet';
+import { ExportStatus } from '../components/Shared/ExportStatus';
 
 /**
  * The inspector Parts tab: the design's bill of materials, one row per
@@ -86,7 +88,7 @@ export function PartsTab(): JSX.Element {
         );
     }
 
-    const totals = bom.totals ?? totalsFromRows(bom.rows);
+    const totals = totalsFromRows(bom.rows, bom.totals);
     const made = bom.rows.filter((row) => row.kind === 'fabricated');
     const bought = bom.rows.filter((row) => row.kind === 'purchased');
 
@@ -152,6 +154,9 @@ export function PartsTab(): JSX.Element {
                     {totals.totalMassG === null ? 'mass unknown' : formatMass(totals.totalMassG)} · prices not included
                 </span>
             </div>
+            <div className="px-3 pb-2">
+                <ExportStatus task={task} testId="parts-status" />
+            </div>
             <OrderSheet open={orderOpen} onClose={() => setOrderOpen(false)} />
         </div>
     );
@@ -216,28 +221,6 @@ function PartsRow({ row, onHighlight, onDownload, busy }: {
             </td>
         </tr>
     );
-}
-
-function totalsFromRows(rows: readonly BomRow[]): BomTotals {
-    const knownMass = rows.some((row) => row.massGTotal !== null);
-    return {
-        partCount: rows.reduce((sum, row) => sum + row.quantity, 0),
-        uniquePartCount: rows.length,
-        totalMassG: knownMass
-            ? Math.round(rows.reduce((sum, row) => sum + (row.massGTotal ?? 0), 0) * 1e4) / 1e4
-            : null,
-    };
-}
-
-/** BOM masses are grams; a kilogram-scale total reads better in kg. */
-function formatMass(grams: number | null): string {
-    if (grams === null) return '—';
-    if (grams >= 1000) return `${round(grams / 1000)} kg`;
-    return `${round(grams)} g`;
-}
-
-function round(value: number): string {
-    return String(Math.round(value * 100) / 100);
 }
 
 export default PartsTab;

@@ -14,7 +14,7 @@
 import { useMemo } from 'react';
 import type { JSX, ReactNode } from 'react';
 import { Copy, Download } from 'lucide-react';
-import type { BomRow, BomTotals } from '../../agent/script-runtime/bom';
+import type { BomRow } from '../../agent/script-runtime/bom';
 import { FAB_PROCESSES, type FabProcess } from '../../shared/fab';
 import { buildHandoffs, digikeyFastAddUrl, handoffItems } from '../../kernel/export/order/handoffs';
 import { servicesForProcess } from '../../kernel/export/order/fabServices';
@@ -23,6 +23,7 @@ import { useCode } from '../context/CodeContext';
 import { useBom } from '../hooks/useBom';
 import { useExportTask } from '../hooks/useExportTask';
 import { downloadBlob, exportViaServer } from '../exportViaServer';
+import { formatMass, totalsFromRows } from '../logic/bomFormat';
 import { currentStudioScript } from '../scriptSource';
 import { ExportStatus } from './Shared/ExportStatus';
 import { useCopyText } from './useCopyText';
@@ -88,7 +89,7 @@ export function OrderSheet({ open, onClose }: OrderSheetProps): JSX.Element {
             );
         }
 
-        const totals = bom.totals ?? totalsFromRows(rows);
+        const totals = totalsFromRows(rows, bom.totals);
         const madeCount = quantityOf(made);
         const boughtCount = quantityOf(bought);
         const split = groups.map((group) => `${quantityOf(group.rows)} × ${group.process}`).join(', ');
@@ -286,29 +287,6 @@ function VendorRow({ name, testId, copyTestId, text, children }: {
 
 function quantityOf(rows: readonly BomRow[]): number {
     return rows.reduce((sum, row) => sum + row.quantity, 0);
-}
-
-/** Same fallback PartsTab's footer uses when the endpoint sends no totals. */
-function totalsFromRows(rows: readonly BomRow[]): BomTotals {
-    const knownMass = rows.some((row) => row.massGTotal !== null);
-    return {
-        partCount: quantityOf(rows),
-        uniquePartCount: rows.length,
-        totalMassG: knownMass
-            ? Math.round(rows.reduce((sum, row) => sum + (row.massGTotal ?? 0), 0) * 1e4) / 1e4
-            : null,
-    };
-}
-
-/** BOM masses are grams; a kilogram-scale total reads better in kg. */
-function formatMass(grams: number | null): string {
-    if (grams === null) return '—';
-    if (grams >= 1000) return `${round(grams / 1000)} kg`;
-    return `${round(grams)} g`;
-}
-
-function round(value: number): string {
-    return String(Math.round(value * 100) / 100);
 }
 
 const EMPTY_ROWS: readonly BomRow[] = [];
