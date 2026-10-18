@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Five machining-fixture families with stock dimensions and placement connectors, worked into a clamp set on a T-slot table." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="A T-slot clamp set from lib.fixture" />
+  <meta property="og:description" content="Five machining-fixture families with stock dimensions and placement connectors, worked into a clamp set on a T-slot table." />
+  <meta property="og:image" content="https://kernelcad.com/blog/fixture-library/fixture.png" />
+  <meta property="og:url" content="https://kernelcad.com/blog/fixture-library/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="A T-slot clamp set from lib.fixture" />
+  <meta name="twitter:description" content="Five machining-fixture families with stock dimensions and placement connectors, worked into a clamp set on a T-slot table." />
+  <meta name="twitter:image" content="https://kernelcad.com/blog/fixture-library/fixture.png" />
+  <link rel="canonical" href="https://kernelcad.com/blog/fixture-library/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>A T-slot clamp set from lib.fixture</title>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
+  <style>
+    .legal { max-width: 760px; margin: 0 auto; padding: 1rem 0 4rem; }
+    .legal h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; line-height: 1.2; margin: 1.5rem 0 0.25rem; }
+    .legal .effective { color: var(--ink-faint, #8a8475); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 2rem; }
+    .legal h2 { font-family: 'Source Serif 4', serif; font-size: 1.35rem; margin: 2.2rem 0 0.5rem; }
+    .legal p, .legal li { font-family: 'Inter', sans-serif; line-height: 1.65; color: var(--ink-soft, #3a3a3a); }
+    .legal ul { padding-left: 1.25rem; }
+    .legal code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .legal a { color: var(--blueprint, #2f6df0); }
+    .legal strong { color: var(--ink, #1a1a1a); }
+    .legal .lede { font-size: 1.1rem; color: var(--ink); }
+    .legal figure { margin: 1.5rem 0; }
+    .legal figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal figcaption { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--ink-faint); margin-top: 0.5rem; }
+    .legal pre { background: var(--code-bg); color: var(--code-text); border-radius: 6px; padding: 16px 18px; overflow-x: auto; margin: 1.25rem 0; }
+    .legal pre code { font-size: 0.85rem; line-height: 1.6; color: inherit; }
+    .legal p code, .legal li code { background: var(--vellum-soft); padding: 1px 5px; border-radius: 3px; }
+    .post-list { list-style: none; padding: 0; margin: 2rem 0; }
+    .post-list li { padding: 1.25rem 0; border-top: 1px solid var(--rule); }
+    .post-list li:last-child { border-bottom: 1px solid var(--rule); }
+    .post-list a.post-title { font-family: 'Source Serif 4', serif; font-size: 1.4rem; text-decoration: none; }
+    .post-list a.post-title:hover { text-decoration: underline; }
+    .post-list .effective { margin: 0.25rem 0 0.5rem; }
+    .post-list p { margin: 0; }
+    .legal figure video { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal model-viewer { display: block; width: 100%; height: 440px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a class="nav-mark" href="/">
+        <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span class="cad">CAD</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="/blog/">blog</a>
+        <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">@kernelcad</a>
+      </div>
+    </nav>
+
+    <main class="legal">
+      <article>
+      <p class="effective"><a href="/blog/">Blog</a> · <time datetime="2026-10-18">2026-10-18</time> · Andrii Shylenko</p>
+      <h1>A T-slot clamp set from lib.fixture</h1>
+
+      <p class="lede"><code>lib.fixture.*</code> is the clamping kit for a T-slot machine table. Five families, keyed by the thread the hardware uses (M8, M10, M12), each with its stock dimensions and placement connectors. The solids are nominal envelope values from the stock table, so a setup can be laid out and checked before anything is bolted down.</p>
+      <figure>
+        <video src="video.mp4" controls playsinline preload="metadata"></video>
+      </figure>
+      <figure>
+        <model-viewer src="model.glb" alt="The model built from examples/fixture/table-clamp-set.kcad.ts" camera-controls auto-rotate rotation-per-second="12deg" interaction-prompt="none" touch-action="pan-y" loading="lazy"></model-viewer>
+        <figcaption>The model, built from <code>examples/fixture/table-clamp-set.kcad.ts</code>. Drag to turn it.</figcaption>
+      </figure>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+      <h2>What is in the kit</h2>
+      <ul>
+        <li><strong><code>tSlotNut({ thread })</code></strong> — T-slot nut, DIN 508 form: slot 10 mm for M8, 12 mm for M10, 14 mm for M12. The bore axis is +Z, the top face sits at z = 0 and the wide base hangs below it. Connectors: <code>mating-face</code> (the wing tops that pull against the slot), <code>top-face</code>, <code>thread-bore</code>.</li>
+        <li><strong><code>clampStud({ thread, lengthMm })</code></strong> — clamping stud, DIN 6379 form; stocked lengths 63 and 100 mm (M8), 80 and 125 mm (M10), 100 and 160 mm (M12). Connectors: <code>table-end</code>, <code>clamp-end</code>, <code>axis</code>.</li>
+        <li><strong><code>flangeNut({ thread })</code></strong> — flange nut, DIN 6330 form, for the top of a clamp. Connectors: <code>mating-face</code>, <code>top-face</code>, <code>inner-bore</code>.</li>
+        <li><strong><code>strapClamp({ thread })</code></strong> — strap clamp. The slot center is the origin and the nose points toward -X, so <code>slot-axis</code> is where the stud goes and <code>nose-bearing</code>/<code>tail-bearing</code> are the ends that do the work.</li>
+        <li><strong><code>stepBlock({ thread })</code></strong> — step block whose treads rise along +X at 10/20/30/40 mm (M8), 12/24/36/48 mm (M10), 15/30/45/60 mm (M12). <code>base-face</code> sits on the table and <code>step-1</code> … <code>step-4</code> name the treads.</li>
+      </ul>
+      <pre><code>const tNut = await lib.fixture.tSlotNut({ thread: 'M10' });
+const stud = await lib.fixture.clampStud({ thread: 'M10', lengthMm: 80 });
+const clamp = await lib.fixture.strapClamp({ thread: 'M10' });
+const block = await lib.fixture.stepBlock({ thread: 'M10' });
+const nut = await lib.fixture.flangeNut({ thread: 'M10' });
+const set = assembly('clamp-set');
+set.part('t-nut', tNut);
+set.part('stud', stud.translate(0, 0, -9));
+set.part('clamp', clamp.translate(0, 0, 36));
+set.part('step-block', block.translate(60, 0, 0));
+set.part('flange-nut', nut.translate(0, 0, 48));
+return set.model();</code></pre>
+      <figure>
+        <img src="fixture.png" alt="The clamp set on a T-slot table section" width="1600" height="1200" loading="lazy" />
+        <figcaption>Two M10 clamp sets hold a 36 mm workpiece on a 400 mm table section; every hardware part comes from lib.fixture.</figcaption>
+      </figure>
+
+      <h2>Planning a real setup</h2>
+      <p>The committed example is the same five parts, twice, around a workpiece: a 400 × 130 × 24 mm table section with a 12 mm channel, a 50 × 70 × 36 mm workpiece, and M10 hardware. The dimensions chain together, and each link is a named stock value rather than a guess:</p>
+      <ul>
+        <li>The channel is cut to the T-nut's envelope plus clearance: 12.4 mm opening, 18.6 mm internal width, so the nut's 11.7 mm neck and 17.8 mm base slide in.</li>
+        <li>The stud's <code>table-end</code> sits 9.6 mm below the table surface, on the channel ceiling the T-nut's <code>mating-face</code> pulls against.</li>
+        <li>The workpiece is 36 mm tall, which is exactly the M10 step block's <code>step-3</code> tread, so the clamp lies level: nose on the workpiece, tail on the tread, <code>flange-nut</code> on top.</li>
+        <li>An 80 mm stud is the shortest stocked M10 length that clears the clamp and nut.</li>
+      </ul>
+      <figure>
+        <img src="fixture-detail.png" alt="The tail of a clamp resting on the step block's tread" width="760" height="660" loading="lazy" />
+        <figcaption>The tail bearing lands on step-3; the higher tread stands clear so the clamp cannot climb it.</figcaption>
+      </figure>
+      <p>The same chain is one call when the workpiece height is known. It must equal a stocked tread of the thread's step block (10/20/30/40 for M8, 12/24/36/48 for M10, 15/30/45/60 for M12):</p>
+      <pre><code>const set = await lib.fixture.clampSet({ thread: 'M10', workpieceHeightMm: 36 });
+const fixture = assembly('clamp-set');
+for (const member of set.members) fixture.part(member.role, member.shape);
+return fixture.model();</code></pre>
+      <p>The example's own five lines are the whole API surface for the hardware:</p>
+      <pre><code>  const tNut = await lib.fixture.tSlotNut({ thread: 'M10' });
+  const stud = await lib.fixture.clampStud({ thread: 'M10', lengthMm: 80 });
+  const clamp = await lib.fixture.strapClamp({ thread: 'M10' });
+  const block = await lib.fixture.stepBlock({ thread: 'M10' });
+  const nut = await lib.fixture.flangeNut({ thread: 'M10' });</code></pre>
+
+      <h2>What the evidence says, and does not say</h2>
+      <p><code>examples/fixture/verify-fixture.mts</code> re-evaluates the example and writes <code>docs/demos/fixture-library/geometry-evidence.json</code>: 66 part pairs checked with zero positive-volume overlaps, and the spans that document each mating face (T-nut wing tops at 14.4 mm, clamp underside level with the workpiece top at 60 mm, flange nut at 72–82 mm).</p>
+      <p>That is placement and stock dimensions, not clamping force. Nothing here proves stud deflection, fixture stiffness, torque or machining loads, and the envelope solids carry no thread. The example evaluates to 28 features with 0 diagnostics. Check the supplier drawing before ordering: the table is nominal, not a certified standard-dimension source.</p>
+
+      <h2>Reproduce</h2>
+      <p>In a repository checkout with dependencies installed:</p>
+      <pre><code>npx tsx examples/fixture/verify-fixture.mts
+npx tsx src/agent/cli/index.ts render examples/fixture/table-clamp-set.kcad.ts --preset publish --pose 55,42 -o docs/demos/fixture-library/fixture.hero.png</code></pre>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div>kernelCAD · MIT</div>
+      <div class="footer-links">
+        <a href="/terms.html">terms</a>
+        <a href="/privacy.html">privacy</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">x</a>
+        <a href="https://app.kernelcad.com">app</a>
+      </div>
+    </footer>
+    <div class="footer-stack" style="border-top: 1px solid var(--stroke, rgba(255,255,255,0.08)); padding: 14px 0 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--mute, #888); font-size: 0.78rem;">
+      <span style="opacity: 0.7;">part of the engineer stack</span>
+      <nav style="display: flex; gap: 18px;">
+        <a href="https://labwired.com" style="color: inherit;">LabWired</a>
+        <a href="https://kernelcad.com" style="color: inherit;">kernelCAD</a>
+        <a href="https://koamtachi.com" style="color: inherit;">koamtachi</a>
+        <a href="https://shylenko.com" style="color: inherit;">shylenko.com</a>
+      </nav>
+    </div>
+  </div>
+</body>
+</html>

@@ -3,10 +3,9 @@ title: A T-slot clamp set from lib.fixture
 summary: Five machining-fixture families with stock dimensions and placement connectors, worked into a clamp set on a T-slot table.
 date: 2026-10-18
 kind: guide
-status: draft
+status: published
 model: examples/fixture/table-clamp-set.kcad.ts
 video: docs/demos/fixture-library/demo.mp4
-note: To publish, move the two PNGs in docs/guide/fixture-library/ into site/blog/fixture-library/, point the figures at ../../site/blog/fixture-library/, and flip status to published. Demo bundle lives in docs/demos/fixture-library/.
 ---
 
 `lib.fixture.*` is the clamping kit for a T-slot machine table. Five
@@ -48,7 +47,7 @@ set.part('flange-nut', nut.translate(0, 0, 48));
 return set.model();
 ```
 
-![The clamp set on a T-slot table section](fixture-library/fixture.png "Two M10 clamp sets hold a 36 mm workpiece on a 400 mm table section; every hardware part comes from lib.fixture.")
+![The clamp set on a T-slot table section](../../site/blog/fixture-library/fixture.png "Two M10 clamp sets hold a 36 mm workpiece on a 400 mm table section; every hardware part comes from lib.fixture.")
 
 ## Planning a real setup
 
@@ -68,7 +67,7 @@ is a named stock value rather than a guess:
 - An 80 mm stud is the shortest stocked M10 length that clears the clamp
   and nut.
 
-![The tail of a clamp resting on the step block's tread](fixture-library/fixture-detail.png "The tail bearing lands on step-3; the higher tread stands clear so the clamp cannot climb it.")
+![The tail of a clamp resting on the step block's tread](../../site/blog/fixture-library/fixture-detail.png "The tail bearing lands on step-3; the higher tread stands clear so the clamp cannot climb it.")
 
 The same chain is one call when the workpiece height is known. It must equal
 a stocked tread of the thread's step block (10/20/30/40 for M8, 12/24/36/48
