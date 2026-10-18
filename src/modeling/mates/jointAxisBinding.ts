@@ -190,7 +190,12 @@ export async function validateJointAxisBindingWithCache(
   const engine = new RecomputeEngine(createOcctLowerer(session));
   const pending = session.snapshotFullLower(new Map());
   let warnings = 0;
+  // The interference gate (or an earlier build) may already have lowered
+  // this session's records — identical work. Seed the shared prefix so the
+  // assembly is lowered once per evaluation, not once per gate.
+  const seedShapes = session.reusableLoweredPrefix(session.cleanScriptLower);
   const recompute = await engine.run(session.getRecords(), {
+    ...(seedShapes.size > 0 ? { seedShapes } : {}),
     paramTable: session.paramTable,
     gatedFeatureNames: session.gatedFeatureNames,
     warningSink: () => { warnings += 1; },
