@@ -1,0 +1,45 @@
+{
+  "checkedAt": "2026-10-18T11:36:31.996336+00:00",
+  "video": "demo.mp4",
+  "videoSha256": "8ec488102c82d2dbc0fc95a963d615d15e22d66c8e6116aa28f797b5b1aca91a",
+  "durationSec": 23.0,
+  "canvas": "1920x1080",
+  "slides": [
+    {
+      "image": null,
+      "durationSec": 4.0
+    },
+    {
+      "image": "lineup.hero.png",
+      "durationSec": 5.0
+    },
+    {
+      "image": "stack.hero.png",
+      "durationSec": 5.0
+    },
+    {
+      "image": "stack-detail.png",
+      "durationSec": 5.0
+    },
+    {
+      "image": null,
+      "durationSec": 4.0
+    }
+  ],
+  "sourceModels": {
+    "bolt-stack.kcad.ts": "18c4ea243e69a7ae3414842e09e3a1eeec955952e402607d9ce56849c3b67ece",
+    "fastener-lineup.kcad.ts": "12de8a821a349ab7b5b2af9ce8905ca7252a21471ab667b6504eb38dc2924252"
+  },
+  "inputSha256": {
+    "lineup.hero.png": "d0f6d7523ef1849fd240c0466b41089813949c213e53a0e33ce9f7f21048cabc",
+    "stack.hero.png": "ad32782c648c08ff9742e683a524ac57412020b9f943618c5cf94cbe642004f4",
+    "stack-detail.png": "f8a413f91c23a8c6c0702ff5c755445d7abf36019fb71293e2e52beeb71379fa"
+  },
+  "invocations": [
+    "npx tsx src/agent/cli/index.ts render examples/parts/fastener-lineup.kcad.ts --preset publish -o docs/demos/standard-parts/lineup.hero.png",
+    "npx tsx src/agent/cli/index.ts render examples/parts/bolt-stack.kcad.ts --preset publish -o docs/demos/standard-parts/stack.hero.png",
+    "npx tsx src/agent/cli/index.ts render examples/parts/bolt-stack.kcad.ts --preset publish --width 2048 --height 1536 --pose 0,0 -o docs/demos/standard-parts/stack-front.png",
+    "convert stack-front.pose-0-0.png -crop 1400x1100+330+210 +repage stack-detail.png"
+  ],
+  "provenance": "Annotated still sequence composed from local kernelcad render --preset publish outputs of the committed example sources. Not a screen recording, turntable, deployed platform capture, physical hardware or strength test."
+}
