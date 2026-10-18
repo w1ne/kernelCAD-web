@@ -13,40 +13,53 @@
 
 import type { ParamEditValues } from './paramEditsForMesh';
 
-export interface ParamEditQueue {
-  /** Queue or replace the pending edit map; resolves when the request that
-   *  carried these values settles (for a coalesced value: the trailing one). */
-  submit(edits: ParamEditValues): Promise<void>;
+export interface ParamEditQueue<T> {
+  /** Queue or replace the pending edit map; resolves with the value of the
+   *  run that carried these values (for a coalesced value: the trailing
+   *  run's), or `null` when the batch was dropped (dispose/replacement). */
+  submit(edits: ParamEditValues): Promise<T | null>;
   /** In-flight + pending counts (tests + telemetry). */
   stats(): { inFlight: boolean; pending: boolean };
   /** Stop accepting; drop the pending batch (the in-flight run continues). */
   dispose(): void;
 }
 
-interface Settler {
-  resolve: () => void;
+interface Settler<T> {
+  resolve: (value: T | null) => void;
   reject: (err: unknown) => void;
 }
 
-export function createParamEditQueue(run: (edits: ParamEditValues) => Promise<void>): ParamEditQueue {
+/** The finished run's outcome in settled shape: its value, or the error its
+ *  submits are rejected with. */
+type RunOutcome<T> = { ok: true; value: T } | { ok: false; err: unknown };
+
+export function createParamEditQueue<T>(run: (edits: ParamEditValues) => Promise<T>): ParamEditQueue<T> {
   let inFlight = false;
   let disposed = false;
   let pending: ParamEditValues | null = null;
-  let inFlightSettlers: Settler[] = [];
-  let pendingSettlers: Settler[] = [];
+  let inFlightSettlers: Settler<T>[] = [];
+  let pendingSettlers: Settler<T>[] = [];
 
-  const resolveAll = (settlers: Settler[]): void => {
-    for (const settler of settlers) settler.resolve();
+  const settleAll = (settlers: Settler<T>[], outcome: RunOutcome<T>): void => {
+    for (const settler of settlers) {
+      if (outcome.ok) settler.resolve(outcome.value);
+      else settler.reject(outcome.err);
+    }
   };
 
-  const rejectAll = (settlers: Settler[], err: unknown): void => {
-    for (const settler of settlers) settler.reject(err);
+  /** Resolve a batch that never ran as dropped (null). Locked choice: a
+   *  replaced queue's own in-flight run still resolves its submitters with
+   *  its value — the upstream revision check discards it as stale — while a
+   *  batch that was pending at dispose never runs and has nothing to hand
+   *  back. */
+  const dropAll = (settlers: Settler<T>[]): void => {
+    for (const settler of settlers) settler.resolve(null);
   };
 
   // Settle the finished run, then start the coalesced trailing batch (if one
   // is pending and the queue is still live). `in-flight` is cleared first so
   // a submit racing this hand-off joins the fresh pending batch.
-  const finish = (err: unknown, failed: boolean): void => {
+  const finish = (outcome: RunOutcome<T>): void => {
     inFlight = false;
     const finished = inFlightSettlers;
     inFlightSettlers = [];
@@ -54,35 +67,34 @@ export function createParamEditQueue(run: (edits: ParamEditValues) => Promise<vo
     const nextSettlers = pendingSettlers;
     pending = null;
     pendingSettlers = [];
-    if (failed) rejectAll(finished, err);
-    else resolveAll(finished);
+    settleAll(finished, outcome);
     if (next !== null && !disposed) start(next, nextSettlers);
-    // A disposed queue dropped the batch: resolve its submits as no-ops so
+    // A disposed queue dropped the batch: resolve its submits as dropped so
     // awaiting callers cannot hang (the replacement queue carries the work).
-    else resolveAll(nextSettlers);
+    else dropAll(nextSettlers);
   };
 
-  const start = (edits: ParamEditValues, settlers: Settler[]): void => {
+  const start = (edits: ParamEditValues, settlers: Settler<T>[]): void => {
     inFlight = true;
     inFlightSettlers = settlers;
-    let result: Promise<void>;
+    let result: Promise<T>;
     try {
       result = run(edits);
     } catch (err) {
-      finish(err, true);
+      finish({ ok: false, err });
       return;
     }
     result.then(
-      () => finish(undefined, false),
-      (err: unknown) => finish(err, true),
+      (value) => finish({ ok: true, value }),
+      (err: unknown) => finish({ ok: false, err }),
     );
   };
 
   return {
-    submit(edits: ParamEditValues): Promise<void> {
-      return new Promise<void>((resolve, reject) => {
+    submit(edits: ParamEditValues): Promise<T | null> {
+      return new Promise<T | null>((resolve, reject) => {
         if (disposed) {
-          resolve();
+          resolve(null);
           return;
         }
         const settler = { resolve, reject };
@@ -96,7 +108,7 @@ export function createParamEditQueue(run: (edits: ParamEditValues) => Promise<vo
     },
 
     stats(): { inFlight: boolean; pending: boolean } {
-      return { inFlight, pending: pending !== null && !disposed };
+      return { inFlight, pending: pending !== null };
     },
 
     dispose(): void {
@@ -104,7 +116,7 @@ export function createParamEditQueue(run: (edits: ParamEditValues) => Promise<vo
       pending = null;
       const dropped = pendingSettlers;
       pendingSettlers = [];
-      resolveAll(dropped);
+      dropAll(dropped);
     },
   };
 }

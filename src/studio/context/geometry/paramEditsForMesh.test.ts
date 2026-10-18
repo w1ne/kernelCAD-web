@@ -5,7 +5,6 @@ import {
   __resetParamEditQueueForTests,
   meshParamEdits,
   paramEditsForMesh,
-  takeParamEditPayload,
 } from './paramEditsForMesh';
 import { __resetMeshMergeStatesForTests, mergeMeshPayload } from './meshMergeStore';
 
@@ -79,14 +78,14 @@ describe('meshParamEdits partial payloads', () => {
       }),
     } as Response);
 
-    await meshParamEdits(source, { Width: 60 });
+    const payload = await meshParamEdits(source, { Width: 60 });
 
     expect(postedBodyAt(fetchMock, 1)).toEqual({
       source,
       params: { Width: 60 },
       have: { base: HEX_A },
     });
-    expect(takeParamEditPayload(source)?.features.map((f) => f.featureId)).toEqual(['base', 'patched']);
+    expect(payload?.features.map((f) => f.featureId)).toEqual(['base', 'patched']);
   });
 
   it('retries once without have when the trailer names an unknown unchanged id', async () => {
@@ -103,12 +102,12 @@ describe('meshParamEdits partial payloads', () => {
         json: async () => ({ features: [feature('fresh', HEX_B)] }),
       } as Response);
 
-    await meshParamEdits(source, { Width: 60 });
+    const payload = await meshParamEdits(source, { Width: 60 });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(postedBodyAt(fetchMock, 1).have).toEqual({ base: HEX_A });
     expect(postedBodyAt(fetchMock, 2)).not.toHaveProperty('have');
-    expect(takeParamEditPayload(source)?.features.map((f) => f.featureId)).toEqual(['fresh']);
+    expect(payload?.features.map((f) => f.featureId)).toEqual(['fresh']);
   });
 
   it('omits have when the state holds no hex16 fingerprint to claim', async () => {
@@ -176,31 +175,47 @@ describe('meshParamEdits partial payloads', () => {
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 
     gates[0]!({ features: [feature('patched', HEX_B)] });
-    await first;
+    const firstPayload = await first;
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     expect(postedBodyAt(fetchMock, 2).params).toEqual({ Width: 62, Height: 9 });
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    // The first batch's submitter sees its own run's payload; the trailing
+    // run's payload is not observable until that run completes.
+    expect(firstPayload?.features.map((f) => f.featureId)).toEqual(['patched']);
+    let trailingSettled = false;
+    void second.then(() => { trailingSettled = true; });
+    void third.then(() => { trailingSettled = true; });
+    expect(trailingSettled).toBe(false);
 
     gates[1]!({ features: [feature('final', HEX_B)] });
-    await Promise.all([second, third]);
-    expect(takeParamEditPayload(source)?.features.map((f) => f.featureId)).toEqual(['final']);
+    const trailing = await Promise.all([second, third]);
+    expect(trailing.map((p) => p?.features.map((f) => f.featureId))).toEqual([['final'], ['final']]);
   });
 
-  it('does not coalesce across codes: a different code starts its own request immediately', async () => {
+  it('does not coalesce across codes: a replaced queue resolves its own submitters and drops only its pending batch', async () => {
     stubHostedApp();
     const sourceA = "const w = param('Width', 40); return box(w, 1, 1);";
     const sourceB = "const w = param('Width', 41); return box(w, 1, 1);";
     const { fetchMock, gates } = gatedFetch();
 
     const first = meshParamEdits(sourceA, { Width: 60 });
+    const droppedA = meshParamEdits(sourceA, { Width: 61 });
     const second = meshParamEdits(sourceB, { Width: 60 });
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
 
     expect(postedBodyAt(fetchMock, 1).source).toBe(sourceA);
     expect(postedBodyAt(fetchMock, 2).source).toBe(sourceB);
 
+    // Queue A's pending batch never runs: replaced, so it resolves null.
+    await expect(droppedA).resolves.toBeNull();
+
     gates[0]!({ features: [feature('a', HEX_A)] });
     gates[1]!({ features: [feature('b', HEX_B)] });
-    await Promise.all([first, second]);
+    const [payloadA, payloadB] = await Promise.all([first, second]);
+    // Queue A's completing run still resolves its own submitter with A's
+    // payload (the revision check upstream discards it as stale); by
+    // construction B's submitter can only ever see B's payload.
+    expect(payloadA?.features.map((f) => f.featureId)).toEqual(['a']);
+    expect(payloadB?.features.map((f) => f.featureId)).toEqual(['b']);
   });
 });

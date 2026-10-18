@@ -78,8 +78,8 @@ function isMeshMergeMismatch(err: unknown): boolean {
  *  The server schema strips unknown body fields, so sending `have` to an
  *  endpoint that predates the field is safe.
  *
- *  Internal: the one request `meshParamEdits`' queue runs per batch. Returns
- *  the merged payload for the queue's handoff into `latestParamEditPayloads`. */
+ *  Internal: the one request `meshParamEdits`' queue runs per batch. The
+ *  queue hands the returned payload to the submitter that rode this run. */
 async function runParamEditRequest(
   code: string,
   edits: ParamEditValues,
@@ -104,55 +104,34 @@ async function runParamEditRequest(
 }
 
 /** The module-scoped coalescing queue for the active `(code, bakeAll)` pair.
- *  A submit with a different key disposes this queue (its pending batch is
- *  dropped; an in-flight run continues) and replaces it, so a code edit or a
- *  bakeAll flip never coalesces onto the wrong request shape. */
-let currentQueue: { code: string; bakeAll: boolean; queue: ParamEditQueue } | null = null;
+ *  A submit with a different key disposes this queue and replaces it, so a
+ *  code edit or a bakeAll flip never coalesces onto the wrong request shape.
+ *  A disposed queue's late in-flight run still resolves its own submitters
+ *  with its payload; the revision check upstream discards it as stale. A
+ *  submit that was pending at dispose never runs and resolves null. */
+let currentQueue: { code: string; bakeAll: boolean; queue: ParamEditQueue<BackendMeshPayload> } | null = null;
 
-/** Merged payload of the most recent completed run, per code. Coalescing
- *  means a submit can ride a trailing batch that also carries other submits'
- *  values, so the payload cannot meaningfully resolve the submit promise.
- *  `meshParamEdits` therefore returns void and the apply path (the Studio's
- *  `useParamUpdate`) takes the payload after its await. */
-const latestParamEditPayloads = new Map<string, BackendMeshPayload>();
-
-/** Consume the merged payload of the last completed param-edit run for
- *  `code` (null when no run completed for it, e.g. the batch was dropped by
- *  a queue replacement). Only the caller that awaited that run's submit may
- *  call this. */
-export function takeParamEditPayload(code: string): BackendMeshPayload | null {
-  const payload = latestParamEditPayloads.get(code);
-  if (payload === undefined) return null;
-  latestParamEditPayloads.delete(code);
-  return payload;
-}
-
-function paramEditQueueFor(code: string, bakeAll: boolean): ParamEditQueue {
+function paramEditQueueFor(code: string, bakeAll: boolean): ParamEditQueue<BackendMeshPayload> {
   const active = currentQueue;
   if (active !== null && active.code === code && active.bakeAll === bakeAll) return active.queue;
   active?.queue.dispose();
-  const queue = createParamEditQueue(async (edits) => {
-    const payload = await runParamEditRequest(code, edits, bakeAll);
-    // A replaced queue's late run must not hand its payload to the new key.
-    if (currentQueue?.queue === queue) latestParamEditPayloads.set(code, payload);
-  });
+  const queue = createParamEditQueue<BackendMeshPayload>((edits) => runParamEditRequest(code, edits, bakeAll));
   currentQueue = { code, bakeAll, queue };
   return queue;
 }
 
 /** Mesh the code with the accumulated edits, coalesced with any request
  *  already in flight (one in-flight + one trailing per `(code, bakeAll)`;
- *  see `paramEditQueue`). Resolves when the run carrying these values
- *  settles; a failed run rejects it. `meshParamEdits` returns no payload:
- *  a coalesced submit is carried by the trailing run, so callers apply the
- *  merged payload via `takeParamEditPayload(code)` after the await. */
-export function meshParamEdits(code: string, edits: ParamEditValues, bakeAll = false): Promise<void> {
+ *  see `paramEditQueue`). Resolves with the merged payload of the run that
+ *  carried these values (for a coalesced submit: the trailing run's), or
+ *  `null` when the batch was dropped by a queue replacement; a failed run
+ *  rejects its submits. */
+export function meshParamEdits(code: string, edits: ParamEditValues, bakeAll = false): Promise<BackendMeshPayload | null> {
   return paramEditQueueFor(code, bakeAll).submit(edits);
 }
 
-/** Test-only: dispose the active queue and drop every pending payload. */
+/** Test-only: dispose the active queue and drop its pending batch. */
 export function __resetParamEditQueueForTests(): void {
   currentQueue?.queue.dispose();
   currentQueue = null;
-  latestParamEditPayloads.clear();
 }

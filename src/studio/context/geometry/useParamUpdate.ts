@@ -10,13 +10,27 @@ import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
-import { meshParamEdits, takeParamEditPayload, type ParamEditValues } from './paramEditsForMesh';
+import { meshParamEdits, type ParamEditValues } from './paramEditsForMesh';
 
 export interface ParamUpdateOptions {
     /** Stateless path only: write every value into the source and re-run the
      *  whole script (see `paramEditsForMesh`). The public-page customizer uses
      *  it so the view matches its export. */
     bakeIntoSource?: boolean;
+}
+
+/** Apply the payload a param-edit submit resolved with, unless a newer edit
+ *  (code change or another param drag) superseded it. */
+function applyTakenParamPayload(
+    payload: BackendMeshPayload | null,
+    revision: number,
+    deps: ExecutionApplyDeps,
+    applyBridgePayload: (payload: BackendMeshPayload, revision: number) => void,
+): void {
+    // payload === null means the batch was dropped by a queue replacement — nothing to paint.
+    if (payload === null) return;
+    if (revision !== deps.mainRevisionRef.current) return;
+    applyBridgePayload(payload, revision);
 }
 
 /**
@@ -119,15 +133,8 @@ export function useParamUpdate(
         deps.setCurrentCodeRevision(revision);
         deps.setIsComputing(true);
         try {
-            await meshParamEdits(code, overrides, options?.bakeIntoSource);
-            // Superseded by a newer edit (code change or another param drag).
-            if (revision !== deps.mainRevisionRef.current) return;
-            // The run this submit rode merges its payload into the geometry
-            // state store; take it here so the viewport applies it. Null when
-            // the batch was dropped by a queue replacement — nothing to paint.
-            const payload = takeParamEditPayload(code);
-            if (payload === null) return;
-            applyBridgePayload(payload, revision);
+            const payload = await meshParamEdits(code, overrides, options?.bakeIntoSource);
+            applyTakenParamPayload(payload, revision, deps, applyBridgePayload);
         } catch (err) {
             if (revision !== deps.mainRevisionRef.current) return;
             deps.setError(err instanceof Error ? err.message : String(err));
