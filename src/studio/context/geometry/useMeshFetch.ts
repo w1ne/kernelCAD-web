@@ -2,58 +2,17 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useRef, type MutableRefObject } from 'react';
 import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
-import type { FeatureMeshSerializedInput } from '../../../modeling/capture/featureMeshBinary';
 import type { SerializedParamTable } from '../../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
-import { shouldUseHostedMesh, meshSourceHosted, type BackendMeshPayload } from '../../scriptSource';
+import { shouldUseHostedMesh, meshSourceHosted } from '../../scriptSource';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { overlayLiveReview, featureMeshesToGeometries, isAbortError, type ScriptReviewSummary } from './types';
-import { mergeFeatureMeshes, orderedFeatures, type MeshMergeState } from './mergeFeatureMeshes';
+import { mergeMeshPayload } from './meshMergeStore';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import type { ViewerDimension } from '../../../shared/intent/viewerDimension';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 
 export type MeshFetchOpts = { keepExistingOnError?: boolean; skipReview?: boolean; liveReview?: boolean };
-
-// --- Partial-payload merge state -------------------------------------------
-// Last merged geometry per studio source. Seeded by every full hosted payload
-// (initial load, code edit, Validate) and folded by partial param-edit
-// responses; `paramEditsForMesh.meshParamEdits` reads the held fingerprints to
-// send as `have` and merges its responses back in here. Keyed by source, so a
-// code edit naturally starts a fresh entry (same keys compare by content
-// fingerprint, so a param edit with different overrides still diffs correctly
-// against the claimed geometry).
-const meshMergeStates = new Map<string, MeshMergeState>();
-
-/** The merge state for `source`, or null when nothing has been received. */
-export function meshMergeStateFor(source: string): MeshMergeState | null {
-    return meshMergeStates.get(source) ?? null;
-}
-
-/** Fold a mesh response into the stored state for `source` and return the
- *  payload with its `features` replaced by the merged, display-ordered set.
- *  `trailer === undefined` (initial load, code edit, unedited source) is a
- *  full replace and resets the store to that one source: every other key is
- *  stale by definition (the current source is the only one the studio
- *  meshes), so this is what keeps a session's worth of edited code from
- *  pinning a full mesh copy per revision. `baseState` defaults to the stored
- *  state; `meshParamEdits` passes the snapshot whose fingerprints it sent as
- *  `have`. Throws on a trailer naming an unchanged id the state does not
- *  hold — the caller must refetch full. */
-export function mergeHostedMeshPayload(
-    source: string,
-    payload: BackendMeshPayload,
-    baseState: MeshMergeState | null = meshMergeStateFor(source),
-): BackendMeshPayload {
-    const { state } = mergeFeatureMeshes(
-        baseState,
-        payload.features as FeatureMeshSerializedInput[],
-        payload.trailer,
-    );
-    if (payload.trailer === undefined) meshMergeStates.clear();
-    meshMergeStates.set(source, state);
-    return { ...payload, features: orderedFeatures(state) };
-}
 
 /** The hosted-mesh branch of `fetchMeshAndReview`: no session token, and the
  *  deploy resolves mesh data via build-time precompute / the hosted mesh
@@ -72,7 +31,7 @@ function fetchHostedMeshAndReview(
                 deps.setStaleMainResponsesDropped((prev) => prev + 1);
                 return;
             }
-            deps.setGeometries(featureMeshesToGeometries(mergeHostedMeshPayload(code, payload).features));
+            deps.setGeometries(featureMeshesToGeometries(mergeMeshPayload(code, payload).features));
             deps.setGeometryTransformOverrides({});
             deps.setFeatureRecords(payload.featureRecords ?? []);
             setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));

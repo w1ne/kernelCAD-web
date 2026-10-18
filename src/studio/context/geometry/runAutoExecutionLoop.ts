@@ -15,7 +15,7 @@ import {
     type BackendMeshPayload,
 } from '../../scriptSource';
 import { detectEmptyBuild, featureMeshesToGeometries } from './types';
-import { mergeHostedMeshPayload } from './useMeshFetch';
+import { mergeMeshPayload } from './meshMergeStore';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 
@@ -70,7 +70,7 @@ async function runHostedAutoExecution(
         }
         // Full response: (re)seed the partial-merge state this source's later
         // param edits diff against.
-        applyAutoRunPayload(deps, revision, executionCount, mergeHostedMeshPayload(code, payload));
+        applyAutoRunPayload(deps, revision, executionCount, mergeMeshPayload(code, payload));
     } catch (err: unknown) {
         if (revision !== deps.mainRevisionRef.current) {
             deps.setStaleMainResponsesDropped((prev) => prev + 1);

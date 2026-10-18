@@ -9,8 +9,8 @@ import {
   type MeshHaveFingerprints,
   type ParamOverrides,
 } from '../../scriptSource';
-import { mergeHostedMeshPayload, meshMergeStateFor } from './useMeshFetch';
-import type { MeshMergeState } from './mergeFeatureMeshes';
+import { mergeMeshPayload, meshMergeStateFor } from './meshMergeStore';
+import { MESH_MERGE_UNKNOWN_ID_PREFIX, type MeshMergeState } from './mergeFeatureMeshes';
 
 export type ParamEditValues = Record<string, number | boolean | string>;
 
@@ -47,22 +47,23 @@ export function paramEditsForMesh(
 }
 
 /** Matches the codec's per-feature fingerprints (two FNV-1a lanes, hex16).
- *  Anything else must not be claimed through `have`. */
+ *  Only entries matching this are claimed through `have`; a value the server
+ *  would not compute the same way must never be claimed. */
 const FINGERPRINT_HEX16 = /^[0-9a-f]{16}$/;
 
-/** The fingerprints to claim the client already holds, or undefined to ask
- *  for a full payload (no state, nothing fingerprinted, or a format the
- *  server would not understand). */
+/** The fingerprints to claim the client already holds: only the entries whose
+ *  value is a hex16 fingerprint. Returns undefined to ask for a full payload
+ *  (no state, nothing fingerprinted, or nothing in the expected format). */
 function haveFingerprints(state: MeshMergeState | null): MeshHaveFingerprints | undefined {
-  if (state === null || state.fingerprints.size === 0) return undefined;
-  const entries = [...state.fingerprints];
-  if (!entries.some(([, fingerprint]) => FINGERPRINT_HEX16.test(fingerprint))) return undefined;
+  if (state === null) return undefined;
+  const entries = [...state.fingerprints].filter(([, fingerprint]) => FINGERPRINT_HEX16.test(fingerprint));
+  if (entries.length === 0) return undefined;
   return Object.fromEntries(entries);
 }
 
 /** The merge rejecting a patch whose `unchangedIds` the state does not hold. */
 function isMeshMergeMismatch(err: unknown): boolean {
-  return err instanceof Error && err.message.startsWith('mesh merge: unknown unchanged id ');
+  return err instanceof Error && err.message.startsWith(MESH_MERGE_UNKNOWN_ID_PREFIX);
 }
 
 /** Mesh the code with the accumulated edits through the stateless endpoint:
@@ -71,9 +72,10 @@ function isMeshMergeMismatch(err: unknown): boolean {
  *
  *  Sends the fingerprints the client holds as `have` so the server can answer
  *  with only the changed features (folded into the merge state by
- *  `mergeHostedMeshPayload`). If the trailer names an unchanged id the state
- *  does not hold, the request is retried once without `have` for a full
- *  payload. */
+ *  `mergeMeshPayload`). If the trailer names an unchanged id the state does
+ *  not hold, the request is retried once without `have` for a full payload.
+ *  The server schema strips unknown body fields, so sending `have` to an
+ *  endpoint that predates the field is safe. */
 export async function meshParamEdits(
   code: string,
   edits: ParamEditValues,
@@ -90,9 +92,9 @@ export async function meshParamEdits(
         })
       : meshSourceDev(source, params, nextHave);
   try {
-    return mergeHostedMeshPayload(code, await send(have), state);
+    return mergeMeshPayload(code, await send(have), state);
   } catch (err) {
     if (have === undefined || !isMeshMergeMismatch(err)) throw err;
-    return mergeHostedMeshPayload(code, await send(undefined), state);
+    return mergeMeshPayload(code, await send(undefined), state);
   }
 }

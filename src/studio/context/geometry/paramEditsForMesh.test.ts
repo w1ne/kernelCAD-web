@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { meshParamEdits, paramEditsForMesh } from './paramEditsForMesh';
-import { mergeHostedMeshPayload } from './useMeshFetch';
+import { __resetMeshMergeStatesForTests, mergeMeshPayload } from './meshMergeStore';
 
 const code = [
   "const w = param('Width', 40, { min: 10, max: 80 });",
@@ -48,12 +48,14 @@ function stubHostedApp(): void {
   vi.stubGlobal('window', { location: { hostname: 'app.kernelcad.com', pathname: '/' } });
 }
 
-function postedBody(fetchMock: ReturnType<typeof vi.spyOn>, callIndex: number): Record<string, unknown> {
-  return JSON.parse((fetchMock.mock.calls[callIndex - 1]![1] as RequestInit).body as string) as Record<string, unknown>;
+/** The JSON body of the `callNumber`-th (1-based) fetch call. */
+function postedBodyAt(fetchMock: ReturnType<typeof vi.spyOn>, callNumber: number): Record<string, unknown> {
+  return JSON.parse((fetchMock.mock.calls[callNumber - 1]![1] as RequestInit).body as string) as Record<string, unknown>;
 }
 
 describe('meshParamEdits partial payloads', () => {
   afterEach(() => {
+    __resetMeshMergeStatesForTests();
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
     vi.unstubAllGlobals();
@@ -62,7 +64,7 @@ describe('meshParamEdits partial payloads', () => {
   it('claims held fingerprints via have and folds a partial response into the state', async () => {
     stubHostedApp();
     const source = "const w = param('Width', 40); return box(w, 1, 1);";
-    mergeHostedMeshPayload(source, { features: [feature('base', HEX_A)] });
+    mergeMeshPayload(source, { features: [feature('base', HEX_A)] });
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -73,7 +75,7 @@ describe('meshParamEdits partial payloads', () => {
 
     const payload = await meshParamEdits(source, { Width: 60 });
 
-    expect(postedBody(fetchMock, 1)).toEqual({
+    expect(postedBodyAt(fetchMock, 1)).toEqual({
       source,
       params: { Width: 60 },
       have: { base: HEX_A },
@@ -84,7 +86,7 @@ describe('meshParamEdits partial payloads', () => {
   it('retries once without have when the trailer names an unknown unchanged id', async () => {
     stubHostedApp();
     const source = "const w = param('Width', 41); return box(w, 1, 1);";
-    mergeHostedMeshPayload(source, { features: [feature('base', HEX_A)] });
+    mergeMeshPayload(source, { features: [feature('base', HEX_A)] });
     const fetchMock = vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce({
         ok: true,
@@ -98,15 +100,15 @@ describe('meshParamEdits partial payloads', () => {
     const payload = await meshParamEdits(source, { Width: 60 });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(postedBody(fetchMock, 1).have).toEqual({ base: HEX_A });
-    expect(postedBody(fetchMock, 2)).not.toHaveProperty('have');
+    expect(postedBodyAt(fetchMock, 1).have).toEqual({ base: HEX_A });
+    expect(postedBodyAt(fetchMock, 2)).not.toHaveProperty('have');
     expect(payload.features.map((f) => f.featureId)).toEqual(['fresh']);
   });
 
   it('omits have when the state holds no hex16 fingerprint to claim', async () => {
     stubHostedApp();
     const source = "const w = param('Width', 42); return box(w, 1, 1);";
-    mergeHostedMeshPayload(source, { features: [feature('unfingerprinted')] });
+    mergeMeshPayload(source, { features: [feature('unfingerprinted')] });
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
       json: async () => ({ features: [feature('unfingerprinted')] }),
@@ -114,6 +116,34 @@ describe('meshParamEdits partial payloads', () => {
 
     await meshParamEdits(source, { Width: 60 });
 
-    expect(postedBody(fetchMock, 1)).not.toHaveProperty('have');
+    expect(postedBodyAt(fetchMock, 1)).not.toHaveProperty('have');
+  });
+
+  it('omits have when every held fingerprint is garbage', async () => {
+    stubHostedApp();
+    const source = "const w = param('Width', 43); return box(w, 1, 1);";
+    mergeMeshPayload(source, { features: [feature('base', 'not-a-fingerprint'), feature('other', '0123')] });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ features: [feature('base', HEX_A)] }),
+    } as Response);
+
+    await meshParamEdits(source, { Width: 60 });
+
+    expect(postedBodyAt(fetchMock, 1)).not.toHaveProperty('have');
+  });
+
+  it('claims exactly the hex16 held fingerprints through have', async () => {
+    stubHostedApp();
+    const source = "const w = param('Width', 44); return box(w, 1, 1);";
+    mergeMeshPayload(source, { features: [feature('base', HEX_A), feature('draft', 'not-a-fingerprint')] });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ features: [feature('fresh', HEX_B)] }),
+    } as Response);
+
+    await meshParamEdits(source, { Width: 60 });
+
+    expect(postedBodyAt(fetchMock, 1).have).toEqual({ base: HEX_A });
   });
 });
