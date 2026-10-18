@@ -12,7 +12,6 @@ import { isSceneBackend } from '../../src/kernel/backends/sceneBackend';
 import {
   BHCS_HEAD,
   BHCS_LENGTHS,
-  FLATHEAD_HEAD,
   FLAT_WASHER,
   HEX_NUT,
   LOCK_NUT,
@@ -114,7 +113,7 @@ assert.equal(lineupRows.size, 8);
 expectSpan(lineupRows, 'display-base', -4, 0);
 expectSpan(lineupRows, 'socket-head', 0, 16 + SHCS_HEAD.M5!.K);
 expectSpan(lineupRows, 'button-head', 0, 16 + BHCS_HEAD.M5!.K);
-expectSpan(lineupRows, 'flat-head', 0, 16 + FLATHEAD_HEAD.M5!.K);
+expectSpan(lineupRows, 'flat-head', 0, 16); // seated frustum: rim at 0, tip at -length
 expectSpan(lineupRows, 'hex-nut', 0, HEX_NUT.M5!.m);
 expectSpan(lineupRows, 'lock-nut', 0, LOCK_NUT.M5!.m);
 expectSpan(lineupRows, 'flat-washer', 0, FLAT_WASHER.M5!.t);
