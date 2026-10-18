@@ -59,4 +59,26 @@ describe('lib parts surface — script-runtime integration', () => {
     expect(sA).toBeDefined();
     expect(sB).toBeDefined();
   });
+
+  it('lib.part and lib.fixture resolve the same fixture id', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const viaPart = await api.lib.part({ family: 't-slot-nut', thread: 'M10' });
+    const viaFixture = await api.lib.fixture.tSlotNut({ thread: 'M10' });
+    for (const shape of [viaPart, viaFixture]) {
+      const record = session.getRecords().find((candidate) => candidate.id === shape.id);
+      expect(record?.metadata?.catalogPart).toMatchObject({
+        id: 'tslot-nut-m10',
+        family: 't-slot-nut',
+      });
+    }
+  });
+
+  it('builds a step block envelope with tread connectors without a STEP file', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const block = await api.lib.fixture.stepBlock({ thread: 'M12' });
+    const record = session.getRecords().find((candidate) => candidate.id === block.id);
+    expect(record?.metadata?.catalogPart).toMatchObject({ id: 'step-block-m12' });
+  });
 });

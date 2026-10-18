@@ -8,7 +8,8 @@ import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import type { Shape } from '../capture/proxy';
 import type { CaptureSession } from '../capture/captureSession';
 import { snapshotCatalogPart, type PartRecord } from '../../shared/parts/types';
-import type { ResolvedPart } from './familyTable';
+import { isFixtureKind, type ResolvedPart } from './familyTable';
+import { fixtureSolid } from './fixtureSolids';
 
 export interface EnvelopeCtx {
   session: CaptureSession;
@@ -55,15 +56,29 @@ function nutSolid(part: ResolvedPart): OcctBackend {
 }
 
 function solidFor(part: ResolvedPart): OcctBackend {
+  if (isFixtureKind(part.kind)) return fixtureSolid(part.kind, part.dims ?? {}, part.nominalMm);
   if (part.kind === 'washer') return washerSolid(part);
   if (part.kind === 'nut') return nutSolid(part);
   return screwSolid(part);
 }
 
+/** Fixture envelopes carry their own dimensions; fold them into the digest so
+ *  two different fixture geometries cannot hash alike. */
+function dimsKey(part: ResolvedPart): string {
+  if (part.dims === undefined) return '';
+  return Object.entries(part.dims)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, value]) => `${name}=${value}`)
+    .join(',');
+}
+
 export async function synthesizeEnvelope(ctx: EnvelopeCtx, part: ResolvedPart): Promise<Shape> {
   await initOcct();
   const backend = solidFor(part);
-  const digest = envelopeDigest(`${part.id}|${part.headDiameterMm}|${part.headHeightMm}|${part.lengthMm}`);
+  const dims = dimsKey(part);
+  const digest = envelopeDigest(
+    `${part.id}|${part.headDiameterMm}|${part.headHeightMm}|${part.lengthMm}${dims === '' ? '' : `|${dims}`}`,
+  );
   const record: PartRecord = {
     id: part.id,
     name: part.name,
@@ -75,6 +90,7 @@ export async function synthesizeEnvelope(ctx: EnvelopeCtx, part: ResolvedPart): 
       thread: part.thread,
       ...(part.lengthMm > 0 ? { lengthMm: part.lengthMm } : {}),
       nominalMm: part.nominalMm,
+      ...(part.dims ?? {}),
     },
     sha256: digest,
     source: 'local-catalog',

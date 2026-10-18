@@ -35,6 +35,7 @@ import type { FetchPartOpts } from './parts/fetchPart';
 import type { FindPartOpts, FindPartResult } from './parts/findPart';
 import type { StandardParts } from './parts/standardParts';
 import type { PartRequest, StackRequest } from './parts/familyTable';
+import type { FixtureParts } from './parts/fixtureParts';
 import type { PlacedStack } from './parts/placePart';
 import type { FromDXFOptions, FromSVGOptions } from './parts/fromVectorFormats';
 import type { ShapeList } from './selection/shapeList';
@@ -129,6 +130,9 @@ export interface PartsLib {
   part(request: PartRequest): Promise<Shape>;
   /** Socket head, washer under the head, and for mode 'bolt' a washer and nut on the far side. */
   stack(request: StackRequest): Promise<PlacedStack>;
+  /** Machining-fixture hardware: T-slot nuts, clamping studs, flange nuts, strap
+   *  clamps and step blocks, keyed by the thread their clamping parts use. */
+  fixture: FixtureParts;
   standard: StandardParts;
 }
 
