@@ -1,6 +1,9 @@
+# Uses pull_request_target so fork PRs get a write token for the label/comment.
+# SAFETY: this workflow must never check out or execute PR head code; it only
+# reads the changed-file list via the API. Do not add actions/checkout here.
 name: Studio PR intake
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 permissions:
   contents: read
