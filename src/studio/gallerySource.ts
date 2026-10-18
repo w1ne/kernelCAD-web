@@ -38,6 +38,23 @@ export function galleryPrecomputedMeshUrl(sourceSha256Hex: string): string {
 }
 
 /**
+ * URL of the bin1 precompute, written next to the JSON by the gallery build.
+ * The client prefers it (smaller + zero-parse) and falls back to the JSON.
+ */
+export function galleryPrecomputedMeshBinUrl(sourceSha256Hex: string): string {
+  return `${galleryAssetBase()}/gallery/_mesh/${sourceSha256Hex}.bin`;
+}
+
+/**
+ * URL of the brotli variant of the bin1 precompute, for CDNs that do not
+ * auto-compress a custom binary content type; the client tries it first and
+ * falls back to the uncompressed `.bin`.
+ */
+export function galleryPrecomputedMeshBinBrUrl(sourceSha256Hex: string): string {
+  return `${galleryAssetBase()}/gallery/_mesh/${sourceSha256Hex}.bin.br`;
+}
+
+/**
  * URL of a build-time precomputed ANIMATION timeline (per-part world transforms
  * per frame), keyed by the sha256 hex of the .kcad.ts source. `build-gallery.ts`
  * writes these under `public/gallery/_anim/<sha>.json` for curated entries that

@@ -3,7 +3,9 @@ import { mkdtempSync, rmSync, readFileSync, existsSync, copyFileSync, mkdirSync,
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { buildGallery, communityApiFromEnv, fetchCommunityGallery } from './build-gallery';
+import { brotliCompressSync, brotliDecompressSync, constants as zlibConstants } from 'node:zlib';
+import { buildGallery, communityApiFromEnv, fetchCommunityGallery, writeMeshArtifacts } from './build-gallery';
+import { decodeMeshBinary } from '../../src/modeling/capture/featureMeshBinary';
 
 describe('buildGallery', () => {
   let tmp: string;
@@ -163,6 +165,12 @@ describe('buildGallery', () => {
     expect(bridge.featureRecords.length).toBeGreaterThan(0);
     expect(bridge.features.length).toBeGreaterThan(0);
     expect(bridge).toHaveProperty('params');expect(bridge).toHaveProperty('review');expect(bridge).toHaveProperty('bounds');
+    const binPath=path.join(publicDir,'gallery/_mesh',sha+'.bin'),brPath=path.join(publicDir,'gallery/_mesh',sha+'.bin.br');
+    expect(existsSync(binPath)).toBe(true);expect(existsSync(brPath)).toBe(true);
+    const bin=readFileSync(binPath);
+    expect(decodeMeshBinary(new Uint8Array(bin)).features.map(f=>f.featureId))
+      .toEqual(bridge.features.map((f:{featureId:string})=>f.featureId));
+    expect(brotliDecompressSync(readFileSync(brPath)).equals(bin)).toBe(true);
   });
 
   it('fails a selected compact bridge when source precomputation fails', {timeout:60000}, async () => {
@@ -339,6 +347,64 @@ describe('buildGallery', () => {
       entriesPath: path.join(entriesDir, 'entries.json'),
       publicDir: path.join(tmp, 'public'),
     })).rejects.toThrow(/failing-review.*review_cad.*ok.*true/i);
+  });
+});
+
+describe('writeMeshArtifacts', () => {
+  let tmp: string;
+  afterEach(() => {
+    if (tmp) rmSync(tmp, { recursive: true, force: true });
+  });
+
+  it('writes json (unchanged) + bin1 + brotli q11 siblings for the same payload', () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'gallery-mesh-artifacts-'));
+    const meshDir = path.join(tmp, '_mesh');
+    mkdirSync(meshDir, { recursive: true });
+
+    const sha = createHash('sha256').update('mesh-source').digest('hex');
+    const payload = {
+      source: 'return box(1, 1, 1);',
+      features: [{
+        featureId: 'box-1',
+        featureKind: 'box',
+        predecessors: [],
+        faces: [{
+          faceId: 0,
+          vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+          normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+          indices: [0, 1, 2],
+        }],
+      }],
+      featureRecords: [{ kind: 'box' }],
+      bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+      params: {},
+      review: { ok: true, diagnostics: [] },
+    };
+
+    writeMeshArtifacts(meshDir, sha, payload);
+
+    const jsonPath = path.join(meshDir, `${sha}.json`);
+    const binPath = path.join(meshDir, `${sha}.bin`);
+    const brPath = path.join(meshDir, `${sha}.bin.br`);
+    expect(existsSync(jsonPath)).toBe(true);
+    expect(existsSync(binPath)).toBe(true);
+    expect(existsSync(brPath)).toBe(true);
+
+    // The JSON bridge keeps the pre-bin encoding byte-for-byte (old clients/embeds).
+    expect(readFileSync(jsonPath, 'utf8')).toBe(JSON.stringify(payload));
+
+    // The .bin is a bin1 container ("KCB1" magic) decoding back to the same features.
+    const bin = readFileSync(binPath);
+    const binBytes = new Uint8Array(bin); // fresh copy: byteOffset 0, decode-safe
+    expect(Array.from(binBytes.subarray(0, 4))).toEqual([0x4b, 0x43, 0x42, 0x31]);
+    expect(decodeMeshBinary(binBytes).features.map((f) => f.featureId)).toEqual(['box-1']);
+
+    // The .br sibling is brotli quality 11 of exactly those bin bytes.
+    expect(readFileSync(brPath).equals(brotliCompressSync(bin, {
+      params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 },
+    }))).toBe(true);
+    const brBytes = new Uint8Array(brotliDecompressSync(readFileSync(brPath)));
+    expect(decodeMeshBinary(brBytes).features.map((f) => f.featureId)).toEqual(['box-1']);
   });
 });
 

@@ -9,6 +9,7 @@ import {
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { brotliCompressSync, constants as zlibConstants } from 'node:zlib';
 import {
   parseGalleryEntries,
   validateMechanismReviewEvidenceFiles,
@@ -23,7 +24,8 @@ import { copyMeshoptDecoder, MESHOPT_DECODER_URL } from '../../scripts/lib/mesho
 import { optimizeGlb } from '../../scripts/lib/optimizeGlb';
 import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature } from '../../src/modeling/capture/featureMeshing';
-import { serializeForBridge } from '../../src/modeling/capture/featureMeshSerialize';
+import { serializeForBridge, type FeatureMeshSerialized } from '../../src/modeling/capture/featureMeshSerialize';
+import { encodeMeshBinary } from '../../src/modeling/capture/featureMeshBinary';
 import { evaluateAndBuildScript } from '../../src/agent/cli/commands/evaluate';
 import { bakeAnimationTimeline, selectAnimationMetadata } from '../../src/modeling/animation/bakeAnimationTimeline';
 import { validateAssemblyWithMates } from '../../src/modeling/mates/validator';
@@ -238,6 +240,28 @@ export async function fetchCommunityGallery(
   return cards.sort((a, b) => Number(b.featured) - Number(a.featured));
 }
 
+/**
+ * Writes the three precomputed mesh artifacts for one entry under
+ * `_mesh/<sha>`: the JSON bridge (unchanged — old clients and the ChatGPT
+ * embed read it), the bin1 container (smaller + zero-parse), and its brotli
+ * sibling (a custom binary content type is not auto-compressed by the CDN).
+ * All three encode the SAME feature list, so they cannot drift apart.
+ */
+export function writeMeshArtifacts(
+  meshOutDir: string,
+  sourceSha256Hex: string,
+  bridgePayload: { features: FeatureMeshSerialized[] },
+): void {
+  const json = encodeBridgePayload(bridgePayload);
+  const bin = Buffer.from(encodeMeshBinary(bridgePayload.features));
+  const brotli = brotliCompressSync(bin, {
+    params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 },
+  });
+  writeFileSync(path.join(meshOutDir, `${sourceSha256Hex}.json`), json);
+  writeFileSync(path.join(meshOutDir, `${sourceSha256Hex}.bin`), bin);
+  writeFileSync(path.join(meshOutDir, `${sourceSha256Hex}.bin.br`), brotli);
+}
+
 async function precomputeGalleryBridge(entry: GalleryEntry, srcScript: string, meshOutDir: string): Promise<boolean> {
   let declaresAnimation = false;
   try {
@@ -273,7 +297,7 @@ async function precomputeGalleryBridge(entry: GalleryEntry, srcScript: string, m
         params: loaded.paramTable.serialize(),
         review,
       };
-      writeFileSync(path.join(meshOutDir, `${sha}.json`), encodeBridgePayload(bridgePayload));
+      writeMeshArtifacts(meshOutDir, sha, bridgePayload);
     }
   } catch (err) {
     if (entry.compactBridge) throw err;
