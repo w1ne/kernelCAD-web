@@ -21,7 +21,7 @@ export interface ParamUpdateOptions {
 
 /** Apply the payload a param-edit submit resolved with, unless a newer edit
  *  (code change or another param drag) superseded it. */
-function applyTakenParamPayload(
+function applyParamEditPayload(
     payload: BackendMeshPayload | null,
     revision: number,
     deps: ExecutionApplyDeps,
@@ -134,7 +134,7 @@ export function useParamUpdate(
         deps.setIsComputing(true);
         try {
             const payload = await meshParamEdits(code, overrides, options?.bakeIntoSource);
-            applyTakenParamPayload(payload, revision, deps, applyBridgePayload);
+            applyParamEditPayload(payload, revision, deps, applyBridgePayload);
         } catch (err) {
             if (revision !== deps.mainRevisionRef.current) return;
             deps.setError(err instanceof Error ? err.message : String(err));

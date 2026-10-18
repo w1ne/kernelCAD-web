@@ -263,6 +263,9 @@ interface DecodedMeta {
   faces: FaceMeta[]; hasUv: boolean; hasMesh: boolean; hasEdges: boolean; fingerprint?: string;
 }
 interface BufferSlice { offset: number; byteLength: number }
+interface RecordEntry { metaOffset: number; metaLength: number; bufferCount: number }
+interface RecordEnvelope { meta?: DecodedMeta; trailer?: MeshBinaryTrailer; containerMeta?: unknown }
+interface BufferWalk { slices: BufferSlice[]; cursor: number }
 
 function f32View(bytes: Uint8Array, byteOffset: number, elements: number): Float32Array {
   return new Float32Array(bytes.buffer, bytes.byteOffset + byteOffset, elements);
@@ -328,14 +331,11 @@ function rebuildFeature(bytes: Uint8Array, meta: DecodedMeta, slices: BufferSlic
   };
 }
 
-/** Decodes a bin1 container. `bytes` must start at a 4-byte-aligned byteOffset
- *  (`byteOffset % 4 === 0`): decoded geometry comes back as zero-copy typed-array views over
- *  `bytes.buffer`, which cannot start at a misaligned offset. Copy (`.slice()`) a misaligned
- *  region before decoding it. */
-export function decodeMeshBinary(bytes: Uint8Array): {
-  features: FeatureMeshSerializedInput[];
-  trailer?: MeshBinaryTrailer;
-  containerMeta?: Record<string, unknown>;
+/** Validates the container header and returns the shared view plus its decoded fields.
+ *  `bytes` must start at a 4-byte-aligned byteOffset (`byteOffset % 4 === 0`): decoded
+ *  geometry comes back as zero-copy typed-array views over `bytes.buffer`. */
+function readContainerHeader(bytes: Uint8Array): {
+  view: DataView; flags: number; count: number; tableEnd: number;
 } {
   if (bytes.byteOffset % 4 !== 0) {
     throw new Error(`featureMeshBinary: byteOffset must be 4-byte aligned (got ${bytes.byteOffset})`);
@@ -356,8 +356,14 @@ export function decodeMeshBinary(bytes: Uint8Array): {
   if (count === 0 && (flags & MESH_BIN_FLAG_PARTIAL) !== 0) {
     throw new Error('featureMeshBinary: partial flag set but the container has no records to carry the trailer');
   }
+  return { view, flags, count, tableEnd };
+}
 
-  const entries: Array<{ metaOffset: number; metaLength: number; bufferCount: number }> = [];
+/** Validates every record-table entry and returns them with the first buffer offset (past the meta). */
+function readRecordTable(view: DataView, count: number, tableEnd: number, byteLength: number): {
+  entries: RecordEntry[]; bufferStart: number;
+} {
+  const entries: RecordEntry[] = [];
   let bufferStart = tableEnd;
   let bufferTotal = 0;
   for (let i = 0; i < count; i += 1) {
@@ -366,7 +372,7 @@ export function decodeMeshBinary(bytes: Uint8Array): {
     const metaOffset = view.getUint32(entry + 4, true);
     const firstBuffer = view.getUint32(entry + 8, true);
     const bufferCount = view.getUint32(entry + 12, true);
-    if (metaOffset < tableEnd || metaOffset + metaLength > bytes.byteLength) {
+    if (metaOffset < tableEnd || metaOffset + metaLength > byteLength) {
       throw new Error(`featureMeshBinary: record ${i} metadata overflows the container`);
     }
     if (firstBuffer !== bufferTotal) {
@@ -376,6 +382,76 @@ export function decodeMeshBinary(bytes: Uint8Array): {
     bufferStart = Math.max(bufferStart, metaOffset + metaLength);
     entries.push({ metaOffset, metaLength, bufferCount });
   }
+  return { entries, bufferStart };
+}
+
+function parseRecordEnvelope(decoder: InstanceType<typeof TextDecoder>, bytes: Uint8Array, entry: RecordEntry, index: number): RecordEnvelope {
+  const raw = decoder.decode(bytes.subarray(entry.metaOffset, entry.metaOffset + entry.metaLength));
+  const nul = raw.indexOf('\u0000');
+  try {
+    return JSON.parse(nul === -1 ? raw : raw.slice(0, nul)) as RecordEnvelope;
+  } catch {
+    throw new Error(`featureMeshBinary: record ${index} metadata is not valid JSON`);
+  }
+}
+
+/** Record 0's envelope carries the container trailer — flags bit0 gates it, so a stray
+ *  `trailer` key without the flag stays ignored — and the reserved `containerMeta` key. */
+function readFirstEnvelope(envelope: RecordEnvelope, flags: number): {
+  trailer?: MeshBinaryTrailer; containerMeta?: Record<string, unknown>;
+} {
+  let trailer: MeshBinaryTrailer | undefined;
+  if ((flags & MESH_BIN_FLAG_PARTIAL) !== 0) {
+    if (envelope.trailer === undefined) {
+      throw new Error('featureMeshBinary: partial flag is set but record 0 metadata carries no trailer');
+    }
+    trailer = envelope.trailer;
+  }
+  let containerMeta: Record<string, unknown> | undefined;
+  const candidate = envelope.containerMeta;
+  if (candidate !== undefined) {
+    if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) {
+      const got = candidate === null ? 'null' : Array.isArray(candidate) ? 'array' : typeof candidate;
+      throw new Error(`featureMeshBinary: record 0 containerMeta is not an object (got ${got})`);
+    }
+    containerMeta = candidate as Record<string, unknown>;
+  }
+  return { trailer, containerMeta };
+}
+
+/** Walks one record's `{ len u32, bytes, pad to 4 }` buffer sequence starting at `from`. */
+function readBufferSlices(view: DataView, bytes: Uint8Array, entry: RecordEntry, from: number, index: number): BufferWalk {
+  const slices: BufferSlice[] = [];
+  let cursor = from;
+  for (let b = 0; b < entry.bufferCount; b += 1) {
+    if (cursor + 4 > bytes.byteLength) {
+      throw new Error(`featureMeshBinary: record ${index} buffer ${b} is truncated (missing length prefix)`);
+    }
+    const byteLength = view.getUint32(cursor, true);
+    const dataOffset = cursor + 4;
+    if (dataOffset + byteLength > bytes.byteLength) {
+      throw new Error(`featureMeshBinary: record ${index} buffer ${b} is truncated (declares ${byteLength} bytes at offset ${dataOffset})`);
+    }
+    slices.push({ offset: dataOffset, byteLength });
+    cursor = dataOffset + pad4(byteLength);
+    if (cursor > bytes.byteLength) {
+      throw new Error(`featureMeshBinary: record ${index} buffer ${b} padding overflows the container`);
+    }
+  }
+  return { slices, cursor };
+}
+
+/** Decodes a bin1 container. `bytes` must start at a 4-byte-aligned byteOffset
+ *  (`byteOffset % 4 === 0`): decoded geometry comes back as zero-copy typed-array views over
+ *  `bytes.buffer`, which cannot start at a misaligned offset. Copy (`.slice()`) a misaligned
+ *  region before decoding it. */
+export function decodeMeshBinary(bytes: Uint8Array): {
+  features: FeatureMeshSerializedInput[];
+  trailer?: MeshBinaryTrailer;
+  containerMeta?: Record<string, unknown>;
+} {
+  const { view, flags, count, tableEnd } = readContainerHeader(bytes);
+  const { entries, bufferStart } = readRecordTable(view, count, tableEnd, bytes.byteLength);
 
   const decoder = new TextDecoder();
   const features: FeatureMeshSerializedInput[] = [];
@@ -384,51 +460,16 @@ export function decodeMeshBinary(bytes: Uint8Array): {
   let cursor = bufferStart;
   for (let i = 0; i < count; i += 1) {
     const entry = entries[i];
-    const raw = decoder.decode(bytes.subarray(entry.metaOffset, entry.metaOffset + entry.metaLength));
-    const nul = raw.indexOf('\u0000');
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(nul === -1 ? raw : raw.slice(0, nul));
-    } catch {
-      throw new Error(`featureMeshBinary: record ${i} metadata is not valid JSON`);
-    }
-    // flags bit0 gates the trailer: a stray `trailer` key without the flag stays ignored.
-    const envelope = parsed as { meta?: DecodedMeta; trailer?: MeshBinaryTrailer; containerMeta?: unknown };
+    const envelope = parseRecordEnvelope(decoder, bytes, entry, i);
     if (i === 0) {
-      if ((flags & MESH_BIN_FLAG_PARTIAL) !== 0) {
-        if (envelope.trailer === undefined) {
-          throw new Error('featureMeshBinary: partial flag is set but record 0 metadata carries no trailer');
-        }
-        trailer = envelope.trailer;
-      }
-      if (envelope.containerMeta !== undefined) {
-        const candidate = envelope.containerMeta;
-        if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) {
-          const got = candidate === null ? 'null' : Array.isArray(candidate) ? 'array' : typeof candidate;
-          throw new Error(`featureMeshBinary: record 0 containerMeta is not an object (got ${got})`);
-        }
-        containerMeta = candidate as Record<string, unknown>;
-      }
+      const first = readFirstEnvelope(envelope, flags);
+      trailer = first.trailer;
+      containerMeta = first.containerMeta;
     }
-    const meta = envelope.meta !== undefined ? envelope.meta : (parsed as DecodedMeta);
-
-    const slices: BufferSlice[] = [];
-    for (let b = 0; b < entry.bufferCount; b += 1) {
-      if (cursor + 4 > bytes.byteLength) {
-        throw new Error(`featureMeshBinary: record ${i} buffer ${b} is truncated (missing length prefix)`);
-      }
-      const byteLength = view.getUint32(cursor, true);
-      const dataOffset = cursor + 4;
-      if (dataOffset + byteLength > bytes.byteLength) {
-        throw new Error(`featureMeshBinary: record ${i} buffer ${b} is truncated (declares ${byteLength} bytes at offset ${dataOffset})`);
-      }
-      slices.push({ offset: dataOffset, byteLength });
-      cursor = dataOffset + pad4(byteLength);
-      if (cursor > bytes.byteLength) {
-        throw new Error(`featureMeshBinary: record ${i} buffer ${b} padding overflows the container`);
-      }
-    }
-    features.push(rebuildFeature(bytes, meta, slices, i));
+    const meta = envelope.meta !== undefined ? envelope.meta : (envelope as DecodedMeta);
+    const walk = readBufferSlices(view, bytes, entry, cursor, i);
+    cursor = walk.cursor;
+    features.push(rebuildFeature(bytes, meta, walk.slices, i));
   }
   return {
     features,
