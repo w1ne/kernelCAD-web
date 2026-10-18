@@ -64,6 +64,7 @@ function harness(): Harness {
     },
     scriptBudgetMs: 1_000,
     totalBudgetMs: 5_000,
+    buildBudgetMs: 5_000,
     onEvent: (event) => {
       events.push(event);
     },
@@ -203,6 +204,32 @@ describe('browserKernelClient: warm', () => {
     expect(h.kernel.fallbackReason()).toBe('timeout');
     expect(h.workers).toHaveLength(2);
     expect(h.events).toContainEqual({ type: 'fallback', reason: 'timeout' });
+  });
+
+  it('gives the background warm build a longer budget than an interactive request', async () => {
+    const workers: FakeWorker[] = [];
+    const kernel = createBrowserKernel({
+      spawn: () => {
+        const worker = new FakeWorker();
+        workers.push(worker);
+        return worker as unknown as Worker;
+      },
+      scriptBudgetMs: 1_000,
+    });
+    const promise = kernel.warm('heavy(1)', 'f.ts');
+    const rejection = rejectionOf(promise);
+    const worker = workers[0]!;
+    worker.reply(scriptDone(lastBuild(worker).id));
+
+    // Past the interactive 300 s budget: warming continues (it is off the
+    // interaction path and heavy models build for minutes).
+    await vi.advanceTimersByTimeAsync(300_000);
+    expect(kernel.status()).toBe('warming');
+
+    // The background build budget (900 s) is the one that ends it.
+    await vi.advanceTimersByTimeAsync(600_000);
+    expect(await rejection).toBeInstanceOf(KernelSourceError);
+    expect(kernel.fallbackReason()).toBe('timeout');
   });
 
   it('fails immediately on the total watchdog, without a second spawn', async () => {

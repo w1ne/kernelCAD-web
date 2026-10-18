@@ -151,6 +151,10 @@ class BrowserKernelClient implements BrowserKernel {
   private readonly spawnWorkerFn: () => Worker;
   private readonly scriptBudgetMs: number;
   private readonly totalBudgetMs: number;
+  /** Budget for the background WARM build. Longer than an interactive params
+   *  budget: warming is off the interaction path, and a heavy gallery model's
+   *  cold in-browser build runs for minutes. */
+  private readonly buildBudgetMs: number;
   private readonly onEvent: ((event: KernelEvent) => void) | undefined;
 
   private statusValue: KernelStatus = 'idle';
@@ -169,11 +173,14 @@ class BrowserKernelClient implements BrowserKernel {
     spawn: () => Worker;
     scriptBudgetMs?: number;
     totalBudgetMs?: number;
+    /** Background warm-build budget (default 900_000). */
+    buildBudgetMs?: number;
     onEvent?: (event: KernelEvent) => void;
   }) {
     this.spawnWorkerFn = opts.spawn;
     this.scriptBudgetMs = opts.scriptBudgetMs ?? 30_000;
     this.totalBudgetMs = opts.totalBudgetMs ?? 300_000;
+    this.buildBudgetMs = opts.buildBudgetMs ?? 900_000;
     this.onEvent = opts.onEvent;
   }
 
@@ -286,10 +293,19 @@ class BrowserKernelClient implements BrowserKernel {
     spawned.onmessage = (event: MessageEvent) => {
       this.onWorkerMessage(spawned, event.data as KernelResponse);
     };
-    spawned.onerror = () => {
+    spawned.onerror = (event) => {
+      // Dev-facing breadcrumb: without it a worker that fails to load its
+      // module (CSP, a failed dev-server transform, a missing asset) is only
+      // visible as a silent sticky `crash`.
+      if (typeof console !== 'undefined' && typeof console.debug === 'function') {
+        console.debug('[kernel] worker error', (event as ErrorEvent)?.message ?? event);
+      }
       this.onWorkerFailure(spawned, 'crash');
     };
-    spawned.onmessageerror = () => {
+    spawned.onmessageerror = (event) => {
+      if (typeof console !== 'undefined' && typeof console.debug === 'function') {
+        console.debug('[kernel] worker message error', event);
+      }
       this.onWorkerFailure(spawned, 'crash');
     };
     if (this.spawnStartedAt === null && !this.initEmitted) this.spawnStartedAt = now();
@@ -303,13 +319,13 @@ class BrowserKernelClient implements BrowserKernel {
     }, this.scriptBudgetMs);
   }
 
-  private armTotalWatchdog(): void {
+  private armTotalWatchdog(budgetMs: number = this.totalBudgetMs): void {
     this.disarmTotal();
     this.totalTimer = setTimeout(() => {
       this.totalTimer = null;
       // A total-watchdog fire is terminal: fail now, no respawn.
       this.handleFailure('timeout', true);
-    }, this.totalBudgetMs);
+    }, budgetMs);
   }
 
   private onWorkerMessage(source: Worker, message: KernelResponse): void {
@@ -387,6 +403,11 @@ class BrowserKernelClient implements BrowserKernel {
   private settleBuildError(build: PendingBuild, message: ErrorResponse): void {
     this.clearTimers();
     this.pendingBuild = null;
+    // Dev-facing breadcrumb: a failed warm silently becomes a sticky server
+    // fallback, so the reason must be visible somewhere.
+    if (typeof console !== 'undefined' && typeof console.debug === 'function') {
+      console.debug('[kernel] build failed', message.code, message.message);
+    }
     if (message.code === 'host-fs-unavailable') {
       this.markFailed('host-fs');
       build.reject(new KernelSourceError('host-fs', message.message, message.failedFeatureIds ?? []));
@@ -502,7 +523,7 @@ class BrowserKernelClient implements BrowserKernel {
     };
     this.post(request);
     this.armScriptWatchdog();
-    this.armTotalWatchdog();
+    this.armTotalWatchdog(this.buildBudgetMs);
   }
 
   private startBuild(source: string, fileName: string): Promise<void> {
@@ -568,6 +589,8 @@ export function createBrowserKernel(opts: {
   spawn: () => Worker;
   scriptBudgetMs?: number;
   totalBudgetMs?: number;
+  /** Background warm-build budget (default 900_000). */
+  buildBudgetMs?: number;
   onEvent?: (event: KernelEvent) => void;
 }): BrowserKernel {
   return new BrowserKernelClient(opts);
