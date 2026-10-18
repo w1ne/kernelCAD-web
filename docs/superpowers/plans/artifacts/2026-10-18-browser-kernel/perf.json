@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-18T19:09:02.375Z",
+  "slug": "e2e-param-box",
+  "machine": "darwin arm64",
+  "note": "LOCAL validation of feat/studio-browser-kernel; not the deployed build.",
+  "edits": [
+    {
+      "name": "w",
+      "value": "11",
+      "wall_ms": 303,
+      "kernel_ms": 11.099999904632568,
+      "patch_bytes": 2504
+    },
+    {
+      "name": "w",
+      "value": "12",
+      "wall_ms": 298,
+      "kernel_ms": 9.400000095367432,
+      "patch_bytes": 2508
+    },
+    {
+      "name": "w",
+      "value": "13",
+      "wall_ms": 284,
+      "kernel_ms": 7.299999952316284,
+      "patch_bytes": 2516
+    },
+    {
+      "name": "w",
+      "value": "14",
+      "wall_ms": 294,
+      "kernel_ms": 11.299999952316284,
+      "patch_bytes": 2508
+    },
+    {
+      "name": "w",
+      "value": "15",
+      "wall_ms": 298,
+      "kernel_ms": 9.099999904632568,
+      "patch_bytes": 2504
+    }
+  ],
+  "open_to_warm_ms": 9287,
+  "wasm_init_ms": 1515.1000001430511,
+  "warm_build_ms": 569.7999999523163,
+  "feature_count": 1,
+  "video_webm": "/Users/andrii/worktrees/kcw-perf/docs/superpowers/plans/artifacts/2026-10-18-browser-kernel/video-raw/40111abea4bcebba1adfb73db194615b.webm"
+}

@@ -90,7 +90,6 @@
     "site:dev": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts && npm run site:build-island && npx tsx site/scripts/build-demo.ts && npx tsx site/scripts/build-gallery.ts && npm run site:build-blog && npm run site:build-docs && bash site/scripts/link-public.sh && cd site && python3 -m http.server 8000",
     "site:build": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts && npm run site:build-island && npx tsx site/scripts/build-demo.ts && npx tsx site/scripts/build-gallery.ts && npm run site:build-blog && npm run site:build-docs && node site/scripts/render-brand.mjs",
     "site:build-blog": "npx tsx site/scripts/build-blog.ts",
-
     "site:build-pricing": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts",
     "site:build-island": "vite build --config vite.pricing-island.config.ts",
     "site:render-brand": "node site/scripts/render-brand.mjs",
@@ -119,7 +118,8 @@
     "portfolio:capture": "npx tsx scripts/capturePortfolioEntry.ts",
     "site:build-docs": "npx tsx site/scripts/prebake-docs-models.ts && npx tsx site/scripts/build-docs.ts && vite build --config vite.docs-island.config.ts && npx tsx site/scripts/verify-docs-bundle.ts",
     "docs:site": "npm run site:build-docs",
-    "build:mcp-viewer": "vite build --config vite.mcp-viewer.config.ts"
+    "build:mcp-viewer": "vite build --config vite.mcp-viewer.config.ts",
+    "test:e2e:kernel": "playwright test --config playwright.browser-kernel.config.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
