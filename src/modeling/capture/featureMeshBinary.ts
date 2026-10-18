@@ -110,6 +110,30 @@ function asU32(buffer: NumericBuffer): Uint32Array {
   return buffer instanceof Uint32Array ? buffer : new Uint32Array(buffer);
 }
 
+/** Concatenate per-face buffers into the single region the encoder hashes and writes.
+ *  Byte-identical to hashing the parts separately: `hashSources` mixes each chunk's
+ *  total byteLength once, then every part's bytes in order. */
+function concatF32(arrays: readonly Float32Array[]): Float32Array {
+  if (arrays.length === 1) return arrays[0];
+  const out = new Float32Array(arrays.reduce((total, array) => total + array.length, 0));
+  let offset = 0;
+  for (const array of arrays) {
+    out.set(array, offset);
+    offset += array.length;
+  }
+  return out;
+}
+function concatU32(arrays: readonly Uint32Array[]): Uint32Array {
+  if (arrays.length === 1) return arrays[0];
+  const out = new Uint32Array(arrays.reduce((total, array) => total + array.length, 0));
+  let offset = 0;
+  for (const array of arrays) {
+    out.set(array, offset);
+    offset += array.length;
+  }
+  return out;
+}
+
 interface NormalizedFace {
   faceId: number; plane?: Plane; cylinder?: Cylinder;
   vertices: Float32Array; normals: Float32Array; uv?: Float32Array; indices: Uint32Array;
@@ -118,7 +142,7 @@ interface FaceMeta {
   faceId: number; plane?: Plane; cylinder?: Cylinder;
   vertexOffset: number; vertexCount: number; indexOffset: number; indexCount: number;
 }
-interface NormalizedRecord { metaJson: Uint8Array; metaPaddedLength: number; chunks: Chunk[] }
+interface NormalizedRecord { metaJson: Uint8Array; metaPaddedLength: number; chunks: Chunk[]; fingerprint: string }
 
 function normalizeFace(face: FaceGeometryInput | FaceGeometry): NormalizedFace {
   const uv = face.uv !== undefined ? asF32(face.uv) : undefined;
@@ -129,6 +153,35 @@ function normalizeFace(face: FaceGeometryInput | FaceGeometry): NormalizedFace {
     ...(face.plane !== undefined ? { plane: face.plane } : {}),
     ...(face.cylinder !== undefined ? { cylinder: face.cylinder } : {}),
   };
+}
+
+/** The hash the container embeds for one record, computed from its NORMALIZED geometry —
+ *  the exact input `normalizeRecord` writes, so `featureFingerprint` and the encoder can
+ *  never diverge. Chunk order must match `fingerprintBuffers`: vertices, normals, [uv],
+ *  indices, [display mesh], [edges]. */
+function fingerprintOfNormalized(
+  faces: readonly NormalizedFace[],
+  hasUv: boolean,
+  mesh: { positions: Float32Array; normals: Float32Array; indices: Uint32Array } | undefined,
+  edges: Float32Array | undefined,
+): string {
+  return fingerprintBuffers({
+    faceIds: faces.map((face) => face.faceId),
+    vertices: concatF32(faces.map((face) => face.vertices)),
+    normals: concatF32(faces.map((face) => face.normals)),
+    ...(hasUv ? { uvs: concatF32(faces.map((face) => face.uv as Float32Array)) } : {}),
+    indices: concatU32(faces.map((face) => face.indices)),
+    ...(mesh !== undefined ? { meshPositions: mesh.positions, meshNormals: mesh.normals, meshIndices: mesh.indices } : {}),
+    ...(edges !== undefined ? { edges } : {}),
+  });
+}
+
+/** The 64-bit fingerprint `encodeMeshBinary` would embed for this feature — the decoded
+ *  container's per-record `fingerprint`. Stable across input forms (raw `FeatureMesh`,
+ *  serialized JSON, or a decoded feature) and sensitive to every geometry byte and face
+ *  id; the featureId is the caller's map key, not part of the hash. */
+export function featureFingerprint(feature: FeatureMeshSerializedInput | FeatureMesh): string {
+  return normalizeRecord(feature).fingerprint;
 }
 
 function normalizeRecord(
@@ -170,7 +223,7 @@ function normalizeRecord(
   ];
   if (mesh !== undefined) chunks.push(chunkOf([mesh.positions]), chunkOf([mesh.normals]), chunkOf([mesh.indices]));
   if (edges !== undefined) chunks.push(chunkOf([edges]));
-  const fingerprint = hashSources(faces.map((face) => face.faceId), chunks);
+  const fingerprint = fingerprintOfNormalized(faces, hasUv, mesh, edges);
 
   let vertexOffset = 0;
   let indexOffset = 0;
@@ -200,7 +253,7 @@ function normalizeRecord(
     ...(containerMeta !== undefined ? { containerMeta } : {}),
   });
   const metaJson = new TextEncoder().encode(json);
-  return { metaJson, metaPaddedLength: pad4(metaJson.byteLength), chunks };
+  return { metaJson, metaPaddedLength: pad4(metaJson.byteLength), chunks, fingerprint };
 }
 
 export function encodeMeshBinary(

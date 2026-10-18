@@ -186,3 +186,33 @@ describe('docs live-example worker import graph', () => {
     expect(rel).toContain('src/kernel/backends/occt/occtBackend.ts');
   });
 });
+
+// Studio's kernel worker is a THIRD browser entry: the docs worker's script +
+// mesh pipeline plus param-driven re-meshing (`updateModelParams`), which none
+// of the graphs above reach. A node builtin anywhere behind that edge would
+// only surface as a Vite build failure or a worker that dies on its first
+// params edit — so it is guarded mechanically, same as the other two.
+describe('studio kernel worker import graph', () => {
+  const ENTRY = resolve(REPO_ROOT, 'src/studio/kernel/studioKernelWorker.ts');
+
+  it('pulls no node: builtins', () => {
+    const { files, violations } = walkGraph(ENTRY);
+    expect(files.size).toBeGreaterThan(50);
+    expect(
+      violations,
+      violations.length === 0
+        ? ''
+        : `The studio kernel worker's import graph reaches node builtins:\n${formatViolations(violations)}`,
+    ).toEqual([]);
+  });
+
+  it('reaches the worker core, the param updater and the mesher', () => {
+    const { files } = walkGraph(ENTRY);
+    const rel = [...files].map((f) => relative(REPO_ROOT, f));
+    // The param updater is the half the docs worker guard does not cover.
+    // Without it this assertion would be a duplicate of that one.
+    expect(rel).toContain('src/studio/kernel/kernelWorkerCore.ts');
+    expect(rel).toContain('src/modeling/paramUpdate.ts');
+    expect(rel).toContain('src/modeling/capture/featureMeshing.ts');
+  });
+});

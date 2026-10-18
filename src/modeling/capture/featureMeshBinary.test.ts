@@ -3,7 +3,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import {
-  decodeMeshBinary, encodeMeshBinary, fingerprintBuffers,
+  decodeMeshBinary, encodeMeshBinary, featureFingerprint, fingerprintBuffers,
   MESH_BIN_MAGIC, MESH_BIN_FLAG_PARTIAL, MESH_BIN_VERSION,
   type FeatureMeshSerializedInput, type MeshBinaryTrailer,
 } from './featureMeshBinary';
@@ -628,5 +628,89 @@ describe('fingerprintBuffers', () => {
       indices: new Uint32Array([0, 1]),
       edges: decoded.edges!,
     })).not.toBe(decoded.fingerprint);
+  });
+});
+
+describe('featureFingerprint', () => {
+  it('equals the fingerprint the encoder embeds on a single-feature container', () => {
+    const single = feature();
+    const decoded = decodeMeshBinary(encodeMeshBinary([single])).features[0]!;
+    expect(featureFingerprint(single)).toBe(decoded.fingerprint);
+  });
+
+  it('is per-feature: independent of the container neighbours', () => {
+    const a = feature();
+    const b = feature({ featureId: 'shape#2', featureKind: 'cylinder', displayName: 'Boss' });
+    const decoded = decodeMeshBinary(encodeMeshBinary([a, b]));
+    expect(featureFingerprint(a)).toBe(decoded.features[0]!.fingerprint);
+    expect(featureFingerprint(b)).toBe(decoded.features[1]!.fingerprint);
+  });
+
+  it('matches through the uv, display-mesh and edges chunk paths', () => {
+    const withExtras = feature({
+      faces: [
+        {
+          vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+          normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          uv: new Float32Array([0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
+          faceId: 7,
+        },
+        {
+          vertices: new Float32Array([0, 0, 1, 1, 0, 1, 0, 1, 1]),
+          normals: new Float32Array([0, 0, -1, 0, 0, -1, 0, 0, -1]),
+          uv: new Float32Array([0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
+          faceId: 8,
+        },
+      ],
+      mesh: {
+        positions: new Float32Array([0, 0, 0, 1, 1, 1]),
+        normals: new Float32Array([0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1]),
+      },
+      edges: new Float32Array([0, 1]),
+    });
+    const decoded = decodeMeshBinary(encodeMeshBinary([withExtras])).features[0]!;
+    expect(featureFingerprint(withExtras)).toBe(decoded.fingerprint);
+  });
+
+  it('accepts a raw FeatureMesh and a decoded feature interchangeably', () => {
+    const typed: FeatureMesh = {
+      featureId: 'typed#1', featureKind: 'box', predecessors: [],
+      faces: [{
+        vertices: new Float32Array([1, 2, 3]), normals: new Float32Array([0, 0, 1]),
+        indices: new Uint32Array([0]), faceId: 9,
+      }],
+      edges: new Float32Array([1.5]),
+    };
+    const decoded = decodeMeshBinary(encodeMeshBinary([typed])).features[0]!;
+    expect(featureFingerprint(typed)).toBe(decoded.fingerprint);
+    expect(featureFingerprint(decoded)).toBe(decoded.fingerprint);
+  });
+
+  it('hashes geometry and face ids only: the feature id is the map key, not part of the hash', () => {
+    const single = feature();
+    const moved = feature({
+      faces: [{
+        vertices: new Float32Array([0, 0, 0.5, 1, 0, 0, 0, 1, 0]),
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        faceId: 7,
+      }],
+    });
+    const renamed = feature({ featureId: 'shape#9' });
+    expect(featureFingerprint(moved)).not.toBe(featureFingerprint(single));
+    expect(featureFingerprint(renamed)).toBe(featureFingerprint(single));
+    const reordered = feature({
+      faces: [
+        single.faces[0]!,
+        {
+          vertices: new Float32Array([9, 9, 9]), normals: new Float32Array([0, 0, 1]),
+          indices: new Uint32Array([0]), faceId: 7,
+        },
+      ],
+    });
+    expect(featureFingerprint(reordered)).not.toBe(featureFingerprint(single));
   });
 });
