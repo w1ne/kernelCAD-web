@@ -1,13 +1,37 @@
 // SPDX-License-Identifier: MIT
-import type { RefObject } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
+import { Loader2 } from 'lucide-react';
 import type { DraftingProfile, DimensioningStyle, DraftingView } from '../../shared/intent/drafting';
 import type { DraftingReviewState } from './useDraftingReview';
 import { DrawingSheetViewport, type DrawingSheetHandle } from './DrawingSheetViewport';
 import { BUTTON, INPUT } from './draftingReviewStyles';
 
+/** Ticking seconds since `startedAt`, or null when not running. The clock
+ *  only advances from the interval callback, so render stays pure; a fresh
+ *  run clamps to 0 until its first tick. */
+function useElapsedSeconds(startedAt: number | null | undefined): number | null {
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    if (startedAt == null) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [startedAt]);
+  return startedAt == null ? null : Math.max(0, Math.round((now - startedAt) / 1000));
+}
+
+/** One-line live status for the pane: phase + elapsed. */
+function generationStatusText(progress: DraftingReviewState['drawing']['progress'], verb: string): string {
+  if (progress?.phase === 'waiting' && progress.retryInSec !== undefined) {
+    return `Server is busy — retrying in ${progress.retryInSec} s…`;
+  }
+  return verb;
+}
+
 export function DrawingPreviewPane({ state, sheetRef }: { state: DraftingReviewState; sheetRef: RefObject<DrawingSheetHandle | null> }) {
-  const { stale, resetSourceChoices, drawing: { preview }, annotations } = state;
+  const { stale, resetSourceChoices, drawing: { preview, busy, progress }, annotations } = state;
   const { missing } = annotations;
+  const elapsed = useElapsedSeconds(busy ? progress?.startedAt : null);
+  const elapsedSuffix = elapsed !== null && elapsed > 2 ? ` · ${elapsed} s` : '';
   return <div className="relative flex h-full min-h-[320px] min-w-0 flex-col bg-guide-grey">
     {(stale || missing.length > 0 || preview) && <div className="flex shrink-0 flex-col gap-2 bg-surface-2/95 p-3">
       {stale && <div className="flex flex-col gap-2"><p role="status" className="text-ui text-warn">Source changed. Saved annotation, datum and decision overrides were withheld; review the new drawing.</p>
@@ -20,13 +44,23 @@ export function DrawingPreviewPane({ state, sheetRef }: { state: DraftingReviewS
     {preview?.svg
       ? <div className="relative min-h-0 flex-1">
           <DrawingSheetViewport ref={sheetRef} svg={preview.svg} selectedId={annotations.selected} onSelect={annotations.setSelected} onPlaceEdge={state.placeEdge} placed={state.placed} />
+          {busy && <div role="status" className="pointer-events-none absolute left-1/2 top-3 z-10 flex -translate-x-1/2 items-center gap-2 rounded-panel border border-border bg-surface-1/95 px-3 py-1.5 text-2xs text-fg-2 shadow-lg">
+            <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden="true" />
+            <span>{generationStatusText(progress, 'Refreshing the sheet…')}{elapsedSuffix}</span>
+          </div>}
           {annotations.annotation && <aside aria-label="Annotation" className="absolute right-3 top-3 z-10 max-h-[calc(100%-4.5rem)] w-72 overflow-auto rounded-panel border border-border bg-surface-1 p-3 text-fg shadow-2xl">
             <h3 className="font-medium">{annotations.annotation.kind} · {annotations.annotation.view}</h3>
             <p className="mb-2 text-2xs text-fg-3">Edits apply to the PDF now. Refresh the sheet to see the new placement.</p>
             <AnnotationEditor state={annotations} />
           </aside>}
         </div>
-      : <p className="m-auto text-center text-ui text-fg-3">Generate the sheet to review dimensions and callouts.</p>}
+      : busy
+        ? <div role="status" className="m-auto flex max-w-sm flex-col items-center gap-3 px-6 text-center">
+            <Loader2 className="h-6 w-6 animate-spin text-fg-3" aria-hidden="true" />
+            <p className="text-ui text-fg-2">{generationStatusText(progress, 'Generating the sheet…')}{elapsedSuffix}</p>
+            <p className="text-2xs text-fg-3">The first render of a large assembly can take a while. The result is cached — later opens and unchanged refreshes come back instantly.</p>
+          </div>
+        : <p className="m-auto text-center text-ui text-fg-3">Generate the sheet to review dimensions and callouts.</p>}
   </div>;
 }
 
