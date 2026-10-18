@@ -1,0 +1,241 @@
+{
+  "checkedAt": "2026-10-18T00:32:16.363Z",
+  "nativeKernel": "OCCT via evaluateAndBuildScript",
+  "source": "examples/parts/hole-driven-insert.kcad.ts",
+  "sourceSha256": "6ab63c5b1ed13ff3441183ca77239c370749a508ed6b466c91858b857a0070a2",
+  "featureCount": 38,
+  "pairsChecked": 105,
+  "positiveVolumeOverlaps": [],
+  "parts": [
+    {
+      "name": "plate",
+      "min": [
+        -40,
+        -25,
+        -4
+      ],
+      "max": [
+        40,
+        25,
+        4
+      ],
+      "volumeMm3": 30716.807055863283
+    },
+    {
+      "name": "m5-1-screw",
+      "min": [
+        -33.6,
+        -21.6,
+        -10
+      ],
+      "max": [
+        -22.4,
+        -10.4,
+        4.00000000000139
+      ],
+      "volumeMm3": 381.5631829393468
+    },
+    {
+      "name": "m5-1-tail-washer",
+      "min": [
+        -33,
+        -21,
+        -5
+      ],
+      "max": [
+        -23,
+        -11,
+        -4
+      ],
+      "volumeMm3": 56.477981929911756
+    },
+    {
+      "name": "m5-1-nut",
+      "min": [
+        -32.61880215351825,
+        -20.000000000000004,
+        -9
+      ],
+      "max": [
+        -23.381197846481747,
+        -11.999999999999998,
+        -5
+      ],
+      "volumeMm3": 143.1626870290708
+    },
+    {
+      "name": "m5-2-screw",
+      "min": [
+        -33.6,
+        10.4,
+        -10
+      ],
+      "max": [
+        -22.4,
+        21.6,
+        4.00000000000139
+      ],
+      "volumeMm3": 381.5631829393468
+    },
+    {
+      "name": "m5-2-tail-washer",
+      "min": [
+        -33,
+        11,
+        -5
+      ],
+      "max": [
+        -23,
+        21,
+        -4
+      ],
+      "volumeMm3": 56.477981929911756
+    },
+    {
+      "name": "m5-2-nut",
+      "min": [
+        -32.61880215351825,
+        11.999999999999996,
+        -9
+      ],
+      "max": [
+        -23.381197846481747,
+        20,
+        -5
+      ],
+      "volumeMm3": 143.1626870290708
+    },
+    {
+      "name": "m5-3-screw",
+      "min": [
+        22.4,
+        -21.6,
+        -10
+      ],
+      "max": [
+        33.6,
+        -10.4,
+        4.00000000000139
+      ],
+      "volumeMm3": 381.5631829393468
+    },
+    {
+      "name": "m5-3-tail-washer",
+      "min": [
+        23,
+        -21,
+        -5
+      ],
+      "max": [
+        33,
+        -11,
+        -4
+      ],
+      "volumeMm3": 56.477981929911756
+    },
+    {
+      "name": "m5-3-nut",
+      "min": [
+        23.381197846481747,
+        -20.000000000000004,
+        -9
+      ],
+      "max": [
+        32.61880215351825,
+        -11.999999999999998,
+        -5
+      ],
+      "volumeMm3": 143.1626870290708
+    },
+    {
+      "name": "m5-4-screw",
+      "min": [
+        22.4,
+        10.4,
+        -10
+      ],
+      "max": [
+        33.6,
+        21.6,
+        4.00000000000139
+      ],
+      "volumeMm3": 381.5631829393468
+    },
+    {
+      "name": "m5-4-tail-washer",
+      "min": [
+        23,
+        11,
+        -5
+      ],
+      "max": [
+        33,
+        21,
+        -4
+      ],
+      "volumeMm3": 56.477981929911756
+    },
+    {
+      "name": "m5-4-nut",
+      "min": [
+        23.381197846481747,
+        11.999999999999996,
+        -9
+      ],
+      "max": [
+        32.61880215351825,
+        20,
+        -5
+      ],
+      "volumeMm3": 143.1626870290708
+    },
+    {
+      "name": "m3-1-screw",
+      "min": [
+        -2.750000000000001,
+        -18.75,
+        -4
+      ],
+      "max": [
+        2.749999999999999,
+        -13.25,
+        7
+      ],
+      "volumeMm3": 127.82355109293441
+    },
+    {
+      "name": "m3-2-screw",
+      "min": [
+        -2.750000000000001,
+        13.25,
+        -4
+      ],
+      "max": [
+        2.749999999999999,
+        18.75,
+        7
+      ],
+      "volumeMm3": 127.82355109293441
+    }
+  ],
+  "insert": {
+    "m5": {
+      "holes": 4,
+      "thread": "M5",
+      "lengthMm": 14,
+      "family": "flat-head-countersunk",
+      "seat": "countersink Ø11.2 x 90°"
+    },
+    "m3": {
+      "holes": 2,
+      "thread": "M3",
+      "lengthMm": 8,
+      "family": "socket-head-cap-screw",
+      "seat": "none"
+    },
+    "countersinkRemovedMm3": 377.66027766599655,
+    "plainPlateVolumeMm3": 31094.46733352928,
+    "seatedPlateVolumeMm3": 30716.807055863283
+  },
+  "scope": "Native static envelope geometry and placement: head + shank solids, countersink seats, no helical thread, no thread contact, strength, torque or preload. The countersunk head is the envelope cylinder in the seat cone; the seat is cut to the head diameter."
+}

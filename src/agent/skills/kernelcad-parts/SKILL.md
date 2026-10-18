@@ -77,12 +77,61 @@ const bearing = await lib.standard.bearing608();
 const stepper = await lib.standard.nema17();
 const header  = await lib.standard.pinHeader254({ pins: 8 });
 const conn    = await lib.standard.jstXH({ pins: 4 });
+
+// 3. Table-driven fasteners (lib.part / lib.stack) and hole-driven insert.
+const screw   = await lib.part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 });
+const stack   = await lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
+const fitted  = await lib.insert(plate, { diameterMm: 5.5, family: 'socket-head-cap-screw', mode: 'bolt' });
 ```
 
 `lib.fetchPart('iso-4762-m3x12')` and
 `lib.standard.boltSHCS({ thread: 'M3', lengthMm: 12 })` resolve to the same
 record; pick the typed call when arguments are static, the generic call
-when ids are computed.
+when ids are computed. `lib.part` resolves the same catalog ids from the
+family table and builds the envelope in memory when no STEP is on disk.
+
+## Fastener table — lib.part and lib.stack
+
+`lib.part({ family, thread, lengthMm })` builds one stocked fastener:
+socket-head (ISO 4762), button-head (ISO 7380) and countersunk (ISO 10642)
+screws, hex nuts (ISO 4032), lock nuts (DIN 985), flat washers (ISO 7089)
+and lock washers (DIN 127B), M2 through M6. Screws need a stocked length;
+an unknown family, thread or length fails with a diagnostic that names the
+stocked values. Every solid is an envelope (head plus shank), no helical
+thread.
+
+`lib.stack({ thread, gripMm, mode })` returns `lengthMm` plus the members,
+each positioned against a seat at z = 0 (the grip's top face).
+`mode: 'screw'` places the screw alone; `mode: 'bolt'` adds a washer under
+the head and a washer plus hex nut on the back. The screw length is the
+shortest stocked one at or above grip + washer + nut (for socket heads —
+the only family `lib.stack` plans).
+
+## Hole-driven insert — lib.insert
+
+```typescript
+const fitted = await lib.insert(plate, {
+  diameterMm: 5.5,                       // or near: [x, y, z] to seed from one hole
+  family: 'socket-head-cap-screw',      // or button-head-cap-screw / flat-head-countersunk
+  mode: 'bolt',                          // or 'screw'
+  gripMm: 6,                             // defaults to the bore's wall length
+  seat: 'auto',                          // 'none' or 'counterbore' also accepted
+});
+// fitted.shape  — the plate with seats cut
+// fitted.holes  — one placed stack per hole: screw (+ headWasher, tailWasher, nut)
+```
+
+The holes already on the shape drive everything. Sizing reads the bore
+diameter against ISO 273 normal clearance (Ø2.4 M2, Ø2.9 M2.5, Ø3.4 M3,
+Ø4.5 M4, Ø5.5 M5, Ø6.6 M6). Selection covers every similar hole (same
+diameter, parallel axis), so a patterned hole is covered without naming the
+pattern. The seat follows the family: flat-head cuts a 90° countersink to
+the head diameter, cap heads cut nothing unless `seat: 'counterbore'`.
+Through holes take the head at the end nearest `near` (or the larger Z);
+`headAt` overrides. A blind hole takes `mode: 'screw'` and the longest
+stocked length that fits; `mode: 'bolt'` requires a through bore. Only
+clearance bores are sized — a tapped hole reports its modeled pilot
+diameter, so do not use `lib.insert` to classify a thread.
 
 ## Pre-shipped connector convention
 
@@ -173,7 +222,7 @@ See `kernelcad-mcp` for the full grammar.
 
 ## Bundled-only by default
 
-Bundled tier coverage (273 records on the seed catalog):
+Bundled tier coverage (275 records on the seed catalog):
 
 - M2 / M2.5 / M3 / M4 / M5 / M6 socket head, button head, flat head
   countersunk screws (ISO 4762 / 7380 / 10642).

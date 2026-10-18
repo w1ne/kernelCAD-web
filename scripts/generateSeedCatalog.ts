@@ -14,6 +14,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct } from '../src/kernel/backends/occt/occtBackend';
+import { countersunkScrewSolid } from '../src/modeling/parts/headSolids';
 import type { PartRecord } from '../src/shared/parts/types';
 import type {
   ConnectorEntry,
@@ -112,14 +113,18 @@ function fastenerStep(
   thread: string,
   lengthMm: number,
   head: { D: number; K: number },
+  countersunk = false,
 ): Promise<{ bytes: Uint8Array; tNum: number; headD: number; headK: number }> {
   const tNum = parseFloat(thread.slice(1));
   const headD = head.D;
   const headK = head.K;
-  const headCyl = OcctBackend.cylinder(headK, headD / 2);
-  // Shank: cylinder of length lengthMm extending below head (translate -length on Z so head sits at Z=0..K).
-  const shank = OcctBackend.cylinder(lengthMm, tNum / 2).translate(0, 0, -lengthMm);
-  const fused = headCyl.union(shank);
+  // Cylindrical heads sit on the seat plane (Z=0..K). A countersunk head seats
+  // in its cone: rim on Z=0, cone down to the nominal Ø at Z=-K.
+  const fused = countersunk
+    ? countersunkScrewSolid(tNum, headD, headK, lengthMm)
+    : OcctBackend.cylinder(headK, headD / 2).union(
+        OcctBackend.cylinder(lengthMm, tNum / 2).translate(0, 0, -lengthMm),
+      );
   return fused.exportSTEPAsync().then((bytes) => ({ bytes, tNum, headD, headK }));
 }
 
@@ -394,6 +399,7 @@ function flatHeadCountersunk(): SeedFamily {
         thread as string,
         lengthMm as number,
         head,
+        true,
       );
       const id = `iso-10642-${threadSlug(thread as string)}x${lengthMm}`;
       return {
