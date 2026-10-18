@@ -57,6 +57,8 @@ interface FakeState {
   failMesh?: unknown;
   failUpdateParams?: unknown;
   failedFeatureIds: string[];
+  /** The script's resolved root feature id, as the entry's runScript reports it. */
+  rootId?: unknown;
 }
 
 interface FakeKernel {
@@ -75,7 +77,10 @@ function fakeKernel(): FakeKernel {
   const deps: KernelWorkerDeps = {
     async runScript() {
       if (state.failRunScript !== undefined) throw state.failRunScript;
-      return { records, paramTable: table, session: { id: 'session' } };
+      return {
+        records, paramTable: table, session: { id: 'session' },
+        ...(state.rootId !== undefined ? { rootId: state.rootId } : {}),
+      };
     },
     async mesh() {
       if (state.failMesh !== undefined) throw state.failMesh;
@@ -227,6 +232,39 @@ describe('createKernelWorkerCore: params without have', () => {
     expect(partialFlagOf(result.payload)).toBe(0);
     const decoded = decodeMeshBinary(result.payload);
     expect(decoded.features.map((f) => f.featureId)).toEqual(['stable#1', 'mover#1']);
+  });
+});
+
+describe('createKernelWorkerCore: rootId threading', () => {
+  it('passes the stored rootId to updateParams even when the last record is virtual', async () => {
+    const kernel = fakeKernel();
+    // The reproducer: the script's last record is virtual (recomputeEngine
+    // skips it), so `updateModelParams` has no tail shape to fall back to and
+    // needs `model.rootId` — exactly what the worker deps used to drop.
+    kernel.state.rootId = 'body#1';
+    kernel.records.push({ id: 'animation#1', kind: 'animationView', metadata: { virtual: true } });
+
+    const baseUpdateParams = kernel.deps.updateParams;
+    kernel.deps.updateParams = async (model, edits) => {
+      if ((model as { rootId?: unknown }).rootId === undefined) {
+        throw new Error('recompute.lowering.exception');
+      }
+      return baseUpdateParams(model, edits);
+    };
+    const core = createKernelWorkerCore(kernel.deps);
+
+    await core.handle(build(1));
+    const first = await core.handle(params(2, [{ name: 'width', value: 2 }]));
+    // The second edit pins that the core re-threads the stored rootId: the
+    // update result (like the real entry's) does not echo it back.
+    const second = await core.handle(params(3, [{ name: 'width', value: 3 }]));
+
+    expect(first.map((r) => r.type)).toEqual(['result']);
+    expect(second.map((r) => r.type)).toEqual(['result']);
+    expect(kernel.updateParamsCalls).toEqual([
+      { records: kernel.records, paramTable: kernel.table, session: { id: 'session' }, rootId: 'body#1' },
+      { records: kernel.records, paramTable: kernel.table, session: { id: 'session' }, rootId: 'body#1' },
+    ]);
   });
 });
 

@@ -13,11 +13,11 @@ import type { FeatureId } from '../shared/intent/types';
 import type { CaptureSession } from './capture/captureSession';
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { runScript, type RunScriptFacadeOptions } from './runtime/runScript';
-import { Shape } from './capture/proxy';
-import { Scene } from './validation/scene';
 import { computePrefixReuse, type RecordHealth } from './compute/prefixReuse';
+import { resolveRootId } from './compute/resolveRootId';
 import { populateCache } from './paramUpdate';
 
+export { resolveRootId } from './compute/resolveRootId';
 export { updateModelParams } from './paramUpdate';
 export { populateCache };
 export type { UpdateModelParamsOptions } from './paramUpdate';
@@ -290,19 +290,4 @@ export async function buildModelFromFile(
     { code, fileName, scriptDir: dirname(fileName), ...(input.kernel !== undefined ? { kernel: input.kernel } : {}) },
     opts,
   );
-}
-
-/**
- * Resolve the FeatureId of the value the script `return`ed.
- * Shape → its feature id; Scene → the upstream solvedAssembly /
- * assemblyModel record id; anything else (Region, plain data, no
- * return) → fall back to the chain tail.
- */
-export function resolveRootId(
-  returnValue: unknown,
-  tailId: FeatureId | undefined,
-): FeatureId | undefined {
-  if (returnValue instanceof Shape) return returnValue.id;
-  if (returnValue instanceof Scene) return returnValue.__sourceFeatureId() ?? tailId;
-  return tailId;
 }

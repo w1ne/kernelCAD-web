@@ -137,6 +137,32 @@ describe('buildModel', () => {
     expect(updated.result.relowered.length).toBeGreaterThan(0);
     expect(updated.model.session.paramTable.get('w').value).toBe(30);
   });
+
+  it('re-lowers when the tail record is virtual by using the script rootId', async () => {
+    const model = await buildModel({
+      fileName: 'virtual-tail.kcad.ts',
+      code: `
+        const w = param('w', 20);
+        const body = box(w, 10, 2);
+        animationView({ param: 'w', from: 20, to: 40, durationMs: 1000 });
+        return body;
+      `,
+    });
+    expect(model.records.at(-1)!.kind).toBe('animationView');
+    expect(model.rootId).not.toBe(model.tailId);
+    expect(model.rootShape).toBeDefined();
+
+    // The regression the worker deps had: without `rootId`, the virtual tail
+    // lowers to no shape and the edit rejects.
+    const stripped = { ...model, rootId: undefined };
+    await expect(updateModelParams(stripped, [{ name: 'w', value: 30 }])).rejects.toThrow(
+      /no shape produced for the chain tail/,
+    );
+
+    const updated = await updateModelParams(model, [{ name: 'w', value: 30 }]);
+    expect(updated.result.shape).toBe(updated.model.rootShape);
+    expect(updated.model.session.paramTable.get('w').value).toBe(30);
+  });
 });
 
 /** Instrument `createOcctLowerer` so a test can observe exactly which record

@@ -16,6 +16,7 @@ import wasmUrl from 'replicad-opencascadejs/src/replicad_single.wasm?url';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { runScriptInBrowser } from '../../composition/browserRuntime';
 import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
+import { resolveRootId } from '../../modeling/compute/resolveRootId';
 import { updateModelParams } from '../../modeling/paramUpdate';
 import { createKernelWorkerCore } from './kernelWorkerCore';
 import type { KernelRequest, KernelResponse } from './protocol';
@@ -37,6 +38,10 @@ const core = createKernelWorkerCore({
       records: [...result.records],
       paramTable: result.paramTable,
       session: result.session,
+      // The script's returned root. Without it `updateModelParams` falls back
+      // to the chain tail, which lowers to no shape when the script's last
+      // record is virtual (animationView / setCameraTarget / dfmSpec / …).
+      rootId: resolveRootId(result.returnValue, result.records.at(-1)?.id),
     };
   },
   async mesh(records, paramTable, session) {

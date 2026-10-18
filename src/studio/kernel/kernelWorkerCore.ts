@@ -29,11 +29,20 @@ import {
 import type { Bounds, FeatureMesh } from '../../modeling/capture/featureMeshing';
 import { KERNEL_PROTOCOL_VERSION, type KernelRequest, type KernelResponse } from './protocol';
 
+/** A dependency `runScript` result plus the script's root feature id (the
+ *  record its `return` value lowers to; falls back to the chain tail). */
+export interface KernelScriptRun {
+  records: unknown[];
+  paramTable: unknown;
+  session: unknown;
+  rootId?: unknown;
+}
+
 /** The kernel operations the core drives. The worker entry supplies the real
  *  implementations; tests supply fakes. `unknown` where the core never looks
  *  inside (records/paramTable/session round-trip untouched). */
 export interface KernelWorkerDeps {
-  runScript(input: { code: string; fileName: string }): Promise<{ records: unknown[]; paramTable: unknown; session: unknown }>;
+  runScript(input: { code: string; fileName: string }): Promise<KernelScriptRun>;
   mesh(records: unknown[], paramTable: unknown, session: unknown): Promise<{
     features: FeatureMesh[]; bounds: Bounds; failedFeatureIds: string[];
   }>;
@@ -54,12 +63,18 @@ export function createKernelWorkerCore(deps: KernelWorkerDeps): {
   handle(request: KernelRequest): Promise<KernelResponse[]>;
 } {
   let model: StoredModel | undefined;
+  // The script's root feature id, resolved once at build. It is threaded into
+  // every param edit so `updateModelParams` can fall back to the returned
+  // root's shape — records whose LAST entry is virtual (animationView,
+  // setCameraTarget, …) lower to no shape at the tail.
+  let rootId: unknown;
 
   async function handle(request: KernelRequest): Promise<KernelResponse[]> {
     try {
       if (request.type === 'build') return await handleBuild(request);
       if (request.type === 'params') return await handleParams(request);
       model = undefined;
+      rootId = undefined;
       return [];
     } catch (err) {
       // A dependency failure is converted to an error response inside the
@@ -70,7 +85,7 @@ export function createKernelWorkerCore(deps: KernelWorkerDeps): {
   }
 
   async function handleBuild(request: BuildRequest): Promise<KernelResponse[]> {
-    let run: StoredModel;
+    let run: KernelScriptRun;
     try {
       run = await deps.runScript({ code: request.source, fileName: request.fileName });
     } catch (err) {
@@ -79,7 +94,8 @@ export function createKernelWorkerCore(deps: KernelWorkerDeps): {
     // The model commits as soon as the script ran. A later mesh may fail a
     // feature (the response is an error) but the geometry that DID compute is
     // the new model, and a following params edit must drive it.
-    model = run;
+    rootId = run.rootId;
+    model = { records: run.records, paramTable: run.paramTable, session: run.session };
     const done: KernelResponse = { v: KERNEL_PROTOCOL_VERSION, id: request.id, type: 'script-done' };
     try {
       const meshed = await deps.mesh(run.records, run.paramTable, run.session);
@@ -95,7 +111,11 @@ export function createKernelWorkerCore(deps: KernelWorkerDeps): {
     }
     let next: StoredModel;
     try {
-      next = (await deps.updateParams(model, request.edits)).model;
+      // The root id is re-threaded on every edit: the update may return a
+      // rebuilt model, and `updateModelParams` needs `model.rootId` to find
+      // the returned shape when the tail record is virtual.
+      const edited = rootId !== undefined ? { ...model, rootId } : model;
+      next = (await deps.updateParams(edited, request.edits)).model;
     } catch (err) {
       return [depError(request.id, err)];
     }
