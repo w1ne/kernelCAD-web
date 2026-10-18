@@ -919,6 +919,46 @@ function kernelCadMeshEndpoint(): Plugin {
           }
 
           const scriptPath = resolveExampleScript(url.searchParams.get('script'));
+
+          // Session parity (mirrors the review GET branch): when the Studio
+          // passes its live pool `session` token, compute the BOM from the
+          // pooled BuiltModel's first assembly instead of re-evaluating the
+          // script, so a slider-driven `params.update` override is reflected
+          // in the Parts tab / Order sheet. The assembly resolution matches
+          // `inspectBomTool` (first captured assembly). Any pool/session
+          // failure — an evicted token, no captured assembly — falls through
+          // to the script-eval path below rather than 500ing a stale token.
+          const sessionToken = url.searchParams.get('session');
+          if (sessionToken) {
+            try {
+              const bundle = await getPoolBundle();
+              const entry = bundle.pool.get(sessionToken);
+              if (entry) {
+                const { computeBom } = await import('./src/agent/script-runtime/bom');
+                const assemblies = entry.model.session.assemblies as Map<string, Parameters<typeof computeBom>[0]>;
+                const arm = assemblies.values().next().value;
+                if (arm !== undefined) {
+                  const { withNextActions } = await import('./src/shared/diagnostics/diagnostic');
+                  const bom = await computeBom(arm, entry.model.session);
+                  res.statusCode = 200;
+                  res.setHeader('content-type', 'application/json');
+                  res.end(JSON.stringify({
+                    ok: true,
+                    featureCount: entry.model.records.length,
+                    assembly: arm.name,
+                    rows: bom.rows,
+                    totals: bom.totals,
+                    diagnostics: withNextActions(bom.diagnostics),
+                  }));
+                  return;
+                }
+              }
+            } catch {
+              // Unknown/evicted session or a pool failure: fall back to the
+              // script/source path so the request still succeeds.
+            }
+          }
+
           if (!scriptPath) {
             res.statusCode = 400;
             res.setHeader('content-type', 'application/json');
