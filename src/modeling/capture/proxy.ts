@@ -1403,7 +1403,12 @@ export class Shape {
     this.session.lastFullLower = { ...pending, shapes: r.shapes };
     const shape = r.shapes.get(this.id);
     if (!shape) {
-      throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);
+      const details = (r.diagnostics ?? [])
+        .map((diagnostic) => `${diagnostic.code}: ${diagnostic.message}`)
+        .join('; ');
+      throw new Error(
+        `Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).${details ? ` ${details}` : ''}`,
+      );
     }
     if (!(shape instanceof OcctBackend)) throw new Error('Shape.lower(): display mesh body has no BRep backend; solid operations are unavailable.');
     this._loweredBackend = shape;

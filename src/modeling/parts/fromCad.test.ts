@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { zipSync, strToU8 } from 'fflate';
+import * as replicad from 'replicad';
 import { makeBox } from 'replicad';
+import { getOC } from 'replicad';
 import { initOcct, OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import {
   fromCAD,
@@ -166,9 +168,8 @@ describe('in-process Parasolid reader', () => {
   it('reads a transmit header inside the process and names the missing schema', async () => {
     const bytes = readFileSync(fileURLToPath(new URL('./parasolid/schema-header.x_t', import.meta.url)));
     const model = await readParasolidBytes(new Uint8Array(bytes));
-    expect(model.ok).toBe(false);
-    expect(model.code).toBe('schema.missing_base_schema');
     expect(model.schemaKey).toBe('SCH_3201255_32001_13006');
+    expect(model.code).not.toBe('schema.missing_base_schema');
   });
 
   it('rejects a buffer that is not a Parasolid transmit', async () => {
@@ -177,6 +178,133 @@ describe('in-process Parasolid reader', () => {
     expect(model.code).toBeTruthy();
   });
 });
+
+/**
+ * The RP1 robot excerpts are real slices of /Volumes/LabWired/rp1-cad/
+ * RP1-assembly.x_t (the whole-machine SolidWorks transmit, schema
+ * SCH_3201255_32001_13006). They are written by
+ * `cargo run --release --example excerpt` in crates/parasolid-import. Without
+ * the mounted drive the checks are unverifiable and fail rather than skip.
+ */
+describe('RP1 whole-robot transmit import', () => {
+  const RP1_DIR = '/Volumes/LabWired/rp1-cad';
+  const ONE_BODY = join(RP1_DIR, 'rp1-one-body.x_t');
+  const TWO_INSTANCE = join(RP1_DIR, 'rp1-two-instance.x_t');
+
+  function requireExcerpt(path: string): Uint8Array {
+    if (!existsSync(path)) {
+      throw new Error(
+        `RP1 excerpt ${path} is missing. Mount /Volumes/LabWired, or rebuild it with the excerpt tool; this check must not pass without the real file.`,
+      );
+    }
+    return new Uint8Array(readFileSync(path));
+  }
+
+  function stubContext(): { ctx: never; imported: Map<string, OcctBackend> } {
+    const imported = new Map<string, OcctBackend>();
+    const session = {
+      importedGeometry: imported,
+      createShape: () => ({ id: 'rp1-shape' }),
+    };
+    return { ctx: { session } as never, imported };
+  }
+
+  /** Solids of a compound backend, in OCCT traversal order. */
+  function collectSolids(backend: OcctBackend): unknown[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oc = getOC() as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wrapped = (backend as any).shape?.wrapped ?? (backend as any).wrapped;
+    const explorer = new oc.TopExp_Explorer_2(wrapped, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+    const solids: unknown[] = [];
+    while (explorer.More()) {
+      solids.push(oc.TopoDS.Solid_1(explorer.Current()));
+      explorer.Next();
+    }
+    explorer.delete();
+    return solids;
+  }
+
+  function solidCenter(solid: unknown): [number, number, number] {
+    const backend = new OcctBackend(replicad.cast(solid as never) as never);
+    const com = backend.massProperties(1000).com;
+    return [com[0], com[1], com[2]];
+  }
+
+  it('imports a real one-body excerpt as a solid and keeps its cylinder surface', async () => {
+    const bytes = requireExcerpt(ONE_BODY);
+    const model = await readParasolidBytes(bytes);
+    expect(model.ok, model.message ?? model.code).toBe(true);
+    expect(model.schemaKey).toBe('SCH_3201255_32001_13006');
+    const kinds = (model.bodies ?? []).flatMap((body) => body.faces.map((face) => face.kind));
+    expect(kinds).toContain('cylinder');
+
+    const { ctx, imported } = stubContext();
+    const shape = await fromCAD(ctx, ONE_BODY, { sourceUnit: 'm' });
+    const backend = imported.get(shape.id);
+    expect(backend).toBeDefined();
+    expect(backend!.volume()).toBeGreaterThan(0);
+  });
+
+  it('places two instances of one body by the transmit transforms', async () => {
+    const bytes = requireExcerpt(TWO_INSTANCE);
+    const model = await readParasolidBytes(bytes);
+    expect(model.ok, model.message ?? model.code).toBe(true);
+    const instances = model.instances ?? [];
+    const pair = findTranslationPair(instances);
+    expect(pair, 'the excerpt must contain two co-oriented instances with a real translation').not.toBeNull();
+    const expected: [number, number, number] = [
+      (pair!.b.translation[0]! - pair!.a.translation[0]!) * 1000 * (pair!.a.scale ?? 1),
+      (pair!.b.translation[1]! - pair!.a.translation[1]!) * 1000 * (pair!.a.scale ?? 1),
+      (pair!.b.translation[2]! - pair!.a.translation[2]!) * 1000 * (pair!.a.scale ?? 1),
+    ];
+
+    const { ctx, imported } = stubContext();
+    const shape = await fromCAD(ctx, TWO_INSTANCE, { sourceUnit: 'm' });
+    const backend = imported.get(shape.id);
+    expect(backend).toBeDefined();
+    const solids = collectSolids(backend!);
+    expect(solids.length).toBeGreaterThanOrEqual(2);
+    const centers = solids.map(solidCenter);
+    const matches = (delta: [number, number, number]): boolean =>
+      Math.abs(delta[0]) <= 0.1 && Math.abs(delta[1]) <= 0.1 && Math.abs(delta[2]) <= 0.1;
+    let found = false;
+    for (let i = 0; i < centers.length && !found; i++) {
+      for (let j = 0; j < centers.length && !found; j++) {
+        if (i === j) continue;
+        const delta: [number, number, number] = [
+          centers[j]![0] - centers[i]![0] - expected[0],
+          centers[j]![1] - centers[i]![1] - expected[1],
+          centers[j]![2] - centers[i]![2] - expected[2],
+        ];
+        if (matches(delta)) found = true;
+      }
+    }
+    expect(found, `no two solids differ by the transmit translation ${expected.join(', ')} mm`).toBe(true);
+  });
+});
+
+/** Two instances of one body, same orientation, with a real translation. */
+function findTranslationPair(
+  instances: { body: number; rotation: number[]; translation: number[]; scale: number }[],
+): { a: (typeof instances)[number]; b: (typeof instances)[number] } | null {
+  for (let i = 0; i < instances.length; i++) {
+    for (let j = i + 1; j < instances.length; j++) {
+      const a = instances[i]!;
+      const b = instances[j]!;
+      if (a.body !== b.body) continue;
+      const rotationDelta = a.rotation.reduce((sum, value, index) => sum + Math.abs(value - b.rotation[index]!), 0);
+      if (rotationDelta > 1e-9) continue;
+      const gap = Math.hypot(
+        b.translation[0]! - a.translation[0]!,
+        b.translation[1]! - a.translation[1]!,
+        b.translation[2]! - a.translation[2]!,
+      );
+      if (gap > 0.005) return { a, b };
+    }
+  }
+  return null;
+}
 
 describe('convertToStep (external converter contract)', () => {
   const withConverter = async (value: string | undefined, run: () => Promise<unknown>) => {

@@ -25,12 +25,18 @@ export function lowerImported(ctx: LowerContext, r: FeatureRecord): LowerOutcome
     });
     return noShape();
   }
-  // Hand back a clone, never the parked backend itself: replicad's
-  // translate/rotate/mirror/scale destroy their source OCCT handle, so
-  // the post-hoc `r.transforms` loop below (or any destructive
-  // downstream consumer) would invalidate the map entry and the next
-  // lowering pass would throw "This object has been deleted".
-  const shape: ShapeBackend = backend instanceof MeshBackend ? backend : (backend as import('../../../../kernel/backends/occt/occtBackend').OcctBackend).clone();
+  // Hand back a clone whenever transforms follow: replicad's
+  // translate/rotate/mirror/scale destroy their source OCCT handle, so the
+  // post-hoc `r.transforms` loop below (or any destructive downstream
+  // consumer) would invalidate the map entry and the next lowering pass
+  // would throw "This object has been deleted". Without transforms the
+  // parked backend is handed back directly — cloning a whole-machine import
+  // doubles its footprint inside the OCCT module for no benefit.
+  const needsClone = (r.transforms?.length ?? 0) > 0;
+  const shape: ShapeBackend =
+    backend instanceof MeshBackend || !needsClone
+      ? backend
+      : (backend as import('../../../../kernel/backends/occt/occtBackend').OcctBackend).clone();
   return built(shape);
 }
 

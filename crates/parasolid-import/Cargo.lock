@@ -17,8 +17,6 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 [[package]]
 name = "parasolid-core"
 version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ff3cbb9817406ac809cd989e47454deee4af89a30b57b436561b676f98af37e"
 
 [[package]]
 name = "parasolid-import"

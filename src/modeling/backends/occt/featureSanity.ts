@@ -114,8 +114,16 @@ function readBox(shape: OcctBackend): Box | undefined {
   const oc = getOC() as any;
   const box = new oc.Bnd_Box_1();
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    oc.BRepBndLib.Add((shape.getReplicadShape() as any).wrapped, box, true);
+    // Optimal bounds: the fast `Add` path reports an open box for imported
+    // shells sewn from analytic patches (its face UV-bounds pass fails on
+    // wires that only approximate their surfaces).
+    oc.BRepBndLib.AddOptimal(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (shape.getReplicadShape() as any).wrapped,
+      box,
+      false,
+      true,
+    );
     if (box.IsVoid()) return undefined;
     const gap = box.GetGap();
     const lo = box.CornerMin();

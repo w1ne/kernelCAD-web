@@ -1,0 +1,23 @@
+[package]
+name = "parasolid-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+documentation = "https://docs.rs/parasolid-core"
+keywords = ["cad", "parasolid", "parser", "brep", "geometry"]
+categories = ["parser-implementations", "graphics"]
+include = ["Cargo.toml", "LICENSE", "LICENSE-APACHE-2.0", "PARTIAL_READERS.md", "README.md", "src/**", "tests/**", "examples/**"]
+
+[lib]
+name = "parasolid_core"
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+serde_json = "1"
+sha2 = "0.10"
