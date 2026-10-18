@@ -114,9 +114,10 @@ describe('/connect agent picker', () => {
     expect(onChange).toHaveBeenLastCalledWith('vscode');
   });
 
-  it('shows the Codex commands to copy', () => {
+  it('shows the Codex plugin commands to copy', () => {
     render(<ClientPanel client={connectClient('codex')} />);
-    expect(screen.getByText('codex mcp add kernelcad --url https://mcp.kernelcad.com/mcp')).toBeTruthy();
+    expect(screen.getByText('codex plugin marketplace add w1ne/kernelCAD-web')).toBeTruthy();
+    expect(screen.getByText('codex plugin add kernelcad@kernelcad')).toBeTruthy();
     expect(screen.getByText('codex mcp login kernelcad')).toBeTruthy();
   });
 
