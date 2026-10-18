@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-10-18T09:55:44.657Z",
+  "checkedAt": "2026-10-18T19:27:44.250Z",
   "nativeKernel": "OCCT via evaluateAndBuildScript",
   "source": "examples/fixture/table-clamp-set.kcad.ts",
-  "sourceSha256": "ba08faeb7121cfe3284f9eb2cb8100bd2c88aba8a163dd369f5f0c7390ceec87",
+  "sourceSha256": "bb29214cf482cb15a055de61953432b1a4d9b6539fc64a22c6b5e45be394b2de",
   "featureCount": 28,
   "pairsChecked": 66,
   "positiveVolumeOverlaps": [],
@@ -19,7 +19,7 @@
         65,
         24
       ],
-      "volumeMm3": 1143840.0000000002
+      "volumeMm3": 1157352
     },
     {
       "name": "workpiece",
@@ -39,27 +39,27 @@
       "name": "left-t-nut",
       "min": [
         -93,
-        -8.9,
-        7.399999999999999
+        -8.75,
+        9.399999999999999
       ],
       "max": [
         -67,
-        8.9,
+        8.75,
         23.4
       ],
-      "volumeMm3": 4720.762938564034
+      "volumeMm3": 4160.242571243531
     },
     {
       "name": "left-stud",
       "min": [
         -85,
         -5,
-        14.4
+        16.4
       ],
       "max": [
         -75,
         5,
-        94.4
+        96.4
       ],
       "volumeMm3": 6283.185307179587
     },
@@ -101,35 +101,35 @@
       "max": [
         -69,
         11,
-        82
+        87
       ],
-      "volumeMm3": 1748.487285721892
+      "volumeMm3": 2781.1611362983917
     },
     {
       "name": "right-t-nut",
       "min": [
         67,
-        -8.9,
-        7.399999999999999
+        -8.75,
+        9.399999999999999
       ],
       "max": [
         93,
-        8.9,
+        8.75,
         23.4
       ],
-      "volumeMm3": 4720.762938564034
+      "volumeMm3": 4160.242571243531
     },
     {
       "name": "right-stud",
       "min": [
         75,
         -5,
-        14.4
+        16.4
       ],
       "max": [
         85,
         5,
-        94.4
+        96.4
       ],
       "volumeMm3": 6283.185307179587
     },
@@ -171,9 +171,9 @@
       "max": [
         91,
         11,
-        82
+        87
       ],
-      "volumeMm3": 1748.487285721892
+      "volumeMm3": 2781.1611362983917
     }
   ],
   "set": {
@@ -184,10 +184,10 @@
       24
     ],
     "channel": {
-      "openingMm": 12.4,
-      "depthMm": 9.6,
-      "internalWidthMm": 18.6,
-      "internalHeightMm": 7.6
+      "openingMm": 12,
+      "openingDepthMm": 7.6,
+      "internalWidthMm": 18.3,
+      "internalDepthMm": 7.4
     },
     "workpieceMm": [
       50,

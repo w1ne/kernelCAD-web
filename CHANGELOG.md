@@ -49,6 +49,8 @@
 
 ## Fixed
 
+- Fixture dimensions now come from the DIN tables instead of nominal values: T-slot nuts follow DIN 508 (a/e/h/k; neck = a min, base = e min) and collar nuts DIN 6331 (s/m/d1/a). The fixture example's channel and stud offsets and its evidence follow the real nut; strap clamps and step blocks have no DIN table and stay nominal kit dimensions.
+
 - The catalog's hex nuts and lock nuts now build their prisms with a flat facing +X, the same orientation as the in-memory envelope; the STEPs were rotated 30 degrees from the envelope before. Caught by the new sampled STEP-vs-envelope test (`src/modeling/parts/catalogStepMatch.test.ts`), which also covers the countersunk frustum.
 
 - STEP, STL (including per-part STL), DXF, 3MF and G-code exports now check the same tube routing rules and clearance as evaluation before writing fabrication output. Tube errors return no bytes and leave previous output untouched; warnings allow export. GLB and rendering remain available for inspection.

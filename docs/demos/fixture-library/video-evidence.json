@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-10-18T10:02:21.999559+00:00",
+  "checkedAt": "2026-10-18T19:29:48.113124+00:00",
   "video": "demo.mp4",
-  "videoSha256": "1dac7c3e1c4c7f8d4f4af45ae0ff920bb3c142f98a028aa4d33c3a30f76b27ae",
+  "videoSha256": "64581bfaf53143cc040bbbbe82b4bfa42a87aee72d01dcc587ecea38774582c9",
   "durationSec": 18.0,
   "canvas": "1920x1080",
   "slides": [
@@ -23,11 +23,11 @@
     }
   ],
   "sourceModels": {
-    "table-clamp-set.kcad.ts": "ba08faeb7121cfe3284f9eb2cb8100bd2c88aba8a163dd369f5f0c7390ceec87"
+    "table-clamp-set.kcad.ts": "bb29214cf482cb15a055de61953432b1a4d9b6539fc64a22c6b5e45be394b2de"
   },
   "inputSha256": {
-    "fixture.hero.png": "2159f8e4bf0f40f17ee7814ccaeb64a3b1a6f1cd92786af15b1647d41096fbb9",
-    "fixture-detail.png": "b8f274213cedd5c75e495a48ebd7ce573f1913752a285a7ad7f1224825e835dd"
+    "fixture.hero.png": "9305ca576dbb6dec884ef73f192dce46085a8b50dae5f3776965d5040ad17a2c",
+    "fixture-detail.png": "29edfffb3d624928fddb5110ec40c51fc225793b7b73b3b7e3d99a187a5f4315"
   },
   "invocations": [
     "npx tsx src/agent/cli/index.ts render examples/fixture/table-clamp-set.kcad.ts --preset publish --pose 55,42 -o docs/demos/fixture-library/fixture.hero.png",
