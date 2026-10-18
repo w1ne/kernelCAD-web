@@ -892,6 +892,16 @@ export default defineConfig(({ command }) => ({
   },
   worker: {
     format: 'es',
+    rollupOptions: {
+      // Node builtins are reachable in the worker graph only down guarded
+      // dynamic imports (host-fs features throw before the import runs);
+      // rollup still has to emit those chunks, and Vite's default stub
+      // (`__vite-browser-external`) exports nothing, so `import { isAbsolute }
+      // from 'node:path'` fails the build with "not exported". Externalizing
+      // leaves a bare `node:` specifier in a chunk no browser ever loads —
+      // same treatment as vite.docs-island.config.ts.
+      external: /^node:/,
+    },
   },
   resolve: {
     alias: {
