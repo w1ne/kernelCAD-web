@@ -103,23 +103,6 @@ describe('static gallery landing page', () => {
     expect(css).toContain('.lightbox-prompt-label');
   });
 
-  it('keeps the React funnel gallery from loading model-viewer on section mount', () => {
-    const source = readFileSync(
-      path.resolve(__dirname, '../src/funnel/components/GallerySection.tsx'),
-      'utf8',
-    );
-    const gallerySectionSetup = source.slice(
-      source.indexOf('export function GallerySection()'),
-      source.indexOf('if (!entries || entries.length === 0) return null;'),
-    );
-
-    expect(gallerySectionSetup).not.toContain('useModelViewer();');
-    expect(source).toContain('function GalleryTile');
-    expect(source).toContain('IntersectionObserver');
-    expect(source).toContain('onPointerEnter');
-    expect(source).toContain('onFocus');
-  });
-
   it('keeps the royal watch gallery tile face-forward while allowing model-viewer upgrade', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 

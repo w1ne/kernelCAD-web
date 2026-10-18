@@ -11,53 +11,32 @@ module.exports = {
             }
         },
         {
-            name: 'components-cannot-import-worker',
-            severity: 'error',
-            comment: 'UI components must not import the OCCT worker entrypoint directly; they should use the geometryEngine wrapper in shared/worker.',
-            from: { path: '^src/studio/components' },
-            to: { path: '^src/kernel/backends/occt/worker\\.ts' }
-        },
-        {
-            name: 'contexts-cannot-import-components',
-            severity: 'warn',
-            comment: 'Contexts should not depend on UI components.',
-            from: { path: '^src/studio/context' },
-            to: { path: '^src/studio/components' }
-        },
-        {
             name: 'shared-stays-leaf',
             severity: 'error',
             comment: 'shared/ may not import from any other layer. Files with cross-layer deps stay outside shared/ until those deps are broken.',
             from: { path: '^src/shared/' },
-            to: { path: '^src/(kernel|modeling|authoring|agent|studio)/' }
+            to: { path: '^src/(kernel|modeling|authoring|agent)/' }
         },
         {
             name: 'kernel-stays-pure',
             severity: 'error',
             comment: 'kernel/ may only import from kernel/ or shared/.',
             from: { path: '^src/kernel/' },
-            to: { path: '^src/(modeling|authoring|agent|studio)/' }
+            to: { path: '^src/(modeling|authoring|agent)/' }
         },
         {
             name: 'modeling-no-upward',
             severity: 'error',
             comment: 'modeling/ may only import from modeling/, kernel/, or shared/.',
             from: { path: '^src/modeling/' },
-            to: { path: '^src/(authoring|agent|studio)/' }
+            to: { path: '^src/(authoring|agent)/' }
         },
         {
             name: 'authoring-no-upward',
             severity: 'error',
             comment: 'authoring/ may only import from authoring/, modeling/, kernel/, or shared/.',
             from: { path: '^src/authoring/' },
-            to: { path: '^src/(agent|studio)/' }
-        },
-        {
-            name: 'agent-no-studio',
-            severity: 'error',
-            comment: 'agent/ may not import from studio/.',
-            from: { path: '^src/agent/' },
-            to: { path: '^src/studio/' }
+            to: { path: '^src/agent/' }
         }
     ],
     options: {

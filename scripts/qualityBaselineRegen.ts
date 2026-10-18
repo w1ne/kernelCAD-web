@@ -21,7 +21,7 @@ const existingFindings = readJsonIfExists<Finding[]>(qualityBaselinePath);
 const existingCycles = readJsonIfExists<string[]>(cycleBaselinePath);
 
 const findings = await collectFindings(root, listSourceFiles(root));
-const { cycles, skipped } = await collectCyclesDetailed(root, 'tsconfig.app.json');
+const { cycles, skipped } = await collectCyclesDetailed(root, 'tsconfig.base.json');
 
 const findingsPlan = planRegen(findings, existingFindings, allowNew);
 const cyclesPlan = planCycleRegen(cycles, existingCycles, allowNew);

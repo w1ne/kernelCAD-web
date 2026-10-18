@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 // The marketing site at site/index.html is served by `npm run site:dev`
-// (Python http.server on :8000). It is independent of the React Studio app
-// served from the repo root by `npm run dev` on :5173.
+// (Python http.server on :8000).
 const SITE_BASE = process.env.SITE_BASE_URL ?? 'http://127.0.0.1:8000';
 
 test.describe('homepage hero prompt box', () => {

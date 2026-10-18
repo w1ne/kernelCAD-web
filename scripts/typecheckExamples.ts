@@ -394,7 +394,7 @@ export async function runTypecheck(targets: string[]): Promise<number> {
       join(wrapperDir, 'tsconfig.json'),
       `${JSON.stringify(
         {
-          extends: relative(wrapperDir, join(REPO_ROOT, 'tsconfig.app.json')).split('\\').join('/'),
+          extends: relative(wrapperDir, join(REPO_ROOT, 'tsconfig.base.json')).split('\\').join('/'),
           compilerOptions: {
             noEmit: true,
             noUnusedLocals: false,

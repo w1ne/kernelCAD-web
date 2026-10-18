@@ -38,7 +38,7 @@ test('renders the gallery section with one tile per entry', async ({ page }) => 
   const gallery = page.locator('section.gallery');
   await expect(gallery).toBeVisible();
   await expect(gallery.locator('.gallery-tile')).toHaveCount(2);
-  await expect(gallery.locator('.gallery-tile[data-slug="one"] .title')).toHaveText('First');
+  await expect(gallery.locator('.gallery-tile[data-slug="one"] .card-title')).toHaveText('First');
 });
 
 test('first tile starts as a poster and upgrades to model-viewer on interaction', async ({ page }) => {
@@ -65,5 +65,7 @@ test('first tile starts as a poster and upgrades to model-viewer on interaction'
   await tile.hover();
   const mv = tile.locator('model-viewer');
   await expect(mv).toHaveAttribute('src', /\/gallery\/one\/model\.glb\?v=/);
-  await expect(mv).toHaveAttribute('poster', /\/og-image\.png\?v=/);
+  // The poster is a sibling <img> until the model loads; it must not be a
+  // model-viewer poster attribute (the viewer only swaps it in on 'load').
+  await expect(mv).not.toHaveAttribute('poster', /.*/);
 });

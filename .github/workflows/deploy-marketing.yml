@@ -9,8 +9,7 @@ name: Deploy kernelcad.com (on merge to develop)
 # This workflow closes that gap: every push to develop — which, per branch
 # protection (required checks: lint, build-and-checks, test), means a PR that
 # passed CI was merged — automatically triggers the marketing deploy against the
-# freshly-merged develop. app.kernelcad.com already auto-deploys on develop push
-# (deploy-cloudflare.yml); this gives kernelcad.com the same behaviour.
+# freshly-merged develop.
 #
 # ONE-TIME SETUP (only a repo admin can do this):
 #   Add a repo secret MARKETING_DEPLOY_TOKEN = a fine-grained PAT (or GitHub App

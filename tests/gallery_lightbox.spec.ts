@@ -27,7 +27,7 @@ test('clicking a tile opens the lightbox with entry content', async ({ page }) =
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.lightbox-title')).toHaveText('First Build');
   await expect(dialog.locator('.lightbox-prompt')).toHaveText('build a thing');
-  await expect(dialog.locator('input[name="source"]')).toHaveAttribute('value', 'gallery-lightbox:one');
+  await expect(dialog.locator('.lightbox-source')).toHaveAttribute('href', 'https://github.com/w1ne/kernelCAD-web');
 });
 
 test('ESC closes the lightbox', async ({ page }) => {

@@ -43,7 +43,7 @@ function moduleSourcePath(repoRoot: string, module: string): string {
 /** Emit the declarations of the entry modules as ONE file of ambient
  *  `declare module "src/..."` blocks (tsc `outFile` + AMD). */
 function emitAmbientDeclarations(repoRoot: string, entryModules: readonly string[]): string {
-  const configPath = join(repoRoot, 'tsconfig.app.json');
+  const configPath = join(repoRoot, 'tsconfig.base.json');
   const parsed = ts.getParsedCommandLineOfConfigFile(configPath, {}, {
     ...ts.sys,
     onUnRecoverableConfigFileDiagnostic: (d) => {

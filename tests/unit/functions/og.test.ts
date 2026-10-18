@@ -4,8 +4,12 @@
 // Link-preview Pages Functions (functions/). No Cloudflare runtime: the API,
 // the edge cache and the static asset (`context.next()`) are fakes. The tests
 // sit outside functions/ because wrangler bundles every file there as a route.
+//
+// The rewrite handlers serve the app's built index.html, which ships with the
+// private app repo (open-core split): the page-dependent suites below only run
+// where that file exists.
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import {
   DEFAULT_IMAGE,
@@ -22,7 +26,9 @@ import { onRequest as onProjectPage } from '../../../functions/p/[slug]';
 import { onRequest as onEmbedPage } from '../../../functions/embed/[slug]';
 import { onRequest as onGalleryPage } from '../../../functions/gallery';
 
-const INDEX_HTML = readFileSync('index.html', 'utf8');
+const INDEX_HTML = existsSync('index.html') ? readFileSync('index.html', 'utf8') : '';
+/** Suite gate for tests that need the app's built index.html. */
+const describeAppPage = INDEX_HTML ? describe : describe.skip;
 const API = 'https://api.example.test';
 const IMAGE = `${API}/api/v1/projects/bracket-abc/og.png?v=2026-09-28T10%3A11%3A12.000Z`;
 const HOSTILE_TITLE = `Bracket "v2" </title><script>alert('x')</script> & $& co`;
@@ -77,7 +83,7 @@ const publicApi = (title = HOSTILE_TITLE, image: string | null = IMAGE) =>
   vi.fn(async () => jsonResponse(200, { slug: 'bracket-abc', title, image })) as unknown as typeof fetch;
 const notFoundApi = () => vi.fn(async () => jsonResponse(404, { error: 'not_found' })) as unknown as typeof fetch;
 
-describe('index.html', () => {
+describeAppPage('index.html', () => {
   it('ships generic tags inside the replaceable block', () => {
     const start = INDEX_HTML.indexOf(OG_START);
     const end = INDEX_HTML.indexOf(OG_END);
@@ -90,7 +96,7 @@ describe('index.html', () => {
   });
 });
 
-describe('/p/:slug', () => {
+describeAppPage('/p/:slug', () => {
   it('injects escaped per-project tags for a public project', async () => {
     const api = publicApi();
     const res = await onProjectPage(context('/p/bracket-abc', api));
@@ -151,7 +157,7 @@ describe('/p/:slug', () => {
   });
 });
 
-describe('/embed/:slug', () => {
+describeAppPage('/embed/:slug', () => {
   it('injects the same per-project tags with the embed URL', async () => {
     const res = await onEmbedPage(context('/embed/bracket-abc', publicApi('Bracket')));
     const html = await res.text();
@@ -160,7 +166,7 @@ describe('/embed/:slug', () => {
   });
 });
 
-describe('/gallery', () => {
+describeAppPage('/gallery', () => {
   it('injects static gallery tags without an API call', async () => {
     const api = publicApi();
     const res = await onGalleryPage(context('/gallery', api));

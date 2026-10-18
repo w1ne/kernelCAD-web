@@ -48,19 +48,19 @@ export default defineConfig([
       }],
     },
   },
-  // Layering: shared -> kernel -> modeling -> kinematic -> composition -> agent -> studio.
+  // Layering: shared -> kernel -> modeling -> kinematic -> composition -> agent.
   // Imports may only point down. Mapped dirs: shared, kernel, modeling, kinematic,
   // composition, agent. Unmapped for now (no layering rule applied): authoring, docs,
-  // funnel, lib, server.
+  // lib, server.
   ...[
-    { dir: 'shared', forbid: ['kernel', 'modeling', 'kinematic', 'composition', 'agent', 'studio', 'server'] },
-    { dir: 'kernel', forbid: ['modeling', 'kinematic', 'composition', 'agent', 'studio', 'server'] },
-    { dir: 'modeling', forbid: ['kinematic', 'composition', 'agent', 'studio', 'server'] },
-    { dir: 'kinematic', forbid: ['composition', 'agent', 'studio'] },
-    { dir: 'composition', forbid: ['agent', 'studio', 'server'] },
+    { dir: 'shared', forbid: ['kernel', 'modeling', 'kinematic', 'composition', 'agent', 'server'] },
+    { dir: 'kernel', forbid: ['modeling', 'kinematic', 'composition', 'agent', 'server'] },
+    { dir: 'modeling', forbid: ['kinematic', 'composition', 'agent', 'server'] },
+    { dir: 'kinematic', forbid: ['composition', 'agent'] },
+    { dir: 'composition', forbid: ['agent', 'server'] },
     {
       dir: 'agent',
-      forbid: ['studio'],
+      forbid: [],
       // Composition owns the only factories that evaluate a script against the
       // full `kc.*` surface; agent code must not re-open the modeling-only
       // factory or the raw script core it cannot supply an apiFactory for.
@@ -77,7 +77,7 @@ export default defineConfig([
         patterns: [
           ...forbid.map((layer) => ({
             regex: layerImportRegex(layer),
-            message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> composition -> agent -> studio).`,
+            message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> composition -> agent).`,
           })),
           ...restrict.map((module) => ({
             regex: `^((\\.\\./)+|(^|/)src/)${module.replace(/\//g, '\\/')}$`,
@@ -87,7 +87,7 @@ export default defineConfig([
       }],
       'no-restricted-syntax': ['error', ...forbid.map((layer) => ({
         selector: `ImportExpression[source.value=/${layerImportRegex(layer).replace(/\//g, '\\/')}/]`,
-        message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> composition -> agent -> studio).`,
+        message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> composition -> agent).`,
       }))],
     },
   })),
@@ -108,18 +108,6 @@ export default defineConfig([
           message: `Import ${name} only inside src/{modeling,kernel}/backends/occt/. Elsewhere go through ShapeBackend / the kernel registry (src/modeling/backends/kernelRegistry.ts) so a second kernel can slot in.`,
         })),
       }],
-    },
-  },
-  // 11 px (text-2xs) is the smallest step of the type scale in src/index.css.
-  // Raw colours in src/studio are held by the ratchet in
-  // tests/unit/architecture/studioRawColours.test.ts.
-  {
-    files: ['src/studio/**/*.{ts,tsx}'],
-    rules: {
-      'no-restricted-syntax': ['error', ...['Literal[value', 'TemplateElement[value.raw'].map((node) => ({
-        selector: `${node}=/(^|[\\s:])text-\\[10px\\]/]`,
-        message: 'text-[10px] is below the type scale. Use text-2xs (11 px).',
-      }))],
     },
   },
   {

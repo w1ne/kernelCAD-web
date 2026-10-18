@@ -45,6 +45,8 @@ site/demo.json
 site/demo-poster.png
 site/favicon.svg
 site/gallery.json
+site/demos
+site/vendor
 
 # Gallery build artifacts + per-slug symlinks inside site/gallery/
 # (curator-tracked files: entries.json, README.md, .gitkeep)
@@ -68,9 +70,6 @@ eval/portfolio-attempts.jsonl
 # Refactor / ad-hoc debug scaffolds
 /.debug-*.ts
 
-# TanStack Router generated route tree (regenerated at dev/build time)
-src/studio/routeTree.gen.ts
-src/routeTree.gen.ts
 .tanstack/
 .tmp-vite-ignore-worktrees.config.ts
 
