@@ -31,9 +31,9 @@ FreeCAD `Placement`. Bodies are combined into one compound.
 ## Parasolid (`.x_t`, `.x_b`)
 
 `lib.fromCAD` reads Parasolid inside the kernelCAD process. The reader is
-[parasolid-core](https://github.com/monozukuri-ai/parasolid-kit), compiled into
-`src/modeling/parts/parasolid/parasolid_import.wasm` from
-`crates/parasolid-import`. There is no external program.
+parasolid-core (a reviewed fork under `crates/parasolid-core`, applied via a
+`[patch]`), compiled into `src/modeling/parts/parasolid/parasolid_import.wasm`
+from `crates/parasolid-import`. There is no external program.
 
 Pass the file's coordinate unit. The reader does not infer it. The default is
 millimetres.
@@ -42,10 +42,37 @@ millimetres.
 const part = await lib.fromCAD('./parts/link.x_t', { sourceUnit: 'm' });
 ```
 
-parasolid-core accepts an exact built-in schema profile. It does not substitute
-a nearby profile. A file whose schema key is outside that set fails with the
-key named in the error. Planar faces are sewn into a solid. Other surface
-kinds are read and then reported, rather than replaced with a mesh.
+The reader accepts an exact built-in schema profile plus the shipped application
+schemas it is reviewed against. It does not substitute a nearby profile: a file
+whose schema key is outside that set fails with the key named in the error.
+
+### Whole-machine transmits
+
+Whole assemblies are streamed, not retained. A 1.2 GB transmit parses in about
+a minute inside the wasm module: the buffer is compacted in place, one pass
+records a pointer-level summary of every B-Rep node, and each body is then
+parsed and mapped from its own small closure. The full node stream is never
+held in memory, which is what keeps whole-machine files inside the 32-bit
+wasm address space.
+
+What is built into solids:
+
+- Bodies whose faces are planes, cylinders, cones, spheres or tori are sewn
+  into closed solids and placed by the transmit's own instance transforms.
+- NURBS and intersection surfaces are reported as unsupported-geometry
+  diagnostics; they are read and named, never replaced with a mesh.
+- Very large bodies (over 400 faces, or over 150 000 closure nodes) and bodies
+  whose geometry the source stored invalid are skipped and counted
+  (`skippedBodies`, `firstSkip` in the reader result).
+
+Performance notes: a whole-machine import is dominated by OCCT sewing, not
+parsing (~7 minutes for the 1.2 GB RP1 robot on an M-series Mac, roughly 47
+seconds of that inside the wasm reader). Both whole-file and excerpt imports
+use the same path; there is no caching between runs.
+
+`cargo run --release --example excerpt` in `crates/parasolid-import` writes
+small self-contained excerpts (one body, two instances of one body) for tests
+that must not depend on the whole file.
 
 ## SolidWorks and IGES (converter)
 

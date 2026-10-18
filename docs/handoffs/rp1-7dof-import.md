@@ -193,3 +193,65 @@ Revolute mates are not in the script yet.
   `SCH_3201255_32001`.
 - The public manufacturing STEP set and BOM are revision RP1.3.4, 7-DoF plus
   motion head. Confirm that this is the revision to build.
+
+## Progress (2026-10-18, whole-machine transmit imported)
+
+The blocker is gone: the whole-robot Parasolid transmit now imports through the
+shipped `lib.fromCAD` path. No converter, no SolidWorks.
+
+What changed:
+
+- `crates/parasolid-core` (reviewed fork, `[patch]`-applied) now supports the
+  file's key `SCH_3201255_32001_13006`: shared per-type definitions, optional
+  source-offset and raw-byte retention, an in-place compactor
+  (`compact_xt_owned`), and a borrow-mode reader.
+- `crates/parasolid-import/src/stream.rs` streams whole transmits: one walk
+  records a pointer-level summary of the 9.1 M nodes, then each body's closure
+  is parsed and mapped as its own small document. NURBS payload types are
+  excluded and referencing curves/surfaces downgrade to unsupported-geometry
+  diagnostics instead of failing their body.
+- `src/modeling/parts/parasolid/lower.ts` builds one solid per body (exact
+  analytic edges for lines, circles, ellipses; sewing with the cutting pass
+  off, which is pathological on near-coplanar faces), applies the transmit's
+  instance transforms, skips bodies over 400 faces, rejects unbounded faces,
+  and returns analytic machine bounds (the OCCT module cannot box a
+  whole-machine compound).
+- Engine hardening that the import exposed: `featureSanity.ts` reads the
+  sanity box with `BRepBndLib.AddOptimal`; `lowerers/imported.ts` clones the
+  parked backend only when transforms follow; `proxy.ts` surfaces upstream
+  lowering diagnostics in its error.
+
+Verified on 2026-10-18 (evidence in `/tmp/rp1-evidence/`):
+
+- Whole transmit: `ok: true`, `featureCount: 1`, no diagnostics. Span
+  555.9 × 444.0 × 1314.2 mm — the standing robot, feet through the motion
+  head (`rp1-evaluate.json`, reachable from
+  `examples/robots/rp1/rp1-transmit.kcad.ts`).
+- Reader alone: 47 s in wasm, 1095 bodies, 2909 instances (`wasm-try.log`).
+  Native streaming parity: 1093/1095 bodies, 231,452/233,290 faces
+  (`streammap.log`); the two misses are source-invalid geometry.
+- `fromCad.test.ts`: 18/18, including one-body and two-instance excerpts whose
+  centres differ by exactly the transmit translation (0, 54.300, 0) mm.
+- Two fresh consumer launches: identical volume, exit 0.
+- Wider `src/modeling/parts` run: the same pre-existing 7 `fetchPart` /
+  `findPart` / `standardParts` failures as before this work (network-bound).
+
+Limits, honestly:
+
+- 522 of 1095 bodies become solids in the whole-file run; the rest are
+  spline-heavy, oversized, or source-invalid. The bounding box spans the full
+  robot, but a full-fidelity per-part solid needs NURBS lowering.
+- Exact wires exist for line/circle/ellipse edges only; everything else falls
+  back to chord wires.
+- Import is ~7 minutes for this file and is not cached between runs.
+
+Reproduce:
+
+```sh
+cd crates/parasolid-import
+cargo run --release --example excerpt /Volumes/LabWired/rp1-cad/RP1-assembly.x_t \
+  /Volumes/LabWired/rp1-cad/rp1-one-body.x_t /Volumes/LabWired/rp1-cad/rp1-two-instance.x_t
+cd ../..
+NODE_OPTIONS='--max-old-space-size=14336' npx tsx src/agent/cli/index.ts evaluate \
+  examples/robots/rp1/rp1-transmit.kcad.ts --json
+```
