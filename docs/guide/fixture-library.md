@@ -16,15 +16,16 @@ checked before anything is bolted down.
 
 ## What is in the kit
 
-- **`tSlotNut({ thread })`** — T-slot nut, DIN 508 form: slot 10 mm for M8,
-  12 mm for M10, 14 mm for M12. The bore axis is +Z, the top face sits at
+- **`tSlotNut({ thread })`** — T-slot nut, DIN 508: slot 10 mm for M8,
+  12 mm for M10, 14 mm for M12; heights 12/14/16 mm, head height 6/7/8 mm. The bore axis is +Z, the top face sits at
   z = 0 and the wide base hangs below it. Connectors: `mating-face`
   (the wing tops that pull against the slot), `top-face`, `thread-bore`.
 - **`clampStud({ thread, lengthMm })`** — clamping stud, DIN 6379 form;
   stocked lengths 63 and 100 mm (M8), 80 and 125 mm (M10), 100 and 160 mm
   (M12). Connectors: `table-end`, `clamp-end`, `axis`.
-- **`flangeNut({ thread })`** — flange nut, DIN 6330 form, for the top of a
-  clamp. Connectors: `mating-face`, `top-face`, `inner-bore`.
+- **`flangeNut({ thread })`** — collar (flange) nut, DIN 6331 form: across
+  flats 13/16/18 mm, height 12/15/18 mm, collar 18/22/25 mm. Connectors:
+  `mating-face`, `top-face`, `inner-bore`.
 - **`strapClamp({ thread })`** — strap clamp. The slot center is the
   origin and the nose points toward -X, so `slot-axis` is where the stud
   goes and `nose-bearing`/`tail-bearing` are the ends that do the work.
@@ -56,11 +57,12 @@ a 400 × 130 × 24 mm table section with a 12 mm channel, a 50 × 70 × 36 mm
 workpiece, and M10 hardware. The dimensions chain together, and each link
 is a named stock value rather than a guess:
 
-- The channel is cut to the T-nut's envelope plus clearance: 12.4 mm
-  opening, 18.6 mm internal width, so the nut's 11.7 mm neck and 17.8 mm
-  base slide in.
-- The stud's `table-end` sits 9.6 mm below the table surface, on the
-  channel ceiling the T-nut's `mating-face` pulls against.
+- The channel is cut to the T-nut's envelope plus clearance: 12.0 mm
+  opening, 18.3 mm internal width, so the DIN 508 nut's 11.4 mm neck and
+  17.5 mm base slide in.
+- The stud's `table-end` sits 7.6 mm below the table surface (the DIN 508
+  M10 head height plus 0.6 mm clearance), on the channel ceiling the T-nut's
+  `mating-face` pulls against.
 - The workpiece is 36 mm tall, which is exactly the M10 step block's
   `step-3` tread, so the clamp lies level: nose on the workpiece, tail on
   the tread, `flange-nut` on top.
@@ -97,8 +99,8 @@ The example's own five lines are the whole API surface for the hardware:
 `examples/fixture/verify-fixture.mts` re-evaluates the example and writes
 `docs/demos/fixture-library/geometry-evidence.json`: 66 part pairs checked
 with zero positive-volume overlaps, and the spans that document each mating
-face (T-nut wing tops at 14.4 mm, clamp underside level with the workpiece
-top at 60 mm, flange nut at 72–82 mm).
+face (T-nut wing tops at 16.4 mm, clamp underside level with the workpiece
+top at 60 mm, DIN 6331 flange nut at 72–87 mm).
 
 That is placement and stock dimensions, not clamping force. Nothing here
 proves stud deflection, fixture stiffness, torque or machining loads, and
