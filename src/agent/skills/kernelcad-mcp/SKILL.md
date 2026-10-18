@@ -94,14 +94,16 @@ Mate authoring reminder: **`arm.mate(name, a, b, type)`** (4-arg). Retired 3-arg
 ### Local live viewer link
 
 A full local `evaluate_script` returns `viewerUrl` from the first built model.
-Open it once and reuse it: full evaluations and source-edit MCP results update
-the same source, feature history and geometry. This is a loopback link owned by
-the MCP process, not a published project or share URL. Dry runs do not update it;
-genuine build failures retain the last built view. Built models with DFM gate
-failures remain viewable. If provisioning fails, `viewerError` is separate from
-CAD diagnostics; source-checkout users should run `npm run build:player`.
-The viewer's build diagnostics do not replace `review_cad`. Hosted/`--cloud`
-results retain the gateway's own URL behavior.
+Open it once and reuse it: the viewer shows live geometry and auto-refreshes
+after full evaluations and source-edit MCP results. Source view, feature
+history and review badges are Studio features (see `open_in_studio`). This is
+a loopback link owned by the MCP process, not a published project or share
+URL. Dry runs do not update it; genuine build failures retain the last built
+view. Built models with DFM gate failures remain viewable. If provisioning
+fails, `viewerError` is separate from CAD diagnostics; source-checkout users
+should run `npm run build:player`. The viewer's build diagnostics do not
+replace `review_cad`. Hosted/`--cloud` results retain the gateway's own URL
+behavior.
 
 ### Source edit operations
 

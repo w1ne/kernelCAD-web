@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { BuiltModel } from '../../composition/buildModel';
-import { createLiveViewer } from './liveViewer';
+import { createLiveViewer, viewerDistCandidates } from './liveViewer';
 
 const closers: Array<() => Promise<void>> = [];
 afterEach(async () => { await Promise.all(closers.splice(0).map(close => close())); });
@@ -86,5 +86,19 @@ describe('live MCP player viewer', () => {
     const viewer = createLiveViewer({ dist: '/does-not-exist' });
     await expect(viewer.update(model('first'))).rejects.toThrow('build:player');
     await viewer.close();
+  });
+});
+
+describe('viewerDistCandidates', () => {
+  it('resolves the source-tree layout from src/agent/mcp', () => {
+    expect(viewerDistCandidates('/repo/src/agent/mcp')[2]).toBe('/repo/dist/headless-player');
+  });
+
+  it('resolves the packaged layout from dist/cli', () => {
+    expect(viewerDistCandidates('/repo/dist/cli')[1]).toBe('/repo/dist/headless-player');
+  });
+
+  it('keeps an explicit env override first', () => {
+    expect(viewerDistCandidates('/repo/src/agent/mcp', '/env/headless-player')[0]).toBe('/env/headless-player');
   });
 });

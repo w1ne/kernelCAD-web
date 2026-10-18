@@ -24,10 +24,17 @@ interface ViewerOptions {
   mesh?: (model: BuiltModel) => Promise<unknown>;
 }
 
+/** Live-viewer bundle roots, most specific first: an explicit env override,
+ *  then the packaged layout (`dist/headless-player` next to the bundled CLI),
+ *  then the source-tree layout (`<repo>/dist/headless-player`). */
+export function viewerDistCandidates(dir: string, envDist?: string): (string | undefined)[] {
+  return [envDist, resolve(dir, '../headless-player'), resolve(dir, '../../../dist/headless-player')];
+}
+
 function findViewerDist(): string | undefined {
   if (process.env.KERNELCAD_VIEWER_DIST !== undefined) return process.env.KERNELCAD_VIEWER_DIST;
   const dir = fileURLToPath(new URL('.', import.meta.url));
-  return [process.env.KERNELCAD_VIEWER_DIST, resolve(dir, '../headless-player'), resolve(dir, '../../../dist/headless-player')]
+  return viewerDistCandidates(dir)
     .find(candidate => candidate && existsSync(resolve(candidate, 'index.html')));
 }
 

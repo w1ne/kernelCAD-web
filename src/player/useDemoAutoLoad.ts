@@ -46,39 +46,78 @@ function startScriptAutoLoad(
     setScriptLoadStatus: Dispatch<SetStateAction<ScriptLoadStatus | null>>,
 ): () => void {
     let cancelled = false;
-    apiCall()
-        .then(({ base, headers }) =>
-            fetch(
-                rewritePath(`/__kernelcad/mesh?script=${encodeURIComponent(script)}`, base),
-                { headers },
-            ),
-        )
-        .then(async (response) => {
-            const payload = await response.json();
-            if (!response.ok) {
-                const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
-                throw new Error(message);
-            }
-            return payload as DevMeshPayload;
-        })
-        .then((payload) => {
-            if (cancelled) return;
-            if (!window.__demoPlayer) throw new Error('demo-player API disappeared while loading script');
-            window.__demoPlayer.loadFeatureMeshes(payload.features, payload.bounds);
-            window.__demoPlayer.forceFullOpacity();
-            window.__demoPlayer.setVersion('dev');
-            setScriptLoadStatus({ kind: 'idle' });
-        })
-        .catch((error) => {
-            if (cancelled) return;
-            setScriptLoadStatus({
-                kind: 'error',
-                message: error instanceof Error ? error.message : String(error),
+    let events: EventSource | undefined;
+    let refreshing = false;
+    let refreshQueued = false;
+
+    const loadMesh = () =>
+        apiCall()
+            .then(({ base, headers }) =>
+                fetch(
+                    rewritePath(`/__kernelcad/mesh?script=${encodeURIComponent(script)}`, base),
+                    { headers },
+                ),
+            )
+            .then(async (response) => {
+                const payload = await response.json();
+                if (!response.ok) {
+                    const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
+                    throw new Error(message);
+                }
+                return payload as DevMeshPayload;
+            })
+            .then((payload) => {
+                if (cancelled) return;
+                if (!window.__demoPlayer) throw new Error('demo-player API disappeared while loading script');
+                window.__demoPlayer.loadFeatureMeshes(payload.features, payload.bounds);
+                window.__demoPlayer.forceFullOpacity();
+                window.__demoPlayer.setVersion('dev');
+                setScriptLoadStatus({ kind: 'idle' });
+            })
+            .catch((error) => {
+                if (cancelled) return;
+                setScriptLoadStatus({
+                    kind: 'error',
+                    message: error instanceof Error ? error.message : String(error),
+                });
             });
+
+    // One refresh in flight at a time; an event arriving mid-fetch re-fetches
+    // once after it settles so the newest model is never dropped.
+    const refreshMesh = (): void => {
+        if (cancelled) return;
+        if (refreshing) {
+            refreshQueued = true;
+            return;
+        }
+        refreshing = true;
+        void loadMesh().finally(() => {
+            refreshing = false;
+            if (refreshQueued && !cancelled) {
+                refreshQueued = false;
+                refreshMesh();
+            }
         });
+    };
+
+    void loadMesh();
+
+    // `?script=<token>&mcp=1` is the MCP live viewer: the liveViewer pushes a
+    // frame on `/__kernelcad/events` after every model replacement and on
+    // reconnect catch-up, so re-fetch the mesh instead of showing stale
+    // geometry until a manual reload.
+    if (new URLSearchParams(window.location.search).get('mcp') === '1' && typeof EventSource !== 'undefined') {
+        void apiCall().then(({ base }) => {
+            if (cancelled) return;
+            events = new EventSource(rewritePath(`/__kernelcad/events?script=${encodeURIComponent(script)}`, base));
+            events.onmessage = refreshMesh;
+            for (const name of ['relower', 'source-changed']) events.addEventListener(name, refreshMesh);
+        });
+    }
 
     return () => {
         cancelled = true;
+        events?.close();
     };
 }
 
@@ -165,7 +204,9 @@ function startBuildRecordAutoLoad(
  * Owns the two demo-player auto-load paths gated on `isDemoApiReady`:
  * loading a single `?script=` mesh, or stepping through a `?record=`
  * build-loop JSON. Mutually exclusive by URL param, same as the original
- * inline effects.
+ * inline effects. In MCP live-viewer mode (`?script=<token>&mcp=1`) the
+ * script path also follows `/__kernelcad/events` and re-fetches the mesh on
+ * each pushed model replacement.
  */
 export function useDemoAutoLoad(isDemoApiReady: boolean, elapsedMsRef: MutableRefObject<number>) {
     // `null` until one of the async paths settles a status; the pending
