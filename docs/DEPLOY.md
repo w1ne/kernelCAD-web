@@ -5,19 +5,21 @@ you made to the right row — do **not** cut a release tag just to push one surf
 
 | You changed… | Surface | How it ships |
 |---|---|---|
-| `src/**` (the Studio app) | **app.kernelcad.com** | **Automatic** on push to `develop` |
-| `site/**` (landing + gallery) | **kernelcad.com** | **Manual** dispatch (see below) |
+| `site/**` (landing + gallery) | **kernelcad.com** | **dispatched from here** on eligible `develop` pushes (see below) |
 | `workers/feedback-mailer/**` (feedback email) | Worker `kernelcad-feedback-mailer` | **Manual**: `npx -y wrangler@4.94.0 deploy -c workers/feedback-mailer/wrangler.toml` |
 | published packages | **npm** | A `v*` **release tag** (full release) |
 
+This repo deploys only the marketing site. The Studio app
+(`app.kernelcad.com`) and its Pages functions live in the private
+**`kernelCAD-app`** repo and deploy from there.
+
 There is one trunk: **`develop`** (the GitHub default branch). There is no `main`.
 
-## app.kernelcad.com — the Studio
+## app.kernelcad.com — the Studio (private)
 
-- Workflow: `.github/workflows/deploy-cloudflare.yml` (job `app`).
-- Trigger: **push to `develop`** (also `main`, `feat/kernelcad-website`, `v*` tags).
-- Build: Vite (`VITE_BASE_PATH=/`) → Cloudflare Pages project `kernelcad-app`.
-- **So: merging a PR to `develop` auto-deploys the Studio. No manual step.**
+The Studio app moved to the private **`kernelCAD-app`** repo, which builds and
+deploys it (Cloudflare Pages project `kernelcad-app`). Merging a PR to that
+repo's `develop` auto-deploys the Studio — no step here.
 
 ## kernelcad.com — marketing site + gallery
 
@@ -69,16 +71,15 @@ curl -s https://kernelcad.com/ | grep -o '<h1 class="headline">[^<]*'
 ## npm — a release tag
 
 A `v*` tag is a **full release**, not a single-surface deploy. Pushing it fires
-**all** of: `publish-npm.yml` (publishes packages to npm), `dist-skills.yml`,
-`deploy.yml` (GitHub Pages), and `deploy-cloudflare.yml`. Per the **Demo
-discipline** rule in `CLAUDE.md`, a `v0.X.0` minor tag also requires
-`docs/demos/v0.X/<task>/whats-new.md` + `meta.json`.
+**all** of: `publish-npm.yml` (publishes packages to npm) and `dist-skills.yml`.
+Per the **Demo discipline** rule in `CLAUDE.md`, a `v0.X.0` minor tag also
+requires `docs/demos/v0.X/<task>/whats-new.md` + `meta.json`.
 
-Only tag when you intend an actual release. To ship the Studio or the marketing
-site without releasing packages, use the per-surface paths above.
+Only tag when you intend an actual release. To ship the marketing site without
+releasing packages, use the marketing path above.
 
 ## Quick answers
 
-- **Changed the Studio (`src/`)** → merge to `develop`; it auto-deploys to app.kernelcad.com.
+- **Changed the Studio app** → that work lives in the private `kernelCAD-app` repo and auto-deploys to app.kernelcad.com from there. This repo's `src/` is the core/CLI shipped via npm.
 - **Changed marketing build inputs (`site/`, `docs/guide/`, `docs/demos/`)** → merge to `develop`; the private marketing deploy is dispatched automatically. Check that deploy and the live URLs; use manual dispatch when a redeploy is needed.
 - **Want to release packages** → cut a `v*` tag (mind Demo discipline for `v0.X.0`).

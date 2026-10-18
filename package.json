@@ -82,7 +82,7 @@
     "site:verify-production": "npx tsx scripts/verifyProductionSite.ts",
     "test:watch": "vitest",
     "test:e2e": "playwright test --config playwright.site.config.ts",
-    "typecheck": "tsc -b --noEmit && tsc --noEmit -p tsconfig.site.json",
+    "typecheck": "tsc -b --noEmit && tsc --noEmit -p tsconfig.base.json && tsc --noEmit -p tsconfig.site.json",
     "typecheck:examples": "tsx scripts/typecheckExamples.ts examples/gallery/turbojet-engine.kcad.ts examples/gallery/hand-coffee-grinder.kcad.ts tests/e2e/fixtures/twisted-blade.kcad.ts",
     "typecheck:examples:all": "tsx scripts/typecheckExamples.ts --all",
     "test:ratchet": "vitest run tests/unit/scripts/qualityRatchet.test.ts tests/unit/scripts/cycleRatchet.test.ts",
