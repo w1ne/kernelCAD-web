@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { setParamValue } from '../../../modeling/edits/setParamValue';
+import { decodeMeshBinary } from '../../../modeling/capture/featureMeshBinary';
+import type { FeatureRecord } from '../../../shared/intent/featureRecord';
+import type { SerializedParamTable } from '../../../shared/runtime/paramTable';
 import {
   meshSourceDev,
   meshSourceHosted,
@@ -9,6 +12,15 @@ import {
   type MeshHaveFingerprints,
   type ParamOverrides,
 } from '../../scriptSource';
+import { browserKernelEnabled } from '../../kernel/flag';
+import { browserKernelForSource } from '../../kernel/kernelSingleton';
+import {
+  KernelDisposedError,
+  KernelNotWarmError,
+  KernelSourceError,
+  KernelSupersededError,
+  type KernelParamsResult,
+} from '../../kernel/browserKernelClient';
 import { mergeMeshPayload, meshMergeStateFor } from './meshMergeStore';
 import { MESH_MERGE_UNKNOWN_ID_PREFIX, type MeshMergeState } from './mergeFeatureMeshes';
 import { createParamEditQueue, type ParamEditQueue } from './paramEditQueue';
@@ -67,6 +79,61 @@ function isMeshMergeMismatch(err: unknown): boolean {
   return err instanceof Error && err.message.startsWith(MESH_MERGE_UNKNOWN_ID_PREFIX);
 }
 
+/** A warm worker's bin1 result in the bridge shape every consumer already
+ *  handles. No `review`: the worker runs no review pipeline, and the apply
+ *  keeps the last painted review when a payload carries none. */
+function payloadFromKernelResult(result: KernelParamsResult): BackendMeshPayload {
+  const decoded = decodeMeshBinary(result.payload);
+  return {
+    features: decoded.features,
+    ...(decoded.trailer !== undefined ? { trailer: decoded.trailer } : {}),
+    params: result.params as SerializedParamTable,
+    featureRecords: result.featureRecords as FeatureRecord[],
+    bounds: result.bounds,
+  };
+}
+
+/** The number/boolean edits the kernel's `params` takes; string values are
+ *  baked into the source (`paramEditsForMesh`) and never cross as overrides. */
+function numericEdits(edits: ParamEditValues): Array<{ name: string; value: number | boolean }> {
+  const out: Array<{ name: string; value: number | boolean }> = [];
+  for (const [name, value] of Object.entries(edits)) {
+    if (typeof value !== 'string') out.push({ name, value });
+  }
+  return out;
+}
+
+/** Run one edit on the kernel warm for `source`, merged through the same store
+ *  as the server path. Returns null to fall through to the server within this
+ *  edit: host-fs (the source is sticky server-only), crash/timeout (the client
+ *  already flips sticky), and superseded/disposed/not-warm requests all let
+ *  the server answer instead. A `script-error` is surfaced — the same code
+ *  would fail the server kernel too (LOCKED routing polarity). */
+async function kernelParamEditPayload(
+  source: string,
+  edits: ParamEditValues,
+  have: MeshHaveFingerprints | undefined,
+  state: MeshMergeState | null,
+): Promise<BackendMeshPayload | null> {
+  const kernel = browserKernelForSource(source);
+  if (kernel === null) return null;
+  try {
+    const result = await kernel.params(numericEdits(edits), have);
+    return mergeMeshPayload(source, payloadFromKernelResult(result), state);
+  } catch (err) {
+    if (err instanceof KernelSourceError) {
+      if (err.reason !== 'script-error') return null;
+      throw err;
+    }
+    if (err instanceof KernelNotWarmError
+      || err instanceof KernelSupersededError
+      || err instanceof KernelDisposedError) {
+      return null;
+    }
+    throw err;
+  }
+}
+
 /** Mesh the code with the accumulated edits through the stateless endpoint:
  *  the server on the hosted app, the dev middleware on localhost. A rewritten
  *  source can't use the stored project body, so it is sent as source.
@@ -88,6 +155,14 @@ async function runParamEditRequest(
   const { source, params } = paramEditsForMesh(code, edits, bakeAll);
   const state = meshMergeStateFor(code);
   const have = haveFingerprints(state);
+  // The worker answers only for the unedited source: a string baked into
+  // `source` makes it a different model than the one warm in the worker
+  // (LOCKED — otherwise the server is the only path). The server branch below
+  // is also the safety net for every kernel-side failure this edit may hit.
+  if (source === code && browserKernelEnabled()) {
+    const kernelPayload = await kernelParamEditPayload(source, edits, have, state);
+    if (kernelPayload !== null) return kernelPayload;
+  }
   const send = (nextHave: MeshHaveFingerprints | undefined): Promise<BackendMeshPayload> =>
     shouldUseHostedMesh()
       ? meshSourceHosted(source, params, {

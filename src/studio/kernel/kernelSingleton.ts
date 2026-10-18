@@ -1,0 +1,89 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// src/studio/kernel/kernelSingleton.ts
+//
+// The one Studio-owned browser kernel worker and the rules for warming it.
+// The instance is lazy: the first warm spawns the worker through
+// `studioKernelWorker.ts`, whose ~11 MB OCCT chunk nothing imports statically —
+// the `new Worker(new URL(...))` below stays inside `spawnKernelWorker` so the
+// chunk is fetched on the first warm, never on page load (and can be stripped
+// from the embed build). Routing reads `browserKernelForSource`: a kernel is
+// usable for a source only while it is warm for exactly that source.
+
+import { createBrowserKernel, type BrowserKernel } from './browserKernelClient';
+
+let instance: BrowserKernel | null = null;
+let warmedSource: string | null = null;
+
+/** Sources the worker cannot build: `lib.fromSTEP` reads the host filesystem,
+ *  and a literal relative import needs the server's asset manifest. The
+ *  worker would throw `cli.host-fs-unavailable` for them anyway, but only
+ *  after paying the wasm download — the precheck skips that. The locked
+ *  precheck pattern is `lib.from(ST|EP)`; `from(STEP|EP)` is the atom that
+ *  actually matches `lib.fromSTEP` (the plan regex's `ST|EP` fails on its own
+ *  example). Other host-fs importers (fromSTL/fromBREP/…) are left to the
+ *  worker's own host-fs failure, which flips the source sticky server-side.
+ *  Over-matching here only keeps a model on the server path, never breaks it. */
+const HOST_FS_IMPORT = /\blib\s*\.\s*from(STEP|EP)\b/;
+const LITERAL_RELATIVE_IMPORT = /\bfrom\s*['"]\.{1,2}\//;
+
+export function browserKernelSourceIsServerOnly(source: string): boolean {
+  return HOST_FS_IMPORT.test(source) || LITERAL_RELATIVE_IMPORT.test(source);
+}
+
+/** The worker entry, reached only when a kernel actually spawns: `new
+ *  Worker(new URL(...))` compiles to a separate vite chunk, so the wasm
+ *  payload is never part of the main/embed bundles. Must stay inside this
+ *  function — a module-scope Worker would construct one for every studio
+ *  load. */
+function spawnKernelWorker(): Worker {
+  return new Worker(new URL('./studioKernelWorker.ts', import.meta.url), { type: 'module' });
+}
+
+function browserKernelInstance(): BrowserKernel {
+  if (instance === null) instance = createBrowserKernel({ spawn: spawnKernelWorker });
+  return instance;
+}
+
+/** The kernel when it is warm for exactly `source`; null otherwise.
+ *  `status() !== 'warm'` covers every sticky failure (host-fs, script-error,
+ *  crash, timeout), and the tracked source covers a model this kernel was
+ *  never warmed on (or one whose dispose already dropped the worker). */
+export function browserKernelForSource(source: string): BrowserKernel | null {
+  if (instance === null || warmedSource !== source || instance.status() !== 'warm') return null;
+  return instance;
+}
+
+/** Warm the kernel for `(source, fileName)` in the background. Fire-and-
+ *  forget: warm rejects on failure/dispose (see the client's typed errors) and
+ *  no caller can act on that — routing simply sees a not-warm kernel. A new
+ *  source disposes the old worker first so no state leaks across models. */
+export function warmBrowserKernel(source: string, fileName: string): void {
+  if (browserKernelSourceIsServerOnly(source)) return;
+  if (warmedSource !== null && warmedSource !== source) disposeBrowserKernel();
+  const kernel = browserKernelInstance();
+  warmedSource = source;
+  void kernel.warm(source, fileName).catch(() => {});
+}
+
+/** Terminate the worker and forget the warmed source. The client instance
+ *  stays (the one singleton) and a later warm respawns its worker fresh — no
+ *  state of the disposed model can leak into the new build. */
+export function disposeBrowserKernel(): void {
+  instance?.dispose();
+  warmedSource = null;
+}
+
+/** Test-only: swap in a fake kernel and the source it is "warm" for, or clear
+ *  the seam entirely. */
+export function __setBrowserKernelForTests(kernel: BrowserKernel | null, source: string | null = null): void {
+  instance = kernel;
+  warmedSource = source;
+}
+
+/** Test-only: dispose and drop the singleton. */
+export function __resetBrowserKernelForTests(): void {
+  instance?.dispose();
+  instance = null;
+  warmedSource = null;
+}

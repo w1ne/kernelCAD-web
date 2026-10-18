@@ -66,7 +66,10 @@ export function useParamUpdate(
         deps.setGeometryTransformOverrides({});
         deps.setFeatureRecords(recs);
         deps.setScriptParams(Object.values(payload.params ?? {}));
-        deps.setScriptReview(review);
+        // A payload without `review` (e.g. a browser-kernel patch, which runs
+        // no review pipeline) keeps the last painted review instead of
+        // blanking the Validity tab mid-drag.
+        deps.setScriptReview((prev) => payload.review ?? prev);
         deps.setMeshDimensions(meshDimensionsOf(payload));
         deps.setSketchesGeometries([]);
         deps.setPreviewGeometries([]);

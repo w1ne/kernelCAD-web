@@ -6,6 +6,8 @@ import type { SerializedParamTable } from '../../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import { shouldUseHostedMesh, meshSourceHosted } from '../../scriptSource';
 import { apiCall, rewritePath } from '../../api/apiBase';
+import { browserKernelEnabled } from '../../kernel/flag';
+import { warmBrowserKernel } from '../../kernel/kernelSingleton';
 import { overlayLiveReview, featureMeshesToGeometries, isAbortError, type ScriptReviewSummary } from './types';
 import { mergeMeshPayload } from './meshMergeStore';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
@@ -14,12 +16,50 @@ import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimen
 
 export type MeshFetchOpts = { keepExistingOnError?: boolean; skipReview?: boolean; liveReview?: boolean };
 
+/** The warm a hidden tab is holding for the next `visibilitychange`: the
+ *  latest applied source wins, and at most one listener waits for it. */
+let pendingHiddenWarm: { source: string; fileName: string } | null = null;
+let visibilityListenerAttached = false;
+
+function flushPendingKernelWarm(): void {
+    const pending = pendingHiddenWarm;
+    pendingHiddenWarm = null;
+    if (pending !== null) warmBrowserKernel(pending.source, pending.fileName);
+}
+
+function onVisibilityChangeForWarm(): void {
+    if (document.visibilityState !== 'visible') return;
+    document.removeEventListener('visibilitychange', onVisibilityChangeForWarm);
+    visibilityListenerAttached = false;
+    flushPendingKernelWarm();
+}
+
+/** Kick the browser kernel's background warm for the source a hosted payload
+ *  was just applied for. Locked: a hidden tab never starts the ~11 MB worker
+ *  download — the warm is deferred (latest apply wins, one listener) to the
+ *  first `visibilitychange` that makes the tab visible. The `fileName` is the
+ *  `?script=` path (relative-import anchor); host-fs sources are filtered
+ *  inside `warmBrowserKernel`. */
+function warmKernelForHostedApply(source: string, fileName: string): void {
+    if (!browserKernelEnabled()) return;
+    if (typeof document === 'undefined') return;
+    if (document.visibilityState === 'visible') {
+        warmBrowserKernel(source, fileName);
+        return;
+    }
+    pendingHiddenWarm = { source, fileName };
+    if (visibilityListenerAttached) return;
+    visibilityListenerAttached = true;
+    document.addEventListener('visibilitychange', onVisibilityChangeForWarm);
+}
+
 /** The hosted-mesh branch of `fetchMeshAndReview`: no session token, and the
  *  deploy resolves mesh data via build-time precompute / the hosted mesh
  *  endpoint instead of the node dev-kernel `mesh`/`review` routes below. */
 function fetchHostedMeshAndReview(
     deps: ExecutionApplyDeps,
     code: string,
+    fileName: string,
     revision: number,
     fetchStart: number,
     opts: MeshFetchOpts | undefined,
@@ -43,6 +83,7 @@ function fetchHostedMeshAndReview(
             deps.setError(null);
             deps.setLastSuccessfulRevision(revision);
             deps.pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: revision });
+            warmKernelForHostedApply(code, fileName);
         })
         .catch((err: unknown) => {
             if (revision !== deps.mainRevisionRef.current) {
@@ -245,7 +286,7 @@ export function useMeshFetch(
             : `/__kernelcad/review?script=${encodeURIComponent(script)}`;
 
         if (!token && shouldUseHostedMesh()) {
-            const promise = fetchHostedMeshAndReview(deps, code, revision, fetchStart, opts, setRecomputeMs);
+            const promise = fetchHostedMeshAndReview(deps, code, script, revision, fetchStart, opts, setRecomputeMs);
             return { revision, promise };
         }
 
