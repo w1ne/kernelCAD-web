@@ -11,6 +11,7 @@
 // usable for a source only while it is warm for exactly that source.
 
 import { createBrowserKernel, type BrowserKernel } from './browserKernelClient';
+import { browserKernelEnabled } from './flag';
 
 let instance: BrowserKernel | null = null;
 let warmedSource: string | null = null;
@@ -74,6 +75,46 @@ export function disposeBrowserKernel(): void {
   warmedSource = null;
 }
 
+/** A warm a hidden tab is holding for the next `visibilitychange`: the latest
+ *  applied source wins, and at most one listener waits for it. */
+let pendingHiddenWarm: { source: string; fileName: string } | null = null;
+let visibilityListenerAttached = false;
+
+function flushPendingKernelWarm(): void {
+  const pending = pendingHiddenWarm;
+  pendingHiddenWarm = null;
+  if (pending !== null) warmBrowserKernel(pending.source, pending.fileName);
+}
+
+function onVisibilityChangeForWarm(): void {
+  if (document.visibilityState !== 'visible') return;
+  document.removeEventListener('visibilitychange', onVisibilityChangeForWarm);
+  visibilityListenerAttached = false;
+  flushPendingKernelWarm();
+}
+
+/** Kick the browser kernel's background warm for the source a hosted payload
+ *  was just applied for — the one warm-on-open seam both hosted routes call:
+ *  `useMeshFetch`'s `?script=` apply and the auto-run loop's `?gallery=`
+ *  apply. Locked: a hidden tab never starts the ~11 MB worker download — the
+ *  warm is deferred (latest apply wins, one listener) to the first
+ *  `visibilitychange` that makes the tab visible. The `fileName` is the
+ *  `?script=` path (relative-import anchor), or a cosmetic `studio.kcad.ts`
+ *  on routes without one; host-fs sources are filtered inside
+ *  `warmBrowserKernel`. */
+export function warmKernelOnOpen(source: string, fileName: string): void {
+  if (!browserKernelEnabled()) return;
+  if (typeof document === 'undefined') return;
+  if (document.visibilityState === 'visible') {
+    warmBrowserKernel(source, fileName);
+    return;
+  }
+  pendingHiddenWarm = { source, fileName };
+  if (visibilityListenerAttached) return;
+  visibilityListenerAttached = true;
+  document.addEventListener('visibilitychange', onVisibilityChangeForWarm);
+}
+
 /** Test-only: swap in a fake kernel and the source it is "warm" for, or clear
  *  the seam entirely. */
 export function __setBrowserKernelForTests(kernel: BrowserKernel | null, source: string | null = null): void {
@@ -81,9 +122,15 @@ export function __setBrowserKernelForTests(kernel: BrowserKernel | null, source:
   warmedSource = source;
 }
 
-/** Test-only: dispose and drop the singleton. */
+/** Test-only: dispose, drop the singleton, and clear any warm a hidden tab is
+ *  still holding (including its `visibilitychange` listener). */
 export function __resetBrowserKernelForTests(): void {
   instance?.dispose();
   instance = null;
   warmedSource = null;
+  pendingHiddenWarm = null;
+  if (visibilityListenerAttached && typeof document !== 'undefined') {
+    document.removeEventListener('visibilitychange', onVisibilityChangeForWarm);
+  }
+  visibilityListenerAttached = false;
 }

@@ -12,12 +12,19 @@ import {
     rootVisibleFeatures,
     isPinnedRevisionSource,
     storedShareMesh,
+    currentStudioScript,
     type BackendMeshPayload,
 } from '../../scriptSource';
+import { warmKernelOnOpen } from '../../kernel/kernelSingleton';
 import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import { mergeMeshPayload } from './meshMergeStore';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
+
+/** Cosmetic worker fileName for a hosted apply with no `?script=` (gallery /
+ *  default route): the browser worker only uses it to anchor relative
+ *  imports, and this route has none to resolve. */
+const GALLERY_KERNEL_FILE_NAME = 'studio.kcad.ts';
 
 /** Applies a hosted/dev-kernel mesh payload to context state, incl. the
  *  empty-build guard. Shared by the hosted and dev-kernel branches of the
@@ -71,6 +78,11 @@ async function runHostedAutoExecution(
         // Full response: (re)seed the partial-merge state this source's later
         // param edits diff against.
         applyAutoRunPayload(deps, revision, executionCount, mergeMeshPayload(code, payload));
+        // Same warm-on-open seam as `useMeshFetch`'s `?script=` apply, so a
+        // gallery param edit can run against the browser kernel instead of
+        // staying on the server. Deferred while the tab is hidden; host-fs
+        // sources are skipped inside the helper.
+        warmKernelOnOpen(code, currentStudioScript() ?? GALLERY_KERNEL_FILE_NAME);
     } catch (err: unknown) {
         if (revision !== deps.mainRevisionRef.current) {
             deps.setStaleMainResponsesDropped((prev) => prev + 1);
