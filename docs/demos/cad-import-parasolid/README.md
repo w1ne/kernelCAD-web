@@ -16,14 +16,21 @@ diagnostics, span 555.9 × 444.0 × 1314.2 mm — the standing robot, feet throu
 the motion head). The headless browser renderer cannot hold the whole-machine
 scene (hundreds of solids; the page crashes during mesh load), so the clip is a
 turntable of a real excerpt of the same transmit — three bodies read and
-lowered by the same code path. The excerpt's largest body (a machined, mostly
-cylindrical puck) fills the frame; its millimetre-scale neighbours are not
-readable at this framing.
+lowered by the same code path. The excerpt's largest body fills the frame: a
+thin, vertically standing circular cover with rim mounting tabs and stacked
+plates underneath, read from the transmit's own B-rep (50 spherical face
+patches, ~45 cylinders at ~1-inch hole pitch, planes). Its millimetre-scale
+neighbours are not readable at this framing.
 
 ## Caption (what to say)
 
 - Imported: bodies from the native Parasolid transmit of the RP1 robot, read
   and lowered in-process.
+- The body stands upright and is thin: a full 360° turntable walks the camera
+  straight down its rim at 90° and 270°, where it flashes to a sliver, so the
+  clip sweeps the readable 135°–225° arc at 50° elevation on a dark
+  background. Nothing in the silhouette is missing; the slivers are the
+  part's real edge-on profile.
 - Not shown in the clip: the full machine. Its evidence is the evaluate result
   (`result.json`), including the bounding-box span across the whole robot.
 - Skipped by design: spline-heavy bodies are counted as skipped
@@ -37,7 +44,7 @@ readable at this framing.
 | `import-parasolid.kcad.ts` | The source: `lib.fromCAD` on the 1.2 GB transmit, plus the span gate. |
 | `render-excerpt.kcad.ts` | The source the clip was rendered from (one-body excerpt, same code path). |
 | `result.json` | `kernelcad evaluate --json` output for the full transmit: `ok: true`, 1 feature, no diagnostics. |
-| `demo.mp4` | 8-second loop: eight 45° turntable poses, 30 fps, 1024×768. |
+| `demo.mp4` | 4-second loop: 135° → 180° → 225° sweep at 50° elevation, dark background, 30 fps, 1024×768. |
 
 The transmit and its excerpts live on the lab drive (`/Volumes/LabWired/rp1-cad/`)
 and are not in git. Excerpts are written by `cargo run --release --example
@@ -51,15 +58,15 @@ NODE_OPTIONS='--max-old-space-size=14336' \
   npx tsx src/agent/cli/index.ts evaluate \
   docs/demos/cad-import-parasolid/import-parasolid.kcad.ts --json > result.json
 
-# Render the excerpt turntable (one import, reused for all poses).
+# Render the excerpt sweep (one import, reused for all poses).
 npx tsx src/agent/cli/index.ts render \
   docs/demos/cad-import-parasolid/render-excerpt.kcad.ts \
-  --preset publish --separate --no-watermark --no-shadow --environment none \
-  --pose 0,25 --pose 45,25 --pose 90,25 --pose 135,25 \
-  --pose 180,25 --pose 225,25 --pose 270,25 --pose 315,25 \
+  --preset publish --background dark --separate --no-watermark \
+  --pose 135,50 --pose 180,50 --pose 225,50 \
   --out docs/demos/cad-import-parasolid/frame.png
 
-# Encode the loop (ffmpeg concat list of the eight frames, 0.5 s each, twice).
+# Encode the loop (explicit ffmpeg concat list, 0.5 s each pose, twice —
+# the glob order sorts alphabetically and would scramble the sweep).
 ffmpeg -f concat -safe 0 -i list.txt -vf "fps=30,scale=1024:-2" \
   -pix_fmt yuv420p -movflags +faststart demo.mp4
 ```
