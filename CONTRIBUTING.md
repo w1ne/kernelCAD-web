@@ -1,3 +1,12 @@
+## Where does my change go?
+
+- Core: kernel, modeling, shared, authoring, agent/CLI/MCP, player, site → PR here.
+- Studio app (editor UI, funnel, accounts surfaces) → proprietary; not accepted
+  in this repo. Open an issue describing the user problem instead. Maintainers
+  may port a patch into the private app repo with attribution.
+- Mixed PR touching both → split it: land the core part here and describe the
+  Studio part in an issue.
+
 ## Implementation IP Boundary
 
 kernelCAD's implementation is clean-room and independent. Contributors must not paste source material from any commercial CAD product or any GPL/copyleft codebase into kernelCAD code or commits.

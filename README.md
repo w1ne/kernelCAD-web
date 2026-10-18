@@ -11,6 +11,13 @@ Replicad/OpenCASCADE are the kernel layer. kernelCAD is the agent-first workflow
 layer above the kernel: deterministic CAD source, feature history, diagnostics,
 validation, variants, and human review.
 
+## Open core
+
+kernelCAD's kernel, CLI, MCP server, and headless player are MIT and developed
+in this repo. The hosted Studio (app.kernelcad.com) is proprietary and developed
+in a private repo. Core contributions are welcome; Studio-only changes cannot be
+merged here — see CONTRIBUTING.md.
+
 ## Install
 
 ### Already in ChatGPT and Claude: no install
