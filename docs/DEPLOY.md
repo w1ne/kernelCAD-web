@@ -16,7 +16,7 @@ There is one trunk: **`develop`** (the GitHub default branch). There is no `main
 
 - Workflow: `.github/workflows/deploy-cloudflare.yml` (job `app`).
 - Trigger: **push to `develop`** (also `main`, `feat/kernelcad-website`, `v*` tags).
-- Build: `npm run build` (Vite, `VITE_BASE_PATH=/`) → Cloudflare Pages project `kernelcad-app`.
+- Build: Vite (`VITE_BASE_PATH=/`) → Cloudflare Pages project `kernelcad-app`.
 - **So: merging a PR to `develop` auto-deploys the Studio. No manual step.**
 
 ## kernelcad.com — marketing site + gallery

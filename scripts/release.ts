@@ -177,7 +177,6 @@ git clone https://github.com/w1ne/kernelCAD-web.git
 cd kernelCAD-web
 git checkout v${newVersion}
 npm install
-npm run dev
 \`\`\`
 
 ## Links

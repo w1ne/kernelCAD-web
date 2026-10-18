@@ -1,6 +1,6 @@
 # Local MCP viewer workflow
 
-A full local `evaluate_script` build returns `viewerUrl`. Open it in the bundled headless player, then build again or use a source-edit tool such as `set_param`: the same process-session link auto-refreshes the geometry and build diagnostics.
+A full local `evaluate_script` build returns `viewerUrl`. Open it in the bundled headless player, then build again or use a source-edit tool such as `set_param`: the same process-session link auto-refreshes the geometry.
 
 The loopback URL expires when the MCP process exits. It is not a public sharing link. Dry runs and failed builds retain the last built model. Hosted MCP remains a pass-through to its existing gateway.
 

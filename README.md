@@ -194,7 +194,8 @@ review badges stay in hosted Studio (`open_in_studio`). The viewer is served on
 `127.0.0.1` by the MCP process and lasts until that process closes; it is not a
 public share link. Dry runs leave it unchanged. A build failure keeps the last
 built model visible; a successfully built model with DFM failures remains
-viewable. Build diagnostics shown there are not a full CAD/physics review.
+viewable. Build diagnostics belong to the `evaluate_script` tool result and
+are not a full CAD/physics review.
 
 Published packages include the headless player bundle. When running MCP from a
 checkout, run `npm run build:player` first. If the bundle cannot be served, the
@@ -237,13 +238,12 @@ For opt-in kernel selection and fallback diagnostics, see the
 
 ## Contributing
 
-Web app + dev workflow (clone the repo, `npm install`, `npm run dev`) for contributors who want to hack on the kernel or the visual debugger:
+Core + CLI/MCP/player workflow (clone the repo, `npm install`) for contributors who want to hack on the kernel:
 
 ```bash
 git clone https://github.com/w1ne/kernelCAD-web.git
 cd kernelCAD-web
 npm install
-npm run dev          # web visual debugger at localhost:5173
 npm run build:cli    # build the CLI bundle into dist/cli/
 npm run test         # full vitest suite
 npm run qc           # quick quality gate (lint + typecheck + tests)

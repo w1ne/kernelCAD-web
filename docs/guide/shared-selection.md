@@ -1,7 +1,7 @@
 # Shared selection in local Studio
 
-Open a script in local Studio (`npm run dev`, then
-`http://localhost:5173/?script=examples/bracket-with-hole.kcad.ts`). Click a
+Open a script in local Studio
+(`http://localhost:5173/?script=examples/bracket-with-hole.kcad.ts`). Click a
 face or hover an edge and click it. The existing viewer highlight and code
 link identify the pick; no extra selection panel is needed.
 
