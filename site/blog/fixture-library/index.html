@@ -85,9 +85,9 @@
 
       <h2>What is in the kit</h2>
       <ul>
-        <li><strong><code>tSlotNut({ thread })</code></strong> — T-slot nut, DIN 508 form: slot 10 mm for M8, 12 mm for M10, 14 mm for M12. The bore axis is +Z, the top face sits at z = 0 and the wide base hangs below it. Connectors: <code>mating-face</code> (the wing tops that pull against the slot), <code>top-face</code>, <code>thread-bore</code>.</li>
+        <li><strong><code>tSlotNut({ thread })</code></strong> — T-slot nut, DIN 508: slot 10 mm for M8, 12 mm for M10, 14 mm for M12; heights 12/14/16 mm, head height 6/7/8 mm. The bore axis is +Z, the top face sits at z = 0 and the wide base hangs below it. Connectors: <code>mating-face</code> (the wing tops that pull against the slot), <code>top-face</code>, <code>thread-bore</code>.</li>
         <li><strong><code>clampStud({ thread, lengthMm })</code></strong> — clamping stud, DIN 6379 form; stocked lengths 63 and 100 mm (M8), 80 and 125 mm (M10), 100 and 160 mm (M12). Connectors: <code>table-end</code>, <code>clamp-end</code>, <code>axis</code>.</li>
-        <li><strong><code>flangeNut({ thread })</code></strong> — flange nut, DIN 6330 form, for the top of a clamp. Connectors: <code>mating-face</code>, <code>top-face</code>, <code>inner-bore</code>.</li>
+        <li><strong><code>flangeNut({ thread })</code></strong> — collar (flange) nut, DIN 6331 form: across flats 13/16/18 mm, height 12/15/18 mm, collar 18/22/25 mm. Connectors: <code>mating-face</code>, <code>top-face</code>, <code>inner-bore</code>.</li>
         <li><strong><code>strapClamp({ thread })</code></strong> — strap clamp. The slot center is the origin and the nose points toward -X, so <code>slot-axis</code> is where the stud goes and <code>nose-bearing</code>/<code>tail-bearing</code> are the ends that do the work.</li>
         <li><strong><code>stepBlock({ thread })</code></strong> — step block whose treads rise along +X at 10/20/30/40 mm (M8), 12/24/36/48 mm (M10), 15/30/45/60 mm (M12). <code>base-face</code> sits on the table and <code>step-1</code> … <code>step-4</code> name the treads.</li>
       </ul>
@@ -111,8 +111,8 @@ return set.model();</code></pre>
       <h2>Planning a real setup</h2>
       <p>The committed example is the same five parts, twice, around a workpiece: a 400 × 130 × 24 mm table section with a 12 mm channel, a 50 × 70 × 36 mm workpiece, and M10 hardware. The dimensions chain together, and each link is a named stock value rather than a guess:</p>
       <ul>
-        <li>The channel is cut to the T-nut's envelope plus clearance: 12.4 mm opening, 18.6 mm internal width, so the nut's 11.7 mm neck and 17.8 mm base slide in.</li>
-        <li>The stud's <code>table-end</code> sits 9.6 mm below the table surface, on the channel ceiling the T-nut's <code>mating-face</code> pulls against.</li>
+        <li>The channel is cut to the T-nut's envelope plus clearance: 12.0 mm opening, 18.3 mm internal width, so the DIN 508 nut's 11.4 mm neck and 17.5 mm base slide in.</li>
+        <li>The stud's <code>table-end</code> sits 7.6 mm below the table surface (the DIN 508 M10 head height plus 0.6 mm clearance), on the channel ceiling the T-nut's <code>mating-face</code> pulls against.</li>
         <li>The workpiece is 36 mm tall, which is exactly the M10 step block's <code>step-3</code> tread, so the clamp lies level: nose on the workpiece, tail on the tread, <code>flange-nut</code> on top.</li>
         <li>An 80 mm stud is the shortest stocked M10 length that clears the clamp and nut.</li>
       </ul>
@@ -133,7 +133,7 @@ return fixture.model();</code></pre>
   const nut = await lib.fixture.flangeNut({ thread: 'M10' });</code></pre>
 
       <h2>What the evidence says, and does not say</h2>
-      <p><code>examples/fixture/verify-fixture.mts</code> re-evaluates the example and writes <code>docs/demos/fixture-library/geometry-evidence.json</code>: 66 part pairs checked with zero positive-volume overlaps, and the spans that document each mating face (T-nut wing tops at 14.4 mm, clamp underside level with the workpiece top at 60 mm, flange nut at 72–82 mm).</p>
+      <p><code>examples/fixture/verify-fixture.mts</code> re-evaluates the example and writes <code>docs/demos/fixture-library/geometry-evidence.json</code>: 66 part pairs checked with zero positive-volume overlaps, and the spans that document each mating face (T-nut wing tops at 16.4 mm, clamp underside level with the workpiece top at 60 mm, DIN 6331 flange nut at 72–87 mm).</p>
       <p>That is placement and stock dimensions, not clamping force. Nothing here proves stud deflection, fixture stiffness, torque or machining loads, and the envelope solids carry no thread. The example evaluates to 28 features with 0 diagnostics. Check the supplier drawing before ordering: the table is nominal, not a certified standard-dimension source.</p>
 
       <h2>Reproduce</h2>

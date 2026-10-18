@@ -17,9 +17,9 @@ describe('fixture envelope solids', () => {
 
   it('t-slot nut spans the neck and base below the table surface', () => {
     const b = bounds('t-slot-nut', 'M10');
-    expect(b.min[2]).toBeCloseTo(-16, 6); // neck 9 + base 7
+    expect(b.min[2]).toBeCloseTo(-14, 6); // DIN 508 M10 h = 14 (k 7 + base 7)
     expect(b.max[2]).toBeCloseTo(0, 6);
-    expect(b.max[1] - b.min[1]).toBeCloseTo(17.8, 6); // base width
+    expect(b.max[1] - b.min[1]).toBeCloseTo(17.5, 6); // e min for the 12 mm slot
     expect(b.max[0] - b.min[0]).toBeCloseTo(26, 6);
   });
 
@@ -30,11 +30,11 @@ describe('fixture envelope solids', () => {
     expect(b.max[0] - b.min[0]).toBeCloseTo(8, 6);
   });
 
-  it('flange nut is as tall as its nut height and as wide as the flange', () => {
+  it('flange nut is as tall as its nut height and as wide as the collar', () => {
     const b = bounds('flange-nut', 'M10');
     expect(b.min[2]).toBeCloseTo(0, 6);
-    expect(b.max[2]).toBeCloseTo(10, 6);
-    expect(b.max[0] - b.min[0]).toBeCloseTo(22, 6);
+    expect(b.max[2]).toBeCloseTo(15, 6); // DIN 6331 M10 m = 15
+    expect(b.max[0] - b.min[0]).toBeCloseTo(22, 6); // d1 = 22
   });
 
   it('strap clamp runs from the nose to the tail through the slot', () => {

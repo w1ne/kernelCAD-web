@@ -150,17 +150,20 @@ Two bores need a second look:
 ## Machining-fixture hardware — lib.fixture
 
 `lib.fixture.*` is the clamping kit for a T-slot machine table, keyed by the
-thread the hardware uses (M8 / M10 / M12). The solids are nominal envelope
-values from the stock table (slot/thread pairing follows common machine-table
-practice); check the supplier drawing before ordering.
+thread the hardware uses (M8 / M10 / M12). T-slot nuts follow the DIN 508
+table and collar nuts DIN 6331; strap clamps and step blocks have no DIN table
+and stay nominal kit dimensions. Check the supplier drawing before ordering.
 
-- `tSlotNut({ thread })` — T-slot nut (DIN 508 form): slot 10 / 12 / 14 mm for
-  M8 / M10 / M12. Bore axis +Z, top face flush at z = 0, base below.
+- `tSlotNut({ thread })` — T-slot nut (DIN 508): slot 10 / 12 / 14 mm for
+  M8 / M10 / M12; heights 12 / 14 / 16 mm, head height 6 / 7 / 8 mm. Bore
+  axis +Z, top face flush at z = 0, base below.
   Connectors: `mating-face` (wing tops), `top-face`, `thread-bore`.
 - `clampStud({ thread, lengthMm })` — clamping stud (DIN 6379 form); stocked
   lengths 63 / 100 (M8), 80 / 125 (M10), 100 / 160 (M12). Connectors:
   `table-end`, `clamp-end`, `axis`.
-- `flangeNut({ thread })` — flange nut (DIN 6330 form) for the clamp top.
+- `flangeNut({ thread })` — collar (flange) nut (DIN 6331 form) for the
+  clamp top: across flats 13 / 16 / 18 mm, height 12 / 15 / 18 mm, collar
+  18 / 22 / 25 mm.
   Connectors: `mating-face`, `top-face`, `inner-bore`.
 - `strapClamp({ thread })` — strap clamp; the slot center is the origin and
   the nose points toward -X, so `slot-axis` is where the stud goes.
