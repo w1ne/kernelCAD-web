@@ -13,6 +13,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     assert!(args[1] == "binary" || args[1] == "text");
     let limits = DocumentLimits {
         retain_raw_bytes: true,
+        retain_source_offsets: true,
         max_file_size: 65536,
         max_nodes: 2048,
         max_schema_types: 1024,

@@ -248,6 +248,7 @@ fn limits_for(len: usize) -> DocumentLimits {
         max_nodes: 50_000_000,
         max_variable_elements: 50_000_000,
         retain_raw_bytes: false,
+        retain_source_offsets: false,
         ..DocumentLimits::default()
     }
 }
@@ -261,7 +262,7 @@ impl InspectionFromDocument for DocumentLimits {
         InspectionLimits {
             max_file_size: self.max_file_size,
             max_string_bytes: self.max_string_bytes,
-            retain_source_offsets: self.retain_raw_bytes,
+            retain_source_offsets: self.retain_source_offsets,
         }
     }
 }

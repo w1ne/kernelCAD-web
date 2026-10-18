@@ -3,17 +3,17 @@
 **Local validation, not deployed behaviour.** The clip was rendered from the
 checked-in source in this repository. It has not been checked on the deployed site.
 
-## Known issue: the clip's excerpt is contaminated
+## Known issue: the clip's excerpt is not one body
 
-The excerpt generator (`cargo run --release --example excerpt`) over-includes:
-its closure follows the type-exemplar nodes into whole-file sibling chains, so
-the "one-body" excerpt really contains three bodies / 109 faces. The clip and
-the shape notes below therefore show a **fused artifact of several real parts,
-not a real component** — treat the excerpt as display tooling only. The
-whole-robot import is not affected: `result.json` comes from the real transmit
-and is the evidence to trust. Fixing this needs a proper closure boundary in
-the example tool plus a 1.2 GB regeneration (~5.4 GB peak RSS; two attempts on
-this machine were killed by the OOM killer), so it is a separate task.
+The excerpt generator's "one body" label is wrong. To stay parseable and
+mappable, the excerpt must carry the source's file-start structures for every
+node type it uses (the schema carriers) together with their complete objects,
+so the file really contains three bodies / 109 faces. Everything in it is real
+transmit geometry — the shipped reader maps all three bodies — but the clip
+therefore shows several real parts at their real assembly positions,
+overlapping at this scale, and not a single component. Present it as a slice
+of the transmit, not as one part. The whole-robot import is unaffected:
+`result.json` comes from the real transmit and is the evidence to trust.
 
 ## What it shows
 
@@ -35,10 +35,11 @@ its neighbours fused into the silhouette.
 
 - Imported: bodies from the native Parasolid transmit of the RP1 robot, read
   and lowered in-process.
-- The clip's object is an excerpt artifact (see the known issue): a full 360°
-  turntable walks the camera down its rim at 90° and 270° where it flashes to
-  a sliver, so the clip sweeps the readable 135°–225° arc at 50° elevation on
-  a dark background. Do not present the shape as a real part.
+- The clip shows a slice of the transmit holding several real parts (see the
+  known issue). A full 360° turntable would walk the camera down its rim at
+  90° and 270°, where it flashes to a sliver, so the clip sweeps the readable
+  135°–225° arc at 50° elevation on a dark background. Do not present the
+  shape as a single part.
 - Not shown in the clip: the full machine. Its evidence is the evaluate result
   (`result.json`), including the bounding-box span across the whole robot.
 - Skipped by design: spline-heavy bodies are counted as skipped
@@ -50,7 +51,7 @@ its neighbours fused into the silhouette.
 | File | Role |
 | --- | --- |
 | `import-parasolid.kcad.ts` | The source: `lib.fromCAD` on the 1.2 GB transmit, plus the span gate. |
-| `render-excerpt.kcad.ts` | The source the clip was rendered from (one-body excerpt, same code path). |
+| `render-excerpt.kcad.ts` | The source the clip was rendered from (a small excerpt of the real transmit, same code path). |
 | `result.json` | `kernelcad evaluate --json` output for the full transmit: `ok: true`, 1 feature, no diagnostics. |
 | `demo.mp4` | 4-second loop: 135° → 180° → 225° sweep at 50° elevation, dark background, 30 fps, 1024×768. |
 

@@ -31,6 +31,11 @@ pub struct DocumentLimits {
     pub max_variable_elements: usize,
     /// Whether the parsed text document retains a copy of the source bytes.
     pub retain_raw_bytes: bool,
+    /// Whether parsed nodes and the stream record their source byte ranges.
+    /// Separate from [`Self::retain_raw_bytes`]: callers that rewrite the
+    /// source (tooling excerpts) need offsets without paying for a copy of
+    /// the whole file.
+    pub retain_source_offsets: bool,
 }
 
 impl Default for DocumentLimits {
@@ -43,6 +48,7 @@ impl Default for DocumentLimits {
             max_string_bytes: 16 * 1024 * 1024,
             max_variable_elements: 10_000_000,
             retain_raw_bytes: true,
+            retain_source_offsets: true,
         }
     }
 }
@@ -52,7 +58,7 @@ impl DocumentLimits {
         InspectionLimits {
             max_file_size: self.max_file_size,
             max_string_bytes: self.max_string_bytes,
-            retain_source_offsets: self.retain_raw_bytes,
+            retain_source_offsets: self.retain_source_offsets,
         }
     }
 

@@ -389,6 +389,7 @@ fn parse_mini<P: SchemaProvider>(
     let limits = DocumentLimits {
         max_file_size: mini.len().max(1),
         retain_raw_bytes: false,
+        retain_source_offsets: false,
         ..DocumentLimits::default()
     };
     parse_xt(mini, provider, limits)

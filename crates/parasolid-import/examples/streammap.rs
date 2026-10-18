@@ -15,6 +15,7 @@ fn main() {
     limits.max_nodes = 50_000_000;
     limits.max_variable_elements = 50_000_000;
     limits.retain_raw_bytes = false;
+    limits.retain_source_offsets = false;
     let inspection = InspectionLimits {
         max_file_size: limits.max_file_size,
         max_string_bytes: limits.max_string_bytes,

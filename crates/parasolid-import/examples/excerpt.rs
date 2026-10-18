@@ -27,6 +27,9 @@ fn main() {
     limits.max_file_size = bytes.len().max(1);
     limits.max_nodes = 50_000_000;
     limits.max_variable_elements = 50_000_000;
+    // Writing the excerpt needs node byte ranges, not a second copy of the
+    // whole source; dropping the copy saves over a gigabyte on the full file.
+    limits.retain_raw_bytes = false;
 
     let header = inspect_xt(&bytes, inspection(limits)).expect("header");
     let key = SchemaKey::parse(&header.schema_key).expect("key");

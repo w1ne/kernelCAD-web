@@ -14,6 +14,7 @@ fn main() {
     limits.max_nodes = 50_000_000;
     limits.max_variable_elements = 50_000_000;
     limits.retain_raw_bytes = false;
+    limits.retain_source_offsets = false;
     let header = inspect_xt(&bytes, inspection(limits)).expect("header");
     println!("schema {}", header.schema_key);
     let key = SchemaKey::parse(&header.schema_key).expect("key");
