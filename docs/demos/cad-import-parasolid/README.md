@@ -3,6 +3,18 @@
 **Local validation, not deployed behaviour.** The clip was rendered from the
 checked-in source in this repository. It has not been checked on the deployed site.
 
+## Known issue: the clip's excerpt is contaminated
+
+The excerpt generator (`cargo run --release --example excerpt`) over-includes:
+its closure follows the type-exemplar nodes into whole-file sibling chains, so
+the "one-body" excerpt really contains three bodies / 109 faces. The clip and
+the shape notes below therefore show a **fused artifact of several real parts,
+not a real component** — treat the excerpt as display tooling only. The
+whole-robot import is not affected: `result.json` comes from the real transmit
+and is the evidence to trust. Fixing this needs a proper closure boundary in
+the example tool plus a 1.2 GB regeneration (~5.4 GB peak RSS; two attempts on
+this machine were killed by the OOM killer), so it is a separate task.
+
 ## What it shows
 
 `RP1-assembly.x_t` is the whole-robot Parasolid transmit exported from the
@@ -15,22 +27,18 @@ The full import is verified by `result.json` (evaluate output: `ok: true`, no
 diagnostics, span 555.9 × 444.0 × 1314.2 mm — the standing robot, feet through
 the motion head). The headless browser renderer cannot hold the whole-machine
 scene (hundreds of solids; the page crashes during mesh load), so the clip is a
-turntable of a real excerpt of the same transmit — three bodies read and
-lowered by the same code path. The excerpt's largest body fills the frame: a
-thin, vertically standing circular cover with rim mounting tabs and stacked
-plates underneath, read from the transmit's own B-rep (50 spherical face
-patches, ~45 cylinders at ~1-inch hole pitch, planes). Its millimetre-scale
-neighbours are not readable at this framing.
+turntable of the contaminated excerpt described above: one body read and
+lowered through the same code path supplies most of the frame, with pieces of
+its neighbours fused into the silhouette.
 
 ## Caption (what to say)
 
 - Imported: bodies from the native Parasolid transmit of the RP1 robot, read
   and lowered in-process.
-- The body stands upright and is thin: a full 360° turntable walks the camera
-  straight down its rim at 90° and 270°, where it flashes to a sliver, so the
-  clip sweeps the readable 135°–225° arc at 50° elevation on a dark
-  background. Nothing in the silhouette is missing; the slivers are the
-  part's real edge-on profile.
+- The clip's object is an excerpt artifact (see the known issue): a full 360°
+  turntable walks the camera down its rim at 90° and 270° where it flashes to
+  a sliver, so the clip sweeps the readable 135°–225° arc at 50° elevation on
+  a dark background. Do not present the shape as a real part.
 - Not shown in the clip: the full machine. Its evidence is the evaluate result
   (`result.json`), including the bounding-box span across the whole robot.
 - Skipped by design: spline-heavy bodies are counted as skipped
