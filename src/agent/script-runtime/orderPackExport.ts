@@ -29,6 +29,17 @@ export interface OrderPackOptions {
 
 type ScriptRun = Awaited<ReturnType<typeof runScript>>;
 
+/** Nested-run hooks the order pack cannot import itself: `export.ts` imports
+ *  `exportPhases.ts`, which imports this module, so the per-row drawing
+ *  runner is injected by the caller instead of imported (the module graph
+ *  stays acyclic and the cycle ratchet stays green). */
+export interface OrderPackDeps {
+  /** One per-row drawing PDF: runs the full `pdf-drawing` pipeline for the
+   *  given feature id (accepted cost, one run per row). Absent: drawings are
+   *  skipped with a note. */
+  drawingBytes?: (featureId: string) => Promise<{ bytes: Uint8Array; diagnostics: CompilerDiagnostic[] }>;
+}
+
 export interface CollectedOrderPack {
   entries: OrderPackEntry[];
   notes: string[];
@@ -59,26 +70,21 @@ function orderPackOptions(input: ExportInput): OrderPackOptions {
   return input.options !== undefined && input.options.format === 'order-pack' ? input.options : {};
 }
 
-/** One per-row drawing PDF: the full pdf-drawing pipeline re-runs the whole
- *  script for this part's feature — accepted cost, one run per row (S3).
- *  Any failure (refusal, empty bytes, thrown error) degrades to a note
- *  instead of failing the pack. */
+/** One per-row drawing PDF through the injected runner. Any failure
+ *  (refusal, empty bytes, thrown error) degrades to a note instead of
+ *  failing the pack. Without a runner the drawing is skipped and noted. */
 async function drawingBytes(
-  input: ExportInput,
+  deps: OrderPackDeps | undefined,
   row: OrderPackBomRow,
   shapeId: string,
   notes: string[],
 ): Promise<Uint8Array | undefined> {
+  if (deps?.drawingBytes === undefined) {
+    notes.push('drawing skipped: no drawing runner');
+    return undefined;
+  }
   try {
-    const { runAndExport } = await import('./export');
-    const drawing = await runAndExport({
-      code: input.code,
-      fileName: input.fileName,
-      format: 'pdf-drawing',
-      feature_id: shapeId,
-      ...(input.scriptDir !== undefined ? { scriptDir: input.scriptDir } : {}),
-      options: { format: 'pdf-drawing' },
-    });
+    const drawing = await deps.drawingBytes(shapeId);
     const error = drawing.diagnostics.find((d) => d.severity === 'error');
     if (error !== undefined) {
       notes.push(`No drawing for '${row.name}': ${error.message}`);
@@ -95,6 +101,39 @@ async function drawingBytes(
   }
 }
 
+type AssemblyPart = ReturnType<Assembly['__parts']>[number];
+
+/** Append one fabricated row's files: STEP always; STL for 3d-print; DXF for
+ *  sheet-cut when the holes-aware flatten walk succeeds; plus the per-row
+ *  drawing PDF when a runner is injected. Failures that must not sink the
+ *  whole pack land in `notes`. */
+async function collectRowFiles(
+  deps: OrderPackDeps | undefined,
+  run: ScriptRun,
+  part: AssemblyPart,
+  row: OrderPackBomRow,
+  files: OrderPackFileInput[],
+  notes: string[],
+): Promise<void> {
+  files.push({ row, kind: 'step', bytes: await partStepBytes(part.originalShape, row.name) });
+  if (row.process === '3d-print') {
+    files.push({ row, kind: 'stl', bytes: partStlBytes(await part.originalShape.lower()) });
+  }
+  if (row.process === 'sheet-cut') {
+    try {
+      // The same holes-aware walk `exportShapeDxf` uses (exportPhases.ts):
+      // diagnostics/paramTable from this run, the shapes map left to the
+      // walk (it lowers the blank itself).
+      const region = await flattenPatternWithHoles(run.records, part.originalShape.id, undefined, run.paramTable);
+      files.push({ row, kind: 'dxf', bytes: partDxfBytes(region) });
+    } catch (e) {
+      notes.push(`No DXF for '${row.name}': ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  const drawing = await drawingBytes(deps, row, part.originalShape.id, notes);
+  if (drawing !== undefined) files.push({ row, kind: 'drawing', bytes: drawing });
+}
+
 /** Collect every zip entry of an order pack for one solved assembly: the BOM
  *  (CSV + JSON), manifest, README, vendor handoff texts and the per-row
  *  files. Failures that must not sink the whole pack (DXF flatten, drawing)
@@ -106,6 +145,7 @@ export async function collectOrderPack(
   arm: Assembly,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
+  deps?: OrderPackDeps,
 ): Promise<CollectedOrderPack> {
   const bom = await computeBom(arm, run.session);
   // Compile-time contract: the kernel-side structural mirror stays
@@ -129,23 +169,7 @@ export async function collectOrderPack(
       notes.push(`No model files for '${row.name}': no assembly part named '${firstName ?? ''}' to lower.`);
       continue;
     }
-    files.push({ row, kind: 'step', bytes: await partStepBytes(part.originalShape, row.name) });
-    if (row.process === '3d-print') {
-      files.push({ row, kind: 'stl', bytes: partStlBytes(await part.originalShape.lower()) });
-    }
-    if (row.process === 'sheet-cut') {
-      try {
-        // The same holes-aware walk `exportShapeDxf` uses (exportPhases.ts):
-        // diagnostics/paramTable from this run, the shapes map left to the
-        // walk (it lowers the blank itself).
-        const region = await flattenPatternWithHoles(run.records, part.originalShape.id, undefined, run.paramTable);
-        files.push({ row, kind: 'dxf', bytes: partDxfBytes(region) });
-      } catch (e) {
-        notes.push(`No DXF for '${row.name}': ${e instanceof Error ? e.message : String(e)}`);
-      }
-    }
-    const drawing = await drawingBytes(input, row, part.originalShape.id, notes);
-    if (drawing !== undefined) files.push({ row, kind: 'drawing', bytes: drawing });
+    await collectRowFiles(deps, run, part, row, files, notes);
   }
 
   const pack = buildOrderPack({
@@ -168,8 +192,9 @@ export async function exportOrderPack(
   arm: Assembly,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
+  deps?: OrderPackDeps,
 ): Promise<ExportResult> {
-  const collected = await collectOrderPack(input, run, arm, diagnostics, featureCount);
+  const collected = await collectOrderPack(input, run, arm, diagnostics, featureCount, deps);
   return {
     bytes: zipEntries(collected.entries),
     featureCount: collected.featureCount,

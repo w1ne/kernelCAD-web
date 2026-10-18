@@ -446,7 +446,21 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const regionDxf = exportRegionDxf(input, format, run.returnValue, r.diagnostics, featureCount);
   if (regionDxf !== undefined) return regionDxf;
 
-  const assemblyXml = await exportAssemblyFormat(input, format, run, r.diagnostics, featureCount);
+  // The order pack's per-row drawings are nested full `pdf-drawing` runs.
+  // exportOrderPack cannot import this module (it would close the
+  // export > exportPhases > orderPackExport cycle), so inject the runner.
+  const orderPackDeps = {
+    drawingBytes: (featureId: string) => runAndExport({
+      code,
+      fileName,
+      format: 'pdf-drawing' as const,
+      feature_id: featureId,
+      ...(scriptDir !== undefined ? { scriptDir } : {}),
+      options: { format: 'pdf-drawing' as const },
+    }),
+  };
+
+  const assemblyXml = await exportAssemblyFormat(input, format, run, r.diagnostics, featureCount, orderPackDeps);
   if (assemblyXml !== undefined) return assemblyXml;
 
   r.diagnostics.push(...exportMissingReturn(feature_id, run));

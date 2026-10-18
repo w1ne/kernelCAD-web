@@ -150,6 +150,18 @@ function isProcessList(v: unknown): v is FabProcess[] {
   return Array.isArray(v) && v.every(p => PROCESSES.includes(p as FabProcess));
 }
 
+/** formats / processes: each, when given, must be a well-formed list of
+ *  known format ids / process names. */
+function validateFormatsProcesses(input: FabPackInput): string | undefined {
+  if (input.formats !== undefined && !isFormatList(input.formats)) {
+    return `formats must be a non-empty list of ${Object.keys(EXT).join(', ')}.`;
+  }
+  if (input.processes !== undefined && !isProcessList(input.processes)) {
+    return "processes must be a list of '3d-print' | 'cnc' | 'sheet-cut'.";
+  }
+  return undefined;
+}
+
 /** Validate the call; returns the resolved output directory or an error message. */
 function validateInput(input: FabPackInput): { dir: string } | string {
   // 'bom' never reaches here (dispatched before the single-part path); an
@@ -160,12 +172,8 @@ function validateInput(input: FabPackInput): { dir: string } | string {
   const dirCheck = validateOutputPath(input.output_dir);
   if (!dirCheck.ok || dirCheck.resolved === undefined) return dirCheck.error ?? `Refusing to write to ${input.output_dir}.`;
   if (!NAME_RE.test(input.name ?? 'part')) return 'name must be 1-64 characters of letters, digits, ".", "_" or "-".';
-  if (input.formats !== undefined && !isFormatList(input.formats)) {
-    return `formats must be a non-empty list of ${Object.keys(EXT).join(', ')}.`;
-  }
-  if (input.processes !== undefined && !isProcessList(input.processes)) {
-    return "processes must be a list of '3d-print' | 'cnc' | 'sheet-cut'.";
-  }
+  const listsError = validateFormatsProcesses(input);
+  if (listsError !== undefined) return listsError;
   return { dir: resolve(dirCheck.resolved) };
 }
 

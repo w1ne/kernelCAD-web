@@ -65,7 +65,7 @@ export function PartsTab(): JSX.Element {
 
     if (bom.status === 'loading') {
         return (
-            <div className="px-4 py-3 text-sm text-gray-500" data-testid="parts-loading">
+            <div className="px-4 py-3 text-sm text-fg-3" data-testid="parts-loading">
                 Computing bill of materials…
             </div>
         );
@@ -82,7 +82,7 @@ export function PartsTab(): JSX.Element {
     }
     if (bom.status !== 'ready' || bom.rows.length === 0) {
         return (
-            <div className="px-4 py-3 text-sm text-gray-500" data-testid="parts-empty-state">
+            <div className="px-4 py-3 text-sm text-fg-3" data-testid="parts-empty-state">
                 No assembly parts.
             </div>
         );
@@ -100,35 +100,19 @@ export function PartsTab(): JSX.Element {
                     onClick={() => setOrderOpen(true)}
                     aria-expanded={orderOpen}
                     data-testid="parts-order-open"
-                    className="inline-flex items-center gap-1.5 rounded border border-[#2b313c] bg-[#1a1a1a] px-2 py-1 text-[11px] text-gray-300 hover:bg-[#222]"
+                    className="inline-flex items-center gap-1.5 rounded border border-border-strong bg-surface-2 px-2 py-1 text-[11px] text-fg-2 hover:bg-surface-3"
                 >
                     <ShoppingCart className="h-3.5 w-3.5" aria-hidden="true" />
                     Order…
                 </button>
             </div>
-            <table className="w-full text-xs text-gray-300" data-testid="parts-table">
-                <thead>
-                    <tr className="text-left text-2xs text-gray-500">
-                        <th className="py-1 pl-3 pr-1 font-normal">#</th>
-                        <th className="py-1 pr-2 font-normal">Part</th>
-                        <th className="py-1 pr-2 font-normal">Qty</th>
-                        <th className="py-1 pr-2 font-normal">Process</th>
-                        <th className="py-1 pr-2 font-normal">Material</th>
-                        <th className="py-1 pr-2 font-normal">Unit mass</th>
-                        <th className="py-1 pr-3 font-normal" aria-label="Order pack" />
-                    </tr>
-                </thead>
-                <tbody>
-                    {made.length > 0 && <GroupRow label="Made" />}
-                    {made.map((row) => (
-                        <PartsRow key={row.item} row={row} onHighlight={highlightRow} onDownload={downloadRow} busy={task.state.running !== null} />
-                    ))}
-                    {bought.length > 0 && <GroupRow label="Bought" />}
-                    {bought.map((row) => (
-                        <PartsRow key={row.item} row={row} onHighlight={highlightRow} onDownload={downloadRow} busy={task.state.running !== null} />
-                    ))}
-                </tbody>
-            </table>
+            <PartsTable
+                made={made}
+                bought={bought}
+                busy={task.state.running !== null}
+                onHighlight={highlightRow}
+                onDownload={downloadRow}
+            />
             {bom.diagnostics.length > 0 && (
                 <ul className="flex flex-col gap-1 px-3 py-2" data-testid="parts-diagnostics">
                     {bom.diagnostics.map((diagnostic, index) => (
@@ -145,8 +129,57 @@ export function PartsTab(): JSX.Element {
                     ))}
                 </ul>
             )}
+            <PartsFooter totals={totals} task={task} />
+            <OrderSheet open={orderOpen} onClose={() => setOrderOpen(false)} />
+        </div>
+    );
+}
+
+/** The BOM table: group separator rows plus one row per part; the rows
+ *  highlight their instances and download their order pack. */
+function PartsTable({ made, bought, busy, onHighlight, onDownload }: {
+    readonly made: readonly BomRow[];
+    readonly bought: readonly BomRow[];
+    readonly busy: boolean;
+    readonly onHighlight: (row: BomRow) => void;
+    readonly onDownload: (row: BomRow) => void;
+}): JSX.Element {
+    return (
+        <table className="w-full text-xs text-fg-2" data-testid="parts-table">
+            <thead>
+                <tr className="text-left text-2xs text-fg-3">
+                    <th className="py-1 pl-3 pr-1 font-normal">#</th>
+                    <th className="py-1 pr-2 font-normal">Part</th>
+                    <th className="py-1 pr-2 font-normal">Qty</th>
+                    <th className="py-1 pr-2 font-normal">Process</th>
+                    <th className="py-1 pr-2 font-normal">Material</th>
+                    <th className="py-1 pr-2 font-normal">Unit mass</th>
+                    <th className="py-1 pr-3 font-normal" aria-label="Order pack" />
+                </tr>
+            </thead>
+            <tbody>
+                {made.length > 0 && <GroupRow label="Made" />}
+                {made.map((row) => (
+                    <PartsRow key={row.item} row={row} onHighlight={onHighlight} onDownload={onDownload} busy={busy} />
+                ))}
+                {bought.length > 0 && <GroupRow label="Bought" />}
+                {bought.map((row) => (
+                    <PartsRow key={row.item} row={row} onHighlight={onHighlight} onDownload={onDownload} busy={busy} />
+                ))}
+            </tbody>
+        </table>
+    );
+}
+
+/** Totals line and the pack-download status. */
+function PartsFooter({ totals, task }: {
+    readonly totals: ReturnType<typeof totalsFromRows>;
+    readonly task: ReturnType<typeof useExportTask>;
+}): JSX.Element {
+    return (
+        <>
             <div
-                className="flex items-center justify-between gap-2 border-t border-[#1f1f1f] px-3 py-2 text-[11px] text-gray-500"
+                className="flex items-center justify-between gap-2 border-t border-border px-3 py-2 text-[11px] text-fg-3"
                 data-testid="parts-totals"
             >
                 <span>
@@ -157,8 +190,7 @@ export function PartsTab(): JSX.Element {
             <div className="px-3 pb-2">
                 <ExportStatus task={task} testId="parts-status" />
             </div>
-            <OrderSheet open={orderOpen} onClose={() => setOrderOpen(false)} />
-        </div>
+        </>
     );
 }
 
@@ -167,7 +199,7 @@ function GroupRow({ label }: { label: string }): JSX.Element {
         <tr>
             <td
                 colSpan={7}
-                className="px-3 pb-1 pt-2 text-2xs uppercase tracking-wide text-gray-500"
+                className="px-3 pb-1 pt-2 text-2xs uppercase tracking-wide text-fg-3"
                 data-testid={`parts-group-${label.toLowerCase()}`}
             >
                 {label}
@@ -187,20 +219,20 @@ function PartsRow({ row, onHighlight, onDownload, busy }: {
         : `${row.process}${row.processSource === 'inferred' ? ' (assumed)' : ''}`;
     return (
         <tr
-            className="cursor-pointer border-t border-[#1f1f1f] hover:bg-[#1a1a1a]"
+            className="cursor-pointer border-t border-border hover:bg-surface-2"
             data-testid={`parts-row-${row.item}`}
             onClick={() => onHighlight(row)}
         >
-            <td className="py-1.5 pl-3 pr-1 tabular-nums text-2xs text-gray-500">{row.item}</td>
-            <td className="py-1.5 pr-2 text-gray-200">{row.name}</td>
-            <td className="py-1.5 pr-2 tabular-nums text-gray-300" data-testid={`parts-row-qty-${row.item}`}>
+            <td className="py-1.5 pl-3 pr-1 tabular-nums text-2xs text-fg-3">{row.item}</td>
+            <td className="py-1.5 pr-2 text-fg">{row.name}</td>
+            <td className="py-1.5 pr-2 tabular-nums text-fg-2" data-testid={`parts-row-qty-${row.item}`}>
                 {row.quantity}
             </td>
-            <td className="py-1.5 pr-2 text-gray-400" data-testid={`parts-row-process-${row.item}`}>
+            <td className="py-1.5 pr-2 text-fg-3" data-testid={`parts-row-process-${row.item}`}>
                 {process}
             </td>
-            <td className="py-1.5 pr-2 text-gray-400">{row.material ?? '—'}</td>
-            <td className="py-1.5 pr-2 tabular-nums text-gray-300">{formatMass(row.massGPerUnit)}</td>
+            <td className="py-1.5 pr-2 text-fg-3">{row.material ?? '—'}</td>
+            <td className="py-1.5 pr-2 tabular-nums text-fg-2">{formatMass(row.massGPerUnit)}</td>
             <td className="py-1.5 pr-3 text-right">
                 {row.kind === 'fabricated' && (
                     <button
@@ -213,7 +245,7 @@ function PartsRow({ row, onHighlight, onDownload, busy }: {
                             event.stopPropagation();
                             onDownload(row);
                         }}
-                        className="inline-flex items-center justify-center rounded border border-[#2b313c] bg-[#1a1a1a] p-1 text-gray-400 hover:bg-[#222] hover:text-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex items-center justify-center rounded border border-border-strong bg-surface-2 p-1 text-fg-3 hover:bg-surface-3 hover:text-fg disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         <Download className="h-3.5 w-3.5" aria-hidden="true" />
                     </button>
