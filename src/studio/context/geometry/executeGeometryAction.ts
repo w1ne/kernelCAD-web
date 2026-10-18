@@ -12,6 +12,7 @@ import {
     type BackendMeshPayload,
 } from '../../scriptSource';
 import { featureMeshesToGeometries } from './types';
+import { mergeHostedMeshPayload } from './useMeshFetch';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 
@@ -53,7 +54,9 @@ async function runHostedExecuteGeometry(
             deps.pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
             return;
         }
-        applyExecuteGeometryPayload(deps, revision, executionCount, payload);
+        // Full response: (re)seed the partial-merge state this source's later
+        // param edits diff against.
+        applyExecuteGeometryPayload(deps, revision, executionCount, mergeHostedMeshPayload(codeToExecute, payload));
     } catch (err: unknown) {
         if (revision !== deps.mainRevisionRef.current) {
             deps.setStaleMainResponsesDropped((prev) => prev + 1);

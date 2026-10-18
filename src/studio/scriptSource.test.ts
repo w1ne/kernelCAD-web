@@ -198,6 +198,31 @@ describe('param overrides (stateless re-run path)', () => {
     expect(body).toEqual({ source: 'x' });
   });
 
+  it('meshSourceDev posts held fingerprints as have when given', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ features: [] }) } as Response);
+    await meshSourceDev('return box(w,1,1);', { w: 5 }, { b: '0123456789abcdef' });
+    expect(JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string)).toEqual({
+      source: 'return box(w,1,1);',
+      params: { w: 5 },
+      have: { b: '0123456789abcdef' },
+    });
+  });
+
+  it('meshSourceHosted posts held fingerprints as have to the backend', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } }),
+    } as Response);
+
+    await meshSourceHosted('return box(w,1,1);', { w: 7 }, { have: { b: '0123456789abcdef' } });
+
+    expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/__kernelcad/mesh', expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 7 }, have: { b: '0123456789abcdef' } }),
+    }));
+  });
+
   it('meshSourceHosted skips the static precompute and posts params to the backend when overrides are given', async () => {
     vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
     const payload = { features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] }, params: { w: 7 } };

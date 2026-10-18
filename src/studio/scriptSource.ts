@@ -293,13 +293,24 @@ export function needsFullKernel(code: string): boolean {
  *  edited code). Empty/undefined = use the script's declared defaults. */
 export type ParamOverrides = Record<string, number | boolean>;
 
+/** Fingerprints the client already holds (`{ [featureId]: fingerprintHex }`),
+ *  sent with a param-edit request so the server can answer with only the
+ *  changed features plus a `MeshBinaryTrailer` (see `mergeFeatureMeshes`).
+ *  A server that predates the field strips the extra JSON key. */
+export type MeshHaveFingerprints = Record<string, string>;
+
 function hasOverrides(p?: ParamOverrides): p is ParamOverrides {
   return !!p && Object.keys(p).length > 0;
+}
+
+function hasFingerprints(have?: MeshHaveFingerprints): have is MeshHaveFingerprints {
+  return !!have && Object.keys(have).length > 0;
 }
 
 export async function meshSourceDev(
   source: string,
   paramOverrides?: ParamOverrides,
+  have?: MeshHaveFingerprints,
 ): Promise<BackendMeshPayload> {
   // Route through `apiCall()` so embed-mode hosts (StudioConfigProvider
   // with a `backendUrl`) get the correct prefix; standalone dev with no
@@ -309,7 +320,11 @@ export async function meshSourceDev(
   const response = await fetch(rewritePath('/__kernelcad/mesh', base), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: MESH_ACCEPT, ...headers },
-    body: JSON.stringify({ source, ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}) }),
+    body: JSON.stringify({
+      source,
+      ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
+      ...(hasFingerprints(have) ? { have } : {}),
+    }),
   });
   // Error bodies are JSON; a 2xx may be bin1 when the middleware negotiates it.
   const payload = response.ok
@@ -422,7 +437,12 @@ async function readMeshResponseBody(response: Response): Promise<MeshResponseBod
  *  manifest and relative imports still resolve. Off a project page: source.
  *  Unsaved generated code that imports a generation's file (an attached STL)
  *  also names those generations; the server serves the file to their owner. */
-function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefined, preferSource?: boolean) {
+function hostedMeshBody(
+  source: string,
+  paramOverrides: ParamOverrides | undefined,
+  preferSource: boolean | undefined,
+  have: MeshHaveFingerprints | undefined,
+) {
   const project = currentHostedProject();
   const projectRef = project
     ? { projectSlug: project.slug, ...(project.version ? { projectVersion: project.version } : {}) }
@@ -432,6 +452,7 @@ function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefin
   return {
     ...(storedRevision ? projectRef : { source, ...(projectRef ?? {}) }),
     ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
+    ...(hasFingerprints(have) ? { have } : {}),
     ...(generationIds.length > 0 ? { generationIds } : {}),
   };
 }
@@ -746,11 +767,12 @@ async function meshViaServer(
   source: string,
   paramOverrides: ParamOverrides | undefined,
   preferSource: boolean | undefined,
+  have: MeshHaveFingerprints | undefined,
 ): Promise<BackendMeshPayload> {
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base !== 'string' || base.length === 0) throw new Error(NO_HOSTED_BACKEND);
   try {
-    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource));
+    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource, have));
   } catch (error) {
     const stored = storedFallbackAllowed(source, paramOverrides, preferSource) ? await storedRevisionMesh(base) : null;
     if (stored) return stored;
@@ -771,12 +793,12 @@ async function meshViaServer(
 export async function meshSourceHosted(
   source: string,
   paramOverrides?: ParamOverrides,
-  options?: { preferSource?: boolean },
+  options?: { preferSource?: boolean; have?: MeshHaveFingerprints },
 ): Promise<BackendMeshPayload> {
   const preferSource = options?.preferSource;
   const stored = await meshStoredProject(source, paramOverrides, preferSource);
   if (stored) return stored;
   const gallery = await meshGalleryPrecompute(source, paramOverrides);
   if (gallery) return gallery;
-  return meshViaServer(source, paramOverrides, preferSource);
+  return meshViaServer(source, paramOverrides, preferSource, options?.have);
 }
