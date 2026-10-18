@@ -423,6 +423,32 @@ describe('writeMeshArtifacts', () => {
     expect(brBytes).toEqual(binBytes);
     expect(decodeMeshBinary(brBytes).containerMeta).toEqual(containerMeta);
   });
+
+  it('writes only the JSON artifact for a zero-feature payload', () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'gallery-mesh-artifacts-'));
+    const meshDir = path.join(tmp, '_mesh');
+    mkdirSync(meshDir, { recursive: true });
+
+    const sha = createHash('sha256').update('mesh-source-empty').digest('hex');
+    const payload = {
+      source: 'return null;',
+      features: [],
+      featureRecords: [],
+      bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+      params: {},
+      review: { ok: true, diagnostics: [] },
+    };
+
+    expect(() => writeMeshArtifacts(meshDir, sha, payload)).not.toThrow();
+
+    const jsonPath = path.join(meshDir, `${sha}.json`);
+    expect(existsSync(jsonPath)).toBe(true);
+    expect(readFileSync(jsonPath, 'utf8')).toBe(JSON.stringify(payload));
+    // A bin1 container needs a record to carry containerMeta; the pre-amendment
+    // build wrote JSON only and the client skips the missing bins the same way.
+    expect(existsSync(path.join(meshDir, `${sha}.bin`))).toBe(false);
+    expect(existsSync(path.join(meshDir, `${sha}.bin.br`))).toBe(false);
+  });
 });
 
 describe('fetchCommunityGallery', () => {

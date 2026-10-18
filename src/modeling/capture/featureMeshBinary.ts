@@ -192,10 +192,13 @@ function normalizeRecord(
     fingerprint,
   };
   // A containerMeta (bridge metadata: params, review, records, bounds, …) rides in the first
-  // record's envelope; the trailer keeps `__partial` marking the envelope as a partial payload.
-  const json = containerMeta !== undefined
-    ? JSON.stringify({ meta, ...(trailer !== undefined ? { trailer, __partial: true } : {}), containerMeta })
-    : trailer !== undefined ? JSON.stringify({ meta, trailer }) : JSON.stringify(meta);
+  // record's envelope. The reserved `__partial` marker mirrors the header's flags bit: whenever
+  // a trailer is encoded, both are set — containerMeta is independent of them.
+  const json = JSON.stringify({
+    meta,
+    ...(trailer !== undefined ? { trailer, __partial: true } : {}),
+    ...(containerMeta !== undefined ? { containerMeta } : {}),
+  });
   const metaJson = new TextEncoder().encode(json);
   return { metaJson, metaPaddedLength: pad4(metaJson.byteLength), chunks };
 }
@@ -399,10 +402,12 @@ export function decodeMeshBinary(bytes: Uint8Array): {
         trailer = envelope.trailer;
       }
       if (envelope.containerMeta !== undefined) {
-        if (typeof envelope.containerMeta !== 'object' || envelope.containerMeta === null) {
-          throw new Error(`featureMeshBinary: record 0 containerMeta is not an object (got ${envelope.containerMeta === null ? 'null' : typeof envelope.containerMeta})`);
+        const candidate = envelope.containerMeta;
+        if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) {
+          const got = candidate === null ? 'null' : Array.isArray(candidate) ? 'array' : typeof candidate;
+          throw new Error(`featureMeshBinary: record 0 containerMeta is not an object (got ${got})`);
         }
-        containerMeta = envelope.containerMeta as Record<string, unknown>;
+        containerMeta = candidate as Record<string, unknown>;
       }
     }
     const meta = envelope.meta !== undefined ? envelope.meta : (parsed as DecodedMeta);

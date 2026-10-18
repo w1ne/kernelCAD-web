@@ -104,6 +104,20 @@ describe('encode/decode round-trip', () => {
     expect(decodeMeshBinary(encodeMeshBinary([feature()])).containerMeta).toBeUndefined();
   });
 
+  it('marks the first record envelope __partial whenever a trailer is encoded, with or without containerMeta', () => {
+    const firstRecordMeta = (bytes: Uint8Array): string => {
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const metaLength = view.getUint32(12, true);
+      const metaOffset = view.getUint32(16, true);
+      return new TextDecoder().decode(bytes.subarray(metaOffset, metaOffset + metaLength));
+    };
+    const trailer: MeshBinaryTrailer = { unchangedIds: ['shape#9'], removedIds: [] };
+    expect(firstRecordMeta(encodeMeshBinary([feature()], trailer))).toContain('"__partial":true');
+    expect(firstRecordMeta(encodeMeshBinary([feature()], trailer, { params: {} }))).toContain('"__partial":true');
+    expect(firstRecordMeta(encodeMeshBinary([feature()]))).not.toContain('"__partial"');
+    expect(firstRecordMeta(encodeMeshBinary([feature()], undefined, { params: {} }))).not.toContain('"__partial"');
+  });
+
   it('round-trips cylinder faces', () => {
     const cylinder = {
       origin: [0, 0, 0] as [number, number, number],
@@ -500,6 +514,25 @@ describe('decode corruption guard rails', () => {
         ],
       ),
       message: /record 0 containerMeta is not an object/,
+    },
+    {
+      name: 'an array containerMeta',
+      mutate: () => craftContainer(
+        {
+          meta: {
+            feature: { featureId: 'meta-array#1', featureKind: 'box', predecessors: [] },
+            faces: [{ faceId: 1, vertexOffset: 0, vertexCount: 3, indexOffset: 0, indexCount: 1 }],
+            hasUv: false, hasMesh: false, hasEdges: false,
+          },
+          containerMeta: [1, 2],
+        },
+        [
+          f32Bytes([0, 0, 0]),
+          f32Bytes([0, 0, 1]),
+          u32Bytes([0, 1, 2]),
+        ],
+      ),
+      message: /record 0 containerMeta is not an object \(got array\)/,
     },
     {
       name: 'a partial flag with zero records',

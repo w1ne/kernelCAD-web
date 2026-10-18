@@ -755,6 +755,32 @@ describe('binary precompute preference and bin negotiation', () => {
     expect(urls[0]).toMatch(/\.bin\.br$/);
   });
 
+  it('restores the payload from an uncompressed .bin precompute carrying containerMeta', async () => {
+    const containerMeta = {
+      params: { width: { value: 10, unit: 'mm' } },
+      review: { ok: true, diagnostics: [] },
+      featureRecords: [{ kind: 'box', featureId: 'rec-1' }],
+      bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith('.bin')) return binOkWithMeta([binFeature('bin-plain-meta')], containerMeta);
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    const payload = await meshSourceHosted(source);
+
+    expect(payload.features.map((f) => f.featureId)).toEqual(['bin-plain-meta']);
+    expect(payload.features[0]!.faces[0]!.vertices).toBeInstanceOf(Float32Array);
+    expect(payload.params).toEqual(containerMeta.params);
+    expect(payload.review).toEqual(containerMeta.review);
+    expect(payload.featureRecords).toEqual(containerMeta.featureRecords);
+    expect(payload.bounds).toEqual(containerMeta.bounds);
+    const urls = fetchedUrls(fetchMock);
+    expect(urls.some((u) => u.endsWith('.bin.br'))).toBe(true);
+    expect(urls.some((u) => u.endsWith('.json'))).toBe(false);
+  });
+
   it('treats a legacy bin precompute without containerMeta as unusable and falls through to JSON', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const url = String(input);
@@ -800,6 +826,57 @@ describe('binary precompute preference and bin negotiation', () => {
         Accept: 'application/json, application/x-kernelcad-mesh+bin',
       }),
     }));
+  });
+
+  it('restores params/review from a server bin response carrying containerMeta', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    const containerMeta = {
+      params: { width: { value: 10, unit: 'mm' } },
+      review: { ok: true, diagnostics: [] },
+      featureRecords: [{ kind: 'box', featureId: 'rec-1' }],
+      bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+    };
+    const bytes = encodeMeshBinary([binFeature('server-bin-meta')], undefined, containerMeta);
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      headers: { get: (k: string) => (k.toLowerCase() === 'content-type' ? 'application/x-kernelcad-mesh+bin' : null) },
+      arrayBuffer: async () => bytes.buffer,
+    } as unknown as Response);
+
+    const payload = await meshSourceHosted(source, { w: 1 });
+
+    expect(payload.features.map((f) => f.featureId)).toEqual(['server-bin-meta']);
+    expect(payload.features[0]!.faces[0]!.vertices).toBeInstanceOf(Float32Array);
+    expect(payload.params).toEqual(containerMeta.params);
+    expect(payload.review).toEqual(containerMeta.review);
+    expect(payload.featureRecords).toEqual(containerMeta.featureRecords);
+    expect(payload.bounds).toEqual(containerMeta.bounds);
+  });
+
+  it('decodes a server bin response without containerMeta to features only, without throwing', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(binOkWithContentType([binFeature('server-bin-bare')]));
+
+    const payload = await meshSourceHosted(source, { w: 1 });
+
+    expect(payload.features.map((f) => f.featureId)).toEqual(['server-bin-bare']);
+    expect(payload.params).toBeUndefined();
+    expect(payload.review).toBeUndefined();
+    expect(payload.trailer).toBeUndefined();
+  });
+
+  it('maps a corrupt server bin payload to a friendly error', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      headers: { get: (k: string) => (k.toLowerCase() === 'content-type' ? 'application/x-kernelcad-mesh+bin' : null) },
+      arrayBuffer: async () => new TextEncoder().encode('garbage, not a KCB1 container').buffer,
+    } as unknown as Response);
+
+    await expect(meshSourceHosted(source, { w: 1 }))
+      .rejects.toThrow('The server returned an unreadable mesh payload.');
+    expect(debugSpy).toHaveBeenCalled();
   });
 
   it('parses a JSON server response unchanged when the endpoint did not negotiate bin', async () => {

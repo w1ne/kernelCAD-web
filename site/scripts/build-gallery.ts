@@ -255,12 +255,16 @@ export function writeMeshArtifacts(
   bridgePayload: { features: FeatureMeshSerialized[] } & Record<string, unknown>,
 ): void {
   const json = encodeBridgePayload(bridgePayload);
+  writeFileSync(path.join(meshOutDir, `${sourceSha256Hex}.json`), json);
   const { features, ...containerMeta } = bridgePayload;
+  // A bin1 container needs at least one record to carry its containerMeta, so
+  // a zero-feature payload keeps the JSON-only build behavior: no `.bin`/`.bin.br`
+  // (the client skips them the same way it skips a pre-amendment bin).
+  if (features.length === 0) return;
   const bin = Buffer.from(encodeMeshBinary(features, undefined, containerMeta));
   const brotli = brotliCompressSync(bin, {
     params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 },
   });
-  writeFileSync(path.join(meshOutDir, `${sourceSha256Hex}.json`), json);
   writeFileSync(path.join(meshOutDir, `${sourceSha256Hex}.bin`), bin);
   writeFileSync(path.join(meshOutDir, `${sourceSha256Hex}.bin.br`), brotli);
 }

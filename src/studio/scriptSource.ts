@@ -380,11 +380,13 @@ const MESH_BIN_CONTENT_TYPE = 'application/x-kernelcad-mesh+bin';
  *  (today's dev middleware and production server) answers JSON as before. */
 const MESH_ACCEPT = `application/json, ${MESH_BIN_CONTENT_TYPE}`;
 
-/** A decoded bin1 container as a bridge payload: typed-array features plus,
- *  for a partial response, the trailer naming the unchanged/removed rest. */
-function payloadFromMeshBinary(bytes: Uint8Array): BackendMeshPayload {
-  const decoded = decodeMeshBinary(bytes);
+/** A decoded bin1 container as a bridge payload: the container's bridge
+ *  metadata when it carries one (a server response may hold geometry only),
+ *  the typed-array features, and, for a partial response, the trailer naming
+ *  the unchanged/removed rest. */
+function payloadFromMeshBinary(decoded: ReturnType<typeof decodeMeshBinary>): BackendMeshPayload {
   return {
+    ...(decoded.containerMeta ?? {}),
     features: decoded.features,
     ...(decoded.trailer !== undefined ? { trailer: decoded.trailer } : {}),
   };
@@ -399,7 +401,14 @@ type MeshResponseBody = Partial<BackendMeshPayload> & {
 async function readMeshResponseBody(response: Response): Promise<MeshResponseBody | null> {
   const contentType = response.headers?.get?.('content-type') ?? '';
   if (contentType.includes(MESH_BIN_CONTENT_TYPE)) {
-    return payloadFromMeshBinary(new Uint8Array(await response.arrayBuffer()));
+    try {
+      return payloadFromMeshBinary(decodeMeshBinary(new Uint8Array(await response.arrayBuffer())));
+    } catch (err) {
+      // A corrupt bin is not user-fixable; log the codec cause and surface a
+      // friendly message instead of leaking the decoder error to the status bar.
+      console.debug('[mesh] server binary payload unreadable', { err });
+      throw new Error('The server returned an unreadable mesh payload.', { cause: err });
+    }
   }
   const json: unknown = await response.json().catch(() => null);
   return json !== null && typeof json === 'object' ? json as MeshResponseBody : null;
@@ -686,13 +695,10 @@ async function fetchPrecomputedMeshBinary(url: string): Promise<BackendMeshPaylo
     if (!res.ok) return null;
     const decoded = decodeMeshBinary(new Uint8Array(await res.arrayBuffer()));
     const containerMeta = decoded.containerMeta;
-    if (typeof containerMeta !== 'object' || containerMeta === null) return null;
-    return {
-      ...containerMeta,
-      features: decoded.features,
-      ...(decoded.trailer !== undefined ? { trailer: decoded.trailer } : {}),
-    };
-  } catch {
+    if (typeof containerMeta !== 'object' || containerMeta === null || Array.isArray(containerMeta)) return null;
+    return payloadFromMeshBinary(decoded);
+  } catch (err) {
+    console.debug('[gallery] binary precompute unusable', { url, err });
     return null;
   }
 }

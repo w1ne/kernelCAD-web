@@ -628,8 +628,8 @@ describe('GeometryContext latest-intent-wins', () => {
     await flushUntil(() => screen.getByTestId('face-count').textContent === '1');
 
     expect(fetchUrl(fetchMock, 1)).toBe('/__kernelcad/session?script=examples%2Fgallery%2Fratchet-stool.kcad.ts');
-    expect(fetchUrl(fetchMock, 2)).toContain('https://kernelcad.com/gallery/_mesh/');
-    expect(fetchUrl(fetchMock, 4)).toContain('https://kernelcad.com/gallery/_mesh/');
+    expect(fetchUrl(fetchMock, 2)).toMatch(/^https:\/\/kernelcad\.com\/gallery\/_mesh\/[0-9a-f]{64}\.bin\.br$/);
+    expect(fetchUrl(fetchMock, 4)).toMatch(/^https:\/\/kernelcad\.com\/gallery\/_mesh\/[0-9a-f]{64}\.json$/);
     expect(screen.getByTestId('script-review-ok').textContent).toBe('true');
     expect(screen.getByTestId('recompute-ms').textContent).toBe('500');
     perfNowSpy.mockRestore();
