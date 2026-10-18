@@ -26,7 +26,7 @@ import {
 } from './docsModels';
 
 import { TOOLS, type McpToolDefinition } from '../../src/agent/mcp/toolRegistry';
-import { CONNECT_CLIENTS } from '../../src/studio/connect/connectClients';
+import { CONNECT_CLIENTS } from '../lib/connect/connectClients';
 import { loadSnippets } from '../../src/agent/cookbook/loader';
 import { buildMcpReference, buildDesignGuide, type GuideEntry } from '../../src/docs/workflowDocs';
 

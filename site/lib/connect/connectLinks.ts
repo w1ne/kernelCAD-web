@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+export const MCP_URL = 'https://mcp.kernelcad.com/mcp';
+
+export const CLAUDE_CODE_CMD = `claude mcp add --transport http kernelcad ${MCP_URL}`;
+
+export const NPX_LOCAL_CMD = 'npx kernelcad mcp';
+
+/** Codex CLI: register the hosted server (streamable HTTP), then sign in. */
+export const CODEX_ADD_CMD = `codex mcp add kernelcad --url ${MCP_URL}`;
+export const CODEX_LOGIN_CMD = 'codex mcp login kernelcad';
+
+/** Settings pages where the web clients add a custom MCP server. */
+export const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/#settings/Connectors';
+export const CLAUDE_CONNECTORS_URL = 'https://claude.ai/settings/connectors';
+
+/** A new Claude chat with `prompt` already in the message box. */
+export function claudeNewChatLink(prompt: string): string {
+  return `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
+}
+
+/**
+ * Cursor deeplink to install the kernelCAD MCP server.
+ * Format: cursor://anysphere.cursor-deeplink/mcp/install?name=<n>&config=<base64(JSON)>
+ */
+export function cursorDeeplink(): string {
+  const config = btoa(JSON.stringify({ url: MCP_URL }));
+  return `cursor://anysphere.cursor-deeplink/mcp/install?name=kernelcad&config=${config}`;
+}
+
+/**
+ * VS Code deeplink to install the kernelCAD MCP server.
+ * Format: vscode:mcp/install?<urlencoded JSON.stringify({name,type:'http',url})>
+ */
+export function vscodeDeeplink(): string {
+  const payload = JSON.stringify({ name: 'kernelcad', type: 'http', url: MCP_URL });
+  return `vscode:mcp/install?${encodeURIComponent(payload)}`;
+}
