@@ -286,7 +286,7 @@ describe('decode corruption guard rails', () => {
       message: /unsupported container version 2/,
     },
     {
-      name: 'a count inflated by one into the meta region',
+      name: 'a count inflated until record 0 metadata overflows the container',
       mutate: (bytes) => {
         const copy = bytes.slice();
         const view = viewOf(copy);
@@ -337,6 +337,114 @@ describe('decode corruption guard rails', () => {
       message: /record 0 face 0 uv range 0\+4 overflows its 1-element buffer/,
     },
     {
+      name: 'a metadata envelope with no faces array',
+      mutate: () => craftContainer(
+        {
+          feature: { featureId: 'no-faces#1', featureKind: 'box', predecessors: [] },
+          hasUv: false, hasMesh: false, hasEdges: false,
+        },
+        [
+          f32Bytes([0, 0, 0]),
+          f32Bytes([0, 0, 1]),
+          u32Bytes([0, 1, 2]),
+        ],
+      ),
+      message: /record 0 metadata is missing its faces array/,
+    },
+    {
+      name: 'a record 0 buffer count below the metadata requirement',
+      mutate: () => {
+        const bytes = encodeMeshBinary([feature()]);
+        viewOf(bytes).setUint32(12 + 12, 3, true);
+        return bytes;
+      },
+      message: /record 0 has 3 buffers but its metadata requires 4/,
+    },
+    {
+      name: 'a face vertex range overflowing its vertices buffer',
+      mutate: () => craftContainer(
+        {
+          feature: { featureId: 'vertex-overflow#1', featureKind: 'box', predecessors: [] },
+          faces: [{ faceId: 1, vertexOffset: 1, vertexCount: 9, indexOffset: 0, indexCount: 1 }],
+          hasUv: false, hasMesh: false, hasEdges: false,
+        },
+        [
+          f32Bytes([0, 0, 0]),
+          f32Bytes([0, 0, 1]),
+          u32Bytes([0]),
+        ],
+      ),
+      message: /record 0 face 0 vertices range 1\+9 overflows its 3-element buffer/,
+    },
+    {
+      name: 'a face vertex range overflowing its normals buffer',
+      mutate: () => craftContainer(
+        {
+          feature: { featureId: 'normal-overflow#1', featureKind: 'box', predecessors: [] },
+          faces: [{ faceId: 1, vertexOffset: 0, vertexCount: 6, indexOffset: 0, indexCount: 1 }],
+          hasUv: false, hasMesh: false, hasEdges: false,
+        },
+        [
+          f32Bytes([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1]),
+          f32Bytes([0, 0, 1]),
+          u32Bytes([0]),
+        ],
+      ),
+      message: /record 0 face 0 normals range 0\+6 overflows its 3-element buffer/,
+    },
+    {
+      name: 'a face index range overflowing its indices buffer',
+      mutate: () => craftContainer(
+        {
+          feature: { featureId: 'index-overflow#1', featureKind: 'box', predecessors: [] },
+          faces: [{ faceId: 1, vertexOffset: 0, vertexCount: 3, indexOffset: 0, indexCount: 6 }],
+          hasUv: false, hasMesh: false, hasEdges: false,
+        },
+        [
+          f32Bytes([0, 0, 0]),
+          f32Bytes([0, 0, 1]),
+          u32Bytes([0, 1, 2]),
+        ],
+      ),
+      message: /record 0 face 0 indices range 0\+6 overflows its 3-element buffer/,
+    },
+    {
+      name: 'a face vertex range that is not a whole number of xyz triples',
+      mutate: () => craftContainer(
+        {
+          feature: { featureId: 'uv-triple#1', featureKind: 'box', predecessors: [] },
+          faces: [{ faceId: 1, vertexOffset: 0, vertexCount: 4, indexOffset: 0, indexCount: 3 }],
+          hasUv: true, hasMesh: false, hasEdges: false,
+        },
+        [
+          f32Bytes([0, 0, 0, 1, 0, 0]),
+          f32Bytes([0, 0, 1, 0, 0, 1]),
+          f32Bytes([0.25, 0.25]),
+          u32Bytes([0, 1, 2]),
+        ],
+      ),
+      message: /record 0 face 0 vertex range 0\+4 is not a whole number of xyz triples, so it has no uv mapping/,
+    },
+    {
+      name: 'a final buffer whose padding is truncated at the container tail',
+      mutate: () => {
+        const bytes = craftContainer(
+          {
+            feature: { featureId: 'pad-overflow#1', featureKind: 'box', predecessors: [] },
+            faces: [{ faceId: 1, vertexOffset: 0, vertexCount: 3, indexOffset: 0, indexCount: 1 }],
+            hasUv: false, hasMesh: false, hasEdges: false,
+          },
+          [
+            f32Bytes([0, 0, 0]),
+            f32Bytes([0, 0, 1]),
+            new Uint8Array(6),
+          ],
+        );
+        return bytes.slice(0, bytes.byteLength - 2);
+      },
+      message: /record 0 buffer 2 padding overflows the container/,
+    },
+    {
       name: 'a partial flag with zero records',
       mutate: () => {
         const bytes = new Uint8Array(12);
@@ -370,6 +478,18 @@ describe('decode corruption guard rails', () => {
         },
       ],
     })])).toThrow(/uv present but hasUv false; uv must be on all faces or none/);
+  });
+
+  it('rejects a per-face uv float count that does not match the vertex count at encode time', () => {
+    expect(() => encodeMeshBinary([feature({
+      faces: [{
+        vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        uv: new Float32Array([0, 0, 1, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        faceId: 7,
+      }],
+    })])).toThrow(/face 7 uv holds 4 floats but 9 vertex floats require 6/);
   });
 });
 
