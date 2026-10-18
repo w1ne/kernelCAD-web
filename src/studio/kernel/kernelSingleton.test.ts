@@ -248,6 +248,27 @@ describe('warm swap settling with the hidden-tab deferral', () => {
     expect(browserKernelForSource('source-a')).toBe(h.kernel);
   });
 
+  it('evicts a banked hidden warm when a newer hidden apply is server-only', () => {
+    const h = fakeKernel();
+    __setBrowserKernelForTests(h.kernel, 'source-a');
+    const removeSpy = vi.spyOn(document, 'removeEventListener');
+
+    warmKernelOnOpen('source-c', 'c.kcad.ts');
+    warmKernelOnOpen('const p = await lib.fromSTEP("part.step");', 'step.kcad.ts');
+
+    // The server-only latest apply must drop c's bank along with its listener:
+    // no warm may fire later for a source routing has left behind.
+    expect(removeSpy).toHaveBeenCalledWith('visibilitychange', expect.any(Function));
+
+    visibility = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
+    expect(h.disposeMock).not.toHaveBeenCalled();
+    expect(h.warmMock).not.toHaveBeenCalled();
+    expect(browserKernelForSource('source-a')).toBe(h.kernel);
+  });
+
   it('disposeBrowserKernel clears a banked hidden warm and its listener', () => {
     const h = fakeKernel();
     __setBrowserKernelForTests(h.kernel, 'source-a');
@@ -276,6 +297,29 @@ describe('warm swap settling with the hidden-tab deferral', () => {
     vi.advanceTimersByTime(WARM_SETTLE_MS);
 
     expect(h.disposeMock).not.toHaveBeenCalled();
+    expect(h.warmMock).not.toHaveBeenCalled();
+    expect(browserKernelForSource('source-a')).toBe(h.kernel);
+  });
+
+  it('drops the armed swap and a banked hidden warm when a visible server-only apply is latest', () => {
+    const h = fakeKernel();
+    __setBrowserKernelForTests(h.kernel, 'source-a');
+
+    warmKernelOnOpen('source-c', 'c.kcad.ts');
+    visibility = 'visible';
+
+    warmKernelOnOpen('source-b', 'b.kcad.ts');
+    warmKernelOnOpen('const p = await lib.fromSTEP("part.step");', 'step.kcad.ts');
+
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
+    expect(h.disposeMock).not.toHaveBeenCalled();
+    expect(h.warmMock).not.toHaveBeenCalled();
+
+    // The bank's listener is gone too: a late visibilitychange warms nothing.
+    document.dispatchEvent(new Event('visibilitychange'));
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
     expect(h.warmMock).not.toHaveBeenCalled();
     expect(browserKernelForSource('source-a')).toBe(h.kernel);
   });

@@ -101,10 +101,10 @@ export function browserKernelForSource(source: string): BrowserKernel | null {
 export function warmBrowserKernel(source: string, fileName: string): void {
   // Intentionally skips the capability flag check; `warmKernelOnOpen` is the production entry.
   if (browserKernelSourceIsServerOnly(source)) {
-    // A server-only latest source supersedes any pending swap exactly like a
-    // change back to the current source does: the banked swap must not fire
-    // for a source routing has already left behind.
-    cancelPendingWarmSwap();
+    // A server-only latest source supersedes every pending warm exactly like a
+    // change back to the current source does: neither the armed swap nor a
+    // warm a hidden tab banked may fire for a source routing has left behind.
+    dropPendingKernelWarms();
     return;
   }
   if (warmedSource !== null && warmedSource !== source) {
@@ -149,6 +149,14 @@ function clearPendingHiddenWarm(): void {
   visibilityListenerAttached = false;
 }
 
+/** Drop every pending kernel warm: the armed settle swap and a warm a hidden
+ *  tab banked for the next `visibilitychange`. A latest server-only source
+ *  supersedes them all — none may fire for a source routing has left. */
+function dropPendingKernelWarms(): void {
+  cancelPendingWarmSwap();
+  clearPendingHiddenWarm();
+}
+
 /** Bank `(source, fileName)` for the first `visibilitychange` that makes the
  *  tab visible (latest wins, one listener). Both hidden entry points share
  *  this: `warmKernelOnOpen`'s hidden branch and a settle timer that fires
@@ -160,8 +168,12 @@ function deferKernelWarmUntilVisible(source: string, fileName: string): void {
   // no-op for the settle-timer caller, which popped its swap before deferring.
   cancelPendingWarmSwap();
   // The same server-only precheck the visible path runs: never bank a warm
-  // the worker cannot serve (the newest apply wins by dropping the stale one).
-  if (browserKernelSourceIsServerOnly(source)) return;
+  // the worker cannot serve, and drop a warm already banked for an older
+  // source (the newest apply wins by dropping the stale one).
+  if (browserKernelSourceIsServerOnly(source)) {
+    dropPendingKernelWarms();
+    return;
+  }
   pendingHiddenWarm = { source, fileName };
   if (visibilityListenerAttached) return;
   visibilityListenerAttached = true;
