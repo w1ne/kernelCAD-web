@@ -158,4 +158,64 @@ describe('warm swap settling with the hidden-tab deferral', () => {
     expect(h.disposeMock).toHaveBeenCalledTimes(1);
     expect(h.warmMock).toHaveBeenCalledExactlyOnceWith('source-c', 'c.kcad.ts');
   });
+
+  it('defers instead of swapping when the tab hides during the settle window, then warms the latest source once visible', () => {
+    const h = fakeKernel();
+    __setBrowserKernelForTests(h.kernel, 'source-a');
+    visibility = 'visible';
+
+    warmKernelOnOpen('source-b', 'b.kcad.ts');
+    warmKernelOnOpen('source-c', 'c.kcad.ts');
+    visibility = 'hidden';
+
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
+    // Hidden at settle: no dispose, no worker download, old worker still serves.
+    expect(h.disposeMock).not.toHaveBeenCalled();
+    expect(h.warmMock).not.toHaveBeenCalled();
+    expect(browserKernelForSource('source-a')).toBe(h.kernel);
+
+    visibility = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+    // Visible again: the deferred warm still settles before swapping.
+    expect(h.warmMock).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+    expect(h.disposeMock).toHaveBeenCalledTimes(1);
+    expect(h.warmMock).toHaveBeenCalledExactlyOnceWith('source-c', 'c.kcad.ts');
+  });
+
+  it('keeps only the latest source when another arrives while the deferred warm is pending', () => {
+    const h = fakeKernel();
+    __setBrowserKernelForTests(h.kernel, 'source-a');
+    visibility = 'visible';
+
+    warmKernelOnOpen('source-b', 'b.kcad.ts');
+    visibility = 'hidden';
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+    expect(h.disposeMock).not.toHaveBeenCalled();
+    expect(h.warmMock).not.toHaveBeenCalled();
+
+    warmKernelOnOpen('source-c', 'c.kcad.ts');
+    visibility = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
+    expect(h.disposeMock).toHaveBeenCalledTimes(1);
+    expect(h.warmMock).toHaveBeenCalledExactlyOnceWith('source-c', 'c.kcad.ts');
+  });
+
+  it('cancels a pending swap when the latest source is server-only', () => {
+    const h = fakeKernel();
+    __setBrowserKernelForTests(h.kernel, 'source-a');
+    visibility = 'visible';
+
+    warmKernelOnOpen('source-b', 'b.kcad.ts');
+    warmKernelOnOpen('const p = await lib.fromSTEP("part.step");', 'step.kcad.ts');
+
+    vi.advanceTimersByTime(WARM_SETTLE_MS);
+
+    expect(h.disposeMock).not.toHaveBeenCalled();
+    expect(h.warmMock).not.toHaveBeenCalled();
+    expect(browserKernelForSource('source-a')).toBe(h.kernel);
+  });
 });

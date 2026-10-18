@@ -41,6 +41,13 @@ function scheduleWarmSwap(source: string, fileName: string): void {
     const swap = pendingSwap;
     pendingSwap = null;
     if (swap === null) return;
+    // A tab that went hidden during the settle window must not dispose or pay
+    // the ~11 MB warm. Hand the target to the hidden-deferral mechanism
+    // instead (latest wins) so it warms once the tab is visible again.
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+      deferKernelWarmUntilVisible(swap.source, swap.fileName);
+      return;
+    }
     disposeBrowserKernel();
     warmBrowserKernel(swap.source, swap.fileName);
   }, WARM_SETTLE_MS);
@@ -93,7 +100,13 @@ export function browserKernelForSource(source: string): BrowserKernel | null {
  *  models without churning the worker on every debounced code edit. */
 export function warmBrowserKernel(source: string, fileName: string): void {
   // Intentionally skips the capability flag check; `warmKernelOnOpen` is the production entry.
-  if (browserKernelSourceIsServerOnly(source)) return;
+  if (browserKernelSourceIsServerOnly(source)) {
+    // A server-only latest source supersedes any pending swap exactly like a
+    // change back to the current source does: the banked swap must not fire
+    // for a source routing has already left behind.
+    cancelPendingWarmSwap();
+    return;
+  }
   if (warmedSource !== null && warmedSource !== source) {
     scheduleWarmSwap(source, fileName);
     return;
@@ -127,6 +140,17 @@ function flushPendingKernelWarm(): void {
   if (pending !== null) warmBrowserKernel(pending.source, pending.fileName);
 }
 
+/** Bank `(source, fileName)` for the first `visibilitychange` that makes the
+ *  tab visible (latest wins, one listener). Both hidden entry points share
+ *  this: `warmKernelOnOpen`'s hidden branch and a settle timer that fires
+ *  after the tab went hidden. */
+function deferKernelWarmUntilVisible(source: string, fileName: string): void {
+  pendingHiddenWarm = { source, fileName };
+  if (visibilityListenerAttached) return;
+  visibilityListenerAttached = true;
+  document.addEventListener('visibilitychange', onVisibilityChangeForWarm);
+}
+
 function onVisibilityChangeForWarm(): void {
   if (document.visibilityState !== 'visible') return;
   document.removeEventListener('visibilitychange', onVisibilityChangeForWarm);
@@ -150,10 +174,7 @@ export function warmKernelOnOpen(source: string, fileName: string): void {
     warmBrowserKernel(source, fileName);
     return;
   }
-  pendingHiddenWarm = { source, fileName };
-  if (visibilityListenerAttached) return;
-  visibilityListenerAttached = true;
-  document.addEventListener('visibilitychange', onVisibilityChangeForWarm);
+  deferKernelWarmUntilVisible(source, fileName);
 }
 
 /** Test-only: swap in a fake kernel and the source it is "warm" for, or clear
