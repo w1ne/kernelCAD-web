@@ -1,0 +1,37 @@
+{
+  "checkedAt": "2026-10-18T10:02:21.999559+00:00",
+  "video": "demo.mp4",
+  "videoSha256": "1dac7c3e1c4c7f8d4f4af45ae0ff920bb3c142f98a028aa4d33c3a30f76b27ae",
+  "durationSec": 18.0,
+  "canvas": "1920x1080",
+  "slides": [
+    {
+      "image": null,
+      "durationSec": 4.0
+    },
+    {
+      "image": "fixture.hero.png",
+      "durationSec": 5.0
+    },
+    {
+      "image": "fixture-detail.png",
+      "durationSec": 5.0
+    },
+    {
+      "image": null,
+      "durationSec": 4.0
+    }
+  ],
+  "sourceModels": {
+    "table-clamp-set.kcad.ts": "ba08faeb7121cfe3284f9eb2cb8100bd2c88aba8a163dd369f5f0c7390ceec87"
+  },
+  "inputSha256": {
+    "fixture.hero.png": "2159f8e4bf0f40f17ee7814ccaeb64a3b1a6f1cd92786af15b1647d41096fbb9",
+    "fixture-detail.png": "b8f274213cedd5c75e495a48ebd7ce573f1913752a285a7ad7f1224825e835dd"
+  },
+  "invocations": [
+    "npx tsx src/agent/cli/index.ts render examples/fixture/table-clamp-set.kcad.ts --preset publish --pose 55,42 -o docs/demos/fixture-library/fixture.hero.png",
+    "convert fixture.hero.png -crop 760x660+700+360 +repage fixture-detail.png"
+  ],
+  "provenance": "Annotated still sequence composed from local kernelcad render --preset publish outputs of the committed example source. Not a screen recording, turntable, deployed platform capture, physical setup or machining test."
+}

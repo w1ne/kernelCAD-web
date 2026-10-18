@@ -31,7 +31,12 @@ import {
   LOCK_WASHER,
   SHCS_HEAD,
   SHCS_LENGTHS,
+  FIXTURE_FAMILY_NAMES,
+  fixtureVariants,
+  isFixtureKind,
+  resolvePart,
 } from '../src/modeling/parts/familyTable';
+import { fixtureSolid } from '../src/modeling/parts/fixtureSolids';
 
 // -----------------------------------------------------------------------------
 // Types
@@ -288,6 +293,43 @@ async function jstXhStep(args: {
 // -----------------------------------------------------------------------------
 // Family definitions
 // -----------------------------------------------------------------------------
+
+function fixtureSeedFamily(family: string): SeedFamily {
+  return {
+    id: family,
+    category: 'fixture',
+    variants: fixtureVariants(family),
+    async generate(variant) {
+      const part = resolvePart({
+        family,
+        thread: String(variant.thread),
+        ...(variant.lengthMm !== undefined ? { lengthMm: Number(variant.lengthMm) } : {}),
+      });
+      if (!isFixtureKind(part.kind)) throw new Error(`${family}: not a fixture family`);
+      const backend = fixtureSolid(part.kind, part.dims ?? {}, part.nominalMm);
+      const bytes = await backend.exportSTEPAsync();
+      return {
+        stepBytes: bytes,
+        record: {
+          id: part.id,
+          name: part.name,
+          category: 'fixture',
+          family,
+          tags: part.tags,
+          attributes: {
+            thread: part.thread,
+            nominalMm: part.nominalMm,
+            ...(part.lengthMm > 0 ? { lengthMm: part.lengthMm } : {}),
+            ...(part.dims ?? {}),
+          },
+          license: 'MIT',
+          connectors: part.connectors.map((connector) => connector.name),
+        },
+        connectors: part.connectors,
+      };
+    },
+  };
+}
 
 function socketHeadCapScrew(): SeedFamily {
   const threads: Array<keyof typeof SHCS_HEAD> = ['M2', 'M2_5', 'M3', 'M4', 'M5', 'M6'];
@@ -923,6 +965,7 @@ export const SEED_FAMILIES: SeedFamily[] = [
   pinHeader(),
   jstXh(),
   ...sg90Families(),
+  ...FIXTURE_FAMILY_NAMES.map(fixtureSeedFamily),
 ];
 
 export async function generateSeedCatalog(

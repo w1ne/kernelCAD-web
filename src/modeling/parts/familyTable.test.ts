@@ -37,3 +37,53 @@ describe('family table', () => {
     expect(screw.offsetZ).toBe(1);
   });
 });
+
+describe('fixture families', () => {
+  it('resolves a T-slot nut with its slot pairing and connectors', () => {
+    const nut = resolvePart({ family: 't-slot-nut', thread: 'M10' });
+    expect(nut.id).toBe('tslot-nut-m10');
+    expect(nut.category).toBe('fixture');
+    expect(nut.dims?.slotMm).toBe(12);
+    expect(nut.connectors.map((connector) => connector.name)).toEqual([
+      'mating-face',
+      'top-face',
+      'thread-bore',
+    ]);
+  });
+
+  it('resolves a clamping stud length and rejects an unstocked one', () => {
+    const stud = resolvePart({ family: 'clamping-stud', thread: 'M8', lengthMm: 100 });
+    expect(stud.id).toBe('clamp-stud-m8x100');
+    expect(stud.lengthMm).toBe(100);
+    expect(() => resolvePart({ family: 'clamping-stud', thread: 'M8', lengthMm: 70 })).toThrow(
+      KernelError,
+    );
+  });
+
+  it('puts the step-block treads at the clamping heights', () => {
+    const block = resolvePart({ family: 'step-block', thread: 'M10' });
+    const steps = block.connectors.filter((connector) => connector.name.startsWith('step-'));
+    expect(steps.map((connector) => connector.name)).toEqual(['step-1', 'step-2', 'step-3', 'step-4']);
+    expect(steps.map((connector) => connector.origin?.[2])).toEqual([12, 24, 36, 48]);
+  });
+
+  it('declares the strap clamp slot at its origin, nose toward -X', () => {
+    const clamp = resolvePart({ family: 'strap-clamp', thread: 'M10' });
+    expect(clamp.connectors.map((connector) => connector.name)).toEqual([
+      'nose-bearing',
+      'tail-bearing',
+      'slot-axis',
+      'top-face',
+    ]);
+    const nose = clamp.connectors.find((connector) => connector.name === 'nose-bearing');
+    expect(nose?.origin?.[0]).toBe(-48);
+    expect(clamp.dims?.slotWidthMm).toBe(12);
+  });
+
+  it('resolves a flange nut with its stock across-flats', () => {
+    const nut = resolvePart({ family: 'flange-nut', thread: 'M12' });
+    expect(nut.id).toBe('flange-nut-m12');
+    expect(nut.acrossFlatsMm).toBe(18);
+    expect(nut.dims?.flangeDiameterMm).toBe(26);
+  });
+});
