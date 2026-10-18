@@ -7,6 +7,7 @@ import type { PBRMaterial } from '../../shared/intent/material';
 import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageRecord';
 import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecord';
+import type { FeatureMeshSerializedInput } from './featureMeshBinary';
 
 export interface FaceGeometrySerialized {
   vertices: number[];
@@ -88,7 +89,7 @@ function serializeIndexedMesh(mesh: FeatureMesh['mesh']): Pick<FeatureMeshSerial
   return { mesh: { positions: Array.from(mesh.positions), normals: Array.from(mesh.normals), indices: Array.from(mesh.indices) } };
 }
 
-function rehydrateIndexedMesh(mesh: FeatureMeshSerialized['mesh']): Pick<FeatureMesh, 'mesh'> {
+function rehydrateIndexedMesh(mesh: FeatureMeshSerializedInput['mesh']): Pick<FeatureMesh, 'mesh'> {
   if (!mesh) return {};
   return { mesh: { positions: new Float32Array(mesh.positions), normals: new Float32Array(mesh.normals), indices: new Uint32Array(mesh.indices) } };
 }
@@ -128,7 +129,7 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
   };
 }
 
-export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
+export function rehydrateFromBridge(s: FeatureMeshSerialized | FeatureMeshSerializedInput): FeatureMesh {
   return {
     featureId: s.featureId as FeatureMesh['featureId'],
     featureKind: s.featureKind as FeatureMesh['featureKind'],

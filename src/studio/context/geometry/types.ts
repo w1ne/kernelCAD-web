@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { GeometryResult } from '../../../shared/worker/geometryEngine';
 import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
+import type { FeatureMeshSerializedInput } from '../../../modeling/capture/featureMeshBinary';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { MechanismVerdictSummary } from '../../../modeling/runtime/mechanismVerdict';
 
@@ -240,7 +241,7 @@ export function readStudioScriptParam(): string | null {
     return new URLSearchParams(window.location.search).get('script');
 }
 
-export function featureMeshesToGeometries(features: FeatureMeshSerialized[]): GeometryResult[] {
+export function featureMeshesToGeometries(features: Array<FeatureMeshSerialized | FeatureMeshSerializedInput>): GeometryResult[] {
     return features.map((feature) => {
         const mesh = rehydrateFromBridge(feature);
         return {
