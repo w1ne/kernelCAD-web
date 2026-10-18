@@ -18,6 +18,11 @@ vi.mock('../funnel/lib/supabaseClient', () => ({
 import { defaultCode } from '../shared/worker/geometryEngine';
 import { clearGenerationAssets, rememberGenerationAssets } from '../funnel/lib/generationAssets';
 import {
+  encodeMeshBinary,
+  type FeatureMeshSerializedInput,
+  type MeshBinaryTrailer,
+} from '../modeling/capture/featureMeshBinary';
+import {
   clearStoredMeshCache,
   loadGalleryScriptSource,
   getMeshNotice,
@@ -92,7 +97,7 @@ describe('meshSourceDev', () => {
     await expect(meshSourceDev('return box(1,1,1);')).resolves.toEqual(payload);
     expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, application/x-kernelcad-mesh+bin' },
       body: JSON.stringify({ source: 'return box(1,1,1);' }),
     });
   });
@@ -181,7 +186,7 @@ describe('param overrides (stateless re-run path)', () => {
     await meshSourceDev('return box(w,1,1);', { w: 5 });
     expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, application/x-kernelcad-mesh+bin' },
       body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 5 } }),
     });
   });
@@ -220,7 +225,11 @@ describe('param overrides (stateless re-run path)', () => {
     await meshSourceHosted(source, { w: 1 });
 
     expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/__kernelcad/mesh', expect.objectContaining({
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer tok' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json, application/x-kernelcad-mesh+bin',
+        Authorization: 'Bearer tok',
+      },
       body: JSON.stringify({ source, params: { w: 1 }, generationIds: ['gen-1'] }),
     }));
     clearGenerationAssets();
@@ -235,7 +244,10 @@ describe('param overrides (stateless re-run path)', () => {
     await meshSourceHosted("return await lib.fromSTL('./inputs/ffffffffffff.stl');", { w: 1 });
 
     const init = fetchMock.mock.calls[0]![1] as RequestInit;
-    expect(init.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(init.headers).toEqual({
+      'Content-Type': 'application/json',
+      Accept: 'application/json, application/x-kernelcad-mesh+bin',
+    });
     expect(JSON.parse(init.body as string)).not.toHaveProperty('generationIds');
     expect(getSessionMock).not.toHaveBeenCalled();
     clearGenerationAssets();
@@ -596,6 +608,137 @@ describe('param overrides (stateless re-run path)', () => {
         body: JSON.stringify({ source: "param('Cap', 'round')", projectSlug: 'keycap-123', params: { dishDepth: 1 } }),
       }),
     );
+  });
+});
+
+describe('binary precompute preference and bin negotiation', () => {
+  const source = 'return box(1, 1, 1);';
+
+  function binFeature(id: string): FeatureMeshSerializedInput {
+    return {
+      featureId: id,
+      featureKind: 'box',
+      predecessors: [],
+      faces: [{
+        faceId: 1,
+        vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+      }],
+    };
+  }
+
+  function binOk(features: FeatureMeshSerializedInput[], trailer?: MeshBinaryTrailer): Response {
+    const bytes = encodeMeshBinary(features, trailer);
+    return { ok: true, arrayBuffer: async () => bytes.buffer } as unknown as Response;
+  }
+
+  function binOkWithContentType(features: FeatureMeshSerializedInput[], trailer?: MeshBinaryTrailer): Response {
+    const bytes = encodeMeshBinary(features, trailer);
+    return {
+      ok: true,
+      headers: { get: (k: string) => (k.toLowerCase() === 'content-type' ? 'application/x-kernelcad-mesh+bin' : null) },
+      arrayBuffer: async () => bytes.buffer,
+    } as unknown as Response;
+  }
+
+  const fetchedUrls = (fetchMock: { mock: { calls: unknown[][] } }): string[] =>
+    fetchMock.mock.calls.map((call) => String(call[0]));
+
+  it('decodes the brotli precompute first, without touching .bin or .json', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (String(input).endsWith('.bin.br')) return binOk([binFeature('bin-br')]);
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    const payload = await meshSourceHosted(source);
+
+    expect(payload.features.map((f) => f.featureId)).toEqual(['bin-br']);
+    expect(payload.features[0]!.faces[0]!.vertices).toBeInstanceOf(Float32Array);
+    const urls = fetchedUrls(fetchMock);
+    expect(urls).toHaveLength(1);
+    expect(urls[0]).toMatch(/\.bin\.br$/);
+  });
+
+  it('falls back to the plain bin when the brotli host returned raw brotli bytes', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith('.bin.br')) {
+        // A host without the `Content-Encoding: br` rule hands back raw brotli,
+        // which fails decodeMeshBinary's magic check.
+        return {
+          ok: true,
+          arrayBuffer: async () => new TextEncoder().encode('raw brotli? not bin1').buffer,
+        } as unknown as Response;
+      }
+      if (url.endsWith('.bin')) return binOk([binFeature('bin')]);
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    const payload = await meshSourceHosted(source);
+
+    expect(payload.features.map((f) => f.featureId)).toEqual(['bin']);
+    expect(payload.features[0]!.faces[0]!.vertices).toBeInstanceOf(Float32Array);
+    const urls = fetchedUrls(fetchMock);
+    expect(urls.some((u) => u.endsWith('.bin.br'))).toBe(true);
+    expect(urls.some((u) => u.endsWith('.bin'))).toBe(true);
+    expect(urls.some((u) => u.endsWith('.json'))).toBe(false);
+  });
+
+  it('uses the JSON precompute when both binaries miss', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith('.json')) {
+        return {
+          ok: true,
+          json: async () => ({
+            features: [{ featureId: 'json-feature', featureKind: 'box', predecessors: [], faces: [] }],
+            bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+          }),
+        } as Response;
+      }
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    const payload = await meshSourceHosted(source);
+
+    expect(payload.features.map((f) => f.featureId)).toEqual(['json-feature']);
+    const urls = fetchedUrls(fetchMock);
+    expect(urls.some((u) => u.endsWith('.bin.br'))).toBe(true);
+    expect(urls.some((u) => u.endsWith('.bin'))).toBe(true);
+    expect(urls.some((u) => u.endsWith('.json'))).toBe(true);
+  });
+
+  it('posts the bin-capable Accept header and decodes a bin server response', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValue(binOkWithContentType([binFeature('server-bin')], { unchangedIds: [], removedIds: [] }));
+
+    const payload = await meshSourceHosted(source, { w: 1 });
+
+    expect(payload.features.map((f) => f.featureId)).toEqual(['server-bin']);
+    expect(payload.features[0]!.faces[0]!.vertices).toBeInstanceOf(Float32Array);
+    expect(payload.trailer).toEqual({ unchangedIds: [], removedIds: [] });
+    expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/__kernelcad/mesh', expect.objectContaining({
+      headers: expect.objectContaining({
+        Accept: 'application/json, application/x-kernelcad-mesh+bin',
+      }),
+    }));
+  });
+
+  it('parses a JSON server response unchanged when the endpoint did not negotiate bin', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    const jsonPayload = {
+      features: [{ featureId: 'server-json', featureKind: 'box', predecessors: [], faces: [] }],
+      bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+    };
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      headers: { get: (k: string) => (k.toLowerCase() === 'content-type' ? 'application/json' : null) },
+      json: async () => jsonPayload,
+    } as unknown as Response);
+
+    await expect(meshSourceHosted(source, { w: 1 })).resolves.toEqual(jsonPayload);
   });
 });
 

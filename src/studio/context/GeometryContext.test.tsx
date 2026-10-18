@@ -575,36 +575,39 @@ describe('GeometryContext latest-intent-wins', () => {
       crypto: window.crypto,
     });
 
-    const fetchMock = vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        json: async () => ({ error: 'not found' }),
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          features: [
+    const precomputedPayload = {
+      features: [
+        {
+          featureId: 'seat',
+          featureKind: 'box',
+          predecessors: [],
+          faces: [
             {
-              featureId: 'seat',
-              featureKind: 'box',
-              predecessors: [],
-              faces: [
-                {
-                  vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
-                  indices: [0, 1, 2],
-                  normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
-                  faceId: 0,
-                },
-              ],
+              vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+              indices: [0, 1, 2],
+              normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+              faceId: 0,
             },
           ],
-          featureRecords: [],
-          bounds: { min: [0, 0, 0], max: [1, 1, 0] },
-          params: {},
-          review: { ok: true, diagnostics: [] },
-        }),
-      } as Response);
+        },
+      ],
+      featureRecords: [],
+      bounds: { min: [0, 0, 0], max: [1, 1, 0] },
+      params: {},
+      review: { ok: true, diagnostics: [] },
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === '/__kernelcad/session?script=examples%2Fgallery%2Fratchet-stool.kcad.ts') {
+        return { ok: false, status: 404, json: async () => ({ error: 'not found' }) } as Response;
+      }
+      // The bin precomputes miss here; the JSON bridge kept for older clients
+      // answers and still carries the non-geometry channels (params, review).
+      if (url.endsWith('.json')) {
+        return { ok: true, json: async () => precomputedPayload } as Response;
+      }
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
 
     // Regression for the hosted-mesh branch of `fetchMeshAndReview`
     // (`!token && shouldUseHostedMesh()`, exercised by this test): the
@@ -622,11 +625,11 @@ describe('GeometryContext latest-intent-wins', () => {
       </GeometryProvider>,
     );
 
-    await flushUntil(() => fetchMock.mock.calls.length >= 2);
+    await flushUntil(() => screen.getByTestId('face-count').textContent === '1');
 
     expect(fetchUrl(fetchMock, 1)).toBe('/__kernelcad/session?script=examples%2Fgallery%2Fratchet-stool.kcad.ts');
     expect(fetchUrl(fetchMock, 2)).toContain('https://kernelcad.com/gallery/_mesh/');
-    expect(screen.getByTestId('face-count').textContent).toBe('1');
+    expect(fetchUrl(fetchMock, 4)).toContain('https://kernelcad.com/gallery/_mesh/');
     expect(screen.getByTestId('script-review-ok').textContent).toBe('true');
     expect(screen.getByTestId('recompute-ms').textContent).toBe('500');
     perfNowSpy.mockRestore();

@@ -2,7 +2,6 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { remapSketchNames } from '../../../shared/codeGeneration/sketchNaming';
 import { parseCode } from '../../../shared/codeGeneration/ast';
-import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import {
     shouldUseHostedMesh,
@@ -21,7 +20,7 @@ import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimen
  *  `applyAutoRunPayload`, this path has no empty-build guard — it mirrors
  *  `executeGeometry`'s original inline apply blocks exactly. */
 function applyExecuteGeometryPayload(deps: ExecutionApplyDeps, revision: number, executionCount: number, payload: BackendMeshPayload): void {
-    deps.setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+    deps.setGeometries(featureMeshesToGeometries(payload.features));
     deps.setGeometryTransformOverrides({});
     deps.setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
     deps.setScriptParams(Object.values(payload.params ?? {}));

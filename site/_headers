@@ -25,6 +25,15 @@
 # invalidate it short of renaming the file.
 /replicad_single.wasm
   Cache-Control: public, max-age=86400
+# The brotli precomputed mesh: `Content-Encoding: br` makes the browser hand
+# the client transparently decompressed bin1 bytes. On a host without this
+# rule the raw brotli fails the client's magic check and it falls back to the
+# plain `.bin` next to it, so the rule is an optimization, never a dependency.
+# The filename is the source sha256, so immutable is safe.
+/gallery/_mesh/*.bin.br
+  Content-Type: application/x-kernelcad-mesh+bin
+  Content-Encoding: br
+  Cache-Control: public, max-age=31536000, immutable
 /*
   Strict-Transport-Security: max-age=31536000
 

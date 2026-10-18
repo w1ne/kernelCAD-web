@@ -6,10 +6,17 @@ import { fetchStoredMeshStatus } from '../funnel/lib/storedMeshStatus';
 import {
   findGallerySource,
   findGallerySourceUrlForScriptPath,
+  galleryPrecomputedMeshBinBrUrl,
+  galleryPrecomputedMeshBinUrl,
   galleryPrecomputedMeshUrl,
 } from './gallerySource';
 import { apiCall, rewritePath } from './api/apiBase';
 import { bearerAuthHeader, generationIdsForSource } from '../funnel/lib/generationAssets';
+import {
+  decodeMeshBinary,
+  type FeatureMeshSerializedInput,
+  type MeshBinaryTrailer,
+} from '../modeling/capture/featureMeshBinary';
 import type { SerializedParamTable } from '../shared/runtime/paramTable';
 import type { ScriptReviewSummary } from './context/GeometryContext';
 import type { FeatureMeshSerialized } from '../modeling/capture/featureMeshSerialize';
@@ -86,9 +93,14 @@ export function currentStudioScript(): string | null {
  * GeometryContext success handler can consume it the same way.
  */
 export interface BackendMeshPayload {
-  features: FeatureMeshSerialized[];
+  /** JSON responses carry `number[]` geometry; a bin1 response (or precompute)
+   *  carries the same features as typed arrays — `rehydrateFromBridge` accepts
+   *  both, so a decoded payload flows through the existing consumers. */
+  features: Array<FeatureMeshSerialized | FeatureMeshSerializedInput>;
   featureRecords?: FeatureRecord[];
-  bounds: { min: [number, number, number]; max: [number, number, number] };
+  /** Absent on bin1-only payloads: the container holds geometry, and the
+   *  viewers already treat bounds/dimensions as optional decoration. */
+  bounds?: { min: [number, number, number]; max: [number, number, number] };
   params?: SerializedParamTable;
   /** Deterministic review baked at build time (precompute) or returned by the
    *  server mesh endpoint. Drives the adaptive scene tree + Validity tab on the
@@ -102,6 +114,9 @@ export interface BackendMeshPayload {
   /** Set by the server when it answered from the stored revision artifact
    *  instead of a fresh build: the shape is the published one, approximately. */
   degraded?: 'revision-artifact' | string;
+  /** Carried by a partial bin1 response: `features` is the changed subset of
+   *  the complement this trailer names (see `mergeFeatureMeshes`). */
+  trailer?: MeshBinaryTrailer;
 }
 
 // --- Mesh status the viewer chrome shows -----------------------------------
@@ -137,7 +152,7 @@ export function getStoredBuildError(): string | null { return storedBuildError; 
 
 export function rootVisibleFeatures(
   payload: Pick<BackendMeshPayload, 'features' | 'rootFeatureIds'>,
-): FeatureMeshSerialized[] {
+): Array<FeatureMeshSerialized | FeatureMeshSerializedInput> {
   const roots = payload.rootFeatureIds;
   if (!roots || roots.length === 0) return payload.features;
   const rootSet = new Set(roots);
@@ -292,10 +307,13 @@ export async function meshSourceDev(
   const { base, headers } = await apiCall();
   const response = await fetch(rewritePath('/__kernelcad/mesh', base), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...headers },
+    headers: { 'Content-Type': 'application/json', Accept: MESH_ACCEPT, ...headers },
     body: JSON.stringify({ source, ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}) }),
   });
-  const payload = await response.json().catch(() => null);
+  // Error bodies are JSON; a 2xx may be bin1 when the middleware negotiates it.
+  const payload = response.ok
+    ? await readMeshResponseBody(response)
+    : await response.json().catch(() => null);
   if (!response.ok) {
     const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
     throw new Error(message);
@@ -353,6 +371,37 @@ async function sha256Hex(text: string): Promise<string> {
 
 function isBridgePayload(value: unknown): value is BackendMeshPayload {
   return !!value && typeof value === 'object' && Array.isArray((value as { features?: unknown }).features);
+}
+
+/** Media type the mesh endpoints answer with when the request `Accept`ed bin1. */
+const MESH_BIN_CONTENT_TYPE = 'application/x-kernelcad-mesh+bin';
+/** Offered on every mesh POST: a server that doesn't know the binary format
+ *  (today's dev middleware and production server) answers JSON as before. */
+const MESH_ACCEPT = `application/json, ${MESH_BIN_CONTENT_TYPE}`;
+
+/** A decoded bin1 container as a bridge payload: typed-array features plus,
+ *  for a partial response, the trailer naming the unchanged/removed rest. */
+function payloadFromMeshBinary(bytes: Uint8Array): BackendMeshPayload {
+  const decoded = decodeMeshBinary(bytes);
+  return {
+    features: decoded.features,
+    ...(decoded.trailer !== undefined ? { trailer: decoded.trailer } : {}),
+  };
+}
+
+/** Body of a mesh response before validation. A 2xx negotiated as bin1 decodes
+ *  to typed arrays; anything else (older server, JSON error body) stays JSON. */
+type MeshResponseBody = Partial<BackendMeshPayload> & {
+  error?: unknown; code?: unknown; path?: unknown; retryAfterMs?: unknown;
+};
+
+async function readMeshResponseBody(response: Response): Promise<MeshResponseBody | null> {
+  const contentType = response.headers?.get?.('content-type') ?? '';
+  if (contentType.includes(MESH_BIN_CONTENT_TYPE)) {
+    return payloadFromMeshBinary(new Uint8Array(await response.arrayBuffer()));
+  }
+  const json: unknown = await response.json().catch(() => null);
+  return json !== null && typeof json === 'object' ? json as MeshResponseBody : null;
 }
 
 /** `/__kernelcad/mesh` body. On a `/p/<slug>` page the revision's own
@@ -417,10 +466,13 @@ async function meshOnServer(base: string, body: ReturnType<typeof hostedMeshBody
     for (let attempt = 0; ; attempt++) {
       const response = await fetch(`${base}/__kernelcad/mesh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...auth },
+        headers: { 'Content-Type': 'application/json', Accept: MESH_ACCEPT, ...auth },
         body: JSON.stringify(body),
       });
-      const payload = await response.json().catch(() => null);
+      // Error bodies (incl. 504 mesh.pending) stay JSON; a 2xx may be bin1.
+      const payload: MeshResponseBody | null = response.ok
+        ? await readMeshResponseBody(response)
+        : await response.json().catch(() => null);
       if (!response.ok) {
         if (response.status === 504 && payload?.code === 'mesh.pending' && attempt < MESH_PENDING_MAX_RETRIES) {
           setMeshNotice({ meshing: true });
@@ -620,8 +672,24 @@ async function meshStoredProject(
   return storedShareMesh(source);
 }
 
+/** The bin1 precompute at `url`, decoded; null on any miss. A `.bin.br` read
+ *  from a host without the `Content-Encoding: br` rule comes back as raw
+ *  brotli, which fails `decodeMeshBinary`'s magic check — so both the brotli
+ *  and the plain variant are safe to try in order. */
+async function fetchPrecomputedMeshBinary(url: string): Promise<BackendMeshPayload | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return payloadFromMeshBinary(new Uint8Array(await res.arrayBuffer()));
+  } catch {
+    return null;
+  }
+}
+
 /** Static precompute by source hash — only without param overrides: the
- *  precompute is keyed on the unmodified source and cannot reflect a slider. */
+ *  precompute is keyed on the unmodified source and cannot reflect a slider.
+ *  Tries the brotli bin (CDN decompresses it in-flight), then the plain bin,
+ *  then the JSON bridge kept for older clients. */
 async function meshGalleryPrecompute(
   source: string,
   paramOverrides: ParamOverrides | undefined,
@@ -629,6 +697,9 @@ async function meshGalleryPrecompute(
   if (hasOverrides(paramOverrides)) return null;
   try {
     const hash = await sha256Hex(source);
+    const binary = await fetchPrecomputedMeshBinary(galleryPrecomputedMeshBinBrUrl(hash))
+      ?? await fetchPrecomputedMeshBinary(galleryPrecomputedMeshBinUrl(hash));
+    if (binary) return binary;
     const res = await fetch(galleryPrecomputedMeshUrl(hash));
     if (!res.ok) return null;
     const payload = await res.json().catch(() => null);
@@ -671,11 +742,12 @@ async function meshViaServer(
 /**
  * Compute the mesh bridge payload for a source string on the hosted deploy.
  * A share page's unedited revision code paints its stored artifact first.
- * Otherwise tries the build-time precompute (a static `_mesh/<sha>.json` on the
- * marketing CDN — instant, zero server compute; the common case since
- * curated gallery sources are static and unedited on first open). Falls back
- * to the server mesh endpoint (`POST {VITE_API_BASE_URL}/__kernelcad/mesh`)
- * for edited code, when a backend is configured. Throws if neither resolves.
+ * Otherwise tries the build-time precompute (static `_mesh/<sha>.bin(.br)`
+ * then `.json` on the marketing CDN — instant, zero server compute; the
+ * common case since curated gallery sources are static and unedited on first
+ * open). Falls back to the server mesh endpoint
+ * (`POST {VITE_API_BASE_URL}/__kernelcad/mesh`) for edited code, when a
+ * backend is configured. Throws if neither resolves.
  */
 export async function meshSourceHosted(
   source: string,

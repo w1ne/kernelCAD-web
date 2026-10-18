@@ -7,7 +7,6 @@ import {
 } from '../../scriptSource';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { detectEmptyBuild, featureMeshesToGeometries } from './types';
-import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
@@ -45,7 +44,7 @@ export function useParamUpdate(
     // execution loop's apply, incl. the empty-build guard). Used by the
     // no-session param recompute path.
     const applyBridgePayload = useCallback((payload: BackendMeshPayload, revision: number) => {
-        const geos = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+        const geos = featureMeshesToGeometries(payload.features);
         const recs = (payload.featureRecords as FeatureRecord[]) ?? [];
         const review = payload.review ?? { ok: true, diagnostics: [] };
         const emptyNotice = detectEmptyBuild(geos.length, recs, review);
