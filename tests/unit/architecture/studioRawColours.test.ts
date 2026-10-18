@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Ratchet: Studio colours come from the semantic tokens in src/index.css
-// (bg-surface-1, text-fg-2, border-border, ...). Files that still carry raw
-// hex or raw gray utilities are listed in studioRawColourBaseline.json with
-// their count. A file may not gain raw colours, and a new file starts at zero.
+// Ratchet: Studio and player colours come from the semantic tokens in
+// src/index.css (bg-surface-1, text-fg-2, border-border, ...). Files under
+// src/studio and src/player that still carry raw hex or raw gray utilities
+// are listed in studioRawColourBaseline.json with their count. A file may
+// not gain raw colours, and a new file starts at zero.
 // Numeric three.js colours (0x...) are not counted. To record a file you moved
 // to the tokens, run: KC_UPDATE_RAW_COLOUR_BASELINE=1 npx vitest run <this file>
 import { describe, expect, it } from 'vitest';
@@ -13,6 +14,7 @@ import { join, relative, resolve } from 'node:path';
 
 const ROOT = resolve(__dirname, '../../..');
 const STUDIO_ROOT = join(ROOT, 'src/studio');
+const PLAYER_ROOT = join(ROOT, 'src/player');
 const BASELINE_PATH = join(__dirname, 'studioRawColourBaseline.json');
 
 /** `bg-[#222]`, `hover:text-gray-400`, `border-zinc-700/50`, ... */
@@ -36,14 +38,14 @@ function countRawColours(source: string): number {
 
 function currentCounts(): Record<string, number> {
   const counts: Record<string, number> = {};
-  for (const file of walk(STUDIO_ROOT).sort()) {
+  for (const file of [...walk(STUDIO_ROOT), ...walk(PLAYER_ROOT)].sort()) {
     const n = countRawColours(readFileSync(file, 'utf8'));
     if (n > 0) counts[relative(ROOT, file)] = n;
   }
   return counts;
 }
 
-describe('studio raw colour ratchet', () => {
+describe('studio + player raw colour ratchet', () => {
   it('counts raw colour classes and quoted hex, not tokens or numeric colours', () => {
     expect(countRawColours(`className="bg-[#222] hover:text-gray-400 border-zinc-700/50"`)).toBe(3);
     expect(countRawColours(`style={{ background: '#111' }}`)).toBe(1);
@@ -51,7 +53,7 @@ describe('studio raw colour ratchet', () => {
     expect(countRawColours(`new THREE.Color(0x222222); // see #709`)).toBe(0);
   });
 
-  it('no Studio file gains raw colours', () => {
+  it('no covered file gains raw colours', () => {
     const counts = currentCounts();
     if (process.env.KC_UPDATE_RAW_COLOUR_BASELINE === '1') {
       writeFileSync(BASELINE_PATH, `${JSON.stringify(counts, null, 2)}\n`);

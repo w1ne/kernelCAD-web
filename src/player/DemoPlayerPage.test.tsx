@@ -55,12 +55,17 @@ describe('DemoPlayerPage.loadFeatureMeshes', () => {
   beforeEach(() => {
     delete (window as { __demoPlayer?: unknown }).__demoPlayer;
     window.history.pushState({}, '', '/demo-player');
+    // The player shim honors the VITE_* env base at runtime; pin it empty so
+    // a local .env.local (VITE_API_BASE_URL=...) cannot reroute these URLs.
+    vi.stubEnv('VITE_KERNELCAD_API_BASE', '');
+    vi.stubEnv('VITE_API_BASE_URL', '');
     vi.restoreAllMocks();
   });
 
   afterEach(() => {
     cleanup();
     delete (window as { __demoPlayer?: unknown }).__demoPlayer;
+    vi.unstubAllEnvs();
   });
 
   it('builds one named THREE.Group per feature; group child count matches face count', async () => {

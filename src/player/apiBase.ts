@@ -2,6 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Minimal backend-URL helper for the standalone player. No auth: the player is
 // a local/render surface; the private Studio keeps its own Supabase-aware client.
+// Deliberate divergence from Studio's client: the player always honors the
+// VITE_* env base, even unsigned-in (Studio blanks it to '' on that path).
 
 export interface ApiCallContext {
   base: string;
