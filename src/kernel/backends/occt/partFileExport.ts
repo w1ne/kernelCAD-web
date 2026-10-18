@@ -20,9 +20,8 @@ import type { Region } from '../../../shared/intent/region';
 /**
  * What this module needs from a lowered part backend: its replicad handle.
  * Kernel modules may not import `modeling/capture/*` (layering: shared →
- * kernel → modeling → …) and this module must not bind back to the concrete
- * `OcctBackend` (it is imported BY occtBackend now), so both surfaces bind
- * structurally — `OcctBackend` / `Shape.lower()`'s result satisfy this.
+ * kernel → modeling → …), so both surfaces bind structurally — `OcctBackend`
+ * / `Shape.lower()`'s result satisfy this interface.
  */
 export interface LoweredPartShape {
   getReplicadShape(): Shape3D;

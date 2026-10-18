@@ -12,8 +12,8 @@ import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { resolveTangency } from './tangencySolver';
 import { sweepProfileAlongHelix, type HelicalSweepSpec } from './helicalSweep';
 import { drawingFromCommands } from './sketchToDrawing';
+import { encodeBinaryStl } from './exportStlBinary';
 import { verifyWatertight, type WatertightReport } from './meshHeal';
-import { partStlBytes } from './partFileExport';
 import { isOcctInitialized } from './backendInit';
 import { meshShapeForExport } from './backendMesh';
 import { locateShape } from './occtPlacement';
@@ -1248,8 +1248,7 @@ export class OcctBackend implements ShapeBackend {
    * pipeline (relative-deflection whole-shape mesh, per-face absolute
    * fallback, position-key weld, crack stitch — see meshShapeForExport),
    * then runs the O(n) edge-adjacency verify on the exact mesh that is
-   * encoded, so the report describes the bytes written. Byte production
-   * delegates to `partStlBytes` so every STL emitter shares one encoder.
+   * encoded, so the report describes the bytes written.
    */
   async exportSTLWithReportAsync(): Promise<{
     bytes: Uint8Array;
@@ -1258,7 +1257,8 @@ export class OcctBackend implements ShapeBackend {
   }> {
     const mesh = meshShapeForExport(this.shape);
     const report = verifyWatertight(mesh);
-    return { bytes: partStlBytes(this, mesh), report, triangleCount: mesh.triangles.length / 3 };
+    const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
+    return { bytes: Uint8Array.from(buf), report, triangleCount: mesh.triangles.length / 3 };
   }
 
   exportSTEP(): Uint8Array {
