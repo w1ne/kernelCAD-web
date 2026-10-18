@@ -19,7 +19,7 @@ const spacing = 80;
 const table = box(400, 130, tableT, true)
   .translate(0, 0, tableT / 2)
   .subtract(
-    box(400, 12, 7.6, true).translate(0, 0, tableT - 3.8),
+    box(400, slot, 7.6, true).translate(0, 0, tableT - 3.8),
     box(400, 18.3, 7.4, true).translate(0, 0, tableT - 7.6 - 3.7),
   )
   .finish('steel');
