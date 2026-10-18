@@ -84,6 +84,7 @@ const stack   = await lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
 const fitted  = await lib.insert(plate, { diameterMm: 5.5, family: 'socket-head-cap-screw', mode: 'bolt' });
 
 // 4. Machining-fixture hardware.
+const set     = await lib.fixture.clampSet({ thread: 'M10', workpieceHeightMm: 36 });
 const tNut    = await lib.fixture.tSlotNut({ thread: 'M10' });
 const stud    = await lib.fixture.clampStud({ thread: 'M10', lengthMm: 80 });
 const clamp   = await lib.fixture.strapClamp({ thread: 'M10' });
@@ -167,6 +168,13 @@ practice); check the supplier drawing before ordering.
 - `stepBlock({ thread })` — step block; treads rise along +X at 10 / 20 / 30 /
   40 (M8), 12 / 24 / 36 / 48 (M10), 15 / 30 / 45 / 60 (M12). Connectors:
   `base-face`, `step-1` … `step-4` on the treads.
+- `clampSet({ thread, workpieceHeightMm })` — one call for a complete set:
+  T-slot nut, clamping stud, strap clamp, step block and flange nut, placed in
+  one frame (stud axis at the origin, table surface at z = 0, workpiece toward
+  -X, block at +X, clamp level with the workpiece). The workpiece height must
+  equal a stocked tread of that thread's block; the stud is the shortest
+  stocked length that clears clamp + nut. Returns `{ studLengthMm, treadMm,
+  clampTopMm, members }`; mirror the set for the other side of the workpiece.
 
 ## Pre-shipped connector convention
 

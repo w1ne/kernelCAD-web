@@ -70,6 +70,17 @@ is a named stock value rather than a guess:
 
 ![The tail of a clamp resting on the step block's tread](fixture-library/fixture-detail.png "The tail bearing lands on step-3; the higher tread stands clear so the clamp cannot climb it.")
 
+The same chain is one call when the workpiece height is known. It must equal
+a stocked tread of the thread's step block (10/20/30/40 for M8, 12/24/36/48
+for M10, 15/30/45/60 for M12):
+
+```kcad
+const set = await lib.fixture.clampSet({ thread: 'M10', workpieceHeightMm: 36 });
+const fixture = assembly('clamp-set');
+for (const member of set.members) fixture.part(member.role, member.shape);
+return fixture.model();
+```
+
 The example's own five lines are the whole API surface for the hardware:
 
 ```ts

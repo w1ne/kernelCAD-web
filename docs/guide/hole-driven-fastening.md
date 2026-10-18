@@ -47,6 +47,21 @@ const fitted = await lib.insert(plate, {
 return fitted.shape;
 ```
 
+A pattern is just similar holes: pattern the part and every instance is
+covered, because the selection is diameter and axis, not feature identity.
+
+```kcad
+const patterned = box(20, 10, 6, true)
+  .hole('top', { u: 0, v: 0, diameter: 3.4, depth: 'through' })
+  .patternLinear({ count: 3, direction: [1, 0, 0], spacing: 15 });
+const fitted = await lib.insert(patterned, {
+  near: [0, 0, 3],
+  family: 'socket-head-cap-screw',
+  mode: 'screw',
+});
+return fitted.shape;
+```
+
 ![Four countersunk bolts and two socket-head screws placed from the holes](hole-driven-fastening/insert.png "The example plate: Ø5.5 bores became M5 countersunk bolts, Ø3.4 bores became M3 socket-head screws.")
 
 ![Detail of the flush countersunk heads](hole-driven-fastening/insert-detail.png "The seat follows the family: a 90° countersink to the head diameter, and the flat head's envelope frustum fills it flush.")
