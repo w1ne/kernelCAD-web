@@ -12,6 +12,7 @@
 
 import { createBrowserKernel, type BrowserKernel } from './browserKernelClient';
 import { browserKernelEnabled } from './flag';
+import { kernelEventSink } from './kernelEventSink';
 
 let instance: BrowserKernel | null = null;
 let warmedSource: string | null = null;
@@ -79,7 +80,15 @@ function spawnKernelWorker(): Worker {
 }
 
 function browserKernelInstance(): BrowserKernel {
-  if (instance === null) instance = createBrowserKernel({ spawn: spawnKernelWorker });
+  if (instance === null) {
+    instance = createBrowserKernel({
+      spawn: spawnKernelWorker,
+      // Live indirection: `kernelEventSink()` is read per event, so a sink
+      // installed after the kernel was created (tests, a future hosted
+      // telemetry endpoint) receives everything from that point on.
+      onEvent: (event) => kernelEventSink()(event),
+    });
+  }
   return instance;
 }
 
@@ -93,11 +102,13 @@ export function browserKernelForSource(source: string): BrowserKernel | null {
 }
 
 /** Warm the kernel for `(source, fileName)` in the background. Fire-and-
- *  forget: warm rejects on failure/dispose (see the client's typed errors) and
- *  no caller can act on that — routing simply sees a not-warm kernel. A new
- *  source swaps the old worker only after `WARM_SETTLE_MS` (latest swap wins,
- *  a change back to the current source cancels it) so no state leaks across
- *  models without churning the worker on every debounced code edit. */
+ *  forget: warm rejects on failure/dispose (see the client's typed errors) —
+ *  or throws synchronously when `spawn` itself throws (the embed build's stub,
+ *  a CSP-blocked `new Worker`) — and no caller can act on that: routing simply
+ *  sees a not-warm kernel. A new source swaps the old worker only after
+ *  `WARM_SETTLE_MS` (latest swap wins, a change back to the current source
+ *  cancels it) so no state leaks across models without churning the worker on
+ *  every debounced code edit. */
 export function warmBrowserKernel(source: string, fileName: string): void {
   // Intentionally skips the capability flag check; `warmKernelOnOpen` is the production entry.
   if (browserKernelSourceIsServerOnly(source)) {
@@ -122,7 +133,15 @@ export function warmBrowserKernel(source: string, fileName: string): void {
   cancelPendingWarmSwap();
   const kernel = browserKernelInstance();
   warmedSource = source;
-  void kernel.warm(source, fileName).catch(() => {});
+  try {
+    void kernel.warm(source, fileName).catch(() => {});
+  } catch (err) {
+    // `spawn` can throw synchronously before `warm` returns a promise. The
+    // fire-and-forget contract must hold: the kernel never reaches warm, so
+    // `browserKernelForSource` stays null and routing serves the model from
+    // the server, exactly as after any failed warm.
+    console.debug('[kernel] warm could not start', err);
+  }
 }
 
 /** Terminate the worker and forget the warmed source, dropping a pending

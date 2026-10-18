@@ -21,7 +21,9 @@ import {
   warmBrowserKernel,
   warmKernelOnOpen,
 } from './kernelSingleton';
+import { setKernelEventSink, type KernelEvent } from './kernelEventSink';
 import type { BrowserKernel, KernelStatus } from './browserKernelClient';
+import type { KernelRequest, KernelResponse } from './protocol';
 
 interface FakeKernel {
   kernel: BrowserKernel;
@@ -48,6 +50,7 @@ beforeEach(() => {
 
 afterEach(() => {
   __resetBrowserKernelForTests();
+  setKernelEventSink(null);
   vi.useRealTimers();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
@@ -358,5 +361,134 @@ describe('warm swap settling with the hidden-tab deferral', () => {
 
     expect(h.warmMock).not.toHaveBeenCalled();
     expect(browserKernelForSource('source-a')).toBe(h.kernel);
+  });
+});
+
+/** A fake worker with a recording constructor, so the tests can drive the real
+ *  `createBrowserKernel` the singleton builds on the first warm. */
+class RecordingWorker {
+  static instances: RecordingWorker[] = [];
+  onmessage: ((e: MessageEvent) => void) | null = null;
+  onerror: ((e: unknown) => void) | null = null;
+  onmessageerror: ((e: unknown) => void) | null = null;
+  posted: KernelRequest[] = [];
+  terminated = false;
+
+  constructor() {
+    RecordingWorker.instances.push(this);
+  }
+
+  postMessage(msg: unknown): void {
+    this.posted.push(msg as KernelRequest);
+  }
+
+  terminate(): void {
+    this.terminated = true;
+  }
+
+  reply(msg: KernelResponse): void {
+    this.onmessage?.({ data: msg } as MessageEvent);
+  }
+}
+
+function lastBuild(worker: RecordingWorker): Extract<KernelRequest, { type: 'build' }> {
+  const msg = [...worker.posted].reverse().find((m) => m.type === 'build');
+  if (msg?.type !== 'build') throw new Error('no build request posted');
+  return msg;
+}
+
+function lastParams(worker: RecordingWorker): Extract<KernelRequest, { type: 'params' }> {
+  const msg = [...worker.posted].reverse().find((m) => m.type === 'params');
+  if (msg?.type !== 'params') throw new Error('no params request posted');
+  return msg;
+}
+
+function resultResponse(
+  id: number,
+  overrides: Partial<Extract<KernelResponse, { type: 'result' }>> = {},
+): KernelResponse {
+  return {
+    v: 1,
+    id,
+    type: 'result',
+    payload: new Uint8Array([1, 2, 3]),
+    params: {},
+    featureRecords: [{ id: 'box#1' }, { id: 'cyl#1' }],
+    bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+    failedFeatureIds: [],
+    ...overrides,
+  };
+}
+
+describe('kernel event flow through the singleton', () => {
+  it('routes warm, params, and host-fs fallback events to a sink swapped in after creation', async () => {
+    const before: KernelEvent[] = [];
+    const events: KernelEvent[] = [];
+    setKernelEventSink((event) => before.push(event));
+    vi.stubGlobal('Worker', RecordingWorker);
+    RecordingWorker.instances = [];
+
+    warmBrowserKernel('const w = param("Width", 40);', 'studio.kcad.ts');
+    const worker = RecordingWorker.instances[0]!;
+
+    // The singleton reads the sink per event: swapping after the kernel was
+    // created must reroute everything emitted from here on.
+    setKernelEventSink((event) => events.push(event));
+
+    const build = lastBuild(worker);
+    worker.reply({ v: 1, id: build.id, type: 'script-done' });
+    worker.reply(resultResponse(build.id));
+
+    expect(before).toEqual([]);
+    expect(events).toContainEqual({ type: 'init', ms: expect.any(Number) });
+    expect(events).toContainEqual({ type: 'build', ms: expect.any(Number), featureCount: 2 });
+
+    const kernel = browserKernelForSource('const w = param("Width", 40);');
+    expect(kernel).not.toBeNull();
+    const paramsPromise = kernel!.params([{ name: 'Width', value: 60 }]);
+    worker.reply(resultResponse(lastParams(worker).id, { payload: new Uint8Array(4) }));
+    await paramsPromise;
+
+    expect(events).toContainEqual({ type: 'params', ms: expect.any(Number), bytes: 4 });
+
+    // A fresh source whose worker reports a host-fs failure must surface the
+    // fallback reason on the same sink.
+    __resetBrowserKernelForTests();
+    RecordingWorker.instances = [];
+    warmBrowserKernel('const s = 1;', 'studio.kcad.ts');
+    const failing = RecordingWorker.instances[0]!;
+    failing.reply({
+      v: 1,
+      id: lastBuild(failing).id,
+      type: 'error',
+      code: 'host-fs-unavailable',
+      message: 'needs a filesystem',
+    });
+
+    expect(events).toContainEqual({ type: 'fallback', reason: 'host-fs' });
+  });
+});
+
+describe('warm with a synchronously-throwing spawn', () => {
+  it('does not throw out of warmKernelOnOpen and leaves routing on the server path', () => {
+    vi.stubEnv('VITE_STUDIO_BROWSER_KERNEL', 'force');
+    class ThrowingWorker {
+      constructor() {
+        throw new Error('new Worker blocked');
+      }
+    }
+    vi.stubGlobal('Worker', ThrowingWorker);
+    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+    expect(() => warmKernelOnOpen('const w = 1;', 'studio.kcad.ts')).not.toThrow();
+    expect(browserKernelForSource('const w = 1;')).toBeNull();
+    expect(debugSpy).toHaveBeenCalledTimes(1);
+
+    // A later edit on the same source repeats the guarded attempt instead of
+    // crashing; routing still sees a not-warm kernel and keeps the model on
+    // the server path (the routing tests cover that fallback).
+    expect(() => warmKernelOnOpen('const w = 1;', 'studio.kcad.ts')).not.toThrow();
+    expect(browserKernelForSource('const w = 1;')).toBeNull();
+    expect(debugSpy).toHaveBeenCalledTimes(2);
   });
 });

@@ -84,7 +84,7 @@ export function stripEmbedWorkers(): Plugin {
             }
             if (id.endsWith(kernelWorkerPath)) {
                 const replaced = code.replace(
-                    /new Worker\(new URL\('\.\/studioKernelWorker\.ts', import\.meta\.url\), \{ type: 'module' \}\)/,
+                    /new Worker\(new URL\([^)]*studioKernelWorker\.ts[^)]*\)[^)]*\)/,
                     "(() => { throw new Error('browser kernel is not available in the embed build'); })()",
                 );
                 if (replaced === code) {
