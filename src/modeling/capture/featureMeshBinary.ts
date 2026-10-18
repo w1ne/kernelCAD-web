@@ -12,7 +12,8 @@
 // buffers `{ len u32, bytes, pad to 4 }` in order: vertices f32, normals f32, [uv f32], indices
 // u32, [mesh positions f32, mesh normals f32, mesh indices u32], [edges f32]; each region holds
 // all faces concatenated and meta face ranges are element offsets into it. A trailer rides in
-// the FIRST record's meta as `{ meta, trailer }` with flags bit0 set.
+// the FIRST record's meta as `{ meta, trailer }` with flags bit0 set; a `containerMeta` (the
+// bridge payload minus features) rides in the same envelope as a reserved `containerMeta` key.
 
 import type { FeatureMesh } from './featureMeshing';
 import type { FeatureMeshSerialized } from './featureMeshSerialize';
@@ -133,6 +134,7 @@ function normalizeFace(face: FaceGeometryInput | FaceGeometry): NormalizedFace {
 function normalizeRecord(
   input: FeatureMeshSerializedInput | FeatureMesh,
   trailer?: MeshBinaryTrailer,
+  containerMeta?: Record<string, unknown>,
 ): NormalizedRecord {
   const { faces: rawFaces, mesh: rawMesh, edges: rawEdges, ...feature } = input;
   // Re-encoding a decoded feature carries its old fingerprint; the hash below is recomputed
@@ -189,7 +191,11 @@ function normalizeRecord(
     hasUv, hasMesh: mesh !== undefined, hasEdges: edges !== undefined,
     fingerprint,
   };
-  const json = trailer !== undefined ? JSON.stringify({ meta, trailer }) : JSON.stringify(meta);
+  // A containerMeta (bridge metadata: params, review, records, bounds, …) rides in the first
+  // record's envelope; the trailer keeps `__partial` marking the envelope as a partial payload.
+  const json = containerMeta !== undefined
+    ? JSON.stringify({ meta, ...(trailer !== undefined ? { trailer, __partial: true } : {}), containerMeta })
+    : trailer !== undefined ? JSON.stringify({ meta, trailer }) : JSON.stringify(meta);
   const metaJson = new TextEncoder().encode(json);
   return { metaJson, metaPaddedLength: pad4(metaJson.byteLength), chunks };
 }
@@ -197,12 +203,16 @@ function normalizeRecord(
 export function encodeMeshBinary(
   features: Array<FeatureMeshSerializedInput | FeatureMesh>,
   trailer?: MeshBinaryTrailer,
+  containerMeta?: Record<string, unknown>,
 ): Uint8Array {
   if (trailer !== undefined && features.length === 0) {
     throw new Error("featureMeshBinary: a trailer needs at least one feature — it rides in the first record's meta");
   }
+  if (containerMeta !== undefined && features.length === 0) {
+    throw new Error("featureMeshBinary: containerMeta needs at least one feature — it rides in the first record's meta");
+  }
   const records = features.map((feature, index) =>
-    normalizeRecord(feature, index === 0 ? trailer : undefined),
+    normalizeRecord(feature, index === 0 ? trailer : undefined, index === 0 ? containerMeta : undefined),
   );
   const count = records.length;
   let byteLength = 12 + count * 16;
@@ -322,6 +332,7 @@ function rebuildFeature(bytes: Uint8Array, meta: DecodedMeta, slices: BufferSlic
 export function decodeMeshBinary(bytes: Uint8Array): {
   features: FeatureMeshSerializedInput[];
   trailer?: MeshBinaryTrailer;
+  containerMeta?: Record<string, unknown>;
 } {
   if (bytes.byteOffset % 4 !== 0) {
     throw new Error(`featureMeshBinary: byteOffset must be 4-byte aligned (got ${bytes.byteOffset})`);
@@ -366,6 +377,7 @@ export function decodeMeshBinary(bytes: Uint8Array): {
   const decoder = new TextDecoder();
   const features: FeatureMeshSerializedInput[] = [];
   let trailer: MeshBinaryTrailer | undefined;
+  let containerMeta: Record<string, unknown> | undefined;
   let cursor = bufferStart;
   for (let i = 0; i < count; i += 1) {
     const entry = entries[i];
@@ -378,12 +390,20 @@ export function decodeMeshBinary(bytes: Uint8Array): {
       throw new Error(`featureMeshBinary: record ${i} metadata is not valid JSON`);
     }
     // flags bit0 gates the trailer: a stray `trailer` key without the flag stays ignored.
-    const envelope = parsed as { meta?: DecodedMeta; trailer?: MeshBinaryTrailer };
-    if (i === 0 && (flags & MESH_BIN_FLAG_PARTIAL) !== 0) {
-      if (envelope.trailer === undefined) {
-        throw new Error('featureMeshBinary: partial flag is set but record 0 metadata carries no trailer');
+    const envelope = parsed as { meta?: DecodedMeta; trailer?: MeshBinaryTrailer; containerMeta?: unknown };
+    if (i === 0) {
+      if ((flags & MESH_BIN_FLAG_PARTIAL) !== 0) {
+        if (envelope.trailer === undefined) {
+          throw new Error('featureMeshBinary: partial flag is set but record 0 metadata carries no trailer');
+        }
+        trailer = envelope.trailer;
       }
-      trailer = envelope.trailer;
+      if (envelope.containerMeta !== undefined) {
+        if (typeof envelope.containerMeta !== 'object' || envelope.containerMeta === null) {
+          throw new Error(`featureMeshBinary: record 0 containerMeta is not an object (got ${envelope.containerMeta === null ? 'null' : typeof envelope.containerMeta})`);
+        }
+        containerMeta = envelope.containerMeta as Record<string, unknown>;
+      }
     }
     const meta = envelope.meta !== undefined ? envelope.meta : (parsed as DecodedMeta);
 
@@ -405,5 +425,9 @@ export function decodeMeshBinary(bytes: Uint8Array): {
     }
     features.push(rebuildFeature(bytes, meta, slices, i));
   }
-  return trailer !== undefined ? { features, trailer } : { features };
+  return {
+    features,
+    ...(trailer !== undefined ? { trailer } : {}),
+    ...(containerMeta !== undefined ? { containerMeta } : {}),
+  };
 }

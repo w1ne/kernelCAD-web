@@ -243,17 +243,20 @@ export async function fetchCommunityGallery(
 /**
  * Writes the three precomputed mesh artifacts for one entry under
  * `_mesh/<sha>`: the JSON bridge (unchanged — old clients and the ChatGPT
- * embed read it), the bin1 container (smaller + zero-parse), and its brotli
- * sibling (a custom binary content type is not auto-compressed by the CDN).
- * All three encode the SAME feature list, so they cannot drift apart.
+ * embed read it), the bin1 container (smaller + zero-parse; the bridge payload
+ * minus its features rides inside it as the reserved `containerMeta` entry, so
+ * one bin fetch still reconstructs params/review/records/bounds), and its
+ * brotli sibling (a custom binary content type is not auto-compressed by the
+ * CDN). All three encode the SAME feature list, so they cannot drift apart.
  */
 export function writeMeshArtifacts(
   meshOutDir: string,
   sourceSha256Hex: string,
-  bridgePayload: { features: FeatureMeshSerialized[] },
+  bridgePayload: { features: FeatureMeshSerialized[] } & Record<string, unknown>,
 ): void {
   const json = encodeBridgePayload(bridgePayload);
-  const bin = Buffer.from(encodeMeshBinary(bridgePayload.features));
+  const { features, ...containerMeta } = bridgePayload;
+  const bin = Buffer.from(encodeMeshBinary(features, undefined, containerMeta));
   const brotli = brotliCompressSync(bin, {
     params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 },
   });

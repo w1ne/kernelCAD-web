@@ -628,8 +628,24 @@ describe('binary precompute preference and bin negotiation', () => {
     };
   }
 
+  /** A modern precompute carries the bridge metadata inside the container. */
   function binOk(features: FeatureMeshSerializedInput[], trailer?: MeshBinaryTrailer): Response {
-    const bytes = encodeMeshBinary(features, trailer);
+    const bytes = encodeMeshBinary(features, trailer, { params: {}, review: { ok: true, diagnostics: [] } });
+    return { ok: true, arrayBuffer: async () => bytes.buffer } as unknown as Response;
+  }
+
+  function binOkWithMeta(
+    features: FeatureMeshSerializedInput[],
+    containerMeta: Record<string, unknown>,
+    trailer?: MeshBinaryTrailer,
+  ): Response {
+    const bytes = encodeMeshBinary(features, trailer, containerMeta);
+    return { ok: true, arrayBuffer: async () => bytes.buffer } as unknown as Response;
+  }
+
+  /** A legacy precompute from before the metadata amendment: geometry only. */
+  function legacyBinOk(features: FeatureMeshSerializedInput[]): Response {
+    const bytes = encodeMeshBinary(features);
     return { ok: true, arrayBuffer: async () => bytes.buffer } as unknown as Response;
   }
 
@@ -703,6 +719,66 @@ describe('binary precompute preference and bin negotiation', () => {
     const payload = await meshSourceHosted(source);
 
     expect(payload.features.map((f) => f.featureId)).toEqual(['json-feature']);
+    const urls = fetchedUrls(fetchMock);
+    expect(urls.some((u) => u.endsWith('.bin.br'))).toBe(true);
+    expect(urls.some((u) => u.endsWith('.bin'))).toBe(true);
+    expect(urls.some((u) => u.endsWith('.json'))).toBe(true);
+  });
+
+  it('restores the non-geometry payload from a bin precompute carrying containerMeta', async () => {
+    const containerMeta = {
+      params: { width: { value: 10, unit: 'mm' } },
+      review: { ok: true, diagnostics: [] },
+      featureRecords: [{ kind: 'box', featureId: 'rec-1' }],
+      bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+      dimensions: [{ name: 'Width', value: 1 }],
+      rootFeatureIds: ['bin-meta'],
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (String(input).endsWith('.bin.br')) return binOkWithMeta([binFeature('bin-meta')], containerMeta);
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    const payload = await meshSourceHosted(source);
+
+    expect(payload.features.map((f) => f.featureId)).toEqual(['bin-meta']);
+    expect(payload.features[0]!.faces[0]!.vertices).toBeInstanceOf(Float32Array);
+    expect(payload.params).toEqual(containerMeta.params);
+    expect(payload.review).toEqual(containerMeta.review);
+    expect(payload.featureRecords).toEqual(containerMeta.featureRecords);
+    expect(payload.bounds).toEqual(containerMeta.bounds);
+    expect(payload.dimensions).toEqual(containerMeta.dimensions);
+    expect(payload.rootFeatureIds).toEqual(containerMeta.rootFeatureIds);
+    // One fetch — the .bin and .json fallbacks stay untouched.
+    const urls = fetchedUrls(fetchMock);
+    expect(urls).toHaveLength(1);
+    expect(urls[0]).toMatch(/\.bin\.br$/);
+  });
+
+  it('treats a legacy bin precompute without containerMeta as unusable and falls through to JSON', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith('.bin.br') || url.endsWith('.bin')) {
+        return legacyBinOk([binFeature('legacy-bin')]);
+      }
+      if (url.endsWith('.json')) {
+        return {
+          ok: true,
+          json: async () => ({
+            features: [{ featureId: 'json-after-legacy', featureKind: 'box', predecessors: [], faces: [] }],
+            params: {},
+            review: { ok: true, diagnostics: [] },
+          }),
+        } as Response;
+      }
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    const payload = await meshSourceHosted(source);
+
+    expect(payload.features.map((f) => f.featureId)).toEqual(['json-after-legacy']);
+    expect(payload.params).toEqual({});
+    expect(payload.review).toEqual({ ok: true, diagnostics: [] });
     const urls = fetchedUrls(fetchMock);
     expect(urls.some((u) => u.endsWith('.bin.br'))).toBe(true);
     expect(urls.some((u) => u.endsWith('.bin'))).toBe(true);

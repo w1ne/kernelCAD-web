@@ -86,6 +86,24 @@ describe('encode/decode round-trip', () => {
     expect(features[0]!.fingerprint).toMatch(/^[0-9a-f]{16}$/);
   });
 
+  it('round-trips containerMeta, alone and beside a trailer', () => {
+    const containerMeta = {
+      params: { width: { value: 10, unit: 'mm' } },
+      review: { ok: true, diagnostics: [] },
+      bounds: { min: [0, 0, 0], max: [2, 2, 2] },
+    };
+    const decoded = decodeMeshBinary(encodeMeshBinary([feature()], undefined, containerMeta));
+    expect(decoded.containerMeta).toEqual(containerMeta);
+    expect(decoded.trailer).toBeUndefined();
+
+    const trailer: MeshBinaryTrailer = { unchangedIds: ['shape#9'], removedIds: [] };
+    const partial = decodeMeshBinary(encodeMeshBinary([feature()], trailer, containerMeta));
+    expect(partial.trailer).toEqual(trailer);
+    expect(partial.containerMeta).toEqual(containerMeta);
+
+    expect(decodeMeshBinary(encodeMeshBinary([feature()])).containerMeta).toBeUndefined();
+  });
+
   it('round-trips cylinder faces', () => {
     const cylinder = {
       origin: [0, 0, 0] as [number, number, number],
@@ -125,8 +143,9 @@ describe('encode/decode round-trip', () => {
     expect(Array.from(features[1]!.edges as Float32Array)).toEqual([0.5]);
   });
 
-  it('rejects a trailer with no records and a partial flag with no trailer', () => {
+  it('rejects a trailer or containerMeta with no records and a partial flag with no trailer', () => {
     expect(() => encodeMeshBinary([], { unchangedIds: [], removedIds: ['shape#8'] })).toThrow(/trailer/);
+    expect(() => encodeMeshBinary([], undefined, { params: {} })).toThrow(/containerMeta/);
     const bytes = encodeMeshBinary([feature()]);
     new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).setUint16(6, MESH_BIN_FLAG_PARTIAL, true);
     expect(() => decodeMeshBinary(bytes)).toThrow(/trailer/);
@@ -443,6 +462,44 @@ describe('decode corruption guard rails', () => {
         return bytes.slice(0, bytes.byteLength - 2);
       },
       message: /record 0 buffer 2 padding overflows the container/,
+    },
+    {
+      name: 'a containerMeta that is not an object',
+      mutate: () => craftContainer(
+        {
+          meta: {
+            feature: { featureId: 'meta-bad#1', featureKind: 'box', predecessors: [] },
+            faces: [{ faceId: 1, vertexOffset: 0, vertexCount: 3, indexOffset: 0, indexCount: 1 }],
+            hasUv: false, hasMesh: false, hasEdges: false,
+          },
+          containerMeta: 'nope',
+        },
+        [
+          f32Bytes([0, 0, 0]),
+          f32Bytes([0, 0, 1]),
+          u32Bytes([0, 1, 2]),
+        ],
+      ),
+      message: /record 0 containerMeta is not an object/,
+    },
+    {
+      name: 'a null containerMeta',
+      mutate: () => craftContainer(
+        {
+          meta: {
+            feature: { featureId: 'meta-null#1', featureKind: 'box', predecessors: [] },
+            faces: [{ faceId: 1, vertexOffset: 0, vertexCount: 3, indexOffset: 0, indexCount: 1 }],
+            hasUv: false, hasMesh: false, hasEdges: false,
+          },
+          containerMeta: null,
+        },
+        [
+          f32Bytes([0, 0, 0]),
+          f32Bytes([0, 0, 1]),
+          u32Bytes([0, 1, 2]),
+        ],
+      ),
+      message: /record 0 containerMeta is not an object/,
     },
     {
       name: 'a partial flag with zero records',

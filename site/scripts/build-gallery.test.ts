@@ -168,9 +168,16 @@ describe('buildGallery', () => {
     const binPath=path.join(publicDir,'gallery/_mesh',sha+'.bin'),brPath=path.join(publicDir,'gallery/_mesh',sha+'.bin.br');
     expect(existsSync(binPath)).toBe(true);expect(existsSync(brPath)).toBe(true);
     const bin=readFileSync(binPath);
-    expect(decodeMeshBinary(new Uint8Array(bin)).features.map(f=>f.featureId))
+    const decodedBin=decodeMeshBinary(new Uint8Array(bin));
+    expect(decodedBin.features.map(f=>f.featureId))
       .toEqual(bridge.features.map((f:{featureId:string})=>f.featureId));
+    expect(decodedBin.containerMeta?.params).toEqual(bridge.params);
+    expect(decodedBin.containerMeta?.review).toEqual(bridge.review);
+    expect(decodedBin.containerMeta?.bounds).toEqual(bridge.bounds);
+    expect(decodedBin.containerMeta?.featureRecords).toEqual(bridge.featureRecords);
     expect(brotliDecompressSync(readFileSync(brPath)).equals(bin)).toBe(true);
+    expect(decodeMeshBinary(new Uint8Array(brotliDecompressSync(readFileSync(brPath)))).containerMeta?.params)
+      .toEqual(bridge.params);
   });
 
   it('fails a selected compact bridge when source precomputation fails', {timeout:60000}, async () => {
@@ -397,14 +404,24 @@ describe('writeMeshArtifacts', () => {
     const bin = readFileSync(binPath);
     const binBytes = new Uint8Array(bin); // fresh copy: byteOffset 0, decode-safe
     expect(Array.from(binBytes.subarray(0, 4))).toEqual([0x4b, 0x43, 0x42, 0x31]);
-    expect(decodeMeshBinary(binBytes).features.map((f) => f.featureId)).toEqual(['box-1']);
+    const decodedBin = decodeMeshBinary(binBytes);
+    expect(decodedBin.features.map((f) => f.featureId)).toEqual(['box-1']);
+    // The JSON bridge minus its features rides INSIDE the container, so one bin
+    // fetch reconstructs the full payload (params/review/bounds, not just geometry).
+    const { features: _features, ...containerMeta } = payload;
+    expect(decodedBin.containerMeta).toEqual(containerMeta);
+    expect(decodedBin.containerMeta?.params).toEqual(payload.params);
+    expect(decodedBin.containerMeta?.review).toEqual(payload.review);
+    expect(decodedBin.containerMeta?.bounds).toEqual(payload.bounds);
+    expect(decodedBin.containerMeta?.featureRecords).toEqual(payload.featureRecords);
 
     // The .br sibling is brotli quality 11 of exactly those bin bytes.
     expect(readFileSync(brPath).equals(brotliCompressSync(bin, {
       params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 },
     }))).toBe(true);
     const brBytes = new Uint8Array(brotliDecompressSync(readFileSync(brPath)));
-    expect(decodeMeshBinary(brBytes).features.map((f) => f.featureId)).toEqual(['box-1']);
+    expect(brBytes).toEqual(binBytes);
+    expect(decodeMeshBinary(brBytes).containerMeta).toEqual(containerMeta);
   });
 });
 

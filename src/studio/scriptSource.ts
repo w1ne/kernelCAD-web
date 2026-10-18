@@ -98,8 +98,9 @@ export interface BackendMeshPayload {
    *  both, so a decoded payload flows through the existing consumers. */
   features: Array<FeatureMeshSerialized | FeatureMeshSerializedInput>;
   featureRecords?: FeatureRecord[];
-  /** Absent on bin1-only payloads: the container holds geometry, and the
-   *  viewers already treat bounds/dimensions as optional decoration. */
+  /** May be absent on a bin1-only server response: the container holds
+   *  geometry, and the viewers already treat bounds/dimensions as optional
+   *  decoration. A gallery precompute carries it inside `containerMeta`. */
   bounds?: { min: [number, number, number]; max: [number, number, number] };
   params?: SerializedParamTable;
   /** Deterministic review baked at build time (precompute) or returned by the
@@ -672,15 +673,25 @@ async function meshStoredProject(
   return storedShareMesh(source);
 }
 
-/** The bin1 precompute at `url`, decoded; null on any miss. A `.bin.br` read
- *  from a host without the `Content-Encoding: br` rule comes back as raw
- *  brotli, which fails `decodeMeshBinary`'s magic check — so both the brotli
- *  and the plain variant are safe to try in order. */
+/** The bin1 precompute at `url` as a full bridge payload; null on any miss.
+ *  A `.bin.br` read from a host without the `Content-Encoding: br` rule comes
+ *  back as raw brotli, which fails `decodeMeshBinary`'s magic check — so both
+ *  the brotli and the plain variant are safe to try in order. A bin without a
+ *  `containerMeta` object (pre-amendment deploy) is geometry-only and treated
+ *  as a miss, so the caller falls through to the JSON bridge instead of
+ *  painting with empty params/review/featureRecords. */
 async function fetchPrecomputedMeshBinary(url: string): Promise<BackendMeshPayload | null> {
   try {
     const res = await fetch(url);
     if (!res.ok) return null;
-    return payloadFromMeshBinary(new Uint8Array(await res.arrayBuffer()));
+    const decoded = decodeMeshBinary(new Uint8Array(await res.arrayBuffer()));
+    const containerMeta = decoded.containerMeta;
+    if (typeof containerMeta !== 'object' || containerMeta === null) return null;
+    return {
+      ...containerMeta,
+      features: decoded.features,
+      ...(decoded.trailer !== undefined ? { trailer: decoded.trailer } : {}),
+    };
   } catch {
     return null;
   }
@@ -689,7 +700,9 @@ async function fetchPrecomputedMeshBinary(url: string): Promise<BackendMeshPaylo
 /** Static precompute by source hash — only without param overrides: the
  *  precompute is keyed on the unmodified source and cannot reflect a slider.
  *  Tries the brotli bin (CDN decompresses it in-flight), then the plain bin,
- *  then the JSON bridge kept for older clients. */
+ *  then the JSON bridge kept for older clients. A bin from a pre-amendment
+ *  deploy carries no `containerMeta` and is skipped, so it falls through to
+ *  its JSON sibling — the deploy order is safe without a cache bust. */
 async function meshGalleryPrecompute(
   source: string,
   paramOverrides: ParamOverrides | undefined,
