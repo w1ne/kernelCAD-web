@@ -82,6 +82,12 @@ const conn    = await lib.standard.jstXH({ pins: 4 });
 const screw   = await lib.part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 });
 const stack   = await lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
 const fitted  = await lib.insert(plate, { diameterMm: 5.5, family: 'socket-head-cap-screw', mode: 'bolt' });
+
+// 4. Machining-fixture hardware.
+const tNut    = await lib.fixture.tSlotNut({ thread: 'M10' });
+const stud    = await lib.fixture.clampStud({ thread: 'M10', lengthMm: 80 });
+const clamp   = await lib.fixture.strapClamp({ thread: 'M10' });
+const block   = await lib.fixture.stepBlock({ thread: 'M10' });
 ```
 
 `lib.fetchPart('iso-4762-m3x12')` and
@@ -139,6 +145,28 @@ Two bores need a second look:
 - A coaxial larger bore that already reaches the mouth (a counterbore) is
   reported as `existingSeatMm`; `seat: 'auto'` then leaves the hole alone
   instead of cutting a second seat into it.
+
+## Machining-fixture hardware — lib.fixture
+
+`lib.fixture.*` is the clamping kit for a T-slot machine table, keyed by the
+thread the hardware uses (M8 / M10 / M12). The solids are nominal envelope
+values from the stock table (slot/thread pairing follows common machine-table
+practice); check the supplier drawing before ordering.
+
+- `tSlotNut({ thread })` — T-slot nut (DIN 508 form): slot 10 / 12 / 14 mm for
+  M8 / M10 / M12. Bore axis +Z, top face flush at z = 0, base below.
+  Connectors: `mating-face` (wing tops), `top-face`, `thread-bore`.
+- `clampStud({ thread, lengthMm })` — clamping stud (DIN 6379 form); stocked
+  lengths 63 / 100 (M8), 80 / 125 (M10), 100 / 160 (M12). Connectors:
+  `table-end`, `clamp-end`, `axis`.
+- `flangeNut({ thread })` — flange nut (DIN 6330 form) for the clamp top.
+  Connectors: `mating-face`, `top-face`, `inner-bore`.
+- `strapClamp({ thread })` — strap clamp; the slot center is the origin and
+  the nose points toward -X, so `slot-axis` is where the stud goes.
+  Connectors: `nose-bearing`, `tail-bearing`, `slot-axis`, `top-face`.
+- `stepBlock({ thread })` — step block; treads rise along +X at 10 / 20 / 30 /
+  40 (M8), 12 / 24 / 36 / 48 (M10), 15 / 30 / 45 / 60 (M12). Connectors:
+  `base-face`, `step-1` … `step-4` on the treads.
 
 ## Pre-shipped connector convention
 
@@ -229,7 +257,7 @@ See `kernelcad-mcp` for the full grammar.
 
 ## Bundled-only by default
 
-Bundled tier coverage (275 records on the seed catalog):
+Bundled tier coverage (293 records on the seed catalog):
 
 - M2 / M2.5 / M3 / M4 / M5 / M6 socket head, button head, flat head
   countersunk screws (ISO 4762 / 7380 / 10642).
@@ -243,6 +271,10 @@ Bundled tier coverage (275 records on the seed catalog):
   4-bolt-hole connector frames at the standard bolt circle.
 - 2.54 mm and 1.27 mm pin headers, 2–20 pins, straight and right-angle.
 - JST-XH housings, 2 / 3 / 4 / 5 / 6 pin.
+- Machining-fixture hardware M8 / M10 / M12: T-slot nuts (slot 10 / 12 /
+  14 mm), clamping studs (63–160 mm), flange nuts, strap clamps (100 / 125 /
+  160 mm) and step blocks (40 / 48 / 60 mm of treads), envelope solids with
+  placement connectors (`lib.fixture.*`).
 
 Bundled parts ship under kernelCAD's MIT license — see `record.license`.
 

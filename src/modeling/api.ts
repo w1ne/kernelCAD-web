@@ -36,6 +36,7 @@ import type { FindPartOpts, FindPartResult } from './parts/findPart';
 import type { StandardParts } from './parts/standardParts';
 import type { PartRequest, StackRequest } from './parts/familyTable';
 import type { InsertRequest, InsertResult } from './parts/holeInsert';
+import type { FixtureParts } from './parts/fixtureParts';
 import type { PlacedStack } from './parts/placePart';
 import type { FromDXFOptions, FromSVGOptions } from './parts/fromVectorFormats';
 import type { ShapeList } from './selection/shapeList';
@@ -137,6 +138,9 @@ export interface PartsLib {
    * Returns the shape with seats applied plus one placed stack per hole.
    */
   insert(shape: Shape, request: InsertRequest): Promise<InsertResult>;
+  /** Machining-fixture hardware: T-slot nuts, clamping studs, flange nuts, strap
+   *  clamps and step blocks, keyed by the thread their clamping parts use. */
+  fixture: FixtureParts;
   standard: StandardParts;
 }
 
