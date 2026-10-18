@@ -10,11 +10,12 @@
   },
   "include": [
     "site/scripts/**/*.ts",
+    "site/island/**/*.ts",
     "site/island/**/*.tsx",
     "site/lib/**/*.ts",
     "site/lib/**/*.tsx",
     "src/shared/types/**/*",
     "src/kernel/backends/verb/verb-nurbs.d.ts"
   ],
-  "exclude": ["site/scripts/**/*.test.ts"]
+  "exclude": ["site/scripts/**/*.test.ts", "site/island/**/*.test.ts"]
 }
