@@ -35,7 +35,7 @@ The plugin bundle (`plugins/kernelcad`) is a separate submission. Submit the rem
 The MCP connector draft is filled through step 8 of 10 in `claude.ai/directory/manage`:
 
 - **Connection:** `https://mcp.kernelcad.com/mcp` as a custom connector. The live read reported 76 tools and 2 resources, OAuth detected, connector added with "sign in when needed".
-- **Tools:** 5 tools need a parameter `type` before submission — `inspect` (edges, faces), `query` (query), `verify` (edges, faces, pose), `add_mate` (pose), `run_fea` (material, fixed). Fix on the server, then reconnect/rescan. 3 suggestions also shown.
+- **Tools:** the linter flagged 5 tools for missing parameter `type`s — `inspect` (edges, faces), `query` (query), `verify` (edges, faces, pose), `add_mate` (pose), `run_fea` (material, fixed). Fixed in kernelCAD #1068; the hosted server gets the fix after the next `vendor/kernelcad` bump + deploy, then reconnect/rescan. 3 suggestions also shown.
 - **Listing:** name, slug `kernelcad`, tagline, description, categories (Productivity, Development tools, Creative), author, docs, support (GitHub issues), privacy.
 - **Use cases:** design a part, check manufacturing, export STEP/PDF, with the example prompts above.
 - **Company:** kernelCAD, https://kernelcad.com, contact prefilled from the Claude account, role Maintainer.
