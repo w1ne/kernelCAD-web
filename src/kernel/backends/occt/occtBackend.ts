@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
+import { optimalBoundsOf } from './backendBounds';
 import { getOC } from 'replicad';
 import type { ShapeBackend, BackendTarget } from '../backend';
 import type { SceneBackend } from '../sceneBackend';
@@ -1049,9 +1050,7 @@ export class OcctBackend implements ShapeBackend {
    * @throws {Error} when OCCT reports the boolean failed — a failed probe must
    *   not read as "no overlap".
    */
-  intersectionVolume(other: OcctBackend): number {
-    return this.intersectionMetrics(other).volumeMm3;
-  }
+  intersectionVolume(other: OcctBackend): number { return this.intersectionMetrics(other).volumeMm3; }
 
   /**
    * Volume (mm³) and boundary area (mm²) of the common solid of two shapes.
@@ -1091,22 +1090,7 @@ export class OcctBackend implements ShapeBackend {
         oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
         const areaMm2 = Math.abs(surface.Mass());
         surface.delete();
-        let bounds: { min: Vec3; max: Vec3 } | undefined;
-        const box = new oc.Bnd_Box_1();
-        try {
-          oc.BRepBndLib.AddOptimal(shape, box, false, false);
-          if (!box.IsVoid()) {
-            const lo = box.CornerMin();
-            const hi = box.CornerMax();
-            bounds = { min: [lo.X(), lo.Y(), lo.Z()], max: [hi.X(), hi.Y(), hi.Z()] };
-            lo.delete();
-            hi.delete();
-          }
-        } catch {
-          // Bounds are diagnostic sugar; a failure must not fail the probe.
-        } finally {
-          box.delete();
-        }
+        const bounds = optimalBoundsOf(shape);
         return { volumeMm3, areaMm2, ...(bounds !== undefined ? { bounds } : {}) };
       } finally {
         // The handle holds a reference to the common solid; without this the
