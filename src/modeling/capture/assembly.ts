@@ -329,7 +329,7 @@ export class Assembly {
    * Last `ignore` list passed to `solvedModel`. External review surfaces
    * (`reviewCadTool`) read this so the validator they re-run honors the same
    * known-acceptable contacts the script silenced. Empty when no
-   * `solvedModel({ ignore })` has been called yet. Mirrors the `__mates()` /
+   * `solvedModel({}, { ignore })` has been called yet. Mirrors the `__mates()` /
    * `__parts()` underscore-prefixed convention; not part of the agent-facing
    * surface.
    */
