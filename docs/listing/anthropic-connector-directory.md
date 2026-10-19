@@ -10,7 +10,7 @@ The plugin bundle (`plugins/kernelcad`) is a separate submission. Submit the rem
 - [x] Every tool has a **`title`** and `readOnlyHint` / `destructiveHint`. Checked on the live server on 2026-10-16: all 73 tools carry titles and annotations.
 - [x] Privacy policy: https://kernelcad.com/privacy
 - [x] Public docs: https://kernelcad.com/docs/
-- [ ] Every tool tested in MCP Inspector and as a custom connector in Claude (the *Test & launch* step asks you to confirm)
+- [x] Protocol-level review of the live server: `npm run listing:verify-mcp` on 2026-10-19 connected anonymously, listed 73 tools (73 with titles, 73 with annotations) and returned the documented `lookup_api` discovery response (35,151 chars). The MCP Inspector UI pass and the Claude custom-connector *Test & launch* pass still need a browser session.
 - [ ] Test credentials for a fully set-up account
 - [x] Square PNG icon: `plugins/kernelcad/assets/logo.png` (512×512). Support contact: the GitHub issues page.
 - [ ] Allowed link URIs: kernelcad.com, plus the quote-service origins used by `fab_pack` (jlc3dp.com, jlccnc.com, pcbway.com, xometry.com, app.sendcutsend.com, craftcloud3d.com), if the widget opens links

@@ -3,7 +3,7 @@
 ChatGPT apps are now submitted as **plugins**: you upload a plugin ZIP, the portal checks it, and then you submit it for review (checked 2026-10-13, https://developers.openai.com/plugins/deploy/submission).
 
 ## Submission steps
-1. **Build the ZIP** from `plugins/kernelcad/` (the Agent Plugins layout: root `plugin.json`, `mcp.json`, `skills/`, plus the icon and screenshot files under `assets/`). Leave out credentials and secrets. Lifecycle hooks and `apps` / `.app.json` references are not accepted.
+1. **Build the ZIP** from `plugins/kernelcad/` (the Agent Plugins layout: root `plugin.json`, `mcp.json`, `skills/`, plus the icon and screenshot files under `assets/`). Leave out credentials and secrets. Lifecycle hooks and `apps` / `.app.json` references are not accepted. The allowlisted layout is built by `npm run listing:zip`, which writes `dist/listing/kernelcad-chatgpt-plugin-<version>.zip` (12 KB, 8 files as of 0.17.0; verified 2026-10-19).
 2. **Upload:** platform.openai.com → **Plugins** → **Upload new or existing plugin**, pick the verified developer identity, then **Upload plugin**. You need to be an org Owner or have Apps Management Write, and the org must have completed individual or business verification.
 3. **Metadata & Skills:** wait for the checks, then fix any issues in the package and upload a corrected ZIP. These fields are read-only in the portal.
 4. **MCPs:** connect `https://mcp.kernelcad.com/mcp`, complete the domain challenge (serve the token as plain text at `https://kernelcad.com/.well-known/openai-apps-challenge` or on the MCP host), and let the tool scan finish. Auth settings come from `mcp.json`. The portal supports none, OAuth, or mixed anonymous/OAuth, so kernelCAD should declare mixed.
@@ -15,6 +15,10 @@ After the plugin is published, MCP tool changes are picked up by the daily scan 
 These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` and `composerIcon` (`assets/logo.svg`), `review.test_cases` (5 positive, 3 negative), `review.commerce` (undecided, see the blockers in the README), and `publication.release_notes`. Still missing:
 - `interface.screenshots`: optional; see the list below.
 - `review.demo_recording_url`: a video walkthrough the reviewers can open.
+
+Capture both in the ChatGPT app itself (developer-mode connector or the published app), where the in-chat viewer and checklists appear, so the package matches what reviewers will see. Keep the exact screenshots and their prompts in `docs/listing/assets/chatgpt/` when they land, and add them to `plugins/kernelcad/assets/screenshots/` before `npm run listing:zip` so the ZIP carries them.
+
+The hosted server itself is verified for the reviewers with `npm run listing:verify-mcp`: on 2026-10-19 it reported 73 tools with 73 titles and 73 annotation sets, and a `lookup_api` discovery response (35,151 chars). Re-run it on the day of the submission and paste the output into the review notes.
 
 Use the copy below for the `interface` text fields. `shortDescription` must be 30 characters or fewer.
 
