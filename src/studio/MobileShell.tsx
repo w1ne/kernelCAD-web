@@ -8,7 +8,7 @@
 // phone's width; its facts move into More → Status.
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type JSX, type KeyboardEvent, type ReactNode } from 'react';
 import {
-    Box, ChevronRight, Code2, Download, Film, FolderOpen, Info, Layers, Link2, MoreHorizontal, Plug, ShieldCheck,
+    Box, ChevronRight, Code2, Download, Film, FolderOpen, Info, Layers, Link2, MoreHorizontal, Package, Plug, ShieldCheck,
     SlidersHorizontal, Sparkles,
 } from 'lucide-react';
 import { Header } from './components/Layout/Header';
@@ -30,6 +30,10 @@ import {
 import { EmptyState } from '../ui/EmptyState';
 import { Button } from '../ui/Button';
 import { cx } from '../ui/cx';
+import { useIsNarrow } from './hooks/useIsNarrow';
+
+/** A phone held sideways: the sheet docks beside the model, not under it. */
+const LANDSCAPE_QUERY = '(orientation: landscape)';
 
 const VERSION_LABEL = typeof __APP_VERSION__ !== 'undefined' ? `v${__APP_VERSION__}` : 'dev';
 const ICON = { className: 'size-5', strokeWidth: 1.75, 'aria-hidden': true } as const;
@@ -119,6 +123,7 @@ export function MobileShell({
     const visibleTabs = getVisibleTabs(result);
     const checks = checksBadgeCount(result);
     const summary = mobileStatus(status, VERSION_LABEL);
+    const landscape = useIsNarrow(LANDSCAPE_QUERY);
 
     usePendingPrompt(access, () => open('agent'));
     const items = useActivityItems(showAgent, viewerMode);
@@ -163,8 +168,8 @@ export function MobileShell({
             <div className="shrink-0 bg-surface-1 pt-[env(safe-area-inset-top)]">
                 <Header />
             </div>
-            <div className="relative flex min-h-0 flex-1 flex-col">
-                <div className="relative min-h-0 flex-1" data-testid="mobile-stage">{stage}</div>
+            <div className={cx('relative flex min-h-0 flex-1', landscape ? 'flex-row' : 'flex-col')}>
+                <div className="relative min-h-0 min-w-0 flex-1" data-testid="mobile-stage">{stage}</div>
                 {sheet && (
                     <MobileDrawer
                         title={MOBILE_SHEET_TITLE[sheet]}
@@ -176,6 +181,7 @@ export function MobileShell({
                         fill={sheet === 'code'}
                         panelId={SHEET_ID}
                         labelledBy={tabDomId(activeTab)}
+                        side={landscape}
                     >
                         {content}
                     </MobileDrawer>
@@ -368,6 +374,9 @@ function MoreList({ visibleTabs, checks, summary, enableConnect, viewerMode, onO
                 />
                 {visibleTabs.includes('joints') && (
                     <MoreRow icon={<Link2 {...ICON} />} label="Joints" onClick={() => onOpen('joints')} testId="mobile-more-joints" />
+                )}
+                {visibleTabs.includes('parts') && (
+                    <MoreRow icon={<Package {...ICON} />} label="Parts" hint="Bill of materials and ordering" onClick={() => onOpen('parts')} testId="mobile-more-parts" />
                 )}
                 {visibleTabs.includes('animation') && (
                     <MoreRow icon={<Film {...ICON} />} label="Animation" onClick={() => onOpen('animation')} testId="mobile-more-animation" />

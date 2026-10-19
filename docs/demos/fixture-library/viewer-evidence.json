@@ -1,0 +1,100 @@
+{
+  "checkedAt": "2026-10-18T10:53:09.140Z",
+  "source": "examples/fixture/table-clamp-set.kcad.ts",
+  "invocation": "npx tsx src/agent/cli/index.ts export glb examples/fixture/table-clamp-set.kcad.ts -o <tmp>/model.glb",
+  "format": "glTF",
+  "bytes": 198288,
+  "sha256": "516696bd836352344156bc338252270f3f52bdaa429f60feaebb235d7472f98c",
+  "nodes": [
+    "table",
+    "workpiece",
+    "left-t-nut",
+    "left-stud",
+    "left-clamp",
+    "left-step-block",
+    "left-flange-nut",
+    "right-t-nut",
+    "right-stud",
+    "right-clamp",
+    "right-step-block",
+    "right-flange-nut",
+    null
+  ],
+  "meshCount": 12,
+  "materialCount": 12,
+  "baseColors": [
+    [
+      0.2541520943200296,
+      0.2663556047920505,
+      0.2788942634659966,
+      1
+    ],
+    [
+      0.4793201830913402,
+      0.5028864580233624,
+      0.5271151256969157,
+      1
+    ],
+    [
+      0.2541520943200296,
+      0.2663556047920505,
+      0.2788942634659966,
+      1
+    ],
+    [
+      0.55201140150344,
+      0.5647115056965487,
+      0.5775804404214573,
+      1
+    ],
+    [
+      0.2541520943200296,
+      0.2663556047920505,
+      0.2788942634659966,
+      1
+    ],
+    [
+      0.10224173307914941,
+      0.14702726648767014,
+      0.26225065751888765,
+      1
+    ],
+    [
+      0.2541520943200296,
+      0.2663556047920505,
+      0.2788942634659966,
+      1
+    ],
+    [
+      0.2541520943200296,
+      0.2663556047920505,
+      0.2788942634659966,
+      1
+    ],
+    [
+      0.55201140150344,
+      0.5647115056965487,
+      0.5775804404214573,
+      1
+    ],
+    [
+      0.2541520943200296,
+      0.2663556047920505,
+      0.2788942634659966,
+      1
+    ],
+    [
+      0.10224173307914941,
+      0.14702726648767014,
+      0.26225065751888765,
+      1
+    ],
+    [
+      0.2541520943200296,
+      0.2663556047920505,
+      0.2788942634659966,
+      1
+    ]
+  ],
+  "scope": "GLB export of the committed example through the CLI export path. The inline viewers consume the same glTF: named parts, one material per part. Not a capture of the hosted Claude or ChatGPT apps."
+}

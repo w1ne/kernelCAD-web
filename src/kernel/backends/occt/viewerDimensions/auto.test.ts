@@ -148,16 +148,19 @@ describe('perforated plate', () => {
     expect(t.filter(x => x === '10')).toHaveLength(2); // one spacing per direction
   }, 60_000);
 
-  // Hole recognition probes every bore (~90 ms each at this face count), so
-  // 81 holes (~7.5 s unbudgeted) overrun the 3 s default mid-recognition.
-  it('keeps overall extents and warns when the default budget runs out', () => {
+  // Hole recognition is budget-checked per bore, so an overrun keeps the
+  // overall extents and warns. An 81-hole plate no longer overruns the 3 s
+  // default on its own (bore probes are bbox-filtered and fast now), so the
+  // budget path is pinned with an explicit 1 ms budget instead of relying on
+  // unbudgeted work to be slow.
+  it('keeps overall extents and warns when the budget runs out', () => {
     const parts = perforatedPlate(9);
     const start = performance.now();
-    const r = computeViewerDimensions({ parts, declared: [], auto: true });
+    const r = computeViewerDimensions({ parts, declared: [], auto: true, budgetMs: 1 });
     expect(performance.now() - start).toBeLessThan(4_000);
     expect(r.dimensions.map(d => d.text).sort()).toEqual(['5', '90', '90']);
     expect(r.diagnostics.map(d => d.code)).toEqual(['viewer.dimensions.budget-exceeded']);
-    expect(r.diagnostics[0].message).toMatch(/3000 ms budget/);
+    expect(r.diagnostics[0].message).toMatch(/1 ms budget/);
   }, 60_000);
 });
 

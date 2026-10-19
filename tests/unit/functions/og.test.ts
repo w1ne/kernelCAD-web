@@ -21,6 +21,7 @@ import {
 import { onRequest as onProjectPage } from '../../../functions/p/[slug]';
 import { onRequest as onEmbedPage } from '../../../functions/embed/[slug]';
 import { onRequest as onGalleryPage } from '../../../functions/gallery';
+import { onRequest as onConnectPage } from '../../../functions/connect';
 
 const INDEX_HTML = readFileSync('index.html', 'utf8');
 const API = 'https://api.example.test';
@@ -167,6 +168,20 @@ describe('/gallery', () => {
     const html = await res.text();
     expect(html).toContain('<title>Gallery · kernelCAD</title>');
     expect(metaContent(html, 'og:url')).toBe('https://app.kernelcad.com/gallery');
+    expect(metaContent(html, 'og:image')).toBe(DEFAULT_IMAGE);
+    expect(api).not.toHaveBeenCalled();
+  });
+});
+
+describe('/connect', () => {
+  it('injects static connect tags without an API call', async () => {
+    const api = publicApi();
+    const res = await onConnectPage(context('/connect', api));
+    const html = await res.text();
+    expect(html).toContain('<title>Connect your agent · kernelCAD</title>');
+    expect(metaContent(html, 'og:title')).toBe('Connect your agent to kernelCAD');
+    expect(metaContent(html, 'og:description')).toContain('Install the kernelCAD plugin');
+    expect(metaContent(html, 'og:url')).toBe('https://app.kernelcad.com/connect');
     expect(metaContent(html, 'og:image')).toBe(DEFAULT_IMAGE);
     expect(api).not.toHaveBeenCalled();
   });

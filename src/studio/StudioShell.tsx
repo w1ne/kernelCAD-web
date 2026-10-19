@@ -17,6 +17,7 @@ import { SceneTab } from './tabs/SceneTab';
 import { CodeTab } from './tabs/CodeTab';
 import { ParamsTab } from './tabs/ParamsTab';
 import { JointsTab } from './tabs/JointsTab';
+import { PartsTab } from './tabs/PartsTab';
 import { ValidityTab } from './tabs/ValidityTab';
 import { ExportTab } from './tabs/ExportTab';
 import { AnimationTab } from './components/animation/AnimationTab';
@@ -31,7 +32,7 @@ import { useUI } from './context/UIContext';
 import { isActionableOverlap } from '../modeling/runtime/jointContactCap';
 import { useViewportToggles } from './hooks/useViewportToggles';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
-import { NARROW_QUERY, useIsNarrow } from './hooks/useIsNarrow';
+import { PHONE_QUERY, useIsNarrow } from './hooks/useIsNarrow';
 import { MobileShell } from './MobileShell';
 
 
@@ -170,7 +171,7 @@ export function StudioShell() {
     // contacts do not make a plausible mechanism look broken.
     const interferenceCount = resolveInterferenceCount(recompute);
     // Phones get the tab-bar shell; hosts without the header keep this one.
-    const phone = useIsNarrow() && showHeader;
+    const phone = useIsNarrow(PHONE_QUERY) && showHeader;
 
     const stage = renderStage({
         workbench, ui, markingMode, sectionMode, handleRun, handleValidate, handleToggleMarkingMode,
@@ -363,7 +364,7 @@ function useStudioShellHandlers(workbench: ReturnType<typeof useWorkbench>) {
 function useModelFirstOnPhone(): void {
     useEffect(() => {
         if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-        if (window.matchMedia(NARROW_QUERY).matches) shellStore.setInspectorOpen(false);
+        if (window.matchMedia(PHONE_QUERY).matches) shellStore.setInspectorOpen(false);
     }, []);
 }
 
@@ -407,6 +408,7 @@ function buildTabSlots() {
         code: <CodeTab />,
         params: <ParamsTab />,
         joints: <JointsTab />,
+        parts: <PartsTab />,
         validity: <ValidityTab />,
         export: <ExportTab />,
         animation: <AnimationTab />,

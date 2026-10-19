@@ -32,11 +32,11 @@ import type { CaptureSession } from '../../modeling/capture/captureSession';
 import type { CatalogPartMetadata } from '../../shared/parts/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import type { FabProcess } from '../../shared/fab';
 import { tryResolveMaterial } from '../../modeling/properties/materialLibrary';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 
 export type BomKind = 'fabricated' | 'purchased';
-export type BomProcessHint = 'sheet-metal' | 'machined' | 'printed';
 
 export interface BomCatalogInfo {
   id: string;
@@ -67,7 +67,12 @@ export interface BomRow {
   massGPerUnit: number | null;
   massGTotal: number | null;
   bboxMm: BomBbox;
-  processHint?: BomProcessHint;
+  /** Fabricated rows only: declared (`processSource: 'declared'`) or
+   *  heuristic (`'inferred'`) manufacturing process. `null` on purchased
+   *  rows (checked, not applicable — never omitted). */
+  process: FabProcess | null;
+  /** Provenance of `process`: `declared` only when every instance in the group declared it, else `inferred`; `null` on purchased rows. */
+  processSource: 'declared' | 'inferred' | null;
   catalog?: BomCatalogInfo;
   /** Every `assembly.part(name, ...)` name contributing to this group, in
    *  declaration order. Length always equals `quantity`. */
@@ -152,22 +157,39 @@ function flatSheetMetalBbox(records: readonly FeatureRecord[], part: AssemblyPar
 }
 
 /** Key suffix keeping identically-shaped parts with different declared
- *  material/density in separate rows (empty when neither is declared). */
-function declarationKey(part: AssemblyPartStored): string {
-  if (part.material === undefined && part.density === undefined) return '';
-  return `|material:${part.material ?? ''}|density:${part.density ?? ''}`;
+ *  material/density/effective-process in separate rows. Fabricated parts
+ *  always carry the effective process in the key, so same geometry with a
+ *  different process splits into two rows; purchased parts pass `null`
+ *  (process is not applicable). */
+function declarationKey(part: AssemblyPartStored, proc: { process: FabProcess; declared: boolean } | null): string {
+  const parts: string[] = [];
+  if (part.material !== undefined) parts.push(`material:${part.material}`);
+  if (part.density !== undefined) parts.push(`density:${part.density}`);
+  if (proc !== null) parts.push(`process:${proc.process}`);
+  return parts.length > 0 ? `|${parts.join('|')}` : '';
 }
 
-/** Best-effort fabrication-process hint from the part's capture-graph chain.
- *  A hint, not a CAM decision: never blocks the row. */
-function processHintFor(records: readonly FeatureRecord[], part: AssemblyPartStored): BomProcessHint {
-  if (sheetMetalRoot(records, part.originalShape.id) !== undefined) return 'sheet-metal';
-  const record = records.find((r) => r.id === part.originalShape.id);
+/** Best-effort fabrication-process inference from a shape's capture-graph
+ *  chain. A heuristic, not a CAM decision: never blocks the row. Shared
+ *  with the fab-pack single-shape BOM fallback so both surfaces agree. */
+export function inferredProcess(records: readonly FeatureRecord[], shapeId: string): FabProcess {
+  if (sheetMetalRoot(records, shapeId) !== undefined) return 'sheet-cut';
+  const record = records.find((r) => r.id === shapeId);
   const kind = record?.kind;
   if (kind === 'importedStep' || kind === 'importedBrep' || kind === 'importedStl' || kind === 'importedMesh') {
-    return 'machined';
+    return 'cnc';
   }
-  return 'printed';
+  return '3d-print';
+}
+
+/** Declared process wins; otherwise the capture-graph heuristic. `declared`
+ *  records provenance so a mixed group can be conservatively downgraded. */
+function effectiveProcess(
+  records: readonly FeatureRecord[],
+  part: AssemblyPartStored,
+): { process: FabProcess; declared: boolean } {
+  if (part.process !== undefined) return { process: part.process, declared: true };
+  return { process: inferredProcess(records, part.originalShape.id), declared: false };
 }
 
 interface PartMeasurement {
@@ -177,6 +199,7 @@ interface PartMeasurement {
   density: number | null;
   materialName: string | null;
   massGPerUnit: number | null;
+  proc: { process: FabProcess; declared: boolean };
   groupKey: string;
 }
 
@@ -199,7 +222,8 @@ async function measurePart(part: AssemblyPartStored, records: readonly FeatureRe
   const identityKey = catalogPart !== undefined
     ? `catalog:${catalogPart.id}`
     : fingerprint(volumeMm3, surfaceAreaMm2, bbox);
-  const groupKey = identityKey + declarationKey(part);
+  const proc = effectiveProcess(records, part);
+  const groupKey = identityKey + declarationKey(part, kind === 'fabricated' ? proc : null);
 
   // Density resolution: explicit density wins, else the named material's
   // catalog density, else no guess (unlike inspect({ of: 'mass' }), which
@@ -220,7 +244,7 @@ async function measurePart(part: AssemblyPartStored, records: readonly FeatureRe
 
   const massGPerUnit = density !== null ? round((volumeMm3 / 1e9) * density * 1000, 4) : null;
 
-  return { catalogPart, kind, bbox, density, materialName, massGPerUnit, groupKey };
+  return { catalogPart, kind, bbox, density, materialName, massGPerUnit, proc, groupKey };
 }
 
 /** Per-part BOM warnings, in the order they are emitted. */
@@ -263,6 +287,7 @@ function mergeBomGroup(
   part: AssemblyPartStored,
   density: number | null,
   massGPerUnit: number | null,
+  proc: { process: FabProcess; declared: boolean },
 ): void {
   existing.quantity += 1;
   existing.instancePaths.push(part.name);
@@ -271,6 +296,9 @@ function mergeBomGroup(
     existing.density = density;
     existing.massGPerUnit = massGPerUnit;
   }
+  // Conservative provenance: a group is `declared` only if every instance
+  // declared the same effective process; one inferred instance downgrades it.
+  if (existing.processSource === 'declared' && !proc.declared) existing.processSource = 'inferred';
   existing.massGTotal = existing.massGPerUnit !== null ? round(existing.massGPerUnit * existing.quantity, 4) : null;
 }
 
@@ -279,9 +307,8 @@ function createBomRow(
   item: number,
   part: AssemblyPartStored,
   measured: PartMeasurement,
-  records: readonly FeatureRecord[],
 ): BomRow & { __density: number | null } {
-  const { catalogPart, kind, bbox, density, materialName, massGPerUnit } = measured;
+  const { catalogPart, kind, bbox, density, materialName, massGPerUnit, proc } = measured;
   return {
     item,
     name: part.name,
@@ -292,7 +319,8 @@ function createBomRow(
     massGPerUnit,
     massGTotal: massGPerUnit,
     bboxMm: bbox,
-    ...(kind === 'fabricated' ? { processHint: processHintFor(records, part) } : {}),
+    process: kind === 'fabricated' ? proc.process : null,
+    processSource: kind === 'fabricated' ? (proc.declared ? 'declared' : 'inferred') : null,
     ...(catalogPart !== undefined ? { catalog: catalogInfo(catalogPart) } : {}),
     instancePaths: [part.name],
     __density: density,
@@ -316,12 +344,12 @@ export async function computeBom(arm: Assembly, session: CaptureSession): Promis
 
     const existing = groups.get(measured.groupKey);
     if (existing) {
-      mergeBomGroup(existing, part, measured.density, measured.massGPerUnit);
+      mergeBomGroup(existing, part, measured.density, measured.massGPerUnit, measured.proc);
       continue;
     }
 
     item += 1;
-    groups.set(measured.groupKey, createBomRow(item, part, measured, records));
+    groups.set(measured.groupKey, createBomRow(item, part, measured));
   }
 
   const rows: BomRow[] = Array.from(groups.values()).map((g) => {
@@ -347,7 +375,7 @@ const CSV_HEADER = [
   'item', 'name', 'quantity', 'kind', 'material', 'densityKgM3',
   'massGPerUnit', 'massGTotal',
   'bboxMinX', 'bboxMinY', 'bboxMinZ', 'bboxMaxX', 'bboxMaxY', 'bboxMaxZ',
-  'processHint', 'vendor', 'partNumber', 'license', 'source', 'instancePaths',
+  'process', 'vendor', 'partNumber', 'license', 'source', 'instancePaths',
 ];
 
 function csvCell(value: unknown): string {
@@ -366,7 +394,7 @@ export function bomToCsv(rows: readonly BomRow[]): string {
       r.massGPerUnit, r.massGTotal,
       r.bboxMm.min[0], r.bboxMm.min[1], r.bboxMm.min[2],
       r.bboxMm.max[0], r.bboxMm.max[1], r.bboxMm.max[2],
-      r.processHint ?? '', r.catalog?.vendor ?? '', r.catalog?.partNumber ?? '',
+      r.process ?? '', r.catalog?.vendor ?? '', r.catalog?.partNumber ?? '',
       r.catalog?.license ?? '', r.catalog?.source ?? '', r.instancePaths.join(';'),
     ].map(csvCell).join(','));
   }

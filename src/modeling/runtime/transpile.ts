@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import * as ts from 'typescript';
+import { lazyTs as ts } from '../../shared/runtime/lazyTypescript';
 
 export interface TranspileResult {
   code: string;

@@ -7,10 +7,12 @@
 // in later orchestrator layers.
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { makeCompound } from 'replicad';
 import { OcctBackend, initOcct } from './occtBackend';
 import {
   detectCylindricalHoles,
   inspectCylindricalHoles,
+  probePointInsideMaterial,
   resolveBoreExtents,
   MIN_ANGULAR_COVERAGE_RAD,
   type ConcaveCylFace,
@@ -116,6 +118,45 @@ describe('detectCylindricalHoles', () => {
     const holes = detectCylindricalHoles(plateWithHole(10));
     expect(holes).toHaveLength(1);
     expect(holes[0].faceCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it('classifies holes on a multi-solid compound (drawing path)', () => {
+    // The drawing stage recognises features on the whole assembly as ONE
+    // compound of world-frame parts. End probes must decide against the
+    // right solid without a full sweep of every sibling: a point deep
+    // inside one plate still has to come back "inside", and a through
+    // hole's open ends "outside", with 60+ unrelated solids around.
+    const blind = plateWithHole(6).translate(-40, 0, 0);
+    const through = plateWithHole(10).translate(40, 0, 0);
+    const compound = new OcctBackend(makeCompound([
+      blind.getReplicadShape(),
+      through.getReplicadShape(),
+    ]));
+    const holes = detectCylindricalHoles(compound);
+    expect(holes).toHaveLength(2);
+    const blindHole = holes.find((h) => h.kind === 'blind');
+    const throughHole = holes.find((h) => h.kind === 'through');
+    expect(blindHole?.axisOrigin[0]).toBeCloseTo(-40, 1);
+    expect(throughHole?.axisOrigin[0]).toBeCloseTo(40, 1);
+  });
+
+  it('probes material correctly on a multi-solid compound', () => {
+    const left = OcctBackend.box(20, 20, 10, true).translate(-40, 0, 0);
+    const right = OcctBackend.box(20, 20, 10, true).translate(40, 0, 0);
+    const compound = new OcctBackend(makeCompound([
+      left.getReplicadShape(),
+      right.getReplicadShape(),
+    ]));
+    expect(probePointInsideMaterial(compound, [-40, 8, 0])).toBe(true);
+    expect(probePointInsideMaterial(compound, [40, -8, 0])).toBe(true);
+    expect(probePointInsideMaterial(compound, [0, 0, 0])).toBe(false);
+    expect(probePointInsideMaterial(compound, [0, 8, 0])).toBe(false);
+    // Within the 0.05 mm probe radius of the left plate's x = -30 face
+    // (outside is x > -30; the plate spans x ∈ [-50, -30]).
+    expect(probePointInsideMaterial(compound, [-29.98, 0, 0])).toBe(true);
+    expect(probePointInsideMaterial(compound, [-30.02, 0, 0])).toBe(true);
+    // Clearly beyond that radius.
+    expect(probePointInsideMaterial(compound, [-29.5, 0, 0])).toBe(false);
   });
 });
 

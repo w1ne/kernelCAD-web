@@ -79,11 +79,12 @@ describe('ActivityBar', () => {
         expect(screen.getByTestId('toolbar-connect-link').getAttribute('href')).toBe('/connect');
     });
 
-    it('drops the Agent and Projects on a read-only review page', () => {
+    it('drops the Agent and Projects on a read-only review page and opens the model tree', () => {
         renderBar({ viewerMode: true });
         expect(screen.queryByTestId('activity-agent')).toBeNull();
         expect(screen.queryByTestId('activity-projects')).toBeNull();
         expect(screen.getByTestId('activity-tree')).toBeDefined();
+        expect(screen.getByTestId('left-pane-tree')).toBeDefined();
     });
 
     it('opens one pane at a time and closes it on a second press', () => {

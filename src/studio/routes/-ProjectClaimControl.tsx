@@ -134,7 +134,8 @@ export interface AnonProjectBannerProps {
 }
 
 const BANNER_CLASS = {
-  studio: 'fixed bottom-4 left-4 right-4 z-50 mx-auto flex max-w-xl flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-lg border border-amber-600/60 bg-[#1f1a10]/95 px-4 py-2.5 text-sm text-amber-100 shadow-lg',
+  // On a phone it sits above the tab bar (56 px), not over it.
+  studio: 'fixed bottom-4 left-4 right-4 z-50 mx-auto flex max-w-xl flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-lg border border-amber-600/60 bg-[#1f1a10]/95 px-4 py-2.5 text-sm text-amber-100 shadow-lg max-md:bottom-[calc(64px+env(safe-area-inset-bottom))] [@media(max-height:520px)_and_(pointer:coarse)]:bottom-[calc(64px+env(safe-area-inset-bottom))]',
   page: 'absolute left-3 right-3 top-3 z-10 mx-auto flex max-w-lg items-center justify-between gap-3 rounded-panel border border-border bg-surface-1/95 py-1.5 pl-3 pr-1.5 text-ui text-fg shadow-e2 backdrop-blur-sm md:justify-center md:pl-4',
 } as const;
 
@@ -168,7 +169,13 @@ export function AnonProjectBanner({
     </SignInButton>
   );
   return (
-    <div role="status" className={BANNER_CLASS[look]} data-testid="anon-project-banner">
+    <div
+      role="status"
+      className={BANNER_CLASS[look]}
+      data-testid="anon-project-banner"
+      // The phone camera fit keeps the model clear of the banner.
+      data-viewport-occluder=""
+    >
       {look === 'page' ? (
         <span className="min-w-0">
           <span className="md:hidden">Not saved to an account yet</span>

@@ -9,7 +9,7 @@
 import { createElement, useMemo, type ComponentType } from 'react';
 import {
     Box, Code2, Cuboid, Download, FilePlus, Film, FolderOpen, Grid3x3, Image, Keyboard, Layers, Link2,
-    ListChecks, Maximize, Moon, PanelRight, PenLine, Play, Scissors, ShieldCheck, SlidersHorizontal,
+    ListChecks, Maximize, Moon, Package, PanelRight, PenLine, Play, Scissors, ShieldCheck, SlidersHorizontal,
     SquareDashed, Sun, X,
 } from 'lucide-react';
 import type { Command } from './useCommandRegistry';
@@ -32,6 +32,7 @@ const TAB_COMMANDS: ReadonlyArray<{ tab: TabId; label: string; keywords: string[
     { tab: 'validity', label: 'Show checks', keywords: ['validity', 'validate', 'interferences', 'errors'], icon: ListChecks },
     { tab: 'scene', label: 'Show model tree', keywords: ['scene', 'features', 'bodies', 'parts'], icon: Layers },
     { tab: 'joints', label: 'Show joints', keywords: ['mates', 'kinematics', 'assembly'], icon: Link2 },
+    { tab: 'parts', label: 'Show parts', keywords: ['bom', 'bill of materials', 'order', 'make', 'buy'], icon: Package },
     { tab: 'animation', label: 'Show animation', keywords: ['play', 'motion'], icon: Film },
     { tab: 'export', label: 'Show export options', keywords: ['download', 'formats'], icon: Download },
 ];

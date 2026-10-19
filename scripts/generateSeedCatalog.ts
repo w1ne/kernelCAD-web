@@ -14,6 +14,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct } from '../src/kernel/backends/occt/occtBackend';
+import { countersunkScrewSolid } from '../src/modeling/parts/headSolids';
 import type { PartRecord } from '../src/shared/parts/types';
 import type {
   ConnectorEntry,
@@ -30,7 +31,12 @@ import {
   LOCK_WASHER,
   SHCS_HEAD,
   SHCS_LENGTHS,
+  FIXTURE_FAMILY_NAMES,
+  fixtureVariants,
+  isFixtureKind,
+  resolvePart,
 } from '../src/modeling/parts/familyTable';
+import { fixtureSolid } from '../src/modeling/parts/fixtureSolids';
 
 // -----------------------------------------------------------------------------
 // Types
@@ -112,14 +118,18 @@ function fastenerStep(
   thread: string,
   lengthMm: number,
   head: { D: number; K: number },
+  countersunk = false,
 ): Promise<{ bytes: Uint8Array; tNum: number; headD: number; headK: number }> {
   const tNum = parseFloat(thread.slice(1));
   const headD = head.D;
   const headK = head.K;
-  const headCyl = OcctBackend.cylinder(headK, headD / 2);
-  // Shank: cylinder of length lengthMm extending below head (translate -length on Z so head sits at Z=0..K).
-  const shank = OcctBackend.cylinder(lengthMm, tNum / 2).translate(0, 0, -lengthMm);
-  const fused = headCyl.union(shank);
+  // Cylindrical heads sit on the seat plane (Z=0..K). A countersunk head seats
+  // in its cone: rim on Z=0, cone down to the nominal Ø at Z=-K.
+  const fused = countersunk
+    ? countersunkScrewSolid(tNum, headD, headK, lengthMm)
+    : OcctBackend.cylinder(headK, headD / 2).union(
+        OcctBackend.cylinder(lengthMm, tNum / 2).translate(0, 0, -lengthMm),
+      );
   return fused.exportSTEPAsync().then((bytes) => ({ bytes, tNum, headD, headK }));
 }
 
@@ -147,11 +157,13 @@ async function hexNutStep(
   dims: { S: number; m: number },
 ): Promise<Uint8Array> {
   const tNum = parseFloat(thread.slice(1));
-  // Hex prism via extrudePolygon (six vertices around inscribed circle of S/2).
+  // Hex prism via extrudePolygon. The vertices start at 30 degrees so a FLAT
+  // faces +X, the same orientation the in-memory envelope builds (nutSolid);
+  // both doors must produce the same solid.
   const r = dims.S / Math.sqrt(3);
   const pts: [number, number][] = [];
   for (let i = 0; i < 6; i++) {
-    const a = (Math.PI / 3) * i;
+    const a = (Math.PI / 3) * i + Math.PI / 6;
     pts.push([r * Math.cos(a), r * Math.sin(a)]);
   }
   const prism = OcctBackend.extrudePolygon(pts, dims.m);
@@ -282,12 +294,52 @@ async function jstXhStep(args: {
 // Family definitions
 // -----------------------------------------------------------------------------
 
+function fixtureSeedFamily(family: string): SeedFamily {
+  return {
+    id: family,
+    category: 'fixture',
+    variants: fixtureVariants(family),
+    async generate(variant) {
+      const part = resolvePart({
+        family,
+        thread: String(variant.thread),
+        ...(variant.lengthMm !== undefined ? { lengthMm: Number(variant.lengthMm) } : {}),
+      });
+      if (!isFixtureKind(part.kind)) throw new Error(`${family}: not a fixture family`);
+      const backend = fixtureSolid(part.kind, part.dims ?? {}, part.nominalMm);
+      const bytes = await backend.exportSTEPAsync();
+      return {
+        stepBytes: bytes,
+        record: {
+          id: part.id,
+          name: part.name,
+          category: 'fixture',
+          family,
+          tags: part.tags,
+          attributes: {
+            thread: part.thread,
+            nominalMm: part.nominalMm,
+            ...(part.lengthMm > 0 ? { lengthMm: part.lengthMm } : {}),
+            ...(part.dims ?? {}),
+          },
+          license: 'MIT',
+          connectors: part.connectors.map((connector) => connector.name),
+        },
+        connectors: part.connectors,
+      };
+    },
+  };
+}
+
+/** Stocked threads of one table, with '_' decimal keys turned back into '.'. */
+function threadsOf(table: Record<string, unknown>): string[] {
+  return Object.keys(table).map((key) => key.replace('_', '.'));
+}
+
 function socketHeadCapScrew(): SeedFamily {
-  const threads: Array<keyof typeof SHCS_HEAD> = ['M2', 'M2_5', 'M3', 'M4', 'M5', 'M6'];
+  const threads = threadsOf(SHCS_HEAD);
   const lengths = SHCS_LENGTHS;
-  const variants = threads.flatMap((t) =>
-    lengths.map((l) => ({ thread: t.replace('_', '.'), lengthMm: l })),
-  );
+  const variants = threads.flatMap((t) => lengths.map((l) => ({ thread: t, lengthMm: l })));
   return {
     id: 'socket-head-cap-screw',
     category: 'fastener',
@@ -331,7 +383,7 @@ function socketHeadCapScrew(): SeedFamily {
 }
 
 function buttonHeadCapScrew(): SeedFamily {
-  const threads: Array<keyof typeof BHCS_HEAD> = ['M3', 'M4', 'M5'];
+  const threads = threadsOf(BHCS_HEAD);
   const lengths = BHCS_LENGTHS;
   const variants = threads.flatMap((t) =>
     lengths.map((l) => ({ thread: t, lengthMm: l })),
@@ -378,7 +430,7 @@ function buttonHeadCapScrew(): SeedFamily {
 }
 
 function flatHeadCountersunk(): SeedFamily {
-  const threads: Array<keyof typeof FLATHEAD_HEAD> = ['M3', 'M4', 'M5'];
+  const threads = threadsOf(FLATHEAD_HEAD);
   const lengths = FLATHEAD_LENGTHS;
   const variants = threads.flatMap((t) =>
     lengths.map((l) => ({ thread: t, lengthMm: l })),
@@ -394,6 +446,7 @@ function flatHeadCountersunk(): SeedFamily {
         thread as string,
         lengthMm as number,
         head,
+        true,
       );
       const id = `iso-10642-${threadSlug(thread as string)}x${lengthMm}`;
       return {
@@ -424,7 +477,7 @@ function flatHeadCountersunk(): SeedFamily {
 }
 
 function hexNut(): SeedFamily {
-  const threads = ['M2', 'M2.5', 'M3', 'M4', 'M5', 'M6'];
+  const threads = threadsOf(HEX_NUT);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'hex-nut',
@@ -463,7 +516,7 @@ function hexNut(): SeedFamily {
 }
 
 function lockNut(): SeedFamily {
-  const threads = ['M3', 'M4', 'M5'];
+  const threads = threadsOf(LOCK_NUT);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'lock-nut',
@@ -471,7 +524,7 @@ function lockNut(): SeedFamily {
     standard: 'DIN 985',
     variants,
     async generate({ thread }) {
-      const dims = LOCK_NUT[thread as string];
+      const dims = LOCK_NUT[(thread as string).replace('.', '_')];
       const bytes = await lockNutStep(thread as string, dims);
       const id = `din-985-${threadSlug(thread as string)}`;
       return {
@@ -502,7 +555,7 @@ function lockNut(): SeedFamily {
 }
 
 function flatWasher(): SeedFamily {
-  const threads = ['M2', 'M3', 'M4', 'M5', 'M6'];
+  const threads = threadsOf(FLAT_WASHER);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'flat-washer',
@@ -510,7 +563,7 @@ function flatWasher(): SeedFamily {
     standard: 'ISO 7089',
     variants,
     async generate({ thread }) {
-      const dims = FLAT_WASHER[thread as string];
+      const dims = FLAT_WASHER[(thread as string).replace('.', '_')];
       const bytes = await washerStep(thread as string, dims);
       const id = `iso-7089-${threadSlug(thread as string)}`;
       return {
@@ -542,7 +595,7 @@ function flatWasher(): SeedFamily {
 }
 
 function lockWasher(): SeedFamily {
-  const threads = ['M3', 'M4', 'M5'];
+  const threads = threadsOf(LOCK_WASHER);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'lock-washer',
@@ -550,7 +603,7 @@ function lockWasher(): SeedFamily {
     standard: 'DIN 127B',
     variants,
     async generate({ thread }) {
-      const dims = LOCK_WASHER[thread as string];
+      const dims = LOCK_WASHER[(thread as string).replace('.', '_')];
       const bytes = await washerStep(thread as string, dims);
       const id = `din-127b-${threadSlug(thread as string)}`;
       return {
@@ -915,6 +968,7 @@ export const SEED_FAMILIES: SeedFamily[] = [
   pinHeader(),
   jstXh(),
   ...sg90Families(),
+  ...FIXTURE_FAMILY_NAMES.map(fixtureSeedFamily),
 ];
 
 export async function generateSeedCatalog(

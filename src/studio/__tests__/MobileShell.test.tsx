@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /** @vitest-environment jsdom */
+import { PHONE_QUERY } from '../hooks/useIsNarrow';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -88,7 +89,7 @@ beforeEach(() => {
     params = 3;
     workbenchError = null;
     vi.stubGlobal('matchMedia', (query: string) => ({
-        matches: narrow && query === '(max-width: 767px)' ? true : narrow && query === '(max-width: 1023px)',
+        matches: narrow && (query === '(max-width: 767px)' || query === PHONE_QUERY || query === '(max-width: 1023px)'),
         media: query,
         addEventListener: () => {},
         removeEventListener: () => {},
@@ -137,6 +138,22 @@ describe('Studio on a phone', () => {
         expect(within(screen.getByTestId('mobile-drawer')).getByTestId('slot-code')).toBeTruthy();
         fireEvent.click(tab('Model'));
         expect(screen.queryByTestId('mobile-drawer')).toBeNull();
+    });
+
+    it('docks the sheet beside the model when the phone is held sideways', () => {
+        vi.stubGlobal('matchMedia', (query: string) => ({
+            // A 915 x 412 touch screen: not narrow, but short and coarse.
+            matches: query === PHONE_QUERY || query === '(orientation: landscape)' || query === '(max-width: 1023px)',
+            media: query,
+            addEventListener: () => {},
+            removeEventListener: () => {},
+        }));
+        render(<StudioShell />);
+        expect(screen.getByTestId('mobile-tabbar')).toBeTruthy();
+        fireEvent.click(tab('Params'));
+        const sheet = screen.getByTestId('mobile-drawer');
+        expect(sheet.getAttribute('data-side')).toBe('true');
+        expect(sheet.style.height).toBe('');
     });
 
     it('closes the sheet with Esc and the close button', () => {

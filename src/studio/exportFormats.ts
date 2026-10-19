@@ -21,6 +21,8 @@ export const EXPORT_FORMATS: ReadonlyArray<ExportFormatDescriptor> = [
     { id: 'obj', label: 'OBJ', help: 'Triangle mesh interchange' },
     { id: 'usd', label: 'USD', help: 'ASCII USD triangle mesh' },
     { id: 'pdf-drawing', label: 'Drawing (PDF)', help: 'Dimensioned A3 engineering drawing' },
+    { id: 'order-pack', label: 'Order pack', help: 'Per-part files, manifest and vendor handoffs (zip)' },
+    { id: 'bom-csv', label: 'BOM CSV', help: 'Bill of materials as a spreadsheet CSV' },
 ];
 
 /**

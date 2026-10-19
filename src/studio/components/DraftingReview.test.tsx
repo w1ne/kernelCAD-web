@@ -18,6 +18,30 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.clearAllMocks(); vi.unstubAllGlobals(); });
 
 describe('drafting review', () => {
+  it('shows a live generating status with a spinner while the preview request runs', async () => {
+    let release: (value: { svg: string; diagnostics: never[]; drawingReport: typeof report }) => void = () => {};
+    vi.mocked(exporter.previewDrawingViaServer).mockImplementationOnce(() => new Promise((resolve) => { release = resolve; }));
+    render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
+    // The pane announces the run instead of leaving the placeholder silent.
+    const status = await screen.findByRole('status');
+    expect(status.textContent).toContain('Generating the sheet…');
+    expect(status.querySelector('.animate-spin')).not.toBeNull();
+    release({ svg: '<svg/>', diagnostics: [], drawingReport: report });
+    await screen.findByText('1 placed · 0 crowded · 0 hidden');
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('announces a busy server retry instead of a silent stall', async () => {
+    vi.mocked(exporter.previewDrawingViaServer).mockImplementationOnce(async (_code, _options, opts) => {
+      opts?.onProgress?.({ phase: 'waiting', retryInSec: 42 });
+      return new Promise(() => {});
+    });
+    render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
+    await screen.findByText(/Server is busy — retrying in 42 s…/);
+  });
+
   it('blocks advanced reviewed export for incomplete authoritative coverage while ordinary PDF works', async () => {
     vi.mocked(exporter.previewDrawingViaServer).mockResolvedValueOnce({ svg: '<svg/>', diagnostics: [], drawingReport: { ...report,
       review: { status: 'incomplete', requirements: [], decisions: [], criticalCount: 2, coveredCriticalCount: 1, decisionCount: 0, unresolvedDecisionCount: 0 } } });

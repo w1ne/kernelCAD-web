@@ -21,7 +21,13 @@ claude mcp list
 ```
 
 For the hosted MCP plus workflow skills, use the existing plugin instead of
-adding a separate MCP entry:
+adding a separate MCP entry (Claude Code 2.1.275 or later):
+
+```bash
+claude plugin install kernelcad --marketplace w1ne/kernelCAD-web
+```
+
+On older versions, add the marketplace first:
 
 ```bash
 claude plugin marketplace add w1ne/kernelCAD-web
@@ -36,8 +42,13 @@ codex mcp list
 ```
 
 For account features, run `codex mcp login kernelcad` and let the user complete
-the host's OAuth flow. The optional hosted plugin and skills are documented
-in the installation guide linked below.
+the host's OAuth flow. For the hosted MCP plus workflow skills, install the
+plugin instead:
+
+```bash
+codex plugin marketplace add w1ne/kernelCAD-web
+codex plugin add kernelcad@kernelcad
+```
 
 ### Cursor
 
@@ -55,6 +66,21 @@ Merge this entry into `~/.cursor/mcp.json` (create the file if absent):
 
 ```bash
 code --add-mcp '{"name":"kernelcad","type":"http","url":"https://mcp.kernelcad.com/mcp"}'
+```
+
+### Gemini CLI
+
+```bash
+gemini extensions install https://github.com/w1ne/kernelCAD-web --consent --auto-update
+```
+
+For account features, sign in with `/mcp auth kernelcad`.
+
+### Grok Build
+
+```bash
+grok plugin marketplace add w1ne/kernelCAD-web
+grok plugin install kernelcad --trust
 ```
 
 ### Claude Desktop / claude.ai and ChatGPT
@@ -134,7 +160,7 @@ A discovery call verifies connection, not CAD geometry or hardware acceptance.
 
 ## Documentation
 
-- [Connect a host](https://app.kernelcad.com/connect): connector settings and OAuth.
+- [Connect a host](https://app.kernelcad.com/connect): plugin install, connector settings and OAuth per host.
 - [Agent installation guide](https://github.com/w1ne/kernelCAD-web/blob/develop/docs/usage/agent-plugin-install.md): existing plugins, updates and uninstall.
 - [Local CLI and MCP](https://github.com/w1ne/kernelCAD-web#readme): package usage and script workflow.
 - [CAD reference](https://kernelcad.com/docs/): native kernelCAD modeling documentation.

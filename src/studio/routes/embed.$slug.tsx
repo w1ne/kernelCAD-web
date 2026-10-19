@@ -34,7 +34,7 @@ import StudioApp from '../App';
 import { Button } from '../../ui';
 import { StudioConfigProvider } from '../config/StudioConfigContext';
 import { EmbedAttributionBar, MadeWithKernelcad } from '../components/MadeWithKernelcad';
-import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
+
 import {
   EMBED_CANVAS_BG,
   EMBED_SMALL_GIZMO,
@@ -270,7 +270,6 @@ function EmbedPage() {
   const { mode, revision, meshUrl: rawMeshUrl, instance, animUrl: rawAnimUrl, customize, theme: pinnedTheme } = Route.useSearch();
   // A customizable embed builds from source: a stored mesh has no parameters.
   const meshUrl = customize ? undefined : revisionPinnedMeshUrl(rawMeshUrl, slug, revision);
-  const customizer = customize ? <StudioModelCustomizer slug={slug} /> : undefined;
   const animUrl = rawAnimUrl;
   const theme = resolveEmbedTheme(pinnedTheme, usePrefersDark());
   const [viewerPhase, setViewerPhase] = useState<FunnelViewerPhase | null>(null);
@@ -318,7 +317,7 @@ function EmbedPage() {
   if (viewerReady && mode === 'studio' && sourceSettled && code) {
     return (
       <StudioConfigProvider value={{ showHeader: false, enableAgentRail: false, enableConnect: false }}>
-        <StudioApp initialCode={code} viewerMode viewportOverlay={customizer} />
+        <StudioApp initialCode={code} viewerMode />
         {/* Bottom-right: the Studio viewport's bottom-left holds the parameter chips. */}
         <MadeWithKernelcad surface="embed" className="fixed bottom-2 right-2" remixSlug={slug} />
       </StudioConfigProvider>
@@ -349,7 +348,6 @@ function EmbedPage() {
           statusOverlay={false}
           background={theme}
           look="publish"
-          overlay={customizerOverlay(customizer)}
           feedback={{ surface: instance ? 'chatgpt' : 'embed', slug }}
           markFix={instance ? { slug, instanceId: instance, revision: typeof revision === 'number' ? revision : null } : undefined}
         />
@@ -369,16 +367,6 @@ function embedViewerReady(args: {
   if (args.revision === null) return false;
   if (args.meshUrl) return true;
   return args.sourceSettled && args.sourceState === 'ready' && Boolean(args.code);
-}
-
-/** The customizer panel, placed top-right over the canvas. */
-function customizerOverlay(customizer: ReactNode | undefined): ReactNode | undefined {
-  if (!customizer) return undefined;
-  return (
-    <div className="absolute top-2 right-2 bottom-2 flex flex-col items-end pointer-events-none">
-      {customizer}
-    </div>
-  );
 }
 
 /** Derive the embed's UI phase from the source-load state and viewer phase. */

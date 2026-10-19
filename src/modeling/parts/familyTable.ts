@@ -19,18 +19,28 @@ export const SHCS_HEAD: Record<string, { D: number; K: number }> = {
   M4: { D: 7.0, K: 4.0 },
   M5: { D: 8.5, K: 5.0 },
   M6: { D: 10.0, K: 6.0 },
+  M8: { D: 13.0, K: 8.0 },
+  M10: { D: 16.0, K: 10.0 },
+  M12: { D: 18.0, K: 12.0 },
 };
 
 export const BHCS_HEAD: Record<string, { D: number; K: number }> = {
   M3: { D: 5.7, K: 1.65 },
   M4: { D: 7.6, K: 2.2 },
   M5: { D: 9.5, K: 2.75 },
+  M6: { D: 10.5, K: 3.3 },
+  M8: { D: 14.0, K: 4.4 },
+  M10: { D: 17.5, K: 5.5 },
 };
 
 export const FLATHEAD_HEAD: Record<string, { D: number; K: number }> = {
   M3: { D: 6.72, K: 1.86 },
   M4: { D: 8.96, K: 2.48 },
   M5: { D: 11.2, K: 3.1 },
+  M6: { D: 13.44, K: 3.72 },
+  M8: { D: 17.92, K: 4.96 },
+  M10: { D: 22.4, K: 6.2 },
+  M12: { D: 26.88, K: 7.44 },
 };
 
 export const HEX_NUT: Record<string, { S: number; m: number }> = {
@@ -40,29 +50,54 @@ export const HEX_NUT: Record<string, { S: number; m: number }> = {
   M4: { S: 7, m: 3.2 },
   M5: { S: 8, m: 4.0 },
   M6: { S: 10, m: 5.0 },
+  M8: { S: 13, m: 6.5 },
+  M10: { S: 16, m: 8 },
+  M12: { S: 18, m: 10 },
 };
 
 export const LOCK_NUT: Record<string, { S: number; m: number }> = {
   M3: { S: 5.5, m: 4.0 },
   M4: { S: 7, m: 5.0 },
   M5: { S: 8, m: 6.0 },
+  M6: { S: 10, m: 6.0 },
+  M8: { S: 13, m: 8.0 },
+  M10: { S: 16, m: 10.0 },
+  M12: { S: 18, m: 12.0 },
 };
 
 export const FLAT_WASHER: Record<string, { Dout: number; Din: number; t: number }> = {
   M2: { Dout: 5, Din: 2.2, t: 0.3 },
+  M2_5: { Dout: 5, Din: 2.7, t: 0.5 },
   M3: { Dout: 7, Din: 3.2, t: 0.5 },
   M4: { Dout: 9, Din: 4.3, t: 0.8 },
   M5: { Dout: 10, Din: 5.3, t: 1.0 },
   M6: { Dout: 12, Din: 6.4, t: 1.6 },
+  M8: { Dout: 16, Din: 8.4, t: 1.6 },
+  M10: { Dout: 20, Din: 10.5, t: 2.0 },
+  M12: { Dout: 24, Din: 13.0, t: 2.5 },
 };
 
 export const LOCK_WASHER: Record<string, { Dout: number; Din: number; t: number }> = {
   M3: { Dout: 6.2, Din: 3.1, t: 0.8 },
   M4: { Dout: 7.6, Din: 4.1, t: 1.0 },
   M5: { Dout: 9.2, Din: 5.1, t: 1.2 },
+  M6: { Dout: 11.5, Din: 6.1, t: 1.6 },
+  M8: { Dout: 14.8, Din: 8.1, t: 2.0 },
+  M10: { Dout: 18.1, Din: 10.2, t: 2.2 },
+  M12: { Dout: 21.1, Din: 12.2, t: 2.5 },
 };
 
-export type PartKind = 'screw' | 'nut' | 'washer';
+export type PartKind =
+  | 'screw'
+  | 'nut'
+  | 'washer'
+  | 't-slot-nut'
+  | 'stud'
+  | 'flange-nut'
+  | 'clamp'
+  | 'block';
+
+export type FixtureKind = Extract<PartKind, 't-slot-nut' | 'stud' | 'flange-nut' | 'clamp' | 'block'>;
 
 export interface PartRequest {
   family: string;
@@ -74,8 +109,8 @@ export interface ResolvedPart {
   id: string;
   name: string;
   family: string;
-  standard: string;
-  category: 'fastener';
+  standard?: string;
+  category: 'fastener' | 'fixture';
   kind: PartKind;
   thread: string;
   lengthMm: number;
@@ -85,6 +120,8 @@ export interface ResolvedPart {
   headHeightMm: number;
   acrossFlatsMm: number;
   innerDiameterMm: number;
+  /** Family-specific envelope dimensions (slot width, clamp length, …). */
+  dims?: Record<string, number>;
   tags: string[];
   connectors: ConnectorEntry[];
 }
@@ -130,10 +167,78 @@ interface WasherFamily {
   kind: 'washer';
   threads: Record<string, WasherDims>;
 }
-type FamilySpec = ScrewFamily | NutFamily | WasherFamily;
+export interface FixtureFamily {
+  /** No `standard`: the stock table holds nominal envelope dimensions for the
+   *  classic clamping-kit forms, not certified standard dims. */
+  idPrefix: string;
+  kind: FixtureKind;
+  /** thread -> nominal envelope dimensions. */
+  threads: Record<string, Record<string, number>>;
+  /** Stocked lengths, clamping studs only. */
+  lengths?: Record<string, readonly number[]>;
+}
+type FamilySpec = ScrewFamily | NutFamily | WasherFamily | FixtureFamily;
 
 const PART_EXAMPLE = "lib.part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 })";
 const STACK_EXAMPLE = "lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' })";
+
+/** Machining-fixture hardware, keyed by the thread its clamping parts use.
+ *  Dimensions are the stock table's envelope values: T-slot nuts follow the
+ *  DIN 508 table (a/e/h/k; the envelope length is a stock choice, DIN 508
+ *  does not table it) and collar nuts follow the DIN 6331 table (s/m/d1/a),
+ *  both read 2026-10-18. Strap clamps and step blocks have no DIN table: their
+ *  values stay nominal kit dimensions. Check the supplier drawing before
+ *  ordering. */
+const FIXTURES: Record<string, FixtureFamily> = {
+  't-slot-nut': {
+    idPrefix: 'tslot-nut',
+    kind: 't-slot-nut',
+    // DIN 508: a (slot), e (nut width, min), h (height), k (head height).
+    // neckWidth = a min, baseWidth = e min, neck height = k, base = h - k.
+    threads: {
+      M8: { slotMm: 10, baseWidthMm: 14.5, neckWidthMm: 9.5, baseHeightMm: 6, neckHeightMm: 6, lengthMm: 22 },
+      M10: { slotMm: 12, baseWidthMm: 17.5, neckWidthMm: 11.4, baseHeightMm: 7, neckHeightMm: 7, lengthMm: 26 },
+      M12: { slotMm: 14, baseWidthMm: 21.5, neckWidthMm: 13.4, baseHeightMm: 8, neckHeightMm: 8, lengthMm: 30 },
+    },
+  },
+  'clamping-stud': {
+    idPrefix: 'clamp-stud',
+    kind: 'stud',
+    // DIN 6379 length series (a stocked subset); the envelope is the nominal
+    // thread diameter over that length.
+    threads: { M8: {}, M10: {}, M12: {} },
+    lengths: { M8: [63, 100], M10: [80, 125], M12: [100, 160] },
+  },
+  'flange-nut': {
+    idPrefix: 'flange-nut',
+    kind: 'flange-nut',
+    // DIN 6331: s (across flats), m (height), d1 (collar diameter), a (collar
+    // height). flangeDiameter/thickness carry d1/a.
+    threads: {
+      M8: { acrossFlatsMm: 13, heightMm: 12, flangeDiameterMm: 18, flangeThicknessMm: 3.5 },
+      M10: { acrossFlatsMm: 16, heightMm: 15, flangeDiameterMm: 22, flangeThicknessMm: 4 },
+      M12: { acrossFlatsMm: 18, heightMm: 18, flangeDiameterMm: 25, flangeThicknessMm: 4 },
+    },
+  },
+  'strap-clamp': {
+    idPrefix: 'strap-clamp',
+    kind: 'clamp',
+    threads: {
+      M8: { lengthMm: 100, widthMm: 20, thicknessMm: 10, slotWidthMm: 10, slotLengthMm: 36, slotCenterMm: 38 },
+      M10: { lengthMm: 125, widthMm: 22, thicknessMm: 12, slotWidthMm: 12, slotLengthMm: 45, slotCenterMm: 48 },
+      M12: { lengthMm: 160, widthMm: 25, thicknessMm: 14, slotWidthMm: 14, slotLengthMm: 56, slotCenterMm: 60 },
+    },
+  },
+  'step-block': {
+    idPrefix: 'step-block',
+    kind: 'block',
+    threads: {
+      M8: { lengthMm: 60, widthMm: 20, riseMm: 10, runMm: 15, steps: 4 },
+      M10: { lengthMm: 72, widthMm: 24, riseMm: 12, runMm: 18, steps: 4 },
+      M12: { lengthMm: 88, widthMm: 28, riseMm: 15, runMm: 22, steps: 4 },
+    },
+  },
+};
 
 const FAMILIES: Record<string, FamilySpec> = {
   'socket-head-cap-screw': { standard: 'ISO 4762', idPrefix: 'iso-4762', kind: 'screw', threads: SHCS_HEAD, lengths: SHCS_LENGTHS },
@@ -143,7 +248,44 @@ const FAMILIES: Record<string, FamilySpec> = {
   'lock-nut': { standard: 'DIN 985', idPrefix: 'din-985', kind: 'nut', threads: LOCK_NUT },
   'flat-washer': { standard: 'ISO 7089', idPrefix: 'iso-7089', kind: 'washer', threads: FLAT_WASHER },
   'lock-washer': { standard: 'DIN 127B', idPrefix: 'din-127b', kind: 'washer', threads: LOCK_WASHER },
+  ...FIXTURES,
 };
+
+/** Machining-fixture family names, for the catalog generator and docs. */
+export const FIXTURE_FAMILY_NAMES: readonly string[] = Object.keys(FIXTURES);
+
+/** Stocked variants of one fixture family, for the catalog generator. */
+export function fixtureVariants(family: string): Array<{ thread: string; lengthMm?: number }> {
+  const spec = FIXTURES[family];
+  if (spec === undefined) {
+    invalidArgs({
+      api: 'lib.fixture.*',
+      path: 'family',
+      got: family,
+      requires: `a stocked fixture family: ${FIXTURE_FAMILY_NAMES.join(', ')}`,
+      example: "lib.fixture.tSlotNut({ thread: 'M10' })",
+    });
+  }
+  return Object.keys(spec.threads).flatMap((key) => {
+    const thread = key.replace('_', '.');
+    const lengths = spec.lengths?.[key];
+    return lengths === undefined ? [{ thread }] : lengths.map((lengthMm) => ({ thread, lengthMm }));
+  });
+}
+
+export function isFixtureKind(kind: PartKind): kind is FixtureKind {
+  return (
+    kind === 't-slot-nut' ||
+    kind === 'stud' ||
+    kind === 'flange-nut' ||
+    kind === 'clamp' ||
+    kind === 'block'
+  );
+}
+
+function isFixtureSpec(spec: FamilySpec): spec is FixtureFamily {
+  return isFixtureKind(spec.kind);
+}
 
 export function threadKey(thread: string): string {
   return thread.replace('.', '_');
@@ -324,8 +466,102 @@ function washerPart(
   };
 }
 
+/** Connector frames for one fixture component; the names are the placement
+ *  vocabulary `examples/fixture/*` and mate refs use. */
+function fixtureConnectors(
+  kind: FixtureKind,
+  dims: Record<string, number>,
+  lengthMm: number,
+): ConnectorEntry[] {
+  if (kind === 'stud') {
+    return [
+      { name: 'table-end', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+      { name: 'clamp-end', type: 'frame', origin: [0, 0, lengthMm], normal: [0, 0, 1] },
+      { name: 'axis', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
+    ];
+  }
+  if (kind === 'flange-nut') {
+    return [
+      { name: 'mating-face', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+      { name: 'top-face', type: 'frame', origin: [0, 0, dims.heightMm ?? 0], normal: [0, 0, 1] },
+      { name: 'inner-bore', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
+    ];
+  }
+  if (kind === 't-slot-nut') {
+    return [
+      { name: 'mating-face', type: 'frame', origin: [0, 0, -(dims.neckHeightMm ?? 0)], normal: [0, 0, 1] },
+      { name: 'top-face', type: 'frame', origin: [0, 0, 0], normal: [0, 0, 1] },
+      { name: 'thread-bore', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
+    ];
+  }
+  if (kind === 'clamp') {
+    const center = dims.slotCenterMm ?? 0;
+    return [
+      { name: 'nose-bearing', type: 'frame', origin: [-center, 0, 0], normal: [0, 0, -1] },
+      { name: 'tail-bearing', type: 'frame', origin: [(dims.lengthMm ?? 0) - center, 0, 0], normal: [0, 0, -1] },
+      { name: 'slot-axis', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
+      { name: 'top-face', type: 'frame', origin: [(dims.lengthMm ?? 0) / 2 - center, 0, dims.thicknessMm ?? 0], normal: [0, 0, 1] },
+    ];
+  }
+  const steps = Math.max(1, Math.round(dims.steps ?? 1));
+  const run = dims.runMm ?? 0;
+  const rise = dims.riseMm ?? 0;
+  const half = (dims.lengthMm ?? 0) / 2;
+  return [
+    { name: 'base-face', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+    ...Array.from({ length: steps }, (_, index) => ({
+      name: `step-${index + 1}`,
+      type: 'frame' as const,
+      origin: [-half + (index + 0.5) * run, 0, (index + 1) * rise] as [number, number, number],
+      normal: [0, 0, 1] as [number, number, number],
+    })),
+  ];
+}
+
+const FIXTURE_LABELS: Record<FixtureKind, string> = {
+  't-slot-nut': 't-slot nut',
+  stud: 'clamping stud',
+  'flange-nut': 'flange nut',
+  clamp: 'strap clamp',
+  block: 'step block',
+};
+
+function fixturePart(request: PartRequest, spec: FixtureFamily): ResolvedPart {
+  const thread = requireThread(request, stockedThreads(spec.threads));
+  const key = threadKey(thread);
+  const dims = { ...requireRow(spec.threads, thread, request.family) };
+  const lengths = spec.lengths?.[key];
+  const lengthMm = lengths === undefined ? 0 : screwLength(lengths, request, thread);
+  if (lengths !== undefined) dims.lengthMm = lengthMm;
+  const nominalMm = nominalOf(thread);
+  const label = FIXTURE_LABELS[spec.kind];
+  return {
+    id: lengths === undefined
+      ? `${spec.idPrefix}-${threadSlug(thread)}`
+      : `${spec.idPrefix}-${threadSlug(thread)}x${lengthMm}`,
+    name:
+      lengths === undefined
+        ? `${thread} ${label}`
+        : `${thread} \u00d7 ${lengthMm} ${label}`,
+    family: request.family,
+    category: 'fixture',
+    kind: spec.kind,
+    thread,
+    lengthMm,
+    nominalMm,
+    headDiameterMm: 0,
+    headHeightMm: 0,
+    acrossFlatsMm: dims.acrossFlatsMm ?? 0,
+    innerDiameterMm: nominalMm,
+    dims,
+    tags: ['fixture', 'workholding', spec.kind, 'metric', thread],
+    connectors: fixtureConnectors(spec.kind, dims, lengthMm),
+  };
+}
+
 export function resolvePart(request: PartRequest): ResolvedPart {
   const spec = requireFamily(request.family);
+  if (isFixtureSpec(spec)) return fixturePart(request, spec);
   const thread = requireThread(request, stockedThreads(spec.threads));
   const nominalMm = nominalOf(thread);
   if (spec.kind === 'screw') {
@@ -375,31 +611,72 @@ function positiveGrip(gripMm: number): number {
   });
 }
 
-/** Screw, washer under the head, and for mode 'bolt' a washer and nut on the far side. */
+function requireScrewFamily(family: string): ScrewFamily {
+  const spec = requireFamily(family);
+  if (spec.kind !== 'screw') {
+    invalidArgs({
+      api: 'lib.stack({ thread, gripMm, mode })',
+      path: 'family',
+      got: family,
+      requires: `a stocked screw family for the stack: ${Object.entries(FAMILIES)
+        .filter(([, candidate]) => candidate.kind === 'screw')
+        .map(([name]) => name)
+        .join(', ')}`,
+      example: STACK_EXAMPLE,
+    });
+  }
+  return spec;
+}
+
+interface StackWear {
+  headWasher?: ResolvedPart;
+  tailWasher?: ResolvedPart;
+  nut?: ResolvedPart;
+}
+
+/** The washers and nut a stack mode adds; a flat head takes no head washer
+ *  because it seats inside its countersink. */
+function stackWear(family: string, mode: 'screw' | 'bolt', thread: string): StackWear {
+  if (mode !== 'bolt') return {};
+  return {
+    ...(family !== 'flat-head-countersunk'
+      ? { headWasher: resolvePart({ family: 'flat-washer', thread }) }
+      : {}),
+    tailWasher: resolvePart({ family: 'flat-washer', thread }),
+    nut: resolvePart({ family: 'hex-nut', thread }),
+  };
+}
+
+function stackMembersFor(wear: StackWear, screw: ResolvedPart, gripMm: number): StackMemberPlan[] {
+  const headT = wear.headWasher?.headHeightMm ?? 0;
+  const tailT = wear.tailWasher?.headHeightMm ?? 0;
+  const nutT = wear.nut?.headHeightMm ?? 0;
+  const members: StackMemberPlan[] = [];
+  if (wear.headWasher) members.push({ role: 'head-washer', part: wear.headWasher, offsetZ: 0 });
+  members.push({ role: 'screw', part: screw, offsetZ: headT });
+  if (wear.tailWasher && wear.nut) {
+    members.push({ role: 'tail-washer', part: wear.tailWasher, offsetZ: -(gripMm + tailT) });
+    members.push({ role: 'nut', part: wear.nut, offsetZ: -(gripMm + tailT + nutT) });
+  }
+  return members;
+}
+
+/** Screw, washer under the head, and for mode 'bolt' a washer and nut on the far side.
+ *  Socket-head is the `lib.stack` front door; `planStackFor` serves any stocked
+ *  screw family (a flat head takes no washer under its countersunk head). */
 export function planStack(request: StackRequest): StackPlan {
+  return planStackFor('socket-head-cap-screw', request);
+}
+
+export function planStackFor(family: string, request: StackRequest): StackPlan {
   const mode = stackMode(request.mode);
   const gripMm = positiveGrip(request.gripMm);
-  const washer = mode === 'bolt'
-    ? resolvePart({ family: 'flat-washer', thread: request.thread })
-    : undefined;
-  const nut = mode === 'bolt'
-    ? resolvePart({ family: 'hex-nut', thread: request.thread })
-    : undefined;
-  const washerT = washer?.headHeightMm ?? 0;
-  const nutT = nut?.headHeightMm ?? 0;
-  const needed = gripMm + (mode === 'bolt' ? washerT + nutT : 0);
-  const lengthMm = shortestAtLeast(SHCS_LENGTHS, needed, `socket-head-cap-screw ${request.thread}`);
-  const screw = resolvePart({
-    family: 'socket-head-cap-screw',
-    thread: request.thread,
-    lengthMm,
-  });
-  const members: StackMemberPlan[] = [];
-  if (washer) members.push({ role: 'head-washer', part: washer, offsetZ: 0 });
-  members.push({ role: 'screw', part: screw, offsetZ: washerT });
-  if (washer && nut) {
-    members.push({ role: 'tail-washer', part: washer, offsetZ: -(gripMm + washerT) });
-    members.push({ role: 'nut', part: nut, offsetZ: -(gripMm + washerT + nutT) });
-  }
-  return { lengthMm, members };
+  const spec = requireScrewFamily(family);
+  const wear = stackWear(family, mode, request.thread);
+  const tailT = wear.tailWasher?.headHeightMm ?? 0;
+  const nutT = wear.nut?.headHeightMm ?? 0;
+  const needed = gripMm + (wear.tailWasher ? tailT + nutT : 0);
+  const lengthMm = shortestAtLeast(spec.lengths, needed, `${family} ${request.thread}`);
+  const screw = resolvePart({ family, thread: request.thread, lengthMm });
+  return { lengthMm, members: stackMembersFor(wear, screw, gripMm) };
 }

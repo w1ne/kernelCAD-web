@@ -57,3 +57,20 @@ export function reposedLoweredAssemblyScene(
   }
   return { ...scene, parts };
 }
+
+/**
+ * The last fully lowered rest scene of each assembly, so the checks that run
+ * after the mechanism probe (motion-load, ...) re-pose it instead of lowering
+ * the whole assembly again. A lower is new OCCT geometry, and the WASM heap
+ * keeps its high-water mark for the life of the process.
+ */
+const restScenes = new WeakMap<Assembly, SceneBackend>();
+
+export function rememberRestScene(arm: Assembly, scene: SceneBackend): void {
+  restScenes.set(arm, scene);
+}
+
+/** The remembered rest scene, if it still matches the assembly's parts. */
+export function rememberedRestScene(arm: Assembly): SceneBackend | undefined {
+  return matchingLoweredAssemblyScene(arm, restScenes.get(arm));
+}

@@ -2,13 +2,23 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 export const MCP_URL = 'https://mcp.kernelcad.com/mcp';
 
-export const CLAUDE_CODE_CMD = `claude mcp add --transport http kernelcad ${MCP_URL}`;
-
 export const NPX_LOCAL_CMD = 'npx kernelcad mcp';
 
-/** Codex CLI: register the hosted server (streamable HTTP), then sign in. */
-export const CODEX_ADD_CMD = `codex mcp add kernelcad --url ${MCP_URL}`;
+/**
+ * One-line plugin installs. Each plugin carries the hosted MCP server and the
+ * four kernelCAD skills, so it replaces a separate `mcp add` command.
+ */
+export const CLAUDE_PLUGIN_CMD = 'claude plugin install kernelcad --marketplace w1ne/kernelCAD-web';
+
+export const CODEX_PLUGIN_MARKETPLACE_CMD = 'codex plugin marketplace add w1ne/kernelCAD-web';
+export const CODEX_PLUGIN_INSTALL_CMD = 'codex plugin add kernelcad@kernelcad';
 export const CODEX_LOGIN_CMD = 'codex mcp login kernelcad';
+
+export const GEMINI_EXTENSION_CMD =
+  'gemini extensions install https://github.com/w1ne/kernelCAD-web --consent --auto-update';
+
+export const GROK_PLUGIN_MARKETPLACE_CMD = 'grok plugin marketplace add w1ne/kernelCAD-web';
+export const GROK_PLUGIN_INSTALL_CMD = 'grok plugin install kernelcad --trust';
 
 /** Settings pages where the web clients add a custom MCP server. */
 export const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/#settings/Connectors';

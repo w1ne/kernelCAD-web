@@ -79,7 +79,7 @@ describe('InspectorTabs', () => {
         expect(onSelectTab).toHaveBeenLastCalledWith('validity');
     });
 
-    it('tabs that do not fit the width go to a "More" menu', () => {
+    it('shows every view in the row, with no More menu', () => {
         render(
             <InspectorTabs
                 tabs={['code', 'params', 'validity', 'joints', 'animation', 'export', 'scene']}
@@ -89,10 +89,9 @@ describe('InspectorTabs', () => {
             />,
         );
 
-        expect(screen.getByTestId('inspector-tab-code')).toBeTruthy();
-        expect(screen.getByTestId('inspector-tab-params')).toBeTruthy();
-        expect(screen.getByTestId('inspector-tab-validity')).toBeTruthy();
-        expect(screen.queryByTestId('inspector-tab-scene')).toBeNull();
-        expect(screen.getByRole('button', { name: /more/i })).toBeTruthy();
+        for (const id of ['code', 'params', 'validity', 'joints', 'animation', 'export', 'scene']) {
+            expect(screen.getByTestId(`inspector-tab-${id}`)).toBeTruthy();
+        }
+        expect(screen.queryByRole('button', { name: /more/i })).toBeNull();
     });
 });
