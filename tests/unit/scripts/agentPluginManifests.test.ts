@@ -26,7 +26,18 @@ describe('agent plugin manifests', () => {
     // The submission importer only resolves ./-prefixed paths, and the file must ship.
     expect(existsSync(`${ROOT}plugins/kernelcad/${ext.interface.logo.replace(/^\.\//, '')}`)).toBe(true);
     expect(existsSync(`${ROOT}plugins/kernelcad/${ext.interface.composerIcon.replace(/^\.\//, '')}`)).toBe(true);
-    expect(ext.review.test_cases).toHaveLength(8);
+    expect(ext.review.test_cases.positive).toHaveLength(5);
+    expect(ext.review.test_cases.negative).toHaveLength(3);
+    // The dashboard rejects arrays here: tools_triggered must be a string, and
+    // negative cases that trigger nothing omit the field.
+    for (const c of ext.review.test_cases.positive) {
+      expect(typeof c.tools_triggered).toBe('string');
+      expect(c.tools_triggered.length).toBeGreaterThan(0);
+    }
+    for (const c of ext.review.test_cases.negative) {
+      // Negative cases may name the tool that must refuse (e.g. import_step).
+      if (c.tools_triggered !== undefined) expect(typeof c.tools_triggered).toBe('string');
+    }
     // The commerce declaration is decided (chatgpt.commerceDecision): external checkout.
     expect(ext.review.commerce).toBe(true);
     expect(ext.review.commerce_description).toContain('external checkout');
