@@ -107,7 +107,9 @@
             "tools_triggered": [],
             "expected_behavior": "Doesn't call any kernelCAD tools."
           }
-        ]
+        ],
+        "commerce": true,
+        "commerce_description": "Ordering is external checkout: kernelCAD creates a production request and returns the fabrication vendor's own pay link. Payment, billing and fulfilment stay with the vendor; kernelCAD does not charge cards or process payments."
       },
       "publication": {
         "release_notes": "Hosted kernelCAD MCP: editable .kcad.ts models, design review, DFM checks, STEP/STL/3MF/GLB/DXF/PDF export and fab-pack quote links."
