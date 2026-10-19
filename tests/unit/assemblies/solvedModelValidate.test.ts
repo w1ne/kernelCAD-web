@@ -141,6 +141,19 @@ describe('Assembly.solvedModel({validate:"error"}) — interference hard gate', 
       .rejects.toThrow(/assembly\.interference\.overlap|overlap/i);
   }, 60_000);
 
+  it('names the overlap location in the interference diagnostic', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(10, 10, 10), { at: [8, 0, 0] })
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    await expect(
+      arm.solvedModel({}, { validate: 'error' }),
+    ).rejects.toThrow(/near \(-?\d+\.\d, -?\d+\.\d, -?\d+\.\d\)/);
+  }, 60_000);
+
   it('does NOT auto-run interference under validate:"warn"', async () => {
     // Same fixture but with warn mode — should return a Scene, may have warnings,
     // but should not throw and should NOT include interference results.

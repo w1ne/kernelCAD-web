@@ -12,7 +12,7 @@ import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { detectInterferences, type InterferencePair, pairKey } from '../runtime/detectInterferences';
 import { checkClearance, type ClearancePairReport } from '../runtime/dfm/clearance';
-import { describeOverlap, isActionableOverlap } from '../runtime/jointContactCap';
+import { describeOverlap, describeOverlapLocation, isActionableOverlap } from '../runtime/jointContactCap';
 import { expandCoupledPoses } from './coupledPoses';
 import { reposedLoweredAssemblyScene } from './loweredAssemblyScene';
 import {
@@ -348,7 +348,7 @@ function createInterferenceReporter(
       partA: pair.a,
       partB: pair.b,
       volumeMm3: pair.volumeMm3,
-      message: `Pose-envelope sample '${sampleName}' makes parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}.`,
+      message: `Pose-envelope sample '${sampleName}' makes parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}${describeOverlapLocation(pair)}.`,
       hint: `invalid-args.assembly.pose-envelope-interference — add clearance, reduce mate travel, or move the connector/mount geometry so the swept pose stays collision-free.`,
     });
   };

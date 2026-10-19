@@ -95,6 +95,7 @@ describe('detectInterferences — probe count (bbox prune on real shapes)', () =
     expect(r.comparisonCount).toBe(1);
     expect(r.pairs).toHaveLength(1);
     expect(r.pairs[0].volumeMm3).toBeGreaterThan(0);
+    expect(r.pairs[0].overlapBounds).toBeDefined();
   });
 
   it('honors the symmetric ignore list before probing', async () => {
