@@ -135,9 +135,11 @@ describe('examples evaluate through the kernel', () => {
     });
   }
 
-  // The default budget is 4.5 s. Heavy examples get a longer one: roboto-01 loads about 40 MB of
-  // STL meshes (about 2 s alone) and kspray-facade-robot builds 342 features; both exceed the
-  // budget when the suite runs in parallel.
+  // The default budget is 15 s: these are correctness/environment gates, and a
+  // 4.5 s budget flaked under parallel full-suite load (single examples run in
+  // 0.3-4.8 s, some 10x slower when the machine is busy). Heavy examples get
+  // a longer one: roboto-01 loads about 40 MB of STL meshes and
+  // kspray-facade-robot builds 342 features.
   const SLOW_EXAMPLE_TIMEOUT_MS = new Map<string, number>([
     ['examples/gallery/roboto-01.kcad.ts', 30_000],
     ['examples/gallery/kspray-facade-robot.kcad.ts', 30_000],
@@ -158,6 +160,6 @@ describe('examples evaluate through the kernel', () => {
       } else {
         expect(result.exitCode, `${displayFile}: ${JSON.stringify(result.diagnostics)}`).toBe(0);
       }
-    }, SLOW_EXAMPLE_TIMEOUT_MS.get(displayFile) ?? 4_500);
+    }, SLOW_EXAMPLE_TIMEOUT_MS.get(displayFile) ?? 15_000);
   }
 });
