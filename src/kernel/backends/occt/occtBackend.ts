@@ -1072,7 +1072,12 @@ export class OcctBackend implements ShapeBackend {
    * The area gives the shared region's mean thickness (2·V/A), which tells
    * coincident-face contact apart from a real overlap of any volume.
    */
-  intersectionMetrics(other: OcctBackend): { volumeMm3: number; areaMm2: number } {
+  intersectionMetrics(other: OcctBackend): {
+    volumeMm3: number;
+    areaMm2: number;
+    /** World-frame bounds of the common solid, when OCCT can compute them. */
+    bounds?: { min: Vec3; max: Vec3 };
+  } {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
     const progress = new oc.Message_ProgressRange_1();
@@ -1100,7 +1105,23 @@ export class OcctBackend implements ShapeBackend {
         oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
         const areaMm2 = Math.abs(surface.Mass());
         surface.delete();
-        return { volumeMm3, areaMm2 };
+        let bounds: { min: Vec3; max: Vec3 } | undefined;
+        const box = new oc.Bnd_Box_1();
+        try {
+          oc.BRepBndLib.AddOptimal(shape, box, false, false);
+          if (!box.IsVoid()) {
+            const lo = box.CornerMin();
+            const hi = box.CornerMax();
+            bounds = { min: [lo.X(), lo.Y(), lo.Z()], max: [hi.X(), hi.Y(), hi.Z()] };
+            lo.delete();
+            hi.delete();
+          }
+        } catch {
+          // Bounds are diagnostic sugar; a failure must not fail the probe.
+        } finally {
+          box.delete();
+        }
+        return { volumeMm3, areaMm2, ...(bounds !== undefined ? { bounds } : {}) };
       } finally {
         // The handle holds a reference to the common solid; without this the
         // result of every probe stays in the WASM heap until GC.

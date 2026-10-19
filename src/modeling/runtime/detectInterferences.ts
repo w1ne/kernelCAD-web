@@ -36,6 +36,10 @@ export interface InterferencePair {
   /** Mean thickness (mm) of the shared region, 2·V/A of the common solid.
    *  Tells face contact from a real overlap (`isActionableOverlap`). */
   readonly thicknessMm?: number;
+  /** World-frame bounds of the shared region, when OCCT can compute them.
+   *  Lets a diagnostic name WHERE the parts overlap instead of only how
+   *  much. */
+  readonly overlapBounds?: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] };
 }
 
 /**
@@ -124,14 +128,22 @@ function transformKey(t: SceneBackend['parts'][number]['worldTransform']): strin
  * validator, pose envelope, mechanism sweep all re-pose the SAME lowered
  * part BREPs. Weakly keyed, so it lives exactly as long as the shapes.
  */
-interface OverlapMetrics { volumeMm3: number; thicknessMm?: number }
+interface OverlapMetrics {
+  volumeMm3: number;
+  thicknessMm?: number;
+  bounds?: { min: [number, number, number]; max: [number, number, number] };
+}
 
 const intersectionVolumeMemo = new WeakMap<object, WeakMap<object, Map<string, OverlapMetrics>>>();
 
 function measureOverlap(a: OcctBackend, b: OcctBackend): OverlapMetrics {
   if (typeof a.intersectionMetrics !== 'function') return { volumeMm3: a.intersectionVolume(b) };
   const m = a.intersectionMetrics(b);
-  return { volumeMm3: m.volumeMm3, thicknessMm: overlapThicknessMm(m.volumeMm3, m.areaMm2) };
+  return {
+    volumeMm3: m.volumeMm3,
+    thicknessMm: overlapThicknessMm(m.volumeMm3, m.areaMm2),
+    ...(m.bounds !== undefined ? { bounds: m.bounds } : {}),
+  };
 }
 
 /**
@@ -311,6 +323,7 @@ function probeCandidates(
       pairs.push({
         a: a.name, b: b.name, volumeMm3: vol.volumeMm3,
         ...(vol.thicknessMm !== undefined && Number.isFinite(vol.thicknessMm) ? { thicknessMm: vol.thicknessMm } : {}),
+        ...(vol.bounds !== undefined ? { overlapBounds: vol.bounds } : {}),
       });
     }
   }

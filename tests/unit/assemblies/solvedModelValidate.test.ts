@@ -369,6 +369,13 @@ describe('Assembly.solvedModel — per-pair contact / clearance tolerances', () 
     ).rejects.toThrow(/minimum clearance|clearance\.violated/i);
   }, 60_000);
 
+  it('names the overlap location in the interference diagnostic', async () => {
+    const { arm } = overlappingPair(9);
+    await expect(
+      arm.solvedModel({}, { validate: 'error' }),
+    ).rejects.toThrow(/near \(-?\d+\.\d, -?\d+\.\d, -?\d+\.\d\)/);
+  }, 60_000);
+
   it('rejects unknown, self and duplicate pair declarations at capture entry', async () => {
     const { arm, kcad } = makeArm();
     arm.part('a', kcad.box(1, 1, 1));

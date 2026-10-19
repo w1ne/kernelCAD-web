@@ -45,7 +45,7 @@ import { validateJointConventionMix } from './jointConventionMix';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { validateJointVisualExposure } from './jointVisualExposure';
 import { parseConnectorRef } from './mate';
-import { describeOverlap, isActionableOverlap } from '../runtime/jointContactCap';
+import { describeOverlap, describeOverlapLocation, isActionableOverlap } from '../runtime/jointContactCap';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import { validateMountingHoleAlignment } from './mountingHoleAlignment';
@@ -372,7 +372,7 @@ function collectInterferenceDiagnostics(
         code: 'assembly.contact.tolerance-exceeded',
         severity: 'error',
         message:
-          `Parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}, over the declared contact budget `
+          `Parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}${describeOverlapLocation(pair)}, over the declared contact budget `
           + `(${describeContactBudget(contact)}); exceeded ${describeContactExcess(pair, contact)}.`
           + (contact.reason !== undefined ? ` Reason: ${contact.reason}.` : ''),
         hint: `invalid-args.assembly.contact-tolerance — widen the contact budget for ('${pair.a}', '${pair.b}') or move the parts apart.`,
@@ -385,7 +385,7 @@ function collectInterferenceDiagnostics(
     diagnostics.push({
       code: 'assembly.interference.overlap',
       severity: 'error',
-      message: `Parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}.`,
+      message: `Parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}${describeOverlapLocation(pair)}.`,
       hint: `invalid-args.assembly.interference — translate one part along its mating direction, or add a coupling part (washer / spacer / bracket) to clear the overlap. Pass { ignore: [['${pair.a}', '${pair.b}']] } to assembly.solvedModel(...) if the contact is intentional.`,
       partA: pair.a,
       partB: pair.b,

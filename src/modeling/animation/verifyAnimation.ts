@@ -47,6 +47,7 @@ import {
 import {
   INTERPENETRATION_EPSILON_MM3,
   describeOverlap,
+  describeOverlapLocation,
   isActionableOverlap,
   overlapRuleText,
 } from '../runtime/jointContactCap';
@@ -261,7 +262,7 @@ function collectPoseCollisions(
     diagnostics.push(diag(
       'animation.collision',
       `verifyAnimation: parts '${pair.a}' and '${pair.b}' collide at tMs=${tMs} of the animation timeline — ` +
-        `shared volume ${describeOverlap(pair)} (rule: ${overlapRuleText()}).`,
+        `shared volume ${describeOverlap(pair)}${describeOverlapLocation(pair)} (rule: ${overlapRuleText()}).`,
       `Adjust the keyframes so the pose at tMs=${tMs} keeps '${pair.a}' and '${pair.b}' clear, or reshape / add clearance to the colliding geometry.`,
     ));
   }
