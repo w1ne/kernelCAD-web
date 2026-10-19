@@ -62,7 +62,7 @@ import {
 import type { Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { resolvePrinterProfile } from '../../kernel/export/gcode/printerProfiles';
 export type { StressInfillExportOptions, StressInfillReport } from './stressInfillExport';
-export { stlNotWatertightDiagnostic } from './exportDiagnostics';
+export { stlNotWatertightDiagnostic, brepInvalidDiagnostic } from './exportDiagnostics';
 
 export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 

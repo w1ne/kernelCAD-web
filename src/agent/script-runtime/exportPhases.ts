@@ -35,8 +35,11 @@ import {
   threeMfBedDiagnostics,
   threeMfMeshDiagnostics,
   stlNotWatertightDiagnostic,
+  brepInvalidDiagnostic,
   type GcodeOptions,
 } from './exportDiagnostics';
+import { getOC } from 'replicad';
+import { isValidShape } from '../../kernel/backends/occt/booleanRecovery';
 
 import type {
   ExportInput,
@@ -355,6 +358,13 @@ export async function exportSceneBackend(
     if (verify) {
       const parts = sceneToWorldFrameParts(scene);
       for (const p of parts) {
+        // B-rep validity (BRepCheck): catch invalid topology — e.g. an
+        // unorientable face left by a boolean on an imported body — that the
+        // mesh gate can miss. Downstream validity gates reject these STEPs.
+        if (!isValidShape(getOC(), p.shape.getReplicadShape().wrapped)) {
+          result.diagnostics.push(brepInvalidDiagnostic(targetId, parts.length > 1 ? p.name : undefined));
+          break;
+        }
         const mesh = meshShapeForExport(p.shape.getReplicadShape());
         const report = verifyWatertight(mesh);
         if (!report.ok) {
