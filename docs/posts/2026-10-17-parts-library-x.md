@@ -9,13 +9,13 @@
 ```
 Standard fasteners are now one call in kernelCAD.
 
-lib.part: screws, nuts and washers by family and size (M2 to M12).
+lib.part: screws, bolts, nuts and washers by family and size (M2 to M20).
 lib.stack: give it a grip, it picks the screw length and places the washers and nut.
 
 Open source. kernelcad.com
 ```
 
-*(229 chars · attach demo.mp4, or stack.hero.png for a still)*
+*(237 chars · attach demo.mp4, or stack.hero.png for a still)*
 
 ---
 

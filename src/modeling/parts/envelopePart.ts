@@ -9,7 +9,7 @@ import type { Shape } from '../capture/proxy';
 import type { CaptureSession } from '../capture/captureSession';
 import { snapshotCatalogPart, type PartRecord } from '../../shared/parts/types';
 import { isFixtureKind, type ResolvedPart } from './familyTable';
-import { countersunkScrewSolid } from './headSolids';
+import { countersunkScrewSolid, headlessSolid, hexHeadBoltSolid } from './headSolids';
 import { fixtureSolid } from './fixtureSolids';
 
 export interface EnvelopeCtx {
@@ -40,6 +40,17 @@ function screwSolid(part: ResolvedPart): OcctBackend {
       part.headHeightMm,
       part.lengthMm,
     );
+  }
+  if (part.family === 'hex-head-bolt') {
+    return hexHeadBoltSolid(
+      part.nominalMm,
+      part.acrossFlatsMm,
+      part.headHeightMm,
+      part.lengthMm,
+    );
+  }
+  if (part.family === 'set-screw' || part.family === 'threaded-rod') {
+    return headlessSolid(part.nominalMm, part.lengthMm);
   }
   const head = OcctBackend.cylinder(part.headHeightMm, part.headDiameterMm / 2);
   const shank = OcctBackend.cylinder(part.lengthMm, part.nominalMm / 2).translate(0, 0, -part.lengthMm);

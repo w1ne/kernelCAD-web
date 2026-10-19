@@ -14,17 +14,21 @@ envelope solids, a head plus a shank, and the browser builds them in memory.
 
 ## What the table stocks
 
-- `socket-head-cap-screw` (ISO 4762): M2, M2.5, M3, M4, M5, M6, M8, M10, M12
-- `button-head-cap-screw` (ISO 7380): M3, M4, M5, M6, M8, M10
-- `flat-head-countersunk` (ISO 10642): M3, M4, M5, M6, M8, M10, M12
-- `hex-nut` (ISO 4032): M2, M2.5, M3, M4, M5, M6, M8, M10, M12
-- `lock-nut` (DIN 985): M3, M4, M5, M6, M8, M10, M12
-- `flat-washer` (ISO 7089): M2, M2.5, M3, M4, M5, M6, M8, M10, M12
-- `lock-washer` (DIN 127B): M3, M4, M5, M6, M8, M10, M12
+- `socket-head-cap-screw` (ISO 4762): M2–M20
+- `button-head-cap-screw` (ISO 7380): M3–M10
+- `flat-head-countersunk` (ISO 10642): M3–M12
+- `hex-head-bolt` (ISO 4017): M3–M20
+- `set-screw` (ISO 4026): M3–M12
+- `threaded-rod` (DIN 975): M3–M12, stocked 250 and 1000 mm
+- `hex-nut` (ISO 4032): M2–M20
+- `lock-nut` (DIN 985): M3–M12
+- `flat-washer` (ISO 7089): M2–M20
+- `lock-washer` (DIN 127B): M3–M12
 
-Screws also take a stocked length: socket head 4 to 50 mm, button head 5 to
-25 mm, countersunk 6 to 25 mm. An unknown family, thread or length fails with a
-diagnostic that names the stocked values.
+Screws also take a stocked length, and the lengths are per thread from the
+standard's preferred series: socket head 4–200 mm (M2–M20), button head
+5–60 mm, countersunk 6–100 mm, hex head 8–200 mm. An unknown family, thread or
+length fails with a diagnostic that names the stocked values.
 
 ![One envelope per family on a display base](standard-parts-library/lineup.png "The lineup example: socket, button and countersunk heads, two nut styles and two washer styles.")
 

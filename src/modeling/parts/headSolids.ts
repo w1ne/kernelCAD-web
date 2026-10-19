@@ -48,3 +48,34 @@ export function countersunkScrewSolid(
   const shank = OcctBackend.cylinder(shankLength, nominalMm / 2).translate(0, 0, -lengthMm);
   return head.union(shank);
 }
+
+/** Hex head (ISO 4017): a prism across flats `acrossFlatsMm` and `headHeightMm`
+ *  tall, with a flat facing +X — the same orientation the nut prism uses, so
+ *  the in-memory envelope and the generated STEP agree. */
+export function hexHeadSolid(acrossFlatsMm: number, headHeightMm: number): OcctBackend {
+  const r = acrossFlatsMm / Math.sqrt(3);
+  const pts: [number, number][] = [];
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI / 3) * i + Math.PI / 6;
+    pts.push([r * Math.cos(a), r * Math.sin(a)]);
+  }
+  return OcctBackend.extrudePolygon(pts, headHeightMm);
+}
+
+/** Hex head bolt envelope: hex head on the seat plane z = 0, shank below. */
+export function hexHeadBoltSolid(
+  nominalMm: number,
+  acrossFlatsMm: number,
+  headHeightMm: number,
+  lengthMm: number,
+): OcctBackend {
+  const head = hexHeadSolid(acrossFlatsMm, headHeightMm);
+  const shank = OcctBackend.cylinder(lengthMm, nominalMm / 2).translate(0, 0, -lengthMm);
+  return head.union(shank);
+}
+
+/** Headless envelope (set screw, threaded rod): a plain cylinder from the
+ *  first end at z = 0 down to the second end at z = -lengthMm. */
+export function headlessSolid(nominalMm: number, lengthMm: number): OcctBackend {
+  return OcctBackend.cylinder(lengthMm, nominalMm / 2).translate(0, 0, -lengthMm);
+}

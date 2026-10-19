@@ -26,12 +26,10 @@ import type { Vec3 } from '../../shared/intent/types';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import {
   BHCS_HEAD,
-  BHCS_LENGTHS,
   FLATHEAD_HEAD,
-  FLATHEAD_LENGTHS,
   SHCS_HEAD,
-  SHCS_LENGTHS,
   planStackFor,
+  stockedScrewLengths,
 } from './familyTable';
 import { placeStackFor } from './placePart';
 
@@ -115,6 +113,8 @@ export const CLEARANCE_FITS_MM: Readonly<
   M8: { close: 8.4, normal: 9.0, loose: 10.0 },
   M10: { close: 10.5, normal: 11.0, loose: 12.0 },
   M12: { close: 13.0, normal: 13.5, loose: 14.5 },
+  M16: { close: 17.0, normal: 17.5, loose: 18.5 },
+  M20: { close: 21.0, normal: 22.0, loose: 24.0 },
 };
 
 /** ISO 273 medium (normal) clearance bores for the stocked threads. */
@@ -138,6 +138,9 @@ export const TAP_DRILL_MM: Readonly<Record<string, number>> = {
   M6: 5,
   M8: 6.8,
   M10: 8.5,
+  M12: 10.2,
+  M16: 14,
+  M20: 17.5,
 };
 /** How close a bore must sit to a tap drill to be called out, mm. */
 export const TAP_DRILL_MATCH_TOL_MM = 0.02;
@@ -426,17 +429,10 @@ function byCenter(a: PlannedInsert, b: PlannedInsert): number {
   );
 }
 
-/** Screw lengths stocked for one insert family. */
-function stockedLengths(family: InsertFamily): readonly number[] {
-  if (family === 'button-head-cap-screw') return BHCS_LENGTHS;
-  if (family === 'flat-head-countersunk') return FLATHEAD_LENGTHS;
-  return SHCS_LENGTHS;
-}
-
 /** A screw alone in a blind hole must fit: the longest stocked length that
  *  reaches no deeper than the grip (the hole's wall length). */
-function blindScrewLength(family: InsertFamily, gripMm: number): number {
-  const lengths = stockedLengths(family);
+function blindScrewLength(family: InsertFamily, thread: string, gripMm: number): number {
+  const lengths = stockedScrewLengths(family, thread);
   const fit = lengths.filter((length) => length <= gripMm + 1e-9).pop();
   if (fit === undefined) {
     invalidArgs({
@@ -486,7 +482,7 @@ export function planInserts(
       const gripMm = resolved.gripMm ?? bore.depthMm;
       const lengthMm =
         resolved.mode === 'screw' && bore.kind === 'blind'
-          ? blindScrewLength(resolved.family, gripMm)
+          ? blindScrewLength(resolved.family, thread, gripMm)
           : planStackFor(resolved.family, {
               thread,
               gripMm,

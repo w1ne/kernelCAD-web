@@ -59,5 +59,5 @@ The `frames/` directory holds the exact slides the encoder consumed (the
 flange video uses `flange-frames/`). The guide page is
 `docs/guide/standard-parts-library.md` (draft; the three feature guides were
 unpublished on 2026-10-19 for one reworked post). The fastener table now
-covers M2–M12, and `lib.insert` matches all three ISO 273 fit classes
+covers M2–M20 (family ranges vary), and `lib.insert` matches all three ISO 273 fit classes
 (close/normal/loose), reporting the match per hole.

@@ -46,6 +46,8 @@ describe('lib.insert sizing', () => {
     expect(threadForHoleDiameter(6.5)).toBe('M6');
     expect(threadForHoleDiameter(9)).toBe('M8');
     expect(threadForHoleDiameter(13.5)).toBe('M12');
+    expect(threadForHoleDiameter(17.5)).toBe('M16');
+    expect(threadForHoleDiameter(22)).toBe('M20');
   });
 
   it('reports the ISO 273 fit class of the bore', () => {

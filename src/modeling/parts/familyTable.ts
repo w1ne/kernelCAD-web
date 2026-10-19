@@ -7,9 +7,73 @@
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ConnectorEntry } from '../../shared/parts/connectorManifestSchema';
 
-export const SHCS_LENGTHS = [4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50] as const;
-export const BHCS_LENGTHS = [5, 6, 8, 10, 12, 14, 16, 18, 20, 25] as const;
-export const FLATHEAD_LENGTHS = [6, 8, 10, 12, 14, 16, 18, 20, 25] as const;
+/** Stocked screw lengths per thread, the standard preferred series (a stocked
+ *  subset). A 50 mm M2 is not hardware; per-size lists keep the table honest. */
+export const SHCS_LENGTHS: Readonly<Record<string, readonly number[]>> = {
+  M2: [4, 5, 6, 8, 10, 12, 16, 20],
+  M2_5: [4, 5, 6, 8, 10, 12, 16, 20, 25],
+  M3: [4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30],
+  M4: [4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40],
+  M5: [5, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50],
+  M6: [6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60],
+  M8: [8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80],
+  M10: [10, 12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100],
+  M12: [12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 110, 120],
+  M16: [16, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160],
+  M20: [20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 180, 200],
+};
+
+export const BHCS_LENGTHS: Readonly<Record<string, readonly number[]>> = {
+  M3: [5, 6, 8, 10, 12, 14, 16, 18, 20],
+  M4: [5, 6, 8, 10, 12, 14, 16, 18, 20, 25],
+  M5: [6, 8, 10, 12, 14, 16, 18, 20, 25, 30],
+  M6: [6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40],
+  M8: [8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50],
+  M10: [10, 12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60],
+};
+
+export const FLATHEAD_LENGTHS: Readonly<Record<string, readonly number[]>> = {
+  M3: [6, 8, 10, 12, 14, 16, 18, 20, 25],
+  M4: [6, 8, 10, 12, 14, 16, 18, 20, 25, 30],
+  M5: [6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40],
+  M6: [6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50],
+  M8: [8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50, 60],
+  M10: [10, 12, 16, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80],
+  M12: [12, 16, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100],
+};
+
+export const HEX_BOLT_LENGTHS: Readonly<Record<string, readonly number[]>> = {
+  M3: [8, 10, 12, 16, 20, 25, 30],
+  M4: [8, 10, 12, 16, 20, 25, 30, 35, 40],
+  M5: [10, 12, 16, 20, 25, 30, 35, 40, 45, 50],
+  M6: [12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60],
+  M8: [16, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80],
+  M10: [20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100],
+  M12: [25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 110, 120],
+  M16: [30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160],
+  M20: [40, 45, 50, 55, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 180, 200],
+};
+
+export const SET_SCREW_LENGTHS: Readonly<Record<string, readonly number[]>> = {
+  M3: [4, 5, 6, 8, 10, 12, 16, 20],
+  M4: [5, 6, 8, 10, 12, 16, 20, 25],
+  M5: [5, 6, 8, 10, 12, 16, 20, 25, 30],
+  M6: [6, 8, 10, 12, 16, 20, 25, 30, 35, 40],
+  M8: [8, 10, 12, 16, 20, 25, 30, 35, 40, 45, 50],
+  M10: [10, 12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60],
+  M12: [12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80],
+};
+
+/** DIN 975 threaded rod: the stocked cut lengths. */
+export const ROD_LENGTHS: Readonly<Record<string, readonly number[]>> = {
+  M3: [250, 1000],
+  M4: [250, 1000],
+  M5: [250, 1000],
+  M6: [250, 1000],
+  M8: [250, 1000],
+  M10: [250, 1000],
+  M12: [250, 1000],
+};
 
 /** Head diameter D and height K. Keys use '_' for the decimal (M2_5). */
 export const SHCS_HEAD: Record<string, { D: number; K: number }> = {
@@ -22,6 +86,8 @@ export const SHCS_HEAD: Record<string, { D: number; K: number }> = {
   M8: { D: 13.0, K: 8.0 },
   M10: { D: 16.0, K: 10.0 },
   M12: { D: 18.0, K: 12.0 },
+  M16: { D: 24.0, K: 16.0 },
+  M20: { D: 30.0, K: 20.0 },
 };
 
 export const BHCS_HEAD: Record<string, { D: number; K: number }> = {
@@ -43,6 +109,19 @@ export const FLATHEAD_HEAD: Record<string, { D: number; K: number }> = {
   M12: { D: 26.88, K: 7.44 },
 };
 
+/** ISO 4017 hex head: S is the across-flats width, D the circumscribed circle. */
+export const HEX_BOLT_HEAD: Record<string, { D: number; K: number; S: number }> = {
+  M3: { S: 5.5, K: 2.0, D: 6.351 },
+  M4: { S: 7.0, K: 2.8, D: 8.083 },
+  M5: { S: 8.0, K: 3.5, D: 9.238 },
+  M6: { S: 10.0, K: 4.0, D: 11.547 },
+  M8: { S: 13.0, K: 5.3, D: 15.011 },
+  M10: { S: 16.0, K: 6.4, D: 18.475 },
+  M12: { S: 18.0, K: 7.5, D: 20.785 },
+  M16: { S: 24.0, K: 10.0, D: 27.713 },
+  M20: { S: 30.0, K: 12.5, D: 34.641 },
+};
+
 export const HEX_NUT: Record<string, { S: number; m: number }> = {
   M2: { S: 4, m: 1.6 },
   M2_5: { S: 5, m: 2 },
@@ -53,6 +132,8 @@ export const HEX_NUT: Record<string, { S: number; m: number }> = {
   M8: { S: 13, m: 6.5 },
   M10: { S: 16, m: 8 },
   M12: { S: 18, m: 10 },
+  M16: { S: 24, m: 13 },
+  M20: { S: 30, m: 16 },
 };
 
 export const LOCK_NUT: Record<string, { S: number; m: number }> = {
@@ -75,6 +156,8 @@ export const FLAT_WASHER: Record<string, { Dout: number; Din: number; t: number 
   M8: { Dout: 16, Din: 8.4, t: 1.6 },
   M10: { Dout: 20, Din: 10.5, t: 2.0 },
   M12: { Dout: 24, Din: 13.0, t: 2.5 },
+  M16: { Dout: 30, Din: 17.0, t: 3.0 },
+  M20: { Dout: 37, Din: 21.0, t: 3.0 },
 };
 
 export const LOCK_WASHER: Record<string, { Dout: number; Din: number; t: number }> = {
@@ -144,16 +227,20 @@ export interface StackPlan {
   members: StackMemberPlan[];
 }
 
-interface HeadDims { D: number; K: number }
+interface HeadDims { D: number; K: number; /** Across-flats width, hex heads only. */ S?: number }
 interface NutDims { S: number; m: number }
 interface WasherDims { Dout: number; Din: number; t: number }
+
+export type ScrewHeadStyle = 'socket' | 'button' | 'flat' | 'hex' | 'headless';
 
 interface ScrewFamily {
   standard: string;
   idPrefix: string;
   kind: 'screw';
+  headStyle: ScrewHeadStyle;
   threads: Record<string, HeadDims>;
-  lengths: readonly number[];
+  /** thread -> stocked lengths; the standard's preferred series subset. */
+  lengths: Record<string, readonly number[]>;
 }
 interface NutFamily {
   standard: string;
@@ -241,15 +328,27 @@ const FIXTURES: Record<string, FixtureFamily> = {
 };
 
 const FAMILIES: Record<string, FamilySpec> = {
-  'socket-head-cap-screw': { standard: 'ISO 4762', idPrefix: 'iso-4762', kind: 'screw', threads: SHCS_HEAD, lengths: SHCS_LENGTHS },
-  'button-head-cap-screw': { standard: 'ISO 7380', idPrefix: 'iso-7380', kind: 'screw', threads: BHCS_HEAD, lengths: BHCS_LENGTHS },
-  'flat-head-countersunk': { standard: 'ISO 10642', idPrefix: 'iso-10642', kind: 'screw', threads: FLATHEAD_HEAD, lengths: FLATHEAD_LENGTHS },
+  'socket-head-cap-screw': { standard: 'ISO 4762', idPrefix: 'iso-4762', kind: 'screw', headStyle: 'socket', threads: SHCS_HEAD, lengths: SHCS_LENGTHS },
+  'button-head-cap-screw': { standard: 'ISO 7380', idPrefix: 'iso-7380', kind: 'screw', headStyle: 'button', threads: BHCS_HEAD, lengths: BHCS_LENGTHS },
+  'flat-head-countersunk': { standard: 'ISO 10642', idPrefix: 'iso-10642', kind: 'screw', headStyle: 'flat', threads: FLATHEAD_HEAD, lengths: FLATHEAD_LENGTHS },
+  'hex-head-bolt': { standard: 'ISO 4017', idPrefix: 'iso-4017', kind: 'screw', headStyle: 'hex', threads: HEX_BOLT_HEAD, lengths: HEX_BOLT_LENGTHS },
+  'set-screw': { standard: 'ISO 4026', idPrefix: 'iso-4026', kind: 'screw', headStyle: 'headless', threads: setScrewThreads(), lengths: SET_SCREW_LENGTHS },
+  'threaded-rod': { standard: 'DIN 975', idPrefix: 'din-975', kind: 'screw', headStyle: 'headless', threads: rodThreads(), lengths: ROD_LENGTHS },
   'hex-nut': { standard: 'ISO 4032', idPrefix: 'iso-4032', kind: 'nut', threads: HEX_NUT },
   'lock-nut': { standard: 'DIN 985', idPrefix: 'din-985', kind: 'nut', threads: LOCK_NUT },
   'flat-washer': { standard: 'ISO 7089', idPrefix: 'iso-7089', kind: 'washer', threads: FLAT_WASHER },
   'lock-washer': { standard: 'DIN 127B', idPrefix: 'din-127b', kind: 'washer', threads: LOCK_WASHER },
   ...FIXTURES,
 };
+
+/** Headless families carry no head dims; the row only has to exist. */
+function setScrewThreads(): Record<string, HeadDims> {
+  return Object.fromEntries(Object.keys(SET_SCREW_LENGTHS).map((key) => [key, { D: 0, K: 0 }]));
+}
+
+function rodThreads(): Record<string, HeadDims> {
+  return Object.fromEntries(Object.keys(ROD_LENGTHS).map((key) => [key, { D: 0, K: 0 }]));
+}
 
 /** Machining-fixture family names, for the catalog generator and docs. */
 export const FIXTURE_FAMILY_NAMES: readonly string[] = Object.keys(FIXTURES);
@@ -370,6 +469,43 @@ function screwLength(lengths: readonly number[], request: PartRequest, thread: s
   });
 }
 
+/** The stocked lengths of one screw family for one thread. */
+function lengthsFor(spec: ScrewFamily, thread: string): readonly number[] {
+  const lengths = spec.lengths[threadKey(thread)];
+  if (lengths !== undefined) return lengths;
+  invalidArgs({
+    api: 'lib.part({ family, thread, lengthMm })',
+    path: 'thread',
+    got: thread,
+    requires: `a stocked thread for this family: ${stockedThreads(spec.threads)}`,
+    example: PART_EXAMPLE,
+  });
+}
+
+/** Public door for callers that plan lengths (lib.insert's blind-hole rule). */
+export function stockedScrewLengths(family: string, thread: string): readonly number[] {
+  return lengthsFor(requireScrewFamily(family), thread);
+}
+
+function screwConnectors(
+  style: ScrewHeadStyle,
+  dims: HeadDims,
+  lengthMm: number,
+): ConnectorEntry[] {
+  if (style === 'headless') {
+    return [
+      { name: 'first-end', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+      { name: 'second-end', type: 'frame', origin: [0, 0, -lengthMm], normal: [0, 0, -1] },
+      { name: 'axis', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
+    ];
+  }
+  return [
+    { name: 'head-bearing', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+    { name: 'thread-tip', type: 'axis', origin: [0, 0, -lengthMm], axis: [0, 0, 1] },
+    { name: 'head-top', type: 'frame', origin: [0, 0, dims.K], normal: [0, 0, 1] },
+  ];
+}
+
 function partId(spec: FamilySpec, thread: string, lengthMm: number): string {
   const slug = threadSlug(thread);
   return spec.kind === 'screw' ? `${spec.idPrefix}-${slug}x${lengthMm}` : `${spec.idPrefix}-${slug}`;
@@ -382,7 +518,7 @@ function screwPart(
   thread: string,
   nominalMm: number,
 ): ResolvedPart {
-  const lengthMm = screwLength(spec.lengths, request, thread);
+  const lengthMm = screwLength(lengthsFor(spec, thread), request, thread);
   return {
     id: partId(spec, thread, lengthMm),
     name: `${thread} × ${lengthMm} ${request.family} (${spec.standard})`,
@@ -395,14 +531,10 @@ function screwPart(
     nominalMm,
     headDiameterMm: dims.D,
     headHeightMm: dims.K,
-    acrossFlatsMm: 0,
+    acrossFlatsMm: dims.S ?? 0,
     innerDiameterMm: 0,
     tags: ['screw', 'metric', thread],
-    connectors: [
-      { name: 'head-bearing', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
-      { name: 'thread-tip', type: 'axis', origin: [0, 0, -lengthMm], axis: [0, 0, 1] },
-      { name: 'head-top', type: 'frame', origin: [0, 0, dims.K], normal: [0, 0, 1] },
-    ],
+    connectors: screwConnectors(spec.headStyle, dims, lengthMm),
   };
 }
 
@@ -676,7 +808,7 @@ export function planStackFor(family: string, request: StackRequest): StackPlan {
   const tailT = wear.tailWasher?.headHeightMm ?? 0;
   const nutT = wear.nut?.headHeightMm ?? 0;
   const needed = gripMm + (wear.tailWasher ? tailT + nutT : 0);
-  const lengthMm = shortestAtLeast(spec.lengths, needed, `${family} ${request.thread}`);
+  const lengthMm = shortestAtLeast(lengthsFor(spec, request.thread), needed, `${family} ${request.thread}`);
   const screw = resolvePart({ family, thread: request.thread, lengthMm });
   return { lengthMm, members: stackMembersFor(wear, screw, gripMm) };
 }
