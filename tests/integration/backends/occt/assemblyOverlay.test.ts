@@ -49,6 +49,6 @@ describe('assembly overlay semantics', () => {
     })();
     expect(() =>
       arm.part('bad', kcad.box(1, 1, 1), { overlay: 'yes' } as never),
-    ).toThrow(/overlay must be a boolean/i);
+    ).toThrow(/overlay.*requires a boolean|overlay must be a boolean/i);
   });
 });
