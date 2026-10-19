@@ -7,6 +7,7 @@ import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
 import type { DiagnosticCode } from '../../../../shared/diagnostics/registry';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { isKernelError } from '../../../../shared/intent/kernelError';
+import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
 import { emptyResultDiagnostic } from '../additiveNoOp';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
 
@@ -246,8 +247,13 @@ function extrudeRoundedRectProfile(
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `extrude rounded-rect axis must be 'x', 'y', or 'z'; got '${axis}'.`,
-      hint: "Pass { axis: 'x' | 'y' | 'z' } on extrudeRoundedRect.",
+      ...invalidArgsText({
+        api: 'extrudeRoundedRect(width, height, radius, depth, opts)',
+        path: 'opts.axis',
+        gotText: `'${axis}'`,
+        requires: "one of 'x', 'y', 'z'",
+        example: "extrudeRoundedRect(40, 30, 10, 3, { axis: 'y' })",
+      }),
     });
     return undefined;
   }

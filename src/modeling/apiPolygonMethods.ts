@@ -124,63 +124,68 @@ export function filletPolygon(
   const out: [number, number][] = [];
 
   for (let i = 0; i < n; i++) {
-    const prev = points[(i - 1 + n) % n]!;
-    const cur = points[i]!;
-    const next = points[(i + 1) % n]!;
-    const toPrev = normalize([prev[0] - cur[0], prev[1] - cur[1]]);
-    const toNext = normalize([next[0] - cur[0], next[1] - cur[1]]);
-    if (toPrev === undefined || toNext === undefined) {
-      out.push([cur[0], cur[1]]);
-      continue;
-    }
-    const cross = toPrev[0] * toNext[1] - toPrev[1] * toNext[0];
-    // Interior angle between the two edge directions. A straight corner has
-    // cos = 1; a hairpin has cos = -1.
-    const cos = Math.max(-1, Math.min(1, toPrev[0] * toNext[0] + toPrev[1] * toNext[1]));
-    const theta = Math.acos(cos);
-    const tanHalf = Math.tan(theta / 2);
-    if (!Number.isFinite(tanHalf) || tanHalf < EPS || Math.abs(cross) < EPS) {
-      out.push([cur[0], cur[1]]);
-      continue;
-    }
-
-    const lenPrev = Math.hypot(prev[0] - cur[0], prev[1] - cur[1]);
-    const lenNext = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
-    const maxTangent = 0.5 * Math.min(lenPrev, lenNext);
-    const tangent = Math.min(radius / tanHalf, maxTangent);
-    const effectiveRadius = tangent * tanHalf;
-    if (tangent < EPS || effectiveRadius < EPS) {
-      out.push([cur[0], cur[1]]);
-      continue;
-    }
-
-    // `cross` uses the two vectors pointing OUT of the corner, so a CCW
-    // convex corner has a negative cross. Multiply by winding to normalize.
-    const convex = cross * orientation < 0;
-    // Inward normal of the incoming edge. For a CCW polygon the interior is
-    // left of a convex edge and right of a reflex edge; CW flips both.
-    const inwardSign = orientation * (convex ? 1 : -1);
-    const nIn = leftNormal([-toPrev[0], -toPrev[1]]); // direction prev→cur
-    const normal: [number, number] = [nIn[0] * inwardSign, nIn[1] * inwardSign];
-
-    const tangentIn: [number, number] = [cur[0] + toPrev[0] * tangent, cur[1] + toPrev[1] * tangent];
-    const tangentOut: [number, number] = [cur[0] + toNext[0] * tangent, cur[1] + toNext[1] * tangent];
-    const center: [number, number] = [
-      tangentIn[0] + normal[0] * effectiveRadius,
-      tangentIn[1] + normal[1] * effectiveRadius,
-    ];
-
-    const a0 = Math.atan2(tangentIn[1] - center[1], tangentIn[0] - center[0]);
-    const a1 = Math.atan2(tangentOut[1] - center[1], tangentOut[0] - center[0]);
-    const delta = angleDelta(a0, a1);
-    out.push(tangentIn);
-    for (let s = 1; s < segments; s++) {
-      const a = a0 + (delta * s) / segments;
-      out.push([center[0] + effectiveRadius * Math.cos(a), center[1] + effectiveRadius * Math.sin(a)]);
-    }
-    out.push(tangentOut);
+    appendFilletCorner(
+      out,
+      points[(i - 1 + n) % n]!,
+      points[i]!,
+      points[(i + 1) % n]!,
+      radius,
+      orientation,
+      segments,
+    );
   }
   return out;
+}
+
+function appendFilletCorner(
+  out: [number, number][],
+  prev: PolygonPoint,
+  cur: PolygonPoint,
+  next: PolygonPoint,
+  radius: number,
+  orientation: 1 | -1,
+  segments: number,
+): void {
+  const toPrev = normalize([prev[0] - cur[0], prev[1] - cur[1]]);
+  const toNext = normalize([next[0] - cur[0], next[1] - cur[1]]);
+  if (toPrev === undefined || toNext === undefined) {
+    out.push([cur[0], cur[1]]);
+    return;
+  }
+  const cross = toPrev[0] * toNext[1] - toPrev[1] * toNext[0];
+  const cos = Math.max(-1, Math.min(1, toPrev[0] * toNext[0] + toPrev[1] * toNext[1]));
+  const tanHalf = Math.tan(Math.acos(cos) / 2);
+  if (!Number.isFinite(tanHalf) || tanHalf < EPS || Math.abs(cross) < EPS) {
+    out.push([cur[0], cur[1]]);
+    return;
+  }
+  const lenPrev = Math.hypot(prev[0] - cur[0], prev[1] - cur[1]);
+  const lenNext = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
+  const tangent = Math.min(radius / tanHalf, 0.5 * Math.min(lenPrev, lenNext));
+  const effectiveRadius = tangent * tanHalf;
+  if (tangent < EPS || effectiveRadius < EPS) {
+    out.push([cur[0], cur[1]]);
+    return;
+  }
+  const convex = cross * orientation < 0;
+  const inwardSign = orientation * (convex ? 1 : -1);
+  const nIn = leftNormal([-toPrev[0], -toPrev[1]]);
+  const normal: [number, number] = [nIn[0] * inwardSign, nIn[1] * inwardSign];
+  const tangentIn: [number, number] = [cur[0] + toPrev[0] * tangent, cur[1] + toPrev[1] * tangent];
+  const tangentOut: [number, number] = [cur[0] + toNext[0] * tangent, cur[1] + toNext[1] * tangent];
+  const center: [number, number] = [
+    tangentIn[0] + normal[0] * effectiveRadius,
+    tangentIn[1] + normal[1] * effectiveRadius,
+  ];
+  const a0 = Math.atan2(tangentIn[1] - center[1], tangentIn[0] - center[0]);
+  const a1 = Math.atan2(tangentOut[1] - center[1], tangentOut[0] - center[0]);
+  const delta = angleDelta(a0, a1);
+  out.push(tangentIn);
+  for (let s = 1; s < segments; s++) {
+    const a = a0 + (delta * s) / segments;
+    out.push([center[0] + effectiveRadius * Math.cos(a), center[1] + effectiveRadius * Math.sin(a)]);
+  }
+  out.push(tangentOut);
 }
 
 /** Build the mask-prism helpers against the fully constructed `kcad` API. */
