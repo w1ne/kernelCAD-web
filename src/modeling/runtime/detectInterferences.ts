@@ -38,6 +38,22 @@ export interface InterferencePair {
   readonly thicknessMm?: number;
 }
 
+/**
+ * Incremental re-check input: pair results from a previous detection pass
+ * plus the names of the parts that changed since then. Candidate pairs that
+ * do not touch a changed part are reused verbatim (including "no overlap"
+ * entries, stored as `null`); only pairs touching a changed part are
+ * re-probed. This is the pose-sweep fast path: a one-joint nudge re-measures
+ * the pairs involving that joint's subtree, not the whole assembly.
+ */
+export interface IncrementalInterferenceOptions {
+  /** Every `pairKey()`-encoded pair from the previous pass. `null` means the
+   *  pair was probed and did not overlap. */
+  readonly previousResults: ReadonlyMap<string, InterferencePair | null>;
+  /** Part names whose pose or geometry changed. Omit to re-probe everything. */
+  readonly changedParts?: ReadonlySet<string>;
+}
+
 export interface CheckInterferenceResult {
   readonly pairs: InterferencePair[];
   readonly partCount: number;
@@ -46,6 +62,10 @@ export interface CheckInterferenceResult {
   /** Mesh-involving pairs were not checked because exact intersection requires BRep. */
   readonly uncheckedPairs: Array<{ readonly a: string; readonly b: string; readonly reason: 'display-mesh' }>;
   readonly partial: boolean;
+  /** Exact BOOLEAN probes actually run this pass. Absent on legacy calls. */
+  readonly probedPairCount?: number;
+  /** Candidate pairs answered from `incremental.previousResults`. */
+  readonly reusedPairCount?: number;
 }
 
 /** The subset of a transformed part the candidate pass reads: its name (for
@@ -170,6 +190,7 @@ export function detectInterferences(
   epsilonMm3: number,
   ignored: ReadonlySet<string>,
   diagnostics: CompilerDiagnostic[] = [],
+  incremental?: IncrementalInterferenceOptions,
 ): CheckInterferenceResult {
   // Place each part at its worldTransform once, up front, through a
   // location (`OcctBackend.located`): the posed shape shares the part's
@@ -194,7 +215,7 @@ export function detectInterferences(
   // to the GC (they reference the parts' shapes and, after a boolean, any
   // data OCCT attached to them).
   try {
-    return probeCandidates(transformed, epsilonMm3, ignored, diagnostics, uncheckedPairs);
+    return probeCandidates(transformed, epsilonMm3, ignored, diagnostics, uncheckedPairs, incremental);
   } finally {
     for (const part of transformed) part.shape.dispose();
   }
@@ -209,46 +230,74 @@ interface PosedPart {
   frameBounds: Map<number, Bounds>;
 }
 
+function canReuseIncrementalPair(
+  incremental: IncrementalInterferenceOptions | undefined,
+  key: string,
+  aName: string,
+  bName: string,
+): boolean {
+  if (incremental === undefined || !incremental.previousResults.has(key)) return false;
+  const changed = incremental.changedParts;
+  return changed === undefined || (!changed.has(aName) && !changed.has(bName));
+}
+
+/** Conservative rigid-frame bounds prove some candidates cannot exceed the
+ *  threshold. Returns false on any bound failure (the exact probe runs). */
+function boundsProveBelowThreshold(a: PosedPart, b: PosedPart, epsilonMm3: number): boolean {
+  for (let frame = 0; frame < BOUND_FRAMES.length; frame++) {
+    try {
+      const upper = overlapVolumeUpperBound(boundsInFrame(a, frame), boundsInFrame(b, frame));
+      if (Number.isFinite(upper) && upper <= epsilonMm3) return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+function boundsInFrame(part: PosedPart, frame: number): Bounds {
+  const cached = part.frameBounds.get(frame);
+  if (cached) return cached;
+  const basis = BOUND_FRAMES[frame];
+  let bounds: Bounds;
+  if (basis === null) {
+    bounds = paddedBounds(part.shape);
+  } else {
+    const rotated = part.shape.located(Transform.rotationAxisAngleDeg(basis.axis, basis.degrees));
+    try {
+      bounds = paddedBounds(rotated);
+    } finally {
+      rotated.dispose();
+    }
+  }
+  part.frameBounds.set(frame, bounds);
+  return bounds;
+}
+
 function probeCandidates(
   transformed: PosedPart[],
   epsilonMm3: number,
   ignored: ReadonlySet<string>,
   diagnostics: CompilerDiagnostic[],
   uncheckedPairs: CheckInterferenceResult['uncheckedPairs'],
+  incremental?: IncrementalInterferenceOptions,
 ): CheckInterferenceResult {
   const pairs: InterferencePair[] = [];
   const candidates = collectInterferenceCandidates(transformed, ignored);
+  let probedPairCount = 0;
+  let reusedPairCount = 0;
   for (const [i, j] of candidates) {
     const a = transformed[i];
     const b = transformed[j];
-    // Conservative rigid-frame bounds prove some candidates cannot exceed the threshold.
-    let boundedBelowThreshold = false;
-    for (let frame = 0; frame < BOUND_FRAMES.length; frame++) {
-      try {
-        const boundsFor = (part: typeof a): Bounds => {
-          const cached = part.frameBounds.get(frame);
-          if (cached) return cached;
-          const basis = BOUND_FRAMES[frame];
-          let bounds: Bounds;
-          if (basis === null) bounds = paddedBounds(part.shape);
-          else {
-            const rotated = part.shape.located(Transform.rotationAxisAngleDeg(basis.axis, basis.degrees));
-            try { bounds = paddedBounds(rotated); }
-            finally { rotated.dispose(); }
-          }
-          part.frameBounds.set(frame, bounds);
-          return bounds;
-        };
-        const upper = overlapVolumeUpperBound(boundsFor(a), boundsFor(b));
-        if (Number.isFinite(upper) && upper <= epsilonMm3) {
-          boundedBelowThreshold = true;
-          break;
-        }
-      } catch {
-        break;
-      }
+    const key = pairKey(a.name, b.name);
+    if (canReuseIncrementalPair(incremental, key, a.name, b.name)) {
+      const previous = incremental!.previousResults.get(key);
+      if (previous !== undefined && previous !== null) pairs.push(previous);
+      reusedPairCount += 1;
+      continue;
     }
-    if (boundedBelowThreshold) continue;
+    probedPairCount += 1;
+    if (boundsProveBelowThreshold(a, b, epsilonMm3)) continue;
 
     // Key on the RELATIVE pose of b in a's frame: the overlap of two rigid
     // bodies depends only on where one sits relative to the other. Parts
@@ -285,6 +334,8 @@ function probeCandidates(
     diagnostics,
     uncheckedPairs,
     partial: uncheckedPairs.length > 0,
+    probedPairCount,
+    reusedPairCount,
   };
 }
 

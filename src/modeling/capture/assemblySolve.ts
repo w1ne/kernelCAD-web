@@ -13,6 +13,12 @@ import { partAtFor, sceneMotion } from '../mates/partFrame';
 import { reviewPoseEnvelope, type PoseEnvelopeDiagnostic } from '../mates/poseEnvelope';
 import { solveMates } from '../mates/solver';
 import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../mates/validator';
+import {
+  measureDeclaredClearances,
+  type PairClearanceResult,
+  type PairClearanceTolerance,
+  type PairContactTolerance,
+} from '../runtime/pairTolerances';
 import { Scene, type SceneDiagnostic, type ScenePart } from '../validation/scene';
 import type { CaptureSession } from './captureSession';
 import { forwardKinematics, type NumericPoses } from './forwardKinematics';
@@ -446,7 +452,10 @@ export function makeScene(
 async function computeInterferencesForGate(
   state: AssemblyState,
   sceneShape: Shape,
-): Promise<readonly import('../runtime/detectInterferences').InterferencePair[]> {
+): Promise<{
+  pairs: readonly import('../runtime/detectInterferences').InterferencePair[];
+  clearances: readonly PairClearanceResult[];
+}> {
   const { RecomputeEngine } = await import('../compute/recomputeEngine');
   const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
   const { initOcct } = await import('../../kernel/backends/occt/occtBackend');
@@ -481,17 +490,34 @@ async function computeInterferencesForGate(
   // list so the gate doesn't double-flag the failure as interference.
   const lowered = r.shapes.get(sceneShape.id);
   if (!lowered || !isSceneBackend(lowered)) {
-    return [];
+    return { pairs: [], clearances: [] };
   }
 
   // Mesh-involving pairs are reported as unchecked by detectInterferences;
   // BRep-BRep pairs are still checked in mixed assemblies.
   const result = detectInterferences(lowered, 0.01, new Set<string>());
-  return result.pairs;
+  const clearanceResults = measureDeclaredClearances(lowered, state.clearanceTolerances);
+  return { pairs: result.pairs, clearances: clearanceResults };
 }
 
 export interface SolvedModelOptions {
   validate?: 'warn' | 'error' | 'off';
+  /**
+   * Per-pair intended-contact budgets. The overlap is still measured; it is
+   * accepted only while it stays within `maxVolumeMm3` (and
+   * `maxThicknessMm` when given). Pairs not listed keep the strict default
+   * interference rule. Use this instead of `ignore` when the amount of
+   * intended interference matters (press fits, seated lips, slivers).
+   */
+  contacts?: readonly PairContactTolerance[];
+  /**
+   * Per-pair minimum-clearance declarations, measured with exact BREP
+   * distance. Only the declared pairs are probed, so the cost scales with
+   * the declaration count rather than the full part-pair matrix. Overlap and
+   * sub-minimum gaps are `assembly.clearance.violated`; unmeasurable pairs
+   * are `assembly.clearance.unresolved`.
+   */
+  clearances?: readonly PairClearanceTolerance[];
   /**
    * v0.7.4 — Which poses the validation gate covers. Orthogonal to
    * `validate` (which controls severity).
@@ -615,6 +641,123 @@ function applySolvedModelEntryChecks(state: AssemblyState, opts?: SolvedModelOpt
       }
     }
   }
+  const knownSet = new Set(state.parts.map((p) => p.name));
+  if (opts?.contacts !== undefined) {
+    assertPairDeclarations(opts.contacts, knownSet, state.name, 'contacts');
+    state.contactTolerances = opts.contacts;
+  }
+  if (opts?.clearances !== undefined) {
+    assertPairDeclarations(opts.clearances, knownSet, state.name, 'clearances');
+    state.clearanceTolerances = opts.clearances;
+  }
+}
+
+/** Shared capture-entry validation for `contacts` / `clearances`. Rejects
+ *  unknown part names, self-pairs, duplicate declarations and non-finite
+ *  budgets before any lowering work. */
+function assertPairDeclarations(
+  declarations: readonly (PairContactTolerance | PairClearanceTolerance)[],
+  knownParts: ReadonlySet<string>,
+  assemblyName: string,
+  option: 'contacts' | 'clearances',
+): void {
+  const seen = new Set<string>();
+  for (const [index, decl] of declarations.entries()) {
+    const [a, b] = assertPairIdentity(decl, index, knownParts, assemblyName, option);
+    const key = a < b ? `${a}\t${b}` : `${b}\t${a}`;
+    if (seen.has(key)) {
+      invalidArgs({
+        api: `assembly.solvedModel({ ${option} })`,
+        path: `${option}[${index}]`,
+        gotText: `duplicate pair ('${a}', '${b}')`,
+        requires: `each pair declared once (symmetric lookup)`,
+        hintSlug: 'invalid-args.assembly.pair-tolerance',
+        example: `${option}: [{ parts: ['${a}', '${b}'] }]`,
+      });
+    }
+    seen.add(key);
+    assertPairBudget(decl, index);
+  }
+}
+
+function assertPairIdentity(
+  decl: PairContactTolerance | PairClearanceTolerance,
+  index: number,
+  knownParts: ReadonlySet<string>,
+  assemblyName: string,
+  option: 'contacts' | 'clearances',
+): [string, string] {
+  const parts = decl.parts;
+  if (!Array.isArray(parts) || parts.length !== 2 || !parts.every((name) => typeof name === 'string')) {
+    invalidArgs({
+      api: `assembly.solvedModel({ ${option} })`,
+      path: `${option}[${index}].parts`,
+      got: parts,
+      requires: `a [partA, partB] pair from: ${[...knownParts].join(', ')}`,
+      hintSlug: 'invalid-args.assembly.pair-tolerance',
+      example: `${option}: [{ parts: ['base', 'lid'] }]`,
+    });
+  }
+  const [a, b] = parts;
+  if (a === b) {
+    invalidArgs({
+      api: `assembly.solvedModel({ ${option} })`,
+      path: `${option}[${index}].parts`,
+      gotText: `'${a}' paired with itself`,
+      requires: 'two different part names',
+      hintSlug: 'invalid-args.assembly.pair-tolerance',
+      example: `${option}: [{ parts: ['base', 'lid'] }]`,
+    });
+  }
+  for (const name of [a, b]) {
+    if (!knownParts.has(name)) {
+      invalidArgs({
+        api: `assembly.solvedModel({ ${option} })`,
+        path: `${option}[${index}].parts`,
+        gotText: `'${name}'`,
+        requires: `a part on assembly '${assemblyName}' (known: ${[...knownParts].join(', ')})`,
+        hintSlug: 'invalid-args.assembly.pair-tolerance',
+        example: `${option}: [{ parts: ['base', 'lid'] }]`,
+      });
+    }
+  }
+  return [a, b];
+}
+
+function assertPairBudget(
+  decl: PairContactTolerance | PairClearanceTolerance,
+  index: number,
+): void {
+  if ('minMm' in decl) {
+    if (!Number.isFinite(decl.minMm) || decl.minMm < 0) {
+      invalidArgs({
+        api: 'assembly.solvedModel({ clearances })',
+        path: `clearances[${index}].minMm`,
+        got: decl.minMm,
+        showType: true,
+        requires: 'a finite number >= 0',
+        unit: 'mm',
+        hintSlug: 'invalid-args.assembly.pair-tolerance',
+        example: "clearances: [{ parts: ['base', 'lid'], minMm: 0.4 }]",
+      });
+    }
+    return;
+  }
+  for (const field of ['maxVolumeMm3', 'maxThicknessMm'] as const) {
+    const value = decl[field];
+    if (value !== undefined && (!Number.isFinite(value) || value < 0)) {
+      invalidArgs({
+        api: 'assembly.solvedModel({ contacts })',
+        path: `contacts[${index}].${field}`,
+        got: value,
+        showType: true,
+        requires: 'a finite number >= 0',
+        unit: field === 'maxThicknessMm' ? 'mm' : 'mm³',
+        hintSlug: 'invalid-args.assembly.pair-tolerance',
+        example: `contacts: [{ parts: ['lip', 'skin'], ${field}: 1 }]`,
+      });
+    }
+  }
 }
 
 /** Phase 2 of `solvedModel` — collect poses, run the v0.6 mate solver /
@@ -629,7 +772,10 @@ function gatherSolvedModelGateInputs(
   mode: 'warn' | 'error' | 'off',
   opts?: SolvedModelOptions,
 ): {
-  interferencePromise: Promise<readonly import('../runtime/detectInterferences').InterferencePair[] | undefined>;
+  interferencePromise: Promise<{
+    pairs: readonly import('../runtime/detectInterferences').InterferencePair[];
+    clearances: readonly PairClearanceResult[];
+  } | undefined>;
   envelopeResultPromise: Promise<import('../mates/poseEnvelope').PoseEnvelopeReviewResult | undefined>;
 } {
   // Under `'error'` mode (the harness gate set by `kernelcad evaluate`), also
@@ -640,7 +786,10 @@ function gatherSolvedModelGateInputs(
   // each bbox-overlapping pair), so we deliberately skip it under
   // `'warn'` / `'off'` to keep the everyday capture-time `arm.solvedModel()`
   // call cheap — interference is opt-in via the gate.
-  const interferencePromise: Promise<readonly import('../runtime/detectInterferences').InterferencePair[] | undefined> =
+  const interferencePromise: Promise<{
+    pairs: readonly import('../runtime/detectInterferences').InterferencePair[];
+    clearances: readonly PairClearanceResult[];
+  } | undefined> =
     mode === 'error'
       ? computeInterferencesForGate(state, sceneShape)
       : Promise.resolve(undefined);
@@ -673,6 +822,7 @@ function gatherSolvedModelGateInputs(
       ? reviewPoseEnvelope(arm, {
           ...(opts?.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
           ...(opts?.combinatorial !== undefined ? { combinatorial: opts.combinatorial } : {}),
+          ...(opts?.contacts !== undefined ? { contactTolerances: opts.contacts } : {}),
           includeInterference: true,
         })
       : Promise.resolve(undefined);
@@ -686,7 +836,10 @@ function gatherSolvedModelGateInputs(
  *  `applySolvedModelEntryChecks`; no behavior change. */
 async function validateSolvedModelGate(
   arm: Assembly,
-  interferencePairs: readonly import('../runtime/detectInterferences').InterferencePair[] | undefined,
+  interferenceGate: {
+    pairs: readonly import('../runtime/detectInterferences').InterferencePair[];
+    clearances: readonly PairClearanceResult[];
+  } | undefined,
   opts: SolvedModelOptions | undefined,
   envelopeResult: import('../mates/poseEnvelope').PoseEnvelopeReviewResult | undefined,
 ): Promise<{ result: import('../mates/validator').ValidatorResult; envelopeDiagnostics: readonly PoseEnvelopeDiagnostic[] }> {
@@ -706,11 +859,13 @@ async function validateSolvedModelGate(
   // `validateWorkspaceReachability` read the connector AABBs.
   const result = await validateAssemblyWithMates(
     arm,
-    interferencePairs,
+    interferenceGate?.pairs,
     undefined,
     opts?.externalLoads,
     envelopeResult?.connectorWorkspace,
     opts?.ignore,
+    opts?.contacts,
+    interferenceGate?.clearances,
   );
   const envelopeDiagnostics: readonly PoseEnvelopeDiagnostic[] =
     envelopeResult ? envelopeResult.diagnostics : [];
@@ -931,8 +1086,8 @@ export function recordSolvedModel(
     interferencePromise,
     mateTransformsPromise,
     envelopeResultPromise,
-  ]).then(([interferencePairs, mateT, envelopeResult]) =>
-    validateSolvedModelGate(arm, interferencePairs, opts, envelopeResult).then(
+  ]).then(([interferenceGate, mateT, envelopeResult]) =>
+    validateSolvedModelGate(arm, interferenceGate, opts, envelopeResult).then(
       ({ result, envelopeDiagnostics }) =>
         finalizeSolvedModelScene(state, sceneShape, mode, result, envelopeDiagnostics, mateT, limitWarnings),
     ),
