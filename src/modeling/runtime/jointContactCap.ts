@@ -61,6 +61,11 @@ export interface MeasuredOverlap {
   readonly volumeMm3: number;
   /** Mean thickness (mm). Absent / null / non-finite = unknown. */
   readonly thicknessMm?: number | null;
+  /** World-frame bounds of the shared region, when measured. */
+  readonly overlapBounds?: {
+    readonly min: readonly [number, number, number];
+    readonly max: readonly [number, number, number];
+  };
 }
 
 /**
@@ -99,4 +104,14 @@ export function describeOverlap(overlap: MeasuredOverlap): string {
   const t = overlap.thicknessMm;
   const thick = typeof t === 'number' && Number.isFinite(t) ? ` (${t.toPrecision(2)} mm thick)` : '';
   return `${formatOverlapMm3(overlap.volumeMm3)} mm³${thick}`;
+}
+
+/** "near (12.4, -3.0, 44.1)" — the centre of the shared region when known.
+ *  Returns an empty string when the probe did not carry bounds, so callers
+ *  can append it unconditionally. */
+export function describeOverlapLocation(overlap: MeasuredOverlap): string {
+  const b = overlap.overlapBounds;
+  if (b === undefined) return '';
+  const c = [0, 1, 2].map((axis) => (b.min[axis] + b.max[axis]) / 2);
+  return ` near (${c.map((v) => v.toFixed(1)).join(', ')})`;
 }

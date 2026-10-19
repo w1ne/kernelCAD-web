@@ -58,7 +58,7 @@ import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
 import { detectInterferences, pairKey } from './detectInterferences';
-import { describeOverlap, formatOverlapMm3, isActionableOverlap, overlapRuleText, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
+import { describeOverlap, describeOverlapLocation, formatOverlapMm3, isActionableOverlap, overlapRuleText, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { rememberRestScene, reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
 import { resolvedPartAt } from '../mates/partFrame';
 import { expandCoupledPoses } from '../mates/coupledPoses';
@@ -829,7 +829,7 @@ async function checkInterpenetration(
           `(rule: ${overlapRuleText()} — a drilled clearance bore has ~0 overlap)`;
       out.push(makeFailure(
         'mechanism.interpenetration',
-        `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${describeOverlap(pair)} at pose sample '${s.sample.name}' — ` +
+        `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${describeOverlap(pair)}${describeOverlapLocation(pair)} at pose sample '${s.sample.name}' — ` +
         `they ${relation}. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. ` +
         `Add clearance, reduce mate travel, move the geometry so the swept pose stays collision-free, ` +
         `or pass { ignore: [['${pair.a}', '${pair.b}']] } to solvedModel(...) if this overlap is genuinely intended.`,
