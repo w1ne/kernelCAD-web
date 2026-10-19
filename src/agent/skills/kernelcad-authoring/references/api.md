@@ -52,7 +52,18 @@ sphere(r: number): Shape;  // centred on the origin; faceLabels NOT accepted —
 extrudeRect(w: number, h: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
 extrudeCircle(r: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
 extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
-extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
+extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number>; axis?: 'x' | 'y' | 'z' }): Shape;
+// axis defaults to 'z' (profile in XY, sweep +Z). 'x': width on Y / height on Z,
+// sweep +X. 'y': width on X / height on Z, sweep +Y.
+
+// 2D polygon + mask-prism helpers. Since the examples hand-roll these, use the
+// built-ins: filletPolygon rounds any closed polygon (CW/CCW, convex/reflex),
+// then feed the points to extrudePolygon or a prism helper.
+filletPolygon(points: [number, number][], radius: number, opts?: { segments?: number }): [number, number][];
+prismSide(points: [number, number][], halfY?: number): Shape;        // points (s, z), spans Y -halfY..+halfY (default 1200)
+prismSideY(points: [number, number][], y0: number, y1: number): Shape; // points (s, z), spans y0..y1
+prismFront(points: [number, number][], x0: number, x1: number): Shape; // points (Y, Z), spans x0..x1
+prismPlan(points: [number, number][], z0: number, z1: number): Shape;  // points (X, Y), spans z0..z1
 
 // Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch. For
 // revolved geometry (washers, donut bodies, mug profiles, etc.) build a profile

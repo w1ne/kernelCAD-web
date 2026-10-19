@@ -38,6 +38,9 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - `referenceImage(path, opts)` — show a reference photo as a plane overlay in the Studio viewport. Display only; hidden during scoring. Supports `.png`, `.jpg`, `.jpeg`, `.webp`. See `kernelcad-authoring` for the full signature.
 - `Shape.finish(name, opts?)` — apply a NAMED material finish (brass, anodized-black, abs, glass-tinted, …), or an engineering material grade (`aluminum-6061`, `mild-steel`, `nylon`) for that grade's default finish. The primary way to make a part look like a real material: you name the material, not BRDF floats. Expands to the same PBR record `.material()` writes. `opts.color` overrides the hue; `opts.face` scopes to a labelled face. Must be called on leaf parts before they enter a boolean. See `kernelcad-authoring` Materials section for the full vocabulary.
 - `Shape.material(opts)` — ADVANCED escape hatch: raw PBR floats (baseColor, metalness, roughness, clearcoat, clearcoatRoughness, ior, transmission) for glass/anisotropy/textures no `.finish()` token covers. Prefer `.finish()` for a named material. Must be called on leaf parts before they enter a boolean.
+- `filletPolygon(points, radius, opts?)` — round every corner of a closed 2D polygon and return points for `extrudePolygon` / the prism helpers. Radius is clamped per corner; CW and CCW both work.
+- `prismSide(points, halfY?)` / `prismSideY(points, y0, y1)` / `prismFront(points, x0, x1)` / `prismPlan(points, z0, z1)` — mask prisms for side / front / plan polygons, replacing hand-written extrude→rotate→translate chains.
+- `extrudeRoundedRect(..., { axis: 'x' | 'y' | 'z' })` — pick the extrusion axis instead of rotating the result; `'x'` puts width on Y / height on Z, `'y'` puts width on X / height on Z.
 
 ## Universal conventions
 

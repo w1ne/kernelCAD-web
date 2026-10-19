@@ -7,6 +7,7 @@ import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
 import type { DiagnosticCode } from '../../../../shared/diagnostics/registry';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { isKernelError } from '../../../../shared/intent/kernelError';
+import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
 import { emptyResultDiagnostic } from '../additiveNoOp';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
 
@@ -239,8 +240,25 @@ function extrudeRoundedRectProfile(
     });
     return undefined;
   }
+  const axis = String(r.params.axis?.expression ?? "'z'").replace(/'/g, '');
+  if (axis !== 'x' && axis !== 'y' && axis !== 'z') {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: r.id,
+      severity: 'error',
+      ...invalidArgsText({
+        api: 'extrudeRoundedRect(width, height, radius, depth, opts)',
+        path: 'opts.axis',
+        gotText: `'${axis}'`,
+        requires: "one of 'x', 'y', 'z'",
+        example: "extrudeRoundedRect(40, 30, 10, 3, { axis: 'y' })",
+      }),
+    });
+    return undefined;
+  }
   try {
-    return OcctBackend.extrudeRoundedRect(width, height, radius, depth, { twistAngle });
+    return OcctBackend.extrudeRoundedRect(width, height, radius, depth, { twistAngle, axis });
   } catch (e) {
     return pushExtrudeFailure(ctx, r, e);
   }
