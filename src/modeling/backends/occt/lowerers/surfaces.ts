@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
-import { faceToShape, thickenFace } from '../../../../kernel/backends/occt/nurbsSurfaceLowerer';
+import { faceToShape, thickenFace, thickenShell, ThickenedSolidError } from '../../../../kernel/backends/occt/nurbsSurfaceLowerer';
 import { lowerSurfaceSew as sewSurfaceFaces } from '../../../../kernel/backends/occt/surfaceSewLowerer';
 import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
@@ -23,17 +23,65 @@ export function lowerSurfaceThicken(ctx: LowerContext, r: FeatureRecord): LowerO
     shape = thickenFace(face, t);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    const invalid = e instanceof ThickenedSolidError;
     ctx.diagnostics.push({
       target: ctx.target,
-      code: 'feature.kernel-failed',
+      code: invalid ? 'feature.surface-thicken.invalid-solid' : 'feature.kernel-failed',
       featureId: r.id,
       severity: 'error',
-      message: `surfaceThicken: OCCT failed: ${msg}`,
-      hint: 'kernel-failed — try a smaller thickness, simplify the control net, or ensure the surface has no self-intersections.',
+      message: `surfaceThicken: ${invalid ? 'result rejected' : 'OCCT failed'}: ${msg}`,
+      hint: invalid
+        ? HINT_TEMPLATES['feature.surface-thicken.invalid-solid'].template
+        : 'kernel-failed — try a smaller thickness, simplify the control net, or ensure the surface has no self-intersections.',
     });
     return noShape();
   }
   return built(shape);
+}
+
+/** `shapeThicken` — solidify a sewn multi-patch shell (or surfaceToShape shell). */
+export function lowerShapeThicken(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
+  const base = ctx.inputs.byKey.base as ShapeBackend | undefined;
+  if (!base) {
+    ctx.diagnostics.push({
+      target: ctx.target,
+      code: 'recompute.input.missing',
+      featureId: r.id,
+      severity: 'error',
+      message: 'shapeThicken: base shell did not lower.',
+      hint: 'Call .thicken(t) on a Shape returned by sew([...]) or surfaceToShape().',
+    });
+    return noShape();
+  }
+  const t = r.params.t?.evaluated;
+  if (t === undefined || !(t > 0) || !Number.isFinite(t)) {
+    ctx.diagnostics.push({
+      target: ctx.target,
+      code: 'feature.invalid-args',
+      featureId: r.id,
+      severity: 'error',
+      message: `shapeThicken: t must be a positive finite number in mm; got ${String(t)}.`,
+      hint: 'Pass the wall thickness in mm: sewn.thicken(3).',
+    });
+    return noShape();
+  }
+  try {
+    return built(thickenShell(base as import('../../../../kernel/backends/occt/occtBackend').OcctBackend, t));
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    const invalid = e instanceof ThickenedSolidError;
+    ctx.diagnostics.push({
+      target: ctx.target,
+      code: invalid ? 'feature.surface-thicken.invalid-solid' : 'feature.kernel-failed',
+      featureId: r.id,
+      severity: 'error',
+      message: `shapeThicken: ${invalid ? 'result rejected' : 'OCCT failed'}: ${msg}`,
+      hint: invalid
+        ? HINT_TEMPLATES['feature.surface-thicken.invalid-solid'].template
+        : 'kernel-failed — ensure the sewn shell is open and manifold, then try a smaller thickness.',
+    });
+    return noShape();
+  }
 }
 
 /** `surfaceToShape` — wraps a Surface face as a single-face shell. */

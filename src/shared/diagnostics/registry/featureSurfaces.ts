@@ -371,6 +371,14 @@ export const FEATURE_SURFACES_CODES = {
     group: 'feature',
     description: 'BRepAlgoAPI_Section returned no edges — the two surfaces or solids do not intersect.',
   },
+  'feature.surface-thicken.invalid-solid': {
+    hintTemplate:
+      'The offset produced an untrustworthy solid (BRep-invalid, split, or a volume that is not physically consistent with area × thickness — the self-intersecting-offset signature behind the roadster 3.46e9 mm³ phantom overlap). Reduce the thickness below the local curvature radius, remove tight folds from the patch, or split the panel. The feature fails instead of publishing the bad solid.',
+    nextAction: { kind: 'fix-arg', field: 't' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A surface/shell thicken was rejected: the offset failed BRepCheck, split into multiple solids, or had a volume implausible for area × thickness.',
+  },
   'feature.loft.rail-miss': {
     hintTemplate:
       'A loft rail does not pass near every section (or more than two rails were given). OCCT MakePipeShell accepts one spine plus one auxiliary spine; each rail must come within 1 mm of every section wire. Shorten the gap, add a section on the rail, or drop extra rails.',

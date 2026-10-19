@@ -813,6 +813,37 @@ export class Shape {
     return this.session.variableEdgeFeature('chamfer', this, 'distance', distanceOrGroups);
   }
 
+  /**
+   * Solidify an open shell returned by `sew([...])` (or `surface.toShape()`).
+   *
+   * The lowerer runs the same validated offset as `Surface.thicken`: BRepCheck,
+   * one-solid and plausible-volume gates, with a reversed-orientation retry.
+   * A closed solid input is rejected rather than hollowed.
+   */
+  thicken(t: Editable<number>): Shape {
+    if (typeof t === 'number' && !(t > 0 && Number.isFinite(t))) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.thicken: t must be a positive finite number; got ${formatScalarForError(t)}.`,
+        this.id,
+        'Pass a positive wall thickness in mm: sewn.thicken(3).',
+      );
+    }
+    if (typeof t !== 'number' && !isParamRef(t)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.thicken: t must be a number or ParamRef<number>; got ${formatScalarForError(t)}.`,
+        this.id,
+        'Pass a positive wall thickness in mm: sewn.thicken(3).',
+      );
+    }
+    return this.session.createShape({
+      kind: 'shapeThicken',
+      inputs: { base: { kind: 'feature', id: this.id } },
+      params: { t: toParam(t, 'mm') },
+    });
+  }
+
   shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
     assertScalarEdgeValue('shell', 'thickness', thickness, this.id);
     if (opts === undefined || opts === null || (opts as { face?: unknown }).face === undefined) {

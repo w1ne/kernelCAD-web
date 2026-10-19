@@ -203,6 +203,7 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 | `surfaceFromCurves(sections: Sketch[]) => Surface` | Skin a NURBS surface through 2+ closed Sketch cross-sections in declaration order. |
 | `surfaceFromBoundary(curves: [Curve3D, Curve3D, Curve3D, Curve3D], opts?: { continuity?: "C0" \| "C1" \| "C2" \| ("C0" \| "C1" \| "C2")[]; sampling?: number }) => Surface` | Build the shipped filling surface: one NURBS face through 4 boundary curves. |
 | `sew(surfaces: Surface[], opts?: { tolerance?: number; requireClosed?: boolean }) => Shape` | Stitch N surfaces into a shell or closed solid. |
+| `Shape.thicken(t: Editable<number>) => Shape` | Solidify an open shell returned by `sew([...])` or `surface.toShape()`. |
 | `Surface.thicken(t: Editable<number>) => Shape` | Offset both sides of this surface by `t` mm and return the closed solid Shape. |
 | `Surface.toShape() => Shape` | Wrap this surface as a single-face zero-volume Shape. |
 | `Surface.trimTo(by: Surface) => Surface` | Trim this surface at its intersection with `by` (a Surface cutter) and return a new Surface representing the kept half. |
