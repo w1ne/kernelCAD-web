@@ -173,6 +173,17 @@ describe('browser runtime — node-only features fail LOUDLY', () => {
     expect(result.returnValue).toBeDefined();
   });
 
+  it('lib.part builds hex-head and headless envelopes without a filesystem', async () => {
+    const hex = await runScriptInBrowser({
+      code: `return await lib.part({ family: 'hex-head-bolt', thread: 'M10', lengthMm: 40 });`,
+    });
+    expect(hex.returnValue).toBeDefined();
+    const rod = await runScriptInBrowser({
+      code: `return await lib.part({ family: 'threaded-rod', thread: 'M8', lengthMm: 1000 });`,
+    });
+    expect(rod.returnValue).toBeDefined();
+  });
+
   it('lib.stack plans a stack without a filesystem', async () => {
     const result = await runScriptInBrowser({
       code: `const s = await lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
