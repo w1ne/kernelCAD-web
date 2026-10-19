@@ -393,7 +393,7 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
               properties: {
                 id: { type: 'string' },
                 statement: { type: 'string' },
-                value: {},
+                value: { type: ['string', 'number', 'boolean', 'array', 'object'] },
                 confidence: { type: 'number', minimum: 0, maximum: 1 },
               },
               required: ['id', 'statement', 'value', 'confidence'],

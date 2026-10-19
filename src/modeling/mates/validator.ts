@@ -30,7 +30,15 @@ import type { Assembly } from '../capture/assembly';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
-import type { InterferencePair } from '../runtime/detectInterferences';
+import { pairKey, type InterferencePair } from '../runtime/detectInterferences';
+import {
+  contactAccepts,
+  contactMap,
+  describeContactBudget,
+  describeContactExcess,
+  type PairClearanceResult,
+  type PairContactTolerance,
+} from '../runtime/pairTolerances';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 import { validateJointConventionMix } from './jointConventionMix';
@@ -78,6 +86,9 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.part.floating'
   | 'assembly.part.orphan'
   | 'assembly.interference.overlap'
+  | 'assembly.contact.tolerance-exceeded'
+  | 'assembly.clearance.violated'
+  | 'assembly.clearance.unresolved'
   | 'assembly.part.under-constrained'
   | 'assembly.mate.over-constrained'
   | 'assembly.mate.type-mismatch'
@@ -177,6 +188,20 @@ export interface ValidateAssemblyInput {
    * directly, not the validator's diagnostics.
    */
   readonly ignore?: ReadonlyArray<readonly [string, string]>;
+  /**
+   * Per-pair intended-contact budgets. Unlike `ignore`, a contact pair is
+   * still measured: the overlap is accepted only while it stays inside the
+   * declared `maxVolumeMm3` / `maxThicknessMm` budget. A bigger overlap
+   * emits `assembly.contact.tolerance-exceeded`.
+   */
+  readonly contacts?: readonly PairContactTolerance[];
+  /**
+   * Per-pair minimum-clearance results (measured by
+   * `measureDeclaredClearances`). Each violation emits
+   * `assembly.clearance.violated`; unmeasurable pairs emit
+   * `assembly.clearance.unresolved`.
+   */
+  readonly clearances?: readonly PairClearanceResult[];
 }
 
 /**
@@ -227,7 +252,8 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   // Check 3 — interference (promoted from checkInterference). Errors,
   // not warnings, because solid bodies sharing volume is mechanically
   // invalid (vs floating, which is a missing-information warning).
-  diagnostics.push(...collectInterferenceDiagnostics(input.interferencePairs, input.ignore));
+  diagnostics.push(...collectInterferenceDiagnostics(input.interferencePairs, input.ignore, input.contacts));
+  diagnostics.push(...collectClearanceDiagnostics(input.clearances));
 
   const status = resolveValidatorStatus(diagnostics);
 
@@ -320,8 +346,10 @@ function collectOrphanDiagnostics(
 function collectInterferenceDiagnostics(
   interferencePairs: readonly InterferencePair[] | undefined,
   ignore: ReadonlyArray<readonly [string, string]> | undefined,
+  contacts: readonly PairContactTolerance[] | undefined,
 ): ValidatorDiagnostic[] {
   const diagnostics: ValidatorDiagnostic[] = [];
+  const contactsByPair = contactMap(contacts);
   // The optional `ignore` list silences known-acceptable contacts (e.g. a
   // knuckle joint where two arm parts touch by design). Matching is
   // SYMMETRIC — `[a, b]` filters both `(a, b)` and `(b, a)` — and applies
@@ -337,6 +365,23 @@ function collectInterferenceDiagnostics(
   for (const pair of interferencePairs ?? []) {
     if (isPairIgnored(pair.a, pair.b, ignore)) continue;
     if (!isActionableOverlap(pair)) continue;
+    const contact = contactsByPair.get(pairKey(pair.a, pair.b));
+    if (contact !== undefined) {
+      if (contactAccepts(pair, contact)) continue;
+      diagnostics.push({
+        code: 'assembly.contact.tolerance-exceeded',
+        severity: 'error',
+        message:
+          `Parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}, over the declared contact budget `
+          + `(${describeContactBudget(contact)}); exceeded ${describeContactExcess(pair, contact)}.`
+          + (contact.reason !== undefined ? ` Reason: ${contact.reason}.` : ''),
+        hint: `invalid-args.assembly.contact-tolerance — widen the contact budget for ('${pair.a}', '${pair.b}') or move the parts apart.`,
+        partA: pair.a,
+        partB: pair.b,
+        volumeMm3: pair.volumeMm3,
+      });
+      continue;
+    }
     diagnostics.push({
       code: 'assembly.interference.overlap',
       severity: 'error',
@@ -346,6 +391,39 @@ function collectInterferenceDiagnostics(
       partB: pair.b,
       volumeMm3: pair.volumeMm3,
     });
+  }
+  return diagnostics;
+}
+
+/** Check 3b — declared minimum-clearance pairs. */
+function collectClearanceDiagnostics(
+  clearances: readonly PairClearanceResult[] | undefined,
+): ValidatorDiagnostic[] {
+  const diagnostics: ValidatorDiagnostic[] = [];
+  for (const pair of clearances ?? []) {
+    if (pair.status === 'violated') {
+      diagnostics.push({
+        code: 'assembly.clearance.violated',
+        severity: 'error',
+        message:
+          `Parts '${pair.a}' and '${pair.b}' are ${pair.distanceMm.toPrecision(3)} mm apart, `
+          + `below the declared ${pair.minMm} mm minimum clearance.`,
+        hint: `invalid-args.assembly.clearance — move the parts at least ${pair.minMm} mm apart, or lower the declared minimum if the smaller gap is intended.`,
+        partA: pair.a,
+        partB: pair.b,
+      });
+    } else if (pair.status === 'unknown') {
+      diagnostics.push({
+        code: 'assembly.clearance.unresolved',
+        severity: 'warning',
+        message:
+          `Clearance between '${pair.a}' and '${pair.b}' could not be measured; `
+          + `the declared ${pair.minMm} mm minimum is UNVERIFIED.`,
+        hint: 'invalid-args.assembly.clearance — use BRep parts and repair degenerate geometry; do not treat an unresolved pair as passing.',
+        partA: pair.a,
+        partB: pair.b,
+      });
+    }
   }
   return diagnostics;
 }
@@ -559,6 +637,10 @@ export async function validateAssemblyWithMates(
   // the unfiltered detection output. See `Assembly.solvedModel`'s `ignore`
   // option for the user-facing entry point.
   ignoreInterference?: ReadonlyArray<readonly [string, string]>,
+  // Per-pair intended-contact budgets and measured clearance results from
+  // `Assembly.solvedModel({ contacts, clearances })`.
+  contacts?: readonly PairContactTolerance[],
+  clearances?: readonly PairClearanceResult[],
 ): Promise<ValidatorResult> {
   // 1. Run the v0.5 base checks (floating / orphan / interference). Reuse
   //    the same code path — do not duplicate. Filter the session's records
@@ -573,6 +655,8 @@ export async function validateAssemblyWithMates(
     ...(arm.__mates().length > 0 || arm.__joints().length > 0 ? { connectivityDeclared: true } : {}),
     ...(interferencePairs !== undefined ? { interferencePairs } : {}),
     ...(ignoreInterference !== undefined ? { ignore: ignoreInterference } : {}),
+    ...(contacts !== undefined ? { contacts } : {}),
+    ...(clearances !== undefined ? { clearances } : {}),
   });
 
   // 2. Build the diagnostics chain starting from v0.5 results. We may

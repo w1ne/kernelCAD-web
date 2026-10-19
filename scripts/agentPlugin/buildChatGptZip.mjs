@@ -40,6 +40,23 @@ export function buildChatGptZip({ root, out } = {}) {
   const pluginDir = join(repo, 'plugins', 'kernelcad');
   const manifest = JSON.parse(readFileSync(join(pluginDir, 'plugin.json'), 'utf8'));
   const files = collectSubmissionEntries(pluginDir);
+  // The dashboard re-import requires the package name to equal the existing app's
+  // package name; the repo package keeps its portable `kernelcad` name.
+  const config = JSON.parse(readFileSync(join(repo, 'agent-plugin.config.json'), 'utf8'));
+  const dashboardName = config.chatgpt?.dashboardPackageName;
+  if (dashboardName && files['plugin.json']) {
+    const submission = { ...manifest, name: dashboardName };
+    files['plugin.json'] = new TextEncoder().encode(JSON.stringify(submission, null, 2) + '\n');
+  }
+  // The dashboard pins the existing app's MCP connection; the ChatGPT mount is
+  // /chatgpt/mcp, while the repo package keeps the general /mcp URL for the
+  // other agents that read the same file.
+  const dashboardMcpUrl = config.chatgpt?.dashboardMcpUrl;
+  if (dashboardMcpUrl && files['mcp.json']) {
+    const mcp = JSON.parse(new TextDecoder().decode(files['mcp.json']));
+    for (const server of Object.values(mcp.mcpServers ?? {})) server.url = dashboardMcpUrl;
+    files['mcp.json'] = new TextEncoder().encode(JSON.stringify(mcp, null, 2) + '\n');
+  }
   const zip = zipSync(
     Object.fromEntries(
       Object.entries(files).map(([name, bytes]) => [

@@ -12,6 +12,9 @@ Sources:
   washers.
 - `examples/parts/bolt-stack.kcad.ts` — two 6 mm bars in a lap joint, one M5
   bolt-mode stack; a 12 mm grip picks the M5 × 18 screw.
+- `examples/parts/catalog-lineup.kcad.ts` — the current catalog on a display
+  base: hex head bolt, socket head, countersunk, button head and set screw,
+  hex and lock nuts, the two washers and an M8 × 250 threaded rod.
 - `examples/parts/bolted-flange.kcad.ts` — a flange ring, eight Ø6.6 bores on
   an 85 mm bolt circle. `lib.insert` sizes them to M6 normal (ISO 273), cuts
   the 90° countersink each flat head needs and places eight M6 × 18 stacks
@@ -32,6 +35,9 @@ npx tsx src/agent/cli/index.ts render examples/parts/bolted-flange.kcad.ts --pre
 npx tsx src/agent/cli/index.ts render examples/parts/bolted-flange.kcad.ts --preset publish --width 2048 --height 1536 --pose 0,0 -o docs/demos/standard-parts/flange-front.png
 convert docs/demos/standard-parts/flange-front.pose-0-0.png -crop 900x430+660+590 +repage docs/demos/standard-parts/flange-detail.png
 python3 docs/demos/standard-parts/make-flange-video.py
+npx tsx examples/parts/verify-catalog.mts
+npx tsx src/agent/cli/index.ts render examples/parts/catalog-lineup.kcad.ts --preset publish -o docs/demos/standard-parts/catalog.hero.png
+convert docs/demos/standard-parts/catalog.hero.png -crop 760x480+330+300 +repage docs/demos/standard-parts/catalog-detail.png
 ```
 
 Evidence:
@@ -46,6 +52,8 @@ Evidence:
   countersink volume (1305 mm³ for eight seats) and the M6 normal sizing.
 - `flange-video-evidence.json` — the `flange-demo.mp4` inputs, hash, slide
   durations and invocations.
+- `catalog-evidence.json` — the current-catalog lineup: source hash, parts,
+  spans, 55 pairs with zero positive-volume overlaps and the family list.
 - `inspect/manifest.json` and `inspect/channels/rgb/` — deterministic
   `kernelcad render inspect` bundle for `bolt-stack.kcad.ts`.
 - `src/modeling/runtime/browserRuntime.test.ts` covers the browser path

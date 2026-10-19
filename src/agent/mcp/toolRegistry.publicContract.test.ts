@@ -145,6 +145,25 @@ describe('toolRegistry public contract', () => {
     }
   });
 
+  it('every tool parameter declares a JSON Schema type', () => {
+    // Directory reviewers (Anthropic, OpenAI) reject parameters without a type;
+    // a union is fine as a type array or an anyOf/oneOf composition.
+    const offenders: string[] = [];
+    const walk = (toolName: string, schema: unknown, prefix: string): void => {
+      if (!schema || typeof schema !== 'object') return;
+      const node = schema as { properties?: Record<string, unknown>; items?: unknown };
+      for (const [name, raw] of Object.entries(node.properties ?? {})) {
+        const prop = (raw ?? {}) as { type?: unknown; anyOf?: unknown; oneOf?: unknown; $ref?: unknown; const?: unknown };
+        const typed = prop.type !== undefined || prop.anyOf !== undefined || prop.oneOf !== undefined || prop.$ref !== undefined || prop.const !== undefined;
+        if (!typed) offenders.push(`${toolName}.${prefix}${name}`);
+        walk(toolName, prop, `${prefix}${name}.`);
+      }
+      walk(toolName, node.items, `${prefix}[].`);
+    };
+    for (const entry of TOOL_REGISTRY) walk(entry.definition.name, entry.definition.inputSchema, '');
+    expect(offenders).toEqual([]);
+  });
+
   it('keeps the public tool order stable', () => {
     expect(TOOL_REGISTRY.map(entry => entry.definition.name)).toEqual(EXPECTED_TOOL_NAMES);
     expect(TOOLS.map(tool => tool.name)).toEqual(EXPECTED_TOOL_NAMES);
