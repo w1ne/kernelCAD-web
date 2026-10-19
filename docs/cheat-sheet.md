@@ -288,3 +288,9 @@ Present a model and declare drawing intent without changing its geometry: text, 
 | `Shape.tolerance(spec: { type: 'position' \| 'flatness' \| 'perpendicularity' \| 'parallelism' \| 'concentricity' \| 'cylindricity'; value: number; face?: FaceQuery; edge?: EdgeQuery; datums?: string[]; modifier?: '⌀' \| 'M' \| 'S' }) => Shape` | Declare a geometric tolerance (feature control frame) on exactly one of `face` / `edge`, for `svg-drawing` sheets. |
 | `Shape.dimension(spec: { id?: string } & ({ kind: 'linear'; from: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; to: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; label?: string } \| { kind: 'diameter' \| 'radius'; edge: EdgeQuery; label?: string } \| { kind: 'angular'; from: EdgeQuery; to: EdgeQuery; label?: string })) => Shape` | Declare a dimension to show on the 3D viewer model and on drawings. |
 | `Shape.drawingReview(plan: DrawingReviewPlan) => Shape` | Declare required geometric callouts and engineering decisions for this shape and downstream exports. |
+
+## Uncategorized
+
+These entries have no task home yet. Classify them in `src/agent/mcp/tools/cheatSheetTaxonomy.ts`.
+
+- `filletIntersection` (SHAPE_METHODS)

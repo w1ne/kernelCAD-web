@@ -371,6 +371,38 @@ export const FEATURE_SURFACES_CODES = {
     group: 'feature',
     description: 'BRepAlgoAPI_Section returned no edges — the two surfaces or solids do not intersect.',
   },
+  'feature.fillet-intersection.no-section': {
+    hintTemplate:
+      'filletIntersection needs the body and cutter to actually cross: BRepAlgoAPI_Section returned no curve. Move/rotate the cutter so it intersects the body (or pass the cutter that was actually subtracted), then retry.',
+    nextAction: { kind: 'fix-arg', field: 'cutter' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'The body and cutter do not intersect, so there is no seam for filletIntersection to round.',
+  },
+  'feature.fillet-intersection.no-seam-edge': {
+    hintTemplate:
+      'The section curve exists but no body edge lies on it within tolerance. Confirm the body is the result of subtracting this cutter (the original body still has the uncut face, not a seam). Increase toleranceMm only if the seam edges are within a known gap; otherwise rebuild the subtract.',
+    nextAction: { kind: 'fix-arg', field: 'body' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'body ∩ cutter produced a section, but no body edge matched it within tolerance.',
+  },
+  'feature.fillet-intersection.fillet-failed': {
+    hintTemplate:
+      'OCCT refused the seam blend at this radius. Check the diagnostic edge lengths: reduce the radius below half the shortest seam segment or below the local wall, simplify tight corner regions, or fillet the seam in shorter runs. Never accept a partial/invalid result.',
+    nextAction: { kind: 'fix-arg', field: 'radius' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'OCCT MakeFillet failed on the selected intersection-seam edges; the body is returned unchanged.',
+  },
+  'feature.fillet-intersection.short-edge': {
+    hintTemplate:
+      'One or more seam edges are shorter than 2 × radius and were skipped so the rest of the seam could blend. Reduce the radius below half the shortest reported segment, or rebuild the upstream cut so the seam has one long segment.',
+    nextAction: { kind: 'fix-arg', field: 'radius' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'A seam edge was shorter than twice the requested fillet radius; it was reported and excluded from the successful blend.',
+  },
   'feature.loft.rail-miss': {
     hintTemplate:
       'A loft rail does not pass near every section (or more than two rails were given). OCCT MakePipeShell accepts one spine plus one auxiliary spine; each rail must come within 1 mm of every section wire. Shorten the gap, add a section on the rail, or drop extra rails.',
