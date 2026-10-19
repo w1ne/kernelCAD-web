@@ -27,7 +27,9 @@
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import { invalidArgsText } from '../../shared/intent/invalidArgs';
 import { pairKey, type InterferencePair } from './detectInterferences';
+import { minDistanceBetweenShapes, wrappedShape } from './brepDistance';
 
 /** A pair that is allowed to share a bounded amount of material. At least
  *  one bound should be given; a declaration with neither is the explicit
@@ -143,8 +145,14 @@ export function measureDeclaredClearances(
         target: 'export-occt',
         code: 'feature.invalid-args',
         severity: 'warn',
-        message: `clearance declaration (${aName}, ${bName}) names a part that is not in this scene.`,
-        hint: 'Declare clearances with part names passed to assembly.part(name, shape).',
+        ...invalidArgsText({
+          api: 'assembly.solvedModel({ clearances })',
+          path: 'clearances[].parts',
+          gotText: `(${aName}, ${bName})`,
+          requires: 'two part names present on this assembly',
+          hintSlug: 'invalid-args.assembly.pair-tolerance',
+          example: "clearances: [{ parts: ['base', 'lid'], minMm: 0.4 }]",
+        }),
       });
       results.push({ a: aName, b: bName, minMm: declaration.minMm, distanceMm: Number.NaN, status: 'unknown' });
       continue;
@@ -174,7 +182,7 @@ function measureOnePair(
     if (lowerBound >= minMm) {
       return { a: aName, b: bName, minMm, distanceMm: lowerBound, status: 'ok' };
     }
-    const measured = posedA.minDistanceTo(posedB);
+    const measured = minDistanceBetweenShapes(wrappedShape(posedA), wrappedShape(posedB));
     if (measured === undefined || !Number.isFinite(measured)) {
       return { a: aName, b: bName, minMm, distanceMm: Number.NaN, status: 'unknown' };
     }

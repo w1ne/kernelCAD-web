@@ -374,12 +374,12 @@ describe('Assembly.solvedModel — per-pair contact / clearance tolerances', () 
     arm.part('a', kcad.box(1, 1, 1));
     arm.part('b', kcad.box(1, 1, 1));
     expect(() => arm.solvedModel({}, { contacts: [{ parts: ['a', 'ghost'] }] }))
-      .toThrow(/does not match any part/i);
+      .toThrow(/requires a part on assembly/i);
     expect(() => arm.solvedModel({}, { contacts: [{ parts: ['a', 'a'] }] }))
-      .toThrow(/itself/i);
+      .toThrow(/paired with itself|two different part names/i);
     expect(() => arm.solvedModel({}, {
       contacts: [{ parts: ['a', 'b'] }, { parts: ['b', 'a'] }],
-    })).toThrow(/more than once/i);
+    })).toThrow(/duplicate pair|each pair declared once/i);
   });
 
   it('rejects negative or non-finite budgets at capture entry', async () => {
@@ -387,8 +387,8 @@ describe('Assembly.solvedModel — per-pair contact / clearance tolerances', () 
     arm.part('a', kcad.box(1, 1, 1));
     arm.part('b', kcad.box(1, 1, 1));
     expect(() => arm.solvedModel({}, { contacts: [{ parts: ['a', 'b'], maxVolumeMm3: -1 }] }))
-      .toThrow(/maxVolumeMm3 must be a finite number >= 0/i);
+      .toThrow(/maxVolumeMm3/i);
     expect(() => arm.solvedModel({}, { clearances: [{ parts: ['a', 'b'], minMm: Number.NaN }] }))
-      .toThrow(/minMm must be a finite number >= 0/i);
+      .toThrow(/minMm/i);
   });
 });

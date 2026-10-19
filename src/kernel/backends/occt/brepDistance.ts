@@ -2,6 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kernel/backends/occt/brepDistance.ts
 //
+import { getOC } from 'replicad';
+
 // BREP minimum distance between two raw TopoDS shapes. Lives in the kernel
 // layer so kernel lowerers (hole entry checks) and the modeling-layer gates
 // (DFM clearance, joint-mesh continuity, via modeling/runtime/brepDistance)
@@ -72,4 +74,11 @@ export function brepExtremaContact(
 ): { distanceMm: number; pointA: readonly [number, number, number]; pointB: readonly [number, number, number] } | undefined {
   const c = brepExtremaClosest(oc, shapeA, shapeB);
   return c && { distanceMm: c.distance, pointA: c.onA, pointB: c.onB };
+}
+
+/** Exact minimum distance between two backends' raw shapes. */
+export function minDistanceBetweenShapes(shapeA: unknown, shapeB: unknown): number | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  return brepExtremaDistance(oc, shapeA, shapeB);
 }

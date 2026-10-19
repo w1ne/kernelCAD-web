@@ -230,6 +230,50 @@ interface PosedPart {
   frameBounds: Map<number, Bounds>;
 }
 
+function canReuseIncrementalPair(
+  incremental: IncrementalInterferenceOptions | undefined,
+  key: string,
+  aName: string,
+  bName: string,
+): boolean {
+  if (incremental === undefined || !incremental.previousResults.has(key)) return false;
+  const changed = incremental.changedParts;
+  return changed === undefined || (!changed.has(aName) && !changed.has(bName));
+}
+
+/** Conservative rigid-frame bounds prove some candidates cannot exceed the
+ *  threshold. Returns false on any bound failure (the exact probe runs). */
+function boundsProveBelowThreshold(a: PosedPart, b: PosedPart, epsilonMm3: number): boolean {
+  for (let frame = 0; frame < BOUND_FRAMES.length; frame++) {
+    try {
+      const upper = overlapVolumeUpperBound(boundsInFrame(a, frame), boundsInFrame(b, frame));
+      if (Number.isFinite(upper) && upper <= epsilonMm3) return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+function boundsInFrame(part: PosedPart, frame: number): Bounds {
+  const cached = part.frameBounds.get(frame);
+  if (cached) return cached;
+  const basis = BOUND_FRAMES[frame];
+  let bounds: Bounds;
+  if (basis === null) {
+    bounds = paddedBounds(part.shape);
+  } else {
+    const rotated = part.shape.located(Transform.rotationAxisAngleDeg(basis.axis, basis.degrees));
+    try {
+      bounds = paddedBounds(rotated);
+    } finally {
+      rotated.dispose();
+    }
+  }
+  part.frameBounds.set(frame, bounds);
+  return bounds;
+}
+
 function probeCandidates(
   transformed: PosedPart[],
   epsilonMm3: number,
@@ -246,45 +290,14 @@ function probeCandidates(
     const a = transformed[i];
     const b = transformed[j];
     const key = pairKey(a.name, b.name);
-    const changed = incremental?.changedParts;
-    const canReuse = incremental !== undefined
-      && incremental.previousResults.has(key)
-      && (changed === undefined || (!changed.has(a.name) && !changed.has(b.name)));
-    if (canReuse) {
-      const previous = incremental.previousResults.get(key);
+    if (canReuseIncrementalPair(incremental, key, a.name, b.name)) {
+      const previous = incremental!.previousResults.get(key);
       if (previous !== undefined && previous !== null) pairs.push(previous);
       reusedPairCount += 1;
       continue;
     }
     probedPairCount += 1;
-    // Conservative rigid-frame bounds prove some candidates cannot exceed the threshold.
-    let boundedBelowThreshold = false;
-    for (let frame = 0; frame < BOUND_FRAMES.length; frame++) {
-      try {
-        const boundsFor = (part: typeof a): Bounds => {
-          const cached = part.frameBounds.get(frame);
-          if (cached) return cached;
-          const basis = BOUND_FRAMES[frame];
-          let bounds: Bounds;
-          if (basis === null) bounds = paddedBounds(part.shape);
-          else {
-            const rotated = part.shape.located(Transform.rotationAxisAngleDeg(basis.axis, basis.degrees));
-            try { bounds = paddedBounds(rotated); }
-            finally { rotated.dispose(); }
-          }
-          part.frameBounds.set(frame, bounds);
-          return bounds;
-        };
-        const upper = overlapVolumeUpperBound(boundsFor(a), boundsFor(b));
-        if (Number.isFinite(upper) && upper <= epsilonMm3) {
-          boundedBelowThreshold = true;
-          break;
-        }
-      } catch {
-        break;
-      }
-    }
-    if (boundedBelowThreshold) continue;
+    if (boundsProveBelowThreshold(a, b, epsilonMm3)) continue;
 
     // Key on the RELATIVE pose of b in a's frame: the overlap of two rigid
     // bodies depends only on where one sits relative to the other. Parts

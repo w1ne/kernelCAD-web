@@ -663,65 +663,99 @@ function assertPairDeclarations(
 ): void {
   const seen = new Set<string>();
   for (const [index, decl] of declarations.entries()) {
-    const parts = decl.parts;
-    if (!Array.isArray(parts) || parts.length !== 2 || !parts.every((name) => typeof name === 'string')) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.solvedModel: ${option}[${index}].parts must be a [partA, partB] pair of part names.`,
-        undefined,
-        `invalid-args.assembly.pair-tolerance — ${option}[${index}].parts must be [partA, partB] from: ${[...knownParts].join(', ')}.`,
-      );
-    }
-    const [a, b] = parts;
-    if (a === b) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.solvedModel: ${option}[${index}] pairs '${a}' with itself.`,
-        undefined,
-        `invalid-args.assembly.pair-tolerance — ${option} must name two different parts.`,
-      );
-    }
-    for (const name of [a, b]) {
-      if (!knownParts.has(name)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solvedModel: ${option}[${index}].parts['${name}'] does not match any part on assembly '${assemblyName}'.`,
-          undefined,
-          `invalid-args.assembly.pair-tolerance — '${name}' is not a part; known parts: ${[...knownParts].join(', ')}.`,
-        );
-      }
-    }
+    const [a, b] = assertPairIdentity(decl, index, knownParts, assemblyName, option);
     const key = a < b ? `${a}\t${b}` : `${b}\t${a}`;
     if (seen.has(key)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.solvedModel: ${option} declares the pair ('${a}', '${b}') more than once.`,
-        undefined,
-        `invalid-args.assembly.pair-tolerance — merge the duplicate ${option} declarations for ('${a}', '${b}').`,
-      );
+      invalidArgs({
+        api: `assembly.solvedModel({ ${option} })`,
+        path: `${option}[${index}]`,
+        gotText: `duplicate pair ('${a}', '${b}')`,
+        requires: `each pair declared once (symmetric lookup)`,
+        hintSlug: 'invalid-args.assembly.pair-tolerance',
+        example: `${option}: [{ parts: ['${a}', '${b}'] }]`,
+      });
     }
     seen.add(key);
-    if ('minMm' in decl) {
-      if (!Number.isFinite(decl.minMm) || decl.minMm < 0) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solvedModel: ${option}[${index}].minMm must be a finite number >= 0; got ${formatScalarForError(decl.minMm)}.`,
-          undefined,
-          'invalid-args.assembly.pair-tolerance — minMm must be >= 0.',
-        );
-      }
-    } else {
-      for (const field of ['maxVolumeMm3', 'maxThicknessMm'] as const) {
-        const value = decl[field];
-        if (value !== undefined && (!Number.isFinite(value) || value < 0)) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `assembly.solvedModel: ${option}[${index}].${field} must be a finite number >= 0; got ${formatScalarForError(value)}.`,
-            undefined,
-            `invalid-args.assembly.pair-tolerance — ${field} must be >= 0.`,
-          );
-        }
-      }
+    assertPairBudget(decl, index);
+  }
+}
+
+function assertPairIdentity(
+  decl: PairContactTolerance | PairClearanceTolerance,
+  index: number,
+  knownParts: ReadonlySet<string>,
+  assemblyName: string,
+  option: 'contacts' | 'clearances',
+): [string, string] {
+  const parts = decl.parts;
+  if (!Array.isArray(parts) || parts.length !== 2 || !parts.every((name) => typeof name === 'string')) {
+    invalidArgs({
+      api: `assembly.solvedModel({ ${option} })`,
+      path: `${option}[${index}].parts`,
+      got: parts,
+      requires: `a [partA, partB] pair from: ${[...knownParts].join(', ')}`,
+      hintSlug: 'invalid-args.assembly.pair-tolerance',
+      example: `${option}: [{ parts: ['base', 'lid'] }]`,
+    });
+  }
+  const [a, b] = parts;
+  if (a === b) {
+    invalidArgs({
+      api: `assembly.solvedModel({ ${option} })`,
+      path: `${option}[${index}].parts`,
+      gotText: `'${a}' paired with itself`,
+      requires: 'two different part names',
+      hintSlug: 'invalid-args.assembly.pair-tolerance',
+      example: `${option}: [{ parts: ['base', 'lid'] }]`,
+    });
+  }
+  for (const name of [a, b]) {
+    if (!knownParts.has(name)) {
+      invalidArgs({
+        api: `assembly.solvedModel({ ${option} })`,
+        path: `${option}[${index}].parts`,
+        gotText: `'${name}'`,
+        requires: `a part on assembly '${assemblyName}' (known: ${[...knownParts].join(', ')})`,
+        hintSlug: 'invalid-args.assembly.pair-tolerance',
+        example: `${option}: [{ parts: ['base', 'lid'] }]`,
+      });
+    }
+  }
+  return [a, b];
+}
+
+function assertPairBudget(
+  decl: PairContactTolerance | PairClearanceTolerance,
+  index: number,
+): void {
+  if ('minMm' in decl) {
+    if (!Number.isFinite(decl.minMm) || decl.minMm < 0) {
+      invalidArgs({
+        api: 'assembly.solvedModel({ clearances })',
+        path: `clearances[${index}].minMm`,
+        got: decl.minMm,
+        showType: true,
+        requires: 'a finite number >= 0',
+        unit: 'mm',
+        hintSlug: 'invalid-args.assembly.pair-tolerance',
+        example: "clearances: [{ parts: ['base', 'lid'], minMm: 0.4 }]",
+      });
+    }
+    return;
+  }
+  for (const field of ['maxVolumeMm3', 'maxThicknessMm'] as const) {
+    const value = decl[field];
+    if (value !== undefined && (!Number.isFinite(value) || value < 0)) {
+      invalidArgs({
+        api: 'assembly.solvedModel({ contacts })',
+        path: `contacts[${index}].${field}`,
+        got: value,
+        showType: true,
+        requires: 'a finite number >= 0',
+        unit: field === 'maxThicknessMm' ? 'mm' : 'mm³',
+        hintSlug: 'invalid-args.assembly.pair-tolerance',
+        example: `contacts: [{ parts: ['lip', 'skin'], ${field}: 1 }]`,
+      });
     }
   }
 }
