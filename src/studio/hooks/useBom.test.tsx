@@ -103,6 +103,45 @@ describe('useBom', () => {
         expect(result.current.totals?.partCount).toBe(1);
     });
 
+    it('GETs ?session=&script= when a live session token is present (no POST)', async () => {
+        const { result } = renderHook(() => useBom('return 1;', true, 'examples/foo.kcad.ts', 'sess-1'));
+        await waitFor(() => expect(result.current.status).toBe('ready'));
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        const [url, init] = fetchMock.mock.calls[0]! as [string, RequestInit];
+        expect(url).toBe('/__kernelcad/bom?session=sess-1&script=examples%2Ffoo.kcad.ts');
+        expect(init.method).toBeUndefined();
+        expect(init.body).toBeUndefined();
+        expect(result.current.rows[0]!.process).toBe('cnc');
+    });
+
+    it('GETs ?session= alone when a session token is present without a script context', async () => {
+        const { result } = renderHook(() => useBom('return 1;', true, null, 'sess-1'));
+        await waitFor(() => expect(result.current.status).toBe('ready'));
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        const [url, init] = fetchMock.mock.calls[0]! as [string, RequestInit];
+        expect(url).toBe('/__kernelcad/bom?session=sess-1');
+        expect(init.method).toBeUndefined();
+        expect(init.body).toBeUndefined();
+    });
+
+    it('refetches when only the session token changes (same source)', async () => {
+        const { result, rerender } = renderHook(
+            ({ session }: { session: string | null }) =>
+                useBom('return 1;', true, 'examples/foo.kcad.ts', session),
+            { initialProps: { session: 'sess-1' as string | null } },
+        );
+        await waitFor(() => expect(result.current.status).toBe('ready'));
+        rerender({ session: 'sess-2' });
+        // Identical source must still bust the cache on a session change —
+        // otherwise a slider override would be served the stale rows.
+        expect(result.current.status).toBe('loading');
+        await waitFor(() => expect(result.current.status).toBe('ready'));
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[1]![0]).toBe(
+            '/__kernelcad/bom?session=sess-2&script=examples%2Ffoo.kcad.ts',
+        );
+    });
+
     it('POSTs { source } to the bom endpoint when there is no script context', async () => {
         const { result } = renderHook(() => useBom('return 1;', true));
         await waitFor(() => expect(result.current.status).toBe('ready'));

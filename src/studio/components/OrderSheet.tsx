@@ -21,6 +21,7 @@ import { servicesForProcess } from '../../kernel/export/order/fabServices';
 import { buildVendorLink, referralDisclosure } from '../../shared/links/referral';
 import { Sheet } from '../../ui/Sheet';
 import { useCode } from '../context/CodeContext';
+import { useWorkbench } from '../context/WorkbenchContext';
 import { useBom, type BomState } from '../hooks/useBom';
 import { useExportTask } from '../hooks/useExportTask';
 import { downloadBlob, exportViaServer } from '../exportViaServer';
@@ -44,7 +45,10 @@ interface OrderGroup {
 
 export function OrderSheet({ open, onClose }: OrderSheetProps): JSX.Element {
     const { code } = useCode();
-    const bom = useBom(code, true, currentStudioScript());
+    const { sessionToken } = useWorkbench();
+    // Address the BOM by `?script=` and, when a live pool session exists, by
+    // its token so slider (`params.update`) overrides are reflected here too.
+    const bom = useBom(code, true, currentStudioScript(), sessionToken);
     const task = useExportTask();
     const { start } = task;
 

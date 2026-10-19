@@ -98,6 +98,9 @@ const defaultRows: BomRow[] = [
 let rows: BomRow[] = defaultRows;
 
 vi.mock('../../context/CodeContext', () => ({ useCode: () => ({ code: 'return 1;' }) }));
+vi.mock('../../context/WorkbenchContext', () => ({
+    useWorkbench: () => ({ sessionToken: null }),
+}));
 
 vi.mock('../../hooks/useBom', () => ({
     useBom: () => ({

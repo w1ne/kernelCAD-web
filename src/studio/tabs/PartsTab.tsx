@@ -5,6 +5,7 @@ import type { JSX } from 'react';
 import { Download, ShoppingCart } from 'lucide-react';
 import type { BomRow } from '../../agent/script-runtime/bom';
 import { useCode } from '../context/CodeContext';
+import { useWorkbench } from '../context/WorkbenchContext';
 import { useBom } from '../hooks/useBom';
 import { useExportTask } from '../hooks/useExportTask';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
@@ -26,10 +27,13 @@ import { ExportStatus } from '../components/Shared/ExportStatus';
  */
 export function PartsTab(): JSX.Element {
     const { code } = useCode();
+    const { sessionToken } = useWorkbench();
     // The third argument addresses the BOM by the Studio's `?script=` context,
     // so the server resolves the same file (and relative assets) the viewport
-    // evaluated — GET parity with the mesh/review fetches.
-    const bom = useBom(code, true, currentStudioScript());
+    // evaluated — GET parity with the mesh/review fetches. The fourth is the
+    // live pool token: when present the server reads the pooled session so
+    // slider (`params.update`) overrides show up instead of the on-disk BOM.
+    const bom = useBom(code, true, currentStudioScript(), sessionToken);
     const { features } = useRecomputeResult();
     const [orderOpen, setOrderOpen] = useState(false);
     const task = useExportTask();

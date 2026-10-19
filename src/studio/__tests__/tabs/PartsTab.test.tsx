@@ -75,6 +75,11 @@ vi.mock('../../hooks/useRecomputeResult', () => ({
 
 vi.mock('../../context/CodeContext', () => ({ useCode: () => ({ code: 'return 1;' }) }));
 
+let workbenchSessionToken: string | null = null;
+vi.mock('../../context/WorkbenchContext', () => ({
+    useWorkbench: () => ({ sessionToken: workbenchSessionToken }),
+}));
+
 const highlightFromCode = vi.fn();
 vi.mock('../../selectionCode/selectionCodeStore', () => ({
     selectionCodeStore: { highlightFromCode: (ids: string[]) => highlightFromCode(ids) },
@@ -105,6 +110,7 @@ beforeEach(() => {
         diagnostics: [],
     };
     features = baseFeatures;
+    workbenchSessionToken = null;
     window.history.replaceState(null, '', '/?script=examples/foo.kcad.ts');
 });
 
@@ -137,7 +143,13 @@ describe('PartsTab', () => {
 
     it('addresses the BOM by the current script context (viewport parity)', () => {
         render(<PartsTab />);
-        expect(bomCalls.at(-1)).toEqual(['return 1;', true, 'examples/foo.kcad.ts']);
+        expect(bomCalls.at(-1)).toEqual(['return 1;', true, 'examples/foo.kcad.ts', null]);
+    });
+
+    it('forwards the live pool session token so slider overrides reach the BOM', () => {
+        workbenchSessionToken = 'sess-42';
+        render(<PartsTab />);
+        expect(bomCalls.at(-1)).toEqual(['return 1;', true, 'examples/foo.kcad.ts', 'sess-42']);
     });
 
     it('opens the Order sheet from the Order… button', () => {

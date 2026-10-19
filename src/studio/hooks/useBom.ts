@@ -37,11 +37,15 @@ export interface BomState {
 const IDLE_BOM_STATE: BomState = { status: 'idle', rows: [], totals: null, diagnostics: [] };
 const LOADING_BOM_STATE: BomState = { status: 'loading', rows: [], totals: null, diagnostics: [] };
 
-/** The identity of one BOM evaluation: the script context + the source text.
- *  The script context is part of the key because the same source text under
- *  a different `?script=` can resolve relative assets differently. */
-function bomKey(source: string, script: string | null | undefined): string {
-  return `${script ?? ''}\u0000${source}`;
+/** The identity of one BOM evaluation: the script context + the session
+ *  token + the source text. The script context is part of the key because the
+ *  same source text under a different `?script=` can resolve relative assets
+ *  differently. The session token is part of the key because a live
+ *  `params.update` override changes the computed BOM even when the source
+ *  text is identical — without it, a slider edit would be served the stale
+ *  cached rows. */
+function bomKey(source: string, script: string | null | undefined, session: string | null | undefined): string {
+  return `${script ?? ''}\u0000${session ?? ''}\u0000${source}`;
 }
 
 /** Ready results only, keyed by `bomKey`, so the Parts tab, the Order sheet
@@ -76,10 +80,15 @@ const bomInFlight = new Map<string, InFlightBom>();
  *  outcome: on success it writes the settled cache even when every subscriber
  *  has already left (an orphaned fetch that was not aborted), exactly like
  *  the previous per-hook fetch did. */
-function startBomFetch(key: string, source: string, script: string | null | undefined): InFlightBom {
+function startBomFetch(
+  key: string,
+  source: string,
+  script: string | null | undefined,
+  session: string | null | undefined,
+): InFlightBom {
   const controller = new AbortController();
   const entry: InFlightBom = { controller, subscribers: 0, promise: Promise.resolve(LOADING_BOM_STATE) };
-  entry.promise = fetchBom(source, script, controller.signal).then(
+  entry.promise = fetchBom(source, script, session, controller.signal).then(
     (next) => {
       if (bomInFlight.get(key) === entry) bomInFlight.delete(key);
       bomCacheSet(key, next);
@@ -122,9 +131,21 @@ function isBomTotals(value: unknown): value is BomTotals {
     && (typeof totals.totalMassG === 'number' || totals.totalMassG === null);
 }
 
-async function fetchBom(source: string, script: string | null | undefined, signal: AbortSignal): Promise<BomState> {
+async function fetchBom(
+  source: string,
+  script: string | null | undefined,
+  session: string | null | undefined,
+  signal: AbortSignal,
+): Promise<BomState> {
   const { base, headers } = await apiCall();
-  const init: RequestInit = script
+  // A session token (slider-edited live pool) or a script context both
+  // address the BOM by GET; only the bare-source edit path POSTs. The
+  // parameter shape mirrors `useMeshFetch`'s live-review request
+  // (`?session=&script=`), minus `live=1`, which is review-only.
+  const query: string[] = [];
+  if (session) query.push(`session=${encodeURIComponent(session)}`);
+  if (script) query.push(`script=${encodeURIComponent(script)}`);
+  const init: RequestInit = query.length > 0
     ? { headers, signal }
     : {
         // Parity limit (the endpoint's POST branch): it never reads a
@@ -139,7 +160,7 @@ async function fetchBom(source: string, script: string | null | undefined, signa
         signal,
       };
   const response = await fetch(
-    rewritePath(script ? `/__kernelcad/bom?script=${encodeURIComponent(script)}` : '/__kernelcad/bom', base),
+    rewritePath(query.length > 0 ? `/__kernelcad/bom?${query.join('&')}` : '/__kernelcad/bom', base),
     init,
   );
   const payload = await response.json().catch(() => null) as BomEndpointPayload | null;
@@ -169,23 +190,34 @@ async function fetchBom(source: string, script: string | null | undefined, signa
  * of that file. Pass `null`/omit to POST the given `source` instead (edited
  * code without a resolvable script context).
  *
+ * `session` is the workbench's live pool token. When present the request
+ *  addresses the pooled session (`?session=&script=`) so a slider-driven
+ *  `params.update` override — which mutates the pooled model, not the
+ *  on-disk file — is reflected in the rows. A session change with identical
+ *  source refetches (the key includes the token).
+ *
  * Subscribers with the same `bomKey` share one in-flight evaluation, aborted
  * only when the last of them unmounts. State is written only from the fetch
  * callbacks (`react-hooks/set-state-in-effect`); `idle` / `loading` are
  * derived at render from `active`, the module cache and the last settled
  * result (itself keyed by `bomKey`).
  */
-export function useBom(source: string, enabled: boolean, script?: string | null): BomState {
+export function useBom(
+  source: string,
+  enabled: boolean,
+  script?: string | null,
+  session?: string | null,
+): BomState {
   const [settled, setSettled] = useState<{ key: string; state: BomState } | null>(null);
   const active = enabled && source.trim().length > 0;
 
   useEffect(() => {
     if (!active) return undefined;
-    const key = bomKey(source, script);
+    const key = bomKey(source, script, session);
     // A ready result is shared through the module cache (tab + sheet +
     // remounts): no refetch.
     if (bomCache.has(key)) return undefined;
-    const entry = bomInFlight.get(key) ?? startBomFetch(key, source, script);
+    const entry = bomInFlight.get(key) ?? startBomFetch(key, source, script, session);
     entry.subscribers += 1;
     let cancelled = false;
     entry.promise.then(
@@ -219,10 +251,10 @@ export function useBom(source: string, enabled: boolean, script?: string | null)
         entry.controller.abort();
       }
     };
-  }, [active, source, script]);
+  }, [active, source, script, session]);
 
   if (!active) return IDLE_BOM_STATE;
-  const key = bomKey(source, script);
+  const key = bomKey(source, script, session);
   const cached = bomCache.get(key);
   if (cached) return cached;
   if (settled && settled.key === key) return settled.state;
