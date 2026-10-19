@@ -11,9 +11,13 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import {
   collectInterferenceCandidates,
+  detectInterferences,
   pairKey,
   type InterferenceCandidatePart,
+  type InterferencePair,
 } from '../../../src/modeling/runtime/detectInterferences';
+import { runScript } from '../../../src/composition/runScript';
+import { lowerScriptScene } from '../../../src/agent/script-runtime/checkInterference';
 
 function part(
   name: string,
@@ -102,5 +106,40 @@ describe('detectInterferences — probe count (bbox prune on real shapes)', () =
     const r = await detect('box(10, 10, 10, true).translate(8, 0, 0)', ignored);
     expect(r.comparisonCount).toBe(0);
     expect(r.pairs).toEqual([]);
+  });
+});
+
+
+describe('detectInterferences — incremental pair re-check', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  it('re-probes only pairs touching a changed part and reuses the rest', async () => {
+    const code = `
+      const arm = assembly('incremental');
+      arm.part('a', box(10, 10, 10, true));
+      arm.part('b', box(10, 10, 10, true).translate(8, 0, 0));
+      arm.part('c', box(10, 10, 10, true).translate(4, 0, 0));
+      return arm.model();
+    `;
+    const run = await runScript({ code, fileName: 'incremental.kcad.ts' });
+    const { scene } = await lowerScriptScene(run);
+    expect(scene).toBeDefined();
+    const first = detectInterferences(scene!, 0.01, new Set());
+    expect(first.pairs).toHaveLength(3);
+    const previous = new Map<string, InterferencePair | null>();
+    for (const pair of first.pairs) previous.set(pairKey(pair.a, pair.b), pair);
+    // Candidate pairs with no overlap also belong in a production cache;
+    // for this all-overlapping fixture every pair has an entry.
+    const second = detectInterferences(scene!, 0.01, new Set(), [], {
+      previousResults: previous,
+      changedParts: new Set(['a']),
+    });
+    expect(second.reusedPairCount).toBe(1); // b-c
+    expect(second.probedPairCount).toBe(2); // a-b, a-c
+    expect(second.pairs.map((p) => pairKey(p.a, p.b)).sort()).toEqual(
+      first.pairs.map((p) => pairKey(p.a, p.b)).sort(),
+    );
   });
 });

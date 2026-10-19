@@ -42,6 +42,12 @@ describe('ChatGPT plugin submission ZIP', () => {
     expect(entries).toEqual(expect.arrayContaining(['plugin.json', 'mcp.json', 'assets/logo.svg']));
     const zippedManifest = JSON.parse(new TextDecoder().decode(unzipSync(new Uint8Array(readFileSync(built.path)))['plugin.json']));
     expect(zippedManifest.version).toBe(manifest.version);
+    // The dashboard requires the existing app's package name and MCP URL on re-import.
+    expect(zippedManifest.name).toBe('app-6a2fcd20e8008191b0c688ca1bc7abb5');
+    expect(manifest.name).toBe('kernelcad');
+    const zippedMcp = JSON.parse(new TextDecoder().decode(unzipSync(new Uint8Array(readFileSync(built.path)))['mcp.json']));
+    expect(zippedMcp.mcpServers.kernelcad.url).toBe('https://mcp.kernelcad.com/chatgpt/mcp');
+    expect(JSON.parse(readFileSync(join(pluginDir, 'mcp.json'), 'utf8')).mcpServers.kernelcad.url).toBe('https://mcp.kernelcad.com/mcp');
     expect(zippedManifest.extensions['com.openai'].interface.shortDescription.length).toBeLessThanOrEqual(30);
   });
 });

@@ -40,8 +40,10 @@
   "chatgpt": {
     "privacyPolicyUrl": "https://kernelcad.com/privacy",
     "termsOfServiceUrl": "https://kernelcad.com/terms",
-    "logo": "assets/logo.svg",
-    "composerIcon": "assets/logo.svg",
+    "logo": "./assets/logo.png",
+    "composerIcon": "./assets/logo.svg",
+    "dashboardPackageName": "app-6a2fcd20e8008191b0c688ca1bc7abb5",
+    "dashboardMcpUrl": "https://mcp.kernelcad.com/chatgpt/mcp",
     "commerceDecision": "DECIDED 2026-10-19: commerce is declared true. The hosted server exposes order_part (creates a production request and returns the fabrication vendor's pay_url; the card is only held, and a person confirms the price before charging) and price_part (real maker prices), so the plugin does route users into purchase flows. Payment, billing and fulfilment stay on the vendor's site; kernelCAD does not charge cards or process payments.",
     "commerce": true,
     "commerceDescription": "Ordering is external checkout: kernelCAD creates a production request and returns the fabrication vendor's own pay link. Payment, billing and fulfilment stay with the vendor; kernelCAD does not charge cards or process payments.",

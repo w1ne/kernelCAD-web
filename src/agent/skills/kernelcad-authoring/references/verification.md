@@ -25,7 +25,7 @@ These root causes account for most non-converging repairs; fix the cause, not th
 - **Undeclared connectors** — declare a connector on the part before referencing it in a mate, and give it a finite `[x, y, z]` origin.
 - **Over-tight fillets/chamfers** — keep the radius below half the local wall/edge thickness; larger radii fail in the kernel.
 - **Members run into each other or float** — `union.member-overlap` / `union.disconnected` on a frame or tray: cut cross members to `span - 2 * railWidth` and place them at the rail width, keep end members inside the frame, and seat sheets on the tubes (see Multi-member fabrications).
-- **ParamRef arithmetic** — never use JS operators on a `param()` result; use `.add/.subtract/.multiply/.divide/.negate` (see the Cookbook entry for worked examples).
+- **ParamRef arithmetic** — never use JS operators on a `param()` result; use `.add/.subtract/.multiply/.divide/.negate/.min/.max/.abs/.clamp` (see the Cookbook entry for worked examples).
 
 ## Verification gates
 

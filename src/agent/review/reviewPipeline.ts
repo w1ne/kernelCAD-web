@@ -45,6 +45,7 @@ import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/
 import { validateAssemblyWithMates } from '../../modeling/mates/validator';
 import type { InterferencePair } from '../../modeling/runtime/detectInterferences';
 import { detectInterferences, pairKey } from '../../modeling/runtime/detectInterferences';
+import { measureDeclaredClearances } from '../../modeling/runtime/pairTolerances';
 import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
 import {
   summarizeInterferencePairs,
@@ -290,6 +291,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     input,
     defaultPoseGeometry.rawInterferencePairs,
     defaultPoseGeometry.wantInterference,
+    model.rootShape ?? model.tailShape,
   )));
   const { poseEnvelope, physicalUseCases, mechanism, mechanismFailures, summary } =
     await runBudgetedStages(clock, arm, model, input, mechanicalReview.includePoseEnvelope);
@@ -480,7 +482,13 @@ async function runMechanicalReviewStage(
   input: Pick<ReviewCadInput, 'includePoseEnvelope'>,
   rawInterferencePairs: readonly InterferencePair[],
   wantInterference: boolean,
+  scene?: unknown,
 ) {
+  const tolerances = arm.__pairTolerances();
+  const clearanceResults =
+    scene !== undefined && isSceneBackend(scene) && tolerances.clearances.length > 0
+      ? measureDeclaredClearances(scene, tolerances.clearances)
+      : undefined;
   const validator = await validateAssemblyWithMates(
     arm,
     wantInterference ? rawInterferencePairs : undefined,
@@ -488,6 +496,8 @@ async function runMechanicalReviewStage(
     undefined,
     undefined,
     arm.__ignoreInterference(),
+    tolerances.contacts.length > 0 ? tolerances.contacts : undefined,
+    clearanceResults,
   );
   const mechanicalPlausibility = await reviewMechanicalPlausibility(arm);
   const mechanicalIntent = await reviewMechanicalIntent(arm);
@@ -696,7 +706,7 @@ export async function runStaticAssemblyReview(
   epsilonMm3?: number,
 ): Promise<StaticAssemblyReview> {
   const rawInterferencePairs = safeDetectDefaultPoseInterferences(scene, epsilonMm3);
-  const mechanicalReview = await runMechanicalReviewStage(arm, {}, rawInterferencePairs, true);
+  const mechanicalReview = await runMechanicalReviewStage(arm, {}, rawInterferencePairs, true, scene);
   // The graph-only mechanism-truth criterion (a part no mate links into a
   // mated assembly); the motion criteria stay with review_cad.
   const orphanParts = withNextActions(checkOrphanParts(arm));

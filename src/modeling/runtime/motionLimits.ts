@@ -76,6 +76,15 @@ export function evaluate(expr: ParamRefExpr, valueOf: (name: string) => number):
       if (expr.op === '*') return l * r;
       return l / r;
     }
+    case 'min': return Math.min(evaluate(expr.left, valueOf), evaluate(expr.right, valueOf));
+    case 'max': return Math.max(evaluate(expr.left, valueOf), evaluate(expr.right, valueOf));
+    case 'abs': return Math.abs(evaluate(expr.expr, valueOf));
+    case 'clamp': {
+      const v = evaluate(expr.value, valueOf);
+      const lo = evaluate(expr.min, valueOf);
+      const hi = evaluate(expr.max, valueOf);
+      return Math.min(hi, Math.max(lo, v));
+    }
   }
 }
 
