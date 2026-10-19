@@ -7,6 +7,7 @@ import type { KernelCadApi } from '../api';
 import { createModelingApi } from '../api';
 import { CaptureSession } from '../capture/captureSession';
 import {
+  clearanceFitForHoleDiameter,
   headFrameFor,
   pilotForThread,
   planInserts,
@@ -43,12 +44,25 @@ describe('lib.insert sizing', () => {
     expect(threadForHoleDiameter(3.4)).toBe('M3');
     expect(threadForHoleDiameter(2.4)).toBe('M2');
     expect(threadForHoleDiameter(6.5)).toBe('M6');
+    expect(threadForHoleDiameter(9)).toBe('M8');
+    expect(threadForHoleDiameter(13.5)).toBe('M12');
+  });
+
+  it('reports the ISO 273 fit class of the bore', () => {
+    expect(clearanceFitForHoleDiameter(5.3)).toEqual({ thread: 'M5', fit: 'close' });
+    expect(clearanceFitForHoleDiameter(5.5)).toEqual({ thread: 'M5', fit: 'normal' });
+    expect(clearanceFitForHoleDiameter(5.8)).toEqual({ thread: 'M5', fit: 'loose' });
+    expect(clearanceFitForHoleDiameter(6.5)).toEqual({ thread: 'M6', fit: 'normal' });
+    expect(clearanceFitForHoleDiameter(9)).toEqual({ thread: 'M8', fit: 'normal' });
+    expect(clearanceFitForHoleDiameter(10)).toEqual({ thread: 'M8', fit: 'loose' });
+    expect(clearanceFitForHoleDiameter(13)).toEqual({ thread: 'M12', fit: 'close' });
+    expect(clearanceFitForHoleDiameter(14.5)).toEqual({ thread: 'M12', fit: 'loose' });
   });
 
   it('refuses a bore that matches no stocked clearance diameter', () => {
-    expect(threadForHoleDiameter(5.8)).toBeUndefined();
+    expect(threadForHoleDiameter(5.0)).toBeUndefined(); // M6 tap drill, not clearance
     expect(threadForHoleDiameter(7.5)).toBeUndefined();
-    expect(threadForHoleDiameter(9)).toBeUndefined();
+    expect(threadForHoleDiameter(15.5)).toBeUndefined();
   });
 
   it('reports a bore that sits exactly on a larger thread tap drill', () => {
@@ -117,8 +131,32 @@ describe('lib.insert on modeled parts', () => {
     expect(nutBounds.max[2]).toBeLessThan(-3);
   }, 120000);
 
-  it('cuts the countersink a flat head needs and skips the head washer', async () => {
+  it('sizes a loose M6 bore and a normal M8 bore from ISO 273', async () => {
     const { kcad } = api();
+    const plate = kcad
+      .box(60, 40, 8, true)
+      .hole('top', { u: -15, v: 0, diameter: 7.0, depth: 'through' })
+      .hole('top', { u: 15, v: 0, diameter: 9.0, depth: 'through' });
+    const m6 = await kcad.lib.insert(plate, {
+      diameterMm: 7.0,
+      family: 'socket-head-cap-screw',
+      mode: 'bolt',
+    });
+    expect(m6.holes[0]!.thread).toBe('M6');
+    expect(m6.holes[0]!.fit).toBe('loose');
+    expect(m6.holes[0]!.lengthMm).toBe(16); // 8 grip + 1.6 tail washer + 5 nut, next stocked
+
+    const m8 = await kcad.lib.insert(plate, {
+      diameterMm: 9.0,
+      family: 'socket-head-cap-screw',
+      mode: 'bolt',
+    });
+    expect(m8.holes[0]!.thread).toBe('M8');
+    expect(m8.holes[0]!.fit).toBe('normal');
+    expect(m8.holes[0]!.lengthMm).toBe(18); // 8 grip + 1.6 tail washer + 6.5 nut, next stocked
+  }, 120000);
+
+  it('cuts the countersink a flat head needs and skips the head washer', async () => {    const { kcad } = api();
     const plate = kcad.box(60, 40, 8, true).holes('top', {
       positions: [{ u: -20, v: 0 }, { u: 20, v: 0 }],
       diameter: 5.5,

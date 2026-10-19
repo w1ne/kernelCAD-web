@@ -331,12 +331,15 @@ function fixtureSeedFamily(family: string): SeedFamily {
   };
 }
 
+/** Stocked threads of one table, with '_' decimal keys turned back into '.'. */
+function threadsOf(table: Record<string, unknown>): string[] {
+  return Object.keys(table).map((key) => key.replace('_', '.'));
+}
+
 function socketHeadCapScrew(): SeedFamily {
-  const threads: Array<keyof typeof SHCS_HEAD> = ['M2', 'M2_5', 'M3', 'M4', 'M5', 'M6'];
+  const threads = threadsOf(SHCS_HEAD);
   const lengths = SHCS_LENGTHS;
-  const variants = threads.flatMap((t) =>
-    lengths.map((l) => ({ thread: t.replace('_', '.'), lengthMm: l })),
-  );
+  const variants = threads.flatMap((t) => lengths.map((l) => ({ thread: t, lengthMm: l })));
   return {
     id: 'socket-head-cap-screw',
     category: 'fastener',
@@ -380,7 +383,7 @@ function socketHeadCapScrew(): SeedFamily {
 }
 
 function buttonHeadCapScrew(): SeedFamily {
-  const threads: Array<keyof typeof BHCS_HEAD> = ['M3', 'M4', 'M5'];
+  const threads = threadsOf(BHCS_HEAD);
   const lengths = BHCS_LENGTHS;
   const variants = threads.flatMap((t) =>
     lengths.map((l) => ({ thread: t, lengthMm: l })),
@@ -427,7 +430,7 @@ function buttonHeadCapScrew(): SeedFamily {
 }
 
 function flatHeadCountersunk(): SeedFamily {
-  const threads: Array<keyof typeof FLATHEAD_HEAD> = ['M3', 'M4', 'M5'];
+  const threads = threadsOf(FLATHEAD_HEAD);
   const lengths = FLATHEAD_LENGTHS;
   const variants = threads.flatMap((t) =>
     lengths.map((l) => ({ thread: t, lengthMm: l })),
@@ -474,7 +477,7 @@ function flatHeadCountersunk(): SeedFamily {
 }
 
 function hexNut(): SeedFamily {
-  const threads = ['M2', 'M2.5', 'M3', 'M4', 'M5', 'M6'];
+  const threads = threadsOf(HEX_NUT);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'hex-nut',
@@ -513,7 +516,7 @@ function hexNut(): SeedFamily {
 }
 
 function lockNut(): SeedFamily {
-  const threads = ['M3', 'M4', 'M5'];
+  const threads = threadsOf(LOCK_NUT);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'lock-nut',
@@ -521,7 +524,7 @@ function lockNut(): SeedFamily {
     standard: 'DIN 985',
     variants,
     async generate({ thread }) {
-      const dims = LOCK_NUT[thread as string];
+      const dims = LOCK_NUT[(thread as string).replace('.', '_')];
       const bytes = await lockNutStep(thread as string, dims);
       const id = `din-985-${threadSlug(thread as string)}`;
       return {
@@ -552,7 +555,7 @@ function lockNut(): SeedFamily {
 }
 
 function flatWasher(): SeedFamily {
-  const threads = ['M2', 'M3', 'M4', 'M5', 'M6'];
+  const threads = threadsOf(FLAT_WASHER);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'flat-washer',
@@ -560,7 +563,7 @@ function flatWasher(): SeedFamily {
     standard: 'ISO 7089',
     variants,
     async generate({ thread }) {
-      const dims = FLAT_WASHER[thread as string];
+      const dims = FLAT_WASHER[(thread as string).replace('.', '_')];
       const bytes = await washerStep(thread as string, dims);
       const id = `iso-7089-${threadSlug(thread as string)}`;
       return {
@@ -592,7 +595,7 @@ function flatWasher(): SeedFamily {
 }
 
 function lockWasher(): SeedFamily {
-  const threads = ['M3', 'M4', 'M5'];
+  const threads = threadsOf(LOCK_WASHER);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'lock-washer',
@@ -600,7 +603,7 @@ function lockWasher(): SeedFamily {
     standard: 'DIN 127B',
     variants,
     async generate({ thread }) {
-      const dims = LOCK_WASHER[thread as string];
+      const dims = LOCK_WASHER[(thread as string).replace('.', '_')];
       const bytes = await washerStep(thread as string, dims);
       const id = `din-127b-${threadSlug(thread as string)}`;
       return {

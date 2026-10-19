@@ -102,7 +102,7 @@ family table and builds the envelope in memory when no STEP is on disk.
 `lib.part({ family, thread, lengthMm })` builds one stocked fastener:
 socket-head (ISO 4762), button-head (ISO 7380) and countersunk (ISO 10642)
 screws, hex nuts (ISO 4032), lock nuts (DIN 985), flat washers (ISO 7089)
-and lock washers (DIN 127B), M2 through M6. Screws need a stocked length;
+and lock washers (DIN 127B), M2 through M12. Screws need a stocked length;
 an unknown family, thread or length fails with a diagnostic that names the
 stocked values. Every solid is an envelope (head plus shank), no helical
 thread.
@@ -129,8 +129,10 @@ const fitted = await lib.insert(plate, {
 ```
 
 The holes already on the shape drive everything. Sizing reads the bore
-diameter against ISO 273 normal clearance (Ø2.4 M2, Ø2.9 M2.5, Ø3.4 M3,
-Ø4.5 M4, Ø5.5 M5, Ø6.6 M6). Selection covers every similar hole (same
+diameter against ISO 273 clearance (Ø2.4 M2, Ø2.9 M2.5, Ø3.4 M3, Ø4.5 M4,
+Ø5.5 M5, Ø6.6 M6, Ø9 M8, Ø11 M10, Ø13.5 M12 normal; close and loose bores
+also size, and `holes[i].fit` reports `'close' | 'normal' | 'loose'`).
+Selection covers every similar hole (same
 diameter, parallel axis), so a patterned hole is covered without naming the
 pattern. The seat follows the family: flat-head cuts a 90° countersink to
 the head diameter, cap heads cut nothing unless `seat: 'counterbore'`.
@@ -268,12 +270,13 @@ See `kernelcad-mcp` for the full grammar.
 
 ## Bundled-only by default
 
-Bundled tier coverage (293 records on the seed catalog):
+Bundled tier coverage (422 records on the seed catalog):
 
-- M2 / M2.5 / M3 / M4 / M5 / M6 socket head, button head, flat head
-  countersunk screws (ISO 4762 / 7380 / 10642).
-- M2 / M2.5 / M3 / M4 / M5 / M6 hex nuts, lock nuts, flat / lock washers
-  (ISO 4032 / DIN 985 / ISO 7089 / DIN 127B).
+- M2 / M2.5 / M3 / M4 / M5 / M6 / M8 / M10 / M12 socket head and flat head
+  countersunk screws (ISO 4762 / 10642); button head M3–M10 (ISO 7380).
+- M2 / M2.5 / M3 / M4 / M5 / M6 / M8 / M10 / M12 hex nuts and flat washers
+  (ISO 4032 / ISO 7089); lock nuts and lock washers M3–M12
+  (DIN 985 / DIN 127B).
 - M2.5 / M3 / M4 heat-set inserts (3.8 mm and 5.7 mm length).
 - Deep-groove ball bearings 608 / 623 / 624 / 625 / 626 / 6800 / 688 / 6900.
 - Linear shaft Ø3..Ø12 × 20..200 mm.
