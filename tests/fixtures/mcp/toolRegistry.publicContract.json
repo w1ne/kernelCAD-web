@@ -7515,6 +7515,20 @@
           "type": "string",
           "description": "HDRI environment override: preset ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse'), a URL, or 'none' for the default three-light rig."
         },
+        "shading": {
+          "type": "string",
+          "enum": [
+            "smooth",
+            "flat"
+          ],
+          "description": "Mesh shading: 'smooth' uses the kernel's vertex normals (default); 'flat' uses face normals to expose tessellation / surface wobble."
+        },
+        "screenshot_timeout_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 600000,
+          "description": "Playwright screenshot deadline in milliseconds. Default leaves Playwright's 30 s in place; raise it for heavy lofts or a slow machine."
+        },
         "no_watermark": {
           "type": "boolean",
           "description": "Suppress the kernelCAD version watermark.",

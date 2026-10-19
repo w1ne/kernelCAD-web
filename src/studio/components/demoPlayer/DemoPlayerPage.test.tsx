@@ -95,6 +95,26 @@ describe('DemoPlayerPage.loadFeatureMeshes', () => {
     expect(dump.meshCount).toBe(3);
   });
 
+  it('setShadingMode toggles flat/smooth shading on every mesh material', async () => {
+    render(<DemoPlayerPage />);
+    await new Promise((r) => setTimeout(r, 50));
+    const fakeFace = {
+      vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      indices: [0, 1, 2],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+      faceId: 0,
+    };
+    window.__demoPlayer!.loadFeatureMeshes(
+      [{ featureId: 'box_1', featureKind: 'box', predecessors: [], faces: [fakeFace] }],
+      { min: [0, 0, 0], max: [1, 1, 1] },
+    );
+    expect(window.__demoPlayer!.dumpScene().sampleFlatShading.every((v) => v === false)).toBe(true);
+    window.__demoPlayer!.setShadingMode('flat');
+    expect(window.__demoPlayer!.dumpScene().sampleFlatShading.every((v) => v === true)).toBe(true);
+    window.__demoPlayer!.setShadingMode('smooth');
+    expect(window.__demoPlayer!.dumpScene().sampleFlatShading.every((v) => v === false)).toBe(true);
+  });
+
   it('fits loaded geometry tighter for mobile-readable demo videos', async () => {
     render(<DemoPlayerPage />);
     await new Promise((r) => setTimeout(r, 50));
