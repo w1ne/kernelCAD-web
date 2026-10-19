@@ -205,8 +205,8 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 | `sew(surfaces: Surface[], opts?: { tolerance?: number; requireClosed?: boolean }) => Shape` | Stitch N surfaces into a shell or closed solid. |
 | `Surface.thicken(t: Editable<number>) => Shape` | Offset both sides of this surface by `t` mm and return the closed solid Shape. |
 | `Surface.toShape() => Shape` | Wrap this surface as a single-face zero-volume Shape. |
-| `Surface.trimTo(by: Surface) => Surface` | Trim this surface at its intersection with `by` (a Surface cutter) and return a new Surface representing the kept half. |
-| `Surface.split(by: Surface) => [Surface, Surface]` | Split this surface at its intersection with `by` (a Surface cutter) and return both resulting Surface halves as `[first, second]`, ordered by descending face area. |
+| `Surface.trimTo(by: Surface \| Shape) => Surface` | Trim this surface at its intersection with `by` and return a new Surface representing the kept half. |
+| `Surface.split(by: Surface \| Shape) => [Surface, Surface]` | Split this surface at its intersection with `by` and return both resulting Surface halves as `[first, second]`, ordered by descending face area. |
 | `Shape.projectCurve(opts: { source: ProjectCurveSource; face: FaceSelector \| string; scaleMode?: 'original' \| 'native' \| 'bounds'; asEdge?: boolean }) => Sketch` | Wrap a 2D closed curve onto a 3D face along the face normal. |
 | `Curve3D.sample(n: number) => [number, number, number][]` | Sample `n + 1` evenly-spaced points along the curve in the public `[0, 1]` parameter domain. |
 | `Curve3D.pointAt(t: number) => [number, number, number]` | World-space point on the curve at parameter `t ∈ [0, 1]` (clamped). |
