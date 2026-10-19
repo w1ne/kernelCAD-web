@@ -130,34 +130,51 @@ function foldExpr(expr: ParamRefExpr): ParamRefExpr {
       }
       return { kind: 'binop', op: expr.op, left, right };
     }
-    case 'min': {
-      const left = foldExpr(expr.left);
-      const right = foldExpr(expr.right);
-      return left.kind === 'lit' && right.kind === 'lit'
-        ? { kind: 'lit', value: Math.min(left.value, right.value) }
-        : { kind: 'min', left, right };
-    }
-    case 'max': {
-      const left = foldExpr(expr.left);
-      const right = foldExpr(expr.right);
-      return left.kind === 'lit' && right.kind === 'lit'
-        ? { kind: 'lit', value: Math.max(left.value, right.value) }
-        : { kind: 'max', left, right };
-    }
-    case 'abs': {
-      const inner = foldExpr(expr.expr);
-      return inner.kind === 'lit' ? { kind: 'lit', value: Math.abs(inner.value) } : { kind: 'abs', expr: inner };
-    }
-    case 'clamp': {
-      const value = foldExpr(expr.value);
-      const min = foldExpr(expr.min);
-      const max = foldExpr(expr.max);
-      if (value.kind === 'lit' && min.kind === 'lit' && max.kind === 'lit') {
-        return { kind: 'lit', value: Math.min(max.value, Math.max(min.value, value.value)) };
-      }
-      return { kind: 'clamp', value, min, max };
-    }
+    default:
+      return foldHelperExpr(expr);
   }
+}
+
+function foldHelperExpr(
+  expr: Extract<ParamRefExpr, { kind: 'min' | 'max' | 'abs' | 'clamp' }>,
+): ParamRefExpr {
+  switch (expr.kind) {
+    case 'min': return foldBinaryHelper(expr, 'min', Math.min);
+    case 'max': return foldBinaryHelper(expr, 'max', Math.max);
+    case 'abs': return foldUnaryHelper(expr, 'abs', Math.abs);
+    case 'clamp': return foldClamp(expr);
+  }
+}
+
+function foldBinaryHelper(
+  expr: Extract<ParamRefExpr, { kind: 'min' | 'max' }>,
+  kind: 'min' | 'max',
+  op: (a: number, b: number) => number,
+): ParamRefExpr {
+  const left = foldExpr(expr.left);
+  const right = foldExpr(expr.right);
+  return left.kind === 'lit' && right.kind === 'lit'
+    ? { kind: 'lit', value: op(left.value, right.value) }
+    : { kind, left, right } as ParamRefExpr;
+}
+
+function foldUnaryHelper(
+  expr: Extract<ParamRefExpr, { kind: 'abs' }>,
+  kind: 'abs',
+  op: (a: number) => number,
+): ParamRefExpr {
+  const inner = foldExpr(expr.expr);
+  return inner.kind === 'lit' ? { kind: 'lit', value: op(inner.value) } : { kind, expr: inner };
+}
+
+function foldClamp(expr: Extract<ParamRefExpr, { kind: 'clamp' }>): ParamRefExpr {
+  const value = foldExpr(expr.value);
+  const min = foldExpr(expr.min);
+  const max = foldExpr(expr.max);
+  if (value.kind === 'lit' && min.kind === 'lit' && max.kind === 'lit') {
+    return { kind: 'lit', value: Math.min(max.value, Math.max(min.value, value.value)) };
+  }
+  return { kind: 'clamp', value, min, max };
 }
 
 /** Build a Param from an expression AST. Literal-only expressions collapse to

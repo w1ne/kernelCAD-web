@@ -260,7 +260,7 @@ describe('ParamRef min / max / abs / clamp helpers', () => {
 
   it('literal clamp with min > max throws at construction', () => {
     const x = makeParamRef<number>('x', 'number');
-    expect(() => x.clamp(10, 0)).toThrow(/min <= max/);
+    expect(() => x.clamp(10, 0)).toThrow(/upper bound >= min/);
   });
 
   it('symbolic clamp that resolves to an inverted range throws at evaluation', () => {
@@ -272,7 +272,7 @@ describe('ParamRef min / max / abs / clamp helpers', () => {
     const lo = makeParamRef<number>('lo', 'number');
     const hi = makeParamRef<number>('hi', 'number');
     const clamped = x.clamp(lo, hi);
-    expect(() => resolveExpr(clamped._expr, t)).toThrow(/inverted range/);
+    expect(() => resolveExpr(clamped._expr, t)).toThrow(/upper bound >= min/);
   });
 
   it('debug strings name the helpers and composed expressions', () => {

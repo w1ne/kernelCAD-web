@@ -21,6 +21,7 @@
 
 import type { Param } from '../intent/types';
 import { KernelError } from '../intent/kernelError';
+import { invalidArgs } from '../intent/invalidArgs';
 import type { ParamTable } from './paramTable';
 import type { ParamRefExpr } from './paramRef';
 
@@ -76,27 +77,45 @@ export function resolveExpr(expr: ParamRefExpr, table: ParamTable): number {
     }
     case 'neg':
       return -resolveExpr(expr.expr, table);
+    default:
+      return resolveHelperExpr(expr, table);
+  }
+}
+
+function resolveHelperExpr(
+  expr: Extract<ParamRefExpr, { kind: 'min' | 'max' | 'abs' | 'clamp' }>,
+  table: ParamTable,
+): number {
+  switch (expr.kind) {
     case 'min':
       return Math.min(resolveExpr(expr.left, table), resolveExpr(expr.right, table));
     case 'max':
       return Math.max(resolveExpr(expr.left, table), resolveExpr(expr.right, table));
     case 'abs':
       return Math.abs(resolveExpr(expr.expr, table));
-    case 'clamp': {
-      const value = resolveExpr(expr.value, table);
-      const lo = resolveExpr(expr.min, table);
-      const hi = resolveExpr(expr.max, table);
-      if (lo > hi) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `ParamRef.clamp() resolved to an inverted range: min=${lo} > max=${hi}.`,
-          undefined,
-          `invalid-args.param.invalid-args — ParamRef.clamp() resolved to min=${lo} > max=${hi}; make the upper bound >= the lower bound.`,
-        );
-      }
-      return Math.min(hi, Math.max(lo, value));
-    }
+    case 'clamp':
+      return resolveClamp(expr, table);
   }
+}
+
+function resolveClamp(
+  expr: Extract<ParamRefExpr, { kind: 'clamp' }>,
+  table: ParamTable,
+): number {
+  const value = resolveExpr(expr.value, table);
+  const lo = resolveExpr(expr.min, table);
+  const hi = resolveExpr(expr.max, table);
+  if (lo > hi) {
+    invalidArgs({
+      api: 'ParamRef.clamp(min, max)',
+      path: 'max',
+      got: hi,
+      requires: `a resolved upper bound >= min (resolved min=${lo})`,
+      hintSlug: 'invalid-args.param.invalid-args',
+      example: "param('x', 5).clamp(param('lo', 0), param('hi', 10))",
+    });
+  }
+  return Math.min(hi, Math.max(lo, value));
 }
 
 function collectExprNames(expr: ParamRefExpr, refs: Set<string>): void {

@@ -17,6 +17,7 @@
 // instead of flowing `"[object Object]4"` / NaN into geometry (#439).
 
 import { KernelError } from '../intent/kernelError';
+import { invalidArgs } from '../intent/invalidArgs';
 
 const PARAM_REF_BRAND = 'ParamRef' as const;
 
@@ -160,12 +161,14 @@ export class ParamRef<T extends number | boolean = number | boolean> {
     const minExpr = operandExpr(min, 'clamp');
     const maxExpr = operandExpr(max, 'clamp');
     if (minExpr.kind === 'lit' && maxExpr.kind === 'lit' && minExpr.value > maxExpr.value) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `ParamRef.clamp() requires min <= max; got min=${minExpr.value}, max=${maxExpr.value}.`,
-        undefined,
-        `invalid-args.param.invalid-args — ParamRef.clamp() requires min <= max; got min=${minExpr.value}, max=${maxExpr.value}.`,
-      );
+      invalidArgs({
+        api: 'ParamRef.clamp(min, max)',
+        path: 'max',
+        got: maxExpr.value,
+        requires: `a finite upper bound >= min (got min=${minExpr.value})`,
+        hintSlug: 'invalid-args.param.invalid-args',
+        example: "param('wall', 2).clamp(1, 8)",
+      });
     }
     return new ParamRef<number>({ kind: 'clamp', value: this._expr, min: minExpr, max: maxExpr }, 'number');
   }
