@@ -822,20 +822,27 @@ export class Shape {
    */
   thicken(t: Editable<number>): Shape {
     if (typeof t === 'number' && !(t > 0 && Number.isFinite(t))) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.thicken: t must be a positive finite number; got ${formatScalarForError(t)}.`,
-        this.id,
-        'Pass a positive wall thickness in mm: sewn.thicken(3).',
-      );
+      invalidArgs({
+        api: 'Shape.thicken(t)',
+        path: 't',
+        got: t,
+        requires: 'a positive finite wall thickness in mm',
+        unit: 'mm',
+        example: 'sewn.thicken(3)',
+        featureId: this.id,
+      });
     }
     if (typeof t !== 'number' && !isParamRef(t)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.thicken: t must be a number or ParamRef<number>; got ${formatScalarForError(t)}.`,
-        this.id,
-        'Pass a positive wall thickness in mm: sewn.thicken(3).',
-      );
+      invalidArgs({
+        api: 'Shape.thicken(t)',
+        path: 't',
+        got: t,
+        showType: true,
+        requires: 'a number or ParamRef<number> in mm',
+        unit: 'mm',
+        example: 'sewn.thicken(3)',
+        featureId: this.id,
+      });
     }
     return this.session.createShape({
       kind: 'shapeThicken',

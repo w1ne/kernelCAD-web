@@ -4,6 +4,7 @@ import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { faceToShape, thickenFace, thickenShell, ThickenedSolidError } from '../../../../kernel/backends/occt/nurbsSurfaceLowerer';
 import { lowerSurfaceSew as sewSurfaceFaces } from '../../../../kernel/backends/occt/surfaceSewLowerer';
 import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
+import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
 import { buildSurfaceById, resolveSurfaceFaceForRecord } from './surfaceResolve';
@@ -60,8 +61,14 @@ export function lowerShapeThicken(ctx: LowerContext, r: FeatureRecord): LowerOut
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `shapeThicken: t must be a positive finite number in mm; got ${String(t)}.`,
-      hint: 'Pass the wall thickness in mm: sewn.thicken(3).',
+      ...invalidArgsText({
+        api: 'Shape.thicken(t)',
+        path: 't',
+        got: t,
+        requires: 'a positive finite wall thickness in mm',
+        unit: 'mm',
+        example: 'sewn.thicken(3)',
+      }),
     });
     return noShape();
   }
