@@ -63,6 +63,10 @@ export interface RenderInput {
   poses?: string[];
   /** HDRI environment override: preset key, custom URL, or 'none'. */
   environment?: string;
+  /** Smooth (kernel vertex normals) or flat (face normals) shading. */
+  shading?: 'smooth' | 'flat';
+  /** Playwright screenshot deadline in ms (default: Playwright's 30 s). */
+  screenshotTimeoutMs?: number;
   /** Suppress the kernelCAD version watermark on the captured frames.
    *  Used for clean hero artifacts intended for public posts. */
   noWatermark?: boolean;
@@ -108,6 +112,8 @@ export interface RenderInspectInput {
   hideReferenceImages: boolean;
   environment?: string;
   noWatermark?: boolean;
+  shading?: 'smooth' | 'flat';
+  screenshotTimeoutMs?: number;
   focus?: string[];
   hide?: string[];
   channels?: string[];
@@ -413,6 +419,8 @@ async function runRenderCapture(
         hideReferenceImages: input.hideReferenceImages,
         environment: input.environment,
         noWatermark: input.noWatermark,
+        ...(input.shading !== undefined ? { shading: input.shading } : {}),
+        ...(input.screenshotTimeoutMs !== undefined ? { screenshotTimeoutMs: input.screenshotTimeoutMs } : {}),
         objectFilter,
         section,
         explode,
@@ -600,6 +608,8 @@ async function renderInspectViews(
         hideReferenceImages: input.hideReferenceImages,
         environment: input.environment,
         noWatermark: input.noWatermark,
+        ...(input.shading !== undefined ? { shading: input.shading } : {}),
+        ...(input.screenshotTimeoutMs !== undefined ? { screenshotTimeoutMs: input.screenshotTimeoutMs } : {}),
         objectFilter,
         inspectionChannels: requestedChannels,
       }),
@@ -739,6 +749,8 @@ function buildInspectManifest(
       name: 'kernelcad render inspect',
       channels: requestedChannels,
       views: requestedViews,
+      ...(input.shading !== undefined ? { shading: input.shading } : {}),
+      ...(input.screenshotTimeoutMs !== undefined ? { screenshotTimeoutMs: input.screenshotTimeoutMs } : {}),
     },
     ...(objectFilter !== undefined ? { filters: { object: objectFilter } } : {}),
     ...(result.objectVisibility !== undefined
@@ -811,6 +823,11 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
   return { exitCode: 0, outputPaths: [manifestPath, ...pngPaths] };
 }
 
+function parseShading(value: string | undefined): 'smooth' | 'flat' | undefined {
+  if (value === undefined) return undefined;
+  return value === 'smooth' || value === 'flat' ? value : undefined;
+}
+
 function configureRenderInspectSubcommand(cmd: Command): void {
   cmd
     .command('inspect')
@@ -834,6 +851,8 @@ function configureRenderInspectSubcommand(cmd: Command): void {
       false,
     )
     .option('--channels <list>', 'comma-separated inspection channels to emit (rgb, mask, depth, normals)').option('--views <list>', 'comma-separated views to capture (front, back, left, right, top, bottom, iso; default front, right, top, iso)')
+    .option('--shading <mode>', "mesh shading: 'smooth' (kernel vertex normals, default) or 'flat' (face normals)")
+    .option('--screenshot-timeout <ms>', 'Playwright screenshot deadline in milliseconds (default 30000)', (v) => parseInt(v, 10))
     .option('--focus <names>', 'show only comma-separated feature ids or assembly part names')
     .option('--hide <names>', 'hide comma-separated feature ids or assembly part names')
     .action(async (file: string, outDir: string, opts: {
@@ -844,9 +863,17 @@ function configureRenderInspectSubcommand(cmd: Command): void {
       environment?: string;
       watermark: boolean;
       channels?: string; views?: string;
+      shading?: string;
+      screenshotTimeout?: number;
       focus?: string;
       hide?: string;
     }) => {
+      const shading = parseShading(opts.shading);
+      if (opts.shading !== undefined && shading === undefined) {
+        console.error(`render inspect: invalid --shading '${opts.shading}' (expected 'smooth' or 'flat').`);
+        process.exitCode = 1;
+        return;
+      }
       const r = await renderInspectBundle({
         file,
         outDir,
@@ -855,8 +882,12 @@ function configureRenderInspectSubcommand(cmd: Command): void {
         baseUrl: opts.baseUrl,
         hideReferenceImages: opts.hideReferenceImages,
         environment: opts.environment,
+        ...(shading !== undefined ? { shading } : {}),
+        ...(opts.screenshotTimeout !== undefined ? { screenshotTimeoutMs: opts.screenshotTimeout } : {}),
         noWatermark: opts.watermark === false,
         channels: opts.channels ? [opts.channels] : undefined, views: opts.views ? [opts.views] : undefined,
+        ...(shading !== undefined ? { shading } : {}),
+        ...(opts.screenshotTimeout !== undefined ? { screenshotTimeoutMs: opts.screenshotTimeout } : {}),
         focus: opts.focus ? [opts.focus] : undefined,
         hide: opts.hide ? [opts.hide] : undefined,
       });
@@ -897,6 +928,8 @@ function configureRenderCommandOptions(cmd: Command): void {
       '--environment <preset|url|none>',
       "HDRI environment preset ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse'), a custom URL/path, or 'none' to force the default three-light rig",
     )
+    .option('--shading <mode>', "mesh shading: 'smooth' (kernel vertex normals, default) or 'flat' (face normals)")
+    .option('--screenshot-timeout <ms>', 'Playwright screenshot deadline in milliseconds (default 30000)', (v) => parseInt(v, 10))
     .option(
       '--no-watermark',
       'suppress the kernelCAD version badge in the bottom-right of the captured frame (clean hero artifacts)',
@@ -922,6 +955,8 @@ function configureRenderCommandOptions(cmd: Command): void {
       hideReferenceImages: boolean;
       pose: string[];
       environment?: string;
+      shading?: string;
+      screenshotTimeout?: number;
       watermark: boolean;  // commander inverts --no-watermark to opts.watermark = false
       focus?: string;
       hide?: string;
@@ -934,6 +969,12 @@ function configureRenderCommandOptions(cmd: Command): void {
       background?: string;
       shadow: boolean;  // commander inverts --no-shadow; default true
     }, command: Command) => {
+      const shading = parseShading(opts.shading);
+      if (opts.shading !== undefined && shading === undefined) {
+        console.error(`render: invalid --shading '${opts.shading}' (expected 'smooth' or 'flat').`);
+        process.exitCode = 1;
+        return;
+      }
       const r = await renderScript({
         file,
         out: opts.out,
