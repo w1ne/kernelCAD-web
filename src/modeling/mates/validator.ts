@@ -86,6 +86,7 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.part.floating'
   | 'assembly.part.orphan'
   | 'assembly.interference.overlap'
+  | 'assembly.overlay.intentional'
   | 'assembly.contact.tolerance-exceeded'
   | 'assembly.clearance.violated'
   | 'assembly.clearance.unresolved'

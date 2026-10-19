@@ -710,6 +710,14 @@ function resolvePartMaterialAndValidateOpts(
       `invalid-args.assembly.part-invalid-role — pass role: 'contact-target' only for external contact/load targets, or omit role for structural parts.`,
     );
   }
+  if (opts.overlay !== undefined && typeof opts.overlay !== 'boolean') {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.part '${name}': overlay must be a boolean; got ${formatScalarForError(opts.overlay)}.`,
+      shape.id,
+      'Pass overlay: true for a styling-study / display clip, or omit it for a structural part.',
+    );
+  }
   return { resolvedMaterial, effectiveDensity };
 }
 
@@ -807,6 +815,7 @@ export function recordPartInternal(
     ...(opts.massKg !== undefined ? { massKg: opts.massKg } : {}),
     ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     ...(opts.role !== undefined ? { role: opts.role } : {}),
+    ...(opts.overlay !== undefined ? { overlay: opts.overlay } : {}),
   };
   state.parts.push(stored);
   if (opts.connect) {
