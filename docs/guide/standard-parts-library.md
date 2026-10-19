@@ -3,7 +3,7 @@ title: Standard fasteners from one table with lib.part and lib.stack
 summary: Script ISO metric screws, nuts and washers by family and size, and place a bolted stack that picks its own screw length.
 date: 2026-10-17
 kind: guide
-status: published
+status: draft
 model: examples/parts/bolt-stack.kcad.ts
 video: docs/demos/standard-parts/demo.mp4
 ---
@@ -26,7 +26,7 @@ Screws also take a stocked length: socket head 4 to 50 mm, button head 5 to
 25 mm, countersunk 6 to 25 mm. An unknown family, thread or length fails with a
 diagnostic that names the stocked values.
 
-![One envelope per family on a display base](../../site/blog/standard-parts-library/lineup.png "The lineup example: socket, button and countersunk heads, two nut styles and two washer styles.")
+![One envelope per family on a display base](standard-parts-library/lineup.png "The lineup example: socket, button and countersunk heads, two nut styles and two washer styles.")
 
 The geometry is an envelope. A socket head is its cylinder, a countersunk head
 is the seated ISO 10642 frustum that fills its countersink, and the lock washer
@@ -83,9 +83,9 @@ For the 12 mm grip in the example the sum is 17 mm and the shortest stocked
 socket-head length at or above it is 18 mm. The members come back placed:
 washer on the seat, screw head above it, tail washer and nut below the grip.
 
-![The lap joint with the M5 bolt stack](../../site/blog/standard-parts-library/stack.png "Two 6 mm bars, one bolt-mode stack. The seat is the upper bar's top face.")
+![The lap joint with the M5 bolt stack](standard-parts-library/stack.png "Two 6 mm bars, one bolt-mode stack. The seat is the upper bar's top face.")
 
-![Front elevation of the stack](../../site/blog/standard-parts-library/stack-detail.png "Head washer on the seat, tail washer and hex nut under the lower bar. Cropped from the front-elevation render of examples/parts/bolt-stack.kcad.ts.")
+![Front elevation of the stack](standard-parts-library/stack-detail.png "Head washer on the seat, tail washer and hex nut under the lower bar. Cropped from the front-elevation render of examples/parts/bolt-stack.kcad.ts.")
 
 The `examples/parts/bolt-stack.kcad.ts` source places the stack like this:
 
