@@ -7,7 +7,7 @@ Copy and metadata for listing kernelCAD in each directory. One file per director
 | ChatGPT app / plugin directory | [chatgpt-directory.md](chatgpt-directory.md) | Plugin ZIP upload (Plugins → Upload new or existing plugin), after org verification | ZIP builds with `npm run listing:zip`; not listed |
 | Anthropic Connectors Directory | [anthropic-connector-directory.md](anthropic-connector-directory.md) | Developer portal: claude.ai/directory/manage → MCP connector | protocol verification done 2026-10-19; not listed |
 | Official MCP Registry | [mcp-registry.md](mcp-registry.md) + [server.json](server.json) | `mcp-publisher publish` | `server.json` is 0.17.0 and remote only; the npm entry returns once 0.17.0 is published (npm is at 0.15.0) |
-| Grok Build built-in marketplace | [grok-marketplace.md](grok-marketplace.md) | PR to `xai-org/plugin-marketplace` | prepared; not listed |
+| Grok Build built-in marketplace | [grok-marketplace.md](grok-marketplace.md) | PR to `xai-org/plugin-marketplace` | [PR #1556](https://github.com/xai-org/plugin-marketplace/pull/1556) open |
 | Cursor Marketplace | [cursor-marketplace.md](cursor-marketplace.md) | Dashboard → Plugins & MCPs; team import works, public listing needs submission | not listed |
 | Smithery | [smithery.md](smithery.md) | smithery.ai/new with the server URL | not listed |
 | mcp.so | [mcp-so.md](mcp-so.md) | mcp.so submit form | not listed |

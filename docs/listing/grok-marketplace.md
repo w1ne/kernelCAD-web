@@ -36,4 +36,4 @@ Keywords stay brand-scoped on purpose: they power the Grok plugin CTA, and gener
 Note the review guidance about sourcing from an official org rather than a personal account: there is no separate kernelCAD org, so explain the w1ne ownership instead of moving the repo.
 
 ## Status
-- 2026-10-19: article prepared; PR to open.
+- 2026-10-19: PR open — [xai-org/plugin-marketplace#1556](https://github.com/xai-org/plugin-marketplace/pull/1556), pinned to `6617c8918275a7a7f7055a0a8cdafff2432a37ce`.
