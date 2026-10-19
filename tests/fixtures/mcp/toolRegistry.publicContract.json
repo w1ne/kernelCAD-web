@@ -735,9 +735,19 @@
           ]
         },
         "edges": {
+          "type": [
+            "object",
+            "array",
+            "string"
+          ],
           "description": "of:'continuity' — optional EdgeQuery or @kc[...] ref(s) limiting which shared edges are sampled."
         },
         "faces": {
+          "type": [
+            "object",
+            "array",
+            "string"
+          ],
           "description": "of:'curvature' — optional FaceQuery or @kc[...] ref(s) limiting which faces are sampled."
         },
         "spike_factor": {
@@ -903,9 +913,19 @@
           "description": "check:'edge-radius' — explicit assembly part names (default all)."
         },
         "edges": {
+          "type": [
+            "object",
+            "array",
+            "string"
+          ],
           "description": "check:'edge-radius' — EdgeQuery or @kc[...] edge ref(s); intersected with faces. Query near sorts, it does not filter."
         },
         "faces": {
+          "type": [
+            "object",
+            "array",
+            "string"
+          ],
           "description": "check:'edge-radius' — FaceQuery or @kc[...] face ref(s); includes incident edges and fillets on selected faces."
         },
         "fasteners": {
@@ -1120,6 +1140,10 @@
           "description": "check:'load-capacity' mode:'fea' — one automatic finer pass (0.75x element size) when the stress is untrusted, inside the element budget (default true); false solves once at the study's meshSize."
         },
         "pose": {
+          "type": [
+            "object",
+            "array"
+          ],
           "description": "check:'static-hold' — explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range."
         },
         "gravity": {
@@ -1838,6 +1862,11 @@
           "description": "The string literal name of the param (first arg to param())."
         },
         "new_value": {
+          "type": [
+            "number",
+            "boolean",
+            "string"
+          ],
           "description": "The new default value: number for numeric params, boolean for boolean params, or string for choice/string/color params (must be one of the declared choices for a choice param; a color param — one whose default is a hex literal — takes '#rrggbb', '#rgb' or a basic CSS colour name and is written back as '#rrggbb')."
         }
       },
@@ -3096,7 +3125,15 @@
               "statement": {
                 "type": "string"
               },
-              "value": {},
+              "value": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "array",
+                  "object"
+                ]
+              },
               "confidence": {
                 "type": "number",
                 "minimum": 0,
@@ -4231,6 +4268,10 @@
           "description": "Inline kernelCAD script source."
         },
         "query": {
+          "type": [
+            "string",
+            "object"
+          ],
           "description": "mode:'evaluate' — Query: a bare face label ('top'), an @kc[<feature-id>/face/<label>] ref, an @kcq[face(...)] expression, or { ast }."
         },
         "ref": {
@@ -5702,6 +5743,7 @@
           "description": "relation:'mate' — mate type."
         },
         "pose": {
+          "type": "object",
           "description": "relation:'mate' — optional mate pose."
         },
         "limitsDeg": {
@@ -7700,6 +7742,13 @@
                 "description": "Matches a `facts[].id` in the ledger."
               },
               "value": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "array",
+                  "object"
+                ],
                 "description": "Overrides the fact's value; marks it `overridden`."
               },
               "confirm": {
@@ -7774,9 +7823,17 @@
           "description": "Name of the declared study to run; defaults to the last declared one."
         },
         "material": {
+          "type": [
+            "string",
+            "object"
+          ],
           "description": "Inline study: material grade name (e.g. 'aluminum-6061') or { E, nu, yield } in MPa."
         },
         "fixed": {
+          "type": [
+            "string",
+            "object"
+          ],
           "description": "Inline study: faces held fixed — a FaceQuery like { atX: 0 }, a face label like 'bottom', or an @kc[...] ref."
         },
         "loads": {
