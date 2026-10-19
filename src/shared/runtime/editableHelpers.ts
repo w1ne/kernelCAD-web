@@ -130,6 +130,33 @@ function foldExpr(expr: ParamRefExpr): ParamRefExpr {
       }
       return { kind: 'binop', op: expr.op, left, right };
     }
+    case 'min': {
+      const left = foldExpr(expr.left);
+      const right = foldExpr(expr.right);
+      return left.kind === 'lit' && right.kind === 'lit'
+        ? { kind: 'lit', value: Math.min(left.value, right.value) }
+        : { kind: 'min', left, right };
+    }
+    case 'max': {
+      const left = foldExpr(expr.left);
+      const right = foldExpr(expr.right);
+      return left.kind === 'lit' && right.kind === 'lit'
+        ? { kind: 'lit', value: Math.max(left.value, right.value) }
+        : { kind: 'max', left, right };
+    }
+    case 'abs': {
+      const inner = foldExpr(expr.expr);
+      return inner.kind === 'lit' ? { kind: 'lit', value: Math.abs(inner.value) } : { kind: 'abs', expr: inner };
+    }
+    case 'clamp': {
+      const value = foldExpr(expr.value);
+      const min = foldExpr(expr.min);
+      const max = foldExpr(expr.max);
+      if (value.kind === 'lit' && min.kind === 'lit' && max.kind === 'lit') {
+        return { kind: 'lit', value: Math.min(max.value, Math.max(min.value, value.value)) };
+      }
+      return { kind: 'clamp', value, min, max };
+    }
   }
 }
 

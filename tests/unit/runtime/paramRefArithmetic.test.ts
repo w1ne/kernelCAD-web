@@ -202,6 +202,117 @@ describe('ParamRef arithmetic methods', () => {
   });
 });
 
+describe('ParamRef min / max / abs / clamp helpers', () => {
+  it('.min(number) and .max(number) resolve correctly', () => {
+    const t = new ParamTable();
+    declared(t, 'x', 10);
+    const x = makeParamRef<number>('x', 'number');
+    expect(resolveExpr(x.min(4)._expr, t)).toBe(4);
+    expect(resolveExpr(x.min(40)._expr, t)).toBe(10);
+    expect(resolveExpr(x.max(40)._expr, t)).toBe(40);
+    expect(resolveExpr(x.max(4)._expr, t)).toBe(10);
+  });
+
+  it('.min / .max accept numeric ParamRef operands', () => {
+    const t = new ParamTable();
+    declared(t, 'a', 4);
+    declared(t, 'b', 9);
+    const a = makeParamRef<number>('a', 'number');
+    const b = makeParamRef<number>('b', 'number');
+    expect(resolveExpr(a.min(b)._expr, t)).toBe(4);
+    expect(resolveExpr(a.max(b)._expr, t)).toBe(9);
+  });
+
+  it('.abs() resolves negative and positive values', () => {
+    const t = new ParamTable();
+    declared(t, 'x', -7);
+    const x = makeParamRef<number>('x', 'number');
+    expect(resolveExpr(x.abs()._expr, t)).toBe(7);
+    t.set('x', 7);
+    expect(resolveExpr(x.abs()._expr, t)).toBe(7);
+  });
+
+  it('.clamp(lo, hi) resolves to the nearest bound', () => {
+    const t = new ParamTable();
+    declared(t, 'x', 12);
+    const x = makeParamRef<number>('x', 'number');
+    const clamped = x.clamp(0, 10);
+    expect(resolveExpr(clamped._expr, t)).toBe(10);
+    t.set('x', -2);
+    expect(resolveExpr(clamped._expr, t)).toBe(0);
+    t.set('x', 5);
+    expect(resolveExpr(clamped._expr, t)).toBe(5);
+  });
+
+  it('.clamp accepts ParamRef bounds and reflows when they change', () => {
+    const t = new ParamTable();
+    declared(t, 'x', 12);
+    declared(t, 'lo', 0);
+    declared(t, 'hi', 10);
+    const x = makeParamRef<number>('x', 'number');
+    const lo = makeParamRef<number>('lo', 'number');
+    const hi = makeParamRef<number>('hi', 'number');
+    const clamped = x.clamp(lo, hi);
+    expect(resolveExpr(clamped._expr, t)).toBe(10);
+    t.set('hi', 15);
+    expect(resolveExpr(clamped._expr, t)).toBe(12);
+  });
+
+  it('literal clamp with min > max throws at construction', () => {
+    const x = makeParamRef<number>('x', 'number');
+    expect(() => x.clamp(10, 0)).toThrow(/min <= max/);
+  });
+
+  it('symbolic clamp that resolves to an inverted range throws at evaluation', () => {
+    const t = new ParamTable();
+    declared(t, 'x', 5);
+    declared(t, 'lo', 10);
+    declared(t, 'hi', 0);
+    const x = makeParamRef<number>('x', 'number');
+    const lo = makeParamRef<number>('lo', 'number');
+    const hi = makeParamRef<number>('hi', 'number');
+    const clamped = x.clamp(lo, hi);
+    expect(() => resolveExpr(clamped._expr, t)).toThrow(/inverted range/);
+  });
+
+  it('debug strings name the helpers and composed expressions', () => {
+    const x = makeParamRef<number>('x', 'number');
+    expect(x.min(4).$param).toBe('min(x, 4)');
+    expect(x.max(4).$param).toBe('max(x, 4)');
+    expect(x.abs().$param).toBe('abs(x)');
+    expect(x.clamp(0, 10).$param).toBe('clamp(x, 0, 10)');
+    expect(x.add(2).clamp(0, x.multiply(3)).$param).toBe('clamp((x + 2), 0, (x * 3))');
+  });
+
+  it('collectParamRefs walks helper nodes', () => {
+    const a = makeParamRef<number>('a', 'number');
+    const b = makeParamRef<number>('b', 'number');
+    const c = makeParamRef<number>('c', 'number');
+    const expr = a.add(1).clamp(b, c.abs());
+    const refs = collectParamRefs({ x: toParam(expr, 'mm') });
+    expect([...refs].sort()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('helpers reject boolean ParamRefs', () => {
+    const flag = makeParamRef<boolean>('flag', 'boolean');
+    const bogus = flag as unknown as ReturnType<typeof makeParamRef<number>>;
+    expect(() => bogus.min(0)).toThrow(/numeric ParamRef/);
+    expect(() => bogus.max(0)).toThrow(/numeric ParamRef/);
+    expect(() => bogus.abs()).toThrow(/numeric ParamRef/);
+    expect(() => bogus.clamp(0, 1)).toThrow(/numeric ParamRef/);
+  });
+
+  it('literal-only helper trees fold to a plain number in toParam', () => {
+    const t = new ParamTable();
+    declared(t, 'x', 12);
+    const x = makeParamRef<number>('x', 'number');
+    const param = toParam(x.clamp(0, 10), 'mm');
+    expect(typeof param.paramRef).toBe('object');
+    const resolved = resolveParams({ p: param }, t) as { p: { evaluated: number } };
+    expect(resolved.p.evaluated).toBe(10);
+  });
+});
+
 describe('ParamRef JS-coercion guard (Symbol.toPrimitive)', () => {
   it('JS + on a ParamRef throws loudly with the .add hint (no [object Object] concat)', () => {
     const w = makeParamRef<number>('fingerWidth', 'number');

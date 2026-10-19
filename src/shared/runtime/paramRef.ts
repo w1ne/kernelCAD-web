@@ -20,15 +20,19 @@ import { KernelError } from '../intent/kernelError';
 
 const PARAM_REF_BRAND = 'ParamRef' as const;
 
-/** Structured expression AST for a ParamRef<number>. Four node kinds:
- *  param leaf, numeric literal, binary op, and negation. Walk via the resolver
- *  in `src/runtime/resolveParams.ts` to get a concrete number against a
- *  ParamTable. Boolean ParamRefs always have `kind: 'param'`. */
+/** Structured expression AST for a ParamRef<number>. Node kinds: param leaf,
+ *  numeric literal, binary op, negation, and the min/max/abs/clamp helpers.
+ *  Walk via the resolver in `src/runtime/resolveParams.ts` to get a concrete
+ *  number against a ParamTable. Boolean ParamRefs always have `kind: 'param'`. */
 export type ParamRefExpr =
   | { kind: 'param'; name: string }
   | { kind: 'lit'; value: number }
   | { kind: 'binop'; op: '+' | '-' | '*' | '/'; left: ParamRefExpr; right: ParamRefExpr }
-  | { kind: 'neg'; expr: ParamRefExpr };
+  | { kind: 'neg'; expr: ParamRefExpr }
+  | { kind: 'min'; left: ParamRefExpr; right: ParamRefExpr }
+  | { kind: 'max'; left: ParamRefExpr; right: ParamRefExpr }
+  | { kind: 'abs'; expr: ParamRefExpr }
+  | { kind: 'clamp'; value: ParamRefExpr; min: ParamRefExpr; max: ParamRefExpr };
 
 /** Build a debug-friendly string for an expression — used to populate
  *  `ParamRef.$param` so that diagnostic messages and serialized blobs that
@@ -44,6 +48,14 @@ export function paramExprToDebugString(expr: ParamRefExpr): string {
       return `(${paramExprToDebugString(expr.left)} ${expr.op} ${paramExprToDebugString(expr.right)})`;
     case 'neg':
       return `(-${paramExprToDebugString(expr.expr)})`;
+    case 'min':
+      return `min(${paramExprToDebugString(expr.left)}, ${paramExprToDebugString(expr.right)})`;
+    case 'max':
+      return `max(${paramExprToDebugString(expr.left)}, ${paramExprToDebugString(expr.right)})`;
+    case 'abs':
+      return `abs(${paramExprToDebugString(expr.expr)})`;
+    case 'clamp':
+      return `clamp(${paramExprToDebugString(expr.value)}, ${paramExprToDebugString(expr.min)}, ${paramExprToDebugString(expr.max)})`;
   }
 }
 
@@ -110,6 +122,54 @@ export class ParamRef<T extends number | boolean = number | boolean> {
     return new ParamRef<number>({ kind: 'neg', expr: this._expr }, 'number');
   }
 
+  /** Smaller of this ref and `other`; symbolic, so it re-evaluates on param
+   *  changes. `min(4)` is equivalent to `clamp(-∞, 4)` without constructing
+   *  infinities. */
+  min(this: ParamRef<number>, other: number | ParamRef<number>): ParamRef<number> {
+    assertNumericReceiver(this, 'min');
+    return new ParamRef<number>(
+      { kind: 'min', left: this._expr, right: operandExpr(other, 'min') },
+      'number',
+    );
+  }
+
+  /** Larger of this ref and `other`; symbolic. */
+  max(this: ParamRef<number>, other: number | ParamRef<number>): ParamRef<number> {
+    assertNumericReceiver(this, 'max');
+    return new ParamRef<number>(
+      { kind: 'max', left: this._expr, right: operandExpr(other, 'max') },
+      'number',
+    );
+  }
+
+  /** Absolute value of this ref; symbolic. */
+  abs(this: ParamRef<number>): ParamRef<number> {
+    assertNumericReceiver(this, 'abs');
+    return new ParamRef<number>({ kind: 'abs', expr: this._expr }, 'number');
+  }
+
+  /** Clamp this ref into `[min, max]`; symbolic. Both bounds accept numbers or
+   *  numeric ParamRefs. Literal bounds are checked at construction so an
+   *  obviously inverted range fails at the call site, not at lower time. */
+  clamp(
+    this: ParamRef<number>,
+    min: number | ParamRef<number>,
+    max: number | ParamRef<number>,
+  ): ParamRef<number> {
+    assertNumericReceiver(this, 'clamp');
+    const minExpr = operandExpr(min, 'clamp');
+    const maxExpr = operandExpr(max, 'clamp');
+    if (minExpr.kind === 'lit' && maxExpr.kind === 'lit' && minExpr.value > maxExpr.value) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `ParamRef.clamp() requires min <= max; got min=${minExpr.value}, max=${maxExpr.value}.`,
+        undefined,
+        `invalid-args.param.invalid-args — ParamRef.clamp() requires min <= max; got min=${minExpr.value}, max=${maxExpr.value}.`,
+      );
+    }
+    return new ParamRef<number>({ kind: 'clamp', value: this._expr, min: minExpr, max: maxExpr }, 'number');
+  }
+
   /** String contexts (template literals, String(ref)) render the symbolic
    *  expression instead of `[object Object]`, so a ref that leaks into a
    *  message or a concatenated string stays identifiable. */
@@ -133,7 +193,7 @@ export class ParamRef<T extends number | boolean = number | boolean> {
       'feature.invalid-args',
       `JS arithmetic on a ParamRef is not supported: tried to coerce ParamRef '${this.$param}' to a primitive (hint: '${hint}'). The result would be a frozen number that no longer re-evaluates when the param changes.`,
       undefined,
-      `invalid-args.param.js-arithmetic — use the ParamRef arithmetic methods instead of JS operators: .add(n), .subtract(n), .multiply(n), .divide(n), .negate(). Example: param('w', 18).add(4) instead of param('w', 18) + 4. These return derived ParamRefs that re-evaluate whenever the underlying param changes.`,
+      `invalid-args.param.js-arithmetic — use the ParamRef arithmetic methods instead of JS operators: .add(n), .subtract(n), .multiply(n), .divide(n), .negate(), .min(n), .max(n), .abs(), .clamp(lo, hi). Example: param('w', 18).add(4) instead of param('w', 18) + 4. These return derived ParamRefs that re-evaluate whenever the underlying param changes.`,
     );
   }
 }

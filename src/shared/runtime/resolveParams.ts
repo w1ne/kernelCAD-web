@@ -76,6 +76,26 @@ export function resolveExpr(expr: ParamRefExpr, table: ParamTable): number {
     }
     case 'neg':
       return -resolveExpr(expr.expr, table);
+    case 'min':
+      return Math.min(resolveExpr(expr.left, table), resolveExpr(expr.right, table));
+    case 'max':
+      return Math.max(resolveExpr(expr.left, table), resolveExpr(expr.right, table));
+    case 'abs':
+      return Math.abs(resolveExpr(expr.expr, table));
+    case 'clamp': {
+      const value = resolveExpr(expr.value, table);
+      const lo = resolveExpr(expr.min, table);
+      const hi = resolveExpr(expr.max, table);
+      if (lo > hi) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `ParamRef.clamp() resolved to an inverted range: min=${lo} > max=${hi}.`,
+          undefined,
+          `invalid-args.param.invalid-args — ParamRef.clamp() resolved to min=${lo} > max=${hi}; make the upper bound >= the lower bound.`,
+        );
+      }
+      return Math.min(hi, Math.max(lo, value));
+    }
   }
 }
 
@@ -92,6 +112,19 @@ function collectExprNames(expr: ParamRefExpr, refs: Set<string>): void {
       return;
     case 'neg':
       collectExprNames(expr.expr, refs);
+      return;
+    case 'min':
+    case 'max':
+      collectExprNames(expr.left, refs);
+      collectExprNames(expr.right, refs);
+      return;
+    case 'abs':
+      collectExprNames(expr.expr, refs);
+      return;
+    case 'clamp':
+      collectExprNames(expr.value, refs);
+      collectExprNames(expr.min, refs);
+      collectExprNames(expr.max, refs);
       return;
   }
 }
