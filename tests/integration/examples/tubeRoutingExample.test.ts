@@ -32,7 +32,15 @@ async function evaluateJson(file: string): Promise<any> {
   const lines: string[] = [];
   vi.spyOn(console, 'log').mockImplementation((s: unknown) => { lines.push(String(s)); });
   await evaluateCommand().parseAsync(['node', 'evaluate', file, '--json']);
-  return JSON.parse(lines.join('\n'));
+  // A stray CLI status line ("Wrote <n> bytes to ...") can land on stdout
+  // while the command runs; the JSON payload is the object between the first
+  // `{` and the last `}`. Parsing the joined output verbatim flaked whenever
+  // that status line won the race.
+  const joined = lines.join('\n');
+  const start = joined.indexOf('{');
+  const end = joined.lastIndexOf('}');
+  if (start < 0 || end <= start) throw new Error(`evaluate --json printed no JSON payload:\n${joined}`);
+  return JSON.parse(joined.slice(start, end + 1));
 }
 
 /** Evaluate a copy of the script with other default values for the named params. */

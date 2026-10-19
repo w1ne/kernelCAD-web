@@ -29,3 +29,23 @@ The plugin bundle (`plugins/kernelcad`) is a separate submission. Submit the rem
 - "Check this part for 3D printing and for CNC with a 6 mm end mill."
 - "Export a STEP and a PDF drawing with dimensions."
 - "Here's a link to my STEP file. Cut a 20 × 10 mm slot in the top face."
+
+## Submission progress (2026-10-19)
+
+The MCP connector draft is filled through step 8 of 10 in `claude.ai/directory/manage`:
+
+- **Connection:** `https://mcp.kernelcad.com/mcp` as a custom connector. The live read reported 76 tools and 2 resources, OAuth detected, connector added with "sign in when needed".
+- **Tools:** the linter flagged 5 tools for missing parameter `type`s — `inspect` (edges, faces), `query` (query), `verify` (edges, faces, pose), `add_mate` (pose), `run_fea` (material, fixed). Fixed in kernelCAD #1068; the hosted server gets the fix after the next `vendor/kernelcad` bump + deploy, then reconnect/rescan. 3 suggestions also shown.
+- **Listing:** name, slug `kernelcad`, tagline, description, categories (Productivity, Development tools, Creative), author, docs, support (GitHub issues), privacy.
+- **Use cases:** design a part, check manufacturing, export STEP/PDF, with the example prompts above.
+- **Company:** kernelCAD, https://kernelcad.com, contact prefilled from the Claude account, role Maintainer.
+- **Authentication:** Required when the server asks + Dynamic Client Registration (matches the mixed anonymous/OAuth server).
+- **Data handling:** we own the API; no personal health data; no sponsored content.
+- **Test setup instructions:** anonymous access documented, OAuth endpoints listed, reviewer credentials to come through the secure channel.
+
+Still open before submitting:
+
+- **Tool schema types** (the 5 tools above) and the **self-tested** attestation, which requires running every tool via MCP Inspector/Claude.
+- **Reviewer test credentials** (see [reviewer-test-account.md](reviewer-test-account.md)).
+- **Compliance attestation review.** One required statement says tool descriptions must contain no instructions about model behavior, other tools, or external instruction sources. Many kernelCAD descriptions carry usage guidance ("prefer `open_in_studio`", "do not fan out parallel lookups", "never ask the user to rotate"). Decide whether to soften the descriptions or explain them as tool-usage guidance; do not tick the box without that review.
+- **Step 10 submit** requires the owner's attestations.

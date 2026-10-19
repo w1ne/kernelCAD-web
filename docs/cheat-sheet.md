@@ -252,6 +252,10 @@ Declare editable dimensions and do arithmetic on them (JS operators throw on a P
 | `ParamRef.multiply(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef times `other`. |
 | `ParamRef.divide(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef divided by `other`. |
 | `ParamRef.negate() => ParamRef<number>` | Build a ParamRef whose value equals the unary negation of this ParamRef. |
+| `ParamRef.min(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value is the smaller of this ParamRef and `other`. |
+| `ParamRef.max(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value is the larger of this ParamRef and `other`. |
+| `ParamRef.abs() => ParamRef<number>` | Build a ParamRef whose value is the absolute value of this ParamRef. |
+| `ParamRef.clamp(min: number \| ParamRef<number>, max: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef clamped into `[min, max]`. |
 
 ## Import & export
 

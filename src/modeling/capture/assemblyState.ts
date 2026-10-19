@@ -51,6 +51,10 @@ export interface AssemblyState {
   readonly groupStates: GroupStateRecord[];
   readonly disabledCollisions: DisabledCollisionRecord[];
   ignoreInterferenceList: ReadonlyArray<readonly [string, string]>;
+  /** Per-pair intended-contact budgets declared on the last `solvedModel`. */
+  contactTolerances: ReadonlyArray<import('../runtime/pairTolerances').PairContactTolerance>;
+  /** Per-pair minimum clearances declared on the last `solvedModel`. */
+  clearanceTolerances: ReadonlyArray<import('../runtime/pairTolerances').PairClearanceTolerance>;
   /**
    * True once the SCRIPT called `solvedModel(...)` (a validating call). The
    * mechanism-truth gate reads it as "the author declared this a mechanism":
@@ -82,6 +86,8 @@ export function createAssemblyState(name: string, session: CaptureSession): Asse
     groupStates: [],
     disabledCollisions: [],
     ignoreInterferenceList: [],
+    contactTolerances: [],
+    clearanceTolerances: [],
     solvedModelRequested: false,
   };
 }

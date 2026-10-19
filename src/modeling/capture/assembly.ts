@@ -337,6 +337,18 @@ export class Assembly {
     return this.state.ignoreInterferenceList;
   }
 
+  /** Last per-pair contact / clearance declarations passed to `solvedModel`.
+   *  External review surfaces re-run the validator with the same budgets. */
+  __pairTolerances(): {
+    contacts: ReadonlyArray<import('../runtime/pairTolerances').PairContactTolerance>;
+    clearances: ReadonlyArray<import('../runtime/pairTolerances').PairClearanceTolerance>;
+  } {
+    return {
+      contacts: this.state.contactTolerances,
+      clearances: this.state.clearanceTolerances,
+    };
+  }
+
   /** True once the script called a validating `solvedModel(...)`. */
   __solvedModelRequested(): boolean {
     return this.state.solvedModelRequested;

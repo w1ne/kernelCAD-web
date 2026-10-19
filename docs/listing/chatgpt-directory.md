@@ -11,8 +11,20 @@ ChatGPT apps are now submitted as **plugins**: you upload a plugin ZIP, the port
 
 After the plugin is published, MCP tool changes are picked up by the daily scan (or a manual **Rescan**). Changes to metadata or skills need a new ZIP.
 
+## Portal re-import requirements (checked 2026-10-19)
+
+The dashboard pins the existing kernelCAD app. The ZIP builder applies all of these from `agent-plugin.config.json`; the repo package keeps its portable form.
+
+- **Package name:** must equal the app's package name (`chatgpt.dashboardPackageName`, currently `app-6a2fcd20e8008191b0c688ca1bc7abb5`), not `kernelcad`.
+- **MCP URL:** must equal the app's configured URL (`chatgpt.dashboardMcpUrl`, `https://mcp.kernelcad.com/chatgpt/mcp`, the ChatGPT mount on the hosted server), not the general `/mcp`.
+- **Icons:** `logo` and `composerIcon` need `./`-prefixed paths, and the files must ship in the ZIP (this clears "App icon required").
+- **Review cases:** `review.test_cases` must be a `{ positive, negative }` object, and `tools_triggered` a comma-separated string. A flat array or array-valued `tools_triggered` is rejected during import.
+- **Commerce:** `review.commerce` + `review.commerce_description`, not under `publication`.
+
+With all of these, the 0.17.0 draft imports with **No findings** (2026-10-19).
+
 ## What `plugins/kernelcad/plugin.json` needs before upload
-These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` and `composerIcon` (`assets/logo.svg`), `review.test_cases` (5 positive, 3 negative), `review.commerce` (declared true on 2026-10-19 with the external-checkout description), and `publication.release_notes`. Still missing:
+These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` (`./assets/logo.png`, square 512×512) and `composerIcon` (`./assets/logo.svg`, square viewBox 84), `review.test_cases` (5 positive, 3 negative), `review.commerce` (declared true on 2026-10-19 with the external-checkout description), and `publication.release_notes`. Both icon paths use the required `./` prefix and the referenced files ship in the ZIP, which is what clears the portal's "App icon required" finding. Still missing:
 - `interface.screenshots`: optional; see the list below.
 - `review.demo_recording_url`: a video walkthrough the reviewers can open.
 
@@ -86,3 +98,9 @@ Negative (three required):
 
 ## Positioning notes
 Lead with **"no install"** and **"try without an account"**. Keep the public copy about what kernelCAD itself does. Dated, sourced comparisons with other tools belong in kernelCAD-private, not here.
+
+## Current draft state (2026-10-19)
+
+- Metadata & skills: **0.17.0 · Draft, No findings**; all four skills pass checks. The About copy, category, capabilities, URLs and icons imported from the rebuilt ZIP. The earlier "App icon required" and "skills-only" findings are gone.
+- MCP: configured at `https://mcp.kernelcad.com/chatgpt/mcp`, domain verified, authorized. The daily scan had **5 unpublished tool updates pending further review** (`evaluate_script`, `review_cad`, `send_to_printer`, `inspect_nurbs`, `write_bom`); their previous published versions stay live. kernelCAD #1068 adds the missing parameter types those tools carried; after the next `vendor/kernelcad` bump + deploy, use **Rescan** (or **Request manual review** if the definitions are intentional).
+- Review status: **Not submitted**. Before submitting: capture the four screenshots and the demo recording in ChatGPT, enter the demo URL where the review form asks, and add the reviewer test account through the secure form (never the ZIP).
