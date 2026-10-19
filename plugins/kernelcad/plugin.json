@@ -41,8 +41,8 @@
         "brandColor": "#2563EB",
         "privacyPolicyURL": "https://kernelcad.com/privacy",
         "termsOfServiceURL": "https://kernelcad.com/terms",
-        "logo": "assets/logo.svg",
-        "composerIcon": "assets/logo.svg"
+        "logo": "./assets/logo.png",
+        "composerIcon": "./assets/logo.svg"
       },
       "review": {
         "test_cases": [

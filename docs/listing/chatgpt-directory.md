@@ -12,7 +12,7 @@ ChatGPT apps are now submitted as **plugins**: you upload a plugin ZIP, the port
 After the plugin is published, MCP tool changes are picked up by the daily scan (or a manual **Rescan**). Changes to metadata or skills need a new ZIP.
 
 ## What `plugins/kernelcad/plugin.json` needs before upload
-These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` and `composerIcon` (`assets/logo.svg`), `review.test_cases` (5 positive, 3 negative), `review.commerce` (declared true on 2026-10-19 with the external-checkout description), and `publication.release_notes`. Still missing:
+These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` (`./assets/logo.png`, square 512×512) and `composerIcon` (`./assets/logo.svg`, square viewBox 84), `review.test_cases` (5 positive, 3 negative), `review.commerce` (declared true on 2026-10-19 with the external-checkout description), and `publication.release_notes`. Both icon paths use the required `./` prefix and the referenced files ship in the ZIP, which is what clears the portal's "App icon required" finding. Still missing:
 - `interface.screenshots`: optional; see the list below.
 - `review.demo_recording_url`: a video walkthrough the reviewers can open.
 

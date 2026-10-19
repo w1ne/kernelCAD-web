@@ -21,8 +21,11 @@ describe('agent plugin manifests', () => {
     const ext = JSON.parse(read('plugins/kernelcad/plugin.json')).extensions['com.openai'];
     expect(ext.interface.privacyPolicyURL).toBe('https://kernelcad.com/privacy');
     expect(ext.interface.termsOfServiceURL).toBe('https://kernelcad.com/terms');
-    expect(ext.interface.logo).toBe('assets/logo.svg');
-    expect(existsSync(`${ROOT}plugins/kernelcad/${ext.interface.logo}`)).toBe(true);
+    expect(ext.interface.logo).toBe('./assets/logo.png');
+    expect(ext.interface.composerIcon).toBe('./assets/logo.svg');
+    // The submission importer only resolves ./-prefixed paths, and the file must ship.
+    expect(existsSync(`${ROOT}plugins/kernelcad/${ext.interface.logo.replace(/^\.\//, '')}`)).toBe(true);
+    expect(existsSync(`${ROOT}plugins/kernelcad/${ext.interface.composerIcon.replace(/^\.\//, '')}`)).toBe(true);
     expect(ext.review.test_cases).toHaveLength(8);
     // The commerce declaration is decided (chatgpt.commerceDecision): external checkout.
     expect(ext.review.commerce).toBe(true);
