@@ -30,6 +30,7 @@ import type { RailPoint } from './helix';
 import type { HermiteEndpoint } from '../kernel/geometry/hermiteG2';
 import type { SketchModule } from './sketch/index';
 import type { FontPath } from '../shared/fonts/fontPath';
+import type { FromStepOptions } from './parts/fromSTEP';
 import type { FromSTLOptions } from './parts/fromMeshFormats';
 import type { FetchPartOpts } from './parts/fetchPart';
 import type { FindPartOpts, FindPartResult } from './parts/findPart';
@@ -81,7 +82,13 @@ export interface ApiContext {
 }
 
 export interface PartsLib {
-  fromSTEP(path: string): Promise<Shape>;
+  /**
+   * Import a STEP file. Length units are normalized to millimetres.
+   * Native SolidWorks `.sldprt`/`.sldasm` files are refused — export to
+   * STEP AP214/AP242 first. Pass `opts.solid` to pick one body from a
+   * multi-body file.
+   */
+  fromSTEP(path: string, opts?: FromStepOptions): Promise<Shape>;
   /**
    * Import an OCCT native BREP file. Exact analytic surfaces + full topology
    * (no schema translation, no tessellation) — the result is a true B-rep

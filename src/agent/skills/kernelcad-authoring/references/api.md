@@ -95,7 +95,10 @@ select<T>(items: Iterable<T>): ShapeList<T>;
 // arm.part(...) like any primitive.
 
 // STEP — the default for vendor catalog components.
-lib.fromSTEP(path: string): Promise<Shape>;
+// Length units (mm, inch, metre) come back in millimetres.
+// SolidWorks .sldprt/.sldasm are refused. Save as STEP AP214 or AP242 with
+// solid bodies. opts.solid picks one body (zero-based) from a multi-body file.
+lib.fromSTEP(path: string, opts?: { solid?: number }): Promise<Shape>;
 
 // Native BREP — lossless (exact analytic surfaces and full topology, no
 // schema translation, no tessellation). Every downstream op is valid on the

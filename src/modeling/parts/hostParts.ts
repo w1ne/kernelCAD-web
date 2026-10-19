@@ -25,6 +25,7 @@ import { requireHostFs } from '../../shared/runtime/hostFs';
 import type { Shape } from '../capture/proxy';
 import type { Sketch } from '../capture/sketch';
 import type { CaptureSession } from '../capture/captureSession';
+import type { FromStepOptions } from './fromSTEP';
 import type { FromSTLOptions } from './fromMeshFormats';
 import type { FromDXFOptions, FromSVGOptions } from './fromVectorFormats';
 import type { FetchPartOpts } from './fetchPart';
@@ -38,10 +39,14 @@ export interface HostPartsCtx {
   scriptDir?: string;
 }
 
-export async function fromSTEPViaHost(ctx: HostPartsCtx, path: string): Promise<Shape> {
+export async function fromSTEPViaHost(
+  ctx: HostPartsCtx,
+  path: string,
+  opts?: FromStepOptions,
+): Promise<Shape> {
   requireHostFs('lib.fromSTEP()');
   const { fromSTEP } = await import('./fromSTEP');
-  return fromSTEP(ctx, path);
+  return fromSTEP(ctx, path, opts);
 }
 
 export async function fromBREPViaHost(ctx: HostPartsCtx, path: string): Promise<Shape> {
