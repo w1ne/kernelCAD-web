@@ -3,7 +3,8 @@
 import { Line } from "@react-three/drei/core/Line";
 import { Html } from "@react-three/drei/web/Html";
 import * as THREE from "three";
-import { useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
+import { clampLabelCentre, compactDimensionLabel, compactLabels } from "../dimensions/labelFit";
 import { ScreenScaled } from "./ScreenScaled";
 import { readThemeColor } from "./themeColor";
 
@@ -25,6 +26,7 @@ export interface DimensionGraphicProps {
 const AMBER_FALLBACK = 0xffb703;
 const ORDER = 3000;
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
+const anchor = new THREE.Vector3();
 
 /** Arrowhead with its tip at the parent's origin, pointing along `outward`. */
 function Arrow({ outward, color }: { outward: THREE.Vector3; color: THREE.ColorRepresentation }) {
@@ -55,6 +57,19 @@ export function DimensionGraphic({ a, b, label, sublabel, kind, color, labelAt }
     const outwardB = useMemo(() => outwardA.clone().negate(), [outwardA]);
     const mid = useMemo(() => pa.clone().add(pb).multiplyScalar(0.5).toArray(), [pa, pb]);
     const labelPos = (labelAt ?? mid) as [number, number, number];
+    const compact = compactLabels();
+    const shown = compact ? compactDimensionLabel(label) : label;
+    // The pill keeps inside the canvas: a label whose anchor is near an
+    // edge slides in rather than run off the screen.
+    const pill = useRef<HTMLDivElement>(null);
+    const placeLabel = useCallback((el: THREE.Object3D, camera: THREE.Camera, size: { width: number; height: number }) => {
+        anchor.setFromMatrixPosition(el.matrixWorld).project(camera);
+        const x = (anchor.x + 1) * size.width / 2;
+        const y = (1 - anchor.y) * size.height / 2;
+        const box = pill.current;
+        if (!box) return [x, y];
+        return clampLabelCentre(x, y, box.offsetWidth, box.offsetHeight, size.width, size.height);
+    }, []);
     if (pa.distanceTo(pb) < 1e-9) return null;
     return (
         <group data-testid="dimension-graphic" userData={{ dimensionKind: kind }}>
@@ -62,13 +77,19 @@ export function DimensionGraphic({ a, b, label, sublabel, kind, color, labelAt }
             {labelAt && <Line points={[mid as [number, number, number], labelPos]} color={stroke} lineWidth={1} depthTest={false} transparent opacity={0.8} renderOrder={ORDER} />}
             {kind !== 'radius' && <ScreenScaled position={a}><Arrow outward={outwardA} color={stroke} /></ScreenScaled>}
             <ScreenScaled position={b}><Arrow outward={outwardB} color={stroke} /></ScreenScaled>
-            <Html position={labelPos} center style={{ pointerEvents: 'none' }} zIndexRange={[30, 20]}>
+            <Html position={labelPos} center calculatePosition={placeLabel} style={{ pointerEvents: 'none' }} zIndexRange={[30, 20]}>
                 <div
+                    ref={pill}
                     data-testid="dimension-label"
-                    className="select-none whitespace-nowrap rounded-md border border-border-strong bg-surface-1 px-2 py-1 text-center text-fg shadow-lg"
+                    data-compact={compact ? 'true' : undefined}
+                    title={shown === label ? undefined : label}
+                    aria-label={shown === label ? undefined : label}
+                    className={compact
+                        ? "select-none whitespace-nowrap rounded border border-border-strong bg-surface-1/90 px-1.5 py-0.5 text-center text-fg shadow"
+                        : "select-none whitespace-nowrap rounded-md border border-border-strong bg-surface-1 px-2 py-1 text-center text-fg shadow-lg"}
                     style={color === undefined ? undefined : { borderColor: color }}
                 >
-                    <div className="text-sm font-semibold leading-tight">{label}</div>
+                    <div className={compact ? "text-2xs font-semibold leading-tight" : "text-sm font-semibold leading-tight"}>{shown}</div>
                     {sublabel && <div className="text-2xs leading-tight text-fg-2">{sublabel}</div>}
                 </div>
             </Html>

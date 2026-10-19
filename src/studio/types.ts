@@ -12,6 +12,7 @@ import type { ValidatorResult, ValidatorStatus } from '../modeling/mates/validat
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import type { ParamTable } from '../shared/runtime/paramTable';
 import type { JointPoseSnapshot } from './adapters/featureRecordsToMates';
+import type { MechanismLoadsLine } from '../modeling/runtime/mechanismVerdict';
 
 /**
  * A `ValidatorResult` plus the shell-only provenance flag the panel needs to
@@ -51,6 +52,7 @@ export type TabId =
     | 'params'
     | 'validity'
     | 'joints'
+    | 'parts'
     | 'export'
     | 'sections'
     | 'cut'
@@ -116,6 +118,8 @@ export interface StudioRecomputeResult {
             readonly hint: string;
         }>;
     } | null;
+    /** Motion-load table from the review, when a joint declares a torque rating. */
+    readonly mechanismLoads?: MechanismLoadsLine | null;
     /**
      * Slice 2E.bridge — POST `edits` to the server's `/__kernelcad/params`
      * endpoint via the pooled `CaptureSession`. Returns once the server has

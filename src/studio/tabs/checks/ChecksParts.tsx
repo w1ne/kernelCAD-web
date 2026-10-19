@@ -96,6 +96,7 @@ export function ChecksSummary(p: ChecksSummaryProps): JSX.Element {
                         onClick={p.onRun}
                         leadingIcon={<RefreshCw className="size-3.5" aria-hidden="true" />}
                         data-testid="checks-run"
+                        className="pointer-coarse:h-touch"
                     >
                         {p.validated ? 'Run checks again' : 'Run checks'}
                     </Button>

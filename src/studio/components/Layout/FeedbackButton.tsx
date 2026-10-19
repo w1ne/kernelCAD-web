@@ -26,7 +26,7 @@ export function FeedbackButton() {
             size="sm"
             tooltipSide="bottom"
             onClick={openFeedback}
-            className="max-md:size-touch"
+            className="phone:size-touch"
             data-testid="feedback-button"
         />
     );

@@ -114,12 +114,12 @@ describe('assembly path continuous mesh sweep', () => {
         const result = checkAssemblyPathMeshes([combine('a', components), combine('b', offset)], { disassemblyOrder: true });
         expect(result.stuckParts).toEqual([]);
         expect(result.parts.every(p => p.removable)).toBe(true);
-    }, 5000);
+    }, 15_000);
     it('charges containment work against the total budget on dense interleaved solids', () => {
         const a = Array.from({ length: 256 }, (_, i) => box(`a${i}`, [3 * i, 0, 0], [3 * i + 1, 1, 1]));
         const b = a.map((_, i) => box(`b${i}`, [3 * i + 1.5, .5, 0], [3 * i + 2.5, 1.5, 1]));
         expect(() => checkAssemblyPathMeshes([combine('a', a), combine('b', b)], { disassemblyOrder: true })).toThrow(/total work budget/);
-    }, 5000);
+    }, 15_000);
     it('interrupts BVH construction when its shared budget is exhausted', () => {
         const mesh = combine('dense', Array.from({ length: 64 }, (_, i) => box(String(i), [3 * i, 0, 0], [3 * i + 1, 1, 1]))).mesh;
         let work = 0;

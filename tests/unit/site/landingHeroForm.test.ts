@@ -72,7 +72,7 @@ describe('landing hero agent line', () => {
   it('replaces the command rows with one connect link', () => {
     const link = [...hero.querySelectorAll<HTMLAnchorElement>('a')].find((a) => /Connect your agent/.test(a.textContent!))!;
     expect(link.getAttribute('href')).toBe(`${APP}/connect`);
-    expect(hero.textContent).toContain('Already use Claude, ChatGPT, Cursor or Codex?');
+    expect(hero.textContent).toContain('Already use ChatGPT, Claude, Claude Code, Codex, Cursor, VS Code, Gemini CLI or Grok?');
   });
 
   it('drops the modes row, install commands, copy buttons and their script', () => {

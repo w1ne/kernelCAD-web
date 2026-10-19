@@ -83,7 +83,7 @@ export function OverflowMenu({ label, children, align = 'right', testId }: Overf
                 aria-expanded={open}
                 title={label}
                 data-testid={testId}
-                className={`focus-ring flex size-control-sm shrink-0 items-center justify-center rounded-control transition-colors duration-80 max-md:size-touch ${
+                className={`focus-ring flex size-control-sm shrink-0 items-center justify-center rounded-control transition-colors duration-80 phone:size-touch ${
                     open ? 'bg-surface-3 text-fg' : 'text-fg-2 hover:bg-surface-2 hover:text-fg'
                 }`}
             >

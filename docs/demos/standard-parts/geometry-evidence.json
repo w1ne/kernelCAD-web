@@ -1,0 +1,231 @@
+{
+  "checkedAt": "2026-10-19T13:17:08.676Z",
+  "nativeKernel": "OCCT via evaluateAndBuildScript",
+  "sources": {
+    "bolt-stack.kcad.ts": "18c4ea243e69a7ae3414842e09e3a1eeec955952e402607d9ce56849c3b67ece",
+    "fastener-lineup.kcad.ts": "12de8a821a349ab7b5b2af9ce8905ca7252a21471ab667b6504eb38dc2924252"
+  },
+  "boltStack": {
+    "gripMm": 12,
+    "screwLengthMm": 18,
+    "lengthRuleMm": 17,
+    "featureCount": 15,
+    "pairsChecked": 15,
+    "positiveVolumeOverlaps": [],
+    "parts": [
+      {
+        "name": "upper-bar",
+        "min": [
+          -34,
+          -11,
+          14
+        ],
+        "max": [
+          10,
+          11,
+          20
+        ],
+        "volumeMm3": 5665.450233343363
+      },
+      {
+        "name": "lower-bar",
+        "min": [
+          -10,
+          -11,
+          8
+        ],
+        "max": [
+          34,
+          11,
+          14
+        ],
+        "volumeMm3": 5665.450233343363
+      },
+      {
+        "name": "screw",
+        "min": [
+          -4.25,
+          -4.25,
+          3
+        ],
+        "max": [
+          4.25,
+          4.25,
+          26
+        ],
+        "volumeMm3": 637.1542600561771
+      },
+      {
+        "name": "head-washer",
+        "min": [
+          -5,
+          -5,
+          20
+        ],
+        "max": [
+          5,
+          5,
+          21
+        ],
+        "volumeMm3": 56.47798192991175
+      },
+      {
+        "name": "tail-washer",
+        "min": [
+          -5,
+          -5,
+          7
+        ],
+        "max": [
+          5,
+          5,
+          7.999999999999999
+        ],
+        "volumeMm3": 56.47798192991175
+      },
+      {
+        "name": "hex-nut",
+        "min": [
+          -4.000000000000001,
+          -4.618802153518255,
+          3
+        ],
+        "max": [
+          4.000000000000002,
+          4.618802153518255,
+          7
+        ],
+        "volumeMm3": 143.16268702909764
+      }
+    ]
+  },
+  "lineup": {
+    "families": [
+      "socket-head-cap-screw (ISO 4762)",
+      "button-head-cap-screw (ISO 7380)",
+      "flat-head-countersunk (ISO 10642)",
+      "hex-nut (ISO 4032)",
+      "lock-nut (DIN 985)",
+      "flat-washer (ISO 7089)",
+      "lock-washer (DIN 127B)"
+    ],
+    "featureCount": 17,
+    "pairsChecked": 28,
+    "positiveVolumeOverlaps": [],
+    "parts": [
+      {
+        "name": "display-base",
+        "min": [
+          -52,
+          -24,
+          -4
+        ],
+        "max": [
+          52,
+          24,
+          0
+        ],
+        "volumeMm3": 19968
+      },
+      {
+        "name": "socket-head",
+        "min": [
+          -30.25,
+          9.75,
+          0
+        ],
+        "max": [
+          -21.75,
+          18.25,
+          21
+        ],
+        "volumeMm3": 597.8843518863054
+      },
+      {
+        "name": "button-head",
+        "min": [
+          -4.75,
+          9.25,
+          0
+        ],
+        "max": [
+          4.75,
+          18.75,
+          18.75
+        ],
+        "volumeMm3": 509.0852720371794
+      },
+      {
+        "name": "flat-head",
+        "min": [
+          20.4,
+          8.4,
+          0
+        ],
+        "max": [
+          31.6,
+          19.6,
+          16.00000000000139
+        ],
+        "volumeMm3": 420.83309110922727
+      },
+      {
+        "name": "hex-nut",
+        "min": [
+          -43,
+          -18.618802153518253,
+          0
+        ],
+        "max": [
+          -35,
+          -9.381197846481745,
+          4
+        ],
+        "volumeMm3": 143.1626870290976
+      },
+      {
+        "name": "lock-nut",
+        "min": [
+          -17,
+          -18.618802153518253,
+          0
+        ],
+        "max": [
+          -8.999999999999998,
+          -9.381197846481745,
+          6
+        ],
+        "volumeMm3": 214.74403054364635
+      },
+      {
+        "name": "flat-washer",
+        "min": [
+          8,
+          -19,
+          0
+        ],
+        "max": [
+          18,
+          -9,
+          1
+        ],
+        "volumeMm3": 56.47798192991174
+      },
+      {
+        "name": "lock-washer",
+        "min": [
+          34.4,
+          -18.6,
+          0
+        ],
+        "max": [
+          43.6,
+          -9.4,
+          1.2
+        ],
+        "volumeMm3": 55.257473183992104
+      }
+    ]
+  },
+  "scope": "Native static envelope geometry and placement: head + shank solids and table dims, no helical thread, no thread contact, strength, torque or preload. The committed catalog STEPs are exported from the same family table."
+}

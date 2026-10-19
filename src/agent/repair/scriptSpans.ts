@@ -9,7 +9,8 @@
 // owns that lookup, using the TypeScript compiler the script runtime already
 // depends on, so spans are real parse results rather than regex guesses.
 
-import * as ts from 'typescript';
+import type * as TS from 'typescript';
+import { lazyTs as ts } from '../../shared/runtime/lazyTypescript';
 import type { ScriptLocation } from '../../shared/intent/types';
 
 /** 1-based inclusive line range in the original file. */
@@ -40,13 +41,13 @@ export interface CallSpan {
  * argument sub-ranges a repair candidate needs to rewrite.
  */
 export class ScriptSpanIndex {
-  private readonly sourceFile: ts.SourceFile;
-  private readonly calls: readonly ts.CallExpression[];
+  private readonly sourceFile: TS.SourceFile;
+  private readonly calls: readonly TS.CallExpression[];
   readonly text: string;
 
   private constructor(
-    sourceFile: ts.SourceFile,
-    calls: readonly ts.CallExpression[],
+    sourceFile: TS.SourceFile,
+    calls: readonly TS.CallExpression[],
     text: string,
   ) {
     this.sourceFile = sourceFile;
@@ -62,8 +63,8 @@ export class ScriptSpanIndex {
       /* setParentNodes */ true,
       ts.ScriptKind.TS,
     );
-    const calls: ts.CallExpression[] = [];
-    const visit = (node: ts.Node): void => {
+    const calls: TS.CallExpression[] = [];
+    const visit = (node: TS.Node): void => {
       if (ts.isCallExpression(node)) calls.push(node);
       ts.forEachChild(node, visit);
     };
@@ -111,7 +112,7 @@ export class ScriptSpanIndex {
     const exact = this.calls.find(call => calleeNamePosition(call) === position);
     if (exact !== undefined) return this.spanOf(exact);
 
-    let innermost: ts.CallExpression | undefined;
+    let innermost: TS.CallExpression | undefined;
     for (const call of this.calls) {
       const start = call.getStart(this.sourceFile);
       if (position < start || position >= call.getEnd()) continue;
@@ -123,12 +124,12 @@ export class ScriptSpanIndex {
   }
 
   /** Raw AST node for the call authored at `location` (internal edit paths). */
-  callNodeAt(location: Pick<ScriptLocation, 'line' | 'column'>): ts.CallExpression | undefined {
+  callNodeAt(location: Pick<ScriptLocation, 'line' | 'column'>): TS.CallExpression | undefined {
     const position = this.offsetOf(location.line, location.column);
     if (position === undefined) return undefined;
     const exact = this.calls.find(call => calleeNamePosition(call) === position);
     if (exact !== undefined) return exact;
-    let innermost: ts.CallExpression | undefined;
+    let innermost: TS.CallExpression | undefined;
     for (const call of this.calls) {
       const start = call.getStart(this.sourceFile);
       if (position < start || position >= call.getEnd()) continue;
@@ -139,7 +140,7 @@ export class ScriptSpanIndex {
     return innermost;
   }
 
-  spanOf(call: ts.CallExpression): CallSpan {
+  spanOf(call: TS.CallExpression): CallSpan {
     const start = call.getStart(this.sourceFile);
     const end = call.getEnd();
     return {
@@ -151,8 +152,8 @@ export class ScriptSpanIndex {
   }
 
   /** Line range of the statement enclosing `node`. */
-  statementRangeOf(node: ts.Node): ScriptRange {
-    let current: ts.Node | undefined = node;
+  statementRangeOf(node: TS.Node): ScriptRange {
+    let current: TS.Node | undefined = node;
     while (current !== undefined && !ts.isStatement(current)) current = current.parent;
     const statement = current ?? node;
     return {
@@ -178,7 +179,7 @@ export class ScriptSpanIndex {
   }
 
   /** Character range of positional argument `index` of `call`. */
-  argumentChars(call: ts.CallExpression, index: number): CharRange | undefined {
+  argumentChars(call: TS.CallExpression, index: number): CharRange | undefined {
     const argument = call.arguments[index];
     if (argument === undefined) return undefined;
     return { start: argument.getStart(this.sourceFile), end: argument.getEnd() };
@@ -190,7 +191,7 @@ export class ScriptSpanIndex {
    * object literal or carries no such property.
    */
   optionValueChars(
-    call: ts.CallExpression,
+    call: TS.CallExpression,
     index: number,
     name: string,
   ): CharRange | undefined {
@@ -213,8 +214,8 @@ export class ScriptSpanIndex {
    * `box(2,2,2).translate(100,100,100)` captures the feature at `box`, but the
    * placement a repair must correct lives on the enclosing `translate` call.
    */
-  chainedCallAfter(call: ts.CallExpression, method: string): ts.CallExpression | undefined {
-    let current: ts.Node = call;
+  chainedCallAfter(call: TS.CallExpression, method: string): TS.CallExpression | undefined {
+    let current: TS.Node = call;
     while (
       current.parent !== undefined &&
       ts.isPropertyAccessExpression(current.parent) &&
@@ -229,8 +230,8 @@ export class ScriptSpanIndex {
   }
 
   /** Outermost call of the fluent chain `call` participates in. */
-  chainTail(call: ts.CallExpression): ts.CallExpression {
-    let current: ts.CallExpression = call;
+  chainTail(call: TS.CallExpression): TS.CallExpression {
+    let current: TS.CallExpression = call;
     while (
       current.parent !== undefined &&
       ts.isPropertyAccessExpression(current.parent) &&
@@ -243,14 +244,14 @@ export class ScriptSpanIndex {
   }
 }
 
-function calleeName(call: ts.CallExpression): string {
+function calleeName(call: TS.CallExpression): string {
   const expression = call.expression;
   if (ts.isPropertyAccessExpression(expression)) return expression.name.text;
   if (ts.isIdentifier(expression)) return expression.text;
   return expression.getText();
 }
 
-function calleeNamePosition(call: ts.CallExpression): number {
+function calleeNamePosition(call: TS.CallExpression): number {
   const expression = call.expression;
   const sourceFile = call.getSourceFile();
   if (ts.isPropertyAccessExpression(expression)) {
@@ -259,7 +260,7 @@ function calleeNamePosition(call: ts.CallExpression): number {
   return expression.getStart(sourceFile);
 }
 
-function propertyKeyName(name: ts.PropertyName): string | undefined {
+function propertyKeyName(name: TS.PropertyName): string | undefined {
   if (ts.isIdentifier(name) || ts.isStringLiteralLike(name)) return name.text;
   return undefined;
 }

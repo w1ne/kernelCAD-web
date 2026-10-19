@@ -29,6 +29,18 @@ export class Transform {
     this.m = m;
   }
 
+  /** Rebuild from 16 column-major numbers at `offset` (see {@link writeTo}). */
+  static fromColumnMajor(src: ArrayLike<number>, offset = 0): Transform {
+    const m = new Float64Array(16);
+    for (let i = 0; i < 16; i++) m[i] = src[offset + i]!;
+    return new Transform(m);
+  }
+
+  /** Write the 16 column-major numbers to `dst` at `offset`. */
+  writeTo(dst: Float64Array, offset = 0): void {
+    dst.set(this.m, offset);
+  }
+
   static identity(): Transform {
     const m = new Float64Array(16);
     m[0] = 1; m[5] = 1; m[10] = 1; m[15] = 1;

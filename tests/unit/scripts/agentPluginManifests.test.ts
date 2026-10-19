@@ -24,8 +24,10 @@ describe('agent plugin manifests', () => {
     expect(ext.interface.logo).toBe('assets/logo.svg');
     expect(existsSync(`${ROOT}plugins/kernelcad/${ext.interface.logo}`)).toBe(true);
     expect(ext.review.test_cases).toHaveLength(8);
-    // The commerce declaration is undecided (chatgpt.commerceDecision), so it is absent.
-    expect(ext.review).not.toHaveProperty('commerce');
+    // The commerce declaration is decided (chatgpt.commerceDecision): external checkout.
+    expect(ext.review.commerce).toBe(true);
+    expect(ext.review.commerce_description).toContain('external checkout');
+    expect(ext.review.commerce_description).toContain('does not charge cards');
     expect(ext.publication.release_notes).toBeTruthy();
   });
 

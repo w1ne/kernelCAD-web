@@ -4,7 +4,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   MCP_URL,
-  CLAUDE_CODE_CMD,
+  CLAUDE_PLUGIN_CMD,
+  CODEX_LOGIN_CMD,
+  CODEX_PLUGIN_INSTALL_CMD,
+  CODEX_PLUGIN_MARKETPLACE_CMD,
+  GEMINI_EXTENSION_CMD,
+  GROK_PLUGIN_INSTALL_CMD,
+  GROK_PLUGIN_MARKETPLACE_CMD,
   NPX_LOCAL_CMD,
   cursorDeeplink,
   vscodeDeeplink,
@@ -15,10 +21,19 @@ describe('connectLinks', () => {
     expect(MCP_URL).toBe('https://mcp.kernelcad.com/mcp');
   });
 
-  it('CLAUDE_CODE_CMD includes the MCP URL', () => {
-    expect(CLAUDE_CODE_CMD).toContain('https://mcp.kernelcad.com/mcp');
-    expect(CLAUDE_CODE_CMD).toContain('claude mcp add');
-    expect(CLAUDE_CODE_CMD).toContain('kernelcad');
+  it('CLAUDE_PLUGIN_CMD installs the Claude Code plugin from the kernelCAD marketplace', () => {
+    expect(CLAUDE_PLUGIN_CMD).toContain('claude plugin install');
+    expect(CLAUDE_PLUGIN_CMD).toContain('kernelcad');
+    expect(CLAUDE_PLUGIN_CMD).toContain('w1ne/kernelCAD-web');
+  });
+
+  it('points every plugin installer at the kernelCAD marketplace', () => {
+    expect(CODEX_PLUGIN_MARKETPLACE_CMD).toBe('codex plugin marketplace add w1ne/kernelCAD-web');
+    expect(CODEX_PLUGIN_INSTALL_CMD).toBe('codex plugin add kernelcad@kernelcad');
+    expect(CODEX_LOGIN_CMD).toBe('codex mcp login kernelcad');
+    expect(GEMINI_EXTENSION_CMD).toContain('gemini extensions install https://github.com/w1ne/kernelCAD-web');
+    expect(GROK_PLUGIN_MARKETPLACE_CMD).toBe('grok plugin marketplace add w1ne/kernelCAD-web');
+    expect(GROK_PLUGIN_INSTALL_CMD).toBe('grok plugin install kernelcad --trust');
   });
 
   it('NPX_LOCAL_CMD is the npx command', () => {

@@ -61,7 +61,7 @@ for (const size of SIZES) {
         await page.setViewportSize({ width: size.width, height: size.height });
         await mockBackends(page);
 
-        await page.goto(`/p/${SLUG}`);
+        await page.goto(`/p/${SLUG}?view=view`);
         const loadFailed = page.getByRole('alert').filter({ hasText: 'Could not load this project' });
         if (await loadFailed.isVisible({ timeout: 3_000 }).catch(() => false)) {
             test.skip(true, 'The dev server has no VITE_SUPABASE_URL; the project row cannot be mocked.');
@@ -99,7 +99,7 @@ for (const size of SIZES) {
         const studio = size.name === 'phone'
             ? page.getByTestId('project-action-bar').getByRole('link', { name: 'Open in Studio' })
             : page.getByTestId('open-in-studio');
-        await expect(studio).toHaveAttribute('href', `/p/${SLUG}?view=studio`);
+        await expect(studio).toHaveAttribute('href', `/p/${SLUG}`);
 
         if (size.name === 'phone') {
             await expect(page.getByTestId('project-action-bar')).toBeVisible();
@@ -118,11 +118,11 @@ test('/p/<slug>?view=studio opens the full workbench with a way back', async ({ 
     test.setTimeout(120_000);
     await page.setViewportSize({ width: 1440, height: 900 });
     await mockBackends(page);
-    await page.goto(`/p/${SLUG}?view=studio`);
+    await page.goto(`/p/${SLUG}`);
     const loadFailed = page.getByRole('alert').filter({ hasText: 'Could not load this project' });
     if (await loadFailed.isVisible({ timeout: 3_000 }).catch(() => false)) {
         test.skip(true, 'The dev server has no VITE_SUPABASE_URL; the project row cannot be mocked.');
     }
-    await expect(page.getByTestId('back-to-model-page')).toHaveAttribute('href', `/p/${SLUG}`, { timeout: 30_000 });
+    await expect(page.getByTestId('open-fast-view')).toHaveAttribute('href', `/p/${SLUG}?view=view`, { timeout: 30_000 });
     await expect(page.getByRole('button', { name: 'Run' }).first()).toBeVisible();
 });

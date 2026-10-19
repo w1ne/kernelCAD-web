@@ -456,10 +456,25 @@ async function computeInterferencesForGate(
   await initOcct();
   const engine = new RecomputeEngine(createOcctLowerer(state.session));
   const records = state.session.getRecords();
+  // Reuse an earlier clean full lower from this session (a previous build or
+  // the joint-axis binding gate) for the shared record prefix — the lower is
+  // identical work. Mirror of the seed `buildModel` applies.
+  const seedShapes = state.session.reusableLoweredPrefix(state.session.cleanScriptLower);
+  const pending = state.session.snapshotFullLower(new Map());
+  let warnings = 0;
   const r = await engine.run(records, {
+    ...(seedShapes.size > 0 ? { seedShapes } : {}),
     paramTable: state.session.paramTable,
     gatedFeatureNames: state.session.gatedFeatureNames,
+    warningSink: () => { warnings += 1; },
   });
+  // Hand the next consumer (the joint-axis binding gate, then `buildModel`)
+  // this lower when it was clean, so the assembly is lowered once per
+  // evaluation instead of three times. See CaptureSession.cleanScriptLower.
+  const clean = warnings === 0
+    && r.diagnostics.length === 0
+    && [...r.health.values()].every((h) => h === 'healthy');
+  state.session.cleanScriptLower = clean ? { ...pending, shapes: r.shapes } : undefined;
 
   // If the lower failed, defer to the validator's other diagnostics; an
   // un-lowerable assembly already has bigger problems. Return an empty

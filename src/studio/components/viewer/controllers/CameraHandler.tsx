@@ -6,9 +6,11 @@ import { useEffect, useRef } from "react";
 import { useWorkbench } from "../../../context/WorkbenchContext";
 import type { GeometryResult } from "../../../../shared/worker/geometryEngine";
 import type { ViewportFocusTarget } from "../../../store/shellStore";
-import { computeGeometryBounds } from "./cameraBounds";
+import { computeGeometryBounds, sampleGeometryPoints } from "./cameraBounds";
 import { buildCameraPose, buildFitCameraPose, fitDistanceForCamera, type ViewTarget } from "./cameraPose";
 import { filterGeometriesForFocusTarget } from "./focusTarget";
+import { boxCorners, fitPointsToSafeArea, occluderInsets } from "./safeFit";
+import { PHONE_QUERY } from "../../../hooks/useIsNarrow";
 
 // Using the exported constants if needed, but they are defined in Viewer.tsx conventionally.
 // For now I will hardcode or use the same values.
@@ -25,12 +27,67 @@ type FitBoundsRef = { current: SceneBounds | null };
 type SavedCameraRef = { current: { position: THREE.Vector3; target: THREE.Vector3; } | null };
 type SketchModeState = ReturnType<typeof useWorkbench>['sketchMode'];
 type ViewportCamera = RootState['camera'];
+type Bounds = NonNullable<ReturnType<typeof computeGeometryBounds>>;
+type Pose = { position: THREE.Vector3; lookAt: THREE.Vector3; up: THREE.Vector3 };
+/** The canvas and any extra world points (dimension endpoints) the phone
+ *  fit must keep in view. */
+export type FitContext = { canvas: HTMLCanvasElement | null; points: readonly THREE.Vector3[] };
+
+function isPhone(): boolean {
+    return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia(PHONE_QUERY).matches;
+}
+
+/**
+ * On a phone the bounding-sphere fit wastes the small screen: a wide model
+ * comes out small, centred on the whole canvas, half under the floating
+ * toolbar. There, keep the view direction but fit the model's box (and the
+ * dimension endpoints) to the canvas minus the toolbar. Desktop keeps the
+ * sphere fit unchanged. The fitted pose is stamped on the canvas
+ * (`data-fit-*`) for tests and debugging.
+ */
+function phonePose(
+    pose: Pose, geometries: GeometryResult[], bounds: Bounds, camera: ViewportCamera, fit: FitContext | undefined,
+): Pose & { distance?: number } {
+    const canvas = fit?.canvas;
+    if (!canvas || !isPhone()) return pose;
+    const rect = canvas.getBoundingClientRect();
+    if (!(rect.width > 0 && rect.height > 0)) return pose;
+    const occluders = Array.from(document.querySelectorAll('[data-viewport-occluder]'), (el) => el.getBoundingClientRect());
+    const insets = occluderInsets(rect, occluders);
+    const perspective = camera as THREE.PerspectiveCamera;
+    const result = fitPointsToSafeArea({
+        points: [...modelPoints(geometries, bounds), ...(fit?.points ?? [])],
+        direction: pose.position.clone().sub(pose.lookAt).normalize(),
+        up: pose.up,
+        fovDegrees: perspective.fov,
+        width: rect.width,
+        height: rect.height,
+        insets,
+    });
+    if (!result) return pose;
+    canvas.dataset.fitInsetTop = String(Math.round(insets.top));
+    canvas.dataset.fitInsetBottom = String(Math.round(insets.bottom));
+    return { position: result.position, lookAt: result.lookAt, up: pose.up, distance: result.distance };
+}
+
+/** The model's own vertices (sampled), or its box corners if it has none. */
+function modelPoints(geometries: GeometryResult[], bounds: Bounds): THREE.Vector3[] {
+    const sampled = sampleGeometryPoints(geometries);
+    return sampled.length > 0 ? sampled : boxCorners(bounds.min, bounds.max);
+}
+
+function setClipping(camera: ViewportCamera, distance: number): void {
+    camera.near = Math.max(distance / 500, 0.01);
+    camera.far = Math.max(distance * 20, 1000);
+    camera.updateProjectionMatrix();
+}
 
 function applySceneFit(
     geometries: GeometryResult[],
     cameraRef: { current: ViewportCamera },
     lastFitBounds: FitBoundsRef,
     targetState: CameraTargetRef,
+    fit?: FitContext,
 ) {
     const bounds = computeGeometryBounds(geometries);
     if (!bounds) return;
@@ -60,12 +117,10 @@ function applySceneFit(
     lastFitBounds.current = { center: bounds.center.clone(), radius: bounds.radius };
 
     const distance = Math.max(fitDistanceForCamera(bounds.radius, cameraRef.current), SKETCH_DISTANCE);
-    const pose = buildFitCameraPose(bounds.center, distance);
+    const pose = phonePose(buildFitCameraPose(bounds.center, distance), geometries, bounds, cameraRef.current, fit);
     cameraRef.current.up.copy(pose.up);
     targetState.current = { position: pose.position, lookAt: pose.lookAt, immediate: isFirstFit };
-    cameraRef.current.near = Math.max(distance / 500, 0.01);
-    cameraRef.current.far = Math.max(distance * 20, 1000);
-    cameraRef.current.updateProjectionMatrix();
+    setClipping(cameraRef.current, Math.max(pose.distance ?? distance, SKETCH_DISTANCE));
 }
 
 function applyNavigationPose(
@@ -73,19 +128,18 @@ function applyNavigationPose(
     geometries: GeometryResult[],
     cameraRef: { current: ViewportCamera },
     targetState: CameraTargetRef,
+    fit?: FitContext,
 ) {
     const bounds = computeGeometryBounds(geometries);
     if (!bounds) return;
 
     const distance = Math.max(fitDistanceForCamera(bounds.radius, cameraRef.current), SKETCH_DISTANCE);
-    const pose = navigationRequest.target === 'fit'
+    const pose = phonePose(navigationRequest.target === 'fit'
         ? buildFitCameraPose(bounds.center, distance)
-        : buildCameraPose(navigationRequest.target, bounds.center, distance);
+        : buildCameraPose(navigationRequest.target, bounds.center, distance), geometries, bounds, cameraRef.current, fit);
 
     cameraRef.current.up.copy(pose.up);
-    cameraRef.current.near = Math.max(distance / 500, 0.01);
-    cameraRef.current.far = Math.max(distance * 20, 1000);
-    cameraRef.current.updateProjectionMatrix();
+    setClipping(cameraRef.current, Math.max(pose.distance ?? distance, SKETCH_DISTANCE));
     targetState.current = { position: pose.position, lookAt: pose.lookAt };
 }
 
@@ -94,6 +148,7 @@ function applyFocusPose(
     geometries: GeometryResult[],
     cameraRef: { current: ViewportCamera },
     targetState: CameraTargetRef,
+    fit?: FitContext,
 ) {
     const focusedGeometries = filterGeometriesForFocusTarget(geometries, focusRequest.target);
     if (focusedGeometries.length === 0) return;
@@ -102,11 +157,10 @@ function applyFocusPose(
     if (!bounds) return;
 
     const distance = Math.max(fitDistanceForCamera(bounds.radius, cameraRef.current), SKETCH_DISTANCE);
-    const pose = buildFitCameraPose(bounds.center, distance);
+    // A focused part fits the free area too, without the dimension points.
+    const pose = phonePose(buildFitCameraPose(bounds.center, distance), focusedGeometries, bounds, cameraRef.current, fit && { canvas: fit.canvas, points: [] });
     cameraRef.current.up.copy(pose.up);
-    cameraRef.current.near = Math.max(distance / 500, 0.01);
-    cameraRef.current.far = Math.max(distance * 20, 1000);
-    cameraRef.current.updateProjectionMatrix();
+    setClipping(cameraRef.current, Math.max(pose.distance ?? distance, SKETCH_DISTANCE));
     targetState.current = { position: pose.position, lookAt: pose.lookAt };
 }
 
@@ -220,13 +274,25 @@ export function CameraHandler({
     geometries,
     navigationRequest,
     focusRequest,
+    fitPoints,
 }: {
     geometries: GeometryResult[];
     navigationRequest?: { target: ViewTarget; id: number } | null;
     focusRequest?: { target: ViewportFocusTarget; id: number } | null;
+    /** Extra world points (shown dimension endpoints) the phone fit keeps in view. */
+    fitPoints?: readonly (readonly [number, number, number])[];
 }) {
     const { selectedFace, sketchMode } = useWorkbench();
-    const { camera, controls } = useThree();
+    const { camera, controls, gl } = useThree();
+    // Read at fit time, so toggling dimensions does not itself move the camera.
+    // Declared before the fit effects, so it is current when they run.
+    const fitRef = useRef<FitContext>({ canvas: null, points: [] });
+    useEffect(() => {
+        fitRef.current = {
+            canvas: gl?.domElement ?? null,
+            points: (fitPoints ?? []).map((p) => new THREE.Vector3(p[0], p[1], p[2])),
+        };
+    }, [gl, fitPoints]);
     const cameraRef = useRef(camera);
     // `immediate` marks the FIRST framing of a scene: the camera has never
     // pointed at this model, so there is nothing to animate from and nothing
@@ -242,17 +308,17 @@ export function CameraHandler({
 
     useEffect(() => {
         if (geometries.length === 0 || sketchMode.active) return;
-        applySceneFit(geometries, cameraRef, lastFitBounds, targetState);
+        applySceneFit(geometries, cameraRef, lastFitBounds, targetState, fitRef.current);
     }, [geometries, sketchMode.active]);
 
     useEffect(() => {
         if (!navigationRequest || geometries.length === 0 || sketchMode.active) return;
-        applyNavigationPose(navigationRequest, geometries, cameraRef, targetState);
+        applyNavigationPose(navigationRequest, geometries, cameraRef, targetState, fitRef.current);
     }, [navigationRequest, geometries, sketchMode.active]);
 
     useEffect(() => {
         if (!focusRequest || geometries.length === 0 || sketchMode.active) return;
-        applyFocusPose(focusRequest, geometries, cameraRef, targetState);
+        applyFocusPose(focusRequest, geometries, cameraRef, targetState, fitRef.current);
     }, [focusRequest, geometries, sketchMode.active]);
 
     useEffect(() => {

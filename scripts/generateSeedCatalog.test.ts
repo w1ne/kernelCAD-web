@@ -24,18 +24,23 @@ describe.skipIf(!process.env.KCAD_SLOW)('generateSeedCatalog', () => {
         'stepper-motor',
         'pin-header',
         'jst-xh',
+        't-slot-nut',
+        'clamping-stud',
+        'flange-nut',
+        'strap-clamp',
+        'step-block',
       ]),
     );
   });
 
   it(
-    'produces ~270 STEP entries when generation runs end-to-end (skip-step dry run)',
+    'produces ~290 STEP entries when generation runs end-to-end (skip-step dry run)',
     async () => {
       const out = mkdtempSync(join(tmpdir(), 'kc-gen-test-'));
       try {
         const result = await generateSeedCatalog({ outDir: out, skipStep: true });
         expect(result.records.length).toBeGreaterThanOrEqual(250);
-        expect(result.records.length).toBeLessThanOrEqual(290);
+        expect(result.records.length).toBeLessThanOrEqual(320);
         // Every manifest validates.
         for (const m of result.manifests) {
           validateConnectorManifest(m);

@@ -5,6 +5,7 @@ import type { ApiContext, KernelCadApi } from './api';
 // node-only: they read files and the parts catalog cache. They are reached
 // through the capability-guarded façade so this module stays importable in a
 // browser — see parts/hostParts.ts.
+import { createFixtureParts } from './parts/fixtureParts';
 import {
   fromSTEPViaHost,
   fromBREPViaHost,
@@ -49,6 +50,17 @@ export function makePartsLib(ctx: ApiContext): Pick<KernelCadApi, 'lib'> {
           { session, ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}) },
           request,
         ),
+      // Hole detection and seat cuts run on OCCT alone, so `insert` is
+      // browser-safe; the dynamic import keeps the lowerer out of the static
+      // graph of every script API consumer.
+      insert: async (shape, request) => {
+        const { insertFasteners } = await import('./parts/holeInsert');
+        return insertFasteners({ session }, shape, request);
+      },
+      fixture: createFixtureParts({
+        session,
+        ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}),
+      }),
       standard: standardPartsViaHost({
         session,
         ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}),

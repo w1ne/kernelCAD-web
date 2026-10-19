@@ -16,6 +16,7 @@ import { encodeBinaryStl } from './exportStlBinary';
 import { verifyWatertight, type WatertightReport } from './meshHeal';
 import { isOcctInitialized } from './backendInit';
 import { meshShapeForExport } from './backendMesh';
+import { sharedAnalysisMesh } from './analysisMeshScope';
 import { locateShape } from './occtPlacement';
 import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases';
 import { resolveColor } from '../../../shared/render/palette';
@@ -1223,14 +1224,14 @@ export class OcctBackend implements ShapeBackend {
     // plausibility suites.
     //
     // angularTolerance is RADIANS (see meshing.ts MeshOptions): 0.3 rad ~ 17°.
-    const meshed = this.shape.mesh({ tolerance: 0.05, angularTolerance: 0.3 });
-    const positions = new Float32Array(meshed.vertices);
-    const normalsSrc = meshed.normals ?? new Array(meshed.vertices.length).fill(0);
-    return {
-      positions,
-      normals: new Float32Array(normalsSrc),
-      indices: new Uint32Array(meshed.triangles),
-    };
+    return sharedAnalysisMesh(this, () => {
+      const meshed = this.shape.mesh({ tolerance: 0.05, angularTolerance: 0.3 });
+      return {
+        positions: new Float32Array(meshed.vertices),
+        normals: new Float32Array(meshed.normals ?? new Array(meshed.vertices.length).fill(0)),
+        indices: new Uint32Array(meshed.triangles),
+      };
+    });
   }
 
   exportSTL(): Uint8Array {

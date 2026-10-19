@@ -12,3 +12,24 @@ export const CORNER_TOP: CSSProperties = { top: `calc(var(${CORNER_INSET_VAR}, 0
 
 /** `top` for the line of text under the corner controls. */
 export const CORNER_BELOW_TOP: CSSProperties = { top: `calc(var(${CORNER_INSET_VAR}, 0px) + 3.5rem)` };
+
+/** The tool dock's slot. Viewer tools portal into it when the dock is mounted. */
+export const TOOL_DOCK_SLOT_ID = 'studio-toolbar-tools';
+
+let toolDock: HTMLElement | null = null;
+const toolDockListeners = new Set<() => void>();
+
+/** The toolbar registers its slot; the viewer subscribes and portals into it. */
+export function registerToolDock(node: HTMLElement | null): void {
+    toolDock = node;
+    for (const listener of toolDockListeners) listener();
+}
+
+export function subscribeToolDock(listener: () => void): () => void {
+    toolDockListeners.add(listener);
+    return () => { toolDockListeners.delete(listener); };
+}
+
+export function currentToolDock(): HTMLElement | null {
+    return toolDock;
+}

@@ -57,6 +57,18 @@ function jointFixture(name: string) {
     };
 }
 
+function assemblyPartRecord(name: string) {
+    return {
+        id: `assemblyPart_${name}` as never,
+        kind: 'assemblyPart' as const,
+        inputs: {},
+        params: {},
+        transforms: [],
+        suppressed: false,
+        metadata: { partName: name },
+    };
+}
+
 describe('getVisibleTabs', () => {
     const cases: Array<{ name: string; result: StudioRecomputeResult | null; expected: TabId[] }> = [
         {
@@ -139,6 +151,15 @@ describe('getVisibleTabs', () => {
 
     it('joints tab is hidden when joints[] is empty', () => {
         expect(getVisibleTabs(fixture({ joints: [] }))).not.toContain('joints');
+    });
+
+    it('parts tab surfaces when at least one assemblyPart record is present', () => {
+        const result = fixture({ features: [assemblyPartRecord('plate_a')] as never });
+        expect(getVisibleTabs(result)).toContain('parts');
+    });
+
+    it('parts tab is hidden when no assemblyPart record exists', () => {
+        expect(getVisibleTabs(fixture())).not.toContain('parts');
     });
 
     it('export tab surfaces when geometries.length > 0 (Slice 1.4)', () => {

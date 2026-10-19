@@ -12,11 +12,15 @@ import type { StudioDrawingOptions } from './draftingSettings';
 import type { DrawingReport } from '../kernel/backends/occt/drawingAuto/contracts';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 
-export type StudioExportFormat = 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'obj' | 'usd' | 'pdf-drawing';
+export type StudioExportFormat = 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'obj' | 'usd' | 'pdf-drawing' | 'order-pack' | 'bom-csv';
 
-/** File extension of a format's download (`pdf-drawing` is a `.pdf`). */
+/** File extension of a format's download (`pdf-drawing` is a `.pdf`,
+ *  `order-pack` a `.zip`, `bom-csv` a `.csv`). */
 export function exportFileExtension(format: StudioExportFormat): string {
-  return format === 'pdf-drawing' ? 'pdf' : format;
+  if (format === 'pdf-drawing') return 'pdf';
+  if (format === 'order-pack') return 'zip';
+  if (format === 'bom-csv') return 'csv';
+  return format;
 }
 
 /** Response headers of an export that shipped with a warning (the server
@@ -75,6 +79,10 @@ export interface ExportProgress {
 
 export interface ExportViaServerOptions {
   drawingOptions?: StudioDrawingOptions;
+  /** Per-format server options forwarded as the request body's `options`
+   *  bag (order-pack: `processes` / `items` filters; the server stamps
+   *  `format` in). */
+  exportOptions?: Record<string, unknown>;
   /** Cancels the request, the retry wait and the job polling. */
   signal?: AbortSignal;
   onProgress?: (progress: ExportProgress) => void;
@@ -98,7 +106,7 @@ export async function exportViaServer(
   options: ExportViaServerOptions = {},
 ): Promise<ServerExportResult> {
   const { signal, onProgress } = options;
-  const request = await exportRequest(format, code, options.drawingOptions);
+  const request = await exportRequest(format, code, options);
   const post = () => fetch(request.url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...request.headers },
@@ -117,7 +125,7 @@ export async function exportViaServer(
 }
 
 /** URL, auth headers and JSON body of the export POST. */
-async function exportRequest(format: StudioExportFormat | 'svg-drawing', code: string, drawingOptions?: StudioDrawingOptions, review = false): Promise<{
+async function exportRequest(format: StudioExportFormat | 'svg-drawing', code: string, options: ExportViaServerOptions = {}, review = false): Promise<{
   url: string;
   base: string;
   headers: Record<string, string>;
@@ -151,7 +159,10 @@ async function exportRequest(format: StudioExportFormat | 'svg-drawing', code: s
         ...(source ? { source } : {}),
       }
     : { source };
-  return { url, base: effectiveBase, headers, body: { ...body, ...(drawingOptions ? { options: { ...drawingOptions, format } } : {}) } };
+  const perFormatOptions = options.drawingOptions !== undefined || options.exportOptions !== undefined
+    ? { options: { ...options.exportOptions, ...options.drawingOptions, format } }
+    : {};
+  return { url, base: effectiveBase, headers, body: { ...body, ...perFormatOptions } };
 }
 
 export interface DrawingPreviewResult { svg: string; drawingReport?: DrawingReport; diagnostics: CompilerDiagnostic[] }
@@ -159,7 +170,7 @@ export interface DrawingPreviewResult { svg: string; drawingReport?: DrawingRepo
 /** Same source/asset/auth adapter as PDF, returning the SVG sheet and report
  * before downloading a final drawing. Preview is a bounded synchronous read. */
 export async function previewDrawingViaServer(code: string, drawingOptions: StudioDrawingOptions = {}, options: ExportViaServerOptions = {}): Promise<DrawingPreviewResult> {
-  const request = await exportRequest('svg-drawing', code, drawingOptions, true);
+  const request = await exportRequest('svg-drawing', code, { drawingOptions }, true);
   options.onProgress?.({ phase: 'running' });
   const response = await postWithBusyRetry(() => fetch(request.url, { method: 'POST',
     headers: { 'Content-Type': 'application/json', ...request.headers }, body: JSON.stringify(request.body), signal: options.signal }), options);

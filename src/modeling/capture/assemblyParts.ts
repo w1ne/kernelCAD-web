@@ -3,6 +3,7 @@
 import { assertTopoRefSafeName } from '../../kernel/naming/uniquenessValidator';
 import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
+import { isFabProcess } from '../../shared/fab';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../../shared/intent/types';
 import { formatScalarForError, isValidEditableVec3 } from '../../shared/intent/types';
 import {
@@ -649,11 +650,11 @@ function validateMassKg(name: string, shape: Shape, massKg: number | undefined):
   }
 }
 
-/** Validate `opts.at` / `opts.density` / `opts.material` / `opts.crossSection` /
- *  `opts.role`, and resolve the effective density + finish from a named
- *  material. Split out of `recordPartInternal` to keep its branching
- *  complexity under the quality-ratchet budget; no behavior change from the
- *  inline version it replaces. */
+/** Validate `opts.at` / `opts.density` / `opts.process` / `opts.material` /
+ *  `opts.crossSection` / `opts.role`, and resolve the effective density +
+ *  finish from a named material. Split out of `recordPartInternal` to keep
+ *  its branching complexity under the quality-ratchet budget; no behavior
+ *  change from the inline version it replaces. */
 function resolvePartMaterialAndValidateOpts(
   state: AssemblyState,
   name: string,
@@ -677,6 +678,12 @@ function resolvePartMaterialAndValidateOpts(
         'Pass density: <kg/m^3>, or omit it to use the 1000 kg/m^3 default. Typical: steel 7850, aluminum 2700, ABS 1050.',
       );
     }
+  }
+  if (opts.process !== undefined && !isFabProcess(opts.process)) {
+    invalidArgs({
+      api: `assembly.part('${name}', shape, { process })`, path: 'opts.process', got: opts.process,
+      requires: "one of '3d-print' | 'cnc' | 'sheet-cut'", example: "arm.part('bracket', box(10, 10, 10), { process: 'cnc' })", featureId: shape.id,
+    });
   }
   validateMassKg(name, shape, opts.massKg);
   // Named material: seeds a density default AND a default finish. Resolve it
@@ -796,6 +803,7 @@ export function recordPartInternal(
     ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
     ...(effectiveDensity !== undefined ? { density: effectiveDensity } : {}),
     ...(resolvedMaterial !== undefined ? { material: resolvedMaterial.name } : {}),
+    ...(opts.process !== undefined ? { process: opts.process } : {}),
     ...(opts.massKg !== undefined ? { massKg: opts.massKg } : {}),
     ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     ...(opts.role !== undefined ? { role: opts.role } : {}),

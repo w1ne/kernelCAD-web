@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { listPartFamiliesTool } from '../../../src/agent/mcp/tools/listPartFamilies';
 
 describe('list_part_families — end-to-end', () => {
-  it('returns all 16 bundled families with no filter', async () => {
+  it('returns all 24 bundled families with no filter', async () => {
     const r = await listPartFamiliesTool({});
     expect(r.ok).toBe(true);
-    expect(r.families.length).toBe(16);
-    expect(r.families.map((f) => f.name)).toEqual(expect.arrayContaining(['micro-servo', 'servo-horn']));
+    expect(r.families.length).toBe(24);
+    expect(r.families.map((f) => f.name)).toEqual(expect.arrayContaining(['micro-servo', 'servo-horn', 'hex-head-bolt', 'set-screw', 'threaded-rod']));
   });
 
   it('every family entry carries a count and exemplar list', async () => {

@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* A phone in either orientation; mirrors PHONE_QUERY in
+   src/studio/hooks/useIsNarrow.ts. A phone held sideways is wide but short. */
+@custom-variant phone {
+    @media (max-width: 767px) { @slot; }
+    @media (max-height: 520px) and (pointer: coarse) { @slot; }
+}
+
 @theme {
     /* Existing Studio palette */
     --color-highlight-orange: #FF9F1C;

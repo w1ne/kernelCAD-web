@@ -1,0 +1,4 @@
+item,name,quantity,kind,material,densityKgM3,massGPerUnit,massGTotal,bboxMinX,bboxMinY,bboxMinZ,bboxMaxX,bboxMaxY,bboxMaxZ,process,vendor,partNumber,license,source,instancePaths
+1,plate,1,fabricated,aluminum-6061,2700,6.48,6.48,0,0,0,40,20,3,cnc,,,,,plate
+2,bracket,1,fabricated,mild-steel,7850,31.5276,31.5276,0,0,0,50,25,3.175,sheet-cut,,,,,bracket
+3,screw_0,2,purchased,,,,,-1.899999976158142,-1.8946871757507324,-4,1.899999976158142,1.8946871757507324,2,,kernelCAD catalog,ISO 4762,MIT,,screw_0;screw_1

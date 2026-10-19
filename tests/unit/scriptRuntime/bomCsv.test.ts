@@ -17,7 +17,8 @@ const ROWS: BomRow[] = [
     massGPerUnit: 194.4,
     massGTotal: 194.4,
     bboxMm: { min: [0, 0, 0], max: [200, 120, 3] },
-    processHint: 'printed',
+    process: '3d-print',
+    processSource: 'declared',
     instancePaths: ['plate'],
   },
   {
@@ -30,14 +31,16 @@ const ROWS: BomRow[] = [
     massGPerUnit: null,
     massGTotal: null,
     bboxMm: { min: [-1.9, -1.89, -4], max: [1.9, 1.89, 2] },
+    process: null,
+    processSource: null,
     catalog: { id: 'iso-4762-m2x4', vendor: 'kernelCAD catalog', partNumber: 'ISO 4762', source: null, license: 'MIT' },
     instancePaths: ['screw_0', 'screw_1', 'screw_2', 'screw_3'],
   },
 ];
 
 const EXPECTED_CSV =
-  'item,name,quantity,kind,material,densityKgM3,massGPerUnit,massGTotal,bboxMinX,bboxMinY,bboxMinZ,bboxMaxX,bboxMaxY,bboxMaxZ,processHint,vendor,partNumber,license,source,instancePaths\n' +
-  '1,plate,1,fabricated,aluminum,2700,194.4,194.4,0,0,0,200,120,3,printed,,,,,plate\n' +
+  'item,name,quantity,kind,material,densityKgM3,massGPerUnit,massGTotal,bboxMinX,bboxMinY,bboxMinZ,bboxMaxX,bboxMaxY,bboxMaxZ,process,vendor,partNumber,license,source,instancePaths\n' +
+  '1,plate,1,fabricated,aluminum,2700,194.4,194.4,0,0,0,200,120,3,3d-print,,,,,plate\n' +
   '2,screw_0,4,purchased,,,,,-1.9,-1.89,-4,1.9,1.89,2,,kernelCAD catalog,ISO 4762,MIT,,screw_0;screw_1;screw_2;screw_3\n';
 
 describe('bomToCsv', () => {

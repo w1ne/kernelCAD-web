@@ -275,20 +275,28 @@ export function chatLinks(prompt: string): ChatLink[] {
 // URLs
 // ---------------------------------------------------------------------------
 
-/** Query value of `?view=` that opens the full Studio workbench. */
+/** Old query kept so existing `?view=studio` links still open the design. */
 export const STUDIO_VIEW = 'studio';
 
+/** Query value of `?view=` that opens the simplified viewer. Embed uses its own route. */
+export const FAST_VIEW = 'view';
+
+/** The project page is the design. The simplified viewer is opt-in. */
+export function isFastView(view: string | null): boolean {
+  return view === FAST_VIEW;
+}
+
 export function studioHref(slug: string): string {
-  return `/p/${encodeURIComponent(slug)}?view=${STUDIO_VIEW}`;
+  return `/p/${encodeURIComponent(slug)}`;
 }
 
 export function modelPageHref(slug: string): string {
-  return `/p/${encodeURIComponent(slug)}`;
+  return `/p/${encodeURIComponent(slug)}?view=${FAST_VIEW}`;
 }
 
 /** The sign-in page, returning to this project. */
 export function signInHref(slug: string): string {
-  return `/signin?next=${encodeURIComponent(modelPageHref(slug))}`;
+  return `/signin?next=${encodeURIComponent(studioHref(slug))}`;
 }
 
 /** Stored render of a public project; 404 for private ones or before the

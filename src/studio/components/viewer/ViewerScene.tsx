@@ -78,6 +78,8 @@ interface ViewerSceneProps {
      *  moved copies but keeps the camera on the assembled model, so the view
      *  does not jump while parts fly apart. */
     cameraGeometries?: GeometryResult[];
+    /** Shown dimension endpoints; the phone camera fit keeps them in view. */
+    fitPoints?: readonly (readonly [number, number, number])[];
 }
 
 /**
@@ -114,6 +116,7 @@ export function ViewerScene({
     planes,
     look = 'engineering',
     cameraGeometries,
+    fitPoints,
 }: ViewerSceneProps) {
     const publish = look === 'publish';
     return (
@@ -181,6 +184,7 @@ export function ViewerScene({
                 geometries={cameraGeometries ?? geometries}
                 navigationRequest={navigationRequest}
                 focusRequest={focusRequest}
+                fitPoints={fitPoints}
             />
         </>
     );
@@ -331,7 +335,8 @@ function SceneControls({
     geometries,
     navigationRequest,
     focusRequest,
-}: Pick<ViewerSceneProps, 'sketchActive' | 'geometries' | 'navigationRequest' | 'focusRequest'>) {
+    fitPoints,
+}: Pick<ViewerSceneProps, 'sketchActive' | 'geometries' | 'navigationRequest' | 'focusRequest' | 'fitPoints'>) {
     return (
         <>
             <OrbitControls
@@ -354,6 +359,7 @@ function SceneControls({
                 geometries={geometries}
                 navigationRequest={navigationRequest}
                 focusRequest={focusRequest}
+                fitPoints={fitPoints}
             />
         </>
     );
