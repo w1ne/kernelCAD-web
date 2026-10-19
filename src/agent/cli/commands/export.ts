@@ -46,7 +46,7 @@ export interface ExportInput {
   file: string;
   format: ExportFormat;
   out: string;
-  /** Watertight verify gate for STL; default-on (`--no-verify` to skip). */
+  /** Watertight verify gate for STL/STEP; default-on (`--no-verify` to skip). */
   verify?: boolean;
   /** Output path for a numeric authored connector sidecar. */
   connectorManifest?: string;
@@ -459,17 +459,17 @@ function exportOptionsFor(
     ? {
         options: {
           ...(input.options !== undefined
-            ? ((input.format === 'stl' && input.verify === false
+            ? (((input.format === 'stl' || input.format === 'step') && input.verify === false
                 ? { ...input.options, verify: false }
                 : input.options) as object)
-            : input.format === 'stl' && input.verify === false
-              ? { format: 'stl' as const, verify: false }
+            : (input.format === 'stl' || input.format === 'step') && input.verify === false
+              ? { format: input.format as 'stl' | 'step', verify: false }
               : {}),
           ...(drawingOptions ?? {}),
         } as unknown as ExportOptions,
       }
-    : input.format === 'stl' && input.verify === false
-      ? { options: { format: 'stl' as const, verify: false } }
+    : (input.format === 'stl' || input.format === 'step') && input.verify === false
+      ? { options: { format: input.format as 'stl' | 'step', verify: false } }
       : {};
 }
 
@@ -613,7 +613,7 @@ export interface ExportPartsCliInput {
   outDir?: string;
   /** Output file path for single `--part NAME` mode. */
   outFile?: string;
-  /** Watertight verify gate; default-on (`--no-verify` to skip). */
+  /** Watertight verify gate (STL/STEP); default-on (`--no-verify` to skip). */
   verify: boolean;
 }
 
@@ -850,7 +850,7 @@ export function exportCommand(): Command {
     .option('--connector-manifest <path>', 'write numeric authored connector manifest beside a STEP export')
     .option('--manifest-part-id <id>', 'catalog part id for --connector-manifest')
     .option('--manifest-family <family>', 'catalog family for --connector-manifest')
-    .option('--no-verify', 'skip the watertight verify gate after STL export')
+    .option('--no-verify', 'skip the watertight verify gate after STL/STEP export')
     .option('--sheet <size>', 'pdf-drawing: a4 | a3 (default) | a2 | a1 | a0 | ansi-a … ansi-e | auto | auto-ansi')
     .option('--projection <angle>', "pdf-drawing: 'third' (default) or 'first' angle projection")
     .option('--title <text>', 'pdf-drawing: title-block title (default: the script name)')

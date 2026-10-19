@@ -87,10 +87,12 @@ export const FINE_MESH_OPTIONS: MeshOptions = { tolerance: 0.1, angularTolerance
  * FINE above). 0.5 rad is OCCT's own default: visibly coarser than FINE's 0.1
  * while still actually constraining curvature.
  *
- * NOTE: this preset has no production caller — the two-tier preview path was
- * scaffolded up to this constant and never built (OCCT_PERFORMANCE.md §9.2).
- * It is kept because the units fix belongs with its sibling; wire it or delete
- * it deliberately, don't let it rot as decoration.
+ * Production callers: the Studio edit loop's first paint. The node capture
+ * path passes it as `meshFeaturesPerFeature`'s `previewMeshOptions` (the
+ * dev-kernel POST's `quality: 'coarse'`); the in-browser worker posts it as an
+ * `EXECUTE_PREVIEW` frame before the display result of the same EXECUTE. Both
+ * follow with a display pass that replaces the preview — see
+ * OCCT_PERFORMANCE.md §9.2.
  */
 export const COARSE_MESH_OPTIONS: MeshOptions = { tolerance: 1.0, angularTolerance: 0.5 };
 

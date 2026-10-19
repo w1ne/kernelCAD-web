@@ -26,17 +26,21 @@ export function stlNotWatertightDiagnostic(
   report: WatertightReport,
   targetId: string | undefined,
   partName?: string,
+  formatLabel = 'STL mesh',
 ): CompilerDiagnostic {
   const spots = report.clusters
     .map(c => `(${c.center.map(n => n.toFixed(2)).join(', ')})×${c.edgeCount}`)
     .join('; ');
-  const subject = partName !== undefined ? `Part '${partName}' STL mesh` : 'STL mesh';
+  const subject = partName !== undefined ? `Part '${partName}' ${formatLabel}` : formatLabel;
+  const counts =
+    `${report.openEdgeCount} open edge(s)` +
+    (report.nonManifoldEdgeCount > 0 ? ` and ${report.nonManifoldEdgeCount} non-manifold edge(s)` : '');
   return {
     target: 'export-occt',
     code: 'export.mesh.not-watertight',
     featureId: targetId,
     severity: 'error',
-    message: `${subject} is not watertight: ${report.openEdgeCount} open edge(s) in ${report.clusters.length} crack cluster(s) at ${spots}.`,
+    message: `${subject} is not watertight: ${counts} in ${report.clusters.length} crack cluster(s) at ${spots}.`,
     hint: HINT_TEMPLATES['export.mesh.not-watertight'].template,
     nextAction: NEXT_ACTIONS['export.mesh.not-watertight'],
   };

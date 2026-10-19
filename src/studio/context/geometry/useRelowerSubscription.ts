@@ -139,7 +139,7 @@ export function useRelowerSubscription(
                         // Transforms fetch failed (non-scene tail, network) —
                         // fall back to the full path so the viewport never
                         // shows a stale pose.
-                        requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, liveReview: true });
+                        requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, liveReview: true, coarseFirst: true });
                         return;
                     }
                     if (liveReviewTimer) clearTimeout(liveReviewTimer);
@@ -157,7 +157,7 @@ export function useRelowerSubscription(
             // pose with the indicator stuck at the original count. (The prior
             // `skipReview: true` flag was a perf optimisation that predated
             // the live-interference channel.)
-            requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, liveReview: true });
+            requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, liveReview: true, coarseFirst: true });
         };
         // Route the SSE URL through apiCall so signed-in users hit the hosted
         // /events endpoint. EventSource can't carry custom headers, so the

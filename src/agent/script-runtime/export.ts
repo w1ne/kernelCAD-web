@@ -75,7 +75,7 @@ export type ExportFormat =
 /** Per-format option payloads. The union member is selected by `format`. */
 export type ExportOptions =
   | { format: 'stl'; verify?: boolean }
-  | { format: 'step'; unit?: 'mm' | 'cm' | 'in' }
+  | { format: 'step'; unit?: 'mm' | 'cm' | 'in'; verify?: boolean }
   | {
       format: 'dxf';
       layers?: DxfLayerSpec[];

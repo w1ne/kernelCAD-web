@@ -20,7 +20,7 @@ import {
   type WorkerResponse,
   WorkerRequestSchema,
 } from '../../../shared/worker/workerTypes';
-import { meshShape, meshWireToSketch, getWire, isRecord, getFn } from './meshing';
+import { meshShape, meshWireToSketch, getWire, isRecord, getFn, COARSE_MESH_OPTIONS, type MeshOptions } from './meshing';
 
 const DEBUG = false;
 
@@ -161,7 +161,10 @@ function evaluateUserCode(code: string): { shapes: unknown[]; activeSketches: Sa
   return { shapes, activeSketches };
 }
 
-function collectReturnedGeometry(shapes: unknown[]): {
+function collectReturnedGeometry(
+  shapes: unknown[],
+  meshOptions?: MeshOptions,
+): {
   geometries: GeometryResult[];
   returnedSketches: SketchGeometry[];
 } {
@@ -177,7 +180,7 @@ function collectReturnedGeometry(shapes: unknown[]): {
         return;
       }
 
-      const result = meshShape(shape);
+      const result = meshShape(shape, meshOptions);
       if (result) {
         if (DEBUG) console.log(`Worker: Shape ${shapeIndex} successfully meshed. Vol: ${result.volume}, Edges: ${result.edges?.length ? (result.edges.length / 3) + ' pts' : 'none'}`);
         geometries.push(result);
@@ -289,6 +292,20 @@ async function handleExecute(request: ExecuteRequest): Promise<void> {
     if (DEBUG) console.log(`Worker: Executing code: ${code.substring(0, 100)}...`);
 
     const { shapes, activeSketches } = evaluateUserCode(code);
+
+    // Coarse tier: post the fast first-paint frame BEFORE the display mesh, so
+    // the viewport updates early. The script has run exactly once — only
+    // tessellation happens twice, and no geometry work is repeated. The frame
+    // carries geometries only (the final owns the sketches) so no buffer is
+    // transferred twice.
+    if (request.meshQuality === 'coarse') {
+      const preview = collectReturnedGeometry(shapes, COARSE_MESH_OPTIONS).geometries;
+      postResponse(
+        { type: 'EXECUTE_PREVIEW', id, geometries: { geometries: preview, sketches: [] } },
+        collectTransferables(preview, []),
+      );
+    }
+
     const { geometries, returnedSketches } = collectReturnedGeometry(shapes);
     const trackedSketches = collectTrackedSketches(activeSketches);
     const allSketches = dedupeSketches(returnedSketches, trackedSketches);

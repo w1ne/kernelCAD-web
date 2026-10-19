@@ -14,8 +14,8 @@ import type { ParamTable } from '../../shared/runtime/paramTable';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
 import type { FeatureEvent } from '../compute/featureEvents';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
-import { RecomputeEngine } from '../compute/recomputeEngine';
-import { meshShape } from '../../kernel/backends/occt/meshing';
+import { RecomputeEngine, predecessorsByRecord, compiledEventForRecord } from '../compute/recomputeEngine';
+import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { generatePlanarUVs } from './planarUv';
@@ -25,13 +25,13 @@ import { partAtFor } from '../mates/partFrame';
 import {
   accumulateMeshBounds,
   accumulateIndexedMeshBounds,
-  buildMeshBounds,
   collectFeatureStyling,
-  collectShadowingWarnings,
   computeConstructionClosure,
   deriveSeedShapes,
   emitSceneBackendFanout,
   emitVirtualFeatureRecords,
+  finishMeshFeatures,
+  markCoarseMesh,
   meshIdentityFields,
   metadataNameOf,
   reEmitSeededFeatureMeshes,
@@ -698,6 +698,21 @@ export function selectTerminalFeatures(
   return features.filter((feature) => !consumed.has(feature.featureId));
 }
 
+/**
+ * Per-pass mesh-quality options for {@link meshFeaturesPerFeature}.
+ *
+ * `previewMeshOptions` set = a PREVIEW pass: the fast first paint while an
+ * edit is settled. Every freshly meshed feature (and assembly part) uses these
+ * looser options and its cached entry is marked coarse, so the follow-up
+ * display pass re-meshes the already-lowered shape at display quality — it
+ * never re-lowers geometry and never emits coarse triangles as final.
+ *
+ * Absent = the normal display pass, byte-identical to before.
+ */
+export interface MeshFeatureOptions {
+  previewMeshOptions?: MeshOptions;
+}
+
 export async function meshFeaturesPerFeature(
   records: readonly FeatureRecord[],
   paramTable?: import('../../shared/runtime/paramTable').ParamTable,
@@ -749,6 +764,7 @@ export async function meshFeaturesPerFeature(
      *  onto each part's solved worldTransform (exploded views). */
     explodeOffsets?: ReadonlyMap<string, readonly [number, number, number]>;
   },
+  opts?: MeshFeatureOptions,
 ): Promise<MeshFeaturesResult> {
   await initOcct();
   const lowerer = new OcctLowerer();
@@ -786,12 +802,7 @@ export async function meshFeaturesPerFeature(
     materialByLabelByFeatureId,
   } = collectFeatureStyling(records);
   // Recordbook for diagnostics — surface unresolved labels as warnings.
-  const warnings: Array<{
-    code: 'feature.material.face-label-no-match';
-    featureId: FeatureId;
-    label: string;
-    detail: string;
-  }> = [];
+  const warnings: PerFaceMaterialWarning[] = [];
 
   // Emit virtual records (referenceImage, renderEnvironment, etc.) directly —
   // they produce no OCCT geometry, but the renderer needs their payload to
@@ -823,26 +834,28 @@ export async function meshFeaturesPerFeature(
   );
 
   const linkState = newLinkState(records, seedShapes);
+  const eventCtx: MeshFeatureEventContext = {
+    emitFeature,
+    meshBounds,
+    failedFeatureIds,
+    constructionClosure,
+    cachedAssemblyPartMeshes,
+    explodeOffsets: session?.explodeOffsets,
+    assembliesIn,
+    recordById,
+    colorByFeatureId,
+    materialByFeatureId,
+    materialByLabelByFeatureId,
+    warnings,
+    records,
+    cachedFeatureMeshes,
+    previewMeshOptions: opts?.previewMeshOptions,
+    ...linkState,
+  };
   await engine.run(records, {
     paramTable,
     ...(seedShapes !== undefined && seedShapes.size > 0 ? { seedShapes } : {}),
-    onEvent: (event) => handleMeshFeatureEvent(event, {
-      emitFeature,
-      meshBounds,
-      failedFeatureIds,
-      constructionClosure,
-      cachedAssemblyPartMeshes,
-      explodeOffsets: session?.explodeOffsets,
-      assembliesIn,
-      recordById,
-      colorByFeatureId,
-      materialByFeatureId,
-      materialByLabelByFeatureId,
-      warnings,
-      records,
-      cachedFeatureMeshes,
-      ...linkState,
-    }),
+    onEvent: (event) => handleMeshFeatureEvent(event, eventCtx),
   });
 
   reEmitSeededFeatureMeshes(
@@ -853,6 +866,7 @@ export async function meshFeaturesPerFeature(
     features,
     emitFeature,
     meshBounds,
+    refineSeededMesh(eventCtx),
   );
 
   return finishMeshFeatures(
@@ -880,41 +894,6 @@ function applySessionToLowerer(
   }
 }
 
-/** Final phase: bounds, shadowing diagnostics (logged in order), result object. */
-function finishMeshFeatures(
-  features: FeatureMesh[],
-  meshBounds: MeshBoundsAccumulator,
-  failedFeatureIds: FeatureId[],
-  explicitMaterialByFeatureId: ReadonlyMap<FeatureId, PBRMaterial>,
-  colorByFeatureId: ReadonlyMap<FeatureId, string>,
-  warnings: PerFaceMaterialWarning[],
-  shapes: ReadonlyMap<FeatureId, ShapeBackend>,
-): MeshFeaturesResult {
-  const bounds = buildMeshBounds(features, meshBounds);
-
-  const { materialShadowingWarnings, colorShadowingWarnings } = collectShadowingWarnings(
-    features,
-    explicitMaterialByFeatureId,
-    colorByFeatureId,
-  );
-  for (const w of materialShadowingWarnings) {
-    console.warn(`meshFeaturesPerFeature: material shadowing — ${w.message}`);
-  }
-  for (const w of colorShadowingWarnings) {
-    console.warn(`meshFeaturesPerFeature: color shadowing — ${w.message}`);
-  }
-
-  return {
-    features,
-    bounds,
-    failedFeatureIds,
-    materialShadowingWarnings,
-    colorShadowingWarnings,
-    shapes,
-    ...(warnings.length > 0 ? { perFaceMaterialWarnings: warnings } : {}),
-  };
-}
-
 /**
  * Per-event handler for the interleaved lower+mesh pass. Extracted verbatim
  * from `meshFeaturesPerFeature`'s `onEvent` closure; free variables are
@@ -935,6 +914,8 @@ interface MeshFeatureEventContext {
   readonly warnings: PerFaceMaterialWarning[];
   readonly records: readonly FeatureRecord[];
   readonly cachedFeatureMeshes?: Map<FeatureId, FeatureMesh>;
+  /** Preview tier of this pass; see {@link MeshFeatureOptions}. */
+  readonly previewMeshOptions?: MeshOptions;
   /** Lowered shape per feature, so ownership can inherit from predecessors. */
   readonly shapeById: Map<FeatureId, ShapeBackend>;
   readonly recordOrder: ReadonlyMap<FeatureId, number>;
@@ -1037,6 +1018,22 @@ function emitDisplayMeshFeature(event: CompiledEvent, shape: MeshBackend, ctx: M
   accumulateIndexedMeshBounds(ctx.meshBounds, positions);
 }
 
+/** Build the `reEmitSeededFeatureMeshes` refiner for one pass: re-meshes a
+ *  preview-marked seeded record from its already-lowered shape (tessellation
+ *  only — no re-lowering) and emits + re-caches the result at the pass's
+ *  quality. The synthesized event mirrors the engine's `feature.compiled`
+ *  (shared graph + event helpers), so ownership links, op labels and per-face
+ *  materials match a fresh lower exactly. */
+function refineSeededMesh(
+  ctx: MeshFeatureEventContext,
+): (record: FeatureRecord, seededShape: ShapeBackend) => void {
+  let predecessors: Map<FeatureId, FeatureId[]> | undefined;
+  return (record, seededShape) => {
+    predecessors ??= predecessorsByRecord(ctx.records);
+    handleMeshFeatureEvent(compiledEventForRecord(record, seededShape, predecessors), ctx);
+  };
+}
+
 function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContext): void {
   if (event.kind === 'feature.failed') {
     ctx.failedFeatureIds.push(event.featureId);
@@ -1082,6 +1079,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
       },
       recordOrder: ctx.recordOrder,
       accumulateIndexedMeshBounds,
+      previewMeshOptions: ctx.previewMeshOptions,
     });
     return;
   }
@@ -1090,7 +1088,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     return;
   }
   const rawShape = extractRawShape(event.shape);
-  const meshed = meshShape(rawShape);
+  const meshed = meshShape(rawShape, ctx.previewMeshOptions);
   if (!meshed) {
     if (event.featureKind === 'sketch') {
       return;
@@ -1149,6 +1147,10 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   // first-affected scan keeps this record's lowered shape can re-emit the
   // cached mesh directly instead of calling `meshShape` again.
   ctx.cachedFeatureMeshes?.set(event.featureId, emitted);
+  // A preview-pass mesh is a first paint only: mark it so the next display
+  // pass refines it (re-meshing the same lowered shape) instead of emitting
+  // these coarse triangles as final.
+  if (ctx.previewMeshOptions) markCoarseMesh(emitted);
 
   // Aggregate bounds from this feature's vertices
   accumulateMeshBounds(ctx.meshBounds, meshed.faces);
