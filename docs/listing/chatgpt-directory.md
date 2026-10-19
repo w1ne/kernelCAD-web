@@ -3,7 +3,7 @@
 ChatGPT apps are now submitted as **plugins**: you upload a plugin ZIP, the portal checks it, and then you submit it for review (checked 2026-10-13, https://developers.openai.com/plugins/deploy/submission).
 
 ## Submission steps
-1. **Build the ZIP** from `plugins/kernelcad/` (the Agent Plugins layout: root `plugin.json`, `mcp.json`, `skills/`, plus the icon and screenshot files under `assets/`). Leave out credentials and secrets. Lifecycle hooks and `apps` / `.app.json` references are not accepted.
+1. **Build the ZIP** from `plugins/kernelcad/` (the Agent Plugins layout: root `plugin.json`, `mcp.json`, `skills/`, plus the icon and screenshot files under `assets/`). Leave out credentials and secrets. Lifecycle hooks and `apps` / `.app.json` references are not accepted. The allowlisted layout is built by `npm run listing:zip`, which writes `dist/listing/kernelcad-chatgpt-plugin-<version>.zip` (12 KB, 8 files as of 0.17.0; verified 2026-10-19).
 2. **Upload:** platform.openai.com → **Plugins** → **Upload new or existing plugin**, pick the verified developer identity, then **Upload plugin**. You need to be an org Owner or have Apps Management Write, and the org must have completed individual or business verification.
 3. **Metadata & Skills:** wait for the checks, then fix any issues in the package and upload a corrected ZIP. These fields are read-only in the portal.
 4. **MCPs:** connect `https://mcp.kernelcad.com/mcp`, complete the domain challenge (serve the token as plain text at `https://kernelcad.com/.well-known/openai-apps-challenge` or on the MCP host), and let the tool scan finish. Auth settings come from `mcp.json`. The portal supports none, OAuth, or mixed anonymous/OAuth, so kernelCAD should declare mixed.
@@ -15,6 +15,10 @@ After the plugin is published, MCP tool changes are picked up by the daily scan 
 These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` and `composerIcon` (`assets/logo.svg`), `review.test_cases` (5 positive, 3 negative), `review.commerce` (undecided, see the blockers in the README), and `publication.release_notes`. Still missing:
 - `interface.screenshots`: optional; see the list below.
 - `review.demo_recording_url`: a video walkthrough the reviewers can open.
+
+Capture both in the ChatGPT app itself (developer-mode connector or the published app), where the in-chat viewer and checklists appear, so the package matches what reviewers will see. Keep the exact screenshots and their prompts in `docs/listing/assets/chatgpt/` when they land, and add them to `plugins/kernelcad/assets/screenshots/` before `npm run listing:zip` so the ZIP carries them.
+
+The hosted server itself is verified for the reviewers with `npm run listing:verify-mcp`: on 2026-10-19 it reported 73 tools with 73 titles and 73 annotation sets, and a `lookup_api` discovery response (35,151 chars). Re-run it on the day of the submission and paste the output into the review notes.
 
 Use the copy below for the `interface` text fields. `shortDescription` must be 30 characters or fewer.
 
@@ -60,6 +64,18 @@ Positive: use five of the six rows below. Row 6 needs a hosted fab_pack; if you 
 2. DFM checklist result.
 3. PDF drawing preview.
 4. An imported STEP being edited.
+
+## Demo recording (under 90 seconds, one take is fine)
+
+Record in a ChatGPT session with kernelCAD enabled, 1280×720 or larger, cursor visible:
+
+1. Paste the plate prompt from test case 1, let the model finish, and rotate the in-chat 3D view once.
+2. Ask the DFM question from test case 2 and scroll the pass/fail checklist slowly.
+3. Ask for "a STEP file and a PDF drawing" (test case 3) and open the PDF preview.
+4. Ask for the thicker version with fillets (test case 4) and show the updated model.
+5. End on the saved project in Studio, signed in, with the share link visible.
+
+Host the MP4 somewhere public (the marketing site's `/demos/` path or a GitHub release asset both work) and put that URL in `review.demo_recording_url` via `agent-plugin.config.json` → `chatgpt.releaseNotes`-adjacent fields are generated, but the URL itself is entered in the portal review form. Keep the exact file and a caption with the prompts in `docs/listing/assets/chatgpt/`.
 
 Negative (three required):
 | # | Prompt | Expected |
