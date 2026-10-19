@@ -65,6 +65,18 @@ Positive: use five of the six rows below. Row 6 needs a hosted fab_pack; if you 
 3. PDF drawing preview.
 4. An imported STEP being edited.
 
+## Demo recording (under 90 seconds, one take is fine)
+
+Record in a ChatGPT session with kernelCAD enabled, 1280×720 or larger, cursor visible:
+
+1. Paste the plate prompt from test case 1, let the model finish, and rotate the in-chat 3D view once.
+2. Ask the DFM question from test case 2 and scroll the pass/fail checklist slowly.
+3. Ask for "a STEP file and a PDF drawing" (test case 3) and open the PDF preview.
+4. Ask for the thicker version with fillets (test case 4) and show the updated model.
+5. End on the saved project in Studio, signed in, with the share link visible.
+
+Host the MP4 somewhere public (the marketing site's `/demos/` path or a GitHub release asset both work) and put that URL in `review.demo_recording_url` via `agent-plugin.config.json` → `chatgpt.releaseNotes`-adjacent fields are generated, but the URL itself is entered in the portal review form. Keep the exact file and a caption with the prompts in `docs/listing/assets/chatgpt/`.
+
 Negative (three required):
 | # | Prompt | Expected |
 |---|---|---|
