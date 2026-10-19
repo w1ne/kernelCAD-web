@@ -73,6 +73,8 @@ export interface InsertedHole {
   depthMm: number;
   /** Stocked thread chosen from the hole diameter. */
   thread: string;
+  /** Which ISO 273 fit class the bore matches. */
+  fit: ClearanceFit;
   /** Stocked screw length chosen for the grip. */
   lengthMm: number;
   /** Set when the bore diameter sits exactly on a larger thread's tap drill
@@ -97,20 +99,35 @@ export interface InsertCtx {
   session: CaptureSession;
 }
 
-/** ISO 273 medium (normal) clearance bores for the stocked threads. */
-export const CLEARANCE_MM: Readonly<Record<string, number>> = {
-  M2: 2.4,
-  'M2.5': 2.9,
-  M3: 3.4,
-  M4: 4.5,
-  M5: 5.5,
-  M6: 6.6,
+/** ISO 273 clearance bores for the stocked threads. Fine/medium/coarse are the
+ *  standard's three fit classes; "normal" is the general-purpose default. */
+export type ClearanceFit = 'close' | 'normal' | 'loose';
+
+export const CLEARANCE_FITS_MM: Readonly<
+  Record<string, Readonly<Record<ClearanceFit, number>>>
+> = {
+  M2: { close: 2.2, normal: 2.4, loose: 2.6 },
+  'M2.5': { close: 2.7, normal: 2.9, loose: 3.1 },
+  M3: { close: 3.2, normal: 3.4, loose: 3.6 },
+  M4: { close: 4.3, normal: 4.5, loose: 4.8 },
+  M5: { close: 5.3, normal: 5.5, loose: 5.8 },
+  M6: { close: 6.4, normal: 6.6, loose: 7.0 },
+  M8: { close: 8.4, normal: 9.0, loose: 10.0 },
+  M10: { close: 10.5, normal: 11.0, loose: 12.0 },
+  M12: { close: 13.0, normal: 13.5, loose: 14.5 },
 };
+
+/** ISO 273 medium (normal) clearance bores for the stocked threads. */
+export const CLEARANCE_MM: Readonly<Record<string, number>> = Object.fromEntries(
+  Object.entries(CLEARANCE_FITS_MM).map(([thread, fits]) => [thread, fits.normal]),
+);
 
 /** Bore diameter tolerance for similar-hole matching, mm. */
 export const SIMILAR_DIAMETER_TOL_MM = 0.1;
-/** How far a bore diameter may sit from a stocked clearance bore, mm. */
-export const CLEARANCE_MATCH_TOL_MM = 0.2;
+/** How far a bore diameter may sit from a stocked clearance bore, mm. Kept
+ *  tight because the fit classes sit close together: a 5.0 mm bore is an M6
+ *  tap drill, not a 0.2 mm-oversize M4 loose hole. */
+export const CLEARANCE_MATCH_TOL_MM = 0.1;
 /** Coarse-pitch ISO metric tap drills (ISO 2306), mm. A tapped pilot is not a
  *  clearance bore: the detector reports the modeled pilot diameter, so these
  *  are reported back as `pilotFor` rather than silently sized as clearance. */
@@ -157,18 +174,28 @@ function unit(v: Vec3): Vec3 {
   return l < 1e-12 ? [0, 0, 1] : mul(v, 1 / l);
 }
 
-/** The threaded family a detected bore can take, or undefined. */
-export function threadForHoleDiameter(diameterMm: number): string | undefined {
-  let best: string | undefined;
+/** The thread and ISO 273 fit class a detected bore matches, or undefined. */
+export function clearanceFitForHoleDiameter(
+  diameterMm: number,
+): { thread: string; fit: ClearanceFit } | undefined {
+  const order: readonly ClearanceFit[] = ['normal', 'close', 'loose'];
+  let best: { thread: string; fit: ClearanceFit } | undefined;
   let bestDelta = Number.POSITIVE_INFINITY;
-  for (const [thread, clearance] of Object.entries(CLEARANCE_MM)) {
-    const delta = Math.abs(clearance - diameterMm);
-    if (delta < bestDelta && delta <= CLEARANCE_MATCH_TOL_MM + 1e-9) {
-      best = thread;
-      bestDelta = delta;
+  for (const [thread, fits] of Object.entries(CLEARANCE_FITS_MM)) {
+    for (const fit of order) {
+      const delta = Math.abs(fits[fit] - diameterMm);
+      if (delta < bestDelta - 1e-9 && delta <= CLEARANCE_MATCH_TOL_MM + 1e-9) {
+        best = { thread, fit };
+        bestDelta = delta;
+      }
     }
   }
   return best;
+}
+
+/** The threaded family a detected bore can take, or undefined. */
+export function threadForHoleDiameter(diameterMm: number): string | undefined {
+  return clearanceFitForHoleDiameter(diameterMm)?.thread;
 }
 
 function nominalOf(thread: string): number {
@@ -356,6 +383,7 @@ export interface PlannedInsert {
   centerMm: Vec3;
   direction: Vec3;
   thread: string;
+  fit: ClearanceFit;
   family: InsertFamily;
   gripMm: number;
   lengthMm: number;
@@ -431,19 +459,20 @@ export function planInserts(
   const resolved = resolveInsert(request);
   return selectInsertBores(bores, request)
     .map((bore) => {
-      const thread = threadForHoleDiameter(bore.diameterMm);
-      if (thread === undefined) {
+      const sized = clearanceFitForHoleDiameter(bore.diameterMm);
+      if (sized === undefined) {
         invalidArgs({
           api: 'lib.insert(shape, { diameterMm, family, ... })',
           path: 'diameterMm',
           got: bore.diameterMm,
-          requires: `a clearance bore matching a stocked thread: ${Object.entries(CLEARANCE_MM)
+          requires: `an ISO 273 clearance bore for a stocked thread (close, normal or loose); normal bores: ${Object.entries(CLEARANCE_MM)
             .map(([t, c]) => `Ø${c} (${t})`)
             .join(', ')}`,
           unit: 'mm',
           example: INSERT_EXAMPLE,
         });
       }
+      const thread = sized.thread;
       if (resolved.mode === 'bolt' && bore.kind === 'blind') {
         invalidArgs({
           api: 'lib.insert(shape, { mode: "bolt", ... })',
@@ -473,6 +502,7 @@ export function planInserts(
         centerMm: frame.center,
         direction: frame.direction,
         thread,
+        fit: sized.fit,
         family: resolved.family,
         gripMm,
         lengthMm,
@@ -564,6 +594,7 @@ export async function insertFasteners(
       diameterMm: plan.bore.diameterMm,
       depthMm: plan.bore.depthMm,
       thread: plan.thread,
+      fit: plan.fit,
       lengthMm: placed.lengthMm,
       ...(plan.pilotFor !== undefined ? { pilotFor: plan.pilotFor } : {}),
       ...(plan.existingSeatMm !== undefined ? { existingSeatMm: plan.existingSeatMm } : {}),

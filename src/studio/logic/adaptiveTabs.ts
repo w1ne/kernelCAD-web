@@ -16,6 +16,7 @@ export const INSPECTOR_TAB_ORDER: readonly TabId[] = [
     'params',
     'validity',
     'joints',
+    'parts',
     'animation',
     'export',
     'scene',
@@ -27,6 +28,7 @@ export const INSPECTOR_TAB_LABEL: Readonly<Partial<Record<TabId, string>>> = {
     params: 'Params',
     validity: 'Checks',
     joints: 'Joints',
+    parts: 'Parts',
     animation: 'Animation',
     export: 'Export',
     scene: 'Scene',
@@ -45,6 +47,7 @@ export const DEFAULT_INSPECTOR_TAB: TabId = 'code';
  *   (an honest "not run yet" state included) and the model tree.
  * - `params` — the script declared at least one `param(...)`.
  * - `joints` — the assembly declared at least one mate with pose.
+ * - `parts` — the assembly declared at least one `assemblyPart` record.
  * - `animation` — the script declared an `animationView(...)` (last-wins).
  * - `export` — there's at least one geometry to export.
  */
@@ -57,6 +60,7 @@ export function getVisibleTabs(result: StudioRecomputeResult | null): readonly T
     if (result != null) {
         has.params = result.paramTable != null && result.paramTable.size() > 0;
         has.joints = (result.joints ?? []).length > 0;
+        has.parts = result.features.some((f) => f.kind === 'assemblyPart');
         has.animation = selectAnimationMetadata(result.features) != null;
         has.export = result.geometries.length > 0;
     }

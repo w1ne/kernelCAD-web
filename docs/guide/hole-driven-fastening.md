@@ -6,7 +6,6 @@ kind: guide
 status: draft
 model: examples/parts/hole-driven-insert.kcad.ts
 video: docs/demos/hole-driven-insert/demo.mp4
-note: To publish, move the three PNGs in docs/guide/hole-driven-fastening/ into site/blog/hole-driven-fastening/, point the figures at ../../site/blog/hole-driven-fastening/, and flip status to published. Demo bundle lives in docs/demos/hole-driven-insert/.
 ---
 
 `lib.insert(shape, request)` works from the holes a part already has. It
@@ -17,9 +16,11 @@ from `hole()`, `holes()`, a pattern or an import.
 
 ## What the holes decide
 
-- **Size.** The bore diameter is matched against ISO 273 normal clearance:
-  Ø2.4 for M2, Ø2.9 for M2.5, Ø3.4 for M3, Ø4.5 for M4, Ø5.5 for M5, Ø6.6
-  for M6. A bore that matches none of them is refused with the diameters the
+- **Size.** The bore diameter is matched against ISO 273 clearance, all three
+  fit classes. Normal is Ø2.4 for M2, Ø2.9 for M2.5, Ø3.4 for M3, Ø4.5 for M4,
+  Ø5.5 for M5, Ø6.6 for M6, Ø9 for M8, Ø11 for M10 and Ø13.5 for M12; the
+  close and loose bores of each thread match too, and each hole reports the
+  class it matched as `fit` (`'close' | 'normal' | 'loose'`). A bore that matches none of them is refused with the diameters the
   shape actually has.
 - **Similar holes.** Every bore with the same diameter and a parallel axis
   is covered, so a patterned hole comes along without naming the pattern.
@@ -43,6 +44,21 @@ const fitted = await lib.insert(plate, {
   diameterMm: 5.5,
   family: 'flat-head-countersunk',
   mode: 'bolt',
+});
+return fitted.shape;
+```
+
+A pattern is just similar holes: pattern the part and every instance is
+covered, because the selection is diameter and axis, not feature identity.
+
+```kcad
+const patterned = box(20, 10, 6, true)
+  .hole('top', { u: 0, v: 0, diameter: 3.4, depth: 'through' })
+  .patternLinear({ count: 3, direction: [1, 0, 0], spacing: 15 });
+const fitted = await lib.insert(patterned, {
+  near: [0, 0, 3],
+  family: 'socket-head-cap-screw',
+  mode: 'screw',
 });
 return fitted.shape;
 ```

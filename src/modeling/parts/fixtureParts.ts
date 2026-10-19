@@ -8,6 +8,7 @@
 
 import type { Shape } from '../capture/proxy';
 import { placePart, type PlaceCtx } from './placePart';
+import { placeClampSet, type PlacedClampSet } from './clampSet';
 
 export type FixtureThread = 'M8' | 'M10' | 'M12';
 
@@ -22,6 +23,10 @@ export interface FixtureParts {
   strapClamp(args: { thread: FixtureThread }): Promise<Shape>;
   /** Step block: treads rise along +X, `step-1..4` connectors on the treads. */
   stepBlock(args: { thread: FixtureThread }): Promise<Shape>;
+  /** A complete clamp set around a workpiece height: T-slot nut, stud, strap
+   *  clamp, step block and flange nut, placed in one frame (stud axis at the
+   *  origin, table surface at z = 0, workpiece toward -X, block at +X). */
+  clampSet(args: { thread: FixtureThread; workpieceHeightMm: number }): Promise<PlacedClampSet>;
 }
 
 export function createFixtureParts(ctx: PlaceCtx): FixtureParts {
@@ -33,5 +38,6 @@ export function createFixtureParts(ctx: PlaceCtx): FixtureParts {
     flangeNut: ({ thread }) => place('flange-nut', thread),
     strapClamp: ({ thread }) => place('strap-clamp', thread),
     stepBlock: ({ thread }) => place('step-block', thread),
+    clampSet: (args) => placeClampSet(ctx, args),
   };
 }

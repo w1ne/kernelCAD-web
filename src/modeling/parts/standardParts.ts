@@ -11,7 +11,16 @@ import { fetchPartHost, type FetchPartCtx } from './fetchPart';
 import type { Shape } from '../capture/proxy';
 import { resolvePart } from './familyTable';
 
-export type MetricThread = 'M2' | 'M2.5' | 'M3' | 'M4' | 'M5' | 'M6';
+export type MetricThread =
+  | 'M2'
+  | 'M2.5'
+  | 'M3'
+  | 'M4'
+  | 'M5'
+  | 'M6'
+  | 'M8'
+  | 'M10'
+  | 'M12';
 
 function threadSlug(t: string): string {
   return t.toLowerCase().replace('.', '-');
@@ -19,17 +28,19 @@ function threadSlug(t: string): string {
 
 export interface StandardParts {
   boltSHCS(args: { thread: MetricThread; lengthMm: number }): Promise<Shape>;
-  boltBHCS(args: { thread: 'M3' | 'M4' | 'M5'; lengthMm: number }): Promise<Shape>;
+  boltBHCS(args: { thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10'; lengthMm: number }): Promise<Shape>;
   boltFlatHead(args: {
-    thread: 'M3' | 'M4' | 'M5';
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
     lengthMm: number;
   }): Promise<Shape>;
   nutHex(args: { thread: MetricThread }): Promise<Shape>;
-  nutLock(args: { thread: 'M3' | 'M4' | 'M5' }): Promise<Shape>;
-  washerFlat(args: {
-    thread: 'M2' | 'M3' | 'M4' | 'M5' | 'M6';
+  nutLock(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
   }): Promise<Shape>;
-  washerLock(args: { thread: 'M3' | 'M4' | 'M5' }): Promise<Shape>;
+  washerFlat(args: { thread: MetricThread }): Promise<Shape>;
+  washerLock(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
+  }): Promise<Shape>;
   heatSetInsert(args: {
     thread: 'M2.5' | 'M3' | 'M4';
     lengthMm: 3.8 | 5.7;

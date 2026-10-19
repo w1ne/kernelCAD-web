@@ -84,6 +84,7 @@ const stack   = await lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
 const fitted  = await lib.insert(plate, { diameterMm: 5.5, family: 'socket-head-cap-screw', mode: 'bolt' });
 
 // 4. Machining-fixture hardware.
+const set     = await lib.fixture.clampSet({ thread: 'M10', workpieceHeightMm: 36 });
 const tNut    = await lib.fixture.tSlotNut({ thread: 'M10' });
 const stud    = await lib.fixture.clampStud({ thread: 'M10', lengthMm: 80 });
 const clamp   = await lib.fixture.strapClamp({ thread: 'M10' });
@@ -101,7 +102,7 @@ family table and builds the envelope in memory when no STEP is on disk.
 `lib.part({ family, thread, lengthMm })` builds one stocked fastener:
 socket-head (ISO 4762), button-head (ISO 7380) and countersunk (ISO 10642)
 screws, hex nuts (ISO 4032), lock nuts (DIN 985), flat washers (ISO 7089)
-and lock washers (DIN 127B), M2 through M6. Screws need a stocked length;
+and lock washers (DIN 127B), M2 through M12. Screws need a stocked length;
 an unknown family, thread or length fails with a diagnostic that names the
 stocked values. Every solid is an envelope (head plus shank), no helical
 thread.
@@ -128,8 +129,10 @@ const fitted = await lib.insert(plate, {
 ```
 
 The holes already on the shape drive everything. Sizing reads the bore
-diameter against ISO 273 normal clearance (Ø2.4 M2, Ø2.9 M2.5, Ø3.4 M3,
-Ø4.5 M4, Ø5.5 M5, Ø6.6 M6). Selection covers every similar hole (same
+diameter against ISO 273 clearance (Ø2.4 M2, Ø2.9 M2.5, Ø3.4 M3, Ø4.5 M4,
+Ø5.5 M5, Ø6.6 M6, Ø9 M8, Ø11 M10, Ø13.5 M12 normal; close and loose bores
+also size, and `holes[i].fit` reports `'close' | 'normal' | 'loose'`).
+Selection covers every similar hole (same
 diameter, parallel axis), so a patterned hole is covered without naming the
 pattern. The seat follows the family: flat-head cuts a 90° countersink to
 the head diameter, cap heads cut nothing unless `seat: 'counterbore'`.
@@ -149,17 +152,20 @@ Two bores need a second look:
 ## Machining-fixture hardware — lib.fixture
 
 `lib.fixture.*` is the clamping kit for a T-slot machine table, keyed by the
-thread the hardware uses (M8 / M10 / M12). The solids are nominal envelope
-values from the stock table (slot/thread pairing follows common machine-table
-practice); check the supplier drawing before ordering.
+thread the hardware uses (M8 / M10 / M12). T-slot nuts follow the DIN 508
+table and collar nuts DIN 6331; strap clamps and step blocks have no DIN table
+and stay nominal kit dimensions. Check the supplier drawing before ordering.
 
-- `tSlotNut({ thread })` — T-slot nut (DIN 508 form): slot 10 / 12 / 14 mm for
-  M8 / M10 / M12. Bore axis +Z, top face flush at z = 0, base below.
+- `tSlotNut({ thread })` — T-slot nut (DIN 508): slot 10 / 12 / 14 mm for
+  M8 / M10 / M12; heights 12 / 14 / 16 mm, head height 6 / 7 / 8 mm. Bore
+  axis +Z, top face flush at z = 0, base below.
   Connectors: `mating-face` (wing tops), `top-face`, `thread-bore`.
 - `clampStud({ thread, lengthMm })` — clamping stud (DIN 6379 form); stocked
   lengths 63 / 100 (M8), 80 / 125 (M10), 100 / 160 (M12). Connectors:
   `table-end`, `clamp-end`, `axis`.
-- `flangeNut({ thread })` — flange nut (DIN 6330 form) for the clamp top.
+- `flangeNut({ thread })` — collar (flange) nut (DIN 6331 form) for the
+  clamp top: across flats 13 / 16 / 18 mm, height 12 / 15 / 18 mm, collar
+  18 / 22 / 25 mm.
   Connectors: `mating-face`, `top-face`, `inner-bore`.
 - `strapClamp({ thread })` — strap clamp; the slot center is the origin and
   the nose points toward -X, so `slot-axis` is where the stud goes.
@@ -167,6 +173,13 @@ practice); check the supplier drawing before ordering.
 - `stepBlock({ thread })` — step block; treads rise along +X at 10 / 20 / 30 /
   40 (M8), 12 / 24 / 36 / 48 (M10), 15 / 30 / 45 / 60 (M12). Connectors:
   `base-face`, `step-1` … `step-4` on the treads.
+- `clampSet({ thread, workpieceHeightMm })` — one call for a complete set:
+  T-slot nut, clamping stud, strap clamp, step block and flange nut, placed in
+  one frame (stud axis at the origin, table surface at z = 0, workpiece toward
+  -X, block at +X, clamp level with the workpiece). The workpiece height must
+  equal a stocked tread of that thread's block; the stud is the shortest
+  stocked length that clears clamp + nut. Returns `{ studLengthMm, treadMm,
+  clampTopMm, members }`; mirror the set for the other side of the workpiece.
 
 ## Pre-shipped connector convention
 
@@ -257,12 +270,13 @@ See `kernelcad-mcp` for the full grammar.
 
 ## Bundled-only by default
 
-Bundled tier coverage (293 records on the seed catalog):
+Bundled tier coverage (422 records on the seed catalog):
 
-- M2 / M2.5 / M3 / M4 / M5 / M6 socket head, button head, flat head
-  countersunk screws (ISO 4762 / 7380 / 10642).
-- M2 / M2.5 / M3 / M4 / M5 / M6 hex nuts, lock nuts, flat / lock washers
-  (ISO 4032 / DIN 985 / ISO 7089 / DIN 127B).
+- M2 / M2.5 / M3 / M4 / M5 / M6 / M8 / M10 / M12 socket head and flat head
+  countersunk screws (ISO 4762 / 10642); button head M3–M10 (ISO 7380).
+- M2 / M2.5 / M3 / M4 / M5 / M6 / M8 / M10 / M12 hex nuts and flat washers
+  (ISO 4032 / ISO 7089); lock nuts and lock washers M3–M12
+  (DIN 985 / DIN 127B).
 - M2.5 / M3 / M4 heat-set inserts (3.8 mm and 5.7 mm length).
 - Deep-groove ball bearings 608 / 623 / 624 / 625 / 626 / 6800 / 688 / 6900.
 - Linear shaft Ø3..Ø12 × 20..200 mm.

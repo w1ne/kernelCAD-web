@@ -91,7 +91,31 @@ describe('exportViaServer', () => {
     expect(result.downloadName).toBe('model-drawing.pdf');
   });
 
-  it('names a pdf-drawing download .pdf when the server sends no filename', async () => {
+  it('forwards per-format export options as the body options bag', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      blob: async () => new Blob(['zip']),
+      headers: new Headers({ 'content-disposition': 'attachment; filename="order.zip"' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { pathname: '/', search: '', hostname: 'localhost' },
+    });
+
+    const result = await exportViaServer('order-pack', 'return box(1,1,1);', {
+      exportOptions: { processes: ['3d-print'] },
+    });
+
+    expect(fetchMock.mock.calls[0]![0]).toBe('/__kernelcad/export?format=order-pack&async=1');
+    expect(JSON.parse((fetchMock.mock.calls[0]![1] as { body: string }).body)).toEqual({
+      source: 'return box(1,1,1);',
+      options: { processes: ['3d-print'], format: 'order-pack' },
+    });
+    expect(result.downloadName).toBe('order.zip');
+  });
+
+  it('names pdf-drawing, order-pack and bom-csv downloads when the server sends no filename', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       blob: async () => new Blob(['%PDF']),
@@ -102,7 +126,11 @@ describe('exportViaServer', () => {
       value: { pathname: '/', search: '', hostname: 'localhost' },
     });
     expect((await exportViaServer('pdf-drawing', 'return box(1,1,1);')).downloadName).toBe('kernelcad-drawing.pdf');
+    expect((await exportViaServer('order-pack', 'return box(1,1,1);')).downloadName).toBe('kernelcad-export.zip');
+    expect((await exportViaServer('bom-csv', 'return box(1,1,1);')).downloadName).toBe('kernelcad-export.csv');
     expect(exportFileExtension('pdf-drawing')).toBe('pdf');
+    expect(exportFileExtension('order-pack')).toBe('zip');
+    expect(exportFileExtension('bom-csv')).toBe('csv');
     expect(exportFileExtension('glb')).toBe('glb');
     expect(exportFileExtension('obj')).toBe('obj');
     expect(exportFileExtension('usd')).toBe('usd');

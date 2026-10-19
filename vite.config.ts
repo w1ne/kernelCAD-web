@@ -440,7 +440,7 @@ function kernelCadMeshEndpoint(): Plugin {
           // follow-up slice; until then they fire export.<format>.not-implemented
           // from the runtime, which would surface as "export produced no bytes"
           // here.
-          const SUPPORTED_STUDIO_FORMATS = ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'pdf-drawing'] as const;
+          const SUPPORTED_STUDIO_FORMATS = ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'pdf-drawing', 'order-pack', 'bom-csv'] as const;
           type StudioFormat = (typeof SUPPORTED_STUDIO_FORMATS)[number];
           if (!SUPPORTED_STUDIO_FORMATS.includes(formatParam as StudioFormat)) {
             res.statusCode = 400;
@@ -542,6 +542,8 @@ function kernelCadMeshEndpoint(): Plugin {
             glb: 'model/gltf-binary',
             'svg-drawing': 'image/svg+xml',
             'pdf-drawing': 'application/pdf',
+            'order-pack': 'application/zip',
+            'bom-csv': 'text/csv',
           };
           if (url.searchParams.get('review') === '1' && formatParam === 'svg-drawing') {
             res.statusCode = 200;
@@ -550,7 +552,7 @@ function kernelCadMeshEndpoint(): Plugin {
             return;
           }
           const contentType = CONTENT_TYPES[formatParam as StudioFormat];
-          const extension = formatParam === 'pdf-drawing' ? 'pdf' : formatParam === 'svg-drawing' ? 'svg' : formatParam;
+          const extension = formatParam === 'pdf-drawing' ? 'pdf' : formatParam === 'svg-drawing' ? 'svg' : formatParam === 'order-pack' ? 'zip' : formatParam === 'bom-csv' ? 'csv' : formatParam;
           const downloadName = `${fileName.replace(/\.[^./]+$/, '')}.${extension}`;
           res.statusCode = 200;
           res.setHeader('content-type', contentType);
@@ -857,6 +859,119 @@ function kernelCadMeshEndpoint(): Plugin {
           res.statusCode = 200;
           res.setHeader('content-type', 'application/json');
           res.end(JSON.stringify(review));
+        } catch (error) {
+          res.statusCode = 500;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+          }));
+        }
+      });
+
+      // BOM dev endpoint (BOM order spec, S2): a thin delegate to
+      // `inspectBomTool` so the Studio Parts tab fetches the same numbers as
+      // `inspect({ of: 'bom' })`. The rows carry capture-time fields
+      // (process / processSource) that cannot be recomputed browser-side.
+      server.middlewares.use('/__kernelcad/bom', async (req, res) => {
+        try {
+          const url = new URL(req.url ?? '', 'http://localhost');
+
+          // POST { source } inspects ARBITRARY edited code (the Studio
+          // Parts-tab candidate path) through the same inspectBomTool the
+          // GET path uses. The `script` query param is not read on this
+          // path: inspectBomTool gets the raw source and no scriptDir, so
+          // relative asset paths resolve from the dev server's cwd.
+          if ((req.method ?? 'GET').toUpperCase() === 'POST') {
+            const { readBody } = await import('./src/server/middleware/httpUtil');
+            let parsedBody: { source?: unknown };
+            try {
+              parsedBody = JSON.parse(
+                (await readBody(req as unknown as NodeJS.ReadableStream, 1_000_000)) || '{}',
+              );
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error);
+              if (/too large/.test(message)) {
+                res.statusCode = 413;
+                res.setHeader('content-type', 'application/json');
+                res.end(JSON.stringify({ error: message }));
+                return;
+              }
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must be JSON { source: string }' }));
+              return;
+            }
+            if (typeof parsedBody.source !== 'string' || parsedBody.source.length === 0) {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must include a non-empty "source" string' }));
+              return;
+            }
+            // Same Emscripten shim the mesh/review paths need: the BOM
+            // request can be the first one hitting the node kernel.
+            ensureOcctShims();
+            const { inspectBomTool } = await import('./src/agent/mcp/tools/inspectBom');
+            const bom = await inspectBomTool({ code: parsedBody.source });
+            res.statusCode = 200;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify(bom));
+            return;
+          }
+
+          const scriptPath = resolveExampleScript(url.searchParams.get('script'));
+
+          // Session parity (mirrors the review GET branch): when the Studio
+          // passes its live pool `session` token, compute the BOM from the
+          // pooled BuiltModel's first assembly instead of re-evaluating the
+          // script, so a slider-driven `params.update` override is reflected
+          // in the Parts tab / Order sheet. The assembly resolution matches
+          // `inspectBomTool` (first captured assembly). Any pool/session
+          // failure — an evicted token, no captured assembly — falls through
+          // to the script-eval path below rather than 500ing a stale token.
+          const sessionToken = url.searchParams.get('session');
+          if (sessionToken) {
+            try {
+              const bundle = await getPoolBundle();
+              const entry = bundle.pool.get(sessionToken);
+              if (entry) {
+                const { computeBom } = await import('./src/agent/script-runtime/bom');
+                const assemblies = entry.model.session.assemblies as Map<string, Parameters<typeof computeBom>[0]>;
+                const arm = assemblies.values().next().value;
+                if (arm !== undefined) {
+                  const { withNextActions } = await import('./src/shared/diagnostics/diagnostic');
+                  const bom = await computeBom(arm, entry.model.session);
+                  res.statusCode = 200;
+                  res.setHeader('content-type', 'application/json');
+                  res.end(JSON.stringify({
+                    ok: true,
+                    featureCount: entry.model.records.length,
+                    assembly: arm.name,
+                    rows: bom.rows,
+                    totals: bom.totals,
+                    diagnostics: withNextActions(bom.diagnostics),
+                  }));
+                  return;
+                }
+              }
+            } catch {
+              // Unknown/evicted session or a pool failure: fall back to the
+              // script/source path so the request still succeeds.
+            }
+          }
+
+          if (!scriptPath) {
+            res.statusCode = 400;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ error: 'script must be a repo examples/*.kcad.ts file' }));
+            return;
+          }
+
+          ensureOcctShims();
+          const { inspectBomTool } = await import('./src/agent/mcp/tools/inspectBom');
+          const bom = await inspectBomTool({ file: scriptPath });
+          res.statusCode = 200;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify(bom));
         } catch (error) {
           res.statusCode = 500;
           res.setHeader('content-type', 'application/json');

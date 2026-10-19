@@ -19,18 +19,28 @@ export const SHCS_HEAD: Record<string, { D: number; K: number }> = {
   M4: { D: 7.0, K: 4.0 },
   M5: { D: 8.5, K: 5.0 },
   M6: { D: 10.0, K: 6.0 },
+  M8: { D: 13.0, K: 8.0 },
+  M10: { D: 16.0, K: 10.0 },
+  M12: { D: 18.0, K: 12.0 },
 };
 
 export const BHCS_HEAD: Record<string, { D: number; K: number }> = {
   M3: { D: 5.7, K: 1.65 },
   M4: { D: 7.6, K: 2.2 },
   M5: { D: 9.5, K: 2.75 },
+  M6: { D: 10.5, K: 3.3 },
+  M8: { D: 14.0, K: 4.4 },
+  M10: { D: 17.5, K: 5.5 },
 };
 
 export const FLATHEAD_HEAD: Record<string, { D: number; K: number }> = {
   M3: { D: 6.72, K: 1.86 },
   M4: { D: 8.96, K: 2.48 },
   M5: { D: 11.2, K: 3.1 },
+  M6: { D: 13.44, K: 3.72 },
+  M8: { D: 17.92, K: 4.96 },
+  M10: { D: 22.4, K: 6.2 },
+  M12: { D: 26.88, K: 7.44 },
 };
 
 export const HEX_NUT: Record<string, { S: number; m: number }> = {
@@ -40,26 +50,41 @@ export const HEX_NUT: Record<string, { S: number; m: number }> = {
   M4: { S: 7, m: 3.2 },
   M5: { S: 8, m: 4.0 },
   M6: { S: 10, m: 5.0 },
+  M8: { S: 13, m: 6.5 },
+  M10: { S: 16, m: 8 },
+  M12: { S: 18, m: 10 },
 };
 
 export const LOCK_NUT: Record<string, { S: number; m: number }> = {
   M3: { S: 5.5, m: 4.0 },
   M4: { S: 7, m: 5.0 },
   M5: { S: 8, m: 6.0 },
+  M6: { S: 10, m: 6.0 },
+  M8: { S: 13, m: 8.0 },
+  M10: { S: 16, m: 10.0 },
+  M12: { S: 18, m: 12.0 },
 };
 
 export const FLAT_WASHER: Record<string, { Dout: number; Din: number; t: number }> = {
   M2: { Dout: 5, Din: 2.2, t: 0.3 },
+  M2_5: { Dout: 5, Din: 2.7, t: 0.5 },
   M3: { Dout: 7, Din: 3.2, t: 0.5 },
   M4: { Dout: 9, Din: 4.3, t: 0.8 },
   M5: { Dout: 10, Din: 5.3, t: 1.0 },
   M6: { Dout: 12, Din: 6.4, t: 1.6 },
+  M8: { Dout: 16, Din: 8.4, t: 1.6 },
+  M10: { Dout: 20, Din: 10.5, t: 2.0 },
+  M12: { Dout: 24, Din: 13.0, t: 2.5 },
 };
 
 export const LOCK_WASHER: Record<string, { Dout: number; Din: number; t: number }> = {
   M3: { Dout: 6.2, Din: 3.1, t: 0.8 },
   M4: { Dout: 7.6, Din: 4.1, t: 1.0 },
   M5: { Dout: 9.2, Din: 5.1, t: 1.2 },
+  M6: { Dout: 11.5, Din: 6.1, t: 1.6 },
+  M8: { Dout: 14.8, Din: 8.1, t: 2.0 },
+  M10: { Dout: 18.1, Din: 10.2, t: 2.2 },
+  M12: { Dout: 21.1, Din: 12.2, t: 2.5 },
 };
 
 export type PartKind =
@@ -158,32 +183,41 @@ const PART_EXAMPLE = "lib.part({ family: 'socket-head-cap-screw', thread: 'M5', 
 const STACK_EXAMPLE = "lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' })";
 
 /** Machining-fixture hardware, keyed by the thread its clamping parts use.
- *  Nominal envelope dimensions from the stock table; slot/thread pairing
- *  follows common machine-table practice. Check the supplier drawing before
+ *  Dimensions are the stock table's envelope values: T-slot nuts follow the
+ *  DIN 508 table (a/e/h/k; the envelope length is a stock choice, DIN 508
+ *  does not table it) and collar nuts follow the DIN 6331 table (s/m/d1/a),
+ *  both read 2026-10-18. Strap clamps and step blocks have no DIN table: their
+ *  values stay nominal kit dimensions. Check the supplier drawing before
  *  ordering. */
 const FIXTURES: Record<string, FixtureFamily> = {
   't-slot-nut': {
     idPrefix: 'tslot-nut',
     kind: 't-slot-nut',
+    // DIN 508: a (slot), e (nut width, min), h (height), k (head height).
+    // neckWidth = a min, baseWidth = e min, neck height = k, base = h - k.
     threads: {
-      M8: { slotMm: 10, baseWidthMm: 15.8, neckWidthMm: 9.7, baseHeightMm: 6, neckHeightMm: 8, lengthMm: 22 },
-      M10: { slotMm: 12, baseWidthMm: 17.8, neckWidthMm: 11.7, baseHeightMm: 7, neckHeightMm: 9, lengthMm: 26 },
-      M12: { slotMm: 14, baseWidthMm: 19.8, neckWidthMm: 13.7, baseHeightMm: 8, neckHeightMm: 10, lengthMm: 30 },
+      M8: { slotMm: 10, baseWidthMm: 14.5, neckWidthMm: 9.5, baseHeightMm: 6, neckHeightMm: 6, lengthMm: 22 },
+      M10: { slotMm: 12, baseWidthMm: 17.5, neckWidthMm: 11.4, baseHeightMm: 7, neckHeightMm: 7, lengthMm: 26 },
+      M12: { slotMm: 14, baseWidthMm: 21.5, neckWidthMm: 13.4, baseHeightMm: 8, neckHeightMm: 8, lengthMm: 30 },
     },
   },
   'clamping-stud': {
     idPrefix: 'clamp-stud',
     kind: 'stud',
+    // DIN 6379 length series (a stocked subset); the envelope is the nominal
+    // thread diameter over that length.
     threads: { M8: {}, M10: {}, M12: {} },
     lengths: { M8: [63, 100], M10: [80, 125], M12: [100, 160] },
   },
   'flange-nut': {
     idPrefix: 'flange-nut',
     kind: 'flange-nut',
+    // DIN 6331: s (across flats), m (height), d1 (collar diameter), a (collar
+    // height). flangeDiameter/thickness carry d1/a.
     threads: {
-      M8: { acrossFlatsMm: 13, heightMm: 8, flangeDiameterMm: 18, flangeThicknessMm: 1.6 },
-      M10: { acrossFlatsMm: 16, heightMm: 10, flangeDiameterMm: 22, flangeThicknessMm: 2 },
-      M12: { acrossFlatsMm: 18, heightMm: 12, flangeDiameterMm: 26, flangeThicknessMm: 2.4 },
+      M8: { acrossFlatsMm: 13, heightMm: 12, flangeDiameterMm: 18, flangeThicknessMm: 3.5 },
+      M10: { acrossFlatsMm: 16, heightMm: 15, flangeDiameterMm: 22, flangeThicknessMm: 4 },
+      M12: { acrossFlatsMm: 18, heightMm: 18, flangeDiameterMm: 25, flangeThicknessMm: 4 },
     },
   },
   'strap-clamp': {

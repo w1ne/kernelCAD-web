@@ -23,6 +23,7 @@ export type MobileSheetId =
     | 'projects'
     | 'validity'
     | 'joints'
+    | 'parts'
     | 'animation'
     | 'export'
     | 'status';
@@ -44,6 +45,7 @@ export const MOBILE_SHEET_TITLE: Readonly<Record<MobileSheetId, string>> = {
     projects: 'Projects',
     validity: 'Checks',
     joints: 'Joints',
+    parts: 'Parts',
     animation: 'Animation',
     export: 'Export',
     status: 'Status',
@@ -68,7 +70,7 @@ export function sheetForTab(tab: MobileTabId): MobileSheetId | null {
 
 /** Sheets that stand in for an inspector tab. They keep `inspectorOpen` in step. */
 const INSPECTOR_SHEETS: ReadonlySet<MobileSheetId> = new Set<MobileSheetId>([
-    'code', 'params', 'validity', 'joints', 'animation', 'export',
+    'code', 'params', 'validity', 'joints', 'parts', 'animation', 'export',
 ]);
 
 export function isInspectorSheet(sheet: MobileSheetId | null): boolean {

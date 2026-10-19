@@ -114,7 +114,8 @@ describe("inspect({ of: 'bom' })", () => {
     expect(r.ok).toBe(true);
     if (!r.ok) throw new Error('expected ok');
     const row = r.rows[0];
-    expect(row.processHint).toBe('sheet-metal');
+    expect(row.process).toBe('sheet-cut');
+    expect(row.processSource).toBe('inferred');
     const [minX, minY, minZ] = row.bboxMm.min;
     const [maxX, maxY, maxZ] = row.bboxMm.max;
     expect(maxX - minX).toBeCloseTo(50, 3);
@@ -168,5 +169,72 @@ describe("inspect({ of: 'bom' })", () => {
     if (!r.ok) throw new Error('expected ok');
     expect(r.rows[0].catalog?.vendor).toBeNull();
     expect(r.diagnostics.some((d) => d.code === 'bom.purchased.catalog-metadata-missing')).toBe(true);
+  }, 60000);
+
+  it('declares process per row and splits same-shape parts by effective process', async () => {
+    const script = `
+      const arm = assembly('demo');
+      arm.part('made_cnc', box(10, 10, 10), { process: 'cnc' });
+      arm.part('made_print', box(10, 10, 10));
+      return arm.model();
+    `;
+    const r = await inspectBomTool({ code: script });
+    expect(r.ok).toBe(true);
+    if (!r.ok) throw new Error('expected ok');
+    const cnc = r.rows.find((row) => row.name === 'made_cnc');
+    const printed = r.rows.find((row) => row.name === 'made_print');
+    expect(cnc?.process).toBe('cnc');
+    expect(cnc?.processSource).toBe('declared');
+    expect(printed?.process).toBe('3d-print');
+    expect(printed?.processSource).toBe('inferred');
+    expect(r.rows).toHaveLength(2);
+  }, 60000);
+
+  it('keeps a group declared when every instance declares', async () => {
+    const script = `
+      const arm = assembly('demo');
+      arm.part('a', box(10, 10, 10), { process: 'cnc' });
+      arm.part('b', box(10, 10, 10), { process: 'cnc' });
+      arm.part('c', box(10, 10, 10), { process: 'cnc' });
+      return arm.model();
+    `;
+    const r = await inspectBomTool({ code: script });
+    expect(r.ok).toBe(true);
+    if (!r.ok) throw new Error('expected ok');
+    expect(r.rows).toHaveLength(1);
+    expect(r.rows[0].quantity).toBe(3);
+    expect(r.rows[0].processSource).toBe('declared');
+  }, 60000);
+
+  it('marks a group inferred when only some instances declare the same effective process', async () => {
+    const script = `
+      const arm = assembly('demo');
+      arm.part('a', box(10, 10, 10), { process: '3d-print' });
+      arm.part('b', box(10, 10, 10));
+      return arm.model();
+    `;
+    const r = await inspectBomTool({ code: script });
+    expect(r.ok).toBe(true);
+    if (!r.ok) throw new Error('expected ok');
+    expect(r.rows).toHaveLength(1);
+    expect(r.rows[0].quantity).toBe(2);
+    expect(r.rows[0].process).toBe('3d-print');
+    expect(r.rows[0].processSource).toBe('inferred');
+  }, 60000);
+
+  it('purchased rows carry process: null', async () => {
+    const script = `
+      const arm = assembly('demo');
+      const screw = await lib.fetchPart('iso-4762-m2x4');
+      arm.part('screw_0', screw, { at: [0, 0, 0] });
+      return arm.model();
+    `;
+    const r = await inspectBomTool({ code: script });
+    expect(r.ok).toBe(true);
+    if (!r.ok) throw new Error('expected ok');
+    const row = r.rows[0];
+    expect(row.kind).toBe('purchased');
+    expect(row.process).toBeNull();
+    expect(row.processSource).toBeNull();
   }, 60000);
 });

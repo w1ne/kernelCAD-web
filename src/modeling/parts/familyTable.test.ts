@@ -36,6 +36,19 @@ describe('family table', () => {
     expect(screw.part.id).toBe('iso-4762-m5x16');
     expect(screw.offsetZ).toBe(1);
   });
+
+  it('stocks M8 to M12 with the standard envelope dimensions', () => {
+    const cap = resolvePart({ family: 'socket-head-cap-screw', thread: 'M12', lengthMm: 40 });
+    expect(cap.id).toBe('iso-4762-m12x40');
+    expect(cap.headDiameterMm).toBe(18);
+    expect(cap.headHeightMm).toBe(12);
+    const flat = resolvePart({ family: 'flat-head-countersunk', thread: 'M8', lengthMm: 20 });
+    expect(flat.headDiameterMm).toBe(17.92);
+    const nut = resolvePart({ family: 'hex-nut', thread: 'M10' });
+    expect(nut.acrossFlatsMm).toBe(16);
+    const washer = resolvePart({ family: 'flat-washer', thread: 'M12' });
+    expect(washer.innerDiameterMm).toBe(13);
+  });
 });
 
 describe('fixture families', () => {
@@ -84,6 +97,6 @@ describe('fixture families', () => {
     const nut = resolvePart({ family: 'flange-nut', thread: 'M12' });
     expect(nut.id).toBe('flange-nut-m12');
     expect(nut.acrossFlatsMm).toBe(18);
-    expect(nut.dims?.flangeDiameterMm).toBe(26);
+    expect(nut.dims?.flangeDiameterMm).toBe(25); // DIN 6331 M12 d1
   });
 });

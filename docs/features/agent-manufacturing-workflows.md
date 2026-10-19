@@ -38,6 +38,31 @@ bundle](../demos/sheets-bom/README.md) uses the supplied drawbot handoff and dem
 local merge and CSV fallback only; no Google Sheet was connected or written during
 validation.
 
+## BOM order pack (`order-pack`, `fab_pack scope: 'bom'`)
+
+`export({ format: 'order-pack' })` and `fab_pack({ scope: 'bom' })` build the same pack
+through one collector (`collectOrderPack`) and pure builder (`buildOrderPack`): the BOM
+(`bom.csv`, `bom.json` with totals), one `parts/<item>-<name>/` folder per fabricated row
+(`model.step` always; `model.stl` for `3d-print`; `model.dxf` for `sheet-cut` when the
+holes-aware flat-pattern walk succeeds; `drawing.pdf` where the per-row drawing pipeline
+accepts the row), `handoffs/*.txt` paste texts for purchased rows, `manifest.json`
+(per-part file index, McMaster caveat, per-row notes) and `README.txt`. Options narrow
+which fabricated rows are packed: `processes` (by effective process) or `items` (by BOM
+item number; wins). `fab_pack` additionally writes `<name>-order-pack.zip` and returns
+per-process `quote_links`, each pointing at a service's public instant-quote upload page
+with the pack file to upload.
+
+Handoff texts match the vendors' own paste boxes: McMaster takes part numbers only —
+quantities there mean packs and catalog pack sizes are not modeled yet, so the text never
+carries a quantity and the caveat lives in the manifest/README instead; Mouser is
+`PN|qty`; DigiKey is `PN,qty`, and the Studio Order sheet offers a pre-filled DigiKey
+FastAdd cart URL only when every purchased row uses a DigiKey-style `-ND` part number.
+
+Nothing is uploaded or ordered: the quote links are plain public web pages the user opens
+and uploads to. The [order-pack demo bundle](../demos/bom-order/README.md) retains the
+actual CSV, manifest, handoffs and per-row `process`/`processSource` provenance (declared
+and inferred) from a local mixed fabrication + purchase run.
+
 ## G-code export receipts
 
 ```json

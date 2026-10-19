@@ -6,7 +6,6 @@ kind: guide
 status: draft
 model: examples/parts/bolt-stack.kcad.ts
 video: docs/demos/standard-parts/demo.mp4
-note: To publish, move the three PNGs in docs/guide/standard-parts-library/ into site/blog/standard-parts-library/, point the figures at ../../site/blog/standard-parts-library/, and flip status to published. Demo bundle lives in docs/demos/standard-parts/.
 ---
 
 kernelCAD ships a table of ISO metric fasteners. `lib.part` builds one part from
@@ -15,13 +14,13 @@ envelope solids, a head plus a shank, and the browser builds them in memory.
 
 ## What the table stocks
 
-- `socket-head-cap-screw` (ISO 4762): M2, M2.5, M3, M4, M5, M6
-- `button-head-cap-screw` (ISO 7380): M3, M4, M5
-- `flat-head-countersunk` (ISO 10642): M3, M4, M5
-- `hex-nut` (ISO 4032): M2, M2.5, M3, M4, M5, M6
-- `lock-nut` (DIN 985): M3, M4, M5
-- `flat-washer` (ISO 7089): M2, M3, M4, M5, M6
-- `lock-washer` (DIN 127B): M3, M4, M5
+- `socket-head-cap-screw` (ISO 4762): M2, M2.5, M3, M4, M5, M6, M8, M10, M12
+- `button-head-cap-screw` (ISO 7380): M3, M4, M5, M6, M8, M10
+- `flat-head-countersunk` (ISO 10642): M3, M4, M5, M6, M8, M10, M12
+- `hex-nut` (ISO 4032): M2, M2.5, M3, M4, M5, M6, M8, M10, M12
+- `lock-nut` (DIN 985): M3, M4, M5, M6, M8, M10, M12
+- `flat-washer` (ISO 7089): M2, M2.5, M3, M4, M5, M6, M8, M10, M12
+- `lock-washer` (DIN 127B): M3, M4, M5, M6, M8, M10, M12
 
 Screws also take a stocked length: socket head 4 to 50 mm, button head 5 to
 25 mm, countersunk 6 to 25 mm. An unknown family, thread or length fails with a
@@ -102,6 +101,16 @@ const stack = await lib.stack({ thread: 'M5', gripMm, mode: 'bolt' });
 Envelopes carry no thread, so nothing here proves thread contact, engagement,
 strength, torque or preload. The committed STEP files and the in-memory
 envelope come from the same table and agree; neither is a strength model.
+
+`examples/parts/bolted-flange.kcad.ts` extends the same table to a drilled
+flange: eight Ø6.6 bores on an 85 mm bolt circle size to M6 (ISO 273 normal),
+the seat cut fills each countersink, and `examples/parts/verify-flange.mts`
+checks the eight placed stacks (300 part pairs, zero overlaps,
+`docs/demos/standard-parts/flange-evidence.json`).
+
+`lib.insert` reports which ISO 273 fit class a bore matched
+(`'close' | 'normal' | 'loose'`), so a 6.4, 6.6 or 7.0 mm hole all resolve to
+M6.
 
 `examples/parts/verify.mts` re-evaluates both examples and writes
 `docs/demos/standard-parts/geometry-evidence.json`: per-part bounds and

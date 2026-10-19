@@ -52,6 +52,7 @@ export type TabId =
     | 'params'
     | 'validity'
     | 'joints'
+    | 'parts'
     | 'export'
     | 'sections'
     | 'cut'

@@ -142,7 +142,7 @@ const evidence = {
   scope:
     'Native static envelope geometry and placement: head + shank solids, countersink seats, ' +
     'no helical thread, no thread contact, strength, torque or preload. The countersunk head ' +
-    'is the envelope cylinder in the seat cone; the seat is cut to the head diameter.',
+    'is the seated ISO 10642 frustum (rim on the seat plane); the seat is cut to the head diameter.',
 };
 const outDir = `${dir}../../docs/demos/hole-driven-insert`;
 await mkdir(outDir, { recursive: true });

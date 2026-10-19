@@ -68,7 +68,8 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, ' +
         'and joint drives only when declared in options.drives { <mate>: { stiffness, damping, maxForce?, targetPosition? } }; options.collisionApproximation is convexHull | convexDecomposition; ' +
         'planar/cylindrical/pin_slot/ball mates fail closed with export.usd.joint-unsupported). ' +
-        "bom-csv / bom-json (bill of materials over assembly.model()/solvedModel(): one row per distinct part — grouped by geometry/catalog identity, not name — with real instance quantity, kind, material, density, mass, bbox, process hint, and catalog provenance for purchased parts; same numbers as inspect({ of: 'bom' })). " +
+        "bom-csv / bom-json (bill of materials over assembly.model()/solvedModel(): one row per distinct part — grouped by geometry/catalog identity, not name — with real instance quantity, kind, material, density, mass, bbox, fabrication process (`process` + `processSource`), and catalog provenance for purchased parts; same numbers as inspect({ of: 'bom' })). " +
+        "order-pack (a zip: one single-body file per fabricated part — STEP always, plus STL for 3d-print and DXF for sheet-cut rows, per-part drawing PDFs where available — with bom.csv/bom.json, vendor paste handoff texts for purchased rows and a machine-readable manifest; options processes / items narrow which rows are packed; nothing is uploaded). " +
         "bend-table (tube bender tables over tube() records: one <tube name>.csv per tube with the LRA bend table, XYZ points, cut length and last straight; output_path is a DIRECTORY and the written files are reported in table_files; a script with no tube() fails with export.bend-table.no-tubes, and a script whose tube gates report errors writes nothing). " +
         'urdf and sdf-gazebo also write one meshes/<part>.stl per link, and usd-isaac one meshes/<part>.usda mesh layer per link, next to output_path (reported in mesh_files) — ship the whole directory to the consumer. ' +
         'STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight ' +
@@ -93,7 +94,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
           output_path: { type: 'string', description: "Destination path (a directory for format 'bend-table'). target:'model' — the export file (required). target:'part' — single-part .stl path." },
           format: {
             type: 'string',
-            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'usd', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json', 'bend-table', 'gcode'],
+            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'usd', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json', 'order-pack', 'bend-table', 'gcode'],
             description: "target:'model' — output file format (required for that target).",
           },
           feature_id: { type: 'string', description: "target:'model' — optional FeatureId to export; defaults to last." },

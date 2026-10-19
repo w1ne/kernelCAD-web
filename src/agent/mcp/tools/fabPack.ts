@@ -20,12 +20,15 @@ import type { ExportFormat } from '../../script-runtime/export';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { checkWritableDestination, safeWriteFile } from '../../script-runtime/safeWriteFile';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
-import { bomToCsv } from '../../script-runtime/bom';
+import { bomToCsv, inferredProcess } from '../../script-runtime/bom';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
 import { buildVendorLink, referralDisclosure } from '../../../shared/links/referral';
-
-export type FabPackFormat = 'step' | 'stl' | '3mf' | 'pdf-drawing' | 'bom-csv' | 'dxf';
-export type FabProcess = '3d-print' | 'cnc' | 'sheet-cut';
+import { FAB_PROCESSES, type FabPackFormat, type FabProcess } from '../../../shared/fab';
+export type { FabPackFormat, FabProcess } from '../../../shared/fab';
+import { FAB_SERVICES, type FabService } from '../../../kernel/export/order/fabServices';
+import { fabPackBomTool } from './fabPackBom';
+export { FAB_SERVICES } from '../../../kernel/export/order/fabServices';
+export type { FabService } from '../../../kernel/export/order/fabServices';
 
 export const FAB_PACK_DEFAULT_FORMATS: readonly FabPackFormat[] = ['step', 'stl', '3mf', 'pdf-drawing', 'bom-csv'];
 
@@ -33,56 +36,28 @@ const EXT: Record<FabPackFormat, string> = {
   step: 'step', stl: 'stl', '3mf': '3mf', 'pdf-drawing': 'pdf', 'bom-csv': 'bom.csv', dxf: 'dxf',
 };
 
-export interface FabService {
-  service: string;
-  processes: FabProcess[];
-  /** Public instant-quote / upload page (no API; the user uploads by hand). */
-  url: string;
-  /** File formats the service accepts, in our pack's terms, preferred first. */
-  accepts: FabPackFormat[];
-}
-
-interface FabServiceEntry extends Omit<FabService, 'url'> {
-  /** Quote page as host + path. Outbound URLs are only ever built through
-   *  buildVendorLink (referral.ts), the single vendor-URL emitter. */
-  host: string;
-  path: string;
-}
-
-/** Public quote pages, checked reachable 2026-10-13. Plain web pages only. */
-const FAB_SERVICE_ENTRIES: readonly FabServiceEntry[] = [
-  { service: 'JLC3DP (JLCPCB 3D printing)', processes: ['3d-print'], host: 'jlc3dp.com', path: '/3d-printing-quote', accepts: ['stl', 'step', '3mf'] },
-  { service: 'JLCCNC (JLCPCB CNC machining)', processes: ['cnc'], host: 'jlccnc.com', path: '/cnc-machining-quote', accepts: ['step'] },
-  { service: 'PCBWay 3D printing', processes: ['3d-print'], host: 'www.pcbway.com', path: '/rapid-prototyping/3D-Printing/', accepts: ['stl', 'step'] },
-  { service: 'PCBWay CNC / sheet metal', processes: ['cnc', 'sheet-cut'], host: 'www.pcbway.com', path: '/rapid-prototyping/manufacture/', accepts: ['step', 'dxf', 'pdf-drawing'] },
-  { service: 'Xometry', processes: ['cnc', '3d-print', 'sheet-cut'], host: 'www.xometry.com', path: '/quoting/home/', accepts: ['step', 'stl', 'dxf', 'pdf-drawing'] },
-  { service: 'SendCutSend', processes: ['sheet-cut'], host: 'app.sendcutsend.com', path: '/', accepts: ['dxf', 'step'] },
-  { service: 'Craftcloud', processes: ['3d-print'], host: 'craftcloud3d.com', path: '/', accepts: ['stl', '3mf'] },
-];
-
-/** The quote-service table with clean (untagged) https URLs. */
-export const FAB_SERVICES: readonly FabService[] = FAB_SERVICE_ENTRIES.map(({ host, path, ...rest }) => ({
-  ...rest,
-  url: new URL(path, `https://${host}`).toString(),
-}));
-
 export interface FabPackInput {
+  /** Pack scope: 'part' (default) packs one script's files; 'bom' packs the
+   *  whole assembly's order pack (per-part files, BOM, handoffs, zip). */
+  scope?: 'part' | 'bom';
   file?: string;
   code?: string;
   /** Directory the pack is written into (created if missing). */
   output_dir: string;
-  /** Base file name, default 'part'. */
+  /** Base file name, default 'part'. bom scope: the zip file name. */
   name?: string;
-  /** Files to include. Default step, stl, 3mf, pdf-drawing, bom-csv. Add 'dxf' for flat / sheet parts. */
+  /** Files to include (part scope). Default step, stl, 3mf, pdf-drawing, bom-csv. Add 'dxf' for flat / sheet parts. */
   formats?: FabPackFormat[];
-  /** Filter the quote links to these processes. Default: all. */
+  /** Only return quote links for these processes. bom scope: also narrows which fabricated rows are packed. Default: all. */
   processes?: FabProcess[];
 }
 
 export interface FabPackFile {
-  format: FabPackFormat;
+  /** Requested single-part format; 'order-pack' for the bom scope's zip entry. */
+  format: FabPackFormat | 'order-pack';
   path?: string;
-  /** Companion files the export wrote next to `path` (per-part DXFs under parts/). */
+  /** Companion files the export wrote next to `path` (per-part DXFs under
+   *  parts/). bom scope: every per-part entry path inside the zip. */
   part_files?: string[];
   byte_count?: number;
   ok: boolean;
@@ -150,10 +125,14 @@ async function singlePartBom(input: FabPackInput, name: string, out: string): Pr
   const shape = model?.rootShape ?? model?.tailShape;
   if (shape === undefined) return undefined;
   const bb = shape.boundingBox();
+  // Same inference computeBom applies to an undeclared fabricated part, so
+  // the single-shape fallback row agrees with the assembly BOM on process.
+  const process = model?.rootId !== undefined ? inferredProcess(model.records, model.rootId) : '3d-print';
   const csv = bomToCsv([{
     item: 1, name, quantity: 1, kind: 'fabricated', material: null, density: null,
     massGPerUnit: null, massGTotal: null,
     bboxMm: { min: [...bb.min] as [number, number, number], max: [...bb.max] as [number, number, number] },
+    process, processSource: 'inferred',
     instancePaths: [name],
   }]);
   const err = await safeWriteFile(out, csv);
@@ -161,7 +140,7 @@ async function singlePartBom(input: FabPackInput, name: string, out: string): Pr
   return { ok: true, output_path: out, byte_count: Buffer.byteLength(csv), format: 'bom-csv', diagnostics: evaluation.diagnostics };
 }
 
-const PROCESSES: readonly FabProcess[] = ['3d-print', 'cnc', 'sheet-cut'];
+const PROCESSES: readonly FabProcess[] = FAB_PROCESSES;
 
 function isFormatList(v: unknown): v is FabPackFormat[] {
   return Array.isArray(v) && v.length > 0 && v.every(f => typeof f === 'string' && Object.hasOwn(EXT, f));
@@ -171,19 +150,30 @@ function isProcessList(v: unknown): v is FabProcess[] {
   return Array.isArray(v) && v.every(p => PROCESSES.includes(p as FabProcess));
 }
 
-/** Validate the call; returns the resolved output directory or an error message. */
-function validateInput(input: FabPackInput): { dir: string } | string {
-  if (input.file === undefined && input.code === undefined) return 'Provide { file } or { code }.';
-  if (typeof input.output_dir !== 'string' || input.output_dir.length === 0) return 'Required: output_dir';
-  const dirCheck = validateOutputPath(input.output_dir);
-  if (!dirCheck.ok || dirCheck.resolved === undefined) return dirCheck.error ?? `Refusing to write to ${input.output_dir}.`;
-  if (!NAME_RE.test(input.name ?? 'part')) return 'name must be 1-64 characters of letters, digits, ".", "_" or "-".';
+/** formats / processes: each, when given, must be a well-formed list of
+ *  known format ids / process names. */
+function validateFormatsProcesses(input: FabPackInput): string | undefined {
   if (input.formats !== undefined && !isFormatList(input.formats)) {
     return `formats must be a non-empty list of ${Object.keys(EXT).join(', ')}.`;
   }
   if (input.processes !== undefined && !isProcessList(input.processes)) {
     return "processes must be a list of '3d-print' | 'cnc' | 'sheet-cut'.";
   }
+  return undefined;
+}
+
+/** Validate the call; returns the resolved output directory or an error message. */
+function validateInput(input: FabPackInput): { dir: string } | string {
+  // 'bom' never reaches here (dispatched before the single-part path); an
+  // unknown scope is a caller bug, not a part pack.
+  if (input.scope !== undefined && input.scope !== 'part' && input.scope !== 'bom') return "scope must be 'part' or 'bom'.";
+  if (input.file === undefined && input.code === undefined) return 'Provide { file } or { code }.';
+  if (typeof input.output_dir !== 'string' || input.output_dir.length === 0) return 'Required: output_dir';
+  const dirCheck = validateOutputPath(input.output_dir);
+  if (!dirCheck.ok || dirCheck.resolved === undefined) return dirCheck.error ?? `Refusing to write to ${input.output_dir}.`;
+  if (!NAME_RE.test(input.name ?? 'part')) return 'name must be 1-64 characters of letters, digits, ".", "_" or "-".';
+  const listsError = validateFormatsProcesses(input);
+  if (listsError !== undefined) return listsError;
   return { dir: resolve(dirCheck.resolved) };
 }
 
@@ -293,6 +283,7 @@ async function writePack(dir: string, name: string, files: readonly FabPackFile[
 }
 
 export async function fabPackTool(input: FabPackInput): Promise<FabPackOutput> {
+  if (input.scope === 'bom') return fabPackBomTool(input);
   const checked = validateInput(input);
   if (typeof checked === 'string') return fail(checked);
   const { dir } = checked;

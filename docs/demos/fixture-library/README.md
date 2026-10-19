@@ -6,8 +6,8 @@ not a screen recording, turntable, deployed-platform capture, physical setup
 or machining test.
 
 Source: `examples/fixture/table-clamp-set.kcad.ts` — a 400 × 130 × 24 mm
-T-slot table section with a 12 mm channel, a 50 × 70 × 36 mm workpiece and two
-M10 clamp sets. Every hardware part comes from `lib.fixture`: T-slot nut in
+T-slot table section with a 12 mm (DIN 508 opening) channel, a 50 × 70 × 36 mm
+workpiece and two M10 clamp sets. Every hardware part comes from `lib.fixture`: T-slot nut in
 the channel, clamping stud, strap clamp over the workpiece, step block under
 the tail, flange nut on top.
 
@@ -24,8 +24,9 @@ Evidence:
 
 - `geometry-evidence.json` — source hash, 66 part pairs checked with zero
   positive-volume overlaps, the spans that document each mating face (T-nut
-  wing tops at 14.4 mm, clamp underside level with the 36 mm workpiece top at
-  60 mm, flange nut at 72–82 mm), and the scope statement.
+  wing tops at 16.4 mm on the DIN 508 M10 head height, clamp underside level
+  with the 36 mm workpiece top at 60 mm, DIN 6331 flange nut at 72–87 mm),
+  and the scope statement.
 - `video-evidence.json` — input image hashes, delivered video hash, slide
   durations and the exact render invocations.
 - `viewer-evidence.json` — the GLB the inline viewers consume (12 named
@@ -43,9 +44,10 @@ stud length. `viewer-evidence.json` records the GLB payload for the inline
 viewer. The parts skill teaches Claude and ChatGPT agents the five calls and
 their connectors.
 
-Scope: nominal envelope solids from the stock table (slot/thread pairing
-follows common machine-table practice; check the supplier drawing before
-ordering). The example proves placement and stock dimensions, not clamping
+Scope: envelope solids from the stock table. T-slot nuts follow the DIN 508
+table and flange nuts the DIN 6331 table (both recorded in the family table,
+read 2026-10-18); strap clamps and step blocks have no DIN table and stay
+nominal kit dimensions. Check the supplier drawing before ordering. The example proves placement and stock dimensions, not clamping
 force, torque, stud deflection, fixture stiffness or machining loads. Digital
 assembly only; no physical setup was built or cut.
 
