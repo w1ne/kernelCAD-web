@@ -342,6 +342,26 @@ export function resolveExportTarget(
 /** Scene-aware export dispatch: STEP/3MF/GLB/OBJ/USD keep per-part identity; STL and
  *  gcode auto-fuse. Returns `undefined` for formats that fall through to the
  *  single-shape path (urdf/srdf/sdf-gazebo). */
+/** Per-part STEP verify: B-rep validity (BRepCheck) first — invalid topology
+ *  (e.g. an unorientable face left by a boolean on an imported body) passes the
+ *  mesh gate but downstream validity gates reject the STEP — then the
+ *  watertight mesh check. Returns the first failing diagnostic, or undefined
+ *  when every part passes both gates. */
+function firstStepVerifyFailure(
+  parts: ReturnType<typeof sceneToWorldFrameParts>,
+  targetId: string,
+): CompilerDiagnostic | undefined {
+  for (const p of parts) {
+    const partName = parts.length > 1 ? p.name : undefined;
+    if (!isValidShape(getOC(), p.shape.getReplicadShape().wrapped)) {
+      return brepInvalidDiagnostic(targetId, partName);
+    }
+    const report = verifyWatertight(meshShapeForExport(p.shape.getReplicadShape()));
+    if (!report.ok) return stlNotWatertightDiagnostic(report, targetId, partName, 'STEP mesh');
+  }
+  return undefined;
+}
+
 export async function exportSceneBackend(
   input: ExportInput,
   format: ExportInput['format'],
@@ -361,24 +381,8 @@ export async function exportSceneBackend(
     // defect at export time — the file is still written for inspection.
     const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
     if (verify) {
-      const parts = sceneToWorldFrameParts(scene);
-      for (const p of parts) {
-        // B-rep validity (BRepCheck): catch invalid topology — e.g. an
-        // unorientable face left by a boolean on an imported body — that the
-        // mesh gate can miss. Downstream validity gates reject these STEPs.
-        if (!isValidShape(getOC(), p.shape.getReplicadShape().wrapped)) {
-          result.diagnostics.push(brepInvalidDiagnostic(targetId, parts.length > 1 ? p.name : undefined));
-          break;
-        }
-        const mesh = meshShapeForExport(p.shape.getReplicadShape());
-        const report = verifyWatertight(mesh);
-        if (!report.ok) {
-          result.diagnostics.push(
-            stlNotWatertightDiagnostic(report, targetId, parts.length > 1 ? p.name : undefined, 'STEP mesh'),
-          );
-          break;
-        }
-      }
+      const failure = firstStepVerifyFailure(sceneToWorldFrameParts(scene), targetId);
+      if (failure) result.diagnostics.push(failure);
     }
     return result;
   }
