@@ -239,8 +239,20 @@ function extrudeRoundedRectProfile(
     });
     return undefined;
   }
+  const axis = String(r.params.axis?.expression ?? "'z'").replace(/'/g, '');
+  if (axis !== 'x' && axis !== 'y' && axis !== 'z') {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: r.id,
+      severity: 'error',
+      message: `extrude rounded-rect axis must be 'x', 'y', or 'z'; got '${axis}'.`,
+      hint: "Pass { axis: 'x' | 'y' | 'z' } on extrudeRoundedRect.",
+    });
+    return undefined;
+  }
   try {
-    return OcctBackend.extrudeRoundedRect(width, height, radius, depth, { twistAngle });
+    return OcctBackend.extrudeRoundedRect(width, height, radius, depth, { twistAngle, axis });
   } catch (e) {
     return pushExtrudeFailure(ctx, r, e);
   }

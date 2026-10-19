@@ -87,6 +87,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     names: [
       'box', 'cylinder', 'sphere', 'torus', 'spring', 'threadedRod', 'isoThread', 'spurGear', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
       'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect',
+      'filletPolygon', 'prismSide', 'prismSideY', 'prismFront', 'prismPlan',
       'sheetMetal', 'sdf',
       'path', 'moveTo', 'lineTo', 'close', 'label', 'circle',
       'tangentArc', 'threePointsArc', 'sagittaArc', 'bulgeArc', 'radiusArc',

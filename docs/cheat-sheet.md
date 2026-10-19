@@ -43,7 +43,12 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `extrudeRect(w, h, height, opts?) => Shape` | Extrude a w-by-h rectangle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
 | `extrudeCircle(r, height, opts?) => Shape` | Extrude a radius-r circle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
 | `extrudePolygon(points, depth, opts?) => Shape` | Extrude a 2D polygon (array of [x, y] points; coordinates and `depth` accept ParamRefs) by `depth` along Z. |
-| `extrudeRoundedRect(width, height, radius, depth, opts?) => Shape` | Extrude a rounded rectangle (corner radius) by `depth` along Z. |
+| `extrudeRoundedRect(width, height, radius, depth, opts?) => Shape` | Extrude a rounded rectangle (corner radius) by `depth`. |
+| `filletPolygon(points: [number, number][], radius, opts?: { segments?: number }) => [number, number][]` | Round every corner of a closed 2D polygon with tangent arcs and return points for extrudePolygon / the prism helpers. |
+| `prismSide(points: [number, number][], halfY?: number) => Shape` | Side-view mask prism: points are (station s, height z), extruded through Y from -halfY to +halfY (default 1200). |
+| `prismSideY(points: [number, number][], y0: number, y1: number) => Shape` | Side-view mask prism on one side only: points are (s, z), extruded through Y from y0 to y1 (y1 > y0). |
+| `prismFront(points: [number, number][], x0: number, x1: number) => Shape` | Front-view mask prism: points are (Y, Z), extruded along X from x0 to x1. |
+| `prismPlan(points: [number, number][], z0: number, z1: number) => Shape` | Plan-view mask prism: points are (X, Y), extruded along Z from z0 to z1. |
 | `sheetMetal(profile: Sketch, { thickness, kFactor, faceLabels? }) => Shape` | Build a sheet-metal body from a closed planar Sketch. |
 | `sdf : { sphere(r), box(size), cylinder(r, h), torus(R, r), smoothBlend(a, b, k), materialize(field, opts?), bind(name, field) }` | SDF authoring namespace (W2.3 slice-1). |
 | `path() => PathBuilder` | Start a 2D path: chain moveTo / lineTo / arcs / .close() to get a Sketch. |

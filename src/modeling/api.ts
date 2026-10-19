@@ -70,6 +70,7 @@ import { makePartsLib } from './apiPartsLib';
 import { makeNurbsSurfaceMethods, makeCurveMethods, makeSweepMethods } from './apiSurfaceMethods';
 import { makeModuleNamespaces } from './apiModuleNamespaces';
 import { makeCaptureMethods } from './apiCaptureMethods';
+import { makePolygonMethods, type FilletPolygonOptions, type PolygonPoint } from './apiPolygonMethods';
 import { makeThreadMethods } from './apiThreadMethods';
 import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
 
@@ -156,6 +157,11 @@ export interface ExtrudeOpts extends FaceLabelOpts {
    *  that does not touch the origin changes its bounding box. Defaults to 0
    *  (straight extrude). Unknown option keys throw `feature.invalid-args`. */
   twistAngle?: Editable<number>;
+  /** Extrusion axis for `extrudeRoundedRect`: 'z' (default) keeps the
+   *  profile in XY and sweeps +Z; 'x' places width along Y / height along Z
+   *  and sweeps +X; 'y' places width along X / height along Z and sweeps +Y.
+   *  Saves a rotate() chain when building wings, cockpit plates, etc. */
+  axis?: 'x' | 'y' | 'z';
 }
 
 /** W2.2: opts for `sheetMetal(profile, opts)`. The kernel does not bake
@@ -284,6 +290,24 @@ export interface KernelCadApi {
   extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: ExtrudeOpts): Shape;
   extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: ExtrudeOpts): Shape;
   extrudeRoundedRect(width: Editable<number>, height: Editable<number>, radius: Editable<number>, depth: Editable<number>, opts?: ExtrudeOpts): Shape;
+  /**
+   * Round every corner of a closed 2D polygon with tangent arcs. Returns
+   * points for `extrudePolygon` / the prism helpers. Radius is clamped per
+   * corner to half the shorter adjacent edge; CW and CCW winding both work.
+   */
+  filletPolygon(points: readonly PolygonPoint[], radius: number, opts?: FilletPolygonOptions): [number, number][];
+  /**
+   * Side-view mask prism: polygon points are (station s, height z), extruded
+   * through Y from -halfY to +halfY (default 1200). The polygon lies on the
+   * XZ plane, so the shape reads like a side elevation.
+   */
+  prismSide(points: readonly PolygonPoint[], halfY?: number): Shape;
+  /** Side-view mask prism on one side only: Y spans y0..y1 (y1 > y0). */
+  prismSideY(points: readonly PolygonPoint[], y0: number, y1: number): Shape;
+  /** Front-view mask prism: points are (Y, Z), extruded along X from x0..x1. */
+  prismFront(points: readonly PolygonPoint[], x0: number, x1: number): Shape;
+  /** Plan-view mask prism: points are (X, Y), extruded along Z from z0..z1. */
+  prismPlan(points: readonly PolygonPoint[], z0: number, z1: number): Shape;
   union(...shapes: Shape[]): Shape;
   assembly(name?: string): Assembly;
 
@@ -781,6 +805,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     planetaryToothCompatibility: makePlanetaryToothCompatibilityMethod(),
     ...makeThreadMethods(session, () => api),
     ...makeExtrudeMethods(session),
+    ...makePolygonMethods(() => api),
     assembly(name) {
       return makeAssembly(name, session);
     },

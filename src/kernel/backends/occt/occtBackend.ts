@@ -249,7 +249,7 @@ export class OcctBackend implements ShapeBackend {
     height: number,
     radius: number,
     depth: number,
-    opts: { twistAngle?: number } = {},
+    opts: { twistAngle?: number; axis?: 'x' | 'y' | 'z' } = {},
   ): OcctBackend {
     return new OcctBackend(extrudeRoundedRectShape(width, height, radius, depth, opts));
   }

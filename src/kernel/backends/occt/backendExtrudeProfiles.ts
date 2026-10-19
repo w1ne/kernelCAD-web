@@ -151,7 +151,7 @@ export function extrudeRoundedRectShape(
   height: number,
   radius: number,
   depth: number,
-  opts: { twistAngle?: number } = {},
+  opts: { twistAngle?: number; axis?: 'x' | 'y' | 'z' } = {},
 ): ReplicadShape3D {
   if (depth <= 0) {
     throw new Error(`OcctBackend.extrudeRoundedRect: depth must be positive (got ${depth})`);
@@ -164,7 +164,17 @@ export function extrudeRoundedRectShape(
   const clamped = Math.min(Math.max(0, radius), maxR * 0.9999);
   const drawing = replicad.drawRoundedRectangle(width, height, clamped);
   const sketch = drawing.sketchOnPlane('XY');
-  return extrudeLiftedShape(sketch, depth, angle);
+  const extruded = extrudeLiftedShape(sketch, depth, angle);
+  switch (opts.axis ?? 'z') {
+    case 'z':
+      return extruded;
+    case 'x':
+      // (x, y, z) -> (z, x, y): width along Y, height along Z, sweep +X.
+      return extruded.rotate(120, [0, 0, 0], [1, 1, 1]) as ReplicadShape3D;
+    case 'y':
+      // (x, y, z) -> (x, z, -y): width along X, height along Z, sweep +Y.
+      return extruded.rotate(-90, [0, 0, 0], [1, 0, 0]) as ReplicadShape3D;
+  }
 }
 
 /**
