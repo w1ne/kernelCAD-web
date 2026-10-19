@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
+import { brepExtremaDistance } from './brepDistance';
 import { getOC } from 'replicad';
 import type { ShapeBackend, BackendTarget } from '../backend';
 import type { SceneBackend } from '../sceneBackend';
@@ -1051,6 +1052,19 @@ export class OcctBackend implements ShapeBackend {
    */
   intersectionVolume(other: OcctBackend): number {
     return this.intersectionMetrics(other).volumeMm3;
+  }
+
+  /**
+   * Exact minimum surface-to-surface distance (mm) between this shape and
+   * `other`. Returns `undefined` when OCCT's distance solver fails — a failed
+   * probe must not read as "clear".
+   */
+  minDistanceTo(other: OcctBackend): number | undefined {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oc = getOC() as any;
+    const self = this.shape as unknown as { wrapped: unknown };
+    const peer = other.shape as unknown as { wrapped: unknown };
+    return brepExtremaDistance(oc, self.wrapped, peer.wrapped);
   }
 
   /**

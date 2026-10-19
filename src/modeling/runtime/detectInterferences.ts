@@ -38,6 +38,22 @@ export interface InterferencePair {
   readonly thicknessMm?: number;
 }
 
+/**
+ * Incremental re-check input: pair results from a previous detection pass
+ * plus the names of the parts that changed since then. Candidate pairs that
+ * do not touch a changed part are reused verbatim (including "no overlap"
+ * entries, stored as `null`); only pairs touching a changed part are
+ * re-probed. This is the pose-sweep fast path: a one-joint nudge re-measures
+ * the pairs involving that joint's subtree, not the whole assembly.
+ */
+export interface IncrementalInterferenceOptions {
+  /** Every `pairKey()`-encoded pair from the previous pass. `null` means the
+   *  pair was probed and did not overlap. */
+  readonly previousResults: ReadonlyMap<string, InterferencePair | null>;
+  /** Part names whose pose or geometry changed. Omit to re-probe everything. */
+  readonly changedParts?: ReadonlySet<string>;
+}
+
 export interface CheckInterferenceResult {
   readonly pairs: InterferencePair[];
   readonly partCount: number;
@@ -46,6 +62,10 @@ export interface CheckInterferenceResult {
   /** Mesh-involving pairs were not checked because exact intersection requires BRep. */
   readonly uncheckedPairs: Array<{ readonly a: string; readonly b: string; readonly reason: 'display-mesh' }>;
   readonly partial: boolean;
+  /** Exact BOOLEAN probes actually run this pass. Absent on legacy calls. */
+  readonly probedPairCount?: number;
+  /** Candidate pairs answered from `incremental.previousResults`. */
+  readonly reusedPairCount?: number;
 }
 
 /** The subset of a transformed part the candidate pass reads: its name (for
@@ -170,6 +190,7 @@ export function detectInterferences(
   epsilonMm3: number,
   ignored: ReadonlySet<string>,
   diagnostics: CompilerDiagnostic[] = [],
+  incremental?: IncrementalInterferenceOptions,
 ): CheckInterferenceResult {
   // Place each part at its worldTransform once, up front, through a
   // location (`OcctBackend.located`): the posed shape shares the part's
@@ -194,7 +215,7 @@ export function detectInterferences(
   // to the GC (they reference the parts' shapes and, after a boolean, any
   // data OCCT attached to them).
   try {
-    return probeCandidates(transformed, epsilonMm3, ignored, diagnostics, uncheckedPairs);
+    return probeCandidates(transformed, epsilonMm3, ignored, diagnostics, uncheckedPairs, incremental);
   } finally {
     for (const part of transformed) part.shape.dispose();
   }
@@ -215,12 +236,27 @@ function probeCandidates(
   ignored: ReadonlySet<string>,
   diagnostics: CompilerDiagnostic[],
   uncheckedPairs: CheckInterferenceResult['uncheckedPairs'],
+  incremental?: IncrementalInterferenceOptions,
 ): CheckInterferenceResult {
   const pairs: InterferencePair[] = [];
   const candidates = collectInterferenceCandidates(transformed, ignored);
+  let probedPairCount = 0;
+  let reusedPairCount = 0;
   for (const [i, j] of candidates) {
     const a = transformed[i];
     const b = transformed[j];
+    const key = pairKey(a.name, b.name);
+    const changed = incremental?.changedParts;
+    const canReuse = incremental !== undefined
+      && incremental.previousResults.has(key)
+      && (changed === undefined || (!changed.has(a.name) && !changed.has(b.name)));
+    if (canReuse) {
+      const previous = incremental.previousResults.get(key);
+      if (previous !== undefined && previous !== null) pairs.push(previous);
+      reusedPairCount += 1;
+      continue;
+    }
+    probedPairCount += 1;
     // Conservative rigid-frame bounds prove some candidates cannot exceed the threshold.
     let boundedBelowThreshold = false;
     for (let frame = 0; frame < BOUND_FRAMES.length; frame++) {
@@ -285,6 +321,8 @@ function probeCandidates(
     diagnostics,
     uncheckedPairs,
     partial: uncheckedPairs.length > 0,
+    probedPairCount,
+    reusedPairCount,
   };
 }
 
