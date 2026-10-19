@@ -158,7 +158,6 @@ const LEGACY_CODE_ORDER = [
   'export.dxf.non-planar',
   'export.3mf.not-watertight',
   'export.mesh.not-watertight',
-  'export.brep.invalid',
   'export.part.not-found',
   'export.glb.draco-glass-conflict',
   'export.urdf.cylindrical-lossy',
