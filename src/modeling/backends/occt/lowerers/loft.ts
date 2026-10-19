@@ -2,7 +2,9 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
+import { loftSegmentedFromSketches } from '../../../../kernel/backends/occt/segmentedLoft';
 import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
+import { invalidArgs } from '../../../../shared/intent/invalidArgs';
 import { isCurve3DMetadata } from '../../../../shared/intent/curve3dRecord';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { lowerCurve3D } from '../curve3dLowerer';
@@ -89,35 +91,8 @@ async function loftSketchSections(
   const withTwist = applySectionTwist(planes, twistDeg);
   const railIds = readLoftRailIds(meta);
   if (!enforceLoftRailLimit(ctx, r, railIds)) return undefined;
-  const segmented = meta?.segmented;
-  if (segmented !== undefined) {
-    if (railIds.length > 0) {
-      ctx.diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.invalid-args',
-        featureId: r.id,
-        severity: 'error',
-        message: 'loft: segmented options cannot be combined with rails; remove opts.rails or the continuity/spanSize/mode options.',
-        hint: 'Rail-guided lofts follow their own curves and already have no station joins to control. Drop one of the two authoring modes.',
-      });
-      return undefined;
-    }
-    if (segmented.mode === 'sewn' && segmented.continuity !== 'G0') {
-      ctx.diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.loft.continuity-requires-single',
-        featureId: r.id,
-        severity: 'warn',
-        message: `loft: continuity '${segmented.continuity}' cannot be enforced across independently sewn spans; building one multi-span skin instead of mode 'sewn'.`,
-        hint: "Use continuity: 'G0' with mode: 'sewn' for the fast C0 path, or drop mode to accept the single smooth skin.",
-      });
-      return buildLoftFromSketches(ctx, r, sketches, withTwist, false, meta);
-    }
-    if (segmented.mode === 'sewn' && segmented.continuity === 'G0') {
-      return buildSegmentedSewnLoft(ctx, r, sketches, withTwist, ruled, meta, segmented.spanSize ?? 3);
-    }
-    return buildLoftFromSketches(ctx, r, sketches, withTwist, false, meta);
-  }
+  const segmentedOutcome = buildSegmentedLoftBranch(ctx, r, sketches, withTwist, ruled, meta, railIds);
+  if (segmentedOutcome.handled) return segmentedOutcome.shape;
   if (railIds.length > 0) {
     return buildRailGuidedLoft(ctx, r, sketches, planes, railIds, twistDeg, withTwist);
   }
@@ -215,6 +190,50 @@ function buildLoftFromSketches(
   }
 }
 
+/** Handle the continuity/spanSize/mode options when present. Returns
+ *  `{ handled: false }` when the record uses the historical single-loft path. */
+function buildSegmentedLoftBranch(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  sketches: OcctBackend[],
+  planes: LoftPlane[],
+  ruled: boolean,
+  meta: LoftMeta | undefined,
+  railIds: string[],
+): { handled: boolean; shape?: ShapeBackend } {
+  const segmented = meta?.segmented;
+  if (segmented === undefined) return { handled: false };
+  if (railIds.length > 0) {
+    invalidArgs({
+      api: 'Sketch.loft',
+      path: 'opts.rails',
+      gotText: 'rails combined with continuity/spanSize/mode',
+      requires: 'either rails or the segmented options, not both',
+      example: "a.loft(b, { mode: 'sewn', spanSize: 3 })",
+      featureId: r.id,
+      hintSlug: 'invalid-args.loft.segmented-with-rails',
+    });
+  }
+  if (segmented.mode === 'sewn' && segmented.continuity !== 'G0') {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.loft.continuity-requires-single',
+      featureId: r.id,
+      severity: 'warn',
+      message: `loft: continuity '${segmented.continuity}' cannot be enforced across independently sewn spans; building one multi-span skin instead of mode 'sewn'.`,
+      hint: "Use continuity: 'G0' with mode: 'sewn' for the fast C0 path, or drop mode to accept the single smooth skin.",
+    });
+    return { handled: true, shape: buildLoftFromSketches(ctx, r, sketches, planes, false, meta) };
+  }
+  if (segmented.mode === 'sewn') {
+    return {
+      handled: true,
+      shape: buildSegmentedSewnLoft(ctx, r, sketches, planes, ruled, meta, segmented.spanSize ?? 3),
+    };
+  }
+  return { handled: true, shape: buildLoftFromSketches(ctx, r, sketches, planes, false, meta) };
+}
+
 /**
  * Fast segmented path: split the station list into overlapping spans (each
  * span shares its boundary station with the next), loft each span on its own,
@@ -231,7 +250,7 @@ function buildSegmentedSewnLoft(
   spanSize: number,
 ): ShapeBackend | undefined {
   try {
-    return OcctBackend.loftSegmentedFromSketches(sketches, planes, {
+    return loftSegmentedFromSketches(OcctBackend, sketches, planes, {
       ruled,
       ...(meta?.startPoint === undefined ? {} : { startPoint: meta.startPoint }),
       ...(meta?.endPoint === undefined ? {} : { endPoint: meta.endPoint }),

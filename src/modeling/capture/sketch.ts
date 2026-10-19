@@ -8,6 +8,7 @@ import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
 import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
+import { validateLoftSegmentedOptions } from './loftSegmentedOptions';
 import { helix as sampleHelix, helixOptionsFromSpec, helixRailSpecOf, type HelixRailSpec } from '../helix';
 import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
 import { type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
@@ -1367,45 +1368,6 @@ function buildSketchInputs(allSketches: readonly Sketch[]): Record<string, Featu
     inputs[`sketch_${i}`] = { kind: 'feature', id: allSketches[i].id };
   }
   return inputs;
-}
-
-/** Validate the segmented-loft options. `spanSize` is structural (not a
- *  drivable dimension), so only a literal number can be checked here; the
- *  lowerer re-checks the evaluated value. */
-function validateLoftSegmentedOptions(opts: LoftOptions, featureId: FeatureId): void {
-  if (opts.continuity !== undefined
-    && opts.continuity !== 'G0' && opts.continuity !== 'G1' && opts.continuity !== 'G2') {
-    throw new KernelError(
-      'feature.invalid-args',
-      `Sketch.loft: opts.continuity must be 'G0', 'G1' or 'G2'; got ${JSON.stringify(opts.continuity)}.`,
-      featureId,
-      "Pass continuity: 'G1' or 'G2' for a single multi-span skin, or omit it for the historical G0 result.",
-    );
-  }
-  if (opts.mode !== undefined && opts.mode !== 'single' && opts.mode !== 'sewn') {
-    throw new KernelError(
-      'feature.invalid-args',
-      `Sketch.loft: opts.mode must be 'single' or 'sewn'; got ${JSON.stringify(opts.mode)}.`,
-      featureId,
-      "Pass mode: 'sewn' for the fast per-span path (C0 joins), or omit it for one skin.",
-    );
-  }
-  if (opts.spanSize !== undefined) {
-    assertEditableNumber(
-      opts.spanSize,
-      'Sketch.loft: opts.spanSize',
-      featureId,
-      'Pass opts.spanSize as an integer >= 2 stations per span — a number or a param() reference.',
-    );
-    if (typeof opts.spanSize === 'number' && (!Number.isInteger(opts.spanSize) || opts.spanSize < 2)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Sketch.loft: opts.spanSize must be an integer >= 2; got ${opts.spanSize}.`,
-        featureId,
-        'A span needs at least two stations. Use spanSize >= 2, or omit it.',
-      );
-    }
-  }
 }
 
 function validateLoftRails(
