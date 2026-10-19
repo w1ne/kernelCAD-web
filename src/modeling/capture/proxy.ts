@@ -9,6 +9,7 @@ import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
+import { captureFilletIntersection } from './filletIntersectionCapture';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import type { Query, FaceMarker, EdgeMarker } from '../../kernel/naming/query';
 import {
@@ -814,17 +815,10 @@ export class Shape {
   }
 
   /**
-   * Round the seam where `cutter` met this body.
-   *
-   * The seam is selected by geometric proximity to the exact `body ∩ cutter`
-   * section, so it does not depend on face/edge labels that a boolean split
-   * can invalidate. The body is expected to be the result of subtracting
-   * `cutter` (or otherwise sharing that seam); the cutter is only used to
-   * rebuild the section.
-   *
-   * First slice: constant radius, body-side only (`sides: 'body'`). Edges
-   * shorter than `2 * r` are reported via
-   * `feature.fillet-intersection.short-edge` rather than silently skipped.
+   * Round the seam where `cutter` met this body. The seam is selected by
+   * proximity to the exact `body ∩ cutter` section, so it does not depend on
+   * face/edge labels that a boolean split can invalidate. First slice:
+   * constant radius, body-side only.
    */
   filletIntersection(
     cutter: Shape,
@@ -835,74 +829,7 @@ export class Shape {
       continuity?: FilletContinuity;
     },
   ): Shape {
-    if (typeof radius === 'number' && !(radius > 0 && Number.isFinite(radius))) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `filletIntersection: radius must be a positive finite number; got ${formatScalarForError(radius)}.`,
-        this.id,
-        'Pass a positive radius in mm: body.filletIntersection(cutter, 2).',
-      );
-    }
-    if (typeof radius !== 'number' && !isParamRef(radius)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `filletIntersection: radius must be a number or ParamRef<number>; got ${formatScalarForError(radius)}.`,
-        this.id,
-        'Pass a positive radius in mm: body.filletIntersection(cutter, 2).',
-      );
-    }
-    const tolerance = opts?.toleranceMm ?? 0.05;
-    if (typeof tolerance === 'number' && !(tolerance > 0 && Number.isFinite(tolerance))) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `filletIntersection: toleranceMm must be a positive finite number; got ${formatScalarForError(tolerance)}.`,
-        this.id,
-        'Pass toleranceMm as a positive distance in mm (default 0.05).',
-      );
-    }
-    if (typeof tolerance !== 'number' && !isParamRef(tolerance)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `filletIntersection: toleranceMm must be a number or ParamRef<number>; got ${formatScalarForError(tolerance)}.`,
-        this.id,
-        'Pass toleranceMm as a positive distance in mm (default 0.05).',
-      );
-    }
-    if (opts?.sides !== undefined && opts.sides !== 'body' && opts.sides !== 'both') {
-      invalidArgs({
-        api: 'filletIntersection(cutter, radius, { sides })',
-        path: 'opts.sides',
-        got: opts.sides,
-        requires: "'body' (default) or 'both'",
-        example: "body.filletIntersection(cutter, 2, { sides: 'body' })",
-        featureId: this.id,
-      });
-    }
-    if (opts?.continuity !== undefined && !isFilletContinuity(opts.continuity)) {
-      invalidArgs({
-        api: 'filletIntersection(cutter, radius, { continuity })',
-        path: 'opts.continuity',
-        got: opts.continuity,
-        requires: "'G1' (default) or 'G2'",
-        example: "body.filletIntersection(cutter, 2, { continuity: 'G2' })",
-        featureId: this.id,
-      });
-    }
-    return this.session.createShape({
-      kind: 'filletIntersection',
-      inputs: {
-        base: { kind: 'feature', id: this.id },
-        cutter: { kind: 'feature', id: cutter.id },
-      },
-      params: {
-        radius: toParam(radius, 'mm'),
-        tolerance: toParam(tolerance, 'mm'),
-      },
-      metadata: {
-        sides: opts?.sides ?? 'body',
-        continuity: opts?.continuity ?? 'G1',
-      },
-    });
+    return captureFilletIntersection(this.session, this, cutter, radius, opts);
   }
 
   shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {

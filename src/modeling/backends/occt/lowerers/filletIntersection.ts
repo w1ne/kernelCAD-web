@@ -14,6 +14,7 @@ import {
   type SeamEdge,
 } from '../../../../kernel/backends/occt/filletIntersection';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
+import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
 import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
 import { built, finished, noShape, type LowerContext, type LowerOutcome } from './context';
 
@@ -22,22 +23,35 @@ interface FilletIntersectionMeta {
   continuity?: 'G1' | 'G2';
 }
 
-/** `filletIntersection` — round the seam where `cutter` met `base`. */
-export function lowerFilletIntersection(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
-  const base = ctx.inputs.byKey.base as OcctBackend | undefined;
-  const cutter = ctx.inputs.byKey.cutter as OcctBackend | undefined;
+interface Request {
+  radius: number;
+  toleranceMm: number;
+  continuity: 'G1' | 'G2';
+}
+
+/** Validate the record's inputs, pushing a typed diagnostic on failure. */
+function validateInputsAndSides(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  base: OcctBackend | undefined,
+  cutter: OcctBackend | undefined,
+): { radius: number; toleranceMm: number; continuity: 'G1' | 'G2' } | undefined {
   if (!base || !cutter) {
     ctx.diagnostics.push({
       target: ctx.target,
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `filletIntersection: missing ${base ? 'cutter' : 'base'} input — the upstream shape did not lower.`,
-      hint: 'Call body.filletIntersection(cutter, r) with both shapes captured and lowered.',
+      ...invalidArgsText({
+        api: 'body.filletIntersection(cutter, radius)',
+        path: base ? 'cutter' : 'body',
+        gotText: 'an upstream shape that did not lower',
+        requires: 'both the cut body and the cutter captured and lowered',
+        example: 'const cut = body.subtract(cutter); cut.filletIntersection(cutter, 2)',
+      }),
     });
-    return noShape();
+    return undefined;
   }
-
   const meta = (r.metadata ?? {}) as FilletIntersectionMeta;
   if (meta.sides !== undefined && meta.sides !== 'body') {
     ctx.diagnostics.push({
@@ -45,12 +59,23 @@ export function lowerFilletIntersection(ctx: LowerContext, r: FeatureRecord): Lo
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `filletIntersection: sides '${meta.sides}' is reserved; the first slice supports sides: 'body' only.`,
-      hint: "Pass sides: 'body' (default) or omit it; filleting the cutter side is a follow-up.",
+      ...invalidArgsText({
+        api: 'body.filletIntersection(cutter, radius, { sides })',
+        path: 'opts.sides',
+        got: meta.sides,
+        requires: "sides: 'body' (the first slice; 'both' is reserved)",
+        example: "cut.filletIntersection(cutter, 2, { sides: 'body' })",
+      }),
     });
-    return finished(base);
+    return undefined;
   }
+  return { radius: 0, toleranceMm: 0, continuity: meta.continuity ?? 'G1' };
+}
 
+function validateNumbers(
+  ctx: LowerContext,
+  r: FeatureRecord,
+): { radius: number; toleranceMm: number } | undefined {
   const radius = r.params.radius?.evaluated;
   const toleranceMm = r.params.tolerance?.evaluated ?? 0.05;
   if (radius === undefined || !(radius > 0) || !Number.isFinite(radius)) {
@@ -59,10 +84,16 @@ export function lowerFilletIntersection(ctx: LowerContext, r: FeatureRecord): Lo
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `filletIntersection: radius must be a positive finite number in mm; got ${String(radius)}.`,
-      hint: 'Pass the fillet radius as the second argument: body.filletIntersection(cutter, 2).',
+      ...invalidArgsText({
+        api: 'body.filletIntersection(cutter, radius)',
+        path: 'radius',
+        got: radius,
+        requires: 'a positive finite radius in mm',
+        unit: 'mm',
+        example: 'cut.filletIntersection(cutter, 2)',
+      }),
     });
-    return finished(base);
+    return undefined;
   }
   if (!(toleranceMm > 0) || !Number.isFinite(toleranceMm)) {
     ctx.diagnostics.push({
@@ -70,13 +101,41 @@ export function lowerFilletIntersection(ctx: LowerContext, r: FeatureRecord): Lo
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `filletIntersection: toleranceMm must be a positive finite number; got ${String(toleranceMm)}.`,
-      hint: 'Pass toleranceMm (default 0.05) as the seam-selection tolerance in mm.',
+      ...invalidArgsText({
+        api: 'body.filletIntersection(cutter, radius, { toleranceMm })',
+        path: 'opts.toleranceMm',
+        got: toleranceMm,
+        requires: 'a positive finite distance in mm',
+        unit: 'mm',
+        example: 'cut.filletIntersection(cutter, 2, { toleranceMm: 0.05 })',
+      }),
     });
-    return finished(base);
+    return undefined;
   }
+  return { radius, toleranceMm };
+}
 
-  const seam = findIntersectionSeamEdges(base, cutter, { toleranceMm, radius });
+function validateRequest(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  base: OcctBackend | undefined,
+  cutter: OcctBackend | undefined,
+): Request | undefined {
+  const baseCheck = validateInputsAndSides(ctx, r, base, cutter);
+  if (baseCheck === undefined) return undefined;
+  const numbers = validateNumbers(ctx, r);
+  if (numbers === undefined) return undefined;
+  return { ...numbers, continuity: baseCheck.continuity };
+}
+
+/** `filletIntersection` — round the seam where `cutter` met `base`. */
+export function lowerFilletIntersection(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
+  const base = ctx.inputs.byKey.base as OcctBackend | undefined;
+  const cutter = ctx.inputs.byKey.cutter as OcctBackend | undefined;
+  const request = validateRequest(ctx, r, base, cutter);
+  if (request === undefined) return base ? finished(base) : noShape();
+
+  const seam = findIntersectionSeamEdges(base!, cutter!, request);
   if (seam.sectionEdgeCount === 0) {
     ctx.diagnostics.push({
       target: ctx.target,
@@ -86,7 +145,7 @@ export function lowerFilletIntersection(ctx: LowerContext, r: FeatureRecord): Lo
       message: 'filletIntersection: the body and cutter do not intersect — no seam to round.',
       hint: HINT_TEMPLATES['feature.fillet-intersection.no-section'].template,
     });
-    return finished(base);
+    return finished(base!);
   }
   if (seam.matched.length === 0) {
     ctx.diagnostics.push({
@@ -94,27 +153,38 @@ export function lowerFilletIntersection(ctx: LowerContext, r: FeatureRecord): Lo
       code: 'feature.fillet-intersection.no-seam-edge',
       featureId: r.id,
       severity: 'error',
-      message: `filletIntersection: section exists (${seam.sectionEdgeCount} edge(s)) but no body edge lies within ${toleranceMm} mm of it.`,
+      message: `filletIntersection: section exists (${seam.sectionEdgeCount} edge(s)) but no body edge lies within ${request.toleranceMm} mm of it.`,
       hint: HINT_TEMPLATES['feature.fillet-intersection.no-seam-edge'].template,
     });
-    return finished(base);
+    return finished(base!);
   }
 
-  const all = tryIntersectionFillet(base, seam.matched, radius, meta.continuity ?? 'G1');
+  const outcome = blendSeam(ctx, r, base!, seam.matched, seam.short, request);
+  return outcome ?? finished(base!);
+}
+
+/** Try the whole seam, then the long-edge subset; push the failure otherwise. */
+function blendSeam(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  base: OcctBackend,
+  matched: readonly SeamEdge[],
+  short: readonly SeamEdge[],
+  request: Request,
+): LowerOutcome | undefined {
+  const all = tryIntersectionFillet(base, matched, request.radius, request.continuity);
   if (all.ok) return builtFromResult(base, all.result);
 
-  // A short seam segment can make the whole blend fail. Retry without the
-  // edges shorter than 2r and report them instead of silently skipping.
-  const longEdges = seam.matched.filter((e) => e.lengthMm >= 2 * radius);
-  if (seam.short.length > 0 && longEdges.length > 0 && longEdges.length < seam.matched.length) {
-    const subset = tryIntersectionFillet(base, longEdges, radius, meta.continuity ?? 'G1');
+  const longEdges = matched.filter((e) => e.lengthMm >= 2 * request.radius);
+  if (short.length > 0 && longEdges.length > 0 && longEdges.length < matched.length) {
+    const subset = tryIntersectionFillet(base, longEdges, request.radius, request.continuity);
     if (subset.ok) {
       ctx.diagnostics.push({
         target: ctx.target,
         code: 'feature.fillet-intersection.short-edge',
         featureId: r.id,
         severity: 'warn',
-        message: `filletIntersection: skipped ${seam.short.length} seam edge(s) shorter than 2 × radius (${formatLengths(seam.short)}).`,
+        message: `filletIntersection: skipped ${short.length} seam edge(s) shorter than 2 × radius (${formatLengths(short)}).`,
         hint: HINT_TEMPLATES['feature.fillet-intersection.short-edge'].template,
       });
       return builtFromResult(base, subset.result);
@@ -126,10 +196,10 @@ export function lowerFilletIntersection(ctx: LowerContext, r: FeatureRecord): Lo
     code: 'feature.fillet-intersection.fillet-failed',
     featureId: r.id,
     severity: 'error',
-    message: `filletIntersection: OCCT could not blend ${seam.matched.length} seam edge(s) at r=${radius} mm (lengths: ${formatLengths(seam.matched)}): ${all.message}`,
+    message: `filletIntersection: OCCT could not blend ${matched.length} seam edge(s) at r=${request.radius} mm (lengths: ${formatLengths(matched)}): ${all.message}`,
     hint: HINT_TEMPLATES['feature.fillet-intersection.fillet-failed'].template,
   });
-  return finished(base);
+  return undefined;
 }
 
 type Attempt =
@@ -176,4 +246,3 @@ function formatLengths(edges: readonly SeamEdge[]): string {
     .slice(0, 8)
     .join(', ') + (edges.length > 8 ? `, … (${edges.length} total)` : '');
 }
-

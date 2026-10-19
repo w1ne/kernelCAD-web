@@ -66,6 +66,6 @@ describe('filletIntersection', () => {
     cut.filletIntersection(cutter, 1, { sides: 'both' });
     const result = await new RecomputeEngine(new OcctLowerer()).run(session.getRecords());
     const diagnostic = result.diagnostics.find((d) => d.code === 'feature.invalid-args');
-    expect(diagnostic?.message).toMatch(/sides 'both' is reserved/i);
+    expect(diagnostic?.message).toMatch(/both.*reserved/i);
   });
 });
