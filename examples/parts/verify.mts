@@ -11,7 +11,6 @@ import { evaluateAndBuildScript } from '../../src/agent/cli/commands/evaluate';
 import { isSceneBackend } from '../../src/kernel/backends/sceneBackend';
 import {
   BHCS_HEAD,
-  BHCS_LENGTHS,
   FLAT_WASHER,
   HEX_NUT,
   LOCK_NUT,
@@ -86,7 +85,7 @@ const seat = 8 + gripMm; // bar lift + grip
 const washerT = FLAT_WASHER.M5!.t;
 const nutM = HEX_NUT.M5!.m;
 const needed = gripMm + washerT + nutM;
-const screwLength = SHCS_LENGTHS.find((length) => length >= needed);
+const screwLength = SHCS_LENGTHS.M5!.find((length) => length >= needed);
 assert(screwLength, 'no stocked screw length clears the grip');
 
 const stack = await evaluateScene(`${dir}bolt-stack.kcad.ts`);

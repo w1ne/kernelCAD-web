@@ -29,6 +29,14 @@ describe('lib.standard.* typed wrappers', () => {
     expect(b).toBeDefined();
   });
 
+  it('boltHex, setScrew and rodThreaded resolve the new families', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    expect(await api.lib.standard.boltHex({ thread: 'M10', lengthMm: 40 })).toBeDefined();
+    expect(await api.lib.standard.setScrew({ thread: 'M6', lengthMm: 20 })).toBeDefined();
+    expect(await api.lib.standard.rodThreaded({ thread: 'M8', lengthMm: 1000 })).toBeDefined();
+  }, 120000);
+
   it('nutHex({ thread: M3 }) resolves', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session });

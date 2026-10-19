@@ -100,12 +100,15 @@ family table and builds the envelope in memory when no STEP is on disk.
 ## Fastener table — lib.part and lib.stack
 
 `lib.part({ family, thread, lengthMm })` builds one stocked fastener:
-socket-head (ISO 4762), button-head (ISO 7380) and countersunk (ISO 10642)
-screws, hex nuts (ISO 4032), lock nuts (DIN 985), flat washers (ISO 7089)
-and lock washers (DIN 127B), M2 through M12. Screws need a stocked length;
-an unknown family, thread or length fails with a diagnostic that names the
-stocked values. Every solid is an envelope (head plus shank), no helical
-thread.
+socket-head (ISO 4762, M2–M20), button-head (ISO 7380, M3–M10), countersunk
+(ISO 10642, M3–M12) and hex-head (ISO 4017, M3–M20) screws and bolts,
+headless set screws (ISO 4026, M3–M12) and threaded rod (DIN 975, M3–M12 ×
+250/1000), hex nuts (ISO 4032, M2–M20), lock nuts (DIN 985, M3–M12), flat
+washers (ISO 7089, M2–M20) and lock washers (DIN 127B, M3–M12). Screws need
+a stocked length, and the stocked lengths are per thread (the standard's
+preferred series), not one list for every size; an unknown family, thread or
+length fails with a diagnostic that names the stocked values. Every solid is
+an envelope (head plus shank), no helical thread.
 
 `lib.stack({ thread, gripMm, mode })` returns `lengthMm` plus the members,
 each positioned against a seat at z = 0 (the grip's top face).
@@ -270,13 +273,14 @@ See `kernelcad-mcp` for the full grammar.
 
 ## Bundled-only by default
 
-Bundled tier coverage (422 records on the seed catalog):
+Bundled tier coverage (671 records on the seed catalog):
 
-- M2 / M2.5 / M3 / M4 / M5 / M6 / M8 / M10 / M12 socket head and flat head
-  countersunk screws (ISO 4762 / 10642); button head M3–M10 (ISO 7380).
-- M2 / M2.5 / M3 / M4 / M5 / M6 / M8 / M10 / M12 hex nuts and flat washers
-  (ISO 4032 / ISO 7089); lock nuts and lock washers M3–M12
-  (DIN 985 / DIN 127B).
+- M2–M20 socket head (ISO 4762) and M2–M20 hex head bolts (ISO 4017);
+  M3–M12 flat head countersunk (ISO 10642); button head M3–M10 (ISO 7380).
+- M3–M12 set screws (ISO 4026) and M3–M12 threaded rod (DIN 975, 250/1000 mm).
+- M2–M20 hex nuts and flat washers (ISO 4032 / ISO 7089); lock nuts and lock
+  washers M3–M12 (DIN 985 / DIN 127B).
+- Stocked lengths are per thread, the standard's preferred series subset.
 - M2.5 / M3 / M4 heat-set inserts (3.8 mm and 5.7 mm length).
 - Deep-groove ball bearings 608 / 623 / 624 / 625 / 626 / 6800 / 688 / 6900.
 - Linear shaft Ø3..Ø12 × 20..200 mm.

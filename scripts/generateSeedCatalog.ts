@@ -14,7 +14,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct } from '../src/kernel/backends/occt/occtBackend';
-import { countersunkScrewSolid } from '../src/modeling/parts/headSolids';
+import { countersunkScrewSolid, headlessSolid, hexHeadBoltSolid } from '../src/modeling/parts/headSolids';
 import type { PartRecord } from '../src/shared/parts/types';
 import type {
   ConnectorEntry,
@@ -26,9 +26,13 @@ import {
   FLATHEAD_HEAD,
   FLATHEAD_LENGTHS,
   FLAT_WASHER,
+  HEX_BOLT_HEAD,
+  HEX_BOLT_LENGTHS,
   HEX_NUT,
   LOCK_NUT,
   LOCK_WASHER,
+  ROD_LENGTHS,
+  SET_SCREW_LENGTHS,
   SHCS_HEAD,
   SHCS_LENGTHS,
   FIXTURE_FAMILY_NAMES,
@@ -336,10 +340,24 @@ function threadsOf(table: Record<string, unknown>): string[] {
   return Object.keys(table).map((key) => key.replace('_', '.'));
 }
 
+/** Stocked lengths of one thread, or none. */
+function lengthsOf(table: Record<string, readonly number[]>, thread: string): readonly number[] {
+  return table[thread.replace('.', '_')] ?? [];
+}
+
+/** One variant per (thread, stocked length). */
+function threadLengthVariants(
+  threads: string[],
+  lengths: Record<string, readonly number[]>,
+): Array<{ thread: string; lengthMm: number }> {
+  return threads.flatMap((thread) =>
+    lengthsOf(lengths, thread).map((lengthMm) => ({ thread, lengthMm })),
+  );
+}
+
 function socketHeadCapScrew(): SeedFamily {
   const threads = threadsOf(SHCS_HEAD);
-  const lengths = SHCS_LENGTHS;
-  const variants = threads.flatMap((t) => lengths.map((l) => ({ thread: t, lengthMm: l })));
+  const variants = threadLengthVariants(threads, SHCS_LENGTHS);
   return {
     id: 'socket-head-cap-screw',
     category: 'fastener',
@@ -384,10 +402,7 @@ function socketHeadCapScrew(): SeedFamily {
 
 function buttonHeadCapScrew(): SeedFamily {
   const threads = threadsOf(BHCS_HEAD);
-  const lengths = BHCS_LENGTHS;
-  const variants = threads.flatMap((t) =>
-    lengths.map((l) => ({ thread: t, lengthMm: l })),
-  );
+  const variants = threadLengthVariants(threads, BHCS_LENGTHS);
   return {
     id: 'button-head-cap-screw',
     category: 'fastener',
@@ -431,10 +446,7 @@ function buttonHeadCapScrew(): SeedFamily {
 
 function flatHeadCountersunk(): SeedFamily {
   const threads = threadsOf(FLATHEAD_HEAD);
-  const lengths = FLATHEAD_LENGTHS;
-  const variants = threads.flatMap((t) =>
-    lengths.map((l) => ({ thread: t, lengthMm: l })),
-  );
+  const variants = threadLengthVariants(threads, FLATHEAD_LENGTHS);
   return {
     id: 'flat-head-countersunk',
     category: 'fastener',
@@ -948,6 +960,99 @@ function jstXh(): SeedFamily {
   };
 }
 
+
+function hexHeadBolt(): SeedFamily {
+  const threads = threadsOf(HEX_BOLT_HEAD);
+  const variants = threadLengthVariants(threads, HEX_BOLT_LENGTHS);
+  return {
+    id: 'hex-head-bolt',
+    category: 'fastener',
+    standard: 'ISO 4017',
+    variants,
+    async generate({ thread, lengthMm }) {
+      const head = HEX_BOLT_HEAD[(thread as string).replace('.', '_')];
+      const tNum = parseFloat(String(thread).slice(1));
+      const fused = hexHeadBoltSolid(tNum, head.S, head.K, Number(lengthMm));
+      const bytes = await fused.exportSTEPAsync();
+      const id = `iso-4017-${threadSlug(String(thread))}x${lengthMm}`;
+      return {
+        stepBytes: bytes,
+        record: {
+          id,
+          name: `${thread} × ${lengthMm} hex head bolt (ISO 4017)`,
+          category: 'fastener',
+          family: 'hex-head-bolt',
+          standard: 'ISO 4017',
+          tags: ['bolt', 'hex', 'metric', 'DIN 933', String(thread)],
+          attributes: {
+            thread: String(thread),
+            lengthMm: Number(lengthMm),
+            headDiameterMm: head.D,
+            acrossFlatsMm: head.S,
+            headHeightMm: head.K,
+            shankDiameterMm: tNum,
+          },
+          license: 'MIT',
+          connectors: ['head-bearing', 'thread-tip', 'head-top'],
+        },
+        connectors: [
+          { name: 'head-bearing', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+          { name: 'thread-tip', type: 'axis', origin: [0, 0, -Number(lengthMm)], axis: [0, 0, 1] },
+          { name: 'head-top', type: 'frame', origin: [0, 0, head.K], normal: [0, 0, 1] },
+        ],
+      };
+    },
+  };
+}
+
+/** Headless families: set screws (ISO 4026) and threaded rod (DIN 975) share
+ *  the same cylinder envelope and their two ends as connectors. */
+function headlessFamily(args: {
+  family: 'set-screw' | 'threaded-rod';
+  standard: string;
+  idPrefix: string;
+  label: string;
+  lengths: Record<string, readonly number[]>;
+  tags: string[];
+}): SeedFamily {
+  const threads = threadsOf(args.lengths);
+  const variants = threadLengthVariants(threads, args.lengths);
+  return {
+    id: args.family,
+    category: 'fastener',
+    standard: args.standard,
+    variants,
+    async generate({ thread, lengthMm }) {
+      const tNum = parseFloat(String(thread).slice(1));
+      const bytes = await headlessSolid(tNum, Number(lengthMm)).exportSTEPAsync();
+      const id = `${args.idPrefix}-${threadSlug(String(thread))}x${lengthMm}`;
+      return {
+        stepBytes: bytes,
+        record: {
+          id,
+          name: `${thread} × ${lengthMm} ${args.label} (${args.standard})`,
+          category: 'fastener',
+          family: args.family,
+          standard: args.standard,
+          tags: [...args.tags, 'metric', String(thread)],
+          attributes: {
+            thread: String(thread),
+            lengthMm: Number(lengthMm),
+            shankDiameterMm: tNum,
+          },
+          license: 'MIT',
+          connectors: ['first-end', 'second-end', 'axis'],
+        },
+        connectors: [
+          { name: 'first-end', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+          { name: 'second-end', type: 'frame', origin: [0, 0, -Number(lengthMm)], normal: [0, 0, -1] },
+          { name: 'axis', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
+        ],
+      };
+    },
+  };
+}
+
 // -----------------------------------------------------------------------------
 // Top-level driver
 // -----------------------------------------------------------------------------
@@ -956,6 +1061,23 @@ export const SEED_FAMILIES: SeedFamily[] = [
   socketHeadCapScrew(),
   buttonHeadCapScrew(),
   flatHeadCountersunk(),
+  hexHeadBolt(),
+  headlessFamily({
+    family: 'set-screw',
+    standard: 'ISO 4026',
+    idPrefix: 'iso-4026',
+    label: 'set screw',
+    lengths: SET_SCREW_LENGTHS,
+    tags: ['set-screw', 'headless'],
+  }),
+  headlessFamily({
+    family: 'threaded-rod',
+    standard: 'DIN 975',
+    idPrefix: 'din-975',
+    label: 'threaded rod',
+    lengths: ROD_LENGTHS,
+    tags: ['rod', 'headless'],
+  }),
   hexNut(),
   lockNut(),
   flatWasher(),
