@@ -19,18 +19,28 @@ export const SHCS_HEAD: Record<string, { D: number; K: number }> = {
   M4: { D: 7.0, K: 4.0 },
   M5: { D: 8.5, K: 5.0 },
   M6: { D: 10.0, K: 6.0 },
+  M8: { D: 13.0, K: 8.0 },
+  M10: { D: 16.0, K: 10.0 },
+  M12: { D: 18.0, K: 12.0 },
 };
 
 export const BHCS_HEAD: Record<string, { D: number; K: number }> = {
   M3: { D: 5.7, K: 1.65 },
   M4: { D: 7.6, K: 2.2 },
   M5: { D: 9.5, K: 2.75 },
+  M6: { D: 10.5, K: 3.3 },
+  M8: { D: 14.0, K: 4.4 },
+  M10: { D: 17.5, K: 5.5 },
 };
 
 export const FLATHEAD_HEAD: Record<string, { D: number; K: number }> = {
   M3: { D: 6.72, K: 1.86 },
   M4: { D: 8.96, K: 2.48 },
   M5: { D: 11.2, K: 3.1 },
+  M6: { D: 13.44, K: 3.72 },
+  M8: { D: 17.92, K: 4.96 },
+  M10: { D: 22.4, K: 6.2 },
+  M12: { D: 26.88, K: 7.44 },
 };
 
 export const HEX_NUT: Record<string, { S: number; m: number }> = {
@@ -40,26 +50,41 @@ export const HEX_NUT: Record<string, { S: number; m: number }> = {
   M4: { S: 7, m: 3.2 },
   M5: { S: 8, m: 4.0 },
   M6: { S: 10, m: 5.0 },
+  M8: { S: 13, m: 6.5 },
+  M10: { S: 16, m: 8 },
+  M12: { S: 18, m: 10 },
 };
 
 export const LOCK_NUT: Record<string, { S: number; m: number }> = {
   M3: { S: 5.5, m: 4.0 },
   M4: { S: 7, m: 5.0 },
   M5: { S: 8, m: 6.0 },
+  M6: { S: 10, m: 6.0 },
+  M8: { S: 13, m: 8.0 },
+  M10: { S: 16, m: 10.0 },
+  M12: { S: 18, m: 12.0 },
 };
 
 export const FLAT_WASHER: Record<string, { Dout: number; Din: number; t: number }> = {
   M2: { Dout: 5, Din: 2.2, t: 0.3 },
+  M2_5: { Dout: 5, Din: 2.7, t: 0.5 },
   M3: { Dout: 7, Din: 3.2, t: 0.5 },
   M4: { Dout: 9, Din: 4.3, t: 0.8 },
   M5: { Dout: 10, Din: 5.3, t: 1.0 },
   M6: { Dout: 12, Din: 6.4, t: 1.6 },
+  M8: { Dout: 16, Din: 8.4, t: 1.6 },
+  M10: { Dout: 20, Din: 10.5, t: 2.0 },
+  M12: { Dout: 24, Din: 13.0, t: 2.5 },
 };
 
 export const LOCK_WASHER: Record<string, { Dout: number; Din: number; t: number }> = {
   M3: { Dout: 6.2, Din: 3.1, t: 0.8 },
   M4: { Dout: 7.6, Din: 4.1, t: 1.0 },
   M5: { Dout: 9.2, Din: 5.1, t: 1.2 },
+  M6: { Dout: 11.5, Din: 6.1, t: 1.6 },
+  M8: { Dout: 14.8, Din: 8.1, t: 2.0 },
+  M10: { Dout: 18.1, Din: 10.2, t: 2.2 },
+  M12: { Dout: 21.1, Din: 12.2, t: 2.5 },
 };
 
 export type PartKind =

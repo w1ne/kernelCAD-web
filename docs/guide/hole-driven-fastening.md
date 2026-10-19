@@ -16,9 +16,11 @@ from `hole()`, `holes()`, a pattern or an import.
 
 ## What the holes decide
 
-- **Size.** The bore diameter is matched against ISO 273 normal clearance:
-  Ø2.4 for M2, Ø2.9 for M2.5, Ø3.4 for M3, Ø4.5 for M4, Ø5.5 for M5, Ø6.6
-  for M6. A bore that matches none of them is refused with the diameters the
+- **Size.** The bore diameter is matched against ISO 273 clearance, all three
+  fit classes. Normal is Ø2.4 for M2, Ø2.9 for M2.5, Ø3.4 for M3, Ø4.5 for M4,
+  Ø5.5 for M5, Ø6.6 for M6, Ø9 for M8, Ø11 for M10 and Ø13.5 for M12; the
+  close and loose bores of each thread match too, and each hole reports the
+  class it matched as `fit` (`'close' | 'normal' | 'loose'`). A bore that matches none of them is refused with the diameters the
   shape actually has.
 - **Similar holes.** Every bore with the same diameter and a parallel axis
   is covered, so a patterned hole comes along without naming the pattern.
