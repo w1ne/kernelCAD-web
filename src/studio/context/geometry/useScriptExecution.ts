@@ -131,7 +131,7 @@ export function useScriptExecution(
         // Initial load uses the cheap live review; this is the explicit
         // Validate press the comments above promise.
         if (studioScript) {
-            requestMeshAndReview(studioScript, sessionToken);
+            requestMeshAndReview(studioScript, sessionToken, { coarseFirst: true });
             return;
         }
         await runExecuteGeometryAction(applyDeps, codeToExecute, executionCount, isReady);

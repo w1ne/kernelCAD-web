@@ -4,6 +4,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct, OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { ShapeBackend } from '../../kernel/backends/backend';
+import { COARSE_MESH_OPTIONS } from '../../kernel/backends/occt/meshing';
 import { runScript } from '../runtime/runScript';
 import { meshFeaturesPerFeature } from './featureMeshing';
 import { buildModel, updateModelParams } from '../buildModel';
@@ -33,6 +34,33 @@ describe('meshFeaturesPerFeature', () => {
     expect(moved.bounds.min[0] - initial.bounds.min[0]).toBeCloseTo(40, 5);
     const repeated = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
     expect(repeated.features.find(f => f.featureId.endsWith('__moving'))!.faces).toBe(next.faces);
+  });
+
+  it('coarse preview meshes first, then refines to display quality on the next pass', async () => {
+    const triangles = (mesh: { faces: { indices: Uint32Array }[] }) =>
+      mesh.faces.reduce((n, f) => n + f.indices.length / 3, 0);
+
+    const model = await buildModel({ fileName: 'curved-preview.kcad.ts', code: `
+      const base = box(40, 40, 12);
+      return base.fillet(3);
+    ` });
+    const preview = await meshFeaturesPerFeature(
+      model.records, model.session.paramTable, model.session,
+      { previewMeshOptions: COARSE_MESH_OPTIONS },
+    );
+    const coarse = preview.features.find(f => f.featureKind === 'fillet')!;
+    expect(coarse).toBeDefined();
+
+    // The display pass replaces the preview: same record, re-meshed coarser
+    // entry refined to display quality (never re-emitted as final).
+    const display = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+    const refined = display.features.find(f => f.featureId === coarse.featureId)!;
+    expect(refined.faces).not.toBe(coarse.faces);
+    expect(triangles(refined)).toBeGreaterThan(triangles(coarse));
+    expect(display.failedFeatureIds).toEqual([]);
+    // A third display pass re-emits the now-display cache entry unchanged.
+    const again = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+    expect(again.features.find(f => f.featureId === coarse.featureId)!.faces).toBe(refined.faces);
   });
   it('returns one entry per feature in dependency order', async () => {
     const code = `

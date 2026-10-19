@@ -30,8 +30,11 @@ export interface CrackCluster {
 
 export interface WatertightReport {
   ok: boolean;
-  /** Count of mesh edges not shared by exactly two triangles. */
+  /** Mesh edges used by exactly one triangle (boundary / open edges). */
   openEdgeCount: number;
+  /** Mesh edges used by three or more triangles (non-manifold: two surfaces
+   *  meeting along the same edge, typically exact tangency/coincidence). */
+  nonManifoldEdgeCount: number;
   /** Up to 5 largest crack clusters (connected components over shared vertices). */
   clusters: CrackCluster[];
 }
@@ -72,7 +75,15 @@ function collectCrackEdges(triangles: ArrayLike<number>): Map<string, CrackEdge>
  */
 export function verifyWatertight(mesh: MeshData): WatertightReport {
   const cracks = collectCrackEdges(mesh.triangles);
-  if (cracks.size === 0) return { ok: true, openEdgeCount: 0, clusters: [] };
+  if (cracks.size === 0) return { ok: true, openEdgeCount: 0, nonManifoldEdgeCount: 0, clusters: [] };
+  // Split the crack set: count 1 = open boundary, count >= 3 = non-manifold
+  // (two surfaces meeting along one edge; stitching cannot heal these).
+  let openEdgeCount = 0;
+  let nonManifoldEdgeCount = 0;
+  for (const e of cracks.values()) {
+    if (e.count === 1) openEdgeCount++;
+    else if (e.count >= 3) nonManifoldEdgeCount++;
+  }
   // Cluster crack edges by shared vertices (union-find).
   const parent = new Map<number, number>();
   const find = (x: number): number => {
@@ -112,7 +123,7 @@ export function verifyWatertight(mesh: MeshData): WatertightReport {
       center: [a.sx / a.n, a.sy / a.n, a.sz / a.n] as [number, number, number],
       edgeCount: a.n,
     }));
-  return { ok: false, openEdgeCount: cracks.size, clusters };
+  return { ok: false, openEdgeCount, nonManifoldEdgeCount, clusters };
 }
 
 function distPointSegInterior(

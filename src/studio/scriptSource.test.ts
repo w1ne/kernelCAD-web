@@ -97,6 +97,25 @@ describe('meshSourceDev', () => {
     });
   });
 
+  it('asks for quality: coarse on a preview pass', async () => {
+    const payload = {
+      features: [],
+      featureRecords: [],
+      bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => payload,
+    } as Response);
+
+    await meshSourceDev('return box(1,1,1);', undefined, { quality: 'coarse' });
+    expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: 'return box(1,1,1);', quality: 'coarse' }),
+    });
+  });
+
   it('throws the endpoint error message on a non-ok response', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: false,
