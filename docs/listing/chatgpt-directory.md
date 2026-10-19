@@ -11,6 +11,18 @@ ChatGPT apps are now submitted as **plugins**: you upload a plugin ZIP, the port
 
 After the plugin is published, MCP tool changes are picked up by the daily scan (or a manual **Rescan**). Changes to metadata or skills need a new ZIP.
 
+## Portal re-import requirements (checked 2026-10-19)
+
+The dashboard pins the existing kernelCAD app. The ZIP builder applies all of these from `agent-plugin.config.json`; the repo package keeps its portable form.
+
+- **Package name:** must equal the app's package name (`chatgpt.dashboardPackageName`, currently `app-6a2fcd20e8008191b0c688ca1bc7abb5`), not `kernelcad`.
+- **MCP URL:** must equal the app's configured URL (`chatgpt.dashboardMcpUrl`, `https://mcp.kernelcad.com/chatgpt/mcp`, the ChatGPT mount on the hosted server), not the general `/mcp`.
+- **Icons:** `logo` and `composerIcon` need `./`-prefixed paths, and the files must ship in the ZIP (this clears "App icon required").
+- **Review cases:** `review.test_cases` must be a `{ positive, negative }` object, and `tools_triggered` a comma-separated string. A flat array or array-valued `tools_triggered` is rejected during import.
+- **Commerce:** `review.commerce` + `review.commerce_description`, not under `publication`.
+
+With all of these, the 0.17.0 draft imports with **No findings** (2026-10-19).
+
 ## What `plugins/kernelcad/plugin.json` needs before upload
 These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` (`./assets/logo.png`, square 512×512) and `composerIcon` (`./assets/logo.svg`, square viewBox 84), `review.test_cases` (5 positive, 3 negative), `review.commerce` (declared true on 2026-10-19 with the external-checkout description), and `publication.release_notes`. Both icon paths use the required `./` prefix and the referenced files ship in the ZIP, which is what clears the portal's "App icon required" finding. Still missing:
 - `interface.screenshots`: optional; see the list below.
