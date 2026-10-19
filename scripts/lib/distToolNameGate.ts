@@ -126,6 +126,7 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // render_preview tool name, which DOES resolve — params, not calls).
   'out_dir',
   'base_url',
+  'screenshot_timeout_ms',
   // Hosted-product tool that lives in kernelCAD-server's registry, not the
   // local TOOL_REGISTRY — referenced in prose to redirect hosted/remote
   // clients ("hosted clients should use `open_in_studio` instead") and in

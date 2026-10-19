@@ -904,43 +904,19 @@ function configureRenderCommandOptions(cmd: Command): void {
     .option('--sheet', 'capture all seven views (adds back, left, bottom) into one labelled inspection sheet', false)
     .option('--width <n>', 'per-tile width in pixels (default 1024; 1600 with --preset publish)', (v) => parseInt(v, 10))
     .option('--height <n>', 'per-tile height in pixels (default 1024; 1200 with --preset publish)', (v) => parseInt(v, 10))
-    .option(
-      '--preset <name>',
-      "render look: 'default' (engineering review) or 'publish' (studio product shot: one 3/4 hero PNG, auto-framed, supersampled; with --separate/--pose, those views in the publish look)",
-    )
-    .option(
-      '--background <color>',
-      "--preset publish only: 'white' (default), 'light', 'dark', 'black', 'transparent' (alpha PNG), or a hex colour like '#f5f5f0'",
-    )
+    .option('--preset <name>', "render look: 'default' (engineering review) or 'publish' (studio product shot: one 3/4 hero PNG, auto-framed, supersampled; with --separate/--pose, those views in the publish look)")
+    .option('--background <color>', "--preset publish only: 'white' (default), 'light', 'dark', 'black', 'transparent' (alpha PNG), or a hex colour like '#f5f5f0'")
     .option('--no-shadow', '--preset publish only: drop the soft contact shadow under the model')
-    .option(
-      '--base-url <url>',
-      'optional render-surface override (e.g. a running studio dev server); default is the bundled static player',
-    )
+    .option('--base-url <url>', 'optional render-surface override (e.g. a running studio dev server); default is the bundled static player')
     .option('--hide-reference-images', 'hide referenceImage() overlays in rendered output (default false)', false)
-    .option(
-      '--pose <az,el>',
-      'capture an arbitrary az,el pose (degrees; az=0,el=0 is front, +az is CCW around Z, +el lifts the camera). Repeatable.',
-      (value: string, prev: string[]) => prev.concat([value]),
-      [] as string[],
-    )
-    .option(
-      '--environment <preset|url|none>',
-      "HDRI environment preset ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse'), a custom URL/path, or 'none' to force the default three-light rig",
-    )
+    .option('--pose <az,el>', 'capture an arbitrary az,el pose (degrees; az=0,el=0 is front, +az is CCW around Z, +el lifts the camera). Repeatable.', (value: string, prev: string[]) => prev.concat([value]), [] as string[])
+    .option('--environment <preset|url|none>', "HDRI environment preset ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse'), a custom URL/path, or 'none' to force the default three-light rig")
     .option('--shading <mode>', "mesh shading: 'smooth' (kernel vertex normals, default) or 'flat' (face normals)")
     .option('--screenshot-timeout <ms>', 'Playwright screenshot deadline in milliseconds (default 30000)', (v) => parseInt(v, 10))
-    .option(
-      '--no-watermark',
-      'suppress the kernelCAD version badge in the bottom-right of the captured frame (clean hero artifacts)',
-      false,
-    )
+    .option('--no-watermark', 'suppress the kernelCAD version badge in the bottom-right of the captured frame (clean hero artifacts)', false)
     .option('--focus <names>', 'show only comma-separated feature ids or assembly part names')
     .option('--hide <names>', 'hide comma-separated feature ids or assembly part names')
-    .option(
-      '--section <axis>=<pos>',
-      'clip the model with a section plane, e.g. --section z=10 (keeps the negative-axis side; see --section-flip)',
-    )
+    .option('--section <axis>=<pos>', 'clip the model with a section plane, e.g. --section z=10 (keeps the negative-axis side; see --section-flip)')
     .option('--section-flip', 'keep the positive-axis side of the section plane instead', false)
     .option('--explode <factor>', 'explode a multi-part assembly by this factor (≥ 0); requires assembly.model()', (v) => Number(v))
     .option('--explode-mode <mode>', "explode direction: 'mate-axis' (default) or 'radial'")
