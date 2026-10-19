@@ -176,7 +176,7 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
           a: { type: 'string', description: "relation:'mate' — connector ref \"<partName>.<connectorName>\"." },
           b: { type: 'string', description: "relation:'mate' — connector ref \"<partName>.<connectorName>\"." },
           type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'], description: "relation:'mate' — mate type." },
-          pose: { description: "relation:'mate' — optional mate pose." },
+          pose: { type: 'object', description: "relation:'mate' — optional mate pose." },
           limitsDeg: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minDeg, maxDeg]." },
           limitsMm: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minMm, maxMm]." },
           driven: { type: 'string', description: "relation:'coupling' — driven mate name." },
