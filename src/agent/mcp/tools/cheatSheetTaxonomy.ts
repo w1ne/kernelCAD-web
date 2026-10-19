@@ -162,7 +162,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Parametrize',
     blurb: 'Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef).',
-    names: ['param', 'params', 'add', 'subtract', 'multiply', 'divide', 'negate'],
+    names: ['param', 'params', 'add', 'subtract', 'multiply', 'divide', 'negate', 'min', 'max', 'abs', 'clamp'],
   },
   {
     task: 'Import & export',

@@ -75,8 +75,18 @@ function collectExprParamNames(expr: ParamRefExpr, names: Set<string>): void {
       collectExprParamNames(expr.expr, names);
       break;
     case 'binop':
+    case 'min':
+    case 'max':
       collectExprParamNames(expr.left, names);
       collectExprParamNames(expr.right, names);
+      break;
+    case 'abs':
+      collectExprParamNames(expr.expr, names);
+      break;
+    case 'clamp':
+      collectExprParamNames(expr.value, names);
+      collectExprParamNames(expr.min, names);
+      collectExprParamNames(expr.max, names);
       break;
   }
 }
