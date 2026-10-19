@@ -22,6 +22,11 @@ interface LoftMeta {
   endPoint?: [number, number, number] | undefined;
   twistCenter?: [number, number];
   rails?: string[];
+  segmented?: {
+    continuity: 'G0' | 'G1' | 'G2';
+    spanSize?: number;
+    mode: 'single' | 'sewn';
+  };
 }
 
 /**
@@ -84,6 +89,35 @@ async function loftSketchSections(
   const withTwist = applySectionTwist(planes, twistDeg);
   const railIds = readLoftRailIds(meta);
   if (!enforceLoftRailLimit(ctx, r, railIds)) return undefined;
+  const segmented = meta?.segmented;
+  if (segmented !== undefined) {
+    if (railIds.length > 0) {
+      ctx.diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        featureId: r.id,
+        severity: 'error',
+        message: 'loft: segmented options cannot be combined with rails; remove opts.rails or the continuity/spanSize/mode options.',
+        hint: 'Rail-guided lofts follow their own curves and already have no station joins to control. Drop one of the two authoring modes.',
+      });
+      return undefined;
+    }
+    if (segmented.mode === 'sewn' && segmented.continuity !== 'G0') {
+      ctx.diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.loft.continuity-requires-single',
+        featureId: r.id,
+        severity: 'warn',
+        message: `loft: continuity '${segmented.continuity}' cannot be enforced across independently sewn spans; building one multi-span skin instead of mode 'sewn'.`,
+        hint: "Use continuity: 'G0' with mode: 'sewn' for the fast C0 path, or drop mode to accept the single smooth skin.",
+      });
+      return buildLoftFromSketches(ctx, r, sketches, withTwist, false, meta);
+    }
+    if (segmented.mode === 'sewn' && segmented.continuity === 'G0') {
+      return buildSegmentedSewnLoft(ctx, r, sketches, withTwist, ruled, meta, segmented.spanSize ?? 3);
+    }
+    return buildLoftFromSketches(ctx, r, sketches, withTwist, false, meta);
+  }
   if (railIds.length > 0) {
     return buildRailGuidedLoft(ctx, r, sketches, planes, railIds, twistDeg, withTwist);
   }
@@ -181,6 +215,43 @@ function buildLoftFromSketches(
   }
 }
 
+/**
+ * Fast segmented path: split the station list into overlapping spans (each
+ * span shares its boundary station with the next), loft each span on its own,
+ * then fuse the span solids. The span joins are C0 by construction; callers
+ * requesting G1/G2 are routed to the single-skin path instead.
+ */
+function buildSegmentedSewnLoft(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  sketches: OcctBackend[],
+  planes: LoftPlane[],
+  ruled: boolean,
+  meta: LoftMeta | undefined,
+  spanSize: number,
+): ShapeBackend | undefined {
+  try {
+    return OcctBackend.loftSegmentedFromSketches(sketches, planes, {
+      ruled,
+      ...(meta?.startPoint === undefined ? {} : { startPoint: meta.startPoint }),
+      ...(meta?.endPoint === undefined ? {} : { endPoint: meta.endPoint }),
+      ...(meta?.twistCenter === undefined ? {} : { twistCenter: meta.twistCenter }),
+      spanSize,
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.loft.span-failed',
+      featureId: r.id,
+      severity: 'error',
+      message: `loft: segmented build failed: ${msg}`,
+      hint: 'Fix the named station range (matching vertex counts/orientation), use a larger spanSize, or switch to mode: \'single\'.',
+    });
+    return undefined;
+  }
+}
+
 /** Collect sketch_0 through sketch_{N-1} from ctx.inputs.byKey. */
 function collectLoftSections(
   ctx: LowerContext,
@@ -219,6 +290,11 @@ function readLoftMeta(r: FeatureRecord): LoftMeta | undefined {
     endPoint?: Coord[];
     twistCenter?: Coord[];
     rails?: string[];
+    segmented?: {
+      continuity?: 'G0' | 'G1' | 'G2';
+      spanSize?: Coord;
+      mode?: 'single' | 'sewn';
+    };
   } | undefined;
   return rawMeta === undefined ? undefined : {
     planes: rawMeta.planes?.map((p) => ({
@@ -230,6 +306,11 @@ function readLoftMeta(r: FeatureRecord): LoftMeta | undefined {
     endPoint: point3(rawMeta.endPoint),
     twistCenter: point2(rawMeta.twistCenter),
     rails: rawMeta.rails,
+    segmented: rawMeta.segmented === undefined ? undefined : {
+      continuity: rawMeta.segmented.continuity ?? 'G0',
+      ...(rawMeta.segmented.spanSize === undefined ? {} : { spanSize: num(rawMeta.segmented.spanSize) }),
+      mode: rawMeta.segmented.mode ?? 'single',
+    },
   };
 }
 
