@@ -206,6 +206,13 @@ describe('encode/decode round-trip', () => {
     expect(refOut).toEqual(ref);
   });
 
+  it('includes the viewport transform in the fingerprint', () => {
+    const moved = feature({
+      transform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 0, 0, 1],
+    });
+    expect(featureFingerprint(moved)).not.toBe(featureFingerprint(feature()));
+  });
+
   it('drops a stale caller fingerprint and embeds exactly the recomputed one', () => {
     const bytes = encodeMeshBinary([feature({ fingerprint: 'deadbeefdeadbeef' })]);
     const text = new TextDecoder().decode(bytes);
@@ -619,6 +626,7 @@ describe('fingerprintBuffers', () => {
       normals: face.normals,
       indices: face.indices,
       edges: decoded.edges!,
+      transform: decoded.transform!,
     });
     expect(recomputed).toBe(decoded.fingerprint);
     expect(fingerprintBuffers({
@@ -627,6 +635,7 @@ describe('fingerprintBuffers', () => {
       normals: face.normals,
       indices: new Uint32Array([0, 1]),
       edges: decoded.edges!,
+      transform: decoded.transform!,
     })).not.toBe(decoded.fingerprint);
   });
 });

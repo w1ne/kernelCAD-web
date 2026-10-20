@@ -43,6 +43,7 @@ export interface FeatureFingerprintInput {
   uvs?: NumericBuffer; indices: NumericBuffer;
   meshPositions?: NumericBuffer; meshNormals?: NumericBuffer; meshIndices?: NumericBuffer;
   edges?: NumericBuffer;
+  transform?: NumericBuffer;
 }
 
 type Plane = NonNullable<FaceGeometry['plane']>;
@@ -100,6 +101,7 @@ export function fingerprintBuffers(input: FeatureFingerprintInput): string {
   };
   add(input.vertices); add(input.normals); add(input.uvs); add(input.indices);
   add(input.meshPositions); add(input.meshNormals); add(input.meshIndices); add(input.edges);
+  add(input.transform);
   return hashSources(input.faceIds, sources);
 }
 
@@ -164,6 +166,7 @@ function fingerprintOfNormalized(
   hasUv: boolean,
   mesh: { positions: Float32Array; normals: Float32Array; indices: Uint32Array } | undefined,
   edges: Float32Array | undefined,
+  transform: readonly number[] | undefined,
 ): string {
   return fingerprintBuffers({
     faceIds: faces.map((face) => face.faceId),
@@ -173,6 +176,7 @@ function fingerprintOfNormalized(
     indices: concatU32(faces.map((face) => face.indices)),
     ...(mesh !== undefined ? { meshPositions: mesh.positions, meshNormals: mesh.normals, meshIndices: mesh.indices } : {}),
     ...(edges !== undefined ? { edges } : {}),
+    ...(transform !== undefined ? { transform: [...transform] } : {}),
   });
 }
 
@@ -223,7 +227,7 @@ function normalizeRecord(
   ];
   if (mesh !== undefined) chunks.push(chunkOf([mesh.positions]), chunkOf([mesh.normals]), chunkOf([mesh.indices]));
   if (edges !== undefined) chunks.push(chunkOf([edges]));
-  const fingerprint = fingerprintOfNormalized(faces, hasUv, mesh, edges);
+  const fingerprint = fingerprintOfNormalized(faces, hasUv, mesh, edges, feature.transform);
 
   let vertexOffset = 0;
   let indexOffset = 0;
