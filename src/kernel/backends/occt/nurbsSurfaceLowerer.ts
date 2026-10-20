@@ -358,14 +358,24 @@ function thickenedResultProblem(raw: unknown, area: number, t: number): string |
 function thickenShellRaw(shellTopo: unknown, t: number): OcctBackend {
   const area = rawSurfaceArea(shellTopo);
   const reasons: string[] = [];
-  for (const candidate of [shellTopo, (shellTopo as { Reversed: () => unknown }).Reversed()]) {
+  for (let pass = 0; pass < 2; pass++) {
+    const reversed = pass === 1 ? (shellTopo as { Reversed: () => unknown }).Reversed() : null;
+    const candidate = reversed ?? shellTopo;
+    let raw: unknown = null;
     try {
-      const raw = buildThickSolidRaw(candidate, t);
+      raw = buildThickSolidRaw(candidate, t);
       const problem = thickenedResultProblem(raw, area, t);
-      if (problem === null) return new OcctBackend(replicad.cast(raw) as replicad.Shape3D);
+      if (problem === null) {
+        const accepted = raw;
+        raw = null;
+        return new OcctBackend(replicad.cast(accepted) as replicad.Shape3D);
+      }
       reasons.push(problem);
     } catch (e) {
       reasons.push(e instanceof Error ? e.message : String(e));
+    } finally {
+      (raw as { delete?: () => void } | null)?.delete?.();
+      (reversed as { delete?: () => void } | null)?.delete?.();
     }
   }
   throw new ThickenedSolidError(`thicken rejected the result: ${reasons.join(' / ')}`);

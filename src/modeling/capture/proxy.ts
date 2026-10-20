@@ -822,24 +822,13 @@ export class Shape {
    * A closed solid input is rejected rather than hollowed.
    */
   thicken(t: Editable<number>): Shape {
-    if (typeof t === 'number' && !(t > 0 && Number.isFinite(t))) {
+    if (!isParamRef(t) && !(typeof t === 'number' && t > 0 && Number.isFinite(t))) {
       invalidArgs({
         api: 'Shape.thicken(t)',
         path: 't',
         got: t,
-        requires: 'a positive finite wall thickness in mm',
-        unit: 'mm',
-        example: 'sewn.thicken(3)',
-        featureId: this.id,
-      });
-    }
-    if (typeof t !== 'number' && !isParamRef(t)) {
-      invalidArgs({
-        api: 'Shape.thicken(t)',
-        path: 't',
-        got: t,
-        showType: true,
-        requires: 'a number or ParamRef<number> in mm',
+        showType: typeof t !== 'number',
+        requires: 'a positive finite wall thickness in mm, or a ParamRef<number>',
         unit: 'mm',
         example: 'sewn.thicken(3)',
         featureId: this.id,
