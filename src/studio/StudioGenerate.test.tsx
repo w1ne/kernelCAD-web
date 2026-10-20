@@ -131,6 +131,38 @@ describe('StudioGenerate — unified prompt', () => {
     expect(snapshot.notes).toEqual([expect.objectContaining({ text: 'Keep this face flat', anchor: [1, 2, 3] })]);
   });
 
+  it('keeps the prompt when the attached markup would exceed the final prompt limit', () => {
+    markupStore.addNote({
+      id: 'large-prompt-note',
+      text: 'Keep this face flat',
+      anchor: [1, 2, 3],
+      refs: [],
+    });
+    render(<StudioGenerate />);
+    const prompt = screen.getByLabelText('Generate prompt') as HTMLTextAreaElement;
+    fireEvent.change(prompt, { target: { value: 'x'.repeat(62_900) } });
+    fireEvent.click(screen.getByRole('button', { name: 'Build' }));
+
+    expect(generationSubmit).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent(/prompt.*markup.*63,000 characters/i);
+    expect(prompt.value).toHaveLength(62_900);
+  });
+
+  it('keeps a concept prompt when its markup would exceed the final prompt limit', () => {
+    const { rerender } = render(<StudioGenerate />);
+    const prompt = screen.getByLabelText('Generate prompt') as HTMLTextAreaElement;
+    fireEvent.change(prompt, { target: { value: 'x'.repeat(62_900) } });
+    fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
+    previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
+    markupStore.addNote({ id: 'large-concept-note', text: 'Keep this face flat', anchor: [1, 2, 3], refs: [] });
+    rerender(<StudioGenerate />);
+    fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
+
+    expect(generationSubmit).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent(/prompt.*markup.*63,000 characters/i);
+    expect(prompt.value).toHaveLength(62_900);
+  });
+
   it('disables 3D concept mode when a photo is attached', async () => {
     render(<StudioGenerate />);
     fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'an e-reader enclosure' } });

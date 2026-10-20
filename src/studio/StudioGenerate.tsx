@@ -193,7 +193,7 @@ function useAgentPane() {
     const concept = useConceptWorkflow({
         prompt, busy: run.busy, currentCode, selectedFeatureId, agentRepairWorkflow, submit, preview,
         setBaseline: run.setBaseline, setReviewSnapshot: run.setReviewSnapshot,
-        captureMarkupSnapshot,
+        captureMarkupSnapshot, onPromptError: run.reportPromptError,
     });
     const { accept, applied } = useAcceptProposal(phase, stagedEdit, review.stageGeneratedEdit);
     useRepairRollback(phase, agentRepairWorkflow);
@@ -291,11 +291,15 @@ const StudioGenerateInner: React.FC = () => {
                 <GenerateForm
                     selectedFeatureId={pane.selectedFeatureId}
                     prompt={pane.prompt}
-                    onPromptChange={pane.setPrompt}
+                    onPromptChange={(value) => {
+                        pane.setPrompt(value);
+                        run.clearPromptError();
+                    }}
                     busy={run.busy}
                     conceptBusy={pane.conceptBusy}
                     previewPhase={pane.preview.phase}
                     onSubmit={run.onSubmit}
+                    submitError={run.promptError}
                     onConcept={pane.concept.onConcept}
                     agentBusy={run.agentBusy}
                     onClearTarget={() => pane.selectFeature(null)}

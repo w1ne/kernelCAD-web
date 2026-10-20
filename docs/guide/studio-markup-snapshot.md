@@ -22,8 +22,10 @@ records its diameter. Remove individual measurements from the list, or choose
 **Clear all markup**.
 
 Sending a prompt captures the current camera and markup at that moment and
-attaches it to the prompt as a JSON code block. Changes made after sending do
-not alter that run's saved context. **Save JSON** downloads the current
+attaches it to the prompt as a JSON code block when the snapshot contains any
+picked face or edge, note, or measurement. A camera-only snapshot is omitted,
+so plain prompts keep their existing text unchanged. Changes made after sending
+do not alter that run's saved context. **Save JSON** downloads the current
 snapshot. **Load JSON** validates the file, restores its camera pose, and
 redisplays saved notes, measurements and topology highlights.
 
@@ -86,6 +88,12 @@ points for a freehand stroke.
 
 The JSON is checked against the version 1 schema before it is replayed. Unknown
 versions and unexpected fields are rejected rather than partially applied.
+Each snapshot is limited to 256 picked topology references, 128 measurements,
+and 128 notes. Each measurement or note can reference up to 32 topology items;
+freehand strokes can contain up to 512 points. Note text is limited to 280
+characters. A generated prompt, including its markup block, is limited to
+63,000 characters; Studio reports when the prompt and markup together exceed
+that limit.
 
 ## Demo evidence
 

@@ -4,6 +4,7 @@ import { useRef, useState, useSyncExternalStore, type ChangeEvent } from 'react'
 import { Download, FileUp, Trash2, X } from 'lucide-react';
 import { formatDiameter, formatLength } from '../measure/measureMath';
 import { serializeMarkupSnapshot } from '../../../markup/markupSnapshot';
+import { MARKUP_NOTE_MAX_LENGTH } from '../../../markup/markupLimits';
 import { markupStore } from '../../../markup/markupStore';
 
 const FIELD = 'w-full resize-y rounded-control border border-border bg-surface-2 px-2 py-1.5 text-ui text-fg placeholder:text-fg-3 focus-ring';
@@ -55,7 +56,7 @@ export function MarkupPanel() {
           data-testid="markup-note-draft"
           className={FIELD}
           rows={2}
-          maxLength={280}
+          maxLength={MARKUP_NOTE_MAX_LENGTH}
           placeholder="e.g. Keep this mounting face flat"
           value={state.draftText}
           onChange={(event) => markupStore.setDraftText(event.currentTarget.value)}
@@ -80,7 +81,7 @@ export function MarkupPanel() {
             <ul className="space-y-2">
               {state.notes.map((note, index) => (
                 <li key={note.id} className="flex items-start gap-1 rounded-control border border-border bg-surface-2 p-1.5">
-                  <textarea aria-label={`Edit note ${index + 1}`} className={`${FIELD} min-h-10`} rows={2} value={note.text} onChange={(event) => markupStore.updateNote(note.id, event.currentTarget.value)} />
+                  <textarea aria-label={`Edit note ${index + 1}`} className={`${FIELD} min-h-10`} rows={2} maxLength={MARKUP_NOTE_MAX_LENGTH} value={note.text} onChange={(event) => markupStore.updateNote(note.id, event.currentTarget.value)} />
                   <button type="button" className={ACTION} aria-label={`Remove note ${index + 1}`} onClick={() => markupStore.removeNote(note.id)}><X size={14} /></button>
                 </li>
               ))}

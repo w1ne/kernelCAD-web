@@ -20,6 +20,7 @@ interface UseConceptWorkflowArgs {
     readonly setBaseline: (value: string) => void;
     readonly setReviewSnapshot: (snapshot: GenerationReviewSnapshot | null) => void;
     readonly captureMarkupSnapshot: () => MarkupSnapshot;
+    readonly onPromptError: (message: string | null) => void;
 }
 
 /**
@@ -37,6 +38,7 @@ export function useConceptWorkflow({
     setBaseline,
     setReviewSnapshot,
     captureMarkupSnapshot,
+    onPromptError,
 }: UseConceptWorkflowArgs) {
     // The prompt the last concept was generated from — Build-as-CAD uses what
     // the user actually previewed even if they edited the box afterwards.
@@ -51,13 +53,25 @@ export function useConceptWorkflow({
 
     const buildConceptAsCad = () => {
         if (!conceptPrompt || busy) return;
+        let markupSnapshot: MarkupSnapshot;
+        let requestPrompt: string;
+        try {
+            markupSnapshot = captureMarkupSnapshot();
+            requestPrompt = attachMarkupSnapshotToPrompt(conceptPrompt, markupSnapshot);
+        } catch (error) {
+            onPromptError(error instanceof Error
+                ? error.message
+                : 'Studio markup exceeds its snapshot limits. Remove some markup, then try again.');
+            return;
+        }
+        onPromptError(null);
+
         // Fresh generation, never an edit: framing the concept prompt as an
         // edit of whatever happens to sit in the editor (often the untouched
         // starter sample) lets the model return that code unchanged. The
         // review diff still uses the current editor code as its baseline, so
         // nothing is overwritten without the user accepting.
         setBaseline(currentCode);
-        const markupSnapshot = captureMarkupSnapshot();
         setReviewSnapshot({
             fromCode: currentCode,
             promptText: conceptPrompt,
@@ -72,7 +86,7 @@ export function useConceptWorkflow({
         const mesh = preview.phase.state === 'done'
             ? { renderImageUrl: preview.phase.renderImageUrl, proportions: preview.phase.proportions }
             : undefined;
-        void submit(attachMarkupSnapshotToPrompt(conceptPrompt, markupSnapshot), undefined, mesh);
+        void submit(requestPrompt, undefined, mesh);
     };
 
     return { onConcept, buildConceptAsCad };

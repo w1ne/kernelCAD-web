@@ -2,6 +2,13 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import { attachMarkupSnapshotToPrompt } from './markupSnapshot';
+import {
+  MARKUP_NOTE_MAX_STROKE_POINTS,
+  MARKUP_SNAPSHOT_MAX_MEASUREMENTS,
+  MARKUP_SNAPSHOT_MAX_NOTES,
+  MARKUP_SNAPSHOT_MAX_REFS_PER_ITEM,
+  MARKUP_SNAPSHOT_MAX_TOPOLOGY_REFS,
+} from './markupLimits';
 
 const sample = {
   schemaVersion: 1 as const,
@@ -101,7 +108,7 @@ describe('Studio markup snapshots', () => {
     }).success).toBe(false);
   });
 
-  it('accepts distance float noise within tolerance and keeps diameter independent', async () => {
+  it('accepts distance float noise within tolerance and validates a matching diameter', async () => {
     const api = await import('./markupSnapshot');
     expect(api.markupSnapshotSchema?.safeParse).toEqual(expect.any(Function));
     if (!api.markupSnapshotSchema) return;
@@ -114,10 +121,95 @@ describe('Studio markup snapshots', () => {
       ...sample.measurements[0],
       id: 'diameter-1',
       type: 'diameter' as const,
-      value: 8,
+      value: 5,
     };
 
     expect(api.markupSnapshotSchema.safeParse({ ...sample, measurements: [nearDistance] }).success).toBe(true);
     expect(api.markupSnapshotSchema.safeParse({ ...sample, measurements: [independentDiameter] }).success).toBe(true);
+  });
+
+  it('rejects a diameter value that disagrees with its endpoint length beyond tolerance', async () => {
+    const api = await import('./markupSnapshot');
+    const inconsistentDiameter = {
+      ...sample.measurements[0],
+      id: 'diameter-1',
+      type: 'diameter' as const,
+      value: 8,
+    };
+
+    expect(api.markupSnapshotSchema.safeParse({
+      ...sample,
+      measurements: [inconsistentDiameter],
+    }).success).toBe(false);
+  });
+
+  it('rejects a snapshot with more topology references than the supported bound', async () => {
+    const api = await import('./markupSnapshot');
+    const topologyRefs = Array.from({ length: MARKUP_SNAPSHOT_MAX_TOPOLOGY_REFS + 1 }, (_, id) => ({ shapeIndex: 0, kind: 'face' as const, id }));
+
+    expect(api.markupSnapshotSchema.safeParse({
+      ...sample,
+      selection: { topologyRefs },
+    }).success).toBe(false);
+  });
+
+  it('bounds every collection in the snapshot schema', async () => {
+    const api = await import('./markupSnapshot');
+    const topologyRef = { shapeIndex: 0, kind: 'face' as const, id: 0 };
+    const overflowCases = [
+      {
+        snapshot: {
+          ...sample,
+          measurements: Array.from({ length: MARKUP_SNAPSHOT_MAX_MEASUREMENTS + 1 }, (_, index) => ({
+            ...sample.measurements[0], id: `measurement-${index}`, refs: [],
+          })),
+        },
+      },
+      {
+        snapshot: {
+          ...sample,
+          notes: Array.from({ length: MARKUP_SNAPSHOT_MAX_NOTES + 1 }, (_, index) => ({
+            ...sample.notes[0], id: `note-${index}`, refs: [],
+          })),
+        },
+      },
+      {
+        snapshot: {
+          ...sample,
+          measurements: [{
+            ...sample.measurements[0],
+            refs: Array.from({ length: MARKUP_SNAPSHOT_MAX_REFS_PER_ITEM + 1 }, (_, id) => ({ ...topologyRef, id })),
+          }],
+        },
+      },
+      {
+        snapshot: {
+          ...sample,
+          notes: [{
+            ...sample.notes[0],
+            refs: Array.from({ length: MARKUP_SNAPSHOT_MAX_REFS_PER_ITEM + 1 }, (_, id) => ({ ...topologyRef, id })),
+          }],
+        },
+      },
+      {
+        snapshot: {
+          ...sample,
+          notes: [{
+            ...sample.notes[0],
+            strokePoints: Array.from({ length: MARKUP_NOTE_MAX_STROKE_POINTS + 1 }, () => [0, 0, 0] as [number, number, number]),
+          }],
+        },
+      },
+    ];
+
+    for (const { snapshot } of overflowCases) {
+      expect(api.markupSnapshotSchema.safeParse(snapshot).success).toBe(false);
+    }
+  });
+
+  it('rejects the final prompt when appending markup would exceed the prompt character limit', () => {
+    expect(() => attachMarkupSnapshotToPrompt('x'.repeat(63_000), sample)).toThrow(
+      /prompt plus Studio markup exceeds 63,000 characters.*remove some notes, measurements, or picked topology/i,
+    );
   });
 });

@@ -122,7 +122,9 @@ export class StudioMarkupStore {
   updateNote(id: string, text: string): void {
     const index = this.state.notes.findIndex((note) => note.id === id);
     if (index < 0 || !text.trim()) return;
-    const next = markupNoteSchema.parse({ ...this.state.notes[index], text });
+    const parsed = markupNoteSchema.safeParse({ ...this.state.notes[index], text });
+    if (!parsed.success) return;
+    const next = parsed.data;
     this.state = { ...this.state, notes: this.state.notes.map((note, i) => i === index ? next : note) };
     this.emit();
   }

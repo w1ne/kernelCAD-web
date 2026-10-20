@@ -75,7 +75,7 @@
 
       <h2>Make and replay markup</h2>
       <p>Open <strong>Markup</strong> in the viewer toolbar. Enter a note, leave <strong>Place note</strong> on, and click a visible point on the model. The note is anchored at the snapped model point and the picked face or edge is highlighted. The Notes list lets you edit or remove notes. To measure, choose <strong>Measure</strong> and click two points; a completed distance is kept in the Markup panel. Clicking one circular edge records its diameter. Remove individual measurements from the list, or choose <strong>Clear all markup</strong>.</p>
-      <p>Sending a prompt captures the current camera and markup at that moment and attaches it to the prompt as a JSON code block. Changes made after sending do not alter that run's saved context. <strong>Save JSON</strong> downloads the current snapshot. <strong>Load JSON</strong> validates the file, restores its camera pose, and redisplays saved notes, measurements and topology highlights.</p>
+      <p>Sending a prompt captures the current camera and markup at that moment and attaches it to the prompt as a JSON code block when the snapshot contains any picked face or edge, note, or measurement. A camera-only snapshot is omitted, so plain prompts keep their existing text unchanged. Changes made after sending do not alter that run's saved context. <strong>Save JSON</strong> downloads the current snapshot. <strong>Load JSON</strong> validates the file, restores its camera pose, and redisplays saved notes, measurements and topology highlights.</p>
       <p>This is local Studio viewer context. It does not change the CAD script or model. Markup stays with the open project and is cleared when you switch projects. Point coordinates and measurement values use model-space millimetres. Face and edge identifiers refer to the current rendered shape and may change after a model rebuild.</p>
 
       <h2>Format, version 1</h2>
@@ -115,7 +115,7 @@
   ]
 }</code></pre>
       <p><code>topologyRefs</code> is a generic list of face or edge references. A reference records the geometry's <code>shapeIndex</code>, its <code>kind</code>, the local face or edge <code>id</code>, and the optional owning <code>featureId</code>. Distance measurements derive <code>value</code> from their two endpoints; diameter measurements store the circle diameter and endpoints across it. Notes may include <code>strokePoints</code>, an optional list of model-space points for a freehand stroke.</p>
-      <p>The JSON is checked against the version 1 schema before it is replayed. Unknown versions and unexpected fields are rejected rather than partially applied.</p>
+      <p>The JSON is checked against the version 1 schema before it is replayed. Unknown versions and unexpected fields are rejected rather than partially applied. Each snapshot is limited to 256 picked topology references, 128 measurements, and 128 notes. Each measurement or note can reference up to 32 topology items; freehand strokes can contain up to 512 points. Note text is limited to 280 characters. A generated prompt, including its markup block, is limited to 63,000 characters; Studio reports when the prompt and markup together exceed that limit.</p>
 
       <h2>Demo evidence</h2>
       <p><a href="https://github.com/w1ne/kernelCAD-web/tree/develop/docs/demos/studio-markup">Open the Studio markup walkthrough bundle</a> for a replayable example and the verification status for this change. Local validation does not establish deployed behavior or hardware acceptance.</p>

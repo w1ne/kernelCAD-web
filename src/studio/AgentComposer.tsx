@@ -14,6 +14,7 @@ import {
     meshAttachmentPromptNote,
     stlAttachmentFromBytes,
 } from '../funnel/lib/meshAttachment';
+import { STUDIO_AGENT_PROMPT_MAX_CHARS } from './markup/markupLimits';
 
 interface Recognition {
     lang: string;
@@ -44,9 +45,7 @@ type ComposerSubmit = (
     prompt: string,
     referenceImage?: GenerateRequest['referenceImage'],
     attachments?: GenerateAttachment[],
-) => void;
-// Leave room for Studio's selected-feature context in the 64,000 character API budget.
-const MAX_PROMPT = 63_000;
+) => void | boolean;
 const MAX_TEXT_FILES = 5;
 const ACCEPT = '.txt,.md,.csv,.json,.svg,.ts,.js,.py,.scad,.step,.stp,.stl';
 const buttonClass = 'focus-ring inline-flex h-control-md items-center justify-center gap-1.5 rounded-control px-2 text-ui text-fg-2 transition-colors duration-80 hover:bg-surface-3 hover:text-fg disabled:opacity-40 disabled:cursor-not-allowed max-md:h-touch max-md:min-w-touch';
@@ -180,12 +179,15 @@ function submitComposer({ disabled, reading, listening, value, files, setError, 
             .filter((file): file is TextAttachment => file.kind === 'text')
             .map(file => `Included file: ${file.name}\n${file.content}\nEnd of file: ${file.name}`),
     ].join('\n\n');
-    if (prompt.length > MAX_PROMPT) { setError('Your message and files are too long. Shorten the message or remove a file.'); return false; }
+    if (prompt.length > STUDIO_AGENT_PROMPT_MAX_CHARS) { setError('Your message and files are too long. Shorten the message or remove a file.'); return false; }
     setError('');
     const referenceImage = photo ? { dataUrl: photo.dataUrl, fileName: photo.name, mimeType: photo.mimeType } : undefined;
-    if (meshes.length > 0) onSubmit(prompt, referenceImage, meshes);
-    else if (referenceImage) onSubmit(prompt, referenceImage);
-    else onSubmit(prompt);
+    const accepted = meshes.length > 0
+        ? onSubmit(prompt, referenceImage, meshes)
+        : referenceImage
+            ? onSubmit(prompt, referenceImage)
+            : onSubmit(prompt);
+    if (accepted === false) return false;
     return true;
 }
 
@@ -228,7 +230,7 @@ function toggleVoiceInput({ recognition, Speech, latest, setError, setListening 
 
 export function AgentComposer({
     value, onChange, onSubmit, disabled = false, submitLabel = 'Send', onPhotoChange,
-    clearOnSubmit = false, placeholder = 'What would you like to make?', context, rows = 5,
+    clearOnSubmit = false, placeholder = 'What would you like to make?', context, rows = 5, submitError,
 }: {
     value: string;
     onChange: (value: string) => void;
@@ -242,6 +244,7 @@ export function AgentComposer({
     /** A row inside the box above the controls: what the agent will see. */
     context?: ReactNode;
     rows?: number;
+    submitError?: string | null;
 }) {
     const [files, setFiles] = useState<Attachment[]>([]);
     const [reading, setReading] = useState(false);
@@ -319,7 +322,7 @@ export function AgentComposer({
                     submitLabel={submitLabel} onFilesPicked={includeFiles} onToggleVoice={toggleVoice} />
             </div>
             {listening && <p role="status" className="text-ui text-fg-2">Listening… stop the microphone to send.</p>}
-            {error && <p role="alert" className="text-ui text-danger">{error}</p>}
+            {(error || submitError) && <p role="alert" className="text-ui text-danger">{error || submitError}</p>}
         </form>
     );
 }

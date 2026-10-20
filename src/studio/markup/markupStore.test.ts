@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { StudioMarkupStore } from './markupStore';
 import type { MarkupSnapshot } from './markupSnapshot';
+import { MARKUP_NOTE_MAX_LENGTH } from './markupLimits';
 
 const sample: MarkupSnapshot = {
   schemaVersion: 1,
@@ -53,6 +54,14 @@ describe('Studio markup store', () => {
     expect(store.captureSnapshot().measurements).toEqual([]);
     store.removeNote('n1');
     expect(store.captureSnapshot().notes).toEqual([]);
+  });
+
+  it('ignores an invalid overlong note edit without throwing or changing the saved note', () => {
+    const store = new StudioMarkupStore();
+    store.addNote(sample.notes[0]!);
+
+    expect(() => store.updateNote('n1', 'x'.repeat(MARKUP_NOTE_MAX_LENGTH + 1))).not.toThrow();
+    expect(store.getSnapshot().notes).toEqual(sample.notes);
   });
 
   it('toggles note placement with the panel and clears saved markup on demand', () => {

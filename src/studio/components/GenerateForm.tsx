@@ -52,6 +52,7 @@ export function GenerateForm({
     conceptBusy,
     previewPhase,
     onSubmit,
+    submitError,
     onConcept,
     agentBusy = false,
     onClearTarget,
@@ -66,7 +67,8 @@ export function GenerateForm({
         message: string,
         referenceImage?: GenerateRequest['referenceImage'],
         attachments?: GenerateRequest['attachments'],
-    ) => void;
+    ) => void | boolean;
+    submitError?: string | null;
     onConcept: () => void;
     /** A run is going: the composer stays open and queues follow-ups. */
     agentBusy?: boolean;
@@ -76,7 +78,7 @@ export function GenerateForm({
     const narrow = useIsNarrow();
     return (
         <div className="flex flex-col gap-2">
-            <AgentComposer value={prompt} onChange={onPromptChange} onSubmit={onSubmit}
+            <AgentComposer value={prompt} onChange={onPromptChange} onSubmit={onSubmit} submitError={submitError}
                 disabled={conceptBusy} submitLabel={agentBusy ? 'Queue follow-up' : 'Build'} onPhotoChange={setPhotoAttached}
                 clearOnSubmit rows={narrow ? 2 : 3}
                 placeholder={agentBusy ? 'Add a follow-up; it runs after this change…' : 'Describe a part or a change…'}

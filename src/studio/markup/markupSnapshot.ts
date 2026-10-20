@@ -1,9 +1,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { z } from 'zod';
+import {
+  MARKUP_NOTE_MAX_LENGTH,
+  MARKUP_NOTE_MAX_STROKE_POINTS,
+  MARKUP_SNAPSHOT_MAX_MEASUREMENTS,
+  MARKUP_SNAPSHOT_MAX_NOTES,
+  MARKUP_SNAPSHOT_MAX_REFS_PER_ITEM,
+  MARKUP_SNAPSHOT_MAX_TOPOLOGY_REFS,
+  STUDIO_AGENT_PROMPT_MAX_CHARS,
+  STUDIO_AGENT_PROMPT_TOO_LARGE_MESSAGE,
+} from './markupLimits';
 
 export const MARKUP_SNAPSHOT_VERSION = 1 as const;
-export const MARKUP_NOTE_MAX_LENGTH = 280;
 /** Absolute distance/endpoints agreement allowed when replaying markup (mm). */
 export const MARKUP_DISTANCE_VALUE_TOLERANCE_MM = 1e-6;
 
@@ -32,18 +41,17 @@ export const markupMeasurementSchema = z.object({
   id: z.string().min(1),
   type: z.enum(['distance', 'diameter']),
   endpoints: z.tuple([modelPointSchema, modelPointSchema]),
-  refs: z.array(topologyRefSchema),
+  refs: z.array(topologyRefSchema).max(MARKUP_SNAPSHOT_MAX_REFS_PER_ITEM),
   value: number.nonnegative(),
   units: z.literal('mm'),
 }).strict().superRefine((measurement, context) => {
-  if (measurement.type !== 'distance') return;
   const [a, b] = measurement.endpoints;
   const endpointDistance = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
   if (Math.abs(measurement.value - endpointDistance) > MARKUP_DISTANCE_VALUE_TOLERANCE_MM) {
     context.addIssue({
       code: 'custom',
       path: ['value'],
-      message: `Distance value must match endpoint length within ${MARKUP_DISTANCE_VALUE_TOLERANCE_MM} mm.`,
+      message: `${measurement.type} value must match endpoint length within ${MARKUP_DISTANCE_VALUE_TOLERANCE_MM} mm.`,
     });
   }
 });
@@ -52,16 +60,16 @@ export const markupNoteSchema = z.object({
   id: z.string().min(1),
   text: z.string().trim().min(1).max(MARKUP_NOTE_MAX_LENGTH),
   anchor: modelPointSchema,
-  refs: z.array(topologyRefSchema),
-  strokePoints: z.array(modelPointSchema).optional(),
+  refs: z.array(topologyRefSchema).max(MARKUP_SNAPSHOT_MAX_REFS_PER_ITEM),
+  strokePoints: z.array(modelPointSchema).max(MARKUP_NOTE_MAX_STROKE_POINTS).optional(),
 }).strict();
 
 export const markupSnapshotSchema = z.object({
   schemaVersion: z.literal(MARKUP_SNAPSHOT_VERSION),
   camera: markupCameraSchema,
-  selection: z.object({ topologyRefs: z.array(topologyRefSchema) }).strict(),
-  measurements: z.array(markupMeasurementSchema),
-  notes: z.array(markupNoteSchema),
+  selection: z.object({ topologyRefs: z.array(topologyRefSchema).max(MARKUP_SNAPSHOT_MAX_TOPOLOGY_REFS) }).strict(),
+  measurements: z.array(markupMeasurementSchema).max(MARKUP_SNAPSHOT_MAX_MEASUREMENTS),
+  notes: z.array(markupNoteSchema).max(MARKUP_SNAPSHOT_MAX_NOTES),
 }).strict();
 
 export type ModelPoint = z.infer<typeof modelPointSchema>;
@@ -89,17 +97,27 @@ export function serializeMarkupSnapshot(snapshot: MarkupSnapshot): string {
   return JSON.stringify(markupSnapshotSchema.parse(snapshot));
 }
 
-/** Inline a compact replayable context block in the existing prompt channel. */
+/**
+ * Inline a replayable context block only when the snapshot contains a picked
+ * topology ref, note, or measurement. A camera pose alone is intentionally
+ * omitted to preserve plain-prompt behavior. The final string is checked after
+ * appending the snapshot against the composer budget.
+ */
 export function attachMarkupSnapshotToPrompt(prompt: string, snapshot: MarkupSnapshot): string {
   const json = serializeMarkupSnapshot(snapshot);
   const hasMarkup = snapshot.notes.length > 0
     || snapshot.measurements.length > 0
     || snapshot.selection.topologyRefs.length > 0;
-  if (!hasMarkup) return prompt;
-
-  const longestFence = Math.max(0, ...(json.match(/`+/g) ?? []).map((run) => run.length));
-  const fence = '`'.repeat(Math.max(3, longestFence + 1));
-  return `${prompt}\n\nStudio markup snapshot JSON (schemaVersion ${snapshot.schemaVersion}):\n${fence}json\n${json}\n${fence}`;
+  let finalPrompt = prompt;
+  if (hasMarkup) {
+    const longestFence = Math.max(0, ...(json.match(/`+/g) ?? []).map((run) => run.length));
+    const fence = '`'.repeat(Math.max(3, longestFence + 1));
+    finalPrompt = `${prompt}\n\nStudio markup snapshot JSON (schemaVersion ${snapshot.schemaVersion}):\n${fence}json\n${json}\n${fence}`;
+  }
+  if (finalPrompt.length > STUDIO_AGENT_PROMPT_MAX_CHARS) {
+    throw new Error(STUDIO_AGENT_PROMPT_TOO_LARGE_MESSAGE);
+  }
+  return finalPrompt;
 }
 
 export function parseMarkupSnapshot(serialized: string | unknown): MarkupSnapshot {
