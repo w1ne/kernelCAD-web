@@ -8,6 +8,7 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { EditorEdit, EditorLike } from '../../shared/types/editor';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
+import { useCodeLineReveal } from '../logic/useCodeLineReveal';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { currentStudioScript, devMeshAvailable } from '../scriptSource';
 import { scriptCodeEditorIsReadOnly } from '../linkedScriptAutosave';
@@ -153,6 +154,7 @@ export function CodeTab(): JSX.Element {
     useEffect(() => {
         indexInputRef.current = { code: workbench.code ?? '', features };
     }, [workbench.code, features]);
+    useCodeLineReveal(editorRef, features);
 
     const { beforeMount: handleBeforeMount, attach: attachTypeCheck } = useKcadTypeCheck();
 

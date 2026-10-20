@@ -12,6 +12,7 @@ const mockSelectedFeatureId = { value: null as string | null };
 const mockSelectFeature = vi.fn();
 const mockSetCode = vi.fn();
 const revealLineInCenter = vi.fn();
+const focusEditor = vi.fn();
 const setModelMarkers = vi.fn();
 const deltaDecorations = vi.fn((_old: string[], next: unknown[]) => next.map((_, i) => `d${i}`));
 const mockCode = { value: '// hello' };
@@ -55,8 +56,8 @@ vi.mock('@monaco-editor/react', () => ({
                 executeEdits: vi.fn(),
                 setPosition: vi.fn(),
                 revealLineInCenter,
+                focus: focusEditor,
                 deltaDecorations,
-                focus: vi.fn(),
                 onMouseDown: vi.fn(),
             };
             // Real Monaco puts MarkerSeverity on the namespace, not on `editor`.
@@ -80,6 +81,7 @@ vi.mock('@monaco-editor/react', () => ({
 
 import { CodeTab } from '../../tabs/CodeTab';
 import { selectionCodeStore } from '../../selectionCode/selectionCodeStore';
+import { codeLineRevealRequests } from '../../hooks/studioNavigation';
 
 function partFeature(id: string, line: number, column = 1): FeatureRecord {
     return {
@@ -124,6 +126,7 @@ afterEach(() => {
     deltaDecorations.mockClear();
     mockCode.value = '// hello';
     revealLineInCenter.mockReset();
+    focusEditor.mockReset();
     setModelMarkers.mockReset();
     mockSelectFeature.mockReset();
     mockSetCode.mockReset();
@@ -133,6 +136,7 @@ afterEach(() => {
 
 beforeEach(() => {
     revealLineInCenter.mockReset();
+    focusEditor.mockReset();
     setModelMarkers.mockReset();
     mockSelectFeature.mockReset();
     mockSetCode.mockReset();
@@ -182,6 +186,25 @@ describe('CodeTab', () => {
 
         expect(revealLineInCenter).toHaveBeenCalledTimes(1);
         expect(revealLineInCenter).toHaveBeenCalledWith(42);
+        expect(focusEditor).not.toHaveBeenCalled();
+    });
+
+    it('scrolls again when the same feature asks to be shown, and does not focus the editor', () => {
+        mockSelectedFeatureId.value = 'shoulder';
+        mockUseRecomputeResult.mockReturnValue(
+            baseResult({ features: [partFeature('shoulder', 42, 3)] }),
+        );
+
+        render(<CodeTab />);
+        revealLineInCenter.mockClear();
+        focusEditor.mockClear();
+
+        act(() => {
+            codeLineRevealRequests.request({ featureId: 'shoulder' });
+        });
+
+        expect(revealLineInCenter).toHaveBeenCalledWith(42);
+        expect(focusEditor).not.toHaveBeenCalled();
     });
 
     it('does not call reveal when selectedFeatureId is null', () => {

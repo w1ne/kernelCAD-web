@@ -7,6 +7,8 @@ import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
 import { WorkbenchContext } from '../context/WorkbenchContext';
 import { routeDiagnosticToFocusTarget, routeDiagnosticToSelection } from '../logic/diagnosticRouter';
+import { scriptLineForId } from '../logic/featureLine';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/validator';
 import { buildValiditySuggestions, type ValiditySuggestionCard } from '../adapters/validitySuggestions';
 import { useShellStore, shellStore } from '../store/useShellStore';
@@ -72,7 +74,7 @@ export function ValidityTab(): JSX.Element {
     const groups = groupChecks(diagnostics);
     const interferences = actionableInterferences(result);
 
-    const findingActions = makeFindingActions(allCards, validityFingerprint, selectFeature);
+    const findingActions = makeFindingActions(allCards, validityFingerprint, selectFeature, result.features);
 
     return (
         <div className="flex flex-col gap-4 pb-6" data-testid="validity-tab">
@@ -186,9 +188,14 @@ function makeFindingActions(
     allCards: readonly ValiditySuggestionCard[],
     validityFingerprint: string,
     selectFeature: (id: string | null) => void,
+    features: readonly FeatureRecord[],
 ): FindingActions {
     return {
         onSelect: (d) => selectDiagnostic(d, selectFeature),
+        lineFor: (d) => {
+            const id = routeDiagnosticToSelection(d);
+            return id == null ? null : scriptLineForId(features, id);
+        },
         fixFor: (d) => {
             const card = cardForDiagnostic(allCards, d);
             if (card == null) return null;
