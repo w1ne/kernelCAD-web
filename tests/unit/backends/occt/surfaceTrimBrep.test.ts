@@ -80,6 +80,18 @@ describe('surface trim against a BRep body', () => {
     expect(area).toBeLessThan(75);
   }, 120_000);
 
+  it('rejects a cutter that splits the patch into more than two pieces', async () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const base = patch(kcad);
+    const left = kcad.box(2, 14, 2).translate(2, -2, -1);
+    const right = kcad.box(2, 14, 2).translate(6, -2, -1);
+    const bridge = kcad.box(6, 2, 2).translate(2, 11, -1);
+    base.trimTo(left.union(right, bridge)).toShape();
+    const result = await new RecomputeEngine(createOcctLowerer(session)).run(session.getRecords());
+    expect(result.diagnostics.some((d) => /split the patch into/.test(d.message))).toBe(true);
+  }, 120_000);
+
   it('emits no-intersection when the body misses the patch', async () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });

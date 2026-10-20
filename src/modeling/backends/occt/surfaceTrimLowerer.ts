@@ -134,6 +134,9 @@ export function lowerSurfaceTrim(
     if (faces.length === 0) {
       throw new Error('surfaceTrim: split produced no valid face pieces');
     }
+    if (faces.length > 2) {
+      throw new Error(`surfaceTrim: cutter split the patch into ${faces.length} pieces; use a cutter with one section contour`);
+    }
 
     const index = op === 'split' ? piece : 0;
     const selected = faces[index];
