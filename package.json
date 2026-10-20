@@ -78,6 +78,8 @@
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",
     "test": "NODE_OPTIONS='--max-old-space-size=8192' vitest run",
+    "test:reference-parts": "node --import tsx scripts/referencePartsScorecard.ts --check",
+    "reference-parts:regenerate": "node --import tsx scripts/referencePartsScorecard.ts --write",
     "test:audit": "npx tsx scripts/testQualityAudit.ts",
     "test:hygiene": "npm test -- scripts/repoHygieneAudit.test.ts",
     "test:package": "npx tsx scripts/packageReleaseAudit.ts",

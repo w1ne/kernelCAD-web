@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "units": { "length": "mm", "volume": "mm^3", "surfaceArea": "mm^2" },
+  "limits": { "perPartMs": 5000, "totalMs": 60000 },
+  "parts": [
+    {
+      "id": "rectangular-block",
+      "name": "Rectangular block",
+      "source": "assets/reference-parts/scorecard/box-rectangular.kcad.ts",
+      "expected": { "volumeMm3": 24000, "surfaceAreaMm2": 5200, "bbox": { "min": [0, 0, 0], "max": [40, 30, 20] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Closed form: V=abc; A=2(ab+bc+ca); corner-anchored bbox follows the declared dimensions." },
+      "status": "pass"
+    },
+    {
+      "id": "centered-block",
+      "name": "Centered block",
+      "source": "assets/reference-parts/scorecard/box-centered.kcad.ts",
+      "expected": { "volumeMm3": 2592, "surfaceAreaMm2": 1368, "bbox": { "min": [-12, -9, -3], "max": [12, 9, 3] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Closed-form rectangular prism: V=abc; A=2(ab+bc+ca); symmetric bbox from half-dimensions." },
+      "status": "pass"
+    },
+    {
+      "id": "cylinder",
+      "name": "Cylinder",
+      "source": "assets/reference-parts/scorecard/cylinder.kcad.ts",
+      "expected": { "volumeMm3": 15707.963267948966, "surfaceAreaMm2": 3769.911184307752, "bbox": { "min": [-10, -10, 0], "max": [10, 10, 50] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Closed form: V=πr²h; A=2πr²+2πrh; bbox from radius and height." },
+      "status": "pass"
+    },
+    {
+      "id": "sphere",
+      "name": "Sphere",
+      "source": "assets/reference-parts/scorecard/sphere.kcad.ts",
+      "expected": { "volumeMm3": 7238.229473870883, "surfaceAreaMm2": 1809.55736846772, "bbox": { "min": [-12, -12, -12], "max": [12, 12, 12] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Closed form: V=4πr³/3; A=4πr²; bbox is the diameter on each axis." },
+      "status": "pass"
+    },
+    {
+      "id": "torus-revolve",
+      "name": "Revolved torus",
+      "source": "assets/reference-parts/scorecard/torus-revolve.kcad.ts",
+      "expected": { "volumeMm3": 9869.604401089358, "surfaceAreaMm2": 3947.841760435743, "bbox": { "min": [-25, -25, -5], "max": [25, 25, 5] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Closed-form torus with major radius 20 and tube radius 5: V=2π²Rr²; A=4π²Rr. The profile uses four exact circular arcs; bbox is ±(R+r), ±(R+r), ±r." },
+      "status": "pass"
+    },
+    {
+      "id": "cone-frustum-revolve",
+      "name": "Revolved cone frustum",
+      "source": "assets/reference-parts/scorecard/cone-frustum-revolve.kcad.ts",
+      "expected": { "volumeMm3": 4105.014400690663, "surfaceAreaMm2": 1452.475304530714, "bbox": { "min": [-10, -10, 0], "max": [10, 10, 20] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Closed form with R=10, r=6, h=20: V=πh(R²+Rr+r²)/3; A=π(R²+r²)+π(R+r)√(h²+(R-r)²)." },
+      "status": "pass"
+    },
+    {
+      "id": "plate-through-hole",
+      "name": "Plate with through-hole",
+      "source": "assets/reference-parts/scorecard/plate-through-hole.kcad.ts",
+      "expected": { "volumeMm3": 23214.601836602553, "surfaceAreaMm2": 6957.07963267949, "bbox": { "min": [0, 0, 0], "max": [60, 40, 10] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "60×40×10 plate minus a centered r=5 through-cylinder: V=24000−250π; A=6800+50π; outer bbox unchanged." },
+      "status": "pass"
+    },
+    {
+      "id": "plate-blind-hole",
+      "name": "Plate with blind hole",
+      "source": "assets/reference-parts/scorecard/plate-blind-hole.kcad.ts",
+      "expected": { "volumeMm3": 14148.672587712817, "surfaceAreaMm2": 4205.663706143591, "bbox": { "min": [0, 0, 0], "max": [40, 30, 12] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "40×30×12 plate with a nominal r=4, depth=5 blind bore: V=14400−80π; A=4080+40π; bbox unchanged." },
+      "status": "known-failure",
+      "knownFailureReason": "The OCCT hole cutter extends a blind bore 0.01 mm past its requested depth, adding π·4²·0.01 mm³. The analytic nominal value and tight tolerances remain the target."
+    },
+    {
+      "id": "plate-counterbore",
+      "name": "Plate with counterbored through-hole",
+      "source": "assets/reference-parts/scorecard/plate-counterbore.kcad.ts",
+      "expected": { "volumeMm3": 11516.194731347172, "surfaceAreaMm2": 3982.212373908208, "bbox": { "min": [0, 0, 0], "max": [40, 30, 10] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "40×30×10 plate; r=3 through-bore and r=5 counterbore, depth 4: V=12000−154π; A=3800+58π; bbox unchanged." },
+      "status": "known-failure",
+      "knownFailureReason": "The OCCT counterbore cutter extends 0.01 mm past the requested shoulder depth, removing an extra π·(5²−3²)·0.01 mm³. The analytic nominal value and tight tolerances remain the target."
+    },
+    {
+      "id": "plate-through-slot",
+      "name": "Plate with through-slot",
+      "source": "assets/reference-parts/scorecard/plate-through-slot.kcad.ts",
+      "expected": { "volumeMm3": 13400, "surfaceAreaMm2": 4840, "bbox": { "min": [0, 0, 0], "max": [50, 30, 10] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "50×30×10 plate minus a centered 20×8 through-slot: V=15000−1600; A=4600−2·160+56·10." },
+      "status": "pass"
+    },
+    {
+      "id": "annular-cylinder",
+      "name": "Annular cylinder boolean cut",
+      "source": "assets/reference-parts/scorecard/annular-cylinder.kcad.ts",
+      "expected": { "volumeMm3": 12566.370614359172, "surfaceAreaMm2": 3769.911184307752, "bbox": { "min": [-15, -15, 0], "max": [15, 15, 20] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "20 mm high annulus, outer radius 15 and inner radius 5: V=π(R²−r²)h; A=2π(R²−r²)+2π(R+r)h." },
+      "status": "pass"
+    },
+    {
+      "id": "open-top-shell",
+      "name": "Open-top shell",
+      "source": "assets/reference-parts/scorecard/open-top-shell.kcad.ts",
+      "expected": { "volumeMm3": 19608, "surfaceAreaMm2": 13612, "bbox": { "min": [0, 0, 0], "max": [50, 40, 30] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "50×40×30 box shelled inward 3 mm with its top removed: subtract the 44×34×27 cavity; area sums outer faces, rim, floor, and four inner walls." },
+      "status": "pass"
+    },
+    {
+      "id": "l-bracket-union",
+      "name": "L-bracket boolean union",
+      "source": "assets/reference-parts/scorecard/l-bracket-union.kcad.ts",
+      "expected": { "volumeMm3": 9600, "surfaceAreaMm2": 3680, "bbox": { "min": [0, 0, 0], "max": [40, 20, 28] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Union of 40×20×8 and 8×20×20 boxes sharing one 8×20 face: sum volumes; sum areas minus twice the shared face." },
+      "status": "pass"
+    },
+    {
+      "id": "boolean-intersection",
+      "name": "Boolean intersection",
+      "source": "assets/reference-parts/scorecard/boolean-intersection.kcad.ts",
+      "expected": { "volumeMm3": 4000, "surfaceAreaMm2": 1600, "bbox": { "min": [5, 0, 0], "max": [15, 20, 20] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "The box intersection is a 10×20×20 cuboid: V=abc; A=2(ab+bc+ca); bounds are the overlap intervals." },
+      "status": "pass"
+    },
+    {
+      "id": "rounded-box",
+      "name": "All-edge filleted box",
+      "source": "assets/reference-parts/scorecard/box-all-edge-fillet.kcad.ts",
+      "expected": { "volumeMm3": 23340.84937505542, "surfaceAreaMm2": 4726.265361880022, "bbox": { "min": [0, 0, 0], "max": [40, 30, 20] } },
+      "tolerance": { "volumeRelative": 0.00000001, "surfaceAreaRelative": 0.00000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "For the 40×30×20 box with all edges filleted at r=3, the 34×24×14 core gives the Steiner volume V=34·24·14+2r(34·24+34·14+24·14)+πr²(34+24+14)+(4/3)πr³. Surface area is six flat faces (3256), twelve quarter-cylinder strips (432π), and eight spherical octants (36π): A=3256+468π. Bbox preserves the outer dimensions." },
+      "status": "pass"
+    },
+    {
+      "id": "top-edge-chamfer",
+      "name": "Top-edge chamfer",
+      "source": "assets/reference-parts/scorecard/box-top-chamfer.kcad.ts",
+      "expected": { "volumeMm3": 23730.666666666664, "surfaceAreaMm2": 5029.352380466496, "bbox": { "min": [0, 0, 0], "max": [40, 30, 20] } },
+      "tolerance": { "volumeRelative": 0.00000001, "surfaceAreaRelative": 0.00000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "occt-local", "recordedOn": "2026-10-20", "details": "Volume and surface area were measured from this repository's buildModel(..., kernel:'occt') result because the top-edge corner miters are not a simple closed-form bevel. The bbox is analytic. FreeCAD Python was unavailable, so these local OCCT values are a regression baseline rather than independent cross-kernel evidence." },
+      "status": "pass"
+    },
+    {
+      "id": "plate-four-holes",
+      "name": "Plate with four patterned holes",
+      "source": "assets/reference-parts/scorecard/plate-four-holes.kcad.ts",
+      "expected": { "volumeMm3": 38869.02664470767, "surfaceAreaMm2": 11127.787565803086, "bbox": { "min": [0, 0, 0], "max": [80, 50, 10] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "80×50×10 plate minus four r=3 through-holes: V=40000−360π; A=10600+168π; outer bbox unchanged." },
+      "status": "pass"
+    },
+    {
+      "id": "circular-pattern-pins",
+      "name": "Circular pattern of pins",
+      "source": "assets/reference-parts/scorecard/circular-pattern-pins.kcad.ts",
+      "expected": { "volumeMm3": 1357.1680263507906, "surfaceAreaMm2": 1244.0706908215582, "bbox": { "min": [-23, -20.32050807568877, 0], "max": [23, 20.32050807568877, 8] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Six disjoint r=3, h=8 cylinders on a radius-20 circle: V=6·72π; A=6·66π; bbox from the six centers and cylinder radii." },
+      "status": "pass"
+    },
+    {
+      "id": "linear-pattern-pins",
+      "name": "Linear pattern of pins",
+      "source": "assets/reference-parts/scorecard/linear-pattern-pins.kcad.ts",
+      "expected": { "volumeMm3": 904.7786842338604, "surfaceAreaMm2": 829.3804605477054, "bbox": { "min": [2, -3, 0], "max": [38, 3, 8] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Four disjoint r=3, h=8 cylinders at 10 mm pitch: V=4·72π; A=4·66π; bounds use first and last centers." },
+      "status": "pass"
+    },
+    {
+      "id": "grid-pattern-pins",
+      "name": "Grid pattern of pins",
+      "source": "assets/reference-parts/scorecard/grid-pattern-pins.kcad.ts",
+      "expected": { "volumeMm3": 1357.1680263507906, "surfaceAreaMm2": 1244.0706908215582, "bbox": { "min": [1, 2, 0], "max": [27, 18, 8] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Six disjoint r=3, h=8 cylinders in a 3×2 grid at 10 mm pitch: V=6·72π; A=6·66π; bounds use the grid endpoints." },
+      "status": "pass"
+    },
+    {
+      "id": "mirrored-blocks",
+      "name": "Mirrored block pair",
+      "source": "assets/reference-parts/scorecard/mirrored-blocks.kcad.ts",
+      "expected": { "volumeMm3": 2000, "surfaceAreaMm2": 1200, "bbox": { "min": [-20, 0, 0], "max": [20, 10, 10] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Two separated 10×10×10 blocks mirrored across the YZ plane: doubled volume and area; bounds include both copies." },
+      "status": "pass"
+    },
+    {
+      "id": "sweep-square-prism",
+      "name": "Square profile sweep",
+      "source": "assets/reference-parts/scorecard/sweep-square-prism.kcad.ts",
+      "expected": { "volumeMm3": 480, "surfaceAreaMm2": 512, "bbox": { "min": [-2, -2, 0], "max": [2, 2, 30] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "A 4×4 square swept along a 30 mm straight rail is a prism: V=16·30; A=2·16+4·4·30." },
+      "status": "pass"
+    },
+    {
+      "id": "sweep-round-prism",
+      "name": "Circular profile sweep",
+      "source": "assets/reference-parts/scorecard/sweep-round-prism.kcad.ts",
+      "expected": { "volumeMm3": 1570.7963267948965, "surfaceAreaMm2": 785.3981633974483, "bbox": { "min": [-5, -5, 0], "max": [5, 5, 20] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "An exact r=5 circular profile swept along a 20 mm straight rail is a cylinder: V=πr²h; A=2πr²+2πrh." },
+      "status": "pass"
+    },
+    {
+      "id": "loft-circular-frustum",
+      "name": "Circular-section loft",
+      "source": "assets/reference-parts/scorecard/loft-circular-frustum.kcad.ts",
+      "expected": { "volumeMm3": 3665.1914291880917, "surfaceAreaMm2": 1364.1829574548633, "bbox": { "min": [-10, -10, 0], "max": [10, 10, 20] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Exact circular loft from r=10 to r=5 over h=20: V=πh(R²+Rr+r²)/3; A=π(R²+r²)+π(R+r)√(h²+(R−r)²)." },
+      "status": "pass"
+    },
+    {
+      "id": "loft-square-frustum",
+      "name": "Square-section loft",
+      "source": "assets/reference-parts/scorecard/loft-square-frustum.kcad.ts",
+      "expected": { "volumeMm3": 2613.3333333333335, "surfaceAreaMm2": 1233.3010953132166, "bbox": { "min": [-10, -10, 0], "max": [10, 10, 10] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Ruled loft from 20×20 to 12×12 over h=10: V=h(A₀+A₁+√(A₀A₁))/3; side area is four trapezoids with slant √116." },
+      "status": "pass"
+    },
+    {
+      "id": "stepped-shaft-revolve",
+      "name": "Stepped shaft revolve",
+      "source": "assets/reference-parts/scorecard/revolve-stepped-shaft.kcad.ts",
+      "expected": { "volumeMm3": 2513.2741228718346, "surfaceAreaMm2": 1156.1060965210438, "bbox": { "min": [-8, -8, 0], "max": [8, 8, 20] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "Revolved stepped profile: r=4 for 10 mm, then r=8 for 10 mm; V=800π; A=368π including end disks and shoulder annulus." },
+      "status": "pass"
+    },
+    {
+      "id": "rotated-box",
+      "name": "Rotated box",
+      "source": "assets/reference-parts/scorecard/rotated-box.kcad.ts",
+      "expected": { "volumeMm3": 4000, "surfaceAreaMm2": 2200, "bbox": { "min": [-10, 0, 0], "max": [34.64101615137755, 37.32050807568877, 5] } },
+      "tolerance": { "volumeRelative": 0.000001, "surfaceAreaRelative": 0.000001, "bboxAbsoluteMm": 0.05 },
+      "provenance": { "kind": "analytic", "details": "The box's volume and area are rotation invariant. Its XY bounds are the four corners of a 40×20 rectangle rotated 30° about the origin." },
+      "status": "pass"
+    }
+  ]
+}

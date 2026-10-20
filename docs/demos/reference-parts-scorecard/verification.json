@@ -1,0 +1,57 @@
+{
+  "generatedAtUtc": "2026-10-20T18:55:57.576108+00:00",
+  "scope": "local OCCT validation; no deployment or hardware acceptance",
+  "command": [
+    "npm",
+    "run",
+    "test:reference-parts"
+  ],
+  "exitCode": 0,
+  "partCount": 27,
+  "expectedPartCount": 27,
+  "knownFailureIds": [
+    "plate-blind-hole",
+    "plate-counterbore"
+  ],
+  "knownFailureStatuses": {
+    "plate-blind-hole": "KNOWN FAIL",
+    "plate-counterbore": "KNOWN FAIL"
+  },
+  "maxPartMs": 286.6,
+  "scoreSummary": "25/27 reference parts match; gate PASS (25/25 expected-pass); 2 known failures declared, 2 remain, 0 cleared for promotion; total 1034.4 ms / 60000 ms.",
+  "renderSettings": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 24,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "audio": "none",
+    "font": "/System/Library/Fonts/Supplemental/Andale Mono.ttf (or DejaVu Sans Mono fallback)",
+    "sceneDurationsSeconds": [
+      2,
+      6,
+      3
+    ]
+  },
+  "transcriptSha256": "32b4f0241064a3eb0bcdfea2bb44395bb22d72409ac361e4edf2c14703009f0f",
+  "manifestSha256": "605fb64f8ca5c3afae7bb813c158ae9a4163f3e94e4010409d32fa9531e52249",
+  "demoSourceSha256": "77dbf3315589658ab7c3237d4df9d3efa23777efe45bd32f4400cf2d24bf3ed7",
+  "videoSha256": "39296086713bc0aac6068304a8e64f52abd1c6bb754b170374f20d2a4b276519",
+  "fullDecodeExitCode": 0,
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080,
+        "avg_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "11.000000",
+      "size": "301143"
+    }
+  }
+}

@@ -81,6 +81,16 @@ Some checks go past the picture:
 3.  **Validation-Centered**: Useful CAD output needs deterministic review for constraints, hardware fit, clearances, and exportability.
 4.  **Workflow Over Primitives**: Product progress is measured by intent-level workflows, not by copying every traditional CAD button.
 
+## Reference-parts accuracy
+
+The headless OCCT gate checks 27 native `.kcad.ts` reference parts against
+analytic or recorded OCCT volume, surface-area, and bounding-box values. The
+current headline is 25/27 reference parts match; the expected-pass gate is
+25/25, with two documented known failures and their reasons listed in the
+scorecard. See the
+[reference-parts scorecard](docs/reference-parts-scorecard.md) and its
+[local validation demo](docs/demos/reference-parts-scorecard/README.md).
+
 ## Agent workflow
 
 For agents and contributors, `.kcad.ts` source is the design source of truth.

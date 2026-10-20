@@ -1,7 +1,9 @@
 name: CI
 
 # Push path-filters and the PR `changes` job (below) skip CI on truly content-only changes (top-level README/LICENSE/
-# CHANGELOG, plus docs/ which is human-written prose). Anything that COULD
+# CHANGELOG, plus docs/ which is human-written prose). The reference-parts
+# scorecard is an exception: its committed table is checked by a fast OCCT job.
+# Anything that COULD
 # affect runtime — src/, tests/, scripts/, eval/, site/, package*.json,
 # tsconfig*.json, .github/workflows/ — still triggers CI. docs/guide/ and
 # docs/demos/ are exceptions inside docs/: site:build consumes their blog
@@ -22,6 +24,7 @@ on:
       - '!docs/**'
       - 'docs/guide/**'
       - 'docs/demos/**'
+      - 'docs/reference-parts-scorecard.md'
       - '!doc/**'
       - '!archive/**'
   pull_request:
@@ -53,6 +56,7 @@ jobs:
   # Keep the case-list in sync with the push `paths` filter above. Blog sources
   # and demo packets come first and count as build inputs, so content-only PRs
   # affecting the marketing build still run lint, build and the blog tests.
+  # A scorecard-only docs PR runs only the reference-parts geometry/report gate.
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -61,6 +65,7 @@ jobs:
       pull-requests: read
     outputs:
       docs_only: ${{ steps.detect.outputs.docs_only }}
+      reference_parts: ${{ steps.detect.outputs.reference_parts }}
     steps:
       - id: detect
         env:
@@ -70,20 +75,35 @@ jobs:
         run: |
           set -euo pipefail
           docs_only=false
+          reference_parts=true
           if [ "$EVENT" = "pull_request" ]; then
+            reference_parts=false
             files=$(gh api --paginate "repos/${{ github.repository }}/pulls/${PR}/files" --jq '.[] | .filename, (.previous_filename // empty)')
             if [ -n "$files" ]; then
               docs_only=true
               while IFS= read -r f; do
                 case "$f" in
                   docs/guide/*|docs/demos/*) echo "marketing input: $f"; docs_only=false ;;
+                  docs/reference-parts-scorecard.md) reference_parts=true ;;
                   README.md|CONTRIBUTING.md|CHANGELOG.md|LICENSE|RELEASE_NOTES.md|docs/*|doc/*|archive/*) ;;
-                  *) echo "non-docs file: $f"; docs_only=false ;;
+                  *) echo "non-docs file: $f"; docs_only=false; reference_parts=true ;;
                 esac
               done <<< "$files"
             fi
           fi
           echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
+          echo "reference_parts=$reference_parts" >> "$GITHUB_OUTPUT"
+
+  reference-parts:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.reference_parts == 'true'
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+      - name: Reference-parts geometry and scorecard gate
+        run: npm run test:reference-parts
   lint:
     runs-on: ubuntu-latest
     needs: changes
@@ -158,14 +178,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 2
-    needs: [changes, test-shard]
+    needs: [changes, test-shard, reference-parts]
     if: always()
     steps:
       - name: All test shards green
         run: |
           [ "${{ needs.changes.result }}" = "success" ] || { echo "changes job: ${{ needs.changes.result }}"; exit 1; }
-          [ "${{ needs.changes.outputs.docs_only }}" = "true" ] && exit 0
-          [ "${{ needs.test-shard.result }}" = "success" ] || { echo "shard result: ${{ needs.test-shard.result }}"; exit 1; }
+          if [ "${{ needs.changes.outputs.docs_only }}" = "true" ]; then
+            [ "${{ needs.changes.outputs.reference_parts }}" = "true" ] || exit 0
+          else
+            [ "${{ needs.test-shard.result }}" = "success" ] || { echo "shard result: ${{ needs.test-shard.result }}"; exit 1; }
+          fi
+          if [ "${{ needs.changes.outputs.reference_parts }}" = "true" ]; then
+            [ "${{ needs.reference-parts.result }}" = "success" ] || { echo "reference-parts result: ${{ needs.reference-parts.result }}"; exit 1; }
+          fi
 
   # Exercises the FEA solve and USD-Isaac export against the REAL external
   # toolchain (CalculiX, gmsh, usd-core) instead of letting the integration
