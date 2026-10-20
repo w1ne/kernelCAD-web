@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import type { GeometryResult } from '../../../../shared/worker/geometryEngine';
-import { buildEdgePolylines, rangePoints } from './edgePolylines';
+import { buildEdgePolylines, buildVisibleEdgePolylines, rangePoints } from './edgePolylines';
 
 /** Segment-pair vertices (a,b,b,c,...) of a polyline, as the viewer draws edges. */
 const pairs = (pts: number[][]): number[] =>
@@ -34,6 +34,10 @@ describe('buildEdgePolylines', () => {
     expect(pl.corners.sort()).toEqual([0, 1, 2, 3]);
     expect(pl.circle).toBeNull();
   });
+  it('keeps the mesh-local edge reference and owning feature with each polyline', () => {
+    const [pl] = buildEdgePolylines([geo({ featureId: 'base', edgeOwners: ['fillet'] })]);
+    expect(pl.ref).toEqual({ shapeIndex: 0, kind: 'edge', id: 0, featureId: 'fillet' });
+  });
   it('applies the per-part transform (translate +100 in x)', () => {
     const t = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 100, 0, 0, 1];
     const [pl] = buildEdgePolylines([geo({ transform: t })]);
@@ -47,5 +51,9 @@ describe('buildEdgePolylines', () => {
   });
   it('skips geometry without edge ranges', () => {
     expect(buildEdgePolylines([geo({ edgeRanges: undefined })])).toEqual([]);
+  });
+  it('preserves original topology indices when a hidden part is filtered out', () => {
+    const visible = buildVisibleEdgePolylines([geo(), geo()], ['hidden', 'visible'], ['hidden']);
+    expect(visible.map((edge) => edge.ref)).toEqual([{ shapeIndex: 1, kind: 'edge', id: 0 }]);
   });
 });

@@ -5,6 +5,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import type { PreviewPhase } from '../funnel/hooks/useTextTo3dPreview';
+import { DEFAULT_MARKUP_CAMERA, markupStore } from './markup/markupStore';
+import { parseMarkupSnapshot } from './markup/markupSnapshot';
 
 // The localhost guard would blank the whole component in happy-dom.
 vi.mock('./agentAvailability', () => ({ inAppAgentEnabled: () => true }));
@@ -36,6 +38,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   previewPhase = { state: 'idle' };
   mockCode = '';
+  markupStore.clear();
+  markupStore.setCamera(DEFAULT_MARKUP_CAMERA);
 });
 afterEach(() => cleanup());
 
@@ -73,7 +77,8 @@ describe('StudioGenerate — unified prompt', () => {
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
-    expect(generationSubmit).toHaveBeenCalledWith('a hex planter', undefined, { renderImageUrl: null, proportions: null });
+    expect(generationSubmit).toHaveBeenCalledWith(expect.any(String), undefined, { renderImageUrl: null, proportions: null });
+    expectAgentPrompt(generationSubmit.mock.calls[0]?.[0], 'a hex planter');
   });
 
   it('Build-as-CAD is a FRESH generation even when the editor holds code (not an edit of it)', () => {
@@ -84,7 +89,8 @@ describe('StudioGenerate — unified prompt', () => {
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
-    expect(generationSubmit).toHaveBeenCalledWith('a hex planter', undefined, { renderImageUrl: null, proportions: null });
+    expect(generationSubmit).toHaveBeenCalledWith(expect.any(String), undefined, { renderImageUrl: null, proportions: null });
+    expectAgentPrompt(generationSubmit.mock.calls[0]?.[0], 'a hex planter');
   });
 
   it('Build-as-CAD passes the concept mesh context into the agent submit', () => {
@@ -94,7 +100,70 @@ describe('StudioGenerate — unified prompt', () => {
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
-    expect(generationSubmit).toHaveBeenCalledWith('a bracket', undefined, { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] });
+    expect(generationSubmit).toHaveBeenCalledWith(expect.any(String), undefined, { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] });
+    expectAgentPrompt(generationSubmit.mock.calls[0]?.[0], 'a bracket');
+  });
+
+  it('Build-as-CAD keeps nonempty markup attached to the concept prompt', () => {
+    const { rerender } = render(<StudioGenerate />);
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'a bracket' } });
+    fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
+    previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
+    markupStore.addNote({ id: 'concept-note', text: 'Keep this face flat', anchor: [1, 2, 3], refs: [] });
+    rerender(<StudioGenerate />);
+    fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
+
+    const prompt = generationSubmit.mock.calls[0]![0] as string;
+    expect(expectPromptHasMarkup(prompt).notes).toEqual([expect.objectContaining({ text: 'Keep this face flat' })]);
+  });
+
+  it('sends the current markup snapshot alongside the agent prompt', () => {
+    markupStore.addNote({
+      id: 'test-note',
+      text: 'Keep this face flat',
+      anchor: [1, 2, 3],
+      refs: [{ shapeIndex: 0, kind: 'face', id: 4 }],
+    });
+    render(<StudioGenerate />);
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'make a bracket' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Build' }));
+
+    const requestPrompt = generationSubmit.mock.calls[0]![0] as string;
+    expect(requestPrompt).toContain('make a bracket');
+    const snapshot = expectPromptHasMarkup(requestPrompt);
+    expect(snapshot.notes).toEqual([expect.objectContaining({ text: 'Keep this face flat', anchor: [1, 2, 3] })]);
+  });
+
+  it('keeps the prompt when the attached markup would exceed the final prompt limit', () => {
+    markupStore.addNote({
+      id: 'large-prompt-note',
+      text: 'Keep this face flat',
+      anchor: [1, 2, 3],
+      refs: [],
+    });
+    render(<StudioGenerate />);
+    const prompt = screen.getByLabelText('Generate prompt') as HTMLTextAreaElement;
+    fireEvent.change(prompt, { target: { value: 'x'.repeat(62_900) } });
+    fireEvent.click(screen.getByRole('button', { name: 'Build' }));
+
+    expect(generationSubmit).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent(/prompt.*markup.*63,000 characters/i);
+    expect(prompt.value).toHaveLength(62_900);
+  });
+
+  it('keeps a concept prompt when its markup would exceed the final prompt limit', () => {
+    const { rerender } = render(<StudioGenerate />);
+    const prompt = screen.getByLabelText('Generate prompt') as HTMLTextAreaElement;
+    fireEvent.change(prompt, { target: { value: 'x'.repeat(62_900) } });
+    fireEvent.click(screen.getByRole('button', { name: /3d concept/i }));
+    previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
+    markupStore.addNote({ id: 'large-concept-note', text: 'Keep this face flat', anchor: [1, 2, 3], refs: [] });
+    rerender(<StudioGenerate />);
+    fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
+
+    expect(generationSubmit).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent(/prompt.*markup.*63,000 characters/i);
+    expect(prompt.value).toHaveLength(62_900);
   });
 
   it('disables 3D concept mode when a photo is attached', async () => {
@@ -109,3 +178,22 @@ describe('StudioGenerate — unified prompt', () => {
     expect(screen.getByRole('button', { name: /3d concept/i })).toBeDisabled();
   });
 });
+
+function expectPromptHasMarkup(prompt: string) {
+  const match = prompt.match(/Studio markup snapshot JSON \(schemaVersion 1\):\n(`{3,})json\n([\s\S]*?)\n\1/);
+  expect(match?.[2]).toBeTruthy();
+  return parseMarkupSnapshot(match![2]!);
+}
+
+function expectAgentPrompt(value: unknown, expectedText: string) {
+  expect(typeof value).toBe('string');
+  const prompt = value as string;
+  const marker = '\n\nStudio markup snapshot JSON (schemaVersion 1):\n';
+  const markerIndex = prompt.indexOf(marker);
+  expect(markerIndex).toBeGreaterThanOrEqual(0);
+  expect(prompt.slice(0, markerIndex)).toBe(expectedText);
+  const snapshot = expectPromptHasMarkup(prompt);
+  expect(snapshot.schemaVersion).toBe(1);
+  expect(snapshot.camera).toMatchObject({ projection: 'perspective', fov: 40, zoom: 1 });
+  return snapshot;
+}

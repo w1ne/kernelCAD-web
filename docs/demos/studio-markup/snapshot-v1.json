@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "camera": {
+    "position": [40, 40, 40],
+    "target": [0, 0, 0],
+    "up": [0, 0, 1],
+    "projection": "perspective",
+    "fov": 40,
+    "zoom": 1
+  },
+  "selection": {
+    "topologyRefs": [
+      { "shapeIndex": 0, "kind": "face", "id": 4, "featureId": "base_plate" }
+    ]
+  },
+  "measurements": [
+    {
+      "id": "distance-1",
+      "type": "distance",
+      "endpoints": [[0, 0, 0], [3, 4, 0]],
+      "refs": [{ "shapeIndex": 0, "kind": "edge", "id": 2 }],
+      "value": 5,
+      "units": "mm"
+    }
+  ],
+  "notes": [
+    {
+      "id": "note-1",
+      "text": "Keep this face flat",
+      "anchor": [12, 8, 6],
+      "refs": [{ "shapeIndex": 0, "kind": "face", "id": 4 }]
+    }
+  ]
+}

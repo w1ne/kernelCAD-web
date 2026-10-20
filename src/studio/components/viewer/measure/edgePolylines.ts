@@ -2,11 +2,14 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { GeometryResult } from '../../../../shared/worker/geometryEngine';
 import { fitCircle, vdist, type CircleFit, type Vec3 } from './measureMath';
+import type { TopologyRef } from '../../../markup/markupSnapshot';
 
 /** One BREP edge in world coordinates, ready for snapping. */
 export interface EdgePolyline {
   /** Flat xyz of the ordered polyline points. */
   pts: Float32Array;
+  /** Mesh-local edge identity retained for prompt snapshots. */
+  ref: TopologyRef;
   closed: boolean;
   /** Point indices that are corners: open-edge ends and sharp turns. */
   corners: number[];
@@ -60,7 +63,7 @@ function toWorld(points: Vec3[], m: ArrayLike<number> | undefined): Float32Array
   return out;
 }
 
-function polylineOf(points: Vec3[], transform: number[] | undefined): EdgePolyline {
+function polylineOf(points: Vec3[], transform: number[] | undefined): Omit<EdgePolyline, 'ref'> {
   const pts = toWorld(points, transform);
   const n = points.length;
   const closed = n > 2 && same(readV(pts, 0), readV(pts, n - 1));
@@ -70,13 +73,27 @@ function polylineOf(points: Vec3[], transform: number[] | undefined): EdgePolyli
 
 /** World-space edge polylines of every geometry (per-part transforms applied). */
 export function buildEdgePolylines(geometries: readonly GeometryResult[]): EdgePolyline[] {
+  return buildVisibleEdgePolylines(geometries, [], []);
+}
+
+/** Edge polylines with model indices intact while hidden parts are skipped. */
+export function buildVisibleEdgePolylines(
+  geometries: readonly GeometryResult[],
+  itemNames: readonly (string | null)[],
+  hiddenIds: readonly string[],
+): EdgePolyline[] {
   const out: EdgePolyline[] = [];
-  for (const g of geometries) {
+  for (const [shapeIndex, g] of geometries.entries()) {
+    const name = g.assemblyPartName ?? itemNames[shapeIndex] ?? null;
+    if (name && hiddenIds.includes(name)) continue;
     const { edges, edgeRanges } = g;
     if (!edges || !edgeRanges) continue;
     for (let r = 0; r + 1 < edgeRanges.length; r += 2) {
+      const edgeIndex = r / 2;
       const points = rangePoints(edges, edgeRanges[r], edgeRanges[r + 1]);
-      if (points.length >= 2) out.push(polylineOf(points, g.transform));
+      if (points.length < 2) continue;
+      const featureId = g.edgeOwners?.[edgeIndex] ?? g.featureId;
+      out.push({ ...polylineOf(points, g.transform), ref: { shapeIndex, kind: 'edge', id: edgeIndex, ...(featureId ? { featureId } : {}) } });
     }
   }
   return out;

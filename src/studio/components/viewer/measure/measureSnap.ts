@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { EdgePolyline } from './edgePolylines';
 import { vlerp, type Vec3 } from './measureMath';
+import type { TopologyRef } from '../../../markup/markupSnapshot';
 
 export interface ScreenPoint { x: number; y: number }
 /** A projected point: pixel position plus its distance from the camera. */
@@ -11,6 +12,7 @@ export interface SnapHit {
   /** vertex (edge corner) > edge (nearest point on a polyline) > face. */
   kind: 'vertex' | 'edge' | 'face';
   point: Vec3;
+  refs: TopologyRef[];
   /** Index into the polyline list for vertex and edge hits. */
   polyline?: number;
 }
@@ -21,7 +23,7 @@ export interface SnapContext {
   /** World point -> pixels + camera distance; null when behind the camera. */
   project: (p: Vec3) => Projected | null;
   /** Nearest visible mesh hit under the cursor, if any. */
-  face: { point: Vec3; distance: number } | null;
+  face: { point: Vec3; distance: number; ref?: TopologyRef } | null;
   vertexRadius?: number;
   edgeRadius?: number;
 }
@@ -50,7 +52,7 @@ function nearestCorner(ctx: SnapContext, proj: (Projected | null)[][]): SnapHit 
       const s = proj[pi][i];
       if (!s || !visible(s.depth, ctx.face)) continue;
       const d = Math.hypot(s.x - ctx.cursor.x, s.y - ctx.cursor.y);
-      if (d < bestD) { bestD = d; best = { kind: 'vertex', point: pointAt(pl.pts, i), polyline: pi }; }
+      if (d < bestD) { bestD = d; best = { kind: 'vertex', point: pointAt(pl.pts, i), polyline: pi, refs: [pl.ref] }; }
     }
   });
   return best;
@@ -78,7 +80,7 @@ function nearestOnEdges(ctx: SnapContext, proj: (Projected | null)[][]): SnapHit
       const d = Math.hypot(a.x + (b.x - a.x) * t - ctx.cursor.x, a.y + (b.y - a.y) * t - ctx.cursor.y);
       if (d >= bestD || !visible(a.depth + (b.depth - a.depth) * t, ctx.face)) continue;
       bestD = d;
-      best = { kind: 'edge', point: vlerp(pointAt(pl.pts, i), pointAt(pl.pts, i + 1), t), polyline: pi };
+      best = { kind: 'edge', point: vlerp(pointAt(pl.pts, i), pointAt(pl.pts, i + 1), t), polyline: pi, refs: [pl.ref] };
     }
   });
   return best;
@@ -90,6 +92,6 @@ export function computeSnap(ctx: SnapContext): SnapHit | null {
   return (
     nearestCorner(ctx, proj) ??
     nearestOnEdges(ctx, proj) ??
-    (ctx.face ? { kind: 'face', point: ctx.face.point } : null)
+    (ctx.face ? { kind: 'face', point: ctx.face.point, refs: ctx.face.ref ? [ctx.face.ref] : [] } : null)
   );
 }

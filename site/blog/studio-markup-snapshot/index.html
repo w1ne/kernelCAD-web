@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Mark up a model in Studio and send its camera, notes, picked topology and measurements with an agent prompt." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Studio markup snapshots" />
+  <meta property="og:description" content="Mark up a model in Studio and send its camera, notes, picked topology and measurements with an agent prompt." />
+  <meta property="og:image" content="https://kernelcad.com/og-image.png" />
+  <meta property="og:url" content="https://kernelcad.com/blog/studio-markup-snapshot/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Studio markup snapshots" />
+  <meta name="twitter:description" content="Mark up a model in Studio and send its camera, notes, picked topology and measurements with an agent prompt." />
+  <meta name="twitter:image" content="https://kernelcad.com/og-image.png" />
+  <link rel="canonical" href="https://kernelcad.com/blog/studio-markup-snapshot/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>Studio markup snapshots</title>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
+  <style>
+    .legal { max-width: 760px; margin: 0 auto; padding: 1rem 0 4rem; }
+    .legal h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; line-height: 1.2; margin: 1.5rem 0 0.25rem; }
+    .legal .effective { color: var(--ink-faint, #8a8475); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 2rem; }
+    .legal h2 { font-family: 'Source Serif 4', serif; font-size: 1.35rem; margin: 2.2rem 0 0.5rem; }
+    .legal p, .legal li { font-family: 'Inter', sans-serif; line-height: 1.65; color: var(--ink-soft, #3a3a3a); }
+    .legal ul { padding-left: 1.25rem; }
+    .legal code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .legal a { color: var(--blueprint, #2f6df0); }
+    .legal strong { color: var(--ink, #1a1a1a); }
+    .legal .lede { font-size: 1.1rem; color: var(--ink); }
+    .legal figure { margin: 1.5rem 0; }
+    .legal figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal figcaption { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--ink-faint); margin-top: 0.5rem; }
+    .legal pre { background: var(--code-bg); color: var(--code-text); border-radius: 6px; padding: 16px 18px; overflow-x: auto; margin: 1.25rem 0; }
+    .legal pre code { font-size: 0.85rem; line-height: 1.6; color: inherit; }
+    .legal p code, .legal li code { background: var(--vellum-soft); padding: 1px 5px; border-radius: 3px; }
+    .post-list { list-style: none; padding: 0; margin: 2rem 0; }
+    .post-list li { padding: 1.25rem 0; border-top: 1px solid var(--rule); }
+    .post-list li:last-child { border-bottom: 1px solid var(--rule); }
+    .post-list a.post-title { font-family: 'Source Serif 4', serif; font-size: 1.4rem; text-decoration: none; }
+    .post-list a.post-title:hover { text-decoration: underline; }
+    .post-list .effective { margin: 0.25rem 0 0.5rem; }
+    .post-list p { margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a class="nav-mark" href="/">
+        <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span class="cad">CAD</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="/blog/">blog</a>
+        <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">@kernelcad</a>
+      </div>
+    </nav>
+
+    <main class="legal">
+      <article>
+      <p class="effective"><a href="/blog/">Blog</a> · <time datetime="2026-10-20">2026-10-20</time> · Andrii Shylenko</p>
+      <h1>Studio markup snapshots</h1>
+
+      <p class="lede">Studio markup lets you pin a short note to the model and save measurements from the viewer. When you send a prompt to the Studio agent, it receives a validated, versioned JSON snapshot of the camera, picked topology, notes and measurements. The same JSON can be saved to a file and loaded later to restore the view and overlays.</p>
+
+      <h2>Make and replay markup</h2>
+      <p>Open <strong>Markup</strong> in the viewer toolbar. Enter a note, leave <strong>Place note</strong> on, and click a visible point on the model. The note is anchored at the snapped model point and the picked face or edge is highlighted. The Notes list lets you edit or remove notes. To measure, choose <strong>Measure</strong> and click two points; a completed distance is kept in the Markup panel. Clicking one circular edge records its diameter. Remove individual measurements from the list, or choose <strong>Clear all markup</strong>.</p>
+      <p>Sending a prompt captures the current camera and markup at that moment and always attaches it to the prompt as a versioned JSON code block, including when the only context is the camera and the selection, measurements and notes arrays are empty. The camera records view state rather than markup; Studio includes it so the agent can reproduce the view the user saw even when there are no annotations or picks. Changes made after sending do not alter that run's saved context. <strong>Save JSON</strong> downloads the current snapshot. <strong>Load JSON</strong> validates the file, restores its camera pose, and redisplays saved notes, measurements and topology highlights.</p>
+      <p>This is local Studio viewer context. It does not change the CAD script or model. Markup stays with the open project and is cleared when you switch projects. Point coordinates and measurement values use model-space millimetres. Face and edge identifiers refer to the current rendered shape and may change after a model rebuild.</p>
+
+      <h2>Format, version 1</h2>
+      <p>The root object has <code>schemaVersion</code>, <code>camera</code>, <code>selection</code>, <code>measurements</code> and <code>notes</code>. Version 1 supports the perspective camera used by Studio. <code>fov</code> is in degrees; <code>zoom</code> is the Three.js camera zoom. Camera position, target and up are three-number model-space vectors.</p>
+      <pre><code>{
+  "schemaVersion": 1,
+  "camera": {
+    "position": [40, 40, 40],
+    "target": [0, 0, 0],
+    "up": [0, 0, 1],
+    "projection": "perspective",
+    "fov": 40,
+    "zoom": 1
+  },
+  "selection": {
+    "topologyRefs": [
+      { "shapeIndex": 0, "kind": "face", "id": 4, "featureId": "base_plate" }
+    ]
+  },
+  "measurements": [
+    {
+      "id": "measure-1",
+      "type": "distance",
+      "endpoints": [[0, 0, 0], [3, 4, 0]],
+      "refs": [{ "shapeIndex": 0, "kind": "edge", "id": 2 }],
+      "value": 5,
+      "units": "mm"
+    }
+  ],
+  "notes": [
+    {
+      "id": "note-1",
+      "text": "Keep this face flat",
+      "anchor": [12, 8, 6],
+      "refs": [{ "shapeIndex": 0, "kind": "face", "id": 4 }]
+    }
+  ]
+}</code></pre>
+      <p><code>topologyRefs</code> is a generic list of face or edge references. A reference records the geometry's <code>shapeIndex</code>, its <code>kind</code>, the local face or edge <code>id</code>, and the optional owning <code>featureId</code>. Distance measurements derive <code>value</code> from their two endpoints; diameter measurements store the circle diameter and endpoints across it. Notes may include <code>strokePoints</code>, an optional list of model-space points for a freehand stroke.</p>
+      <p>The JSON is checked against the version 1 schema before it is replayed. Unknown versions and unexpected fields are rejected rather than partially applied. Each snapshot is limited to 256 picked topology references, 128 measurements, and 128 notes. Each measurement or note can reference up to 32 topology items; freehand strokes can contain up to 512 points. Note text is limited to 280 characters. A generated prompt, including its markup block, is limited to 63,000 characters; Studio reports when the prompt and markup together exceed that limit.</p>
+
+      <h2>Demo evidence</h2>
+      <p><a href="https://github.com/w1ne/kernelCAD-web/tree/develop/docs/demos/studio-markup">Open the Studio markup walkthrough bundle</a> for a replayable example and the verification status for this change. Local validation does not establish deployed behavior or hardware acceptance.</p>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div>kernelCAD · MIT</div>
+      <div class="footer-links">
+        <a href="/terms.html">terms</a>
+        <a href="/privacy.html">privacy</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">x</a>
+        <a href="https://app.kernelcad.com">app</a>
+      </div>
+    </footer>
+    <div class="footer-stack" style="border-top: 1px solid var(--stroke, rgba(255,255,255,0.08)); padding: 14px 0 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--mute, #888); font-size: 0.78rem;">
+      <span style="opacity: 0.7;">part of the engineer stack</span>
+      <nav style="display: flex; gap: 18px;">
+        <a href="https://labwired.com" style="color: inherit;">LabWired</a>
+        <a href="https://kernelcad.com" style="color: inherit;">kernelCAD</a>
+        <a href="https://koamtachi.com" style="color: inherit;">koamtachi</a>
+        <a href="https://shylenko.com" style="color: inherit;">shylenko.com</a>
+      </nav>
+    </div>
+  </div>
+</body>
+</html>

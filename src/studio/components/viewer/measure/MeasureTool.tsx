@@ -1,23 +1,25 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useThree } from '@react-three/fiber';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { GeometryResult } from '../../../../shared/worker/geometryEngine';
 import { readThemeColor } from '../overlays/themeColor';
 import { CAD_COLORS_HEX } from '../../../../shared/constants/colors';
 import { DimensionGraphic } from '../overlays/DimensionGraphic';
 import { ScreenScaled } from '../overlays/ScreenScaled';
-import { buildEdgePolylines, visibleGeometries } from './edgePolylines';
+import { buildVisibleEdgePolylines } from './edgePolylines';
 import { formatDeltas, formatDiameter, formatLength, vdist, type Vec3 } from './measureMath';
 import type { SnapHit } from './measureSnap';
 import { applyClick, EMPTY_MEASURE, type MeasureState } from './measureState';
 import { useMeasurePointer } from './useMeasurePointer';
 import { useViewerSnapper } from './useViewerSnapper';
+import { createMarkupId, makeDiameterMeasurement, makeDistanceMeasurement, type MarkupMeasurement } from '../../../markup/markupSnapshot';
 
 interface MeasureToolProps {
   geometries: readonly GeometryResult[];
   itemNames: readonly (string | null)[];
   hiddenIds: readonly string[];
+  onMeasurementAdded?: (measurement: MarkupMeasurement) => boolean;
 }
 
 const SNAP_COLORS = { vertex: CAD_COLORS_HEX.snap, edge: CAD_COLORS_HEX.highlight, face: CAD_COLORS_HEX.guide } as const;
@@ -56,17 +58,19 @@ function Dimensions({ state }: { state: MeasureState }) {
 /**
  * Click-to-measure inside the viewer canvas: snaps to edge corners, then edge
  * points, then faces; two clicks draw a dimension, a click on a circular edge
- * reads its diameter at once. Mounted only while the Measure button is on, so
- * turning it off clears everything.
+ * reads its diameter at once. Completed values are passed to Studio markup
+ * when a persistence callback is supplied; an accepted value clears the local
+ * preview immediately.
  */
-export function MeasureTool({ geometries, itemNames, hiddenIds }: MeasureToolProps) {
+export function MeasureTool({ geometries, itemNames, hiddenIds, onMeasurementAdded }: MeasureToolProps) {
   const dom = useThree((s) => s.gl.domElement);
   const polylines = useMemo(
-    () => buildEdgePolylines(visibleGeometries(geometries, itemNames, hiddenIds)),
+    () => buildVisibleEdgePolylines(geometries, itemNames, hiddenIds),
     [geometries, itemNames, hiddenIds],
   );
-  const snapAt = useViewerSnapper(polylines);
+  const snapAt = useViewerSnapper(polylines, geometries);
   const [state, setState] = useState<MeasureState>(EMPTY_MEASURE);
+  const stateRef = useRef<MeasureState>(EMPTY_MEASURE);
   const [hover, setHover] = useState<SnapHit | null>(null);
 
   useMeasurePointer(dom, {
@@ -74,9 +78,35 @@ export function MeasureTool({ geometries, itemNames, hiddenIds }: MeasureToolPro
     onTap: (p) => {
       const hit = snapAt(p);
       setHover(hit);
-      if (hit) setState((s) => applyClick(s, hit, polylines));
+      if (!hit) return;
+      const current = stateRef.current;
+      const next = applyClick(current, hit, polylines);
+      let completed: MarkupMeasurement | null = null;
+      if (current.a && !current.b) {
+        completed = makeDistanceMeasurement({
+          id: createMarkupId('measure-'),
+          a: [...current.a] as [number, number, number],
+          b: [...hit.point] as [number, number, number],
+          refs: [...current.aRefs, ...hit.refs],
+        });
+      } else if (next.diameter && next.diameter !== current.diameter) {
+        completed = makeDiameterMeasurement({
+          id: createMarkupId('measure-'),
+          a: [...next.diameter.a] as [number, number, number],
+          b: [...next.diameter.b] as [number, number, number],
+          refs: next.diameter.refs,
+          value: next.diameter.value,
+        });
+      }
+      if (completed && onMeasurementAdded?.(completed)) {
+        stateRef.current = EMPTY_MEASURE;
+        setState(EMPTY_MEASURE);
+        return;
+      }
+      stateRef.current = next;
+      setState(next);
     },
-    onEscape: () => setState(EMPTY_MEASURE),
+    onEscape: () => { stateRef.current = EMPTY_MEASURE; setState(EMPTY_MEASURE); },
   });
 
   return (

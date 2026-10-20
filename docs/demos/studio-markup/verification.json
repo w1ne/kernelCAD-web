@@ -1,0 +1,81 @@
+{
+  "checkedAt": "2026-10-21",
+  "branch": "feat/studio-markup-snapshot",
+  "pullRequest": 1086,
+  "validationRevision": "worktree based on 6f339ea with camera-only snapshots, trim-on-blur note editing and measurement overlay removal",
+  "checks": {
+    "typecheck": {
+      "command": "npx tsc -b --noEmit && npx tsc --noEmit -p tsconfig.site.json",
+      "status": "passed"
+    },
+    "lint": {
+      "command": "npx eslint on changed Studio TypeScript source and tests",
+      "status": "passed",
+      "scope": "changed shape routing, viewer, markup schema/store, and tests"
+    },
+    "studioVitest": {
+      "command": "npx vitest run --configLoader runner src/studio",
+      "status": "passed",
+      "testFiles": 233,
+      "tests": 1839
+    },
+    "qualityAndSiteVitest": {
+      "command": "npx vitest run --configLoader runner tests/unit/scripts/qualityRatchet.test.ts tests/unit/site",
+      "status": "passed",
+      "testFiles": 10,
+      "tests": 145
+    },
+    "blogBuild": {
+      "command": "tests/unit/site/blogBuild.test.ts",
+      "status": "passed",
+      "output": "site/blog/studio-markup-snapshot/index.html matches the page rendered from docs/guide"
+    },
+    "playwrightDiscovery": {
+      "command": "npx playwright test tests/studio_markup_snapshot.spec.ts tests/studio_markup_capture.spec.ts --project=chromium --list",
+      "status": "passed",
+      "testsListed": 2
+    },
+    "playwrightRun": {
+      "command": "npm run capture:studio-markup",
+      "environment": "macOS with real Chromium",
+      "capturedAt": "2026-10-21 00:04 CEST",
+      "capturedRevision": "working tree based on 6f339ea with this round of fixes (the commit that adds this file)",
+      "result": "2 passed (18.3s), no retries",
+      "snapshotSpec": "passed",
+      "captureSpec": {
+        "status": "passed on the first attempt",
+        "retries": 0
+      },
+      "readinessGate": "The capture waits for the viewer display-ready signal, emitted by DisplayReadySensor after nonempty model geometry has rendered for two frames, and confirms that note mode is active before clicking."
+    }
+  },
+  "media": {
+    "file": "demo.mp4",
+    "status": "captured by operator on the first attempt and inspected",
+    "command": "npm run capture:studio-markup",
+    "recordingSource": "tests/studio_markup_capture.spec.ts",
+    "conversion": "/opt/homebrew/bin/ffmpeg converts the WebM recording to H.264 MP4",
+    "fileBytes": 338348,
+    "durationSeconds": 10.8,
+    "width": 1440,
+    "height": 900,
+    "framesPerSecond": 25,
+    "inspection": {
+      "frameSeconds": [
+        4,
+        8,
+        10.5
+      ],
+      "observed": [
+        "4s: Studio loading the Bracket starter",
+        "8s: Bracket with the note 'Keep the mounting face flat' anchored on the base face (numbered callout), a Distance 9.8 mm measurement, and picked topology Face 5 / shape 0 and Edge 0 / shape 1 in the Markup panel",
+        "10.5s: after Load JSON the panel reports 'Snapshot loaded. The camera and markup were restored.' with the note, measurement and picked topology shown again"
+      ]
+    },
+    "scope": "local capture from the operator's real-Chromium Mac run at 00:04 CEST on 2026-10-21; it does not verify deployed behavior"
+  },
+  "deployment": {
+    "status": "not deployed",
+    "reason": "No deployment was performed; the Mac capture and local tests do not establish deployed behavior."
+  }
+}

@@ -4,6 +4,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { GenerationPhase } from '../../funnel/hooks/useGeneration';
+import { DEFAULT_MARKUP_CAMERA, markupStore } from '../markup/markupStore';
+import { parseMarkupSnapshot } from '../markup/markupSnapshot';
 
 const mockGeneration = vi.hoisted(() => ({
     phase: { state: 'idle' } as GenerationPhase,
@@ -115,6 +117,8 @@ beforeEach(() => {
     mockShell.stagedEdit = null;
     mockShell.setAgentRepairWorkflow.mockReset();
     mockShell.proposeStagedEdit.mockReset();
+    markupStore.clear();
+    markupStore.setCamera(DEFAULT_MARKUP_CAMERA);
 });
 
 afterEach(() => cleanup());
@@ -133,7 +137,7 @@ describe('StudioGenerate', () => {
         fireEvent.submit(prompt.closest('form')!);
 
         expect(mockGeneration.submit).toHaveBeenCalledWith(
-            'model this e-reader enclosure',
+            expect.any(String),
             undefined,
             undefined,
             expect.objectContaining({
@@ -142,6 +146,7 @@ describe('StudioGenerate', () => {
                 mimeType: 'image/png',
             }),
         );
+        expectAgentPrompt(mockGeneration.submit.mock.calls.at(-1)?.[0], 'model this e-reader enclosure');
     });
 
     it('rejects unsupported photo types before they enter the generation request', async () => {
@@ -179,12 +184,17 @@ describe('StudioGenerate', () => {
         expect(screen.getByTestId('studio-generate-target').textContent).toBe('Target: hinge-pin');
     });
 
-    it('submits the raw trimmed prompt when no feature is selected', () => {
+    it('submits the trimmed prompt with a replayable camera snapshot when no feature is selected', () => {
         render(<StudioGenerate />);
         const prompt = screen.getByLabelText('Generate prompt');
         fireEvent.change(prompt, { target: { value: '  make a bracket  ' } });
         fireEvent.submit(prompt.closest('form')!);
-        expect(mockGeneration.submit).toHaveBeenCalledWith('make a bracket');
+        expect(mockGeneration.submit).toHaveBeenCalledWith(expect.any(String));
+        const snapshot = expectAgentPrompt(mockGeneration.submit.mock.calls.at(-1)?.[0], 'make a bracket');
+        expect(snapshot.camera).toEqual(DEFAULT_MARKUP_CAMERA);
+        expect(snapshot.selection.topologyRefs).toEqual([]);
+        expect(snapshot.measurements).toEqual([]);
+        expect(snapshot.notes).toEqual([]);
     });
 
     it('prefixes the prompt with selected target context when a feature is selected', () => {
@@ -196,8 +206,9 @@ describe('StudioGenerate', () => {
         });
         fireEvent.submit(prompt.closest('form')!);
         expect(mockGeneration.submit).toHaveBeenCalledWith(
-            'Edit selected target "hinge-pin": add 2 mm clearance',
+            expect.any(String),
         );
+        expectAgentPrompt(mockGeneration.submit.mock.calls.at(-1)?.[0], 'Edit selected target "hinge-pin": add 2 mm clearance');
     });
 
     it('marks the active repair workflow running when the drafted prompt is submitted', () => {
@@ -223,8 +234,9 @@ describe('StudioGenerate', () => {
             state: 'running',
         });
         expect(mockGeneration.submit).toHaveBeenCalledWith(
-            'Edit selected target "output-horn": Fix assembly.part.floating: output-horn floats Action: add a mate',
+            expect.any(String),
         );
+        expectAgentPrompt(mockGeneration.submit.mock.calls.at(-1)?.[0], 'Edit selected target "output-horn": Fix assembly.part.floating: output-horn floats Action: add a mate');
     });
 
     it('does not mark a drafted repair running when the selected target changed', () => {
@@ -247,8 +259,9 @@ describe('StudioGenerate', () => {
 
         expect(mockShell.setAgentRepairWorkflow).not.toHaveBeenCalled();
         expect(mockGeneration.submit).toHaveBeenCalledWith(
-            'Edit selected target "hinge-pin": Fix assembly.part.floating: output-horn floats Action: add a mate',
+            expect.any(String),
         );
+        expectAgentPrompt(mockGeneration.submit.mock.calls.at(-1)?.[0], 'Edit selected target "hinge-pin": Fix assembly.part.floating: output-horn floats Action: add a mate');
     });
 
     it('submits a drafted whole-model repair without stale selected-feature prefix', () => {
@@ -274,8 +287,9 @@ describe('StudioGenerate', () => {
             state: 'running',
         });
         expect(mockGeneration.submit).toHaveBeenCalledWith(
-            'Repair deterministic mechanism failures.',
+            expect.any(String),
         );
+        expectAgentPrompt(mockGeneration.submit.mock.calls.at(-1)?.[0], 'Repair deterministic mechanism failures.');
     });
 
     it('rolls a running repair workflow back to drafted when generation errors', () => {
@@ -326,8 +340,9 @@ describe('StudioGenerate', () => {
         // Sent: the box empties; the prompt shows in the conversation.
         expect((prompt as HTMLTextAreaElement).value).toBe('');
         expect(mockGeneration.submit).toHaveBeenCalledWith(
-            'Fix assembly.part.floating: output-horn floats Action: add two mates',
+            expect.any(String),
         );
+        expectAgentPrompt(mockGeneration.submit.mock.calls.at(-1)?.[0], 'Fix assembly.part.floating: output-horn floats Action: add two mates');
     });
 
     it('re-applies the same draft text when the draft version changes', () => {
@@ -619,6 +634,21 @@ const DONE_PHASE = (generationId: string, code = 'return box(20, 20, 5);'): Gene
     artifact: { title: 'Bracket', code, parameters: [], suggestions: ['Add a fillet'] },
 });
 
+function expectAgentPrompt(value: unknown, expectedText: string) {
+    expect(typeof value).toBe('string');
+    const prompt = value as string;
+    const marker = '\n\nStudio markup snapshot JSON (schemaVersion 1):\n';
+    const markerIndex = prompt.indexOf(marker);
+    expect(markerIndex).toBeGreaterThanOrEqual(0);
+    expect(prompt.slice(0, markerIndex)).toBe(expectedText);
+    const serialized = prompt.match(/Studio markup snapshot JSON \(schemaVersion 1\):\n(`{3,})json\n([\s\S]*?)\n\1/)?.[2];
+    expect(serialized).toBeTruthy();
+    const snapshot = parseMarkupSnapshot(serialized!);
+    expect(snapshot.schemaVersion).toBe(1);
+    expect(snapshot.camera).toMatchObject({ projection: 'perspective', fov: 40, zoom: 1 });
+    return snapshot;
+}
+
 /** Send a prompt from the composer while the agent is idle. */
 function send(text: string) {
     const prompt = screen.getByLabelText('Generate prompt');
@@ -651,7 +681,8 @@ describe('StudioGenerate — agent pane v2', () => {
 
         mockGeneration.phase = { state: 'idle' };
         rerender(<StudioGenerate />);
-        await waitFor(() => expect(mockGeneration.submit).toHaveBeenCalledWith('then add a 2 mm fillet'));
+        await waitFor(() => expect(mockGeneration.submit).toHaveBeenCalledWith(expect.any(String)));
+        expectAgentPrompt(mockGeneration.submit.mock.calls.at(-1)?.[0], 'then add a 2 mm fillet');
         expect(screen.queryByTestId('agent-queue')).toBeNull();
     });
 
@@ -666,7 +697,8 @@ describe('StudioGenerate — agent pane v2', () => {
         expect(mockGeneration.submit).not.toHaveBeenCalled();
 
         fireEvent.click(screen.getByRole('button', { name: /discard/i }));
-        await waitFor(() => expect(mockGeneration.submit).toHaveBeenCalledWith('make it thicker'));
+        await waitFor(() => expect(mockGeneration.submit).toHaveBeenCalledWith(expect.any(String)));
+        expectAgentPrompt(mockGeneration.submit.mock.calls.at(-1)?.[0], 'make it thicker');
     });
 
     it('pauses the queue after a failed run until the user sends it on', async () => {
@@ -681,7 +713,8 @@ describe('StudioGenerate — agent pane v2', () => {
         expect(screen.getByText(/paused because the last run did not finish/)).toBeTruthy();
 
         fireEvent.click(screen.getByRole('button', { name: 'Send now' }));
-        expect(mockGeneration.submit).toHaveBeenCalledWith('and a chamfer');
+        expect(mockGeneration.submit).toHaveBeenCalledWith(expect.any(String));
+        expectAgentPrompt(mockGeneration.submit.mock.calls.at(-1)?.[0], 'and a chamfer');
     });
 
     it('shows the whole error under Details, not a 140-character cut', () => {
@@ -708,7 +741,8 @@ describe('StudioGenerate — agent pane v2', () => {
         expect(screen.getByText('Lost the connection to the agent')).toBeTruthy();
         fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
-        expect(mockGeneration.submit).toHaveBeenLastCalledWith('Edit selected target "hinge-pin": add 2 mm clearance', 'return box(10);');
+        expect(mockGeneration.submit).toHaveBeenLastCalledWith(expect.any(String), 'return box(10);');
+        expectAgentPrompt(mockGeneration.submit.mock.calls.at(-1)?.[0], 'Edit selected target "hinge-pin": add 2 mm clearance');
     });
 
     it('Repair sends the prompt back with the error so the agent fixes its script', () => {
@@ -730,6 +764,12 @@ describe('StudioGenerate — agent pane v2', () => {
         mockSelection.selectedFeatureId = 'lid';
         mockCode.code = 'return box(30, 20, 10);';
         const { rerender } = render(<StudioGenerate />);
+        markupStore.addNote({
+            id: 'copied-agent-note',
+            text: 'Keep the mounting face flat',
+            anchor: [1, 2, 3],
+            refs: [],
+        });
         send('add a snap fit');
         mockGeneration.phase = { state: 'error', code: 'timeout', message: 'did not finish within 240 s' };
         rerender(<StudioGenerate />);
@@ -742,6 +782,12 @@ describe('StudioGenerate — agent pane v2', () => {
         expect(text).toContain('"lid"');
         expect(text).toContain('did not finish within 240 s');
         expect(text).toContain('return box(30, 20, 10);');
+        const serializedSnapshot = text.match(/Studio markup snapshot JSON \(schemaVersion 1\):\n(`{3,})json\n([\s\S]*?)\n\1/)?.[2];
+        expect(serializedSnapshot).toBeTruthy();
+        const snapshot = parseMarkupSnapshot(serializedSnapshot!);
+        expect(snapshot.schemaVersion).toBe(1);
+        expect(snapshot.camera).toEqual(DEFAULT_MARKUP_CAMERA);
+        expect(snapshot.notes).toMatchObject([{ text: 'Keep the mounting face flat', anchor: [1, 2, 3] }]);
         expect(await screen.findByText('Copied')).toBeTruthy();
     });
 

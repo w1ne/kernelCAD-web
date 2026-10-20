@@ -283,3 +283,9 @@ export function useProject() {
     }
     return context;
 }
+
+/** The active ID when a viewer is embedded outside the project provider. */
+// eslint-disable-next-line react-refresh/only-export-components
+export function useOptionalProjectId(): string | null {
+    return useContext(ProjectContext)?.activeProjectId ?? null;
+}
