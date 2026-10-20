@@ -85,18 +85,37 @@ jobs:
       - name: QC — vitest (shard ${{ matrix.shard }}/12)
         run: npm test -- --shard=${{ matrix.shard }}/12
 
+  # KCAD_SLOW-gated suites (skipped by the shards above to keep each shard
+  # fast) run here once, in parallel with the shards, and are part of the
+  # required `test` gate below. Nightly/on-demand runs: slow-tests.yml.
+  test-slow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+      - name: Build CLI bundle (required by the validate CLI suites)
+        run: npm run build:cli
+      - name: KCAD_SLOW suites
+        run: |
+          files=$(grep -rlE "skipIf\(!process\.env\.KCAD_SLOW\)" tests src eval --include='*.test.ts' || true)
+          echo "$files"
+          [ -n "$files" ] || { echo "no KCAD_SLOW suites found"; exit 1; }
+          KCAD_SLOW=1 NODE_OPTIONS='--max-old-space-size=8192' npx vitest run $files
+
   # Gate job: carries the required-check name `test` so branch protection is
   # unchanged. if: always() ensures it reports failure (rather than being
   # skipped) when a shard fails or is cancelled.
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 2
-    needs: test-shard
+    needs: [test-shard, test-slow]
     if: always()
     steps:
-      - name: All test shards green
+      - name: All test shards and KCAD_SLOW suites green
         run: |
           [ "${{ needs.test-shard.result }}" = "success" ] || { echo "shard result: ${{ needs.test-shard.result }}"; exit 1; }
+          [ "${{ needs.test-slow.result }}" = "success" ] || { echo "slow result: ${{ needs.test-slow.result }}"; exit 1; }
 
   e2e:
     runs-on: ubuntu-latest

@@ -1,20 +1,10 @@
 name: Slow tests
 
-# Suites gated behind KCAD_SLOW (see `npm run test:slow`) are skipped by the
-# sharded `test` job so the merge gate stays fast. They still have to run in
-# CI: on every PR/push to develop and the release lines, nightly, and on demand.
-# (GitHub only fires `schedule` from the default branch's copy of this file.)
+# Nightly / on-demand run of the KCAD_SLOW-gated suites (see `npm run
+# test:slow`). On PRs they run in ci.yml's `test-slow` job, which is part of
+# the required `test` gate. (GitHub only fires `schedule` from the default
+# branch's copy of this file.)
 on:
-  pull_request:
-    branches:
-      - release
-      - master
-      - develop
-  push:
-    branches:
-      - release
-      - master
-      - develop
   schedule:
     - cron: '30 2 * * *'
   workflow_dispatch:
