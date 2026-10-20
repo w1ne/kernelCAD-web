@@ -832,7 +832,7 @@ async function checkInterpenetration(
         `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${describeOverlap(pair)}${describeOverlapLocation(pair)} at pose sample '${s.sample.name}' — ` +
         `they ${relation}. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. ` +
         `Add clearance, reduce mate travel, move the geometry so the swept pose stays collision-free, ` +
-        `or pass { ignore: [['${pair.a}', '${pair.b}']] } to solvedModel(...) if this overlap is genuinely intended.`,
+        `or pass { ignore: [['${pair.a}', '${pair.b}']] } as the SECOND argument to solvedModel({}, { ignore: ... }) if this overlap is genuinely intended.`,
       ));
     }
   }

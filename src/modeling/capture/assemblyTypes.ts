@@ -221,6 +221,12 @@ export interface AssemblyPartOpts {
    *  objects used for contact/load scenarios that are not structural members
    *  of the mechanism graph. */
   role?: AssemblyPartRole;
+  /** Display-clip / styling-study overlay. The part stays in the Scene,
+   *  export, BOM and render, but its overlaps with non-overlay parts are
+   *  excluded from validation as intentional display overlay. This is
+   *  narrower than `ignore`: the intent is recorded and reported, not just
+   *  silenced. */
+  overlay?: boolean;
 }
 
 export interface MechanicalJointIntentOpts {
@@ -412,6 +418,9 @@ export interface AssemblyPartStored extends AssemblyPartRef {
    *  by `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Undefined when
    *  the script did not declare a cross-section on `arm.part(...)`. */
   readonly crossSection?: AssemblyCrossSection;
+  /** Display-clip / intentional-overlay flag, copied from
+   *  `AssemblyPartOpts.overlay`. */
+  readonly overlay?: boolean;
 }
 
 /** SRDF planning group. Either chain-form (base/tip) or enumeration. */

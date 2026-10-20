@@ -60,6 +60,14 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'Two solid parts in the assembly share BREP volume (their bodies interfere).',
   },
+  'assembly.overlay.intentional': {
+    hintTemplate:
+      "This part is declared as a display-clip overlay (`assembly.part(..., { overlay: true })`). Its overlaps are excluded from interference validation on purpose but it stays in the Scene/export/BOM/render. Remove overlay: true to validate it as structure; use contacts/clearances instead when the contact is physical and should be measured.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'info',
+    group: 'assembly',
+    description: 'An assembly part is an intentional display overlay; overlaps involving it are excluded from interference validation.',
+  },
   'assembly.contact.tolerance-exceeded': {
     hintTemplate:
       "The declared contact budget for this pair is too small for the modeled overlap. Widen maxVolumeMm3 / maxThicknessMm if the contact is intended, or move the parts apart until the overlap fits the budget.",
