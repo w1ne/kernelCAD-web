@@ -403,6 +403,30 @@ export const FEATURE_SURFACES_CODES = {
     group: 'feature',
     description: 'A seam edge was shorter than twice the requested fillet radius; it was reported and excluded from the successful blend.',
   },
+  'feature.loft.span-failed': {
+    hintTemplate:
+      'A segmented loft span failed to build or fuse. Check that the stations in the named range have matching vertex counts and orientation, that spanSize leaves at least two stations per span, or switch to mode: \'single\'.',
+    nextAction: { kind: 'fix-arg', field: 'opts.spanSize' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'One span of a segmented loft could not be built, or the span solids could not be fused at their shared station.',
+  },
+  'feature.loft.continuity-unresolved': {
+    hintTemplate:
+      'The loft could not meet the requested G1/G2 join within tolerance. Smooth the station curves so tangents/curvatures agree, add intermediate stations, or request a lower continuity grade. The diagnostic names the seam and the measured gap.',
+    nextAction: { kind: 'fix-arg', field: 'opts.continuity' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A segmented loft join did not reach the requested G1/G2 continuity within tolerance.',
+  },
+  'feature.loft.continuity-requires-single': {
+    hintTemplate:
+      "G1/G2 continuity is not enforceable across independently built spans (sewing does not constrain derivatives). The kernel built one multi-span skin instead. Use continuity: 'G0' with mode: 'sewn' for the fast C0 path, or keep the single skin for smooth joins.",
+    nextAction: { kind: 'fix-arg', field: 'opts.mode' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'loft mode sewn was combined with G1/G2; the kernel fell back to one multi-span skin because sewn span joins are C0.',
+  },
   'feature.loft.rail-miss': {
     hintTemplate:
       'A loft rail does not pass near every section (or more than two rails were given). OCCT MakePipeShell accepts one spine plus one auxiliary spine; each rail must come within 1 mm of every section wire. Shorten the gap, add a section on the rail, or drop extra rails.',

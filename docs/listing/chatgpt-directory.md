@@ -24,9 +24,7 @@ The dashboard pins the existing kernelCAD app. The ZIP builder applies all of th
 With all of these, the 0.17.0 draft imports with **No findings** (2026-10-19).
 
 ## What `plugins/kernelcad/plugin.json` needs before upload
-These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` (`./assets/logo.png`, square 512×512) and `composerIcon` (`./assets/logo.svg`, square viewBox 84), `review.test_cases` (5 positive, 3 negative), `review.commerce` (declared true on 2026-10-19 with the external-checkout description), and `publication.release_notes`. Both icon paths use the required `./` prefix and the referenced files ship in the ZIP, which is what clears the portal's "App icon required" finding. Still missing:
-- `interface.screenshots`: optional; see the list below.
-- `review.demo_recording_url`: a video walkthrough the reviewers can open.
+These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` (`./assets/logo.png`, square 512×512) and `composerIcon` (`./assets/logo.svg`, square viewBox 84), `review.test_cases` (5 positive, 3 negative), `review.commerce` (declared true on 2026-10-19 with the external-checkout description), and `publication.release_notes`. Both icon paths use the required `./` prefix and the referenced files ship in the ZIP, which is what clears the portal's "App icon required" finding. The screenshots and the demo recording are done: the demo URL is `chatgpt.demoRecordingUrl` in `agent-plugin.config.json` and is emitted into `review.demo_recording_url` by `npm run listing:zip`.
 
 Capture both in the ChatGPT app itself (developer-mode connector or the published app), where the in-chat viewer and checklists appear, so the package matches what reviewers will see. Keep the exact screenshots and their prompts in `docs/listing/assets/chatgpt/` when they land, and add them to `plugins/kernelcad/assets/screenshots/` before `npm run listing:zip` so the ZIP carries them.
 
@@ -71,15 +69,18 @@ Positive: use five of the six rows below. Row 6 needs a hosted fab_pack; if you 
 | 5 | (attach `bracket.step`) "Add a 10 mm hole through the middle of this." | `import_step` brings the file in as the base body, then the hole is added. |
 | 6 | "Package it for ordering." | A `fab_pack` zip plus quote links. It's stated that nothing was ordered. |
 
-## Screenshots to capture
-1. Plate with holes in the in-chat 3D view.
-2. DFM checklist result.
-3. PDF drawing preview.
-4. An imported STEP being edited.
+## Screenshots (captured 2026-10-19/20)
+All four are in [`assets/chatgpt/`](assets/chatgpt/), with their prompts in the README there:
+1. `01-plate-viewer.png` — plate with holes in the in-chat 3D view.
+2. `02-dfm-checklist.png` — DFM/CNC result table.
+3. `03-step-drawing.png` — STEP + PDF drawing reply.
+4. `04-step-import.png` — an imported STEP edited with a Ø10 hole in the 3D viewer.
 
-## Demo recording (under 90 seconds, one take is fine)
+They are not yet inside the plugin ZIP; `interface.screenshots` is optional. Add them under `plugins/kernelcad/assets/screenshots/` only if the portal asks for them in the package.
 
-Record in a ChatGPT session with kernelCAD enabled, 1280×720 or larger, cursor visible:
+## Demo recording (recorded 2026-10-20)
+
+`https://kernelcad.com/demos/chatgpt-walkthrough.mp4` — 80 seconds, 1400×840, H.264. It walks the plate in the in-chat 3D viewer, the FDM/CNC result, and the imported STEP with its Ø10 hole. The 5-beat script below is the template for a re-record:
 
 1. Paste the plate prompt from test case 1, let the model finish, and rotate the in-chat 3D view once.
 2. Ask the DFM question from test case 2 and scroll the pass/fail checklist slowly.
@@ -103,4 +104,4 @@ Lead with **"no install"** and **"try without an account"**. Keep the public cop
 
 - Metadata & skills: **0.17.0 · Draft, No findings**; all four skills pass checks. The About copy, category, capabilities, URLs and icons imported from the rebuilt ZIP. The earlier "App icon required" and "skills-only" findings are gone.
 - MCP: configured at `https://mcp.kernelcad.com/chatgpt/mcp`, domain verified, authorized. The daily scan had **5 unpublished tool updates pending further review** (`evaluate_script`, `review_cad`, `send_to_printer`, `inspect_nurbs`, `write_bom`); their previous published versions stay live. kernelCAD #1068 adds the missing parameter types those tools carried; after the next `vendor/kernelcad` bump + deploy, use **Rescan** (or **Request manual review** if the definitions are intentional).
-- Review status: **Not submitted**. Before submitting: capture the four screenshots and the demo recording in ChatGPT, enter the demo URL where the review form asks, and add the reviewer test account through the secure form (never the ZIP).
+- Review status: **Not submitted**. The four screenshots are in `docs/listing/assets/chatgpt/` and the demo URL ships in the package. Before submitting: add the reviewer test account through the secure form (never the ZIP), check the imported review details, and complete the attestations.
