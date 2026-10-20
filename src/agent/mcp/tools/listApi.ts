@@ -361,13 +361,13 @@ export const SURFACE_METHODS: ApiEntry[] = [
   },
   {
     name: 'trimTo',
-    signature: '(by: Surface) => Surface',
-    description: 'Trim this surface at its intersection with `by` (a Surface cutter) and return a new Surface representing the kept half. No geometry is computed at capture time — the cut happens when the model builds, and the larger piece is kept. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve. Shape/Curve3D cutters are deferred to a later slice.',
+    signature: '(by: Surface | Shape) => Surface',
+    description: 'Trim this surface at its intersection with `by` and return a new Surface representing the kept half. `by` may be another Surface or a BRep `Shape` (the whole body is the section cutter, so a patch can be trimmed to the body boundary). No geometry is computed at capture time — the cut happens when the model builds, and the larger piece is kept. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve. Curve3D cutters are deferred.',
   },
   {
     name: 'split',
-    signature: '(by: Surface) => [Surface, Surface]',
-    description: 'Split this surface at its intersection with `by` (a Surface cutter) and return both resulting Surface halves as `[first, second]`, ordered by descending face area. Curved patches are supported when the intersection is clean. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve. Shape/Curve3D cutters are deferred to a later slice.',
+    signature: '(by: Surface | Shape) => [Surface, Surface]',
+    description: 'Split this surface at its intersection with `by` and return both resulting Surface halves as `[first, second]`, ordered by descending face area. `by` may be another Surface or a BRep `Shape` (the whole body is the section cutter). Curved patches are supported when the intersection is clean. Emits `feature.surface-trim.no-intersection` when the cutter produces no section curve. Curve3D cutters are deferred.',
   },
 ];
 
