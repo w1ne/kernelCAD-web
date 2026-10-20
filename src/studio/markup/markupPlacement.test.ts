@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { GeometryResult } from '../../shared/worker/geometryEngine';
+import { markupStore } from './markupStore';
+import { placeMarkupNoteFromModelHit } from './markupPlacement';
+
+afterEach(() => markupStore.clear());
+
+describe('markup note placement', () => {
+  it('anchors the draft note at the model click and records the picked face', () => {
+    markupStore.setMode('note');
+    markupStore.setDraftText('  Keep this mounting face flat  ');
+    const geometry: GeometryResult = {
+      faces: [],
+      faceOwners: ['', '', '', '', 'bracket-wall-feature'],
+    };
+
+    const handled = placeMarkupNoteFromModelHit([12, 3, 5], 2, 4, geometry);
+
+    expect(handled).toBe(true);
+    expect(markupStore.getSnapshot()).toMatchObject({
+      draftText: '',
+      topologyRefs: [{ shapeIndex: 2, kind: 'face', id: 4, featureId: 'bracket-wall-feature' }],
+      notes: [{
+        text: 'Keep this mounting face flat',
+        anchor: [12, 3, 5],
+        refs: [{ shapeIndex: 2, kind: 'face', id: 4, featureId: 'bracket-wall-feature' }],
+      }],
+    });
+  });
+
+  it('places a note when the browser has Web Crypto without secure-context randomUUID', () => {
+    const browserCrypto = globalThis.crypto;
+    vi.stubGlobal('crypto', {
+      getRandomValues: browserCrypto.getRandomValues.bind(browserCrypto),
+    });
+    markupStore.setMode('note');
+    markupStore.setDraftText('Keep the mounting face flat');
+
+    try {
+      const handled = placeMarkupNoteFromModelHit([12, 3, 5], 2, 4, { faces: [] });
+
+      expect(handled).toBe(true);
+      expect(markupStore.getSnapshot().notes).toMatchObject([{
+        text: 'Keep the mounting face flat',
+        anchor: [12, 3, 5],
+        refs: [{ shapeIndex: 2, kind: 'face', id: 4 }],
+      }]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

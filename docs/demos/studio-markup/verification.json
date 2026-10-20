@@ -1,47 +1,53 @@
 {
   "checkedAt": "2026-10-20",
   "branch": "feat/studio-markup-snapshot",
-  "localStudio": {
-    "url": "http://127.0.0.1:5173/studio",
-    "markupPanel": "observed in the existing Chrome profile",
-    "notePlacement": {
-      "status": "observed",
-      "text": "Keep mounting face flat",
-      "topologyRef": { "shapeIndex": 2, "kind": "edge", "id": 13 }
-    },
-    "measurement": {
-      "status": "blocked",
-      "reason": "The browser security review declined the local CDP pointer event and prohibited retrying through another browser API."
-    }
-  },
+  "pullRequest": 1086,
   "checks": {
-    "typecheck": { "command": "npx tsc -b --noEmit", "status": "passed" },
-    "lint": { "status": "passed", "scope": "changed Studio, markup, measurement, guide and test files" },
-    "vitest": {
+    "typecheck": {
+      "command": "npx tsc -b --noEmit",
+      "status": "passed"
+    },
+    "lint": {
+      "status": "passed",
+      "scope": "changed Studio, markup, measurement and Playwright files"
+    },
+    "studioVitest": {
+      "command": "npx vitest run --configLoader runner src/studio",
+      "status": "passed",
+      "testFiles": 232,
+      "tests": 1815
+    },
+    "qualityAndSiteVitest": {
+      "command": "npx vitest run --configLoader runner tests/unit/scripts/qualityRatchet.test.ts tests/unit/site",
       "status": "passed",
       "testFiles": 10,
-      "tests": 41,
-      "includes": [
-        "markup schema/store",
-        "prompt snapshot payload",
-        "measurement snapping and state",
-        "viewport mounting",
-        "published guide rendering"
-      ]
+      "tests": 145
     },
-    "playwright": {
-      "command": "npx playwright test tests/studio_markup_snapshot.spec.ts --project=chromium",
+    "blogBuild": {
+      "command": "node --import tsx /Users/andrii/worktrees/kcw-studio-markup/site/scripts/build-blog.ts",
+      "status": "passed",
+      "output": "site/blog/studio-markup-snapshot/index.html"
+    },
+    "playwrightDiscovery": {
+      "command": "npx playwright test tests/studio_markup_snapshot.spec.ts tests/studio_markup_capture.spec.ts --project=chromium --list",
+      "status": "passed",
+      "testsListed": 2
+    },
+    "playwrightRun": {
+      "command": "npm run capture:studio-markup",
       "status": "not run",
-      "reason": "The browser security review rejected browser automation for the local measurement action."
+      "reason": "The sandbox cannot launch Chromium; the operator will run the capture command on the Mac."
     }
   },
   "media": {
     "file": "demo.mp4",
-    "status": "not captured",
-    "reason": "A full note-and-measure workflow recording could not be captured after the browser action was declined."
+    "status": "capture script added; video not captured in this sandbox",
+    "command": "npm run capture:studio-markup",
+    "recordingSource": "tests/studio_markup_capture.spec.ts",
+    "conversion": "/opt/homebrew/bin/ffmpeg converts the WebM recording to H.264 MP4"
   },
   "deployment": {
     "status": "not deployed",
-    "reason": "This worktree remains uncommitted and was not pushed."
+    "reason": "No deployment was performed during this repair."
   }
 }

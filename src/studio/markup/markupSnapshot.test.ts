@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
+import { attachMarkupSnapshotToPrompt } from './markupSnapshot';
 
 const sample = {
   schemaVersion: 1 as const,
@@ -24,6 +25,25 @@ const sample = {
 };
 
 describe('Studio markup snapshots', () => {
+  it('does not attach a camera-only snapshot to a generation prompt', () => {
+    const emptySnapshot = {
+      ...sample,
+      selection: { topologyRefs: [] },
+      measurements: [],
+      notes: [],
+    };
+
+    expect(attachMarkupSnapshotToPrompt('make a bracket', emptySnapshot)).toBe('make a bracket');
+  });
+
+  it.each([
+    ['selection', { ...sample, selection: { topologyRefs: sample.selection.topologyRefs }, measurements: [], notes: [] }],
+    ['measurement', { ...sample, selection: { topologyRefs: [] }, measurements: sample.measurements, notes: [] }],
+    ['note', { ...sample, selection: { topologyRefs: [] }, measurements: [], notes: sample.notes }],
+  ] as const)('attaches a snapshot when it contains a %s', (_kind, snapshot) => {
+    expect(attachMarkupSnapshotToPrompt('make a bracket', snapshot)).toContain('Studio markup snapshot JSON (schemaVersion 1):');
+  });
+
   it('serializes, validates, and replays the same camera, selection, notes, and measurements', async () => {
     const api = await import('./markupSnapshot');
     expect(api.serializeMarkupSnapshot).toEqual(expect.any(Function));
@@ -64,5 +84,40 @@ describe('Studio markup snapshots', () => {
     if (!api.markupSnapshotSchema) return;
 
     expect(api.markupSnapshotSchema.safeParse({ ...sample, schemaVersion: 2 }).success).toBe(false);
+  });
+
+  it('rejects distance values that disagree with their endpoints beyond tolerance', async () => {
+    const api = await import('./markupSnapshot');
+    expect(api.markupSnapshotSchema?.safeParse).toEqual(expect.any(Function));
+    if (!api.markupSnapshotSchema) return;
+
+    const inconsistentDistance = {
+      ...sample.measurements[0],
+      value: 5.000002,
+    };
+    expect(api.markupSnapshotSchema.safeParse({
+      ...sample,
+      measurements: [inconsistentDistance],
+    }).success).toBe(false);
+  });
+
+  it('accepts distance float noise within tolerance and keeps diameter independent', async () => {
+    const api = await import('./markupSnapshot');
+    expect(api.markupSnapshotSchema?.safeParse).toEqual(expect.any(Function));
+    if (!api.markupSnapshotSchema) return;
+
+    const nearDistance = {
+      ...sample.measurements[0],
+      value: 5.0000005,
+    };
+    const independentDiameter = {
+      ...sample.measurements[0],
+      id: 'diameter-1',
+      type: 'diameter' as const,
+      value: 8,
+    };
+
+    expect(api.markupSnapshotSchema.safeParse({ ...sample, measurements: [nearDistance] }).success).toBe(true);
+    expect(api.markupSnapshotSchema.safeParse({ ...sample, measurements: [independentDiameter] }).success).toBe(true);
   });
 });

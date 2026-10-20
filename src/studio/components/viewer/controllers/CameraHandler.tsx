@@ -11,6 +11,7 @@ import { buildCameraPose, buildFitCameraPose, fitDistanceForCamera, type ViewTar
 import { filterGeometriesForFocusTarget } from "./focusTarget";
 import { boxCorners, fitPointsToSafeArea, occluderInsets } from "./safeFit";
 import { PHONE_QUERY } from "../../../hooks/useIsNarrow";
+import { MARKUP_CAMERA_RESTORE_EVENT } from "../../../markup/markupCameraEvents";
 
 // Using the exported constants if needed, but they are defined in Viewer.tsx conventionally.
 // For now I will hardcode or use the same values.
@@ -121,6 +122,12 @@ function applySceneFit(
     cameraRef.current.up.copy(pose.up);
     targetState.current = { position: pose.position, lookAt: pose.lookAt, immediate: isFirstFit };
     setClipping(cameraRef.current, Math.max(pose.distance ?? distance, SKETCH_DISTANCE));
+}
+
+function rememberGeometryBounds(geometries: GeometryResult[], lastFitBounds: FitBoundsRef): void {
+    const bounds = computeGeometryBounds(geometries);
+    if (!bounds) return;
+    lastFitBounds.current = { center: bounds.center.clone(), radius: bounds.radius };
 }
 
 function applyNavigationPose(
@@ -242,6 +249,40 @@ function subscribeUserInteractionStart(
     return () => ctrl.removeEventListener?.('start', onUserInteractStart);
 }
 
+function subscribeSnapshotCameraRestore(
+    controls: unknown,
+    targetState: CameraTargetRef,
+    snapshotCameraOwnsView: { current: boolean },
+) {
+    const ctrl = controls as unknown as {
+        addEventListener?: (type: string, fn: () => void) => void;
+        removeEventListener?: (type: string, fn: () => void) => void;
+    } | null;
+    if (!ctrl?.addEventListener) return;
+    let userCameraGesture = false;
+    const onSnapshotCameraRestore = () => {
+        targetState.current = null;
+        snapshotCameraOwnsView.current = true;
+    };
+    const onUserInteractStart = () => { userCameraGesture = true; };
+    const onUserCameraChange = () => {
+        if (!userCameraGesture) return;
+        snapshotCameraOwnsView.current = false;
+        userCameraGesture = false;
+    };
+    const onUserInteractEnd = () => { userCameraGesture = false; };
+    ctrl.addEventListener(MARKUP_CAMERA_RESTORE_EVENT, onSnapshotCameraRestore);
+    ctrl.addEventListener('start', onUserInteractStart);
+    ctrl.addEventListener('change', onUserCameraChange);
+    ctrl.addEventListener('end', onUserInteractEnd);
+    return () => {
+        ctrl.removeEventListener?.(MARKUP_CAMERA_RESTORE_EVENT, onSnapshotCameraRestore);
+        ctrl.removeEventListener?.('start', onUserInteractStart);
+        ctrl.removeEventListener?.('change', onUserCameraChange);
+        ctrl.removeEventListener?.('end', onUserInteractEnd);
+    };
+}
+
 function advanceCameraTween(
     camera: ViewportCamera,
     controls: unknown,
@@ -298,6 +339,7 @@ export function CameraHandler({
     // pointed at this model, so there is nothing to animate from and nothing
     // for a tween to fight. It is applied in one frame and cannot be cancelled.
     const targetState = useRef<CameraTargetState | null>(null);
+    const snapshotCameraOwnsView = useRef(false);
     const prevSketchActive = useRef(false);
     const savedCameraState = useRef<{ position: THREE.Vector3; target: THREE.Vector3; } | null>(null);
     const lastFitBounds = useRef<SceneBounds | null>(null);
@@ -308,16 +350,22 @@ export function CameraHandler({
 
     useEffect(() => {
         if (geometries.length === 0 || sketchMode.active) return;
+        if (snapshotCameraOwnsView.current) {
+            rememberGeometryBounds(geometries, lastFitBounds);
+            return;
+        }
         applySceneFit(geometries, cameraRef, lastFitBounds, targetState, fitRef.current);
     }, [geometries, sketchMode.active]);
 
     useEffect(() => {
         if (!navigationRequest || geometries.length === 0 || sketchMode.active) return;
+        snapshotCameraOwnsView.current = false;
         applyNavigationPose(navigationRequest, geometries, cameraRef, targetState, fitRef.current);
     }, [navigationRequest, geometries, sketchMode.active]);
 
     useEffect(() => {
         if (!focusRequest || geometries.length === 0 || sketchMode.active) return;
+        snapshotCameraOwnsView.current = false;
         applyFocusPose(focusRequest, geometries, cameraRef, targetState, fitRef.current);
     }, [focusRequest, geometries, sketchMode.active]);
 
@@ -327,6 +375,10 @@ export function CameraHandler({
 
     useEffect(() => {
         return subscribeUserInteractionStart(controls, targetState);
+    }, [controls]);
+
+    useEffect(() => {
+        return subscribeSnapshotCameraRestore(controls, targetState, snapshotCameraOwnsView);
     }, [controls]);
 
     useFrame((_state, delta) => {

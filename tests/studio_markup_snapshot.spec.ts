@@ -7,6 +7,7 @@ test('Studio loads and re-saves a replayable markup snapshot', async ({ page }) 
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/studio');
     await expect(page.getByTestId('workbench-ready')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByTestId('status-bar')).toContainText('Ready', { timeout: 60_000 });
 
     await page.getByRole('button', { name: 'Markup', exact: true }).click();
     await expect(page.getByTestId('markup-panel')).toBeVisible();

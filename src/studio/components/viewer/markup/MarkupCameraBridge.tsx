@@ -3,8 +3,13 @@
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { markupStore } from '../../../markup/markupStore';
+import { MARKUP_CAMERA_RESTORE_EVENT } from '../../../markup/markupCameraEvents';
 
-interface OrbitTarget { target: THREE.Vector3; update?: () => void }
+interface OrbitTarget {
+  target: THREE.Vector3;
+  update?: () => void;
+  dispatchEvent?: (event: { type: string }) => void;
+}
 
 /** Keeps the latest Studio camera in the markup store and applies imported poses. */
 export function MarkupCameraBridge() {
@@ -15,6 +20,9 @@ export function MarkupCameraBridge() {
     if (controls?.target) {
       const restore = markupStore.consumeCameraRestore();
       if (restore) {
+        // Cancel pending fits and make this imported pose take precedence over
+        // any initial model fit that arrives after the snapshot was loaded.
+        controls.dispatchEvent?.({ type: MARKUP_CAMERA_RESTORE_EVENT });
         camera.position.fromArray(restore.position);
         camera.up.fromArray(restore.up);
         camera.fov = restore.fov;

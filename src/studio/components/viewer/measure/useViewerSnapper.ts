@@ -10,21 +10,33 @@ import type { Vec3 } from './measureMath';
 import type { GeometryResult } from '../../../../shared/worker/geometryEngine';
 import type { TopologyRef } from '../../../markup/markupSnapshot';
 
+type FaceIntersection = THREE.Intersection<THREE.Object3D>;
+
 /** Nearest visible solid face under the cursor (edge lines and overlays are not faces). */
-function faceUnder(raycaster: THREE.Raycaster, scene: THREE.Scene, geometries: readonly GeometryResult[]): { point: Vec3; distance: number; ref?: TopologyRef } | null {
+function visibleFaceHit(raycaster: THREE.Raycaster, scene: THREE.Scene): FaceIntersection | undefined {
   const hits = filterClippedIntersections(raycaster.intersectObjects(scene.children, true));
-  const hit = hits.find((h) => h.object.userData?.type === 'FACE' && (h.object as THREE.Mesh).isMesh);
-  if (!hit) return null;
+  return hits.find((hit) => hit.object.userData?.type === 'FACE' && (hit.object as THREE.Mesh).isMesh);
+}
+
+function faceIdFromHit(hit: FaceIntersection): number | undefined {
   const data = hit.object.userData;
-  let faceId: number | undefined;
-  if (data.faceMap && hit.faceIndex != null) faceId = data.faceMap[hit.faceIndex];
-  else if (typeof data.id === 'number') faceId = data.id;
-  const shapeIndex = data.shapeIndex;
-  const geometry = typeof shapeIndex === 'number' ? geometries[shapeIndex] : undefined;
-  const featureId = typeof faceId === 'number' ? geometry?.faceOwners?.[faceId] ?? geometry?.featureId : undefined;
-  const ref = typeof shapeIndex === 'number' && typeof faceId === 'number' && faceId >= 0
-    ? { shapeIndex, kind: 'face' as const, id: faceId, ...(featureId ? { featureId } : {}) }
-    : undefined;
+  if (data.faceMap && hit.faceIndex != null) return data.faceMap[hit.faceIndex] as number | undefined;
+  return typeof data.id === 'number' ? data.id : undefined;
+}
+
+function faceRefFromHit(hit: FaceIntersection, geometries: readonly GeometryResult[]): TopologyRef | undefined {
+  const shapeIndex = hit.object.userData.shapeIndex;
+  const faceId = faceIdFromHit(hit);
+  if (typeof shapeIndex !== 'number' || typeof faceId !== 'number' || faceId < 0) return undefined;
+  const geometry = geometries[shapeIndex];
+  const featureId = geometry?.faceOwners?.[faceId] ?? geometry?.featureId;
+  return { shapeIndex, kind: 'face', id: faceId, ...(featureId ? { featureId } : {}) };
+}
+
+function faceUnder(raycaster: THREE.Raycaster, scene: THREE.Scene, geometries: readonly GeometryResult[]): { point: Vec3; distance: number; ref?: TopologyRef } | null {
+  const hit = visibleFaceHit(raycaster, scene);
+  if (!hit) return null;
+  const ref = faceRefFromHit(hit, geometries);
   return { point: hit.point.toArray() as unknown as Vec3, distance: hit.distance, ...(ref ? { ref } : {}) };
 }
 

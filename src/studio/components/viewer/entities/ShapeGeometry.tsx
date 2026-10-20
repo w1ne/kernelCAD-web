@@ -14,32 +14,9 @@ import { buildShapeMaterial } from "./buildShapeMaterial";
 import { featureEdgePositions, publishEdgeColor, PUBLISH_EDGE_OPACITY, type ViewerLook } from "../publishLook";
 import { pinRoomEnvironment } from "../roomEnvironment";
 import { matrixFromGeometryTransform } from "./geometryTransform";
-import { selectionCodeStore } from "../../../selectionCode/selectionCodeStore";
-import { resolvePickFeature, type GeometryPick } from "../../../selectionCode/geometryLineage";
-import type { FeatureRecord } from "../../../../shared/intent/featureRecord";
+import { handleShapeModelClick } from "./shapeClickRouting";
 
 const EMPTY_PLANES: THREE.Plane[] = [];
-
-/** Geometry → code: publish the clicked face — or the hovered edge of this
- *  shape, which wins when the pointer is on an edge — with the feature that
- *  created it. */
-function linkClickToCode(
-    geometry: GeometryResult,
-    shapeIndex: number,
-    faceId: number,
-    nativeEvent: MouseEvent,
-    features: readonly FeatureRecord[],
-): void {
-    const hovered = selectionCodeStore.getPreselect();
-    const pick: GeometryPick = hovered && hovered.kind === 'edge' && hovered.shapeIndex === shapeIndex
-        ? hovered
-        : { shapeIndex, kind: 'face', id: faceId };
-    selectionCodeStore.linkFromGeometry(
-        pick,
-        resolvePickFeature(geometry, pick, features),
-        { x: nativeEvent.offsetX, y: nativeEvent.offsetY },
-    );
-}
 
 interface ShapeProps {
     geometry: GeometryResult;
@@ -186,33 +163,17 @@ export function ConsolidatedShape({
         return () => { edgesGeo?.dispose(); };
     }, [edgesGeo]);
 
-    const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
-        e.stopPropagation();
-        const isMulti = e.metaKey || e.ctrlKey || e.shiftKey;
-
-        if (name && isMulti) {
-            toggleSelection(name, true);
-            return;
-        }
-
-        setSelectedSketchName(null);
-        let faceId = -1;
-        if (e.object.userData.faceMap && e.faceIndex != null) {
-            faceId = e.object.userData.faceMap[e.faceIndex] ?? -1;
-        } else if (typeof e.object.userData.id === 'number') {
-            faceId = e.object.userData.id;
-        }
-
-        setSelectedFace({ shapeIndex, faceId });
-        if (name) setSelectedItemId(name);
-        linkClickToCode(geometry, shapeIndex, faceId, e.nativeEvent, featureRecords ?? []);
-
-        const x = e.nativeEvent.clientX;
-        const y = e.nativeEvent.clientY;
-        setContextMenu({
-            visible: true,
-            position: { x, y },
-            type: 'FACE'
+    const handleClick = useCallback((event: ThreeEvent<MouseEvent>) => {
+        handleShapeModelClick(event, {
+            geometry,
+            shapeIndex,
+            name,
+            featureRecords: featureRecords ?? [],
+            setSelectedFace,
+            setSelectedSketchName,
+            setSelectedItemId,
+            toggleSelection,
+            setContextMenu,
         });
     }, [geometry, featureRecords, name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
 

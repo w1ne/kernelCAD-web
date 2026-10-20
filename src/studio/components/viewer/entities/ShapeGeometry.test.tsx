@@ -4,11 +4,14 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
 import * as THREE from 'three';
+import type { ThreeEvent } from '@react-three/fiber';
 import type { FaceGeometry, GeometryResult } from '../../../../shared/worker/geometryEngine';
+import { markupStore } from '../../../markup/markupStore';
 
 let FaceSelectionOverlay: typeof import('./ShapeGeometry').FaceSelectionOverlay;
 let GhostShape: typeof import('./ShapeGeometry').GhostShape;
 let ConsolidatedShape: typeof import('./ShapeGeometry').ConsolidatedShape;
+let handleShapeModelClick: typeof import('./shapeClickRouting').handleShapeModelClick;
 let buildShapeMaterial: typeof import('./buildShapeMaterial').buildShapeMaterial;
 
 vi.mock('../../../context/WorkbenchContext', () => ({
@@ -89,11 +92,13 @@ describe('ConsolidatedShape scene graph per view mode', () => {
         vi.spyOn(console, 'warn').mockImplementation(() => undefined);
         vi.spyOn(console, 'error').mockImplementation(() => undefined);
         ({ ConsolidatedShape } = await import('./ShapeGeometry'));
+        ({ handleShapeModelClick } = await import('./shapeClickRouting'));
         ({ buildShapeMaterial } = await import('./buildShapeMaterial'));
     });
 
     afterEach(() => {
         cleanup();
+        markupStore.clear();
     });
 
     // BREP edge polylines from the kernel payload (two segments).
@@ -157,6 +162,50 @@ describe('ConsolidatedShape scene graph per view mode', () => {
         const { container } = renderShape('shaded');
         expect(container.querySelectorAll('lineSegments')).toHaveLength(0);
         expect(container.querySelectorAll('mesh')).toHaveLength(1);
+    });
+
+    it('routes a real mesh hit to note placement before face selection', () => {
+        const browserCrypto = globalThis.crypto;
+        vi.stubGlobal('crypto', {
+            getRandomValues: browserCrypto.getRandomValues.bind(browserCrypto),
+        });
+        markupStore.setMode('note');
+        markupStore.setDraftText('Keep the mounting face flat');
+        const setSelectedFace = vi.fn();
+        const event = {
+            stopPropagation: vi.fn(),
+            point: new THREE.Vector3(12, 3, 5),
+            object: { userData: { faceMap: [4] } },
+            faceIndex: 0,
+            metaKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            nativeEvent: new MouseEvent('click', { clientX: 32, clientY: 48 }),
+        } as unknown as ThreeEvent<MouseEvent>;
+
+        try {
+            handleShapeModelClick(event, {
+                geometry: { faces: [], faceOwners: ['', '', '', '', 'bracket-wall-feature'] },
+                shapeIndex: 2,
+                name: undefined,
+                featureRecords: [],
+                setSelectedFace,
+                setSelectedSketchName: vi.fn(),
+                setSelectedItemId: vi.fn(),
+                toggleSelection: vi.fn(),
+                setContextMenu: vi.fn(),
+            });
+
+            expect(event.stopPropagation).toHaveBeenCalledOnce();
+            expect(markupStore.getSnapshot().notes).toMatchObject([{
+                text: 'Keep the mounting face flat',
+                anchor: [12, 3, 5],
+                refs: [{ shapeIndex: 2, kind: 'face', id: 4, featureId: 'bracket-wall-feature' }],
+            }]);
+            expect(setSelectedFace).not.toHaveBeenCalled();
+        } finally {
+            vi.unstubAllGlobals();
+        }
     });
 
     it('cutaway props render the same scene graph (smoke)', () => {

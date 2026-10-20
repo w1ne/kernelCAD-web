@@ -50,7 +50,20 @@ vi.mock('./viewer/ViewerScene', () => ({
             data-viewport-background={String(props.viewportBackground)}
             data-planes={JSON.stringify(props.planes)}
             data-geometry-count={String(Array.isArray(props.geometries) ? props.geometries.length : -1)}
-        />
+        >
+            <button
+                data-testid="select-face"
+                onClick={() => (props.setSelectedFace as (selection: { shapeIndex: number; faceId: number } | null) => void)({ shapeIndex: 0, faceId: 3 })}
+            />
+            <button
+                data-testid="hover-edge"
+                onClick={() => (props.setHoveredItem as (hovered: { type: string; id: number; object: { userData: Record<string, unknown> } }) => void)({
+                    type: 'EDGE',
+                    id: 2,
+                    object: { userData: { shapeIndex: 0, edgeRanges: [0, 2] } },
+                })}
+            />
+        </div>
     ),
 }));
 
@@ -62,6 +75,10 @@ vi.mock('./viewer/DisplayReadySensor', () => ({
         />
     ),
 }));
+
+vi.mock('./viewer/markup/MarkupCameraBridge', () => ({ MarkupCameraBridge: () => null }));
+vi.mock('./viewer/markup/MarkupTool', () => ({ MarkupTool: () => null }));
+vi.mock('./viewer/markup/MarkupLayer', () => ({ MarkupLayer: () => null }));
 
 vi.mock('./viewer/overlays/ViewGizmo', () => ({
     ViewGizmo: (props: Record<string, unknown>) => (
@@ -122,6 +139,8 @@ vi.mock('../context/WorkbenchContext', () => ({ useWorkbench: () => mockWorkbenc
 vi.mock('../context/UIContext', () => ({ useUI: () => mockUI }));
 vi.mock('../store/useShellStore', () => ({ useShellStore: () => mockShell }));
 
+import { markupStore } from '../markup/markupStore';
+import { selectionCodeStore } from '../selectionCode/selectionCodeStore';
 import Viewer from './Viewer';
 
 function renderViewer(props: Partial<Parameters<typeof Viewer>[0]> = {}) {
@@ -139,6 +158,8 @@ function renderViewer(props: Partial<Parameters<typeof Viewer>[0]> = {}) {
 
 beforeEach(() => {
     vi.clearAllMocks();
+    markupStore.clear();
+    selectionCodeStore.reset();
     mockGlState.localClippingEnabled = false;
     mockGlState.toneMappingExposure = undefined;
     mockWorkbench.sketchMode = { active: false };
@@ -192,6 +213,34 @@ describe('Viewer', () => {
         expect(mockWorkbench.setSelectedSketchName).toHaveBeenCalledWith(null);
         expect(mockWorkbench.setSelectedItemId).toHaveBeenCalledWith(null);
         expect(mockUI.setContextMenu).toHaveBeenCalledWith({ visible: false, position: null, type: 'FACE' });
+    });
+
+    it('maps a selected face to its owning feature for markup', () => {
+        const geometry = { faces: [], faceOwners: ['other-0', 'other-1', 'other-2', 'face-feature'] };
+        renderViewer({ geometries: [geometry], enableMarkup: true });
+
+        fireEvent.click(screen.getByTestId('select-face'));
+
+        expect(mockWorkbench.setSelectedFace).toHaveBeenCalledWith({ shapeIndex: 0, faceId: 3 });
+        expect(markupStore.getSnapshot().topologyRefs).toEqual([
+            { shapeIndex: 0, kind: 'face', id: 3, featureId: 'face-feature' },
+        ]);
+
+        fireEvent.click(screen.getByTestId('canvas-missed'));
+
+        expect(markupStore.getSnapshot().topologyRefs).toEqual([]);
+    });
+
+    it('uses a hovered edge in preference to the clicked face for markup', () => {
+        const geometry = { faces: [], faceOwners: ['face-0', 'face-1', 'face-2', 'face-feature'], edgeOwners: ['edge-0', 'edge-1', 'edge-feature'] };
+        renderViewer({ geometries: [geometry], enableMarkup: true });
+
+        fireEvent.click(screen.getByTestId('hover-edge'));
+        fireEvent.click(screen.getByTestId('select-face'));
+
+        expect(markupStore.getSnapshot().topologyRefs).toEqual([
+            { shapeIndex: 0, kind: 'edge', id: 2, featureId: 'edge-feature' },
+        ]);
     });
 
     it('passes workbench and shell state through to ViewerScene', () => {

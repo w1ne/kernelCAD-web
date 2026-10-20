@@ -90,6 +90,7 @@
     "site:dev": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts && npm run site:build-island && npx tsx site/scripts/build-demo.ts && npx tsx site/scripts/build-gallery.ts && npm run site:build-blog && npm run site:build-docs && bash site/scripts/link-public.sh && cd site && python3 -m http.server 8000",
     "site:build": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts && npm run site:build-island && npx tsx site/scripts/build-demo.ts && npx tsx site/scripts/build-gallery.ts && npm run site:build-blog && npm run site:build-docs && node site/scripts/render-brand.mjs",
     "site:build-blog": "npx tsx site/scripts/build-blog.ts",
+    "capture:studio-markup": "CI=1 KCAD_CAPTURE=1 __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS=studio.test VITE_ENABLE_IN_APP_AGENT=true VITE_API_BASE_URL=http://studio.test:5173 VITE_SUPABASE_URL=http://studio.test:5173 VITE_SUPABASE_ANON_KEY=studio-markup-capture npx playwright test tests/studio_markup_snapshot.spec.ts tests/studio_markup_capture.spec.ts --project=chromium --reporter=line && /opt/homebrew/bin/ffmpeg -y -i docs/demos/studio-markup/demo.webm -an -vf \"scale=trunc(iw/2)*2:trunc(ih/2)*2\" -c:v libx264 -preset fast -crf 30 -pix_fmt yuv420p -movflags +faststart docs/demos/studio-markup/demo.mp4 && rm docs/demos/studio-markup/demo.webm",
 
     "site:build-pricing": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts",
     "site:build-island": "vite build --config vite.pricing-island.config.ts",

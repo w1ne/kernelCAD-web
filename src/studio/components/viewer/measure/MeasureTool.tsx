@@ -13,7 +13,7 @@ import type { SnapHit } from './measureSnap';
 import { applyClick, EMPTY_MEASURE, type MeasureState } from './measureState';
 import { useMeasurePointer } from './useMeasurePointer';
 import { useViewerSnapper } from './useViewerSnapper';
-import { makeDiameterMeasurement, makeDistanceMeasurement, type MarkupMeasurement } from '../../../markup/markupSnapshot';
+import { createMarkupId, makeDiameterMeasurement, makeDistanceMeasurement, type MarkupMeasurement } from '../../../markup/markupSnapshot';
 
 interface MeasureToolProps {
   geometries: readonly GeometryResult[];
@@ -85,14 +85,14 @@ export function MeasureTool({ geometries, itemNames, hiddenIds, onMeasurementAdd
       setState(next);
       if (current.a && !current.b) {
         onMeasurementAdded?.(makeDistanceMeasurement({
-          id: `measure-${crypto.randomUUID()}`,
+          id: createMarkupId('measure-'),
           a: [...current.a] as [number, number, number],
           b: [...hit.point] as [number, number, number],
           refs: [...current.aRefs, ...hit.refs],
         }));
       } else if (next.diameter && next.diameter !== current.diameter) {
         onMeasurementAdded?.(makeDiameterMeasurement({
-          id: `measure-${crypto.randomUUID()}`,
+          id: createMarkupId('measure-'),
           a: [...next.diameter.a] as [number, number, number],
           b: [...next.diameter.b] as [number, number, number],
           refs: next.diameter.refs,
