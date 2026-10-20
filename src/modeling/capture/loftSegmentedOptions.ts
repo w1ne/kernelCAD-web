@@ -21,6 +21,16 @@ export function validateLoftSegmentedOptions(opts: LoftOptions, featureId: Featu
       featureId,
     });
   }
+  if (opts.ruled === true && (opts.continuity === 'G1' || opts.continuity === 'G2')) {
+    invalidArgs({
+      api: 'Sketch.loft',
+      path: 'opts.ruled',
+      got: opts.ruled,
+      requires: "ruled: false (or omitted) with continuity 'G1'/'G2'; a ruled skin creases at every station",
+      example: "a.loft(b, { continuity: 'G2' })",
+      featureId,
+    });
+  }
   if (opts.mode !== undefined && opts.mode !== 'single' && opts.mode !== 'sewn') {
     invalidArgs({
       api: 'Sketch.loft',
