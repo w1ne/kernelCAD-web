@@ -23,7 +23,7 @@ const TASKS = [
   { name: 'sdf-to-mesh-roundtrip',             minVol: 1500,  maxVol: 2300 },
 ];
 
-describe.skipIf(!process.env.KCAD_SLOW)('SDF slice-1 corpus tasks', () => {
+describe('SDF slice-1 corpus tasks', () => {
   for (const t of TASKS) {
     it(`${t.name}: evaluates clean and lowers to a non-empty solid`, async () => {
       const file = `${REPO}/eval/tasks/${t.name}/solution-expert.kcad.ts`;

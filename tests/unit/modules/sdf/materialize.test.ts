@@ -3,6 +3,10 @@
 // End-to-end capture-side test: feed `materialize` an `SdfField`, get back a
 // Shape whose backend was parked on session.importedGeometry; lowering the
 // shape returns a closed solid with the right bbox.
+//
+// NOTE: companion file materialize.defaultRes.test.ts was split out for CI
+// shard balance (per-file vitest sharding); it hosts the default-resolution
+// (res=30) test, the slowest case in this suite.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';

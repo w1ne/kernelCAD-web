@@ -13,7 +13,7 @@ import { runAndExportParts } from '../../../src/agent/script-runtime/export';
 const FIXTURE = resolve('tests/fixtures/print-prep/spice-carousel-v7.6.1.kcad.ts');
 const PRINTED = ['base', 'wall', 'skirt', 'drum', 'meter-disc', 'cap', 'cover'];
 
-describe.skipIf(!process.env.KCAD_SLOW)('per-part STL export (carousel v7.6.1)', () => {
+describe('per-part STL export (carousel v7.6.1)', () => {
   beforeAll(async () => {
     await initOcct();
   });

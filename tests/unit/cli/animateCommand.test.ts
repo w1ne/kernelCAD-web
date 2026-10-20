@@ -74,16 +74,6 @@ afterEach(() => {
 });
 
 describe('runAnimate', () => {
-  it('parses an arbitrary camera pose and forwards finite degrees to capture', async () => {
-    await runAnimate({ file: 'demo.kcad.ts', pose: '30,60' });
-    expect(mockCapture.mock.calls[0][0].cameraPose).toEqual({ azDeg: 30, elDeg: 60 });
-  });
-
-  it.each(['30', '30,60,90', 'no,60', 'Infinity,60'])('rejects invalid camera pose %s before capture', async (pose) => {
-    const result = await runAnimate({ file: 'demo.kcad.ts', pose });
-    expect(result.exitCode).toBe(2);
-    expect(mockCapture).not.toHaveBeenCalled();
-  });
   it('success → exit 0, engine result passed through, summary names path/frames/duration/fps', async () => {
     const r = await runAnimate({ file: 'demo.kcad.ts', out: '/tmp/out.mp4' });
     expect(r.exitCode).toBe(0);

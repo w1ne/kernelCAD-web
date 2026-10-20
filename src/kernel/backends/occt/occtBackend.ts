@@ -971,8 +971,7 @@ export class OcctBackend implements ShapeBackend {
   mirror(plane: PlaneSpec): OcctBackend {
     const originalClone = this.shape.clone();
     const originalForUnion = new OcctBackend(originalClone);
-    // Reflection consumes its input handle; keep the cached source alive.
-    const reflected = new OcctBackend(this.shape.clone()).reflect(plane);
+    const reflected = this.reflect(plane);
     return originalForUnion.union(reflected);
   }
 

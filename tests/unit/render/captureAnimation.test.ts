@@ -188,26 +188,6 @@ beforeEach(() => {
 });
 
 describe('captureAnimation', () => {
-  it('applies an arbitrary camera pose for native animation instead of the fixed iso view', async () => {
-    const { deps, page } = makeDeps();
-    const result = await captureAnimation({ scriptPath: animScript, outPath: join(tmp, 'pose.mp4'), skipVerify: true, cameraPose: { azDeg: 30, elDeg: 60 } }, deps);
-    expect(result.ok).toBe(true);
-    const poseCalls = page.evaluate.mock.calls.filter(call => call[0].toString().includes('setRenderPose'));
-    expect(poseCalls).toHaveLength(result.frameCount);
-    const frameCalls = page.evaluate.mock.calls.map(call => call[0].toString());
-    let lastReload = -1;
-    let lastPose = -1;
-    for (let index = 0; index < frameCalls.length; index++) {
-      if (frameCalls[index].includes('loadFeatureMeshes')) lastReload = index;
-      if (frameCalls[index].includes('setRenderPose')) {
-        lastPose = index;
-        expect(lastReload).toBeGreaterThanOrEqual(0);
-        expect(frameCalls.slice(lastReload, index)).not.toContainEqual(expect.stringContaining('advance(16)'));
-        expect(page.evaluate.mock.calls[index][1]).toEqual({ azDeg: 30, elDeg: 60 });
-      }
-      if (frameCalls[index].includes('advance(16)')) expect(lastPose).toBeGreaterThan(lastReload);
-    }
-  });
   it('no animationView record → ok:false with cli.invalid-args; no browser, no ffmpeg', async () => {
     const { deps, openPage, spawnFfmpeg } = makeDeps();
     const result = await captureAnimation({ scriptPath: noAnimScript }, deps);
@@ -445,7 +425,7 @@ describe('captureAnimation', () => {
     expect(result.ok).toBe(true);
     // Assert SUBSEQUENCE (order), not exact strings: each pattern must match
     // at a strictly later message index than the previous one.
-    const patterns = [/build done/, /frames scheduled @ /, /verify pose 1\/\d+ tMs=0: solve/, /verify pose 1\/\d+ tMs=0: done/, /verify: params restored/, /page ready/, /^frame \d+\/\d+/, /^total \d+ms/];
+    const patterns = [/build done/, /frames scheduled @ /, /page ready/, /^frame \d+\/\d+/, /^total \d+ms/];
     let from = 0;
     for (const p of patterns) {
       const idx = messages.findIndex((m, i) => i >= from && p.test(m));

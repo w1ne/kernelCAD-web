@@ -37,7 +37,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'examples/robot-arm/desktop-3axis-mates.kcad.ts';
 const EXAMPLE_ABSOLUTE = resolvePath(__dirname, '../../..', EXAMPLE_PATH);
 
-describe.skipIf(!process.env.KCAD_SLOW)('desktop-3axis-mates hero (v0.6)', () => {
+describe('desktop-3axis-mates hero (v0.6)', () => {
   it('evaluates end-to-end with zero error diagnostics', async () => {
     const result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
 

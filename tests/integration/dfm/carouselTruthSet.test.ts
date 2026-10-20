@@ -117,18 +117,17 @@ describe('carousel v7.6.1 — the shipped fix (strict)', () => {
     expect(skirt!.thinnestMm).toBeLessThan(0.05);
   });
 
-  it('full gate sweep stays inside the calibrated budget (reference-machine 10 s, machine-scaled)', () => {
+  it('full gate sweep stays inside the 10 s budget (reference-machine calibrated)', () => {
     // The 10 s budget is a DESIGN budget defined on the reference machine
     // (where this sweep measures ~6.7 s). CI runners are slower (2x+
     // observed), so the raw number there is runner-hardware lottery, not a
     // regression signal. machineFactor scales the budget by how much slower
     // THIS machine runs a deterministic BVH-build + raycast reference
     // workload than the frozen REF_BASELINE_MS — keeping the gate
-    // regression-sensitive everywhere. A 1.5x headroom absorbs dev-machine
-    // scheduling jitter; the factor never tightens below 1.
+    // regression-sensitive everywhere. The factor never tightens below 1,
+    // so on the reference machine the gate stays exactly 10 s.
     const machineFactor = measureMachineFactor();
-    const budgetMs = 10_000 * machineFactor * 1.5;
-    expect(report761.timings.total).toBeLessThan(budgetMs);
+    expect(report761.timings.total).toBeLessThan(10_000 * machineFactor);
   });
 });
 

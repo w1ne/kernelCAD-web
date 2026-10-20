@@ -16,7 +16,7 @@ import {
   sortedCodes,
 } from './cliStudioParityShared';
 
-describe.skipIf(!process.env.KCAD_SLOW)('CLI / Studio parity for mechanism truth', () => {
+describe('CLI / Studio parity for mechanism truth', () => {
   it(
     'P6: clevis-hinge with --include-physics — CLI and Studio agree the bare hinge drops under gravity',
     async () => {

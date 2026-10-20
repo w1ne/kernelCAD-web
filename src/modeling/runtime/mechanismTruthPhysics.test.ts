@@ -19,7 +19,7 @@ function makeArm(name = 'rig'): { arm: Assembly; kcad: ReturnType<typeof createA
     return { arm: kcad.assembly(name), kcad };
 }
 
-describe.skipIf(!process.env.KCAD_SLOW)('mechanism truth — physics gate (P6, criteria 5 + 6)', () => {
+describe('mechanism truth — physics gate (P6, criteria 5 + 6)', () => {
     it('fully-fastened assembly (no DOFs) skips physics cleanly', async () => {
         // A box stack with a single fastened mate. nq=0 in MuJoCo, so the
         // physics check has nothing to do — should return no failures.

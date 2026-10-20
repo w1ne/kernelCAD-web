@@ -30,7 +30,7 @@ import {
   sortedCodes,
 } from './cliStudioParityShared';
 
-describe.skipIf(!process.env.KCAD_SLOW)('CLI / Studio parity for mechanism truth', () => {
+describe('CLI / Studio parity for mechanism truth', () => {
   it(
     'vec3-spring fixture: CLI and Studio both report mechanism: broken with the same failure codes',
     async () => {

@@ -797,7 +797,7 @@ export async function meshFeaturesPerFeature(
     | Map<FeatureId, FeatureMesh>
     | undefined;
   const cachedAssemblyPartMeshes = session?.cachedAssemblyPartMeshes as
-    | Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>
+    | Map<FeatureId, Map<string, { faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>
     | undefined;
   const cachedShapesIn = session?.cachedShapes;
   const assembliesIn = session?.assemblies;
@@ -866,7 +866,7 @@ export async function meshFeaturesPerFeature(
           let faces: FaceGeometry[];
           let volume: number | undefined;
           let edges: Float32Array | undefined;
-          if (cachedPart?.shape === part.shape) {
+          if (cachedPart) {
             faces = cachedPart.faces;
             volume = cachedPart.volume;
             edges = cachedPart.edges;
@@ -886,7 +886,7 @@ export async function meshFeaturesPerFeature(
                 partCache = new Map();
                 cachedAssemblyPartMeshes.set(event.featureId, partCache);
               }
-              partCache.set(part.name, { shape: part.shape, faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}) });
+              partCache.set(part.name, { faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}) });
             }
           }
           const local: FeatureMesh = {
@@ -898,9 +898,7 @@ export async function meshFeaturesPerFeature(
             ...(volume !== undefined ? { volume } : {}),
             ...(edges ? { edges } : {}),
           };
-          // Idempotent: freshly remeshed parts need UVs even when replacing an
-          // existing cache entry; unchanged cached faces already carry them.
-          attachPlanarUVs(local.faces);
+          if (!cachedPart) attachPlanarUVs(local.faces);
           emitFeature({
             ...local,
             assemblyFeatureId: event.featureId,

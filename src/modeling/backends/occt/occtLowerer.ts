@@ -1295,10 +1295,7 @@ export class OcctLowerer implements FeatureLowerer {
           const wrapped = replicad.cast(result.shape as any) as replicad.Shape3D;
           acc = new OcctBackend(wrapped, undefined, newMap);
         }
-        // With no cutters, acc is still the cached input backend. The
-        // transform stack below consumes its OCCT handle, so an independent
-        // no-op boolean must own a clone before applying any placement.
-        shape = cutters.length === 0 ? acc.clone() : acc;
+        shape = acc;
         break;
       }
       case 'fillet': {

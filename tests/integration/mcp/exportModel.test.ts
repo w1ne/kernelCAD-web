@@ -5,7 +5,7 @@
 // `export_stl` shim was removed in C2; the STL path is exercised here via
 // `format: 'stl'`.
 import { describe, it, expect, afterEach, beforeAll, beforeEach } from 'vitest';
-import { mkdtempSync, rmSync, existsSync, statSync, readFileSync, realpathSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync, statSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { exportModelTool } from '../../../src/agent/mcp/tools/exportModel';
@@ -33,7 +33,7 @@ describe('export_model MCP tool', () => {
     });
     expect(r.ok).toBe(true);
     expect(r.format).toBe('stl');
-    expect(realpathSync(r.output_path!)).toBe(realpathSync(out));
+    expect(r.output_path).toBe(out);
     expect(statSync(out).size).toBeGreaterThan(84);
   }, 60000);
 

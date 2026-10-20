@@ -6,7 +6,7 @@ import { runAndExportParts } from '../../../src/agent/script-runtime/export';
 
 const FIXTURE = resolve('tests/fixtures/print-prep/spice-carousel-v7.5.kcad.ts');
 
-describe.skipIf(!process.env.KCAD_SLOW)('mesh-once export pipeline heals tangency-era geometry (carousel v7.5)', () => {
+describe('mesh-once export pipeline heals tangency-era geometry (carousel v7.5)', () => {
   beforeAll(async () => {
     await initOcct();
   });

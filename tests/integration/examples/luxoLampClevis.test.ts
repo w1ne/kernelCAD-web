@@ -25,6 +25,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { runValidateCli } from '../../../src/agent/cli/commands/validate';
 
 const LUXO_SCRIPT_PATH = 'examples/kinematic/luxo-lamp.kcad.ts';
 
@@ -64,4 +65,16 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
   // threshold) under gravity. Co-calibrating them against static equilibrium is
   // out of scope for the interference-gate work and tracked separately in #379.
   // Re-enable once #379 re-calibrates the springs.
+  it.skip('passes the full physics gate (criteria 1-8 incl. 5+6) — wrap-routed springs hold the lamp (issues/379 — spring re-cal, NOT interference)', async () => {
+    const r = await runValidateCli({
+      file: LUXO_SCRIPT_PATH,
+      epsilon: 0.01,
+      includeInterference: true,
+      physical: false,
+      json: true,
+      includePhysics: true,
+    });
+    expect(r.mechanism).toBe('real');
+    expect(r.mechanismFailures ?? []).toEqual([]);
+  }, 240_000);
 });

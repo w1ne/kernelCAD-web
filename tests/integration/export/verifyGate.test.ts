@@ -16,7 +16,7 @@ import { runAndExportParts } from '../../../src/agent/script-runtime/export';
 
 const FIXTURE = resolve('tests/fixtures/print-prep/spice-carousel-v7.5.kcad.ts');
 
-describe.skipIf(!process.env.KCAD_SLOW)('watertight verify gate (heal bypassed)', () => {
+describe('watertight verify gate (heal bypassed)', () => {
   beforeAll(async () => {
     await initOcct();
   });

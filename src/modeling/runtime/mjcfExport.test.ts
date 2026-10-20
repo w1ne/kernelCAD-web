@@ -29,7 +29,7 @@ async function loadMujocoInNode(): Promise<unknown> {
     });
 }
 
-describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
+describe('assemblyToMjcf', () => {
     it('round-trips a 1-revolute hinge into a parseable MJCF with 1 qpos slot', async () => {
         await initOcct();
         const session = new CaptureSession();

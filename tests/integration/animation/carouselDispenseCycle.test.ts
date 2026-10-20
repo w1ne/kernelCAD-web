@@ -69,7 +69,7 @@ afterAll(() => {
   else process.env.KERNELCAD_VALIDATE_DEFAULT = prevValidateDefault;
 });
 
-describe.skipIf(!process.env.KCAD_SLOW)('carousel dispense-cycle — animationView record metadata', () => {
+describe('carousel dispense-cycle — animationView record metadata', () => {
   it("declares the 'dispense-cycle' timeline: 4000 ms @ 30 fps, two tracks (drumDeg, meterDeg)", () => {
     expect(metadata.name).toBe('dispense-cycle');
     expect(metadata.durationMs).toBe(4000);
@@ -79,7 +79,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('carousel dispense-cycle — animationVi
   });
 });
 
-describe.skipIf(!process.env.KCAD_SLOW)('carousel dispense-cycle — motion verification (HERO GATE: zero collisions)', () => {
+describe('carousel dispense-cycle — motion verification (HERO GATE: zero collisions)', () => {
   it('is interference-free at every sampled pose and restores the params', async () => {
     const drumBefore = paramValue(model, 'drumDeg');
     const meterBefore = paramValue(model, 'meterDeg');
