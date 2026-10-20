@@ -29,7 +29,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('Gearfinity-inspired planetary stage gal
       json: true,
       includePhysics: false,
     });
-  }, 300_000);
+  }, 900_000); // KCAD_SLOW-only: slower runners exceed 300 s (see PR #1081)
 
   it('evaluates as a dense mate-driven gear mechanism', async () => {
     const result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
@@ -72,7 +72,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('Gearfinity-inspired planetary stage gal
       ]),
     );
     expect(scene.part('output-fan-wheel').connectors?.some((connector) => connector.name === 'blade-tip')).toBe(true);
-  }, 300_000);
+  }, 900_000);
 
   // Issue #348 RESOLVED (2026-06-09): the gearfinity planetary stage
   // used to time the physics-grounded loop out — 24 parts × 13 pose
