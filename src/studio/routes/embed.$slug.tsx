@@ -319,7 +319,7 @@ function EmbedPage() {
       <StudioConfigProvider value={{ showHeader: false, enableAgentRail: false, enableConnect: false }}>
         <StudioApp initialCode={code} viewerMode />
         {/* Bottom-right: the Studio viewport's bottom-left holds the parameter chips. */}
-        <MadeWithKernelcad surface="embed" className="fixed bottom-2 right-2" remixSlug={slug} />
+        <MadeWithKernelcad surface="embed" className="fixed bottom-2 right-2" remixSlug={slug} instanceId={instance} />
       </StudioConfigProvider>
     );
   }
@@ -327,6 +327,7 @@ function EmbedPage() {
   return (
     <EmbedFrame
       slug={slug}
+      instanceId={instance}
       revision={revision}
       theme={theme}
       uiPhase={uiPhase}
@@ -484,6 +485,8 @@ function isLoadingPhase(uiPhase: EmbedUiPhase): boolean {
  */
 function EmbedFrame(props: {
   slug: string;
+  /** Host-chat widget instance (`?instance=`): its links open through the widget. */
+  instanceId: string | undefined;
   revision: number | null | undefined;
   theme: EmbedTheme;
   uiPhase: EmbedUiPhase;
@@ -528,7 +531,7 @@ function EmbedFrame(props: {
           />
         ) : null}
       </div>
-      <EmbedAttributionBar remixSlug={uiPhase === 'missing' ? undefined : props.slug} />
+      <EmbedAttributionBar remixSlug={uiPhase === 'missing' ? undefined : props.slug} instanceId={props.instanceId} />
     </main>
   );
 }

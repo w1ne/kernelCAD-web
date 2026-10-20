@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { EmbedAttributionBar, MadeWithKernelcad } from './MadeWithKernelcad';
 
 afterEach(cleanup);
@@ -67,5 +67,68 @@ describe('EmbedAttributionBar', () => {
     render(<EmbedAttributionBar />);
     expect(screen.getByTestId('made-with-kernelcad')).toBeTruthy();
     expect(screen.queryByTestId('remix-in-kernelcad')).toBeNull();
+  });
+});
+
+describe('links inside a host-chat widget (ChatGPT / Claude)', () => {
+  const INSTANCE = 'w-1';
+  const realParent = Object.getOwnPropertyDescriptor(window, 'parent');
+
+  /** Pretend this page is the nested embed in a widget; returns what it posts up. */
+  function hostedBy(): { posted: Array<Record<string, unknown>>; hello: (features: string[], instanceId?: string) => void } {
+    const posted: Array<Record<string, unknown>> = [];
+    const parent = { postMessage: vi.fn((data: Record<string, unknown>) => { posted.push(data); }) };
+    Object.defineProperty(window, 'parent', { configurable: true, value: parent });
+    const hello = (features: string[], instanceId = INSTANCE) => {
+      const event = new MessageEvent('message', {
+        data: { source: 'kernelcad-widget', type: 'kernelcad.widget-hello', v: 1, instanceId, features },
+      });
+      Object.defineProperty(event, 'source', { value: parent });
+      act(() => { window.dispatchEvent(event); });
+    };
+    return { posted, hello };
+  }
+
+  afterEach(() => {
+    if (realParent) Object.defineProperty(window, 'parent', realParent);
+  });
+
+  it('asks the widget to open Remix through the host instead of a dead target=_blank click', () => {
+    const { posted, hello } = hostedBy();
+    render(<EmbedAttributionBar remixSlug="abc" instanceId={INSTANCE} />);
+    hello(['edit-request', 'marks-context', 'open-link']);
+    const remix = screen.getByTestId('remix-in-kernelcad');
+    // fireEvent returns false when the default (the in-frame navigation) was prevented.
+    expect(fireEvent.click(remix)).toBe(false);
+    expect(posted).toEqual([{
+      source: 'kernelcad-embed',
+      type: 'kernelcad.open-link',
+      instanceId: INSTANCE,
+      url: remix.getAttribute('href'),
+    }]);
+    expect(new URL(String(posted[0]!.url)).searchParams.get('remix')).toBe('1');
+
+    expect(fireEvent.click(screen.getByTestId('made-with-kernelcad'))).toBe(false);
+    expect(posted[1]).toMatchObject({ type: 'kernelcad.open-link', url: 'https://kernelcad.com/?ref=embed&utm_source=kernelcad&utm_medium=embed' });
+  });
+
+  it('keeps the plain link for a widget without open-link, another instance, or no widget', () => {
+    const { posted, hello } = hostedBy();
+    render(<EmbedAttributionBar remixSlug="abc" instanceId={INSTANCE} />);
+    hello(['edit-request', 'marks-context'], INSTANCE);
+    hello(['open-link'], 'someone-else');
+    expect(fireEvent.click(screen.getByTestId('remix-in-kernelcad'))).toBe(true);
+    cleanup();
+    render(<EmbedAttributionBar remixSlug="abc" />);
+    expect(fireEvent.click(screen.getByTestId('remix-in-kernelcad'))).toBe(true);
+    expect(posted).toEqual([]);
+  });
+
+  it('routes the Studio-mode corner links the same way', () => {
+    const { posted, hello } = hostedBy();
+    render(<MadeWithKernelcad surface="embed" remixSlug="abc" instanceId={INSTANCE} />);
+    hello(['open-link']);
+    expect(fireEvent.click(screen.getByTestId('remix-in-kernelcad'))).toBe(false);
+    expect(posted[0]).toMatchObject({ type: 'kernelcad.open-link', instanceId: INSTANCE });
   });
 });

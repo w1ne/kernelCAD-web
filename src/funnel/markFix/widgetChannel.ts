@@ -7,19 +7,36 @@
 import { useEffect, useState } from 'react';
 import { readWidgetHello, type MarksMessage } from './marks';
 
-/** True once the parent widget said hello for this instance. */
-export function useHostedByWidget(instanceId: string | undefined): boolean {
-  const [hosted, setHosted] = useState(false);
+/** The hosting widget's feature list once it said hello for this instance, else null. */
+export function useWidgetFeatures(instanceId: string | undefined): readonly string[] | null {
+  const [features, setFeatures] = useState<readonly string[] | null>(null);
   useEffect(() => {
     if (!instanceId || typeof window === 'undefined' || window.parent === window) return undefined;
     const onMessage = (event: MessageEvent) => {
       if (event.source !== window.parent) return;
-      if (readWidgetHello(event.data, instanceId)) setHosted(true);
+      const next = readWidgetHello(event.data, instanceId);
+      if (next) setFeatures((prev) => (prev && prev.join() === next.join() ? prev : next));
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, [instanceId]);
-  return hosted;
+  return features;
+}
+
+/** True once the parent widget said hello for this instance. */
+export function useHostedByWidget(instanceId: string | undefined): boolean {
+  return useWidgetFeatures(instanceId) !== null;
+}
+
+/**
+ * Ask the hosting widget to open a link through the host chat. A link in this
+ * nested frame does not open in host apps (the ChatGPT mobile app drops a
+ * target=_blank click here), so the widget opens it with ui/open-link /
+ * window.openai.openExternal. Only for widgets whose hello lists `open-link`.
+ */
+export function postOpenLink(instanceId: string, url: string): void {
+  if (typeof window === 'undefined' || window.parent === window) return;
+  window.parent.postMessage({ source: 'kernelcad-embed', type: 'kernelcad.open-link', instanceId, url }, '*');
 }
 
 /** Fire-and-forget: the widget turns this into host model context. */
