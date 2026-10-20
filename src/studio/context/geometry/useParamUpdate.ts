@@ -20,6 +20,66 @@ interface HostedMeshJob {
     epoch: number;
 }
 
+interface HostedMeshRun {
+    code: string;
+    executionCount: number;
+    deps: ExecutionApplyDeps;
+    epochRef: { current: number };
+    followUpPending: () => boolean;
+}
+
+/** Paint one stateless param mesh. Kept outside the hook so `useParamUpdate`
+ *  stays inside the function-length ratchet. */
+async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promise<void> {
+    if (job.epoch !== run.epochRef.current) return;
+    const revision = ++run.deps.mainRevisionRef.current;
+    run.deps.setCurrentCodeRevision(revision);
+    run.deps.setIsComputing(true);
+    try {
+        const payload = await meshParamEdits(run.code, job.snapshot, job.bakeIntoSource);
+        if (job.epoch !== run.epochRef.current || revision !== run.deps.mainRevisionRef.current) return;
+        applyParamMeshPayload(run.deps, run.executionCount, payload, revision);
+    } catch (err) {
+        if (job.epoch !== run.epochRef.current || revision !== run.deps.mainRevisionRef.current) return;
+        run.deps.setError(err instanceof Error ? err.message : String(err));
+    } finally {
+        const stillCurrent = job.epoch === run.epochRef.current
+            && revision === run.deps.mainRevisionRef.current
+            && !run.followUpPending();
+        if (stillCurrent) {
+            run.deps.setIsComputing(false);
+            run.deps.setExecutionCount(prev => prev + 1);
+        }
+    }
+}
+
+function applyParamMeshPayload(
+    deps: ExecutionApplyDeps,
+    executionCount: number,
+    payload: BackendMeshPayload,
+    revision: number,
+): void {
+    const geos = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+    const recs = (payload.featureRecords as FeatureRecord[]) ?? [];
+    const review = payload.review ?? { ok: true, diagnostics: [] };
+    const emptyNotice = detectEmptyBuild(geos.length, recs, review);
+    deps.setGeometries(geos);
+    deps.setGeometryTransformOverrides({});
+    deps.setFeatureRecords(recs);
+    deps.setScriptParams(Object.values(payload.params ?? {}));
+    deps.setScriptReview(review);
+    deps.setMeshDimensions(meshDimensionsOf(payload));
+    deps.setSketchesGeometries([]);
+    deps.setPreviewGeometries([]);
+    deps.setError(emptyNotice);
+    if (emptyNotice) {
+        deps.pushExecutionRecord({ revision, status: 'error', error: emptyNotice, executionCountAtRecord: executionCount + 1 });
+    } else {
+        deps.setLastSuccessfulRevision(revision);
+        deps.pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+    }
+}
+
 export interface ParamUpdateOptions {
     /** Stateless path only: write every value into the source and re-run the
      *  whole script (see `paramEditsForMesh`). The public-page customizer uses
@@ -49,34 +109,6 @@ export function useParamUpdate(
     const codeEpochRef = useRef(0);
     const hostedRunRef = useRef<(job: HostedMeshJob) => Promise<void>>(async () => {});
     const hostedFlightRef = useRef<SingleFlight<HostedMeshJob> | null>(null);
-
-    // Slice 2E.bridge: callback exposed to consumers (forwarded by
-    // `useRecomputeResult`). Awaits the server ack; the SSE push that
-    // follows is what actually refreshes context state.
-    // Apply a stateless re-run mesh payload to context state (mirrors the main
-    // execution loop's apply, incl. the empty-build guard). Used by the
-    // no-session param recompute path.
-    const applyBridgePayload = useCallback((payload: BackendMeshPayload, revision: number) => {
-        const geos = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
-        const recs = (payload.featureRecords as FeatureRecord[]) ?? [];
-        const review = payload.review ?? { ok: true, diagnostics: [] };
-        const emptyNotice = detectEmptyBuild(geos.length, recs, review);
-        deps.setGeometries(geos);
-        deps.setGeometryTransformOverrides({});
-        deps.setFeatureRecords(recs);
-        deps.setScriptParams(Object.values(payload.params ?? {}));
-        deps.setScriptReview(review);
-        deps.setMeshDimensions(meshDimensionsOf(payload));
-        deps.setSketchesGeometries([]);
-        deps.setPreviewGeometries([]);
-        deps.setError(emptyNotice);
-        if (emptyNotice) {
-            deps.pushExecutionRecord({ revision, status: 'error', error: emptyNotice, executionCountAtRecord: executionCount + 1 });
-        } else {
-            deps.setLastSuccessfulRevision(revision);
-            deps.pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
-        }
-    }, [executionCount, deps]);
 
     // Clear accumulated param overrides whenever the script changes — a code
     // edit re-meshes from the declared defaults (main loop), and stale
@@ -132,28 +164,14 @@ export function useParamUpdate(
         // One stateless mesh at a time. A second value waits, then runs once.
         // Two overlapping cold builds of a heavy gallery model exhaust the API,
         // and bumping the revision up front would drop the first result.
-        hostedRunRef.current = async (job: HostedMeshJob) => {
-            if (job.epoch !== codeEpochRef.current) return;
-            const revision = ++deps.mainRevisionRef.current;
-            deps.setCurrentCodeRevision(revision);
-            deps.setIsComputing(true);
-            try {
-                const payload = await meshParamEdits(code, job.snapshot, job.bakeIntoSource);
-                if (job.epoch !== codeEpochRef.current || revision !== deps.mainRevisionRef.current) return;
-                applyBridgePayload(payload, revision);
-            } catch (err) {
-                if (job.epoch !== codeEpochRef.current || revision !== deps.mainRevisionRef.current) return;
-                deps.setError(err instanceof Error ? err.message : String(err));
-            } finally {
-                const stillCurrent = job.epoch === codeEpochRef.current
-                    && revision === deps.mainRevisionRef.current
-                    && !hostedFlightRef.current?.followUpPending();
-                if (stillCurrent) {
-                    deps.setIsComputing(false);
-                    deps.setExecutionCount(prev => prev + 1);
-                }
-            }
+        const meshRun: HostedMeshRun = {
+            code,
+            executionCount,
+            deps,
+            epochRef: codeEpochRef,
+            followUpPending: () => hostedFlightRef.current?.followUpPending() ?? false,
         };
+        hostedRunRef.current = (job) => runHostedParamMesh(job, meshRun);
         if (!hostedFlightRef.current) {
             hostedFlightRef.current = createSingleFlight((job) => hostedRunRef.current(job));
         }
@@ -162,7 +180,7 @@ export function useParamUpdate(
             bakeIntoSource: options?.bakeIntoSource,
             epoch: codeEpochRef.current,
         });
-    }, [sessionToken, code, applyBridgePayload, deps]);
+    }, [sessionToken, code, executionCount, deps]);
 
     // Slice 2E.bridge: smoke hook for browser-console verification (see the
     // PR description). Mirrors the production path — same fetch, same
