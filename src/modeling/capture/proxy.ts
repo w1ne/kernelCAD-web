@@ -9,6 +9,7 @@ import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
+import { captureFilletIntersection } from './filletIntersectionCapture';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import type { Query, FaceMarker, EdgeMarker } from '../../kernel/naming/query';
 import {
@@ -811,6 +812,24 @@ export class Shape {
       return this.session.edgeFeature('chamfer', this, 'distance', distanceOrGroups, edges);
     }
     return this.session.variableEdgeFeature('chamfer', this, 'distance', distanceOrGroups);
+  }
+
+  /**
+   * Round the seam where `cutter` met this body. The seam is selected by
+   * proximity to the exact `body ∩ cutter` section, so it does not depend on
+   * face/edge labels that a boolean split can invalidate. First slice:
+   * constant radius, body-side only.
+   */
+  filletIntersection(
+    cutter: Shape,
+    radius: Editable<number>,
+    opts?: {
+      sides?: 'body' | 'both';
+      toleranceMm?: Editable<number>;
+      continuity?: FilletContinuity;
+    },
+  ): Shape {
+    return captureFilletIntersection(this.session, this, cutter, radius, opts);
   }
 
   shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
