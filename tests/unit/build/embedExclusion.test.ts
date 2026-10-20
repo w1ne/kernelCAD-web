@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/studio/kernel/embedExclusion.test.ts
+// tests/unit/build/embedExclusion.test.ts
 //
 // The embed/studio-lib build must not ship the ~11 MB kernel worker chunk.
 // `vite.studio.config.ts` strips the `new Worker(new URL('./studioKernelWorker.ts',
@@ -14,9 +14,9 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { stripEmbedWorkers } from '../../../vite.studio.config';
 
-const kernelSingletonId = fileURLToPath(new URL('./kernelSingleton.ts', import.meta.url));
+const kernelSingletonId = fileURLToPath(new URL('../../../src/studio/kernel/kernelSingleton.ts', import.meta.url));
 const kernelSingletonSource = readFileSync(kernelSingletonId, 'utf-8');
-const geometryEngineId = fileURLToPath(new URL('../../shared/worker/geometryEngine.ts', import.meta.url));
+const geometryEngineId = fileURLToPath(new URL('../../../src/shared/worker/geometryEngine.ts', import.meta.url));
 
 function runTransform(
   code: string,
