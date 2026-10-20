@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import {
+  MARKUP_SNAPSHOT_MAX_MEASUREMENTS,
+  MARKUP_SNAPSHOT_MAX_NOTES,
+} from './markupLimits';
+import {
   MARKUP_SNAPSHOT_VERSION,
   markupMeasurementSchema,
   markupNoteSchema,
@@ -24,6 +28,7 @@ export interface MarkupState {
   readonly measurements: readonly MarkupMeasurement[];
   readonly topologyRefs: readonly TopologyRef[];
   readonly lastSnapshot: MarkupSnapshot | null;
+  readonly error: string | null;
 }
 
 type Listener = () => void;
@@ -57,6 +62,7 @@ export class StudioMarkupStore {
     measurements: [],
     topologyRefs: [],
     lastSnapshot: null,
+    error: null,
   };
   private camera = DEFAULT_MARKUP_CAMERA;
   private pendingCameraRestore: MarkupCamera | null = null;
@@ -71,6 +77,12 @@ export class StudioMarkupStore {
 
   private emit(): void {
     for (const listener of this.listeners) listener();
+  }
+
+  private showError(error: string): void {
+    if (this.state.error === error) return;
+    this.state = { ...this.state, error };
+    this.emit();
   }
 
   setMode(mode: MarkupMode): void {
@@ -113,10 +125,15 @@ export class StudioMarkupStore {
     this.emit();
   }
 
-  addNote(note: MarkupNote): void {
+  addNote(note: MarkupNote): boolean {
     const parsed = markupNoteSchema.parse(note);
-    this.state = { ...this.state, notes: [...this.state.notes, parsed] };
+    if (this.state.notes.length >= MARKUP_SNAPSHOT_MAX_NOTES) {
+      this.showError(`Up to ${MARKUP_SNAPSHOT_MAX_NOTES} notes are supported. Remove a note before adding another.`);
+      return false;
+    }
+    this.state = { ...this.state, notes: [...this.state.notes, parsed], error: null };
     this.emit();
+    return true;
   }
 
   updateNote(id: string, text: string): void {
@@ -125,33 +142,38 @@ export class StudioMarkupStore {
     const parsed = markupNoteSchema.safeParse({ ...this.state.notes[index], text });
     if (!parsed.success) return;
     const next = parsed.data;
-    this.state = { ...this.state, notes: this.state.notes.map((note, i) => i === index ? next : note) };
+    this.state = { ...this.state, notes: this.state.notes.map((note, i) => i === index ? next : note), error: null };
     this.emit();
   }
 
   removeNote(id: string): void {
     const notes = this.state.notes.filter((note) => note.id !== id);
     if (notes.length === this.state.notes.length) return;
-    this.state = { ...this.state, notes };
+    this.state = { ...this.state, notes, error: null };
     this.emit();
   }
 
-  addMeasurement(measurement: MarkupMeasurement): void {
+  addMeasurement(measurement: MarkupMeasurement): boolean {
     const parsed = markupMeasurementSchema.parse(measurement);
-    this.state = { ...this.state, measurements: [...this.state.measurements, parsed] };
+    if (this.state.measurements.length >= MARKUP_SNAPSHOT_MAX_MEASUREMENTS) {
+      this.showError(`Up to ${MARKUP_SNAPSHOT_MAX_MEASUREMENTS} measurements are supported. Remove a measurement before adding another.`);
+      return false;
+    }
+    this.state = { ...this.state, measurements: [...this.state.measurements, parsed], error: null };
     this.emit();
+    return true;
   }
 
   removeMeasurement(id: string): void {
     const measurements = this.state.measurements.filter((measurement) => measurement.id !== id);
     if (measurements.length === this.state.measurements.length) return;
-    this.state = { ...this.state, measurements };
+    this.state = { ...this.state, measurements, error: null };
     this.emit();
   }
 
   clear(): void {
     this.pendingCameraRestore = null;
-    this.state = { ...this.state, mode: 'off', draftText: '', notes: [], measurements: [], topologyRefs: [], lastSnapshot: null };
+    this.state = { ...this.state, mode: 'off', draftText: '', notes: [], measurements: [], topologyRefs: [], lastSnapshot: null, error: null };
     this.emit();
   }
 
@@ -181,6 +203,7 @@ export class StudioMarkupStore {
       measurements: snapshot.measurements,
       topologyRefs: snapshot.selection.topologyRefs,
       lastSnapshot: snapshot,
+      error: null,
     };
     this.emit();
     return snapshot;

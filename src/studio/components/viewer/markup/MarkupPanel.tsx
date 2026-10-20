@@ -10,20 +10,41 @@ import { markupStore } from '../../../markup/markupStore';
 const FIELD = 'w-full resize-y rounded-control border border-border bg-surface-2 px-2 py-1.5 text-ui text-fg placeholder:text-fg-3 focus-ring';
 const ACTION = 'focus-ring inline-flex min-h-control items-center justify-center gap-1 rounded-control px-2 text-ui text-fg-2 hover:bg-surface-3 hover:text-fg disabled:cursor-not-allowed disabled:opacity-40';
 
-function downloadSnapshot(): void {
-  const serialized = serializeMarkupSnapshot(markupStore.captureSnapshot());
-  const url = URL.createObjectURL(new Blob([serialized], { type: 'application/json' }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'studio-markup.snapshot.json';
-  link.click();
-  URL.revokeObjectURL(url);
+function downloadSnapshot(setError: (error: string) => void): void {
+  try {
+    const serialized = serializeMarkupSnapshot(markupStore.captureSnapshot());
+    const url = URL.createObjectURL(new Blob([serialized], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'studio-markup.snapshot.json';
+    link.click();
+    URL.revokeObjectURL(url);
+    setError('');
+  } catch (error) {
+    setError(error instanceof Error
+      ? `Could not save snapshot: ${error.message}`
+      : 'Could not save snapshot JSON. Check the current camera and markup, then try again.');
+  }
+}
+
+function PanelFeedback({ error, message }: { error: string | null; message: string }) {
+  return <>
+    {error && <p role="alert" className="mt-3 break-words text-2xs text-danger">{error}</p>}
+    {message && <p role="status" className="mt-3 break-words text-2xs text-fg-2">{message}</p>}
+  </>;
+}
+
+function ClearAllMarkupButton({ disabled, onClear }: { disabled: boolean; onClear: () => void }) {
+  return <button type="button" className={`${ACTION} mt-4 w-full border border-border`} disabled={disabled} onClick={onClear}>
+    <Trash2 size={14} />Clear all markup
+  </button>;
 }
 
 export function MarkupPanel() {
   const state = useSyncExternalStore(markupStore.subscribe, markupStore.getSnapshot, markupStore.getSnapshot);
   const picker = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState('');
+  const [saveError, setSaveError] = useState('');
   if (!state.panelOpen) return null;
 
   async function loadSnapshot(event: ChangeEvent<HTMLInputElement>) {
@@ -32,9 +53,10 @@ export function MarkupPanel() {
     if (!file) return;
     try {
       markupStore.loadSnapshot(await file.text());
+      setSaveError('');
       setMessage('Snapshot loaded. The camera and markup were restored.');
     } catch (error) {
-      setMessage(error instanceof Error ? `Could not load snapshot: ${error.message}` : 'Could not load snapshot JSON.');
+      setSaveError(error instanceof Error ? `Could not load snapshot: ${error.message}` : 'Could not load snapshot JSON.');
     }
     input.value = '';
   }
@@ -70,7 +92,7 @@ export function MarkupPanel() {
           >
             {state.mode === 'note' ? 'Stop placing notes' : 'Place note'}
           </button>
-          <button type="button" className={ACTION} onClick={downloadSnapshot}><Download size={14} />Save JSON</button>
+          <button type="button" className={ACTION} onClick={() => downloadSnapshot(setSaveError)}><Download size={14} />Save JSON</button>
           <button type="button" className={ACTION} onClick={() => picker.current?.click()}><FileUp size={14} />Load JSON</button>
           <input ref={picker} type="file" accept="application/json,.json" aria-label="Choose markup snapshot" className="hidden" onChange={(event) => void loadSnapshot(event)} />
         </div>
@@ -111,15 +133,11 @@ export function MarkupPanel() {
             </ul>
           )}
         </section>
-        {message && <p role="status" className="mt-3 break-words text-2xs text-fg-2">{message}</p>}
-        <button
-          type="button"
-          className={`${ACTION} mt-4 w-full border border-border`}
+        <PanelFeedback error={state.error || saveError} message={message} />
+        <ClearAllMarkupButton
           disabled={state.notes.length === 0 && state.measurements.length === 0 && state.topologyRefs.length === 0}
-          onClick={() => { markupStore.clear(); setMessage('Markup cleared.'); }}
-        >
-          <Trash2 size={14} />Clear all markup
-        </button>
+          onClear={() => { markupStore.clear(); setMessage('Markup cleared.'); }}
+        />
       </div>
     </aside>
   );

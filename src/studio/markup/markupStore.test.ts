@@ -3,7 +3,11 @@
 import { describe, expect, it } from 'vitest';
 import { StudioMarkupStore } from './markupStore';
 import type { MarkupSnapshot } from './markupSnapshot';
-import { MARKUP_NOTE_MAX_LENGTH } from './markupLimits';
+import {
+  MARKUP_NOTE_MAX_LENGTH,
+  MARKUP_SNAPSHOT_MAX_MEASUREMENTS,
+  MARKUP_SNAPSHOT_MAX_NOTES,
+} from './markupLimits';
 
 const sample: MarkupSnapshot = {
   schemaVersion: 1,
@@ -62,6 +66,32 @@ describe('Studio markup store', () => {
 
     expect(() => store.updateNote('n1', 'x'.repeat(MARKUP_NOTE_MAX_LENGTH + 1))).not.toThrow();
     expect(store.getSnapshot().notes).toEqual(sample.notes);
+  });
+
+  it('rejects a note beyond the snapshot limit with an actionable error', () => {
+    const store = new StudioMarkupStore();
+    for (let index = 0; index < MARKUP_SNAPSHOT_MAX_NOTES; index += 1) {
+      store.addNote({ ...sample.notes[0]!, id: `note-${index}` });
+    }
+
+    const accepted = store.addNote({ ...sample.notes[0]!, id: 'overflow-note' });
+
+    expect(accepted).toBe(false);
+    expect(store.getSnapshot().notes.some((item) => item.id === 'overflow-note')).toBe(false);
+    expect(store.getSnapshot().error).toMatch(/128 notes.*remove a note/i);
+  });
+
+  it('rejects a measurement beyond the snapshot limit with an actionable error', () => {
+    const store = new StudioMarkupStore();
+    for (let index = 0; index < MARKUP_SNAPSHOT_MAX_MEASUREMENTS; index += 1) {
+      store.addMeasurement({ ...sample.measurements[0]!, id: `measurement-${index}` });
+    }
+
+    const accepted = store.addMeasurement({ ...sample.measurements[0]!, id: 'overflow-measurement' });
+
+    expect(accepted).toBe(false);
+    expect(store.getSnapshot().measurements.some((item) => item.id === 'overflow-measurement')).toBe(false);
+    expect(store.getSnapshot().error).toMatch(/128 measurements.*remove a measurement/i);
   });
 
   it('toggles note placement with the panel and clears saved markup on demand', () => {

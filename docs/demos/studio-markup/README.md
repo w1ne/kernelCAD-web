@@ -16,6 +16,20 @@ command converts it to `demo.mp4`, then removes the intermediate WebM.
 The capture spec is skipped in regular Playwright runs and only executes when
 the capture command sets `KCAD_CAPTURE=1`.
 
+## Capture evidence
+
+The operator ran `npm run capture:studio-markup` on macOS with real Chromium on
+2026-10-20 at about 21:40 CEST, against the worktree immediately before commit
+`735d9ee`. Both browser specs passed in 19.1 seconds. The resulting
+[`demo.mp4`](demo.mp4) is 279,499 bytes, 1440×900 at 25 fps, and about 11.76
+seconds long. I extracted and inspected a frame at 8 seconds: it shows the
+Bracket model, the anchored “Keep the mounting face flat” callout, a drawn
+“Distance · 9.8 mm” measurement, and picked topology `Face 5 · shape 0` and
+`Edge 0 · shape 1`.
+
+This is local browser evidence for the captured revision. It does not verify
+later code changes or deployed behavior; no deployment was performed.
+
 This bundle documents the version 1 snapshot fixture and the local Studio
 workflow. The feature code and its prompt handoff test are in
 [`src/studio/markup`](../../../src/studio/markup),
@@ -43,9 +57,9 @@ and can be run with the same `--project=chromium` option. The capture command
 also runs it before recording the workflow; run `npm run capture:studio-markup`
 to include its authenticated local prompt flow and produce the MP4.
 
-`verification.json` records the checks run for this working tree. Local
-validation does not establish deployed behavior or hardware acceptance.
+`verification.json` separates the operator's local browser capture from the
+current local validation. Local results do not establish deployed behavior or
+hardware acceptance.
 
-The replayable example is [`snapshot-v1.json`](snapshot-v1.json). After running
-the capture command, inspect the browser recording at [`demo.mp4`](demo.mp4)
-before handoff.
+The replayable example is [`snapshot-v1.json`](snapshot-v1.json). The captured
+browser recording is [`demo.mp4`](demo.mp4).

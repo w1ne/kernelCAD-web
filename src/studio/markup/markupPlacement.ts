@@ -22,13 +22,13 @@ export function placeMarkupNoteFromModelHit(
 
   const text = state.draftText.trim();
   if (text) {
-    markupStore.addNote({
+    const added = markupStore.addNote({
       id: createMarkupId('note-'),
       text,
       anchor,
       refs,
     });
-    markupStore.setDraftText('');
+    if (added) markupStore.setDraftText('');
   }
   return true;
 }

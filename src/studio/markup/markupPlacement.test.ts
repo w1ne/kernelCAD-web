@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { GeometryResult } from '../../shared/worker/geometryEngine';
 import { markupStore } from './markupStore';
 import { placeMarkupNoteFromModelHit } from './markupPlacement';
+import { MARKUP_SNAPSHOT_MAX_NOTES } from './markupLimits';
 
 afterEach(() => markupStore.clear());
 
@@ -50,5 +51,22 @@ describe('markup note placement', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('keeps the draft note when placement is rejected at the snapshot limit', () => {
+    for (let index = 0; index < MARKUP_SNAPSHOT_MAX_NOTES; index += 1) {
+      markupStore.addNote({
+        id: `saved-note-${index}`,
+        text: 'Existing note',
+        anchor: [0, 0, 0],
+        refs: [],
+      });
+    }
+    markupStore.setMode('note');
+    markupStore.setDraftText('Keep this note available');
+
+    expect(placeMarkupNoteFromModelHit([1, 2, 3], 0, -1, { faces: [] })).toBe(true);
+    expect(markupStore.getSnapshot().draftText).toBe('Keep this note available');
+    expect(markupStore.getSnapshot().error).toMatch(/128 notes.*remove a note/i);
   });
 });

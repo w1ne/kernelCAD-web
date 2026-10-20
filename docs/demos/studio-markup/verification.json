@@ -9,13 +9,13 @@
     },
     "lint": {
       "status": "passed",
-      "scope": "changed Studio, markup, measurement and Playwright files"
+      "scope": "all changed Studio markup TypeScript source and test files"
     },
     "studioVitest": {
       "command": "npx vitest run --configLoader runner src/studio",
       "status": "passed",
-      "testFiles": 232,
-      "tests": 1815
+      "testFiles": 233,
+      "tests": 1831
     },
     "qualityAndSiteVitest": {
       "command": "npx vitest run --configLoader runner tests/unit/scripts/qualityRatchet.test.ts tests/unit/site",
@@ -35,19 +35,40 @@
     },
     "playwrightRun": {
       "command": "npm run capture:studio-markup",
-      "status": "not run",
-      "reason": "The sandbox cannot launch Chromium; the operator will run the capture command on the Mac."
+      "status": "passed",
+      "testsPassed": [
+        "tests/studio_markup_snapshot.spec.ts",
+        "tests/studio_markup_capture.spec.ts"
+      ],
+      "result": "2 passed (19.1s)",
+      "environment": "macOS with real Chromium",
+      "capturedAt": "2026-10-20 about 21:40 CEST",
+      "capturedRevision": "worktree immediately before commit 735d9ee"
     }
   },
   "media": {
     "file": "demo.mp4",
-    "status": "capture script added; video not captured in this sandbox",
+    "status": "captured by operator and inspected",
     "command": "npm run capture:studio-markup",
     "recordingSource": "tests/studio_markup_capture.spec.ts",
-    "conversion": "/opt/homebrew/bin/ffmpeg converts the WebM recording to H.264 MP4"
+    "conversion": "/opt/homebrew/bin/ffmpeg converts the WebM recording to H.264 MP4",
+    "fileBytes": 279499,
+    "durationSeconds": 11.76,
+    "width": 1440,
+    "height": 900,
+    "framesPerSecond": 25,
+    "inspection": {
+      "frameAtSeconds": 8,
+      "observed": [
+        "Bracket model with an anchored Keep the mounting face flat note callout",
+        "Distance measurement line labeled 9.8 mm",
+        "Picked topology Face 5 · shape 0 and Edge 0 · shape 1"
+      ]
+    },
+    "scope": "local capture evidence for the revision immediately before 735d9ee; it does not verify later code or deployed behavior"
   },
   "deployment": {
     "status": "not deployed",
-    "reason": "No deployment was performed during this repair."
+    "reason": "No deployment was performed; the Mac capture and local tests do not establish deployed behavior."
   }
 }
