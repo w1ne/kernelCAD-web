@@ -15,7 +15,7 @@ export function LineChip({ line, onReveal }: { line: number; onReveal: () => voi
                 event.stopPropagation();
                 onReveal();
             }}
-            className="shrink-0 rounded px-1.5 py-0.5 font-mono text-2xs text-gray-400 opacity-0 hover:bg-[#2a2a2a] hover:text-gray-200 focus-visible:opacity-100 group-hover:opacity-100"
+            className="shrink-0 rounded px-1.5 py-0.5 font-mono text-2xs text-fg-3 opacity-0 hover:bg-surface-2 hover:text-fg focus-visible:opacity-100 group-hover:opacity-100"
         >
             {`line ${line}`}
         </button>
