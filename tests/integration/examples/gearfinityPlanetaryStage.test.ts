@@ -13,7 +13,7 @@ const EXAMPLE_ABSOLUTE = resolvePath(__dirname, '../../..', EXAMPLE_PATH);
 
 type ValidateResult = Awaited<ReturnType<typeof runValidateCli>>;
 
-describe('Gearfinity-inspired planetary stage gallery example', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('Gearfinity-inspired planetary stage gallery example', () => {
   // Both #348 assertions read the SAME validate run (pure over the script
   // file). The rest-pose interference surface over 24 gear meshes is the
   // heavy part (~150 s); compute it once in beforeAll and share it so the
