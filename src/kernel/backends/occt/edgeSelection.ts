@@ -60,6 +60,7 @@ import {
   resolveQueryDslFace,
 } from './faceSelectionPhases';
 import type { QueryDslFaceRef } from './faceSelectionPhases';
+import { stableEdgeIdResolutionError } from './edgeSelectionDiagnostics';
 
 export { resolveFaceLabelToFace } from './faceSelectionPhases';
 
@@ -505,14 +506,7 @@ function resolveSingleSegmentEdgeRef(
       ? 'does not match an edge on the current shape'
       : `matches ${result.matches} geometrically identical edges`;
     return {
-      error: {
-        target: 'export-occt',
-        code: 'feature.invalid-args',
-        featureId: record.id,
-        severity: 'error',
-        message: `Stable edge ID '${ref.segmentId}' ${reason}.`,
-        hint: 'Pick the edge again from the current Studio mesh; stable edge IDs resolve only when the sampled geometry identifies one edge.',
-      },
+      error: stableEdgeIdResolutionError(record, ref.segmentId, reason),
     };
   }
   // segmentId encodes index into the lowered shape's edges array (`e0`, `e1`, ...).

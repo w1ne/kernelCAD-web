@@ -5,10 +5,13 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { cleanup, render } from '@testing-library/react';
 import * as THREE from 'three';
 import type { FaceGeometry, GeometryResult } from '../../../../shared/worker/geometryEngine';
+import { selectionCodeStore } from '../../../selectionCode/selectionCodeStore';
 
 let FaceSelectionOverlay: typeof import('./ShapeGeometry').FaceSelectionOverlay;
 let GhostShape: typeof import('./ShapeGeometry').GhostShape;
 let ConsolidatedShape: typeof import('./ShapeGeometry').ConsolidatedShape;
+let selectEdgeFromFaceClick: typeof import('./shapeTopologyClick').selectEdgeFromFaceClick;
+let selectGeometryEdge: typeof import('./shapeTopologyClick').selectGeometryEdge;
 let buildShapeMaterial: typeof import('./buildShapeMaterial').buildShapeMaterial;
 
 vi.mock('../../../context/WorkbenchContext', () => ({
@@ -175,6 +178,69 @@ describe('ConsolidatedShape scene graph per view mode', () => {
         );
         expect(container.querySelectorAll('lineSegments')).toHaveLength(1);
         expect(container.querySelectorAll('mesh')).toHaveLength(1);
+    });
+});
+
+describe('topology click handler path', () => {
+    beforeAll(async () => {
+        ({ selectEdgeFromFaceClick, selectGeometryEdge } = await import('./shapeTopologyClick'));
+    });
+
+    afterEach(() => {
+        selectionCodeStore.reset();
+    });
+
+    it('Shift-clicking an edge through a face hit adds exactly that edge to the selection', () => {
+        const geometry: GeometryResult = {
+            featureId: 'body_1',
+            faces: [faceA],
+            edges: new Float32Array([
+                -0.8, -0.5, 0, 0.8, -0.5, 0,
+                0.2, -0.5, 0, 0.2, 0.5, 0,
+            ]),
+            edgeRanges: [0, 2, 2, 2],
+            edgeStableIds: ['s1111111111111111', 's2222222222222222'],
+        };
+        const faceGeometry = new THREE.BufferGeometry();
+        faceGeometry.setAttribute('position', new THREE.Float32BufferAttribute([
+            -1, -1, 0, 1, -1, 0, 1, 1, 0,
+            -1, -1, 0, 1, 1, 0, -1, 1, 0,
+        ], 3));
+        const face = new THREE.Mesh(faceGeometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+        face.userData = { type: 'FACE', shapeIndex: 0, faceMap: [1, 1] };
+        const edgeGeometry = new THREE.BufferGeometry();
+        edgeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(geometry.edges!, 3));
+        const edge = new THREE.LineSegments(edgeGeometry, new THREE.LineBasicMaterial());
+        edge.userData = { type: 'EDGE', shapeIndex: 0, edgeRanges: geometry.edgeRanges };
+        const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+        camera.position.set(0, 0, 10);
+        camera.lookAt(0, 0, 0);
+        camera.updateMatrixWorld(true);
+        const point = new THREE.Vector3(0.2, 0, 0).project(camera);
+        const raycaster = new THREE.Raycaster();
+        raycaster.params.Line.threshold = 0.05;
+        raycaster.setFromCamera(new THREE.Vector2(point.x, point.y), camera);
+        const intersections = raycaster.intersectObjects([face, edge]);
+        const selectEdgeIndex = vi.fn((edgeIndex: number, nativeEvent: MouseEvent) => {
+            selectGeometryEdge(geometry, 0, 'body_1', [], () => undefined, () => undefined, edgeIndex, nativeEvent);
+        });
+
+        selectGeometryEdge(geometry, 0, 'body_1', [], () => undefined, () => undefined, 0, new MouseEvent('click'));
+        expect(selectEdgeFromFaceClick(
+            intersections,
+            0,
+            new MouseEvent('click', { shiftKey: true }),
+            selectEdgeIndex,
+        )).toBe(true);
+
+        expect(selectEdgeIndex).toHaveBeenCalledTimes(1);
+        expect(selectionCodeStore.getSnapshot().topologySelections.map((selection) => selection.stableId))
+            .toEqual(['s1111111111111111', 's2222222222222222']);
+
+        faceGeometry.dispose();
+        edgeGeometry.dispose();
+        face.material.dispose();
+        edge.material.dispose();
     });
 });
 

@@ -17,12 +17,12 @@ import { matrixFromGeometryTransform } from "./geometryTransform";
 import { selectionCodeStore } from "../../../selectionCode/selectionCodeStore";
 import { edgeIndexAtVertex, resolvePickFeature, type GeometryPick } from "../../../selectionCode/geometryLineage";
 import type { FeatureRecord } from "../../../../shared/intent/featureRecord";
+import { hasSelectionModifier, selectEdgeFromFaceClick, selectGeometryEdge } from './shapeTopologyClick';
 
 const EMPTY_PLANES: THREE.Plane[] = [];
 
-/** Geometry → code: publish the clicked face — or the hovered edge of this
- *  shape, which wins when the pointer is on an edge — with the feature that
- *  created it. */
+/** Geometry → code: publish the clicked face with the feature that created it.
+ *  Edge hits are routed through the BREP edge handlers before this runs. */
 function linkClickToCode(
     geometry: GeometryResult,
     shapeIndex: number,
@@ -31,16 +31,13 @@ function linkClickToCode(
     features: readonly FeatureRecord[],
     multi = false,
 ): void {
-    const hovered = selectionCodeStore.getPreselect();
-    const pick: GeometryPick = hovered && hovered.kind === 'edge' && hovered.shapeIndex === shapeIndex
-        ? hovered
-        : { shapeIndex, kind: 'face', id: faceId };
+    const pick: GeometryPick = { shapeIndex, kind: 'face', id: faceId };
     selectionCodeStore.selectFromGeometry(
         pick,
         resolvePickFeature(geometry, pick, features),
         { x: nativeEvent.offsetX, y: nativeEvent.offsetY },
         multi,
-        pick.kind === 'edge' ? geometry.edgeStableIds?.[pick.id] : undefined,
+        undefined,
         geometry.featureId ?? undefined,
     );
 }
@@ -49,10 +46,6 @@ function faceIdAtIntersection(event: ThreeEvent<MouseEvent>): number {
     const faceMap = event.object.userData.faceMap as number[] | undefined;
     if (faceMap && event.faceIndex != null) return faceMap[event.faceIndex] ?? -1;
     return typeof event.object.userData.id === 'number' ? event.object.userData.id : -1;
-}
-
-function hasSelectionModifier(event: MouseEvent): boolean {
-    return event.metaKey || event.ctrlKey || event.shiftKey;
 }
 
 function useEdgeSelection(
@@ -64,20 +57,10 @@ function useEdgeSelection(
     setSelectedSketchName: (name: string | null) => void,
 ) {
     const selectEdgeIndex = useCallback((edgeIndex: number, nativeEvent: MouseEvent) => {
-        const stableId = geometry.edgeStableIds?.[edgeIndex];
-        if (edgeIndex < 0 || !stableId) return;
-        const pick: GeometryPick = { shapeIndex, kind: 'edge', id: edgeIndex };
-        const featureId = resolvePickFeature(geometry, pick, features);
-        selectionCodeStore.selectFromGeometry(
-            pick,
-            featureId,
-            { x: nativeEvent.offsetX, y: nativeEvent.offsetY },
-            hasSelectionModifier(nativeEvent),
-            stableId,
-            geometry.featureId ?? name,
+        selectGeometryEdge(
+            geometry, shapeIndex, name, features, setSelectedFace, setSelectedSketchName,
+            edgeIndex, nativeEvent,
         );
-        setSelectedFace(null);
-        setSelectedSketchName(null);
     }, [features, geometry, name, setSelectedFace, setSelectedSketchName, shapeIndex]);
 
     const handleEdgeClick = useCallback((event: ThreeEvent<MouseEvent>) => {
@@ -242,14 +225,10 @@ export function ConsolidatedShape({
         e.stopPropagation();
         const isMulti = hasSelectionModifier(e.nativeEvent);
 
-        // The face surface can be marginally closer than its line target even
-        // when the pointer is within the edge pixel tolerance. HoverManager
-        // resolves that overlap first, so preserve its edge choice here.
-        const hovered = selectionCodeStore.getPreselect();
-        if (hovered?.kind === 'edge' && hovered.shapeIndex === shapeIndex) {
-            selectEdgeIndex(hovered.id, e.nativeEvent);
-            return;
-        }
+        // Face and edge intersections can overlap. Re-run the shared hover
+        // priority on this click's fresh intersections so an edge within the
+        // pixel tolerance wins without depending on the previous hover frame.
+        if (selectEdgeFromFaceClick(e.intersections, shapeIndex, e.nativeEvent, selectEdgeIndex)) return;
 
         if (name && isMulti) toggleSelection(name, true);
 

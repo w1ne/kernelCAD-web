@@ -13,8 +13,18 @@ import * as THREE from 'three';
 import type { GeometryResult } from '../../../shared/worker/geometryEngine';
 
 vi.mock('@react-three/fiber', () => ({
-    useThree: (selector: (state: { gl: object; scene: object }) => unknown) =>
-        selector({ gl: {}, scene: {} }),
+    useThree: (selector?: (state: { gl: object; scene: object; camera: object }) => unknown) => {
+        const state = {
+            gl: { domElement: {} },
+            scene: {},
+            camera: {
+                updateMatrixWorld: () => undefined,
+                matrixWorldInverse: { toArray: () => [] },
+                projectionMatrix: { toArray: () => [] },
+            },
+        };
+        return selector ? selector(state) : state;
+    },
 }));
 vi.mock('@react-three/drei/core/Grid', () => ({
     Grid: () => <div data-testid="grid" />,
