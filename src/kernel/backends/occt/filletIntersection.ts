@@ -121,7 +121,12 @@ function edgeRunsOnSection(edge: unknown, sectionShape: unknown, toleranceMm: nu
     const last = curve.LastParameter();
     for (const t of [0, 0.25, 0.5, 0.75, 1]) {
       const point = curve.Value(first + (last - first) * t);
-      const d = distancePointToShape(point, sectionShape, toleranceMm);
+      let d: number;
+      try {
+        d = distancePointToShape(point, sectionShape, toleranceMm);
+      } finally {
+        point.delete?.();
+      }
       if (d > toleranceMm) return false;
     }
     return true;
@@ -146,6 +151,73 @@ function distanceTo(edge: unknown, shape: unknown, deflection: number): number {
     dist.delete?.();
     progress.delete?.();
   }
+}
+
+interface SeamScan {
+  matched: SeamEdge[];
+  short: SeamEdge[];
+  smoothRejected: number;
+}
+
+/** Enumerate body edges once, classifying seam matches and cleanup as we go. */
+function scanBodyEdges(
+  bodyShape: unknown,
+  sectionShape: unknown,
+  toleranceMm: number,
+  radius: number,
+  replicadShape: import('replicad').Shape3D,
+  edgeByHash: Map<string, import('replicad').Edge>,
+): SeamScan {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  const matched: SeamEdge[] = [];
+  const short: SeamEdge[] = [];
+  const seen = new Set<string>();
+  let smoothRejected = 0;
+  const explorer = new oc.TopExp_Explorer_2(
+    bodyShape,
+    oc.TopAbs_ShapeEnum.TopAbs_EDGE,
+    oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
+  );
+  try {
+    while (explorer.More()) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const raw = explorer.Current() as any;
+      const edge = oc.TopoDS.Edge_1(raw);
+      try {
+        const hash = (raw as { HashCode: (n: number) => number }).HashCode(HASH_UPPER).toString(16);
+        if (!seen.has(hash)) {
+          seen.add(hash);
+          // An edge may touch the section at its endpoints (e.g. the bore wall's
+          // vertical seam) without lying on it. Sample the interior too.
+          const d = distanceTo(edge, sectionShape, toleranceMm);
+          if (d <= toleranceMm && edgeRunsOnSection(edge, sectionShape, toleranceMm)) {
+            const replicadEdge = edgeByHash.get(hash);
+            const dihedral = replicadEdge
+              ? computeDihedralPublic(replicadShape as unknown as { faces: import('replicad').Face[] }, replicadEdge, { convexity: false })
+              : null;
+            // null = the parametric seam of a cylinder/cone/sphere (normal probe
+            // cannot decide); >= 175° = already smooth. Neither is a boolean cut
+            // seam, so do not fillet it.
+            if (dihedral === null || dihedral.angleDeg >= 175) {
+              smoothRejected++;
+            } else {
+              const lengthMm = edgeLength(edge);
+              const item: SeamEdge = { hash, lengthMm };
+              matched.push(item);
+              if (lengthMm < 2 * radius) short.push(item);
+            }
+          }
+        }
+        explorer.Next();
+      } finally {
+        edge.delete?.();
+      }
+    }
+  } finally {
+    explorer.delete?.();
+  }
+  return { matched, short, smoothRejected };
 }
 
 /** Collect the body edges that lie on the exact `body ∩ cutter` curve. */
@@ -193,50 +265,15 @@ export function findIntersectionSeamEdges(
     const h = ((edge as any).wrapped as { HashCode: (n: number) => number }).HashCode(HASH_UPPER).toString(16);
     edgeByHash.set(h, edge);
   }
-  const matched: SeamEdge[] = [];
-  const short: SeamEdge[] = [];
-  let smoothRejected = 0;
-  const seen = new Set<string>();
-  const explorer = new oc.TopExp_Explorer_2(
+  const scan = scanBodyEdges(
     bodyShape,
-    oc.TopAbs_ShapeEnum.TopAbs_EDGE,
-    oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
+    sectionShape,
+    toleranceMm,
+    opts.radius,
+    replicadShape,
+    edgeByHash,
   );
-  try {
-    while (explorer.More()) {
-      const raw = explorer.Current();
-      const edge = oc.TopoDS.Edge_1(raw);
-      const hash = (raw as { HashCode: (n: number) => number }).HashCode(HASH_UPPER).toString(16);
-      if (seen.has(hash)) {
-        explorer.Next();
-        continue;
-      }
-      seen.add(hash);
-      // An edge may touch the section at its endpoints (e.g. the bore wall's
-      // vertical seam) without lying on it. Sample the interior too.
-      const d = distanceTo(edge, sectionShape, toleranceMm);
-      if (d <= toleranceMm && edgeRunsOnSection(edge, sectionShape, toleranceMm)) {
-        const replicadEdge = edgeByHash.get(hash);
-        const dihedral = replicadEdge
-          ? computeDihedralPublic(replicadShape as unknown as { faces: import('replicad').Face[] }, replicadEdge, { convexity: false })
-          : null;
-        // null = the parametric seam of a cylinder/cone/sphere (normal probe
-        // cannot decide); >= 175° = already smooth. Neither is a boolean cut
-        // seam, so do not fillet it.
-        if (dihedral === null || dihedral.angleDeg >= 175) {
-          smoothRejected++;
-          explorer.Next();
-          continue;
-        }
-        const lengthMm = edgeLength(edge);
-        const item: SeamEdge = { hash, lengthMm };
-        matched.push(item);
-        if (lengthMm < 2 * opts.radius) short.push(item);
-      }
-      explorer.Next();
-    }
-  } finally {
-    explorer.delete?.();
-  }
-  return { sectionBuildFailed: false, sectionEdgeCount, matched, short, smoothRejected };
+  (sectionShape as { delete?: () => void }).delete?.();
+  return { sectionBuildFailed: false, sectionEdgeCount, ...scan };
+
 }
