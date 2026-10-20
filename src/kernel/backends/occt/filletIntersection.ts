@@ -79,11 +79,12 @@ function edgeLength(edge: unknown): number {
 function distancePointToShape(point: { X: () => number; Y: () => number; Z: () => number }, shape: unknown, deflection: number): number {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const maker = new oc.BRepBuilderAPI_MakeVertex(new oc.gp_Pnt_3(point.X(), point.Y(), point.Z()));
+  const pnt = new oc.gp_Pnt_3(point.X(), point.Y(), point.Z());
+  const maker = new oc.BRepBuilderAPI_MakeVertex(pnt);
+  const vertex = maker.Vertex();
   const dist = new oc.BRepExtrema_DistShapeShape_1();
   const progress = new oc.Message_ProgressRange_1();
   try {
-    const vertex = maker.Vertex();
     dist.LoadS1(vertex);
     dist.LoadS2(shape);
     dist.SetDeflection(Math.max(deflection, 1e-6));
@@ -91,7 +92,9 @@ function distancePointToShape(point: { X: () => number; Y: () => number; Z: () =
     if (!dist.IsDone() || dist.NbSolution() < 1) return Number.POSITIVE_INFINITY;
     return dist.Value();
   } finally {
+    vertex.delete?.();
     maker.delete?.();
+    pnt.delete?.();
     dist.delete?.();
     progress.delete?.();
   }
