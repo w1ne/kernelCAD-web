@@ -169,7 +169,7 @@ async function runParamEditRequest(
           preferSource: source !== code,
           ...(nextHave !== undefined ? { have: nextHave } : {}),
         })
-      : meshSourceDev(source, params, nextHave);
+      : meshSourceDev(source, params, { have: nextHave });
   try {
     return mergeMeshPayload(code, await send(have), state);
   } catch (err) {

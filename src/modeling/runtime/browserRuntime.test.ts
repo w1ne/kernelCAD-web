@@ -173,6 +173,58 @@ describe('browser runtime — node-only features fail LOUDLY', () => {
     expect(result.returnValue).toBeDefined();
   });
 
+  it('lib.part builds hex-head and headless envelopes without a filesystem', async () => {
+    const hex = await runScriptInBrowser({
+      code: `return await lib.part({ family: 'hex-head-bolt', thread: 'M10', lengthMm: 40 });`,
+    });
+    expect(hex.returnValue).toBeDefined();
+    const rod = await runScriptInBrowser({
+      code: `return await lib.part({ family: 'threaded-rod', thread: 'M8', lengthMm: 1000 });`,
+    });
+    expect(rod.returnValue).toBeDefined();
+  });
+
+  it('lib.stack plans a stack without a filesystem', async () => {
+    const result = await runScriptInBrowser({
+      code: `const s = await lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
+             return s.screw;`,
+    });
+    expect(result.returnValue).toBeDefined();
+  });
+
+  it('lib.fixture builds a T-slot nut envelope without a filesystem', async () => {
+    const result = await runScriptInBrowser({
+      code: `return await lib.fixture.tSlotNut({ thread: 'M10' });`,
+    });
+    expect(result.returnValue).toBeDefined();
+  });
+
+  it('lib.insert reads holes, cuts seats and places stacks without a filesystem', async () => {
+    const result = await runScriptInBrowser({
+      code: `const plate = box(40, 40, 8, true).holes('top', {
+               positions: [{ u: -10, v: 0 }, { u: 10, v: 0 }],
+               diameter: 5.5,
+               depth: 'through',
+             });
+             const fitted = await lib.insert(plate, {
+               diameterMm: 5.5,
+               family: 'flat-head-countersunk',
+               mode: 'bolt',
+             });
+             return fitted.holes[0].screw;`,
+    });
+    expect(result.returnValue).toBeDefined();
+    expect(result.records.length).toBeGreaterThan(3);
+  });
+
+  it('lib.fixture.clampStud rejects an unstocked length without a filesystem', async () => {
+    await expect(
+      runScriptInBrowser({
+        code: `return await lib.fixture.clampStud({ thread: 'M10', lengthMm: 90 });`,
+      }),
+    ).rejects.toThrow(/stocked length/);
+  });
+
   it('lib.standard.* fails the same way', async () => {
     await expect(
       runScriptInBrowser({ code: `return await lib.standard.boltSHCS({ thread: 'M3', lengthMm: 10 });` }),

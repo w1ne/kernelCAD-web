@@ -499,8 +499,31 @@ arm.solvedModel(poses, {
   posesGate?: 'default' | 'envelope',      // which poses the gate covers
   samplesPerMate?: number,                  // forwarded to the envelope sweep
   combinatorial?: boolean,                  // forwarded to the envelope sweep
+  ignore?: Array<[string, string]>,         // silence a pair entirely
+  contacts?: Array<{                        // allow a BOUNDED intended overlap
+    parts: [string, string];
+    maxVolumeMm3?: number;
+    maxThicknessMm?: number;
+    reason?: string;
+  }>,
+  clearances?: Array<{                      // require a MINIMUM air gap
+    parts: [string, string];
+    minMm: number;
+    reason?: string;
+  }>,
 });
 ```
+
+**Per-pair tolerances instead of all-or-nothing `ignore`.** An `ignore` pair is
+never reported. A `contacts` pair is still measured: the overlap passes only
+while it stays inside `maxVolumeMm3` and `maxThicknessMm`; going over either
+emits `assembly.contact.tolerance-exceeded` with the measured value and the
+budget. A `clearances` pair is measured with exact BREP distance and fails
+below `minMm` (`assembly.clearance.violated`); an unmeasurable pair (mesh-only
+or kernel failure) is `assembly.clearance.unresolved` and is never treated as
+passing. Only the declared clearance pairs are probed, so the check cost scales
+with the declaration count, not the whole part matrix. Pair names must be
+existing parts, and each pair may be declared once (symmetric lookup).
 
 `validate` and `posesGate` are orthogonal:
 

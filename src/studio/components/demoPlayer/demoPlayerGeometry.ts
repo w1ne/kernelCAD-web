@@ -151,6 +151,10 @@ export interface DemoPlayerWindow {
   /** Capture a flat object-id mask for the current view without leaving the
    *  scene in mask-material mode. Colors are deterministic by visible
    *  feature-group order and exclude hidden objects. */
+  /** Switch every mesh material between smooth (kernel vertex normals) and
+   *  flat (face normals) shading. Used by headless renders to expose
+   *  tessellation / surface wobble. */
+  setShadingMode(mode: 'smooth' | 'flat'): void;
   captureMaskPng(maxSize?: number): DemoPlayerMaskCapture;
   /** Capture offscreen depth / normals inspection channels for the current
    *  camera state without disturbing the visible RGB frame. */
@@ -196,6 +200,9 @@ export interface DemoPlayerWindow {
     /** polygonOffset triple per sampled mesh material — used by tests to
      *  verify the renderer applies depth bias on assembly meshes. */
     samplePolygonOffsets: Array<{ enabled: boolean; factor: number; units: number }>;
+    /** flatShading flag per sampled mesh material — verifies the headless
+     *  smooth/flat shading switch. */
+    sampleFlatShading: boolean[];
     /** Per-KCAD-feature group matrix (16 numbers column-major). Used by the
      *  B3 regression test to verify worldTransform-bearing features land on
      *  the group's matrix. */

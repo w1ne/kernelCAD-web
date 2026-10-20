@@ -310,7 +310,7 @@ function hasFingerprints(have?: MeshHaveFingerprints): have is MeshHaveFingerpri
 export async function meshSourceDev(
   source: string,
   paramOverrides?: ParamOverrides,
-  have?: MeshHaveFingerprints,
+  opts?: { quality?: 'coarse'; have?: MeshHaveFingerprints },
 ): Promise<BackendMeshPayload> {
   // Route through `apiCall()` so embed-mode hosts (StudioConfigProvider
   // with a `backendUrl`) get the correct prefix; standalone dev with no
@@ -323,7 +323,8 @@ export async function meshSourceDev(
     body: JSON.stringify({
       source,
       ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
-      ...(hasFingerprints(have) ? { have } : {}),
+      ...(hasFingerprints(opts?.have) ? { have: opts?.have } : {}),
+      ...(opts?.quality === 'coarse' ? { quality: 'coarse' } : {}),
     }),
   });
   // Error bodies are JSON; a 2xx may be bin1 when the middleware negotiates it.

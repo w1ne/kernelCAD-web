@@ -2,11 +2,15 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import {
   CHATGPT_CONNECTORS_URL,
-  CLAUDE_CODE_CMD,
   CLAUDE_CONNECTORS_URL,
-  CODEX_ADD_CMD,
+  CLAUDE_PLUGIN_CMD,
   CODEX_LOGIN_CMD,
+  CODEX_PLUGIN_INSTALL_CMD,
+  CODEX_PLUGIN_MARKETPLACE_CMD,
   cursorDeeplink,
+  GEMINI_EXTENSION_CMD,
+  GROK_PLUGIN_INSTALL_CMD,
+  GROK_PLUGIN_MARKETPLACE_CMD,
   vscodeDeeplink,
 } from './connectLinks';
 
@@ -19,7 +23,7 @@ import {
  * Step text marks UI labels with **double stars**; the page renders them bold.
  */
 
-export type ConnectClientId = 'chatgpt' | 'claude' | 'claude-code' | 'codex' | 'cursor' | 'vscode';
+export type ConnectClientId = 'chatgpt' | 'claude' | 'claude-code' | 'codex' | 'gemini' | 'grok' | 'cursor' | 'vscode';
 
 export interface ConnectCommand {
   readonly label: string;
@@ -84,12 +88,13 @@ export const CONNECT_CLIENTS: readonly ConnectClient[] = [
     label: 'Claude Code',
     where: 'Terminal',
     needsUrl: false,
-    commands: [{ label: 'Add the server', value: CLAUDE_CODE_CMD }],
+    commands: [{ label: 'Install the plugin', value: CLAUDE_PLUGIN_CMD }],
     steps: [
       'Run the command in your terminal.',
-      'Start Claude Code, type **/mcp**, pick **kernelcad** and choose **Authenticate**.',
+      'Restart Claude Code, type **/mcp**, pick **kernelcad** and choose **Authenticate**.',
       'Sign in to kernelCAD in the browser window that opens.',
     ],
+    note: 'Needs Claude Code 2.1.275 or later. The plugin adds the hosted MCP server and four kernelCAD skills.',
     tryIn: 'Claude Code',
   },
   {
@@ -98,15 +103,46 @@ export const CONNECT_CLIENTS: readonly ConnectClient[] = [
     where: 'Terminal',
     needsUrl: false,
     commands: [
-      { label: 'Add the server', value: CODEX_ADD_CMD },
-      { label: 'Sign in', value: CODEX_LOGIN_CMD },
+      { label: 'Add the plugin marketplace', value: CODEX_PLUGIN_MARKETPLACE_CMD },
+      { label: 'Install the plugin', value: CODEX_PLUGIN_INSTALL_CMD },
+      { label: 'Sign in to save projects', value: CODEX_LOGIN_CMD },
     ],
     steps: [
-      'Run the first command to add kernelCAD to Codex.',
-      'Run the second command and sign in to kernelCAD in the browser.',
+      'Run the first two commands in your terminal.',
+      'Run the sign-in command and finish signing in to kernelCAD in the browser.',
       'Start **codex** in any folder.',
     ],
+    note: 'The plugin adds the hosted MCP server and four kernelCAD skills.',
     tryIn: 'Codex',
+  },
+  {
+    id: 'gemini',
+    label: 'Gemini CLI',
+    where: 'Terminal',
+    needsUrl: false,
+    commands: [{ label: 'Install the extension', value: GEMINI_EXTENSION_CMD }],
+    steps: [
+      'Run the command in your terminal.',
+      'Start **gemini** and type **/mcp auth kernelcad** to sign in.',
+    ],
+    note: 'The extension adds the hosted MCP server and four kernelCAD skills.',
+    tryIn: 'Gemini CLI',
+  },
+  {
+    id: 'grok',
+    label: 'Grok Build',
+    where: 'Terminal',
+    needsUrl: false,
+    commands: [
+      { label: 'Add the plugin marketplace', value: GROK_PLUGIN_MARKETPLACE_CMD },
+      { label: 'Install the plugin', value: GROK_PLUGIN_INSTALL_CMD },
+    ],
+    steps: [
+      'Run both commands in your terminal.',
+      'Start **grok** and sign in to kernelCAD when it asks.',
+    ],
+    note: 'The plugin adds the hosted MCP server and four kernelCAD skills.',
+    tryIn: 'Grok Build',
   },
   {
     id: 'cursor',

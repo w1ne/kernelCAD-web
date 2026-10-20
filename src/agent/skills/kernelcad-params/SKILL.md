@@ -5,7 +5,7 @@ description: Editable symbolic parameters — param(), params(), ParamRef arithm
 
 # kernelCAD — editable parameters
 
-Use `param()` for values the user may want to tweak after the first build; use literals for incidental dimensions. A param returns a symbolic `ParamRef`, not a number, so do not do JS arithmetic with it (`paramRef / 2` throws `feature.invalid-args` at the coercion site — the result would be a frozen number that stops re-evaluating on param updates). For derived dimensions, chain the arithmetic methods on the ParamRef itself: `.add`, `.subtract`, `.multiply`, `.divide`, `.negate` each return a new ParamRef built on a structured expression that re-evaluates whenever the underlying param changes — e.g. `param('r', 5).divide(2)` for a half-radius, or `param('w', 80).subtract(param('margin', 5).multiply(2))` for a derived inset width.
+Use `param()` for values the user may want to tweak after the first build; use literals for incidental dimensions. A param returns a symbolic `ParamRef`, not a number, so do not do JS arithmetic with it (`paramRef / 2` throws `feature.invalid-args` at the coercion site — the result would be a frozen number that stops re-evaluating on param updates). For derived dimensions, chain the arithmetic methods on the ParamRef itself: `.add`, `.subtract`, `.multiply`, `.divide`, `.negate`, `.min`, `.max`, `.abs`, `.clamp` each return a new ParamRef built on a structured expression that re-evaluates whenever the underlying param changes — e.g. `param('r', 5).divide(2)` for a half-radius, `param('w', 80).subtract(param('margin', 5).multiply(2))` for a derived inset width, or `param('wall', 2).max(1.2).clamp(1.2, 8)` for a printable wall bound.
 
 ## `param()` / `params()` API
 
@@ -36,6 +36,9 @@ params({ width: 60, addCablePort: true }): {
 | `.multiply(n)` | `ParamRef<number>` | `paramRef.multiply(2)` |
 | `.divide(n)` | `ParamRef<number>` | `paramRef.divide(2)` |
 | `.negate()` | `ParamRef<number>` | `-paramRef` symbolic |
+| `.min(n)` / `.max(n)` | `ParamRef<number>` | smaller / larger of the two |
+| `.abs()` | `ParamRef<number>` | absolute value |
+| `.clamp(lo, hi)` | `ParamRef<number>` | clamp into `[lo, hi]`; both bounds may be ParamRefs |
 
 Each method accepts either a plain number or another `ParamRef`. Chains stay fully symbolic: `radius.multiply(2).add(1)` is a `ParamRef`, not a number, and re-evaluates on each param change.
 
@@ -222,7 +225,7 @@ After authoring with editable parameters, run before reporting done:
 | G-eval | `kernelcad evaluate` exits 0 — no `param.*` diagnostics |
 | G-default-in-range | Every `param()` default value satisfies its declared `min` / `max` |
 | G-unique-names | No two `param()` calls share a `name` in the same script — duplicates fail at capture time |
-| G-paramref-survives-arithmetic | `ParamRef.add/.subtract/.multiply/.divide/.negate` return new ParamRefs, not numbers; chains like `radius.multiply(2).add(1)` stay symbolic |
+| G-paramref-survives-arithmetic | `ParamRef.add/.subtract/.multiply/.divide/.negate/.min/.max/.abs/.clamp` return new ParamRefs, not numbers; chains like `radius.multiply(2).add(1).clamp(0, 50)` stay symbolic |
 | G-params-update-keeps-bounds | When the studio or MCP `set_param` sets a new value, it must satisfy `min` / `max`; otherwise re-evaluating the rewritten source surfaces a diagnostic |
 
 ## Related skills

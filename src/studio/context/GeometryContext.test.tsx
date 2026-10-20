@@ -524,6 +524,10 @@ describe('GeometryContext latest-intent-wins', () => {
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
+        json: async () => meshPayload,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
         json: async () => fullReview,
       } as Response);
 
@@ -552,11 +556,12 @@ describe('GeometryContext latest-intent-wins', () => {
     });
 
     expect(mockEngine.executeCode).not.toHaveBeenCalled();
-    expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-bolt');
-    expect(fetchUrl(fetchMock, 5)).toBe(
+    expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-bolt&quality=coarse');
+    expect(fetchUrl(fetchMock, 5)).toBe('/__kernelcad/mesh?session=tok-bolt');
+    expect(fetchUrl(fetchMock, 6)).toBe(
       '/__kernelcad/review?session=tok-bolt&script=examples%2Fcookbook-parity%2Fiso-metric-bolt-and-nut.kcad.ts',
     );
-    expect(fetchUrl(fetchMock, 5)).not.toContain('live=1');
+    expect(fetchUrl(fetchMock, 6)).not.toContain('live=1');
     expect(screen.getByTestId('error').textContent).toBe('');
     expect(screen.getByTestId('script-review-ok').textContent).toBe('true');
   });
@@ -876,9 +881,13 @@ describe('GeometryContext latest-intent-wins', () => {
     await flushUntil(() => screen.getByTestId('face-count').textContent === '1');
 
     expect(mockEngine.executeCode).not.toHaveBeenCalled();
-    const meshCall = fetchMock.mock.calls.find((c) => String(c[0]) === '/__kernelcad/mesh');
-    expect(meshCall).toBeTruthy();
-    expect(JSON.parse((meshCall![1] as RequestInit).body as string)).toEqual({
+    const meshCalls = fetchMock.mock.calls.filter((c) => String(c[0]) === '/__kernelcad/mesh');
+    expect(meshCalls).toHaveLength(2);
+    expect(JSON.parse((meshCalls[0]![1] as RequestInit).body as string)).toEqual({
+      source: "const t = param('t', 5); return box(t.add(2), 1, 1);",
+      quality: 'coarse',
+    });
+    expect(JSON.parse((meshCalls[1]![1] as RequestInit).body as string)).toEqual({
       source: "const t = param('t', 5); return box(t.add(2), 1, 1);",
     });
     expect(screen.getByTestId('error').textContent).toBe('');
@@ -957,6 +966,22 @@ describe('GeometryContext latest-intent-wins', () => {
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {
+            heightAdjustMm: {
+              name: 'heightAdjustMm',
+              type: 'number',
+              value: 3,
+              defaultValue: 0,
+              meta: { min: 0, max: 6.12 },
+            },
+          },
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
           ok: true,
           livePhysicalUseCaseReview: true,
           diagnostics: [{ code: 'assembly.physical-use-case.contact-unreachable', severity: 'error' }],
@@ -971,6 +996,22 @@ describe('GeometryContext latest-intent-wins', () => {
             contactNoiseCount: 1,
             actionableCount: 1,
             capMm3: 20,
+          },
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {
+            heightAdjustMm: {
+              name: 'heightAdjustMm',
+              type: 'number',
+              value: 4,
+              defaultValue: 0,
+              meta: { min: 0, max: 6.12 },
+            },
           },
         }),
       } as Response)
@@ -1022,18 +1063,19 @@ describe('GeometryContext latest-intent-wins', () => {
     await act(async () => {
       relowerHandler?.();
     });
-    await flushUntil(() => fetchMock.mock.calls.length >= 5);
+    await flushUntil(() => fetchMock.mock.calls.length >= 6);
 
-    expect(fetchMock).toHaveBeenCalledTimes(5);
-    expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-abc');
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+    expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-abc&quality=coarse');
+    expect(fetchUrl(fetchMock, 5)).toBe('/__kernelcad/mesh?session=tok-abc');
     expectFetchSignal(fetchMock, 4);
     expect(screen.getByTestId('script-param-name').textContent).toBe('heightAdjustMm');
-    // 5th fetch is the live-channel review re-run that refreshes the HUD
+    // 6th fetch is the live-channel review re-run that refreshes the HUD
     // interference count. The live payload overlays rawInterferencePairs
     // and interferenceSummary onto the last full review — validator output
     // (including the repair prompt) is intentionally kept from the initial
     // review.
-    expect(fetchUrl(fetchMock, 5)).toBe('/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts&live=1');
+    expect(fetchUrl(fetchMock, 6)).toBe('/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts&live=1');
     expect(screen.getByTestId('script-review-repair').textContent).toBe('initial review');
     expect(screen.getByTestId('script-review-raw-count').textContent).toBe('2');
     expect(screen.getByTestId('script-review-summary-actionable').textContent).toBe('1');
@@ -1043,9 +1085,9 @@ describe('GeometryContext latest-intent-wins', () => {
     await act(async () => {
       relowerHandler?.();
     });
-    await flushUntil(() => fetchMock.mock.calls.length >= 7);
+    await flushUntil(() => fetchMock.mock.calls.length >= 9);
 
-    expect(fetchUrl(fetchMock, 7)).toBe('/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts&live=1');
+    expect(fetchUrl(fetchMock, 9)).toBe('/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts&live=1');
     expect(screen.getByTestId('script-review-summary-actionable').textContent).toBe('0');
     expect(screen.getByTestId('script-review-diagnostic-codes').textContent).toBe('assembly.part.floating');
     expect(screen.getByTestId('script-review-fitness-mode').textContent).toBe('full-review');
@@ -1154,6 +1196,22 @@ describe('GeometryContext latest-intent-wins', () => {
         }),
       } as Response)
       .mockImplementationOnce(() => firstRelower.promise)
+      // Display pass after the first relower's coarse preview.
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {
+            width: {
+              name: 'width',
+              type: 'number',
+              value: 12,
+              defaultValue: 10,
+            },
+          },
+        }),
+      } as Response)
       // Review after first relower mesh.
       .mockResolvedValueOnce({
         ok: true,
@@ -1164,6 +1222,22 @@ describe('GeometryContext latest-intent-wins', () => {
         }),
       } as Response)
       .mockImplementationOnce(() => secondRelower.promise)
+      // Display pass after the trailing relower's coarse preview.
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {
+            width: {
+              name: 'width',
+              type: 'number',
+              value: 13,
+              defaultValue: 10,
+            },
+          },
+        }),
+      } as Response)
       // Review after trailing relower mesh.
       .mockResolvedValueOnce({
         ok: true,
@@ -1223,9 +1297,9 @@ describe('GeometryContext latest-intent-wins', () => {
       await Promise.resolve();
     });
 
-    // After the first mesh resolves: review fires (5) and the queued
-    // trailing mesh starts (6).
-    expect(fetchMock).toHaveBeenCalledTimes(6);
+    // After the first mesh resolves: display pass fires (5), review fires (6)
+    // and the queued trailing mesh starts (7).
+    expect(fetchMock).toHaveBeenCalledTimes(7);
 
     await act(async () => {
       secondRelower.resolve({
@@ -1248,8 +1322,9 @@ describe('GeometryContext latest-intent-wins', () => {
       await Promise.resolve();
     });
 
-    // After the trailing mesh resolves: trailing review fires (7).
-    expect(fetchMock).toHaveBeenCalledTimes(7);
+    // After the trailing coarse preview resolves: display pass (8) and the
+    // trailing review fire (9).
+    expect(fetchMock).toHaveBeenCalledTimes(9);
     expect(screen.getByTestId('script-param-name').textContent).toBe('width');
     expect(screen.getByTestId('execution-count').textContent).toBe('3');
   });

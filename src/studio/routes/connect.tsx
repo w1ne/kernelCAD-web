@@ -67,7 +67,8 @@ function ConnectPage(): JSX.Element {
           Connect your agent to kernelCAD
         </h1>
         <p className="mt-3 max-w-2xl text-body text-fg-2">
-          Add one URL to ChatGPT, Claude, Claude Code or Codex. Your agent then designs real CAD models, checks that they
+          Install the kernelCAD plugin in Claude Code, Codex, Gemini CLI or Grok Build, or connect the hosted MCP
+          server to ChatGPT, Claude, Cursor or VS Code. Your agent then designs real CAD models, checks that they
           build, and saves them to your projects. It takes about two minutes.
         </p>
 

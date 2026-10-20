@@ -12,7 +12,8 @@ import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { detectInterferences, type InterferencePair, pairKey } from '../runtime/detectInterferences';
 import { checkClearance, type ClearancePairReport } from '../runtime/dfm/clearance';
-import { describeOverlap, isActionableOverlap } from '../runtime/jointContactCap';
+import { describeOverlap, describeOverlapLocation, isActionableOverlap } from '../runtime/jointContactCap';
+import { contactAccepts, contactMap, type PairContactTolerance } from '../runtime/pairTolerances';
 import { expandCoupledPoses } from './coupledPoses';
 import { reposedLoweredAssemblyScene } from './loweredAssemblyScene';
 import {
@@ -100,6 +101,9 @@ export interface PoseEnvelopeReviewOptions extends PoseEnvelopeSamplingOptions {
   readonly includeArticulatedMateClearance?: boolean;
   /** pairKey()-encoded part pairs exempt from the clearance check. */
   readonly ignoredPairs?: ReadonlySet<string>;
+  /** Per-pair intended-contact budgets. A sample's overlap is accepted only
+   *  while it stays inside the declared budget for that pair. */
+  readonly contactTolerances?: readonly PairContactTolerance[];
   /**
    * A fully lowered scene from the same evaluated assembly. When its part set
    * matches, pose review reuses each LOCAL-frame BREP and replaces only the
@@ -268,7 +272,8 @@ export async function reviewPoseEnvelope(
   const interferencePairs: Array<InterferencePair & { sampleName: string }> = [];
   const clearancePairs: Array<ClearancePairReport & { sampleName: string }> = [];
   const ignoredPairs = opts.ignoredPairs ?? new Set<string>();
-  const reportInterference = createInterferenceReporter(interferencePairs, diagnostics, ignoredPairs);
+  const contactsByPair = contactMap(opts.contactTolerances);
+  const reportInterference = createInterferenceReporter(interferencePairs, diagnostics, ignoredPairs, contactsByPair);
   const connectorPoses: TrackedConnectorPose[] = [];
   const trackConnectors = resolveTrackedConnectors(opts);
   const unresolvedConnectorRefs = new Set<string>();
@@ -330,12 +335,14 @@ function createInterferenceReporter(
   interferencePairs: Array<InterferencePair & { sampleName: string }>,
   diagnostics: PoseEnvelopeDiagnostic[],
   ignoredPairs: ReadonlySet<string> = new Set(),
+  contactsByPair: ReadonlyMap<string, PairContactTolerance> = new Map(),
 ): (sampleName: string, pair: InterferencePair) => void {
   const reportedInterferences = new Set<string>();
   return (sampleName: string, pair: InterferencePair): void => {
     if (!isActionableOverlap(pair)) return;
     const pairId = pairKey(pair.a, pair.b);
     if (ignoredPairs.has(pairId)) return;
+    if (contactAccepts(pair, contactsByPair.get(pairId))) return;
     const key = `${sampleName}\u0000${pairId}`;
     if (reportedInterferences.has(key)) return;
     reportedInterferences.add(key);
@@ -348,7 +355,7 @@ function createInterferenceReporter(
       partA: pair.a,
       partB: pair.b,
       volumeMm3: pair.volumeMm3,
-      message: `Pose-envelope sample '${sampleName}' makes parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}.`,
+      message: `Pose-envelope sample '${sampleName}' makes parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}${describeOverlapLocation(pair)}.`,
       hint: `invalid-args.assembly.pose-envelope-interference — add clearance, reduce mate travel, or move the connector/mount geometry so the swept pose stays collision-free.`,
     });
   };

@@ -11,7 +11,16 @@ import { fetchPartHost, type FetchPartCtx } from './fetchPart';
 import type { Shape } from '../capture/proxy';
 import { resolvePart } from './familyTable';
 
-export type MetricThread = 'M2' | 'M2.5' | 'M3' | 'M4' | 'M5' | 'M6';
+export type MetricThread =
+  | 'M2'
+  | 'M2.5'
+  | 'M3'
+  | 'M4'
+  | 'M5'
+  | 'M6'
+  | 'M8'
+  | 'M10'
+  | 'M12';
 
 function threadSlug(t: string): string {
   return t.toLowerCase().replace('.', '-');
@@ -19,17 +28,31 @@ function threadSlug(t: string): string {
 
 export interface StandardParts {
   boltSHCS(args: { thread: MetricThread; lengthMm: number }): Promise<Shape>;
-  boltBHCS(args: { thread: 'M3' | 'M4' | 'M5'; lengthMm: number }): Promise<Shape>;
+  boltBHCS(args: { thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10'; lengthMm: number }): Promise<Shape>;
   boltFlatHead(args: {
-    thread: 'M3' | 'M4' | 'M5';
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
     lengthMm: number;
   }): Promise<Shape>;
-  nutHex(args: { thread: MetricThread }): Promise<Shape>;
-  nutLock(args: { thread: 'M3' | 'M4' | 'M5' }): Promise<Shape>;
-  washerFlat(args: {
-    thread: 'M2' | 'M3' | 'M4' | 'M5' | 'M6';
+  boltHex(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12' | 'M16' | 'M20';
+    lengthMm: number;
   }): Promise<Shape>;
-  washerLock(args: { thread: 'M3' | 'M4' | 'M5' }): Promise<Shape>;
+  setScrew(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
+    lengthMm: number;
+  }): Promise<Shape>;
+  rodThreaded(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
+    lengthMm: 250 | 1000;
+  }): Promise<Shape>;
+  nutHex(args: { thread: MetricThread }): Promise<Shape>;
+  nutLock(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
+  }): Promise<Shape>;
+  washerFlat(args: { thread: MetricThread }): Promise<Shape>;
+  washerLock(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
+  }): Promise<Shape>;
   heatSetInsert(args: {
     thread: 'M2.5' | 'M3' | 'M4';
     lengthMm: 3.8 | 5.7;
@@ -61,6 +84,12 @@ export function createStandardParts(ctx: FetchPartCtx): StandardParts {
       fetch(resolvePart({ family: 'button-head-cap-screw', thread, lengthMm }).id),
     boltFlatHead: ({ thread, lengthMm }) =>
       fetch(resolvePart({ family: 'flat-head-countersunk', thread, lengthMm }).id),
+    boltHex: ({ thread, lengthMm }) =>
+      fetch(resolvePart({ family: 'hex-head-bolt', thread, lengthMm }).id),
+    setScrew: ({ thread, lengthMm }) =>
+      fetch(resolvePart({ family: 'set-screw', thread, lengthMm }).id),
+    rodThreaded: ({ thread, lengthMm }) =>
+      fetch(resolvePart({ family: 'threaded-rod', thread, lengthMm }).id),
     nutHex: ({ thread }) =>
       fetch(resolvePart({ family: 'hex-nut', thread }).id),
     nutLock: ({ thread }) =>

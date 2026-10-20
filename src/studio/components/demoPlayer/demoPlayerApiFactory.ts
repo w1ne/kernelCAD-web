@@ -911,6 +911,18 @@ export function createDemoPlayerWindowApi(deps: DemoPlayerApiDeps): DemoPlayerWi
     setRenderView: (view, outputAspect, frameBounds) => setRenderView(deps, view, outputAspect, frameBounds),
     setRenderPose: (azDeg, elDeg, outputAspect) => setRenderPose(deps, azDeg, elDeg, outputAspect),
     forceFullOpacity: () => forceFullOpacity(deps),
+    setShadingMode: (mode) => {
+      const scene = requireScene(deps).scene;
+      scene.traverse((obj) => {
+        if (!(obj instanceof THREE.Mesh)) return;
+        const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+        for (const material of materials) {
+          const mat = material as THREE.MeshStandardMaterial;
+          mat.flatShading = mode === 'flat';
+          mat.needsUpdate = true;
+        }
+      });
+    },
     showOnlyTailFeatures: () => showOnlyTailFeatures(deps),
     applyObjectVisibilityFilter: (filter) => applyObjectVisibilityFilter(deps, filter),
     captureMaskPng: (maxSize) => captureMaskPng(deps, maxSize),

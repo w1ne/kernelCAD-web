@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureId, Vec3, Vec3Param, EditableVec3 } from '../../shared/intent/types';
+import type { FabProcess } from '../../shared/fab';
 import type { Connector, ConnectorOriginInput, ConnectorType, FluidPort } from '../mates/connector';
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
 import type { Editable } from '../../shared/runtime/paramRef';
@@ -203,6 +204,9 @@ export interface AssemblyPartOpts {
    *  `feature.invalid-args` naming the valid materials — never a silent
    *  fallback to water density or a default finish. */
   material?: string;
+  /** Declared manufacturing process; the order pack and BOM group by it.
+   *  Omitted = inferred by the existing capture-graph heuristic. */
+  process?: FabProcess;
   /** Known part mass in kg (catalog or datasheet, e.g. an SG90 is 0.009).
    *  Mass-based checks (`verify({ check: 'motion-load' })`) use it instead of
    *  volume x density; the centre of mass and inertia still come from the
@@ -400,6 +404,8 @@ export interface AssemblyPartStored extends AssemblyPartRef {
    *  this field records which named material was assigned, for BOM / export
    *  provenance. Undefined when no material name was given. */
   readonly material?: string;
+  /** Declared process, copied from `AssemblyPartOpts.process`. */
+  readonly process?: FabProcess;
   /** Declared part mass in kg, copied from `AssemblyPartOpts.massKg`. */
   readonly massKg?: number;
   /** Beam cross-section, copied from `AssemblyPartOpts.crossSection`. Read

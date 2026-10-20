@@ -6,7 +6,7 @@
 // discoverable via list_api as the single entry "export the model to a file".
 // Replaces the legacy `export_stl` shim (removed in the C2 cull).
 //
-// Format enum: stl | step | dxf | 3mf | glb | obj | usd | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | bend-table.
+// Format enum: stl | step | dxf | 3mf | glb | obj | usd | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | order-pack | bend-table.
 // URDF / SDF-Gazebo exports also write companion meshes/<part>.stl files
 // next to output_path (the emitted XML references them by relative path);
 // the written paths are reported in `mesh_files`. A multi-part DXF export
@@ -164,9 +164,9 @@ function exportMetadataFields(
  * carries per-format knobs (see the kernelcad-mcp skill for the per-format
  * keys).
  *
- * STL exports run a watertight verify by default; a failing mesh still
- * writes the file (so the broken mesh can be inspected) but fails the call
- * with `export.mesh.not-watertight` unless `{ no_verify: true }`.
+ * STL and STEP exports run a watertight verify by default; a failing mesh
+ * still writes the file (so the broken mesh can be inspected) but fails the
+ * call with `export.mesh.not-watertight` unless `{ no_verify: true }`.
  *
  * Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`.
  */
@@ -183,10 +183,10 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   await initOcct();
 
-  // `no_verify` mirrors export_part: plumb `verify: false` into the STL
-  // options bag (the runtime gate is default-on).
-  let effectiveOptions: ExportOptions | undefined = format === 'stl' && input.no_verify
-    ? { ...(options ?? {}), format: 'stl' as const, verify: false }
+  // `no_verify` mirrors export_part: plumb `verify: false` into the STL/STEP
+  // options bag (the runtime gate is default-on for both formats).
+  let effectiveOptions: ExportOptions | undefined = (format === 'stl' || format === 'step') && input.no_verify
+    ? { ...(options ?? {}), format, verify: false } as ExportOptions
     : options;
   effectiveOptions = withInfillOutDir(format, effectiveOptions, output_path);
 

@@ -32,13 +32,52 @@ const carriageMm = param('carriageMm', 450, {
   description: 'Gun carriage travel along the platform rail (mm above rail base).',
 });
 
+// ---- application-sequence parameters (drive geometry directly) ------------
+const extX = param('extX', 0, {
+  min: 0, max: 1000,
+  description: 'Robot-hand reach toward the facade (mm). 0 = stowed, ~920 = at the wall for tape work.',
+});
+const gripY = param('gripY', 664, {
+  min: -700, max: 700,
+  description: 'Robot-hand lateral position along the wall (mm); sweeps the tape strips.',
+});
+const maskProgress = param('maskProgress', 0, {
+  min: 0, max: 1,
+  description: 'Peelable mask-film coverage over the window (bottom-up, tracks the spray gun).',
+});
+const tapeTopP = param('tapeTopP', 0, {
+  min: 0, max: 1,
+  description: 'Top tape strip applied (left-to-right).',
+});
+const tapeBottomP = param('tapeBottomP', 0, {
+  min: 0, max: 1,
+  description: 'Bottom tape strip applied (right-to-left).',
+});
+const peelTopP = param('peelTopP', 0, {
+  min: 0, max: 1,
+  description: 'Top tape strip peeled (right-to-left).',
+});
+const peelBottomP = param('peelBottomP', 0, {
+  min: 0, max: 1,
+  description: 'Bottom tape strip peeled (left-to-right).',
+});
+const foamLowerP = param('foamLowerP', 0, {
+  min: 0, max: 1,
+  description: 'Foam band below the window; its top edge tracks the gun nozzle.',
+});
+const foamUpperP = param('foamUpperP', 0, {
+  min: 0, max: 1,
+  description: 'Foam strip above the window; appears as the gun exits over the masked zone.',
+});
+
 const C = {
   frame: '#27343d', dark: '#18232a', orange: '#f0782f', amber: '#f6b23b',
   gunBlue: '#1769aa', gunSilver: '#c5cdd1',
   ivory: '#e8e4d9', alu: '#aeb8bd', black: '#15191c', rubber: '#202326',
   red: '#d7222b', blue: '#315c72', glass: '#315c72',
   wall: '#e9e0d4', wallFace: '#f2ebdf', mask: '#eef7fb', ground: '#d8d4cc',
-  windowFrame: '#f5f2ec', sill: '#dcd6cb',
+  windowFrame: '#ffffff', sill: '#e8e2d6', glassDeep: '#141f27', maskBlue: '#8fcbe8', reveal: '#4a4a45',
+  foam: '#b98a2e', tape: '#d4a53c',
   fork: '#7d8290', pin: '#262a31',
 };
 
@@ -237,6 +276,20 @@ platform.connector('tapeMountFace', frameConnector([680, -360, RAIL_BASE_Z]));
 // PART: carriage — C-channel in a clearance fit on the rail, gun, wrist,
 // edge shield and sensors as one rigid body.
 // ===========================================================================
+// Robot-hand ParamRef chains (JS arithmetic on params is disallowed; derived
+// refs re-evaluate on every param update, which is what the capture drives).
+// The pedestal and mount OVERLAP the carriage body and each other solidly —
+// exact face-to-face contact in a union chain degenerates over long capture
+// runs ("no shape produced for the chain tail"), so every link shares volume.
+const armProbeLen = extX.add(50);
+const armProbeCx = armProbeLen.divide(2).add(230);
+const armElbowCx = extX.add(280);
+const armYProbeCx = extX.add(278);
+const armYProbeLen = gripY.negate().add(668);
+const armYProbeCy = gripY.add(664).divide(2);
+const armPalmCx = extX.add(290);
+const armProngCx = extX.add(300);
+
 const carriage = lift.part('carriage',
   roundedBox(130, 25, 200, 6, 0, 72.5, 0, C.orange)
     .union(roundedBox(130, 25, 200, 6, 0, -72.5, 0, C.orange))
@@ -252,7 +305,18 @@ const carriage = lift.part('carriage',
     .union(roundedBox(38, 420, 90, 6, 594, 0, -210, C.black))
     .union(roundedBox(90, 60, 50, 8, 300, 0, 90, C.dark))
     .union(roundedBox(20, 40, 30, 4, 348, 0, 90, C.glass))
-    .union(roundedBox(60, 44, 40, 6, 160, 90, 60, C.dark)));
+    .union(roundedBox(60, 44, 40, 6, 160, 90, 60, C.dark))
+    // robot hand: x-probe reaches the wall, y-slide tracks the peel front,
+    // palm + prongs pinch the tape end (prongs stay 2 mm clear of the tape
+    // plane so the between-parts interference check stays clean)
+    .union(roundedBox(140, 554, 100, 10, 220, 337, 0, C.alu))
+    .union(roundedBox(120, 140, 180, 12, 220, 664, 0, C.frame))
+    .union(roundedBox(armProbeLen, 60, 60, 8, armProbeCx, 664, 0, C.gunSilver))
+    .union(roundedBox(40, 80, 80, 8, armElbowCx, 664, 0, C.dark))
+    .union(roundedBox(20, armYProbeLen, 44, 6, armYProbeCx, armYProbeCy, 0, C.gunSilver))
+    .union(roundedBox(20, 100, 80, 8, armPalmCx, gripY, 0, C.orange))
+    .union(roundedBox(20, 30, 36, 6, armProngCx, gripY.subtract(30), 0, C.orange))
+    .union(roundedBox(20, 30, 36, 6, armProngCx, gripY.add(30), 0, C.orange)));
 carriage.connector('slideAxis', axisConnector([0, 0, 0], [0, 0, 1]));
 
 // ===========================================================================
@@ -265,7 +329,7 @@ const tapeApplicator = lift.part('tape-applicator',
   roundedBox(220, 130, 80, 12, 0, 0, 40, C.dark)
     .union(roundedBox(70, 70, 240, 10, 0, 0, 120, C.alu))
     .union(roundedBox(200, 70, 70, 10, 95, 0, 240, C.alu))
-    .union(roundedBox(150, 110, 150, 16, 200, 0, 240, C.orange))
+    .union(roundedBox(150, 110, 150, 16, 230, 0, 240, C.orange))
     .union(yCylinder(170, 62, 280, 0, 210, C.alu))
     .union(yCylinder(120, 75, 200, 0, 330, C.blue))
     .union(roundedBox(30, 110, 60, 8, 280, 0, 300, C.dark))
@@ -273,37 +337,84 @@ const tapeApplicator = lift.part('tape-applicator',
 tapeApplicator.connector('mountFace', frameConnector([0, 0, 0]));
 
 // ===========================================================================
-// SCENE PARTS — ground and facade (wall + recessed windows + mask film).
+// SCENE PARTS — ground, wall, and the window protection stack. Unioned
+// multi-colour geometry renders single-tone in this kernel, so every colour
+// group is its OWN mated part: frame, glass, mask film, the four tape-ring
+// strips and the two foam zones. All share the wall coordinate frame
+// (connectors at the origin, mated fastened to the ground). The window is
+// centred on y = 0 so the robot hand's lateral stroke can wrap the tape ring.
 // ===========================================================================
 const ground = lift.part('ground', roundedBox(7600, 4400, 60, 30, 900, 0, -30, C.ground));
 ground.connector('baseFace', frameConnector([0, 0, 0]));
 ground.connector('wallFoot', frameConnector([WALL_X, 0, 0]));
+ground.connector('wallFootFrame', frameConnector([WALL_X, 0, 0]));
+ground.connector('wallFootGlass', frameConnector([WALL_X, 0, 0]));
+ground.connector('wallFootFilm', frameConnector([WALL_X, 0, 0]));
+ground.connector('wallFootTapeT', frameConnector([WALL_X, 0, 0]));
+ground.connector('wallFootTapeB', frameConnector([WALL_X, 0, 0]));
+ground.connector('wallFootFoamLower', frameConnector([WALL_X, 0, 0]));
+ground.connector('wallFootFoamUpper', frameConnector([WALL_X, 0, 0]));
 
-let facadeGeom = roundedBox(120, 3600, 5600, 6, 60, 0, 2800, C.wall)
-  .union(roundedBox(100, 3560, 5480, 4, 50, 0, 2800, C.wallFace));
-for (const sy of [-1, 1]) {
-  const wy = sy * 850;
-  facadeGeom = facadeGeom
-    // recessed dark glass inside a proud light frame
-    .union(roundedBox(26, 980, 1380, 8, -20, wy, 4200, C.glass))
-    .union(roundedBox(60, 1120, 70, 8, -45, wy, 4200 + 715, C.windowFrame))
-    .union(roundedBox(60, 1120, 70, 8, -45, wy, 4200 - 715, C.windowFrame))
-    .union(roundedBox(60, 70, 1360, 8, -45, wy - 525, 4200, C.windowFrame))
-    .union(roundedBox(60, 70, 1360, 8, -45, wy + 525, 4200, C.windowFrame))
-    // sprayed-on peelable mask film over the pane, bright so it reads grey-on-grey
-    .union(roundedBox(14, 1000, 1390, 6, -62, wy, 4200, C.mask))
-    .union(roundedBox(24, 130, 46, 6, -72, wy - 420, 3560, C.alu))
-    // sill
-    .union(roundedBox(120, 1180, 40, 8, -60, wy, 3480, C.sill));
-}
-const facade = lift.part('facade', facadeGeom);
+// geometry drivers — every one of these tracks its tool in the animation
+const hFilm = maskProgress.multiply(1780).add(4);                          // 3300 -> 5080
+const lenTapeTop = tapeTopP.multiply(peelTopP.negate().add(1)).multiply(1240).add(4);
+const lenTapeBottom = tapeBottomP.multiply(peelBottomP.negate().add(1)).multiply(1240).add(4);
+const hFoamLower = foamLowerP.multiply(890).add(4);                        // 2400 -> 3290
+const hFoamUpper = foamUpperP.multiply(190).add(4);                        // 5110 -> 5300
+
+const facade = lift.part('facade', roundedBox(120, 3600, 5600, 6, 60, 0, 2800, C.wall)
+  .union(roundedBox(100, 3560, 5480, 4, 55, 0, 2800, C.wallFace)));
 facade.connector('wallFoot', frameConnector([0, 0, 0]));
+
+// proud white window frame (4 bars + sill), centred on y = 0
+const frame = lift.part('frame',
+  roundedBox(110, 1120, 110, 8, -110, 0, 4985, C.windowFrame)
+    .union(roundedBox(110, 1120, 110, 8, -110, 0, 3415, C.windowFrame))
+    .union(roundedBox(110, 110, 1520, 8, -110, -505, 4200, C.windowFrame))
+    .union(roundedBox(110, 110, 1520, 8, -110, 505, 4200, C.windowFrame))
+    .union(roundedBox(150, 1120, 60, 10, -120, 0, 3345, C.sill)));
+frame.connector('wallFoot', frameConnector([0, 0, 0]));
+
+// near-black glass pane inside the frame opening
+const glass = lift.part('glass', roundedBox(26, 880, 1400, 8, -65, 0, 4200, C.glassDeep));
+glass.connector('wallFoot', frameConnector([0, 0, 0]));
+
+// peelable mask film covering the WHOLE window (frame + sill), bottom-up,
+// growing exactly with the spray pass
+const film = lift.part('film',
+  roundedBox(16, 1200, hFilm, 6, -207, 0, hFilm.divide(2).add(3300), C.maskBlue));
+film.connector('wallFoot', frameConnector([0, 0, 0]));
+
+// masking tape strips AROUND the window, ON THE WALL (not on the frame) —
+// one part per strip; the robot hand applies and later peels each strip
+const tapeTop = lift.part('tape-top',
+  roundedBox(8, lenTapeTop, 60, 3, -35, lenTapeTop.divide(2).subtract(620), 5160, C.tape));
+tapeTop.connector('wallFoot', frameConnector([0, 0, 0]));
+const tapeBottom = lift.part('tape-bottom',
+  roundedBox(8, lenTapeBottom, 60, 3, -35, lenTapeBottom.divide(2).subtract(620), 3220, C.tape));
+tapeBottom.connector('wallFoot', frameConnector([0, 0, 0]));
+
+// spray-foam zones: band below the window (top edge grows with the climbing
+// gun) and the strip above it (appears as the gun exits the masked zone)
+const foamLower = lift.part('foam-lower',
+  roundedBox(20, 3200, hFoamLower, 6, -15, 0, hFoamLower.divide(2).add(2400), C.foam));
+foamLower.connector('wallFoot', frameConnector([0, 0, 0]));
+const foamUpper = lift.part('foam-upper',
+  roundedBox(20, 3200, hFoamUpper, 6, -15, 0, hFoamUpper.divide(2).add(5110), C.foam));
+foamUpper.connector('wallFoot', frameConnector([0, 0, 0]));
 
 // ===========================================================================
 // MATES — full kinematic graph.
 // ===========================================================================
 lift.mate('base-on-ground', 'base.groundFace', 'ground.baseFace', 'fastened');
 lift.mate('facade-on-ground', 'ground.wallFoot', 'facade.wallFoot', 'fastened');
+lift.mate('frame-on-ground', 'ground.wallFootFrame', 'frame.wallFoot', 'fastened');
+lift.mate('glass-on-ground', 'ground.wallFootGlass', 'glass.wallFoot', 'fastened');
+lift.mate('film-on-ground', 'ground.wallFootFilm', 'film.wallFoot', 'fastened');
+lift.mate('tape-top-on-ground', 'ground.wallFootTapeT', 'tape-top.wallFoot', 'fastened');
+lift.mate('tape-bottom-on-ground', 'ground.wallFootTapeB', 'tape-bottom.wallFoot', 'fastened');
+lift.mate('foam-lower-on-ground', 'ground.wallFootFoamLower', 'foam-lower.wallFoot', 'fastened');
+lift.mate('foam-upper-on-ground', 'ground.wallFootFoamUpper', 'foam-upper.wallFoot', 'fastened');
 lift.mate('lower-boom-pivot', 'base.lowerPivot', 'lower-boom.basePivot', 'revolute', {
   pose: lowerDeg,
   limitsDeg: [68, 72],
@@ -323,30 +434,59 @@ lift.mate('carriage-slide', 'platform.railAxis', 'carriage.slideAxis', 'prismati
 lift.mate('tape-applicator-mount', 'platform.tapeMountFace', 'tape-applicator.mountFace', 'fastened');
 
 // ===========================================================================
-// ANIMATION — working pose -> two spray passes -> stow low -> back to work.
-// platformRelDeg mirrors upperRelDeg so the deck stays level throughout.
+// ANIMATION — the service cycle, every action tracking its tool (~17.8 s):
+//   1. mask pass — the gun climbs the window; the film grows with it
+//   2. tape strips — the hand sweeps each strip ON THE WALL above and below
+//      the window; strips grow exactly with the hand's leading edge
+//   3. foam pass — the gun climbs the whole wall; the lower band's top edge
+//      tracks the nozzle, stalls at the masked window, then the upper strip
+//      appears as the gun exits over it
+//   4. peel — the hand sweeps back along each strip; each shrinks with it
+//   5. hand stows, boom returns to the start pose
+// Motion rule: the lateral bar is always SHORT (gripY ~620) while the hand
+// extends or retracts, and grows only at the wall, so it can never sweep
+// through the platform structure. platformRelDeg mirrors upperRelDeg so the
+// deck stays level throughout.
 // ===========================================================================
 animationView({
-  name: 'lift-and-spray-cycle',
+  name: 'mask-tape-spray-peel-cycle',
   tracks: [
     {
       param: 'upperRelDeg',
       keys: [
-        { atMs: 0, value: -40 },
-        { atMs: 3400, value: -40 },
-        { atMs: 5200, value: -120, ease: 'easeInOut' },
-        { atMs: 6400, value: -120 },
-        { atMs: 8000, value: -40, ease: 'easeInOut' },
+        { atMs: 0, value: -104 },
+        { atMs: 300, value: -104 },
+        { atMs: 700, value: -77, ease: 'easeInOut' },
+        { atMs: 2400, value: -40 },
+        { atMs: 4800, value: -40 },
+        { atMs: 5500, value: -83, ease: 'easeInOut' },
+        { atMs: 7600, value: -83 },
+        { atMs: 8200, value: -104, ease: 'easeInOut' },
+        { atMs: 11600, value: -40 },
+        { atMs: 13900, value: -40 },
+        { atMs: 14700, value: -83, ease: 'easeInOut' },
+        { atMs: 16800, value: -83 },
+        { atMs: 17600, value: -104, ease: 'easeInOut' },
+        { atMs: 17800, value: -104 },
       ],
     },
     {
       param: 'platformRelDeg',
       keys: [
-        { atMs: 0, value: -30 },
-        { atMs: 3400, value: -30 },
-        { atMs: 5200, value: 50, ease: 'easeInOut' },
-        { atMs: 6400, value: 50 },
-        { atMs: 8000, value: -30, ease: 'easeInOut' },
+        { atMs: 0, value: 34 },
+        { atMs: 300, value: 34 },
+        { atMs: 700, value: 7, ease: 'easeInOut' },
+        { atMs: 2400, value: -30 },
+        { atMs: 4800, value: -30 },
+        { atMs: 5500, value: 13, ease: 'easeInOut' },
+        { atMs: 7600, value: 13 },
+        { atMs: 8200, value: 34, ease: 'easeInOut' },
+        { atMs: 11600, value: -30 },
+        { atMs: 13900, value: -30 },
+        { atMs: 14700, value: 13, ease: 'easeInOut' },
+        { atMs: 16800, value: 13 },
+        { atMs: 17600, value: 34, ease: 'easeInOut' },
+        { atMs: 17800, value: 34 },
       ],
     },
     {
@@ -354,10 +494,129 @@ animationView({
       keys: [
         { atMs: 0, value: 260 },
         { atMs: 300, value: 260 },
-        { atMs: 1600, value: 700, ease: 'easeInOut' },
-        { atMs: 2900, value: 260, ease: 'easeInOut' },
-        { atMs: 3400, value: 260 },
-        { atMs: 8000, value: 260 },
+        { atMs: 2400, value: 550 },
+        { atMs: 2700, value: 642, ease: 'easeInOut' },
+        { atMs: 4800, value: 642 },
+        { atMs: 5500, value: 297, ease: 'easeInOut' },
+        { atMs: 7600, value: 297 },
+        { atMs: 8200, value: 260, ease: 'easeInOut' },
+        { atMs: 11600, value: 760 },
+        { atMs: 11900, value: 642, ease: 'easeInOut' },
+        { atMs: 13900, value: 642 },
+        { atMs: 14700, value: 297, ease: 'easeInOut' },
+        { atMs: 16800, value: 297 },
+        { atMs: 17600, value: 260, ease: 'easeInOut' },
+        { atMs: 17800, value: 260 },
+      ],
+    },
+    {
+      param: 'extX',
+      keys: [
+        { atMs: 0, value: 0 },
+        { atMs: 2700, value: 0 },
+        { atMs: 2900, value: 923, ease: 'easeInOut' },
+        { atMs: 4100, value: 923 },
+        { atMs: 4500, value: 0, ease: 'easeInOut' },
+        { atMs: 5500, value: 0 },
+        { atMs: 5700, value: 684, ease: 'easeInOut' },
+        { atMs: 7200, value: 684 },
+        { atMs: 7600, value: 0, ease: 'easeInOut' },
+        { atMs: 11900, value: 0 },
+        { atMs: 12100, value: 923, ease: 'easeInOut' },
+        { atMs: 13300, value: 923 },
+        { atMs: 13500, value: 0, ease: 'easeInOut' },
+        { atMs: 14700, value: 0 },
+        { atMs: 14900, value: 684, ease: 'easeInOut' },
+        { atMs: 16100, value: 684 },
+        { atMs: 16400, value: 0, ease: 'easeInOut' },
+        { atMs: 17800, value: 0 },
+      ],
+    },
+    {
+      param: 'gripY',
+      keys: [
+        { atMs: 0, value: 664 },
+        { atMs: 2900, value: 664 },
+        { atMs: 3100, value: -660, ease: 'easeInOut' },
+        { atMs: 4100, value: 660 },
+        { atMs: 4500, value: 660 },
+        { atMs: 4800, value: 664, ease: 'easeInOut' },
+        { atMs: 5700, value: 664 },
+        { atMs: 5900, value: -660, ease: 'easeInOut' },
+        { atMs: 6900, value: 660 },
+        { atMs: 7200, value: 664, ease: 'easeInOut' },
+        { atMs: 12100, value: 664 },
+        { atMs: 12300, value: 660, ease: 'easeInOut' },
+        { atMs: 13300, value: -660 },
+        { atMs: 13500, value: 664, ease: 'easeInOut' },
+        { atMs: 14900, value: 664 },
+        { atMs: 15100, value: -660, ease: 'easeInOut' },
+        { atMs: 16100, value: 660 },
+        { atMs: 16400, value: 664, ease: 'easeInOut' },
+        { atMs: 17800, value: 664 },
+      ],
+    },
+    {
+      param: 'maskProgress',
+      keys: [
+        { atMs: 0, value: 0 },
+        { atMs: 700, value: 0 },
+        { atMs: 2400, value: 1 },
+        { atMs: 17800, value: 1 },
+      ],
+    },
+    {
+      param: 'tapeTopP',
+      keys: [
+        { atMs: 0, value: 0 },
+        { atMs: 3100, value: 0 },
+        { atMs: 4100, value: 1 },
+        { atMs: 17800, value: 1 },
+      ],
+    },
+    {
+      param: 'tapeBottomP',
+      keys: [
+        { atMs: 0, value: 0 },
+        { atMs: 5900, value: 0 },
+        { atMs: 6900, value: 1 },
+        { atMs: 17800, value: 1 },
+      ],
+    },
+    {
+      param: 'peelTopP',
+      keys: [
+        { atMs: 0, value: 0 },
+        { atMs: 12300, value: 0 },
+        { atMs: 13300, value: 1 },
+        { atMs: 17800, value: 1 },
+      ],
+    },
+    {
+      param: 'peelBottomP',
+      keys: [
+        { atMs: 0, value: 0 },
+        { atMs: 15100, value: 0 },
+        { atMs: 16100, value: 1 },
+        { atMs: 17800, value: 1 },
+      ],
+    },
+    {
+      param: 'foamLowerP',
+      keys: [
+        { atMs: 0, value: 0 },
+        { atMs: 8200, value: 0 },
+        { atMs: 9200, value: 1 },
+        { atMs: 17800, value: 1 },
+      ],
+    },
+    {
+      param: 'foamUpperP',
+      keys: [
+        { atMs: 0, value: 0 },
+        { atMs: 11250, value: 0 },
+        { atMs: 11600, value: 1 },
+        { atMs: 17800, value: 1 },
       ],
     },
   ],

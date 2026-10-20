@@ -19,6 +19,7 @@ import { warmKernelOnOpen } from '../../kernel/kernelSingleton';
 import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import { mergeMeshPayload } from './meshMergeStore';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
+import type { ExecutionResult } from '../../../shared/worker/geometryEngine';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 
 /** Cosmetic worker fileName for a hosted apply with no `?script=` (gallery /
@@ -28,8 +29,17 @@ const GALLERY_KERNEL_FILE_NAME = 'studio.kcad.ts';
 
 /** Applies a hosted/dev-kernel mesh payload to context state, incl. the
  *  empty-build guard. Shared by the hosted and dev-kernel branches of the
- *  auto-run loop below. */
-function applyAutoRunPayload(deps: ExecutionApplyDeps, revision: number, executionCount: number, payload: BackendMeshPayload): void {
+ *  auto-run loop below. Returns the empty-build notice (or null), so a
+ *  two-tier caller can skip the refine pass when there is nothing to refine.
+ *  `provisional: true` (a coarse first paint that a display pass will follow)
+ *  applies the geometry but records no execution outcome. */
+function applyAutoRunPayload(
+    deps: ExecutionApplyDeps,
+    revision: number,
+    executionCount: number,
+    payload: BackendMeshPayload,
+    opts?: { provisional?: boolean },
+): string | null {
     const geometries = featureMeshesToGeometries(rootVisibleFeatures(payload));
     const records = (payload.featureRecords as FeatureRecord[]) ?? [];
     // Placeholder, NOT a verdict: a mesh response with no `review` block
@@ -50,10 +60,26 @@ function applyAutoRunPayload(deps: ExecutionApplyDeps, revision: number, executi
     deps.setError(emptyNotice);
     if (emptyNotice) {
         deps.pushExecutionRecord({ revision, status: 'error', error: emptyNotice, executionCountAtRecord: executionCount + 1 });
-    } else {
+    } else if (!opts?.provisional) {
         deps.setLastSuccessfulRevision(revision);
         deps.pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
     }
+    return emptyNotice;
+}
+
+/** Apply one worker EXECUTE result's geometry state. No execution record:
+ *  the coarse first paint and the display refine both land here, and the
+ *  record is pushed once, after the display pass. */
+function applyWorkerExecutionResult(
+    deps: ExecutionApplyDeps,
+    result: ExecutionResult,
+    code: string,
+): void {
+    deps.setGeometries(result.geometries);
+    deps.setMeshDimensions(null);
+    deps.setGeometryTransformOverrides({});
+    deps.setSketchesGeometries(remapSketchNames(result.sketches, code));
+    deps.setError(null);
 }
 
 // Hosted deploy (app.kernelcad.com): the in-process worker is the legacy
@@ -126,6 +152,56 @@ function logAndDescribeWorkerError(err: unknown): string {
 // worker is never given code it can't evaluate, so there is no
 // throw-then-recover "choke". The reactive fallback in the catch below
 // stays as a safety net for any other API the worker happens to lack.
+/** One two-tier run's outcome. `stale` = a newer revision claimed the slot
+ *  mid-flight (its paints must be dropped); `empty` = the coarse pass already
+ *  reported an empty/failed build, so there is nothing to refine. */
+type TwoTierOutcome = 'ok' | 'stale' | 'empty';
+
+/** Coarse-then-display paint through the node dev-kernel mesh endpoint. The
+ *  coarse pass is the fast first paint of an edit; the display pass then
+ *  replaces it. The second request is cheap because the server reuses the
+ *  first pass's lowered solids (same source → prefix/session cache) and only
+ *  re-tessellates the coarse triangles — it does not rebuild geometry. */
+async function paintDevKernelTwoTier(
+    deps: ExecutionApplyDeps,
+    code: string,
+    revision: number,
+    executionCount: number,
+): Promise<TwoTierOutcome> {
+    const coarse = await meshSourceDev(code, undefined, { quality: 'coarse' });
+    if (revision !== deps.mainRevisionRef.current) return 'stale';
+    const emptyNotice = applyAutoRunPayload(deps, revision, executionCount, coarse, { provisional: true });
+    if (emptyNotice) return 'empty';
+    const payload = await meshSourceDev(code);
+    if (revision !== deps.mainRevisionRef.current) return 'stale';
+    applyAutoRunPayload(deps, revision, executionCount, payload);
+    return 'ok';
+}
+
+/** Coarse-then-display paint through the in-browser worker. One EXECUTE: the
+ *  worker evaluates the script once and posts a coarse preview frame before
+ *  the display result, so the first paint lands without paying the script's
+ *  geometry work (booleans, fillets) twice. */
+async function paintWorkerTwoTier(
+    deps: ExecutionApplyDeps,
+    code: string,
+    revision: number,
+    executionCount: number,
+): Promise<TwoTierOutcome> {
+    const result = await deps.engine.executeCode(code, {
+        quality: 'coarse',
+        onPreview: (preview) => {
+            if (revision !== deps.mainRevisionRef.current) return;
+            applyWorkerExecutionResult(deps, preview, code);
+        },
+    });
+    if (revision !== deps.mainRevisionRef.current) return 'stale';
+    applyWorkerExecutionResult(deps, result, code);
+    deps.setLastSuccessfulRevision(revision);
+    deps.pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+    return 'ok';
+}
+
 async function runWorkerOrDevKernelAutoExecution(
     deps: ExecutionApplyDeps,
     code: string,
@@ -136,28 +212,12 @@ async function runWorkerOrDevKernelAutoExecution(
     const useDevKernel = devMeshAvailable() && needsFullKernel(code);
     let staleRecorded = false;
     try {
-        if (useDevKernel) {
-            const payload = await meshSourceDev(code);
-            if (revision !== deps.mainRevisionRef.current) {
-                deps.setStaleMainResponsesDropped((prev) => prev + 1);
-                staleRecorded = true;
-                return;
-            }
-            applyAutoRunPayload(deps, revision, executionCount, payload);
-        } else {
-            const result = await deps.engine.executeCode(code);
-            if (revision !== deps.mainRevisionRef.current) {
-                deps.setStaleMainResponsesDropped((prev) => prev + 1);
-                staleRecorded = true;
-                return;
-            }
-            deps.setGeometries(result.geometries);
-            deps.setMeshDimensions(null);
-            deps.setGeometryTransformOverrides({});
-            deps.setSketchesGeometries(remapSketchNames(result.sketches, code));
-            deps.setError(null);
-            deps.setLastSuccessfulRevision(revision);
-            deps.pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+        const outcome = useDevKernel
+            ? await paintDevKernelTwoTier(deps, code, revision, executionCount)
+            : await paintWorkerTwoTier(deps, code, revision, executionCount);
+        if (outcome === 'stale') {
+            deps.setStaleMainResponsesDropped((prev) => prev + 1);
+            staleRecorded = true;
         }
     } catch (err: unknown) {
         if (revision !== deps.mainRevisionRef.current) {

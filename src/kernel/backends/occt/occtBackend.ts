@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
+import { optimalBoundsOf } from './backendBounds';
 import { getOC } from 'replicad';
 import type { ShapeBackend, BackendTarget } from '../backend';
 import type { SceneBackend } from '../sceneBackend';
@@ -249,7 +250,7 @@ export class OcctBackend implements ShapeBackend {
     height: number,
     radius: number,
     depth: number,
-    opts: { twistAngle?: number } = {},
+    opts: { twistAngle?: number; axis?: 'x' | 'y' | 'z' } = {},
   ): OcctBackend {
     return new OcctBackend(extrudeRoundedRectShape(width, height, radius, depth, opts));
   }
@@ -1049,16 +1050,19 @@ export class OcctBackend implements ShapeBackend {
    * @throws {Error} when OCCT reports the boolean failed — a failed probe must
    *   not read as "no overlap".
    */
-  intersectionVolume(other: OcctBackend): number {
-    return this.intersectionMetrics(other).volumeMm3;
-  }
+  intersectionVolume(other: OcctBackend): number { return this.intersectionMetrics(other).volumeMm3; }
 
   /**
    * Volume (mm³) and boundary area (mm²) of the common solid of two shapes.
    * The area gives the shared region's mean thickness (2·V/A), which tells
    * coincident-face contact apart from a real overlap of any volume.
    */
-  intersectionMetrics(other: OcctBackend): { volumeMm3: number; areaMm2: number } {
+  intersectionMetrics(other: OcctBackend): {
+    volumeMm3: number;
+    areaMm2: number;
+    /** World-frame bounds of the common solid, when OCCT can compute them. */
+    bounds?: { min: Vec3; max: Vec3 };
+  } {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
     const progress = new oc.Message_ProgressRange_1();
@@ -1086,7 +1090,8 @@ export class OcctBackend implements ShapeBackend {
         oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
         const areaMm2 = Math.abs(surface.Mass());
         surface.delete();
-        return { volumeMm3, areaMm2 };
+        const bounds = optimalBoundsOf(shape);
+        return { volumeMm3, areaMm2, ...(bounds !== undefined ? { bounds } : {}) };
       } finally {
         // The handle holds a reference to the common solid; without this the
         // result of every probe stays in the WASM heap until GC.

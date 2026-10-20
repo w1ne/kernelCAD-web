@@ -216,8 +216,11 @@ npx -y kernelcad install --claude-desktop
 ```
 
 Other hosted setup guides: [ChatGPT](https://app.kernelcad.com/connect?client=chatgpt),
+[Claude](https://app.kernelcad.com/connect?client=claude),
 [Claude Code](https://app.kernelcad.com/connect?client=claude-code),
 [Codex](https://app.kernelcad.com/connect?client=codex),
+[Gemini CLI](https://app.kernelcad.com/connect?client=gemini),
+[Grok Build](https://app.kernelcad.com/connect?client=grok),
 [Cursor](https://app.kernelcad.com/connect?client=cursor), and
 [VS Code](https://app.kernelcad.com/connect?client=vscode).
 

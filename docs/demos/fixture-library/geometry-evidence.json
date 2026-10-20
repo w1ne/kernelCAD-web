@@ -1,0 +1,200 @@
+{
+  "checkedAt": "2026-10-18T19:27:44.250Z",
+  "nativeKernel": "OCCT via evaluateAndBuildScript",
+  "source": "examples/fixture/table-clamp-set.kcad.ts",
+  "sourceSha256": "bb29214cf482cb15a055de61953432b1a4d9b6539fc64a22c6b5e45be394b2de",
+  "featureCount": 28,
+  "pairsChecked": 66,
+  "positiveVolumeOverlaps": [],
+  "parts": [
+    {
+      "name": "table",
+      "min": [
+        -200,
+        -65,
+        0
+      ],
+      "max": [
+        200,
+        65,
+        24
+      ],
+      "volumeMm3": 1157352
+    },
+    {
+      "name": "workpiece",
+      "min": [
+        -25,
+        -35,
+        24
+      ],
+      "max": [
+        25,
+        35,
+        60
+      ],
+      "volumeMm3": 126000
+    },
+    {
+      "name": "left-t-nut",
+      "min": [
+        -93,
+        -8.75,
+        9.399999999999999
+      ],
+      "max": [
+        -67,
+        8.75,
+        23.4
+      ],
+      "volumeMm3": 4160.242571243531
+    },
+    {
+      "name": "left-stud",
+      "min": [
+        -85,
+        -5,
+        16.4
+      ],
+      "max": [
+        -75,
+        5,
+        96.4
+      ],
+      "volumeMm3": 6283.185307179587
+    },
+    {
+      "name": "left-clamp",
+      "min": [
+        -157,
+        -11.000000000000005,
+        60
+      ],
+      "max": [
+        -32,
+        11.000000000000009,
+        72
+      ],
+      "volumeMm3": 26890.75781096262
+    },
+    {
+      "name": "left-step-block",
+      "min": [
+        -176,
+        -12.000000000000005,
+        24
+      ],
+      "max": [
+        -104,
+        12.000000000000004,
+        72
+      ],
+      "volumeMm3": 51840
+    },
+    {
+      "name": "left-flange-nut",
+      "min": [
+        -91,
+        -11,
+        72
+      ],
+      "max": [
+        -69,
+        11,
+        87
+      ],
+      "volumeMm3": 2781.1611362983917
+    },
+    {
+      "name": "right-t-nut",
+      "min": [
+        67,
+        -8.75,
+        9.399999999999999
+      ],
+      "max": [
+        93,
+        8.75,
+        23.4
+      ],
+      "volumeMm3": 4160.242571243531
+    },
+    {
+      "name": "right-stud",
+      "min": [
+        75,
+        -5,
+        16.4
+      ],
+      "max": [
+        85,
+        5,
+        96.4
+      ],
+      "volumeMm3": 6283.185307179587
+    },
+    {
+      "name": "right-clamp",
+      "min": [
+        32,
+        -11,
+        60
+      ],
+      "max": [
+        157,
+        11,
+        72
+      ],
+      "volumeMm3": 26890.75781096262
+    },
+    {
+      "name": "right-step-block",
+      "min": [
+        104,
+        -12,
+        24
+      ],
+      "max": [
+        176,
+        12,
+        72
+      ],
+      "volumeMm3": 51840
+    },
+    {
+      "name": "right-flange-nut",
+      "min": [
+        69,
+        -11,
+        72
+      ],
+      "max": [
+        91,
+        11,
+        87
+      ],
+      "volumeMm3": 2781.1611362983917
+    }
+  ],
+  "set": {
+    "hardware": "lib.fixture M10: tSlotNut, clampStud 80, strapClamp, stepBlock, flangeNut",
+    "tableMm": [
+      400,
+      130,
+      24
+    ],
+    "channel": {
+      "openingMm": 12,
+      "openingDepthMm": 7.6,
+      "internalWidthMm": 18.3,
+      "internalDepthMm": 7.4
+    },
+    "workpieceMm": [
+      50,
+      70,
+      36
+    ],
+    "step3TreadMm": 36
+  },
+  "scope": "Native static envelope geometry and placement: nominal stock dimensions for the fixture hardware, no clamping force, torque, deflection or machining-load check. Digital assembly only; no physical setup or cut was made."
+}

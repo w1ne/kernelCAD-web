@@ -78,6 +78,28 @@ describe('occt worker message protocol', () => {
     expect(transfer).toEqual([]);
   });
 
+  it('EXECUTE with meshQuality coarse posts an EXECUTE_PREVIEW frame before the final SUCCESS', async () => {
+    const start = posted.length;
+    if (workerSelf.onmessage === null) throw new Error('worker did not install onmessage');
+    workerSelf.onmessage({
+      data: { type: 'EXECUTE', id: 'exec-preview', code: 'return null;', meshQuality: 'coarse' },
+    });
+    await vi.waitFor(() => {
+      if (posted.length < start + 2) throw new Error('waiting for both frames');
+    }, { timeout: 5000 });
+    expect(posted[start]!.message).toEqual({
+      type: 'EXECUTE_PREVIEW',
+      id: 'exec-preview',
+      geometries: { geometries: [], sketches: [] },
+    });
+    expect(posted[start]!.transfer).toEqual([]);
+    expect(posted[start + 1]!.message).toEqual({
+      type: 'SUCCESS',
+      id: 'exec-preview',
+      geometries: { geometries: [], sketches: [] },
+    });
+  });
+
   it('EXECUTE throwing replies ERROR with String(error)', async () => {
     const { message } = await dispatch({
       type: 'EXECUTE',

@@ -43,7 +43,12 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `extrudeRect(w, h, height, opts?) => Shape` | Extrude a w-by-h rectangle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
 | `extrudeCircle(r, height, opts?) => Shape` | Extrude a radius-r circle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
 | `extrudePolygon(points, depth, opts?) => Shape` | Extrude a 2D polygon (array of [x, y] points; coordinates and `depth` accept ParamRefs) by `depth` along Z. |
-| `extrudeRoundedRect(width, height, radius, depth, opts?) => Shape` | Extrude a rounded rectangle (corner radius) by `depth` along Z. |
+| `extrudeRoundedRect(width, height, radius, depth, opts?) => Shape` | Extrude a rounded rectangle (corner radius) by `depth`. |
+| `filletPolygon(points: [number, number][], radius, opts?: { segments?: number }) => [number, number][]` | Round every corner of a closed 2D polygon with tangent arcs and return points for extrudePolygon / the prism helpers. |
+| `prismSide(points: [number, number][], halfY?: number) => Shape` | Side-view mask prism: points are (station s, height z), extruded through Y from -halfY to +halfY (default 1200). |
+| `prismSideY(points: [number, number][], y0: number, y1: number) => Shape` | Side-view mask prism on one side only: points are (s, z), extruded through Y from y0 to y1 (y1 > y0). |
+| `prismFront(points: [number, number][], x0: number, x1: number) => Shape` | Front-view mask prism: points are (Y, Z), extruded along X from x0 to x1. |
+| `prismPlan(points: [number, number][], z0: number, z1: number) => Shape` | Plan-view mask prism: points are (X, Y), extruded along Z from z0 to z1. |
 | `sheetMetal(profile: Sketch, { thickness, kFactor, faceLabels? }) => Shape` | Build a sheet-metal body from a closed planar Sketch. |
 | `sdf : { sphere(r), box(size), cylinder(r, h), torus(R, r), smoothBlend(a, b, k), materialize(field, opts?), bind(name, field) }` | SDF authoring namespace (W2.3 slice-1). |
 | `path() => PathBuilder` | Start a 2D path: chain moveTo / lineTo / arcs / .close() to get a Sketch. |
@@ -247,6 +252,10 @@ Declare editable dimensions and do arithmetic on them (JS operators throw on a P
 | `ParamRef.multiply(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef times `other`. |
 | `ParamRef.divide(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef divided by `other`. |
 | `ParamRef.negate() => ParamRef<number>` | Build a ParamRef whose value equals the unary negation of this ParamRef. |
+| `ParamRef.min(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value is the smaller of this ParamRef and `other`. |
+| `ParamRef.max(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value is the larger of this ParamRef and `other`. |
+| `ParamRef.abs() => ParamRef<number>` | Build a ParamRef whose value is the absolute value of this ParamRef. |
+| `ParamRef.clamp(min: number \| ParamRef<number>, max: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef clamped into `[min, max]`. |
 
 ## Import & export
 
@@ -254,7 +263,7 @@ Bring in vendor geometry, and write models back out.
 
 | Call | What it does |
 |---|---|
-| `lib : { fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; meshFromSTL(path: string): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; part(request: { family: string; thread?: string; lengthMm?: number }): Promise<Shape>; stack(request: { thread: string; gripMm: number; mode?: "screw" \| "bolt" }): Promise<{ lengthMm: number; screw: Shape }>; standard: StandardParts }` | Parts library namespace. |
+| `lib : { fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; meshFromSTL(path: string): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; part(request: { family: string; thread?: string; lengthMm?: number }): Promise<Shape>; stack(request: { thread: string; gripMm: number; mode?: "screw" \| "bolt" }): Promise<{ lengthMm: number; screw: Shape }>; insert(shape: Shape, request: { diameterMm?: number; near?: Vec3; family: "socket-head-cap-screw" \| "button-head-cap-screw" \| "flat-head-countersunk"; mode?: "screw" \| "bolt"; gripMm?: number; seat?: "auto" \| "none" \| "counterbore"; headAt?: Vec3 }): Promise<{ shape: Shape; holes: Array<{ centerMm: Vec3; direction: Vec3; diameterMm: number; depthMm: number; thread: string; fit: "close" \| "normal" \| "loose"; lengthMm: number; screw: Shape; headWasher?: Shape; tailWasher?: Shape; nut?: Shape }> }>; fixture: FixtureParts; standard: StandardParts }` | Parts library namespace. |
 | `Scene.toCompound() => Shape` | Groups bodies without booleaning. |
 
 ## Annotate & present
