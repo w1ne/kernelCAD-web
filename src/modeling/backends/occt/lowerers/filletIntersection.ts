@@ -136,6 +136,17 @@ export function lowerFilletIntersection(ctx: LowerContext, r: FeatureRecord): Lo
   if (request === undefined) return base ? finished(base) : noShape();
 
   const seam = findIntersectionSeamEdges(base!, cutter!, request);
+  if (seam.sectionBuildFailed) {
+    ctx.diagnostics.push({
+      target: ctx.target,
+      code: 'feature.fillet-intersection.section-failed',
+      featureId: r.id,
+      severity: 'error',
+      message: 'filletIntersection: OCCT could not build the body ∩ cutter section, so the seam is unknown.',
+      hint: HINT_TEMPLATES['feature.fillet-intersection.section-failed'].template,
+    });
+    return finished(base!);
+  }
   if (seam.sectionEdgeCount === 0) {
     ctx.diagnostics.push({
       target: ctx.target,
@@ -148,13 +159,18 @@ export function lowerFilletIntersection(ctx: LowerContext, r: FeatureRecord): Lo
     return finished(base!);
   }
   if (seam.matched.length === 0) {
+    const smoothOnly = seam.smoothRejected > 0;
     ctx.diagnostics.push({
       target: ctx.target,
       code: 'feature.fillet-intersection.no-seam-edge',
       featureId: r.id,
       severity: 'error',
-      message: `filletIntersection: section exists (${seam.sectionEdgeCount} edge(s)) but no body edge lies within ${request.toleranceMm} mm of it.`,
-      hint: HINT_TEMPLATES['feature.fillet-intersection.no-seam-edge'].template,
+      message: smoothOnly
+        ? `filletIntersection: section exists (${seam.sectionEdgeCount} edge(s)) and ${seam.smoothRejected} body edge(s) match it, but all were filtered as smooth or indeterminate. Only sharp boolean cut seams are filletable.`
+        : `filletIntersection: section exists (${seam.sectionEdgeCount} edge(s)) but no body edge lies within ${request.toleranceMm} mm of it.`,
+      hint: smoothOnly
+        ? 'The matching edges are smooth parametric seams, not boolean cut edges. Use .fillet() on those smooth seams, or choose a cutter that leaves a sharp edge along the seam.'
+        : HINT_TEMPLATES['feature.fillet-intersection.no-seam-edge'].template,
     });
     return finished(base!);
   }

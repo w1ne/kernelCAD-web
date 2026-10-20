@@ -28,12 +28,16 @@ export interface SeamEdge {
 }
 
 export interface IntersectionSeamResult {
+  /** True when OCCT could not build the body ∩ cutter section at all. */
+  sectionBuildFailed: boolean;
   /** Number of edges produced by the exact body ∩ cutter section. */
   sectionEdgeCount: number;
   /** Every body edge within tolerance of the section. */
   matched: SeamEdge[];
   /** Matched edges shorter than `2 * radius` (they may be skipped on retry). */
   short: SeamEdge[];
+  /** Matched edges rejected because they were smooth or indeterminate. */
+  smoothRejected: number;
 }
 
 export interface FindSeamOptions {
@@ -46,7 +50,9 @@ function wrappedOf(shape: OcctBackend): unknown {
   return (shape.getReplicadShape() as any).wrapped as unknown;
 }
 
-function buildSection(bodyShape: unknown, cutterShape: unknown): unknown | null {
+type SectionBuild = { ok: true; shape: unknown } | { ok: false };
+
+function buildSection(bodyShape: unknown, cutterShape: unknown): SectionBuild {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   const section = new oc.BRepAlgoAPI_Section_3(bodyShape, cutterShape, false);
@@ -55,8 +61,8 @@ function buildSection(bodyShape: unknown, cutterShape: unknown): unknown | null 
     section.ComputePCurveOn1(false);
     section.Approximation(true);
     section.Build(progress);
-    if (!section.IsDone()) return null;
-    return section.Shape();
+    if (!section.IsDone()) return { ok: false };
+    return { ok: true, shape: section.Shape() };
   } finally {
     section.delete?.();
     progress.delete?.();
@@ -153,10 +159,11 @@ export function findIntersectionSeamEdges(
   const toleranceMm = opts.toleranceMm ?? DEFAULTS.toleranceMm;
   const bodyShape = wrappedOf(body);
   const cutterShape = wrappedOf(cutter);
-  const sectionShape = buildSection(bodyShape, cutterShape);
-  if (sectionShape === null) {
-    return { sectionEdgeCount: 0, matched: [], short: [] };
+  const sectionBuild = buildSection(bodyShape, cutterShape);
+  if (!sectionBuild.ok) {
+    return { sectionBuildFailed: true, sectionEdgeCount: 0, matched: [], short: [], smoothRejected: 0 };
   }
+  const sectionShape = sectionBuild.shape;
 
   // Count the section edges so an empty section and a section with no matching
   // body edge produce different diagnostics.
@@ -188,6 +195,7 @@ export function findIntersectionSeamEdges(
   }
   const matched: SeamEdge[] = [];
   const short: SeamEdge[] = [];
+  let smoothRejected = 0;
   const seen = new Set<string>();
   const explorer = new oc.TopExp_Explorer_2(
     bodyShape,
@@ -216,6 +224,7 @@ export function findIntersectionSeamEdges(
         // cannot decide); >= 175° = already smooth. Neither is a boolean cut
         // seam, so do not fillet it.
         if (dihedral === null || dihedral.angleDeg >= 175) {
+          smoothRejected++;
           explorer.Next();
           continue;
         }
@@ -229,5 +238,5 @@ export function findIntersectionSeamEdges(
   } finally {
     explorer.delete?.();
   }
-  return { sectionEdgeCount, matched, short };
+  return { sectionBuildFailed: false, sectionEdgeCount, matched, short, smoothRejected };
 }

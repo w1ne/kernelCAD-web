@@ -371,6 +371,14 @@ export const FEATURE_SURFACES_CODES = {
     group: 'feature',
     description: 'BRepAlgoAPI_Section returned no edges — the two surfaces or solids do not intersect.',
   },
+  'feature.fillet-intersection.section-failed': {
+    hintTemplate:
+      'OCCT could not compute body ∩ cutter, so the seam is unknown. Check that both operands are valid closed solids, then retry; if the section still fails, rebuild the cut or simplify the cutter.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'rebuild the subtract or simplify the cutter, then retry filletIntersection' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'BRepAlgoAPI_Section failed to build; no seam could be selected.',
+  },
   'feature.fillet-intersection.no-section': {
     hintTemplate:
       'filletIntersection needs the body and cutter to actually cross: BRepAlgoAPI_Section returned no curve. Move/rotate the cutter so it intersects the body (or pass the cutter that was actually subtracted), then retry.',
