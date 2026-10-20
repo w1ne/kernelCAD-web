@@ -19,6 +19,7 @@
  */
 import { useSyncExternalStore } from 'react';
 import type { GeometryPick } from './geometryLineage';
+import type { SharedSelectionItem } from '../../shared/selection/sharedSelection';
 
 export interface CodeLink {
     readonly pick: GeometryPick;
@@ -28,10 +29,14 @@ export interface CodeLink {
     readonly anchor: { readonly x: number; readonly y: number } | null;
     /** Bumps on every click so a repeat click on the same face re-reveals. */
     readonly seq: number;
+    readonly stableId?: string;
+    readonly ref?: string;
 }
 
 export interface SelectionCodeState {
     readonly link: CodeLink | null;
+    /** Current face/edge selection set; `link` is its primary item. */
+    readonly topologySelections: readonly CodeLink[];
     /** Feature ids the code cursor / hover points at; null when none. */
     readonly codeHighlight: readonly string[] | null;
 }
@@ -45,7 +50,7 @@ function sameIds(a: readonly string[] | null, b: readonly string[] | null): bool
 }
 
 export class SelectionCodeStore {
-    private state: SelectionCodeState = { link: null, codeHighlight: null };
+    private state: SelectionCodeState = { link: null, topologySelections: [], codeHighlight: null };
     private preselect: GeometryPick | null = null;
     private seq = 0;
     private readonly listeners = new Set<Listener>();
@@ -70,14 +75,51 @@ export class SelectionCodeStore {
 
     /** Geometry → code. Clears any code-driven highlight. */
     linkFromGeometry(pick: GeometryPick, featureId: string | null, anchor: CodeLink['anchor']): void {
+        this.selectFromGeometry(pick, featureId, anchor, false);
+    }
+
+    selectFromGeometry(
+        pick: GeometryPick,
+        featureId: string | null,
+        anchor: CodeLink['anchor'],
+        multi: boolean,
+        stableId?: string,
+        operationOwner?: string,
+    ): void {
         this.seq += 1;
-        this.state = { link: { pick, featureId, anchor, seq: this.seq }, codeHighlight: null };
+        const item: CodeLink = { pick, featureId, anchor, seq: this.seq,
+            ...(stableId ? { stableId, ...((operationOwner || featureId) ? { ref: `@kc[${operationOwner || featureId}/edge/${stableId}]` } : {}) } : {}) };
+        const key = (candidate: CodeLink) => `${candidate.pick.shapeIndex}:${candidate.pick.kind}:${candidate.stableId ?? candidate.pick.id}`;
+        let topologySelections: readonly CodeLink[];
+        if (!multi) topologySelections = [item];
+        else {
+            const current = this.state.topologySelections;
+            topologySelections = current.some(candidate => key(candidate) === key(item))
+                ? current.filter(candidate => key(candidate) !== key(item))
+                : [...current, item];
+        }
+        const link = topologySelections.includes(item) ? item : topologySelections.at(-1) ?? null;
+        this.state = { link, topologySelections, codeHighlight: null };
+        this.emit();
+    }
+
+    setTopologySelections(selections: readonly SharedSelectionItem[], primary: SharedSelectionItem | null = selections.at(-1) ?? null): void {
+        const topologySelections = selections.map((selection) => {
+            this.seq += 1;
+            const { shapeIndex, kind, id, featureId, stableId, ref } = selection;
+            return { pick: { shapeIndex, kind, id }, featureId, anchor: null, seq: this.seq,
+                ...(stableId ? { stableId } : {}), ...(ref ? { ref } : {}) } as CodeLink;
+        });
+        const primaryKey = primary ? `${primary.shapeIndex}:${primary.kind}:${primary.stableId ?? primary.id}` : null;
+        const link = primaryKey ? topologySelections.find(candidate =>
+            `${candidate.pick.shapeIndex}:${candidate.pick.kind}:${candidate.stableId ?? candidate.pick.id}` === primaryKey) ?? null : null;
+        this.state = { link, topologySelections, codeHighlight: null };
         this.emit();
     }
 
     clearLink(): void {
-        if (this.state.link === null) return;
-        this.state = { ...this.state, link: null };
+        if (this.state.link === null && this.state.topologySelections.length === 0) return;
+        this.state = { ...this.state, link: null, topologySelections: [] };
         this.emit();
     }
 
@@ -91,7 +133,7 @@ export class SelectionCodeStore {
 
     /** Test helper: back to the initial state. */
     reset(): void {
-        this.state = { link: null, codeHighlight: null };
+        this.state = { link: null, topologySelections: [], codeHighlight: null };
         this.preselect = null;
         this.emit();
     }

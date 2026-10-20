@@ -84,6 +84,7 @@ export interface SessionPoolEntry {
   /** Swapped in place by `rebuildByScript` — always read, never cache. */
   model: BuiltModel;
   selection: SharedSelection;
+  selections: Exclude<SharedSelection, null>[];
   selectionFaceSignature: FaceSignature | null;
   selectionPendingSignature: FaceSignature | null;
   selectionRevision: number;
@@ -236,6 +237,7 @@ async function getOrCreateEntry(
     ownerId,
     model,
     selection: null,
+    selections: [],
     selectionFaceSignature: null,
     selectionPendingSignature: null,
     selectionRevision: 0,
@@ -320,6 +322,7 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
         ? entry.selectionFaceSignature
         : pendingSignature;
       entry.selection = null;
+      entry.selections = [];
       entry.selectionFaceSignature = null;
       entry.selectionRevision += 1;
       entry.selectionModelGeneration += 1;

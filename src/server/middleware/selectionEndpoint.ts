@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { SessionPool, SessionPoolEntry } from '../sessionPool';
 import { readBody, readQuery, writeJson, type MinimalRes } from './httpUtil';
-import { faceSignatureSchema, sharedSelectionSchema } from '../../shared/selection/sharedSelection';
+import { faceSignatureSchema, sharedSelectionItemSchema, sharedSelectionSchema } from '../../shared/selection/sharedSelection';
 import { remapFaceSignature, signatureForSelection } from '../../shared/selection/faceSignature';
 import type { FaceSignature, SharedSelection } from '../../shared/selection/sharedSelection';
 import type { GeometryResult } from '../../shared/worker/workerTypes';
@@ -46,6 +46,11 @@ async function updateSelection(
   const body = JSON.parse(await readBody(req, 4096));
   const parsed = sharedSelectionSchema.safeParse(body.selection);
   if (!parsed.success) return { status: 400, message: 'invalid selection' };
+  const parsedSelections = body.selections === undefined
+    ? { success: true as const, data: parsed.data ? [parsed.data] : [] }
+    : zSelectionArray(body.selections);
+  if (!parsedSelections.success) return { status: 400, message: 'invalid selections' };
+  const selections = parsedSelections.data;
   const acceptedGeneration = entry.selectionModelGeneration;
   if (body.model_generation !== acceptedGeneration) return generationConflict();
   const signatureResult = parseSuppliedSignature(body.face_signature);
@@ -54,6 +59,28 @@ async function updateSelection(
   // used by rebuilds. Face verification must stay unlocked to avoid nesting.
   return pool.runExclusive(async () => {
     if (body.model_generation !== entry.selectionModelGeneration || acceptedGeneration !== entry.selectionModelGeneration) return generationConflict();
+    if (selections.some(selected => selected.kind === 'edge' && selected.stableId)) {
+      const geometries = await currentSelectionGeometries(entry);
+      if (body.model_generation !== entry.selectionModelGeneration || acceptedGeneration !== entry.selectionModelGeneration) return generationConflict();
+      for (const selected of selections) {
+        const geometry = geometries[selected.shapeIndex];
+        if (!geometry) return { status: 409, message: 'selection does not match the current mesh' };
+        if (selected.kind === 'edge') {
+          if (!selected.stableId) continue; // legacy mesh-local edge pick; accepted for backwards compatibility
+          if (geometry.edgeStableIds?.[selected.id] !== selected.stableId) {
+            return { status: 409, message: 'edge selection does not match the current mesh' };
+          }
+          const owner = geometry.edgeOwners?.[selected.id] || geometry.featureId || null;
+          const operationOwner = geometry.featureId;
+          const expectedRef = operationOwner ? `@kc[${operationOwner}/edge/${selected.stableId}]` : undefined;
+          if (selected.featureId !== owner || (selected.ref !== undefined && selected.ref !== expectedRef)) {
+            return { status: 409, message: 'edge reference does not match the current mesh' };
+          }
+        } else if (!geometry.faces.some(face => face.faceId === selected.id)) {
+          return { status: 409, message: 'selection does not match the current mesh' };
+        }
+      }
+    }
     if (parsed.data?.kind === 'face') {
       const verification = await (resolver ? resolver(entry, parsed.data!) : verifyCurrentFaceUnlocked(entry, parsed.data!));
       if (body.model_generation !== entry.selectionModelGeneration || acceptedGeneration !== entry.selectionModelGeneration) return generationConflict();
@@ -64,17 +91,38 @@ async function updateSelection(
         return { status: 409, message: 'selection pending rebuild; Studio must publish the unique verified remap' };
       }
       entry.selection = parsed.data;
+      entry.selections = selections;
       entry.selectionFaceSignature = signatureResult.signature ?? verification.signature;
       entry.selectionPendingSignature = null;
       entry.selectionRevision += 1;
       return null;
     }
     entry.selection = parsed.data;
+    entry.selections = selections;
     entry.selectionFaceSignature = null;
     entry.selectionPendingSignature = null;
     entry.selectionRevision += 1;
     return null;
   });
+}
+
+function zSelectionArray(value: unknown) {
+  return Array.isArray(value) && value.every(item => sharedSelectionItemSchema.safeParse(item).success)
+    ? { success: true as const, data: value as Exclude<SharedSelection, null>[] }
+    : { success: false as const };
+}
+
+async function currentSelectionGeometries(entry: SessionPoolEntry): Promise<GeometryResult[]> {
+  const { meshFeaturesPerFeature } = await import('../../modeling/capture/featureMeshing');
+  const result = await meshFeaturesPerFeature(entry.model.records, entry.model.session.paramTable, entry.model.session);
+  return result.features.map(feature => ({
+    featureId: feature.featureId,
+    faces: feature.faces,
+    faceOwners: feature.faceOwners,
+    edgeRanges: feature.edgeRanges,
+    edgeOwners: feature.edgeOwners,
+    edgeStableIds: feature.edgeStableIds,
+  })) as GeometryResult[];
 }
 
 async function verifyCurrentFaceUnlocked(entry: SessionPoolEntry, selection: SharedSelection): Promise<CurrentFaceVerification> {
@@ -109,7 +157,7 @@ function selectionError(entry: SessionPoolEntry, message: string) {
 
 function selectionResponse(entry: SessionPoolEntry, url: string | undefined) {
   const studioRemap = readQuery(url, 'studio_remap') === '1';
-  return { ok: true, selection: entry.selection, revision: entry.selectionRevision, modelGeneration: entry.selectionModelGeneration,
+  return { ok: true, selection: entry.selection, selections: entry.selections, revision: entry.selectionRevision, modelGeneration: entry.selectionModelGeneration,
     ...(entry.selectionPendingSignature && !studioRemap ? { error: 'selection pending rebuild' } : {}),
     ...(studioRemap ? { pendingSignature: entry.selectionPendingSignature } : {}) };
 }

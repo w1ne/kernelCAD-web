@@ -38,6 +38,7 @@ import type { FaceQuery } from './edgeQueries';
 import { KernelError } from '../../../shared/intent/kernelError';
 import { resolveFaceRef } from '../../naming/resolveFaceRef';
 import { resolveEdgeRef } from '../../naming/resolveEdgeRef';
+import { resolveStableEdgeId } from './edgeIdentity';
 import {
   parseFaceSelector,
   findLineageMatches,
@@ -497,6 +498,23 @@ function resolveSingleSegmentEdgeRef(
   base: OcctBackend,
   ref: Extract<EdgeRef, { kind: 'segment' }>,
 ): EdgeList | { error: CompilerDiagnostic } {
+  if (/^s[0-9a-f]{16}$/.test(ref.segmentId)) {
+    const result = resolveStableEdgeId((base.getReplicadShape() as unknown as { edges: Edge[] }).edges, ref.segmentId);
+    if (result.status === 'unique') return [result.edge];
+    const reason = result.status === 'missing'
+      ? 'does not match an edge on the current shape'
+      : `matches ${result.matches} geometrically identical edges`;
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        featureId: record.id,
+        severity: 'error',
+        message: `Stable edge ID '${ref.segmentId}' ${reason}.`,
+        hint: 'Pick the edge again from the current Studio mesh; stable edge IDs resolve only when the sampled geometry identifies one edge.',
+      },
+    };
+  }
   // segmentId encodes index into the lowered shape's edges array (`e0`, `e1`, ...).
   const idx = parseInt(ref.segmentId.replace(/^e/, ''), 10);
   const all = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
@@ -520,23 +538,11 @@ function resolveMultiSegmentEdgeRef(
   base: OcctBackend,
   ref: Extract<EdgeRef, { kind: 'segments' }>,
 ): EdgeList | { error: CompilerDiagnostic } {
-  const all = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
   const out: Edge[] = [];
   for (const sid of ref.segmentIds) {
-    const idx = parseInt(sid.replace(/^e/, ''), 10);
-    if (Number.isNaN(idx) || idx < 0 || idx >= all.length) {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.invalid-args',
-          featureId: record.id,
-          severity: 'error',
-          message: `Invalid segment id '${sid}'.`,
-          hint: 'Re-derive segment IDs from the current shape.',
-        },
-      };
-    }
-    out.push(all[idx]);
+    const resolved = resolveSingleSegmentEdgeRef(record, base, { kind: 'segment', segmentId: sid });
+    if ('error' in resolved) return resolved;
+    out.push(...resolved);
   }
   return out;
 }

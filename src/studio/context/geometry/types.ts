@@ -257,6 +257,7 @@ export function featureMeshesToGeometries(features: FeatureMeshSerialized[]): Ge
             ...(mesh.faceOwners !== undefined ? { faceOwners: mesh.faceOwners } : {}),
             ...(mesh.edgeRanges !== undefined ? { edgeRanges: mesh.edgeRanges } : {}),
             ...(mesh.edgeOwners !== undefined ? { edgeOwners: mesh.edgeOwners } : {}),
+            ...(mesh.edgeStableIds !== undefined ? { edgeStableIds: mesh.edgeStableIds } : {}),
         };
     });
 }

@@ -407,6 +407,7 @@ function badRef(ref: string, why: string, hintTag: string, requires: string): ne
 }
 
 const POSITIONAL_EDGE = /^e\d+$/;
+const STABLE_EDGE = /^s[0-9a-f]{16}$/;
 const POSITIONAL_FACE = /^f\d+$/;
 
 /** Map one `@kc[<owner>/edge/e<N>]` ref (the form list_edges / inspect emit)
@@ -420,13 +421,13 @@ function edgeSegmentIdFromRef(baseId: FeatureId, ref: string): string {
       "the exact ref string printed by inspect / list_edges, e.g. '@kc[box_1/edge/e3]'");
   }
   const name = parsed.segments.length === 1 ? parsed.segments[0] : undefined;
-  if (parsed.kind !== 'edge' || name === undefined || !POSITIONAL_EDGE.test(name)) {
-    badRef(ref, `only positional edge refs '@kc[<feature>/edge/e<N>]' can select edges here (got kind '${parsed.kind}').`,
-      'bad-ref', "an edge ref from inspect({ of: 'edges' }), a face ref / face name (all edges of that face), or an EdgeQuery");
+  if (parsed.kind !== 'edge' || name === undefined || (!POSITIONAL_EDGE.test(name) && !STABLE_EDGE.test(name))) {
+    badRef(ref, `edge refs must use a positional e<N> or stable s<hash> edge id (got kind '${parsed.kind}').`,
+      'bad-ref', "an edge ref from get_selection / inspect({ of: 'edges' }), a face ref / face name (all edges of that face), or an EdgeQuery");
   }
   if (parsed.owner !== baseId) {
-    badRef(ref, `edge ids are positional within the shape they were listed on ('${parsed.owner}'), but this feature is applied to '${baseId}'.`,
-      'ref-owner-mismatch', `refs listed on '${baseId}' itself (inspect({ of: 'edges', feature_id: '${baseId}' })), or an EdgeQuery`);
+    badRef(ref, `edge refs belong to '${parsed.owner}', but this feature is applied to '${baseId}'.`,
+      'ref-owner-mismatch', `refs selected on '${baseId}' itself, or an EdgeQuery`);
   }
   return name;
 }

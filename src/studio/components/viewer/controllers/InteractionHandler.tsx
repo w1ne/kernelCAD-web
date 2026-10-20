@@ -7,6 +7,7 @@ import { HoverManager, type HoverResult } from "../../../features-ui/interaction
 import { SnapManager, type SnapResult } from "../../../features-ui/interaction/SnapManager";
 import { filterClippedIntersections } from "../clipFilter";
 import { pointerIsOver } from "./pointerOver";
+import { edgeRaycastThreshold } from "./edgeRaycastThreshold";
 
 interface InteractionHandlerProps {
     setHovered: (h: HoverResult | null) => void;
@@ -27,7 +28,8 @@ function usePointerOver(el: HTMLElement) {
 }
 
 export function InteractionHandler({ setHovered, setSnap }: InteractionHandlerProps) {
-    const { camera, scene, raycaster, pointer, gl } = useThree();
+    const { camera, scene, raycaster: eventRaycaster, pointer, gl } = useThree();
+    const raycaster = useRef(new THREE.Raycaster());
     const lastCheckTime = useRef(0);
     const lastPointer = useRef(new THREE.Vector2(0, 0));
     const pointerOver = usePointerOver(gl.domElement);
@@ -47,8 +49,15 @@ export function InteractionHandler({ setHovered, setSnap }: InteractionHandlerPr
         }
         cleared.current = false;
         lastPointer.current.copy(pointer);
-        raycaster.setFromCamera(pointer, camera);
-        const intersects = raycaster.intersectObjects(scene.children, true);
+        const lineThreshold = edgeRaycastThreshold(camera, gl.domElement.clientHeight);
+        raycaster.current.setFromCamera(pointer, camera);
+        raycaster.current.params.Line.threshold = lineThreshold;
+        raycaster.current.params.Points.threshold = 0.2;
+        const intersects = raycaster.current.intersectObjects(scene.children, true);
+        // R3F uses this same mutable raycaster for pointer events. Keep its
+        // line target in step with HoverManager's pixel-scaled edge target.
+        // eslint-disable-next-line react-hooks/immutability -- Three.js raycaster params are deliberately mutable in the render loop.
+        eventRaycaster.params.Line.threshold = lineThreshold;
 
         // In a section/cutaway view the Raycaster still hits geometry that the
         // clipping planes have visually removed; drop those so hover/selection

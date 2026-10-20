@@ -15,7 +15,7 @@ import { featureEdgePositions, publishEdgeColor, PUBLISH_EDGE_OPACITY, type View
 import { pinRoomEnvironment } from "../roomEnvironment";
 import { matrixFromGeometryTransform } from "./geometryTransform";
 import { selectionCodeStore } from "../../../selectionCode/selectionCodeStore";
-import { resolvePickFeature, type GeometryPick } from "../../../selectionCode/geometryLineage";
+import { edgeIndexAtVertex, resolvePickFeature, type GeometryPick } from "../../../selectionCode/geometryLineage";
 import type { FeatureRecord } from "../../../../shared/intent/featureRecord";
 
 const EMPTY_PLANES: THREE.Plane[] = [];
@@ -34,10 +34,13 @@ function linkClickToCode(
     const pick: GeometryPick = hovered && hovered.kind === 'edge' && hovered.shapeIndex === shapeIndex
         ? hovered
         : { shapeIndex, kind: 'face', id: faceId };
-    selectionCodeStore.linkFromGeometry(
+    selectionCodeStore.selectFromGeometry(
         pick,
         resolvePickFeature(geometry, pick, features),
         { x: nativeEvent.offsetX, y: nativeEvent.offsetY },
+        false,
+        pick.kind === 'edge' ? geometry.edgeStableIds?.[pick.id] : undefined,
+        geometry.featureId ?? undefined,
     );
 }
 
@@ -167,6 +170,23 @@ export function ConsolidatedShape({
 
     const { setContextMenu } = useUI();
 
+    const selectEdgeIndex = useCallback((edgeIndex: number, nativeEvent: MouseEvent) => {
+        const stableId = geometry.edgeStableIds?.[edgeIndex];
+        if (edgeIndex < 0 || !stableId) return;
+        const pick: GeometryPick = { shapeIndex, kind: 'edge', id: edgeIndex };
+        const featureId = resolvePickFeature(geometry, pick, featureRecords ?? []);
+        selectionCodeStore.selectFromGeometry(
+            pick,
+            featureId,
+            { x: nativeEvent.offsetX, y: nativeEvent.offsetY },
+            nativeEvent.metaKey || nativeEvent.ctrlKey || nativeEvent.shiftKey,
+            stableId,
+            geometry.featureId ?? name,
+        );
+        setSelectedFace(null);
+        setSelectedSketchName(null);
+    }, [featureRecords, geometry, name, setSelectedFace, setSelectedSketchName, shapeIndex]);
+
     const indexedMesh = useIndexedMeshGeometry(geometry.mesh);
     const { geometry: mergedGeometry, faceMap } = useConsolidatedGeometry(geometry.faces);
     const displayGeometry = indexedMesh ?? mergedGeometry;
@@ -189,6 +209,15 @@ export function ConsolidatedShape({
     const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
         e.stopPropagation();
         const isMulti = e.metaKey || e.ctrlKey || e.shiftKey;
+
+        // The face surface can be marginally closer than its line target even
+        // when the pointer is within the edge pixel tolerance. HoverManager
+        // resolves that overlap first, so preserve its edge choice here.
+        const hovered = selectionCodeStore.getPreselect();
+        if (hovered?.kind === 'edge' && hovered.shapeIndex === shapeIndex) {
+            selectEdgeIndex(hovered.id, e.nativeEvent);
+            return;
+        }
 
         if (name && isMulti) {
             toggleSelection(name, true);
@@ -214,7 +243,13 @@ export function ConsolidatedShape({
             position: { x, y },
             type: 'FACE'
         });
-    }, [geometry, featureRecords, name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
+    }, [geometry, featureRecords, name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu, selectEdgeIndex]);
+
+    const handleEdgeClick = useCallback((e: ThreeEvent<MouseEvent>) => {
+        e.stopPropagation();
+        const edgeIndex = edgeIndexAtVertex(geometry.edgeRanges, e.index ?? -1);
+        selectEdgeIndex(edgeIndex, e.nativeEvent);
+    }, [geometry.edgeRanges, selectEdgeIndex]);
 
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;
@@ -248,6 +283,7 @@ export function ConsolidatedShape({
                 clippingPlanes={clippingPlanes ?? EMPTY_PLANES}
                 clipIntersection={clipIntersection ?? false}
                 look={look}
+                onEdgeClick={handleEdgeClick}
             />
             {selectedFace?.shapeIndex === shapeIndex && (
                 <FaceSelectionOverlay
@@ -265,7 +301,7 @@ export function ConsolidatedShape({
  *  viewport background. Under the publish look this full set stays only as
  *  the pick target (`visible: false` skips drawing, not raycasting) and
  *  PublishFeatureEdges draws the creases. */
-function ShapeEdges({ edgesGeo, geometry, shapeIndex, name, color, viewMode3D, clippingPlanes, clipIntersection, look }: {
+function ShapeEdges({ edgesGeo, geometry, shapeIndex, name, color, viewMode3D, clippingPlanes, clipIntersection, look, onEdgeClick }: {
     edgesGeo: THREE.BufferGeometry | null;
     geometry: GeometryResult;
     shapeIndex: number;
@@ -275,9 +311,11 @@ function ShapeEdges({ edgesGeo, geometry, shapeIndex, name, color, viewMode3D, c
     clippingPlanes: THREE.Plane[];
     clipIntersection: boolean;
     look: ViewerLook;
+    onEdgeClick: (event: ThreeEvent<MouseEvent>) => void;
 }) {
-    if (viewMode3D === 'shaded' || !edgesGeo) return null;
+    if (!edgesGeo) return null;
     const publishEdges = look === 'publish' && viewMode3D === 'shadedWithEdges';
+    const pickOnly = viewMode3D === 'shaded';
     return (
         <>
             <lineSegments
@@ -286,10 +324,11 @@ function ShapeEdges({ edgesGeo, geometry, shapeIndex, name, color, viewMode3D, c
                 // Pickable BREP edges: `edgeRanges` maps a raycast hit
                 // to one edge (HoverManager / HighlightOverlay).
                 userData={geometry.edgeRanges ? { type: 'EDGE', id: 'edges', shapeIndex, edgeRanges: geometry.edgeRanges, ownerId: name } : {}}
+                onClick={geometry.edgeRanges ? onEdgeClick : undefined}
             >
                 <lineBasicMaterial
                     color={viewMode3D === 'wireframe' ? color : 0x000000}
-                    visible={!publishEdges}
+                    visible={!publishEdges && !pickOnly}
                     clippingPlanes={clippingPlanes}
                     clipIntersection={clipIntersection}
                 />

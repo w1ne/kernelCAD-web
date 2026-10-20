@@ -153,9 +153,10 @@ describe('ConsolidatedShape scene graph per view mode', () => {
         expect(container.querySelectorAll('mesh')).toHaveLength(1);
     });
 
-    it('shaded — no edge lines', () => {
+    it('shaded — keeps the edge pick target while the lines remain hidden', () => {
         const { container } = renderShape('shaded');
-        expect(container.querySelectorAll('lineSegments')).toHaveLength(0);
+        expect(container.querySelector('lineSegments')).not.toBeNull();
+        expect(container.querySelector('lineBasicMaterial')).not.toBeNull();
         expect(container.querySelectorAll('mesh')).toHaveLength(1);
     });
 
