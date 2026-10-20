@@ -49,6 +49,30 @@ export function stlNotWatertightDiagnostic(
 export type GcodeOptions = Extract<ExportOptions, { format: 'gcode' }>;
 
 /**
+ * `export.brep.invalid` — the STEP/backing B-rep failed BRepCheck (invalid
+ * topology such as unorientable faces). The file is still written; the agent
+ * should rebuild the affected region rather than ship invalid topology.
+ */
+export function brepInvalidDiagnostic(
+  targetId: string | undefined,
+  partName?: string,
+): CompilerDiagnostic {
+  const subject = partName !== undefined ? `Part '${partName}'` : 'The exported solid';
+  return {
+    target: 'export-occt',
+    code: 'export.brep.invalid',
+    featureId: targetId,
+    severity: 'error',
+    message:
+      `${subject} fails the B-rep validity check (BRepCheck): invalid topology ` +
+      '(for example an unorientable face). Downstream tools may reject this STEP; ' +
+      'rebuild the affected region with clean operands and re-export.',
+    hint: HINT_TEMPLATES['export.brep.invalid'].template,
+    nextAction: NEXT_ACTIONS['export.brep.invalid'],
+  };
+}
+
+/**
  * `format: 'gcode'` shared dispatch: place `shape` in the build orientation
  * declared by `dfmSpec({ process: 'fdm', buildDirection })` (as modeled when
  * none is declared), bbox-gate it against the selected printer profile's bed

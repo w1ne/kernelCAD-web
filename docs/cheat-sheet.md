@@ -86,8 +86,8 @@ Turn a profile into a solid, or grow one along a path.
 | `Sketch.revolve() => Shape` | Revolve 360 degrees around the Z axis. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine?, section?: 'axial' \| 'transverse' }) => Shape` | Sweep this profile along a 3D rail. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
-| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels? }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
-| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels?, rails?: Curve3D[] }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
+| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels?, continuity?: "G0" \| "G1" \| "G2", spanSize?: number, mode?: "single" \| "sewn" }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
+| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels?, rails?: Curve3D[], continuity?: "G0" \| "G1" \| "G2", spanSize?: number, mode?: "single" \| "sewn" }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `variableSweep(spine: Curve3D \| Sketch \| Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" \| "C1" \| "C2" }) => Shape` | Multi-section sweep that blends `sections[i].profile` along the spine at the section's `t ∈ [0, 1]` spine parameter. |
 | `helix({ radius: Editable<number>, pitch: Editable<number>, turns: Editable<number>, axis?, pointsPerTurn?, startAngle?: Editable<number> }) => [number, number, number][]` | Helix rail for `Sketch.sweep`. |
 
@@ -124,6 +124,7 @@ Break edges, add draft, hollow out a wall, fold sheet metal.
 | Call | What it does |
 |---|---|
 | `Shape.fillet(radius, edges?: EdgeSelector, opts?: { continuity?: 'G1' \| 'G2' }) => Shape` | Round edges. |
+| `Shape.filletIntersection(cutter: Shape, radius: Editable<number>, opts?: { sides?: 'body' \| 'both'; toleranceMm?: Editable<number>; continuity?: 'G1' \| 'G2' }) => Shape` | Round the seam where `cutter` met this body. |
 | `Shape.chamfer(distance, edges?: EdgeSelector) => Shape` | Bevel edges. |
 | `Shape.draft(angleDeg: Editable<number>, opts: { face: FaceSelector \| string; neutralPlane?: string; pullDir?: [number, number, number] }) => Shape` | Taper the selected face(s) for moldability. |
 | `Shape.shell(thickness, { face: FaceSelector }) => Shape` | Hollow the solid removing the named face. |
@@ -203,6 +204,7 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 | `surfaceFromCurves(sections: Sketch[]) => Surface` | Skin a NURBS surface through 2+ closed Sketch cross-sections in declaration order. |
 | `surfaceFromBoundary(curves: [Curve3D, Curve3D, Curve3D, Curve3D], opts?: { continuity?: "C0" \| "C1" \| "C2" \| ("C0" \| "C1" \| "C2")[]; sampling?: number }) => Surface` | Build the shipped filling surface: one NURBS face through 4 boundary curves. |
 | `sew(surfaces: Surface[], opts?: { tolerance?: number; requireClosed?: boolean }) => Shape` | Stitch N surfaces into a shell or closed solid. |
+| `Shape.thicken(t: Editable<number>) => Shape` | Solidify an open shell returned by `sew([...])` or `surface.toShape()`. |
 | `Surface.thicken(t: Editable<number>) => Shape` | Offset both sides of this surface by `t` mm and return the closed solid Shape. |
 | `Surface.toShape() => Shape` | Wrap this surface as a single-face zero-volume Shape. |
 | `Surface.trimTo(by: Surface \| Shape) => Surface` | Trim this surface at its intersection with `by` and return a new Surface representing the kept half. |

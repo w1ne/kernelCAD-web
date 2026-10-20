@@ -8,6 +8,7 @@ import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
 import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
+import { validateLoftSegmentedOptions } from './loftSegmentedOptions';
 import { helix as sampleHelix, helixOptionsFromSpec, helixRailSpecOf, type HelixRailSpec } from '../helix';
 import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
 import { type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
@@ -84,13 +85,24 @@ export interface LoftOptions {
   endPoint?: [Editable<number>, Editable<number>, Editable<number>];
   faceLabels?: FaceLabelsMap;
   rails?: Curve3D[];
+  /** Requested continuity across station joins. Default `'G0'`, which keeps
+   *  the historical single `ThruSections` result. `'G1'`/`'G2'` build one
+   *  multi-span skin so there are no C0 joins to mismatch; `mode` is then
+   *  forced to `'single'` with a warning. */
+  continuity?: 'G0' | 'G1' | 'G2';
+  /** Stations per internal span for the segmented (`mode: 'sewn'`) path.
+   *  Must be an integer >= 2. Ignored by `mode: 'single'`. */
+  spanSize?: Editable<number>;
+  /** `'single'` (default) builds one skin over all stations. `'sewn'` builds
+   *  one solid per span and fuses them — fast, but the joins are C0. */
+  mode?: 'single' | 'sewn';
 }
 
 /** Option keys `Sketch.loft` accepts. Anything else is a likely typo and is
  *  rejected with `feature.invalid-args` instead of being silently dropped. */
 const ALLOWED_LOFT_KEYS = new Set([
   'spacing', 'planes', 'ruled', 'startPoint', 'endPoint', 'faceLabels',
-  'rails', 'twistDeg', 'twistCenter',
+  'rails', 'twistDeg', 'twistCenter', 'continuity', 'spanSize', 'mode',
 ]);
 
 /** Keys a single `opts.planes[i]` entry accepts. */
@@ -488,6 +500,7 @@ export class Sketch {
       this.id,
       'Pass opts.twistDeg as a total twist in degrees — a number or a param() reference.',
     );
+    validateLoftSegmentedOptions(opts, this.id);
     if (opts.planes !== undefined) {
       if (!Array.isArray(opts.planes)) {
         throw new KernelError(
@@ -1420,6 +1433,17 @@ function buildLoftMetadata(
     twistCenter: opts.twistCenter?.map((v) => (typeof v === 'number' ? v : toParam(v, 'mm'))),
     rails: rails.map((c) => c.id),
     ...(faceLabels ? { faceLabels } : {}),
+    ...(opts.continuity !== undefined || opts.spanSize !== undefined || opts.mode !== undefined
+      ? {
+          segmented: {
+            ...(opts.continuity !== undefined ? { continuity: opts.continuity } : {}),
+            ...(opts.spanSize !== undefined
+              ? { spanSize: typeof opts.spanSize === 'number' ? opts.spanSize : toParam(opts.spanSize, 'unitless') }
+              : {}),
+            ...(opts.mode !== undefined ? { mode: opts.mode } : {}),
+          },
+        }
+      : {}),
   };
 }
 
