@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import { buildModelFromFile } from '../src/modeling/buildModel';
-import { compareMetrics, type ReferenceMetrics } from './referencePartsScorecard';
+import { compareMetrics, renderScorecard, type ReferenceMetrics } from './referencePartsScorecard';
 
 const expected: ReferenceMetrics = {
   volumeMm3: 100,
@@ -42,6 +42,67 @@ describe('reference-parts metric comparison', () => {
     expect(result.volumePass).toBe(false);
     expect(result.surfaceAreaPass).toBe(false);
     expect(result.bboxPass).toBe(false);
+  });
+});
+
+describe('reference-parts scorecard summary', () => {
+  function makeReportResult(
+    expectedStatus: 'pass' | 'known-failure',
+    status: 'PASS' | 'KNOWN FAIL' | 'FAIL',
+    id: string,
+    knownFailureReason?: string,
+  ): Parameters<typeof renderScorecard>[0][number] {
+    const expectedMetrics: ReferenceMetrics = {
+      volumeMm3: 100,
+      surfaceAreaMm2: 200,
+      bbox: { min: [0, 0, 0], max: [10, 10, 10] },
+    };
+    const tolerance = { volumeRelative: 0.001, surfaceAreaRelative: 0.001, bboxAbsoluteMm: 0.01 };
+    const actualMetrics = status === 'PASS'
+      ? expectedMetrics
+      : { ...expectedMetrics, volumeMm3: expectedMetrics.volumeMm3 * 1.1 };
+
+    return {
+      part: {
+        id,
+        name: id,
+        source: `${id}.kcad.ts`,
+        expected: expectedMetrics,
+        tolerance,
+        provenance: { kind: 'analytic', details: 'test fixture formula' },
+        status: expectedStatus,
+        ...(knownFailureReason ? { knownFailureReason } : {}),
+      },
+      elapsedMs: 1,
+      actual: actualMetrics,
+      comparison: compareMetrics(actualMetrics, expectedMetrics, tolerance),
+      status,
+    };
+  }
+
+  it('counts actual matches over all parts and flags a known failure that now passes for promotion', () => {
+    const report = renderScorecard([
+      makeReportResult('pass', 'PASS', 'rectangular-block'),
+      makeReportResult('known-failure', 'KNOWN FAIL', 'plate-blind-hole', 'Blind cutter exceeds requested depth.'),
+      makeReportResult('known-failure', 'PASS', 'plate-counterbore', 'Counterbore cutter exceeds requested shoulder depth.'),
+    ]);
+
+    expect(report).toContain('**Result:** 2/3 reference parts match.');
+    expect(report).toContain('**Gate:** PASS — 1/1 expected-pass parts match');
+    expect(report).toContain('**plate-counterbore**: known failure cleared; promote.');
+    expect(report).toContain('Reason: Counterbore cutter exceeds requested shoulder depth.');
+    expect(report).toContain('Reason: Blind cutter exceeds requested depth.');
+  });
+
+  it('keeps the gate failing when an expected-pass part regresses', () => {
+    const report = renderScorecard([
+      makeReportResult('pass', 'FAIL', 'rectangular-block'),
+      makeReportResult('known-failure', 'KNOWN FAIL', 'plate-blind-hole', 'Blind cutter exceeds requested depth.'),
+      makeReportResult('known-failure', 'PASS', 'plate-counterbore', 'Counterbore cutter exceeds requested shoulder depth.'),
+    ]);
+
+    expect(report).toContain('**Result:** 1/3 reference parts match.');
+    expect(report).toContain('**Gate:** FAIL — 0/1 expected-pass parts match');
   });
 });
 

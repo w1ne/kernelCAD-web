@@ -97,18 +97,20 @@ def render_summary(
     path: Path,
     mono: ImageFont.FreeTypeFont,
     bold: ImageFont.FreeTypeFont,
-    summary: str,
-    known_failures: list[tuple[str, str]],
+    headline: str,
+    gate_summary: str,
+    known_failures: list[tuple[str, str, str]],
 ) -> None:
     image, draw = base_frame("Scorecard current", mono, bold)
     draw.rounded_rectangle((80, 210, WIDTH - 80, 390), radius=22, fill=PANEL, outline=BORDER, width=2)
-    draw.text((122, 244), summary, font=bold, fill=GREEN)
-    draw.text((122, 316), "Expected-pass parts meet analytic or recorded OCCT values.", font=mono, fill=FOREGROUND)
+    draw.text((122, 244), headline, font=bold, fill=GREEN)
+    draw.text((122, 316), gate_summary, font=mono, fill=FOREGROUND)
     if known_failures:
-        draw.text((90, 450), "Known failures kept at their nominal analytic targets:", font=mono, fill=AMBER)
+        draw.text((90, 450), "Declared known failures and promotion status:", font=mono, fill=AMBER)
         y = 500
-        for part_id, reason in known_failures:
-            wrapped = wrap(f"• {part_id}: {reason}", width=124)
+        for part_id, status, reason in known_failures:
+            state = "CLEARED; PROMOTE" if status == "PASS" else "KNOWN FAIL"
+            wrapped = wrap(f"• {part_id} — {state}: {reason}", width=124)
             for line in wrapped:
                 draw.text((120, y), line, font=mono, fill=FOREGROUND)
                 y += 32
@@ -147,10 +149,19 @@ def main() -> None:
     if len(rows) != expected_count or max(times_ms) > 5000:
         raise SystemExit(f"Unexpected demo evidence: {len(rows)} parts, max {max(times_ms):.1f} ms")
     result_statuses = {line.split()[0]: status for line, status in rows}
+    passing_count = sum(status == "PASS" for status in result_statuses.values())
+    expected_pass_ids = {part["id"] for part in corpus["parts"] if part["status"] == "pass"}
+    expected_pass_count = len(expected_pass_ids)
+    expected_pass_matches = sum(result_statuses.get(part_id) == "PASS" for part_id in expected_pass_ids)
+    headline = f"{passing_count}/{len(rows)} reference parts match"
+    gate_summary = (
+        f"GATE {'PASS' if result.returncode == 0 else 'FAIL'}  ·  "
+        f"{expected_pass_matches}/{expected_pass_count} expected-pass parts match"
+    )
     known_failures = [
-        (part["id"], part["knownFailureReason"])
+        (part["id"], result_statuses.get(part["id"], "FAIL"), part["knownFailureReason"])
         for part in corpus["parts"]
-        if result_statuses.get(part["id"]) == "KNOWN FAIL"
+        if part["status"] == "known-failure"
     ]
 
     mono, bold = load_fonts()
@@ -159,9 +170,9 @@ def main() -> None:
         cover = temporary_path / "cover.png"
         results = temporary_path / "results.png"
         summary = temporary_path / "summary.png"
-        render_cover(cover, mono, bold, len(rows), score_summary)
-        render_results(results, mono, bold, rows, score_summary)
-        render_summary(summary, mono, bold, score_summary, known_failures)
+        render_cover(cover, mono, bold, len(rows), f"{headline}  ·  gate {'PASS' if result.returncode == 0 else 'FAIL'}")
+        render_results(results, mono, bold, rows, headline)
+        render_summary(summary, mono, bold, headline, gate_summary, known_failures)
 
         video_path = BUNDLE / "demo.mp4"
         command = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error"]
@@ -196,7 +207,8 @@ def main() -> None:
         "exitCode": result.returncode,
         "partCount": len(rows),
         "expectedPartCount": expected_count,
-        "knownFailureIds": [part_id for part_id, _reason in known_failures],
+        "knownFailureIds": [part_id for part_id, _status, _reason in known_failures],
+        "knownFailureStatuses": {part_id: status for part_id, status, _reason in known_failures},
         "maxPartMs": max(times_ms),
         "scoreSummary": score_summary,
         "renderSettings": {

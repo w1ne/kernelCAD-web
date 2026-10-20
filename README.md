@@ -85,8 +85,9 @@ Some checks go past the picture:
 
 The headless OCCT gate checks 27 native `.kcad.ts` reference parts against
 analytic or recorded OCCT volume, surface-area, and bounding-box values. The
-current result is 25 / 25 expected-pass parts, with two documented known
-failures. See the
+current headline is 25/27 reference parts match; the expected-pass gate is
+25/25, with two documented known failures and their reasons listed in the
+scorecard. See the
 [reference-parts scorecard](docs/reference-parts-scorecard.md) and its
 [local validation demo](docs/demos/reference-parts-scorecard/README.md).
 

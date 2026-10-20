@@ -1,6 +1,7 @@
 # Reference parts scorecard
 
-**Result:** 25 / 25 expected-pass parts match; 2 known failure(s); 0 unexpected failure(s).
+**Result:** 25/27 reference parts match.
+**Gate:** PASS — 25/25 expected-pass parts match; 2 known failures declared, 2 still failing, 0 cleared for promotion; 0 unexpected failures.
 
 This deterministic report compares native `.kcad.ts` models against the values and provenance in `assets/reference-parts/scorecard.json`. The runner uses kernelCAD’s OCCT backend. Per-part timings are printed by the command and omitted here so regeneration stays stable across machines. See the [local validation demo bundle](demos/reference-parts-scorecard/README.md).
 
@@ -15,8 +16,8 @@ Regenerate with `npm run reference-parts:regenerate`; CI runs the same geometry 
 | Revolved torus | -0.0000% | +0.0000% | 0.024 mm | PASS |
 | Revolved cone frustum | -0.0000% | +0.0000% | 0.024 mm | PASS |
 | Plate with through-hole | -0.0000% | +0.0000% | 0.000 mm | PASS |
-| Plate with blind hole | -0.0036% | +0.0060% | 0.000 mm | KNOWN FAIL — The OCCT hole cutter extends a blind bore 0.01 mm past its requested depth, adding π·4²·0.01 mm³. The analytic nominal value and tight tolerances remain the target. |
-| Plate with counterbored through-hole | -0.0044% | +0.0032% | 0.000 mm | KNOWN FAIL — The OCCT counterbore cutter extends 0.01 mm past the requested shoulder depth, removing an extra π·(5²−3²)·0.01 mm³. The analytic nominal value and tight tolerances remain the target. |
+| Plate with blind hole | -0.0036% | +0.0060% | 0.000 mm | KNOWN FAIL |
+| Plate with counterbored through-hole | -0.0044% | +0.0032% | 0.000 mm | KNOWN FAIL |
 | Plate with through-slot | +0.0000% | +0.0000% | 0.000 mm | PASS |
 | Annular cylinder boolean cut | +0.0000% | +0.0000% | 0.024 mm | PASS |
 | Open-top shell | +0.0000% | +0.0000% | 0.000 mm | PASS |
@@ -35,6 +36,11 @@ Regenerate with `npm run reference-parts:regenerate`; CI runs the same geometry 
 | Square-section loft | +0.0000% | +0.0000% | 0.000 mm | PASS |
 | Stepped shaft revolve | -0.0000% | +0.0000% | 0.022 mm | PASS |
 | Rotated box | -0.0000% | -0.0000% | 0.000 mm | PASS |
+
+## Known failures
+
+- **plate-blind-hole**: still failing. Reason: The OCCT hole cutter extends a blind bore 0.01 mm past its requested depth, adding π·4²·0.01 mm³. The analytic nominal value and tight tolerances remain the target.
+- **plate-counterbore**: still failing. Reason: The OCCT counterbore cutter extends 0.01 mm past the requested shoulder depth, removing an extra π·(5²−3²)·0.01 mm³. The analytic nominal value and tight tolerances remain the target.
 
 ## Provenance
 

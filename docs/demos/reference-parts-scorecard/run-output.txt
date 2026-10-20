@@ -2,31 +2,31 @@
 > kernelcad@0.17.0 test:reference-parts
 > node --import tsx scripts/referencePartsScorecard.ts --check
 
-rectangular-block            ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       283.3 ms
-centered-block               ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       11.3 ms
-cylinder                     ΔV +0.0000%  ΔA -0.0000%  Δbbox 0.024 mm  PASS       11.0 ms
-sphere                       ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.024 mm  PASS       27.2 ms
-torus-revolve                ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.024 mm  PASS       81.9 ms
-cone-frustum-revolve         ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.024 mm  PASS       12.5 ms
-plate-through-hole           ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       61.6 ms
-plate-blind-hole             ΔV -0.0036%  ΔA +0.0060%  Δbbox 0.000 mm  KNOWN FAIL 29.2 ms
-plate-counterbore            ΔV -0.0044%  ΔA +0.0032%  Δbbox 0.000 mm  KNOWN FAIL 59.6 ms
-plate-through-slot           ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       28.0 ms
-annular-cylinder             ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.024 mm  PASS       18.7 ms
-open-top-shell               ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       32.2 ms
-l-bracket-union              ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       21.0 ms
-boolean-intersection         ΔV -0.0000%  ΔA -0.0000%  Δbbox 0.000 mm  PASS       23.5 ms
-rounded-box                  ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       75.0 ms
-top-edge-chamfer             ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       25.7 ms
-plate-four-holes             ΔV +0.0000%  ΔA -0.0000%  Δbbox 0.000 mm  PASS       87.6 ms
-circular-pattern-pins        ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.008 mm  PASS       23.2 ms
-linear-pattern-pins          ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.008 mm  PASS       16.2 ms
-grid-pattern-pins            ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.008 mm  PASS       21.9 ms
-mirrored-blocks              ΔV -0.0000%  ΔA -0.0000%  Δbbox 0.000 mm  PASS       17.2 ms
-sweep-square-prism           ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       9.3 ms
-sweep-round-prism            ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       9.5 ms
-loft-circular-frustum        ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       15.4 ms
-loft-square-frustum          ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       10.0 ms
-stepped-shaft-revolve        ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.022 mm  PASS       8.1 ms
+rectangular-block            ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       286.6 ms
+centered-block               ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       11.5 ms
+cylinder                     ΔV +0.0000%  ΔA -0.0000%  Δbbox 0.024 mm  PASS       10.9 ms
+sphere                       ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.024 mm  PASS       28.9 ms
+torus-revolve                ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.024 mm  PASS       82.2 ms
+cone-frustum-revolve         ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.024 mm  PASS       12.4 ms
+plate-through-hole           ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       63.5 ms
+plate-blind-hole             ΔV -0.0036%  ΔA +0.0060%  Δbbox 0.000 mm  KNOWN FAIL 29.6 ms
+plate-counterbore            ΔV -0.0044%  ΔA +0.0032%  Δbbox 0.000 mm  KNOWN FAIL 60.3 ms
+plate-through-slot           ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       28.7 ms
+annular-cylinder             ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.024 mm  PASS       17.6 ms
+open-top-shell               ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       32.5 ms
+l-bracket-union              ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       20.8 ms
+boolean-intersection         ΔV -0.0000%  ΔA -0.0000%  Δbbox 0.000 mm  PASS       22.0 ms
+rounded-box                  ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       74.2 ms
+top-edge-chamfer             ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       25.4 ms
+plate-four-holes             ΔV +0.0000%  ΔA -0.0000%  Δbbox 0.000 mm  PASS       83.8 ms
+circular-pattern-pins        ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.008 mm  PASS       23.4 ms
+linear-pattern-pins          ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.008 mm  PASS       16.6 ms
+grid-pattern-pins            ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.008 mm  PASS       21.6 ms
+mirrored-blocks              ΔV -0.0000%  ΔA -0.0000%  Δbbox 0.000 mm  PASS       16.8 ms
+sweep-square-prism           ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       9.2 ms
+sweep-round-prism            ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       9.1 ms
+loft-circular-frustum        ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       16.3 ms
+loft-square-frustum          ΔV +0.0000%  ΔA +0.0000%  Δbbox 0.000 mm  PASS       10.6 ms
+stepped-shaft-revolve        ΔV -0.0000%  ΔA +0.0000%  Δbbox 0.022 mm  PASS       7.7 ms
 rotated-box                  ΔV -0.0000%  ΔA -0.0000%  Δbbox 0.000 mm  PASS       9.5 ms
-Score: 25/25 expected-pass parts; 2 known failure(s); total 1032.4 ms / 60000 ms.
+Score: 25/27 reference parts match; gate PASS (25/25 expected-pass); 2 known failures declared, 2 remain, 0 cleared for promotion; total 1034.4 ms / 60000 ms.

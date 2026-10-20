@@ -26,6 +26,26 @@ export interface MetricComparison {
   bboxMaxAbsoluteErrorMm: number;
 }
 
+export type ExpectedPartStatus = 'pass' | 'known-failure';
+export type PartRunStatus = 'PASS' | 'KNOWN FAIL' | 'FAIL';
+
+export interface ScorecardSummaryInput {
+  expectedStatus: ExpectedPartStatus;
+  status: PartRunStatus;
+}
+
+export interface ScorecardSummary {
+  passing: number;
+  total: number;
+  expectedPassMatches: number;
+  expectedPassCount: number;
+  knownFailureCount: number;
+  knownFailuresStillFailing: number;
+  knownFailuresCleared: number;
+  unexpectedFailureCount: number;
+  gatePass: boolean;
+}
+
 interface ReferencePart {
   id: string;
   name: string;
@@ -33,7 +53,7 @@ interface ReferencePart {
   expected: ReferenceMetrics;
   tolerance: ReferenceTolerances;
   provenance: { kind: 'analytic' | 'occt-local' | 'mixed'; details: string };
-  status: 'pass' | 'known-failure';
+  status: ExpectedPartStatus;
   knownFailureReason?: string;
 }
 
@@ -48,7 +68,7 @@ interface PartResult {
   elapsedMs: number;
   actual?: ReferenceMetrics;
   comparison?: MetricComparison;
-  status: 'PASS' | 'KNOWN FAIL' | 'FAIL';
+  status: PartRunStatus;
   detail?: string;
 }
 
@@ -93,22 +113,53 @@ function formatMillimetres(value: number | undefined): string {
   return value === undefined ? '—' : `${value.toFixed(3)} mm`;
 }
 
+export function summarizeScorecard(results: readonly ScorecardSummaryInput[]): ScorecardSummary {
+  const expectedPassCount = results.filter((result) => result.expectedStatus === 'pass').length;
+  const expectedPassMatches = results.filter(
+    (result) => result.expectedStatus === 'pass' && result.status === 'PASS',
+  ).length;
+  const knownFailureCount = results.filter((result) => result.expectedStatus === 'known-failure').length;
+  const knownFailuresStillFailing = results.filter(
+    (result) => result.expectedStatus === 'known-failure' && result.status === 'KNOWN FAIL',
+  ).length;
+  const knownFailuresCleared = results.filter(
+    (result) => result.expectedStatus === 'known-failure' && result.status === 'PASS',
+  ).length;
+  const unexpectedFailureCount = results.filter((result) => result.status === 'FAIL').length;
+
+  return {
+    passing: results.filter((result) => result.status === 'PASS').length,
+    total: results.length,
+    expectedPassMatches,
+    expectedPassCount,
+    knownFailureCount,
+    knownFailuresStillFailing,
+    knownFailuresCleared,
+    unexpectedFailureCount,
+    gatePass: expectedPassMatches === expectedPassCount && unexpectedFailureCount === 0,
+  };
+}
+
 function resultStatus(result: PartResult): string {
   if (result.status === 'KNOWN FAIL') {
-    return `KNOWN FAIL — ${result.part.knownFailureReason ?? 'reason recorded in manifest'}`;
+    return 'KNOWN FAIL';
+  }
+  if (result.part.status === 'known-failure' && result.status === 'PASS') {
+    return 'PASS — cleared; promote';
   }
   return result.status;
 }
 
 export function renderScorecard(results: readonly PartResult[]): string {
-  const passing = results.filter((result) => result.status === 'PASS').length;
-  const knownFailures = results.filter((result) => result.status === 'KNOWN FAIL').length;
-  const unexpectedFailures = results.filter((result) => result.status === 'FAIL').length;
-  const expectedPassing = results.filter((result) => result.part.status === 'pass').length;
+  const summary = summarizeScorecard(results.map((result) => ({
+    expectedStatus: result.part.status,
+    status: result.status,
+  })));
   const lines = [
     '# Reference parts scorecard',
     '',
-    `**Result:** ${passing} / ${expectedPassing} expected-pass parts match; ${knownFailures} known failure(s); ${unexpectedFailures} unexpected failure(s).`,
+    `**Result:** ${summary.passing}/${summary.total} reference parts match.`,
+    `**Gate:** ${summary.gatePass ? 'PASS' : 'FAIL'} — ${summary.expectedPassMatches}/${summary.expectedPassCount} expected-pass parts match; ${summary.knownFailureCount} known failure${summary.knownFailureCount === 1 ? '' : 's'} declared, ${summary.knownFailuresStillFailing} still failing, ${summary.knownFailuresCleared} cleared for promotion; ${summary.unexpectedFailureCount} unexpected failure${summary.unexpectedFailureCount === 1 ? '' : 's'}.`,
     '',
     'This deterministic report compares native `.kcad.ts` models against the values and provenance in `assets/reference-parts/scorecard.json`. The runner uses kernelCAD’s OCCT backend. Per-part timings are printed by the command and omitted here so regeneration stays stable across machines. See the [local validation demo bundle](demos/reference-parts-scorecard/README.md).',
     '',
@@ -122,6 +173,21 @@ export function renderScorecard(results: readonly PartResult[]): string {
     lines.push(
       `| ${result.part.name} | ${formatPercent(result.comparison?.volumeRelativeError)} | ${formatPercent(result.comparison?.surfaceAreaRelativeError)} | ${formatMillimetres(result.comparison?.bboxMaxAbsoluteErrorMm)} | ${resultStatus(result)} |`,
     );
+  }
+
+  const knownFailureResults = results.filter((result) => result.part.status === 'known-failure');
+  lines.push('', '## Known failures', '');
+  if (knownFailureResults.length === 0) {
+    lines.push('None declared.');
+  } else {
+    for (const result of knownFailureResults) {
+      const state = result.status === 'PASS'
+        ? 'known failure cleared; promote'
+        : result.status === 'KNOWN FAIL'
+          ? 'still failing'
+          : 'evaluation failed';
+      lines.push(`- **${result.part.id}**: ${state}. Reason: ${result.part.knownFailureReason}`);
+    }
   }
 
   lines.push('', '## Provenance', '');
@@ -278,6 +344,7 @@ async function main(): Promise<number> {
   }
 
   const markdown = renderScorecard(results);
+  let scorecardCurrent = true;
   if (mode === '--write') {
     await writeFile(scorecardPath, markdown, 'utf8');
     console.log(`Wrote ${scorecardPath}`);
@@ -285,23 +352,18 @@ async function main(): Promise<number> {
     const committed = await readFile(scorecardPath, 'utf8').catch(() => '');
     if (committed !== markdown) {
       console.error('Committed scorecard is stale. Run npm run reference-parts:regenerate and review the diff.');
-      results.push({
-        part: corpus.parts[0],
-        elapsedMs: 0,
-        status: 'FAIL',
-        detail: 'committed scorecard differs from current deterministic output',
-      });
+      scorecardCurrent = false;
     }
   }
 
-  const failures = results.filter((result) => result.status === 'FAIL');
-  const expectedPassCount = corpus.parts.filter((part) => part.status === 'pass').length;
-  const passingExpected = results.filter((result) => result.part.status === 'pass' && result.status === 'PASS').length;
-  const knownFailures = results.filter((result) => result.status === 'KNOWN FAIL').length;
+  const summary = summarizeScorecard(results.map((result) => ({
+    expectedStatus: result.part.status,
+    status: result.status,
+  })));
   const elapsedTotal = performance.now() - totalStart;
-  console.log(`Score: ${passingExpected}/${expectedPassCount} expected-pass parts; ${knownFailures} known failure(s); total ${elapsedTotal.toFixed(1)} ms / ${corpus.limits.totalMs} ms.`);
+  console.log(`Score: ${summary.passing}/${summary.total} reference parts match; gate ${summary.gatePass ? 'PASS' : 'FAIL'} (${summary.expectedPassMatches}/${summary.expectedPassCount} expected-pass); ${summary.knownFailureCount} known failure${summary.knownFailureCount === 1 ? '' : 's'} declared, ${summary.knownFailuresStillFailing} remain, ${summary.knownFailuresCleared} cleared for promotion; total ${elapsedTotal.toFixed(1)} ms / ${corpus.limits.totalMs} ms.`);
   if (hardTimeout) process.exit(1);
-  return failures.length > 0 || passingExpected !== expectedPassCount || elapsedTotal > corpus.limits.totalMs ? 1 : 0;
+  return !summary.gatePass || !scorecardCurrent || elapsedTotal > corpus.limits.totalMs ? 1 : 0;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
