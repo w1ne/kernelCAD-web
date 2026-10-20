@@ -51,6 +51,7 @@
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",
     "test": "NODE_OPTIONS='--max-old-space-size=8192' vitest run",
+    "test:slow": "KCAD_SLOW=1 npm test",
     "test:audit": "npx tsx scripts/testQualityAudit.ts",
     "test:hygiene": "npm test -- scripts/repoHygieneAudit.test.ts",
     "test:package": "npx tsx scripts/packageReleaseAudit.ts",
