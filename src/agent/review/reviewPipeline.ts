@@ -161,7 +161,7 @@ export type ReviewCadOutput = ReviewTimingReport & (
        * any `ignore` filtering applied by the validator. Used by interactive
        * surfaces (e.g. the Studio status-bar HUD) that need to show the user
        * what's overlapping right now, even when the script silences specific
-       * pairs via `assembly.solvedModel({ ignore: [...] })`. The validator's
+       * pairs via `assembly.solvedModel({}, { ignore: [...] })`. The validator's
        * filtered diagnostic stream remains on `validator.diagnostics` for the
        * Validity tab + throw path.
        */
@@ -444,7 +444,7 @@ function runDefaultPoseGeometryStage(
   // Raw default-pose interferences are surfaced separately so interactive
   // surfaces (the Studio status-bar HUD) can show the user what's actually
   // overlapping right now, even when the script silences specific pairs via
-  // `assembly.solvedModel({ ignore: [...] })`. The validator's diagnostics
+  // `assembly.solvedModel({}, { ignore: [...] })`. The validator's diagnostics
   // already respect that ignore list; this channel deliberately does NOT.
   //
   // We reuse `detectInterferencesForPoses` with an empty pose map (default
