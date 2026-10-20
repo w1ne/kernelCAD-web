@@ -4,7 +4,7 @@ The 20-second `demo.mp4` is an annotated still sequence from actual hosted MCP i
 
 Source: `examples/plywood-organizer/organizer.kcad.ts`.
 
-Hosted evaluation and nominal contours: `site/blog/plywood-organizer-laser-workflow/`.
+The blog post was removed on 2026-10-20; the demo bundle stays as internal evidence.
 
 Run the example verifier and contour generator from the repository root:
 

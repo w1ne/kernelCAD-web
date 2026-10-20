@@ -2,7 +2,7 @@
   "title": "Plywood organizer: digital preparation for a laser cutting test",
   "source": "examples/plywood-organizer/organizer.kcad.ts",
   "sourceSha256": "78bcbcf127b77a28d8a266f83d0a14711dcfcdca8ce6a0a8f3f263b511002d45",
-  "evaluation": "Hosted MCP evaluate_script; raw output site/blog/plywood-organizer-laser-workflow/mcp-evaluation-evidence.json",
+  "evaluation": "Hosted MCP evaluate_script; blog post removed 2026-10-20",
   "images": "Actual hosted MCP render_preview iso and top; visually inspected by root",
   "physicalTest": "Pending; no measured stock, machine settings or cut results claimed.",
   "video": "demo.mp4",
