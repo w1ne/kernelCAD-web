@@ -654,6 +654,21 @@ function normalizeSolvedModelPoses(poses: Poses | undefined | null): Poses {
   return poses;
 }
 
+/**
+ * Display-clip overlays are intentional by declaration: exclude every pair
+ * that involves an overlay from the validator's interference stream. Shared
+ * by `model()` and `solvedModel()` so model-only review paths see the same
+ * exclusions. The raw detection output still reports them to HUD consumers.
+ */
+export function applyOverlayExclusions(state: AssemblyState): void {
+  const derivedOverlayPairs = overlayInterferencePairs(state.parts);
+  if (derivedOverlayPairs.length === 0) return;
+  state.ignoreInterferenceList = mergeIgnorePairs(
+    state.ignoreInterferenceList ?? [],
+    derivedOverlayPairs,
+  );
+}
+
 function applySolvedModelEntryChecks(state: AssemblyState, opts?: SolvedModelOptions): void {
   if (state.parts.length === 0) {
     throw new KernelError(
@@ -676,18 +691,7 @@ function applySolvedModelEntryChecks(state: AssemblyState, opts?: SolvedModelOpt
   if (opts?.ignore !== undefined) {
     state.ignoreInterferenceList = opts.ignore;
   }
-  // Display-clip overlays are intentional by declaration: exclude every pair
-  // that involves an overlay from the validator's interference stream. The
-  // raw detection output still reports them to HUD consumers, and the info
-  // diagnostic emitted in finalize keeps the intent visible rather than
-  // indistinguishable from a silenced real clash.
-  const derivedOverlayPairs = overlayInterferencePairs(state.parts);
-  if (derivedOverlayPairs.length > 0) {
-    state.ignoreInterferenceList = mergeIgnorePairs(
-      state.ignoreInterferenceList ?? [],
-      derivedOverlayPairs,
-    );
-  }
+  applyOverlayExclusions(state);
   // v0.7.4 — validate externalLoads keys at capture entry so agent typos
   // surface immediately, not silently. Per spec open-question 5 resolution
   // (error on typo, not silent ignore).

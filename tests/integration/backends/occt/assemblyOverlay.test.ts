@@ -41,6 +41,27 @@ describe('assembly overlay semantics', () => {
       .rejects.toThrow(/overlap|interference/i);
   }, 60_000);
 
+  it('records overlay exclusions for model-only assemblies', () => {
+    const { arm } = overlappingArm(true);
+    arm.model();
+    const pairs = arm.__ignoreInterference();
+    expect(pairs.some(([a, b]) =>
+      (a === 'front-clip' && b === 'body') || (a === 'body' && b === 'front-clip'),
+    )).toBe(true);
+  });
+
+  it('preserves overlay flags when importing a subassembly', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const child = kcad.assembly('clip');
+    child.part('shell', kcad.box(30, 40, 30), { overlay: true });
+    const parent = kcad.assembly('car');
+    parent.part('body', kcad.box(100, 40, 30));
+    parent.subAssembly('front', child);
+    const imported = parent.__parts().find((p) => p.name === 'front_shell');
+    expect(imported?.overlay).toBe(true);
+  });
+
   it('rejects a non-boolean overlay flag at capture time', () => {
     const { kcad, arm } = (() => {
       const session = new CaptureSession();

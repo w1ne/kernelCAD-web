@@ -902,6 +902,7 @@ function importSubAssemblyParts(
     const newName = `${prefix}${op.name}`;
     const newRef = recordPartInternal(state, arm, newName, op.originalShape, {
       ...(op.connectors !== undefined ? { connectors: op.connectors } : {}),
+      ...(op.overlay !== undefined ? { overlay: op.overlay } : {}),
     }, false);
     // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)
     // by shallow-copying the array contents. The new part already owns an
