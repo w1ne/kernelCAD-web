@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useRecomputeResult } from './hooks/useRecomputeResult';
+import { paramControlVisible } from './paramControl';
+import { shouldUseHostedMesh } from './scriptSource';
 
 const MAX_VISIBLE = 4;
 
@@ -15,7 +17,8 @@ export function ParamChips() {
     const { paramTable } = useRecomputeResult();
     if (!paramTable) return null;
 
-    const entries = paramTable.list();
+    const surface = shouldUseHostedMesh() ? 'hosted' : 'editor';
+    const entries = paramTable.list().filter((entry) => paramControlVisible(entry.response, surface));
     if (entries.length === 0) return null;
 
     const visible = entries.slice(0, MAX_VISIBLE);

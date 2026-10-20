@@ -62,6 +62,8 @@ export function useScriptExecution(
     const [recomputeMs, setRecomputeMs] = useState<number>(0);
     const [staleMainResponsesDropped, setStaleMainResponsesDropped] = useState(0);
     const mainRevisionRef = useRef(0);
+    const geometriesRef = useRef(geometries);
+    geometriesRef.current = geometries;
 
     const { executionHistory, pushExecutionRecord } = useExecutionHistory();
 
@@ -77,6 +79,7 @@ export function useScriptExecution(
         setIsComputing,
         setStaleMainResponsesDropped,
         setGeometries,
+        geometriesRef,
         setGeometryTransformOverrides,
         setFeatureRecords,
         setScriptParams,

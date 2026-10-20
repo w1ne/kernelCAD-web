@@ -17,6 +17,7 @@ import type { CaptureSession } from './capture/captureSession';
 import type { BuiltModel, BuiltModelParamUpdate, ParamUpdateEdit } from './buildModel';
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { KernelError } from '../shared/intent/kernelError';
+import { affectedFeatureIds } from './paramAffect';
 
 export function populateCache(session: CaptureSession, shapes: Map<FeatureId, ShapeBackend>): void {
   for (const [id, shape] of shapes) {
@@ -192,28 +193,19 @@ function buildSeedShapes(
   records: readonly FeatureRecord[],
   editedNames: Set<string>,
 ): { seedShapes: Map<FeatureId, ShapeBackend>; relowered: string[]; skipped: string[] } {
-  let firstAffected = -1;
-  for (let i = 0; i < records.length; i++) {
-    const refs = (records[i].metadata as { paramRefs?: string[] } | undefined)?.paramRefs ?? [];
-    if (refs.some(name => editedNames.has(name))) {
-      firstAffected = i;
-      break;
-    }
-  }
-
+  const affected = affectedFeatureIds(records, editedNames);
   const seedShapes = new Map<FeatureId, ShapeBackend>();
   const relowered: string[] = [];
   const skipped: string[] = [];
 
-  for (let i = 0; i < records.length; i++) {
-    const record = records[i];
-    if (firstAffected === -1 || i < firstAffected) {
-      skipped.push(record.id);
-      const cached = session.cachedShapes.get(record.id);
-      if (cached) seedShapes.set(record.id, cached);
-    } else {
+  for (const record of records) {
+    if (affected.has(record.id)) {
       relowered.push(record.id);
+      continue;
     }
+    skipped.push(record.id);
+    const cached = session.cachedShapes.get(record.id);
+    if (cached) seedShapes.set(record.id, cached);
   }
 
   return { seedShapes, relowered, skipped };

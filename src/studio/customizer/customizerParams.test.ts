@@ -39,6 +39,13 @@ describe('customizerParamsFrom', () => {
     expect(params[3].step).toBeUndefined();
   });
 
+  it('drops a param publish marked heavy', () => {
+    const heavy = { ...entries[0], name: 'Knurl', response: 'heavy' as const };
+    expect(customizerParamsFrom([...entries, heavy]).map((p) => p.name)).toEqual([
+      'Width', 'HasLid', 'Screw', 'Label',
+    ]);
+  });
+
   it('takes the step 1 for an integer hint and derives one from the range otherwise', () => {
     const [integer] = customizerParamsFrom([entries[0]], [{ name: 'Width', kind: 'integer' }]);
     expect(integer.step).toBe(1);

@@ -24,6 +24,12 @@ const PARAM_EXAMPLE = "param('wallThickness', 3, { min: 1, max: 10, unit: 'mm' }
  *  '#rrggbb'); its value is always stored as lowercase '#rrggbb'. */
 export type ParamType = 'number' | 'boolean' | 'choice' | 'string' | 'color';
 
+/** How a drag of this param is allowed to update the model.
+ *  `rigid`: pose or joint only, under the interactive budget.
+ *  `local`: a re-lower of the affected features finished inside the budget.
+ *  `heavy`: not a control. The value stays in the script. */
+export type ParamResponse = 'rigid' | 'local' | 'heavy';
+
 export type ParamValue = number | boolean | string;
 
 export interface ParamMetadata {
@@ -51,6 +57,8 @@ export interface ParamEntry {
   value: ParamValue;
   defaultValue: ParamValue;
   meta?: ParamMetadata;
+  /** Set by publish or by `measureParamResponses`. Absent means unmeasured. */
+  response?: ParamResponse;
 }
 
 export interface SerializedParamEntry {
@@ -59,6 +67,7 @@ export interface SerializedParamEntry {
   value: ParamValue;
   defaultValue: ParamValue;
   meta?: ParamMetadata;
+  response?: ParamResponse;
 }
 
 export interface SerializedParamTable {
@@ -156,6 +165,13 @@ export class ParamTable {
     return entry;
   }
 
+  /** Record whether a drag of `name` may be a control. */
+  setResponse(name: string, response: ParamResponse): ParamEntry {
+    const entry = this.get(name);
+    entry.response = response;
+    return entry;
+  }
+
   list(): ParamEntry[] {
     return Array.from(this.entries.values()).map((e) => ({ ...e, meta: e.meta ? { ...e.meta } : undefined }));
   }
@@ -190,6 +206,7 @@ export class ParamTable {
         value: entry.value,
         defaultValue: entry.defaultValue,
         meta: entry.meta ? { ...entry.meta } : undefined,
+        ...(entry.response ? { response: entry.response } : {}),
       };
     }
     return out;
@@ -206,6 +223,7 @@ export class ParamTable {
         value: entry.value,
         defaultValue: entry.defaultValue,
         meta: entry.meta ? { ...entry.meta } : undefined,
+        ...(entry.response ? { response: entry.response } : {}),
       });
     }
     return t;
