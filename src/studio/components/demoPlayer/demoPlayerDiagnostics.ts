@@ -22,18 +22,21 @@ export function dumpScene(sceneRef: SceneRef): ReturnType<DemoPlayerWindow['dump
       cameraLookingAt: [0, 0, 0] as [number, number, number],
       sampleOpacities: [],
       samplePolygonOffsets: [],
+      sampleFlatShading: [],
       kcadGroupMatrices: [],
     };
   }
   let meshCount = 0;
   const sampleOpacities: number[] = [];
   const samplePolygonOffsets: Array<{ enabled: boolean; factor: number; units: number }> = [];
+  const sampleFlatShading: boolean[] = [];
   const kcadGroupMatrices: number[][] = [];
   scene.traverse((obj) => {
     if (obj instanceof THREE.Mesh) {
       meshCount++;
       const mat = obj.material as THREE.MeshStandardMaterial;
       if (sampleOpacities.length < 5) sampleOpacities.push(mat.opacity);
+      if (sampleFlatShading.length < 5) sampleFlatShading.push(mat.flatShading === true);
       if (samplePolygonOffsets.length < 5) {
         samplePolygonOffsets.push({
           enabled: mat.polygonOffset,
@@ -62,6 +65,7 @@ export function dumpScene(sceneRef: SceneRef): ReturnType<DemoPlayerWindow['dump
     cameraLookingAt: lookAt,
     sampleOpacities,
     samplePolygonOffsets,
+    sampleFlatShading,
     kcadGroupMatrices,
   };
 }

@@ -4,9 +4,11 @@ Copy and metadata for listing kernelCAD in each directory. One file per director
 
 | Directory | File | How you submit | Status |
 |---|---|---|---|
-| ChatGPT app / plugin directory | [chatgpt-directory.md](chatgpt-directory.md) | Plugin ZIP upload (Plugins → Upload new or existing plugin), after org verification | not listed |
-| Anthropic Connectors Directory | [anthropic-connector-directory.md](anthropic-connector-directory.md) | Developer portal: claude.ai/directory/manage → MCP connector | not listed |
-| Official MCP Registry | [mcp-registry.md](mcp-registry.md) + [server.json](server.json) | `mcp-publisher publish` | `server.json` is 0.17.0 and remote only; the npm entry returns with 0.17.0 |
+| ChatGPT app / plugin directory | [chatgpt-directory.md](chatgpt-directory.md) | Plugin ZIP upload (Plugins → Upload new or existing plugin), after org verification | ZIP builds with `npm run listing:zip`; not listed |
+| Anthropic Connectors Directory | [anthropic-connector-directory.md](anthropic-connector-directory.md) | Developer portal: claude.ai/directory/manage → MCP connector | protocol verification done 2026-10-19; not listed |
+| Official MCP Registry | [mcp-registry.md](mcp-registry.md) + [server.json](server.json) | `mcp-publisher publish` | `server.json` is 0.17.0 and remote only; the npm entry returns once 0.17.0 is published (npm is at 0.15.0) |
+| Grok Build built-in marketplace | [grok-marketplace.md](grok-marketplace.md) | PR to `xai-org/plugin-marketplace` | [PR #1556](https://github.com/xai-org/plugin-marketplace/pull/1556) open |
+| Cursor Marketplace | [cursor-marketplace.md](cursor-marketplace.md) | Dashboard → Plugins & MCPs; team import works, public listing needs submission | not listed |
 | Smithery | [smithery.md](smithery.md) | smithery.ai/new with the server URL | not listed |
 | mcp.so | [mcp-so.md](mcp-so.md) | mcp.so submit form | not listed |
 | skills.sh | [skills-sh.md](skills-sh.md) | Public GitHub repo + `skills.sh.json` | grouping file exists |
@@ -49,10 +51,10 @@ Already listed: Glama (https://glama.ai/mcp/connectors/com.kernelcad/kernelcad) 
 - Don't write "every build is verified" or "guaranteed printable". The DFM gate only runs on rules a script declares, and `dfm_review` is a heuristic review.
 - Quote links (`fab_pack`) send people to the vendor's own upload page. The hosted server also has `order_part`, which creates a production request with a pay link, so don't claim that kernelCAD never orders. Decide the commerce declaration first.
 
-## Blockers before submitting (status as of 2026-10-16)
-- **Tool titles.** Done on the live server: all 73 tools carry a `title`, `annotations` and an output schema (checked 2026-10-16). This repo's contract fixture has no titles, because the hosted layer supplies them. Keep the two in step if the title source moves.
-- **Root `server.json`.** Fixed: 0.17.0, remote only. The npm package entry returns when 0.17.0 is published.
-- **ChatGPT plugin manifest.** Generated from `agent-plugin.config.json`: privacy and terms URLs, logo, 5 positive and 3 negative test cases, commerce, release notes. Still missing: four screenshots and a demo recording URL. See [chatgpt-directory.md](chatgpt-directory.md).
+## Blockers before submitting (status as of 2026-10-19)
+- **Tool titles.** Done on the live server: all 73 tools carry a `title`, `annotations` and an output schema (re-verified 2026-10-19 with `npm run listing:verify-mcp`). This repo's contract fixture has no titles, because the hosted layer supplies them. Keep the two in step if the title source moves.
+- **Root `server.json`.** Fixed: 0.17.0, remote only. The npm package entry returns when 0.17.0 is published; npm is still at 0.15.0 (checked 2026-10-19).
+- **ChatGPT plugin manifest.** Built by `npm run listing:zip` (allowlisted layout, `dist/listing/kernelcad-chatgpt-plugin-<version>.zip`). Still missing: four screenshots and a demo recording URL, both captured in the ChatGPT app itself. See [chatgpt-directory.md](chatgpt-directory.md).
 - **ChatGPT CSP.** Declared on the hosted viewer resource (`connectDomains`, `resourceDomains`, `frameDomains`). Confirm it in a live ChatGPT app session.
-- **Test credentials.** Still open. Both directories ask for a fully set-up demo account; prepare one, even though anonymous use works.
-- **Commerce declaration.** Decision needed. The hosted server has `order_part` (pay link, card hold, a person confirms the price before charging) and `price_part` (real maker prices). So `commerce: false` and the "no ordering" copy are wrong. Decide the declaration before submitting.
+- **Test credentials.** Account setup steps are written down in [reviewer-test-account.md](reviewer-test-account.md); the account itself still needs to be created (mailbox + password + two seeded projects). Enter credentials only through each portal's secure form, never in the ZIP.
+- **Commerce declaration.** Decided 2026-10-19: `commerce: true` with `commerceDescription` in `agent-plugin.config.json`, emitted into `plugins/kernelcad/plugin.json` as `review.commerce` / `review.commerce_description`. The description states that ordering is external checkout: kernelCAD creates a production request and returns the fabrication vendor's pay link, and payment, billing and fulfilment stay with the vendor.

@@ -60,6 +60,47 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'Two solid parts in the assembly share BREP volume (their bodies interfere).',
   },
+  'assembly.overlay.intentional': {
+    hintTemplate:
+      "This part is declared as a display-clip overlay (`assembly.part(..., { overlay: true })`). Its overlaps are excluded from interference validation on purpose but it stays in the Scene/export/BOM/render. Remove overlay: true to validate it as structure; use contacts/clearances instead when the contact is physical and should be measured.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'info',
+    group: 'assembly',
+    description: 'An assembly part is an intentional display overlay; overlaps involving it are excluded from interference validation.',
+  },
+  'assembly.contact.tolerance-exceeded': {
+    hintTemplate:
+      "The declared contact budget for this pair is too small for the modeled overlap. Widen maxVolumeMm3 / maxThicknessMm if the contact is intended, or move the parts apart until the overlap fits the budget.",
+    nextAction: {
+      kind: 'fix-arg',
+      field: 'contacts',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'An intended-contact pair overlaps by more than its declared per-pair volume/thickness budget.',
+  },
+  'assembly.clearance.violated': {
+    hintTemplate:
+      "The pair is closer than its declared clearance. Move the parts apart, reduce the feature that closes the gap, or lower minMm only if the smaller gap is genuinely intended.",
+    nextAction: {
+      kind: 'fix-arg',
+      field: 'clearances',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'A pair declared with a minimum clearance is closer than that clearance (or overlaps).',
+  },
+  'assembly.clearance.unresolved': {
+    hintTemplate:
+      'The declared clearance could not be measured (mesh-only part or a kernel failure). Repair the geometry or use BRep parts; do not treat an unresolved pair as passing.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'repair geometry or replace display-mesh parts with BRep so clearance can be measured',
+    },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'A declared clearance pair could not be measured exactly.',
+  },
   // Assembly validator — v0.6 mate-graph solver (5)
   'assembly.part.under-constrained': {
     hintTemplate:

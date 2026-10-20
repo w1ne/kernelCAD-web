@@ -302,6 +302,9 @@ export function makeSweepMethods(
       const inputs: Record<string, import('../shared/intent/types').FeatureRef> = {};
       for (let i = 0; i < surfaces.length; i++) {
         inputs[`surface_${i}`] = { kind: 'surface', surfaceId: surfaces[i].id };
+        for (const fid of surfaces[i].__trimDependencyIds()) {
+          inputs[fid] = { kind: 'feature', id: fid };
+        }
       }
       const tolerance = opts?.tolerance ?? 1e-6;
       const requireClosed = opts?.requireClosed ?? false;

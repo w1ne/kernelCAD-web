@@ -25,7 +25,8 @@ param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
 }): ParamRef<T>;
 // ParamRef arithmetic uses methods, never JS operators (`+ - * /` throw):
 //   const w = param('w', 60), t = param('t', 2);
-//   box(w.add(5), w.subtract(t).multiply(2), w.divide(4)); // also .negate()
+//   box(w.add(5), w.subtract(t).multiply(2), w.divide(4));
+//   // also .negate(), .min(n), .max(n), .abs(), .clamp(lo, hi)
 // Hex default ('#rrggbb') = colour param with a picker; pass the ref to
 // .color(c) / .finish(t, { color: c }): param('BodyColor', '#3366cc')
 
@@ -51,7 +52,18 @@ sphere(r: number): Shape;  // centred on the origin; faceLabels NOT accepted —
 extrudeRect(w: number, h: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
 extrudeCircle(r: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
 extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
-extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
+extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number>; axis?: 'x' | 'y' | 'z' }): Shape;
+// axis defaults to 'z' (profile in XY, sweep +Z). 'x': width on Y / height on Z,
+// sweep +X. 'y': width on X / height on Z, sweep +Y.
+
+// 2D polygon + mask-prism helpers. Since the examples hand-roll these, use the
+// built-ins: filletPolygon rounds any closed polygon (CW/CCW, convex/reflex),
+// then feed the points to extrudePolygon or a prism helper.
+filletPolygon(points: [number, number][], radius: number, opts?: { segments?: number }): [number, number][];
+prismSide(points: [number, number][], halfY?: number): Shape;        // points (s, z), spans Y -halfY..+halfY (default 1200)
+prismSideY(points: [number, number][], y0: number, y1: number): Shape; // points (s, z), spans y0..y1
+prismFront(points: [number, number][], x0: number, x1: number): Shape; // points (Y, Z), spans x0..x1
+prismPlan(points: [number, number][], z0: number, z1: number): Shape;  // points (X, Y), spans z0..z1
 
 // Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch. For
 // revolved geometry (washers, donut bodies, mug profiles, etc.) build a profile
@@ -515,7 +527,7 @@ const blade = root.loft(tip, {
 
 `tangentCircle` / `tangentLine` take entities of the form `{ kind: 'line', from: [x,y], to: [x,y] }` (an INFINITE line; `from`->`to` sets direction) or `{ kind: 'circle', center: [x,y], radius }`, each with an optional `side: 'outside'` (default) `| 'enclosed' | 'enclosing' | 'unqualified'`. Points are not supported. These constructions have SEVERAL solutions (a radius-r circle tangent to two perpendicular lines has four, one per quadrant). `side` filters first, `opts.near: [x,y]` then picks the closest solution, and if more than one still survives the build FAILS with `sketch.tangency.ambiguous` listing every candidate rather than guessing. No such construction existing fails with `sketch.tangency.no-solution` naming the geometric reason.
 
-Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time. That includes `.circle(cx, cy, r, segments?)` (each vertex is captured as `cx + r·cos θ`; `segments` stays a plain integer), `tangentCircle` / `tangentLine` entity coordinates and radii, and the `extrude` / `revolve` / `loft` / `reflect` scalars above. Capture-time checks read the param's current value, not a placeholder. Raw `sweep` rail arrays stay numeric; a rail from `helix(...)` is the parametric one. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`).
+Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time. That includes `.circle(cx, cy, r, segments?)` (each vertex is captured as `cx + r·cos θ`; `segments` stays a plain integer), `tangentCircle` / `tangentLine` entity coordinates and radii, and the `extrude` / `revolve` / `loft` / `reflect` scalars above. Capture-time checks read the param's current value, not a placeholder. Raw `sweep` rail arrays stay numeric; a rail from `helix(...)` is the parametric one. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`, `.min`, `.max`, `.abs`, `.clamp`).
 
 ### 2D text (sketch.text)
 

@@ -8,6 +8,7 @@ import * as replicad from 'replicad';
  * `replicad.Face` ready to feed into `thickenFace` / `faceToShape` / `sew`,
  * exactly like a `buildNurbsFace` result.
  */
+/** Cutter accepted by {@link lowerSurfaceTrim}: a surface face or a BRep body. */
 export interface SurfaceTrimLowerResult {
   /** Replicad-wrapped trimmed `TopoDS_Face`. */
   face: replicad.Face;
@@ -94,14 +95,17 @@ function collectSectionEdges(oc: any, baseShape: any, cutterShape: any): any[] {
  */
 export function lowerSurfaceTrim(
   baseFace: replicad.Face,
-  cutter: replicad.Face,
+  cutter: replicad.Face | replicad.Shape3D,
   op: 'trim' | 'split',
   piece: 0 | 1 = 0,
 ): SurfaceTrimLowerResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   const baseShape = unwrap(baseFace);
-  const cutterShape = unwrap(cutter);
+  // A Surface cutter is a single Face; a BRep body cutter is a Shape3D.
+  // BRepAlgoAPI_Section accepts either, so the same imprint path serves both.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cutterShape = (cutter as any).wrapped ?? (cutter as any)._wrapped ?? cutter;
 
   const edges = collectSectionEdges(oc, baseShape, cutterShape);
   if (edges.length === 0) {
@@ -129,6 +133,9 @@ export function lowerSurfaceTrim(
     }
     if (faces.length === 0) {
       throw new Error('surfaceTrim: split produced no valid face pieces');
+    }
+    if (faces.length > 2) {
+      throw new Error(`surfaceTrim: cutter split the patch into ${faces.length} pieces; use a cutter with one section contour`);
     }
 
     const index = op === 'split' ? piece : 0;

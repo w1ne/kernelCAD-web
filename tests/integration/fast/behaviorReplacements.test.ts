@@ -9,13 +9,16 @@ import { evaluateAndBuildScript } from '../../../src/composition/scriptEvaluatio
 
 const init = initOcct();
 
+// Each case runs real OCCT work. 4.5 s flaked whenever the full suite ran in
+// parallel (a 60 s config still applies to hooks); 15 s still catches the
+// order-of-magnitude regressions this file exists to guard.
 describe('fast geometry replacements', () => {
   it('flags the 3 mm sink between two boxes', async () => {
     await init;
     const code = `const a = assembly('contact'); a.part('base', box(10,10,10)); a.part('sink', box(10,10,10).translate(0,0,7)); return a.model();`;
     const result = await checkInterference({ code, fileName: 'sink.kcad.ts', epsilonMm3: 0.01 });
     expect(result.pairs.map((p) => p.volumeMm3)).toEqual([expect.closeTo(300, 5)]);
-  }, 4_500);
+  }, 15_000);
 
   it('a single spur gear exports as one solid with no interference pairs', async () => {
     await init;
@@ -59,7 +62,7 @@ describe('fast geometry replacements', () => {
       }
     }
     expect([...edgeUse.values()].every(count => count === 2)).toBe(true);
-  }, 4_500);
+  }, 15_000);
 
   it('round trips an OCCT box STL through the registered mesh_to_features tool', async () => {
     await init;
@@ -76,6 +79,6 @@ describe('fast geometry replacements', () => {
     expect(result.fidelity?.volumeIoU).toBeGreaterThanOrEqual(0.98);
     expect(result.fidelity?.maxDeviationMm).toBeLessThanOrEqual(0.05);
     expect(result.fidelity?.verdict).toBe('faithful');
-  }, 4_500);
+  }, 15_000);
 
 });

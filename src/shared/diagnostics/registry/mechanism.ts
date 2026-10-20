@@ -140,7 +140,7 @@ export const MECHANISM_CODES = {
   // mated parts never touch, is 'broken' rather than 'unverified'.
   'mechanism.rest-interpenetration': {
     hintTemplate:
-      "Two parts share solid volume at the rest pose, more than 0.01 mm³ in a region thicker than the 0.3 mm mesh noise floor (thinner is face contact; a small volume is never excused). Mated parts are not exempt: a seated joint is coincident faces or a pin in a clearance bore, both ~0 shared volume. Pocket the housing around the part it holds, shorten or move the overlapping feature, or re-place the part on its mate. solvedModel({ ignore }) does not silence this check.",
+      "Two parts share solid volume at the rest pose, more than 0.01 mm³ in a region thicker than the 0.3 mm mesh noise floor (thinner is face contact; a small volume is never excused). Mated parts are not exempt: a seated joint is coincident faces or a pin in a clearance bore, both ~0 shared volume. Pocket the housing around the part it holds, shorten or move the overlapping feature, or re-place the part on its mate. solvedModel({}, { ignore }) does not silence this check (and ignore belongs in the SECOND argument; the first is the pose map).",
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',

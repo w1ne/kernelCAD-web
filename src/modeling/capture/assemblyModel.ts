@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { KernelError } from '../../shared/intent/kernelError';
 import { Scene } from '../validation/scene';
-import { buildMateMetadata, makeScene } from './assemblySolve';
+import { applyOverlayExclusions, buildMateMetadata, makeScene } from './assemblySolve';
 import type { AssemblyState } from './assemblyState';
 
 /**
@@ -21,6 +21,7 @@ export function recordModel(state: AssemblyState): Scene {
       'Call assembly.part(name, shape, opts?) before assembly.model().',
     );
   }
+  applyOverlayExclusions(state);
   const mateMetadata = state.mates.length > 0 ? buildMateMetadata(state) : undefined;
   const sceneShape = state.session.assemblyModel(state.name, state.parts, mateMetadata);
   return makeScene(state, sceneShape);

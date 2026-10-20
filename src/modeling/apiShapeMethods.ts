@@ -544,7 +544,7 @@ export function makePlanetaryToothCompatibilityMethod(): KernelCadApi['planetary
 /** Option keys the primitive extrude builders accept. Anything else is a
  *  likely typo and is rejected with `feature.invalid-args` instead of being
  *  silently dropped, matching `Sketch.extrude`. */
-const ALLOWED_PRIMITIVE_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle']);
+const ALLOWED_PRIMITIVE_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle', 'axis']);
 
 /** Validate the shared options of `extrudeRect` / `extrudeCircle` /
  *  `extrudePolygon` / `extrudeRoundedRect` and box `twistAngle` as a `'deg'`
@@ -552,7 +552,7 @@ const ALLOWED_PRIMITIVE_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle']);
 function resolvePrimitiveExtrudeOpts(
   method: string,
   opts: ExtrudeOpts | null | undefined,
-): { faceLabels: FaceLabelsMap | undefined; twistAngle: Param } {
+): { faceLabels: FaceLabelsMap | undefined; twistAngle: Param; axis: 'x' | 'y' | 'z' } {
   // Tolerate an explicit `null` opts the same way `Sketch.extrude` does.
   opts ??= {};
   for (const key of Object.keys(opts)) {
@@ -580,9 +580,33 @@ function resolvePrimitiveExtrudeOpts(
       featureId: method,
     });
   }
+  const axis = opts.axis ?? 'z';
+  if (axis !== 'x' && axis !== 'y' && axis !== 'z') {
+    invalidArgs({
+      api: `${method}(..., { axis })`,
+      path: 'opts.axis',
+      got: axis,
+      showType: true,
+      requires: "one of 'x', 'y', 'z' — the direction the profile is swept",
+      example: `extrudeRoundedRect(40, 30, 10, 3, { axis: 'y' })`,
+      featureId: method,
+    });
+  }
+  if (method !== 'extrudeRoundedRect' && opts.axis !== undefined) {
+    invalidArgs({
+      api: `${method}(..., { axis })`,
+      path: 'opts.axis',
+      got: opts.axis,
+      showType: true,
+      requires: `axis is only supported on extrudeRoundedRect; ${method} always sweeps +Z`,
+      example: "extrudeRoundedRect(40, 30, 10, 3, { axis: 'y' })",
+      featureId: method,
+    });
+  }
   return {
     faceLabels: validateFaceLabels(opts.faceLabels, 'extrude'),
     twistAngle: toParam(opts.twistAngle ?? 0, 'deg'),
+    axis,
   };
 }
 
@@ -637,7 +661,7 @@ export function makeExtrudeMethods(
       });
     },
     extrudeRoundedRect(width, height, radius, depth, opts) {
-      const { faceLabels, twistAngle } = resolvePrimitiveExtrudeOpts('extrudeRoundedRect', opts);
+      const { faceLabels, twistAngle, axis } = resolvePrimitiveExtrudeOpts('extrudeRoundedRect', opts);
       return session.createShape({
         kind: 'extrude',
         inputs: {},
@@ -645,6 +669,7 @@ export function makeExtrudeMethods(
           profileKind: { expression: "'rounded-rect'", unit: 'unitless', evaluated: 0 },
           width: mm(width), height: mm(height), radius: mm(radius), depth: mm(depth),
           twistAngle,
+          axis: { expression: `'${axis}'`, unit: 'unitless', evaluated: 0 },
         },
         metadata: faceLabels ? { faceLabels } : undefined,
       });

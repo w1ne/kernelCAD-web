@@ -3,6 +3,7 @@
 import { assertTopoRefSafeName } from '../../kernel/naming/uniquenessValidator';
 import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
+import { isFabProcess } from '../../shared/fab';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../../shared/intent/types';
 import { formatScalarForError, isValidEditableVec3 } from '../../shared/intent/types';
 import {
@@ -19,6 +20,7 @@ import type { PartLineage } from '../../kernel/naming/evolutionRecord';
 import type { Shape } from './proxy';
 import type { CaptureSession } from './captureSession';
 import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLibrary';
+import { validateMassKg, validateOverlayOption } from './assemblyPartOverlayValidation';
 import { copyMateCapacity } from './assemblyMateCapacity';
 import type { Assembly } from './assembly';
 import type {
@@ -635,25 +637,11 @@ function applyMaterialFinishDefault(
   }
 }
 
-/** `massKg`, when given, must be a positive finite mass. */
-function validateMassKg(name: string, shape: Shape, massKg: number | undefined): void {
-  if (massKg !== undefined && (typeof massKg !== 'number' || !Number.isFinite(massKg) || massKg <= 0)) {
-    invalidArgs({
-      api: `assembly.part('${name}', shape, { massKg })`,
-      path: 'opts.massKg',
-      got: massKg,
-      requires: 'a positive finite mass in kg',
-      example: `arm.part('${name}', shape, { massKg: 0.009 })`,
-      featureId: shape.id,
-    });
-  }
-}
-
-/** Validate `opts.at` / `opts.density` / `opts.material` / `opts.crossSection` /
- *  `opts.role`, and resolve the effective density + finish from a named
- *  material. Split out of `recordPartInternal` to keep its branching
- *  complexity under the quality-ratchet budget; no behavior change from the
- *  inline version it replaces. */
+/** Validate `opts.at` / `opts.density` / `opts.process` / `opts.material` /
+ *  `opts.crossSection` / `opts.role`, and resolve the effective density +
+ *  finish from a named material. Split out of `recordPartInternal` to keep
+ *  its branching complexity under the quality-ratchet budget; no behavior
+ *  change from the inline version it replaces. */
 function resolvePartMaterialAndValidateOpts(
   state: AssemblyState,
   name: string,
@@ -677,6 +665,12 @@ function resolvePartMaterialAndValidateOpts(
         'Pass density: <kg/m^3>, or omit it to use the 1000 kg/m^3 default. Typical: steel 7850, aluminum 2700, ABS 1050.',
       );
     }
+  }
+  if (opts.process !== undefined && !isFabProcess(opts.process)) {
+    invalidArgs({
+      api: `assembly.part('${name}', shape, { process })`, path: 'opts.process', got: opts.process,
+      requires: "one of '3d-print' | 'cnc' | 'sheet-cut'", example: "arm.part('bracket', box(10, 10, 10), { process: 'cnc' })", featureId: shape.id,
+    });
   }
   validateMassKg(name, shape, opts.massKg);
   // Named material: seeds a density default AND a default finish. Resolve it
@@ -703,6 +697,7 @@ function resolvePartMaterialAndValidateOpts(
       `invalid-args.assembly.part-invalid-role — pass role: 'contact-target' only for external contact/load targets, or omit role for structural parts.`,
     );
   }
+  validateOverlayOption(name, shape.id, opts.overlay);
   return { resolvedMaterial, effectiveDensity };
 }
 
@@ -796,9 +791,11 @@ export function recordPartInternal(
     ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
     ...(effectiveDensity !== undefined ? { density: effectiveDensity } : {}),
     ...(resolvedMaterial !== undefined ? { material: resolvedMaterial.name } : {}),
+    ...(opts.process !== undefined ? { process: opts.process } : {}),
     ...(opts.massKg !== undefined ? { massKg: opts.massKg } : {}),
     ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     ...(opts.role !== undefined ? { role: opts.role } : {}),
+    ...(opts.overlay !== undefined ? { overlay: opts.overlay } : {}),
   };
   state.parts.push(stored);
   if (opts.connect) {
@@ -905,6 +902,7 @@ function importSubAssemblyParts(
     const newName = `${prefix}${op.name}`;
     const newRef = recordPartInternal(state, arm, newName, op.originalShape, {
       ...(op.connectors !== undefined ? { connectors: op.connectors } : {}),
+      ...(op.overlay !== undefined ? { overlay: op.overlay } : {}),
     }, false);
     // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)
     // by shallow-copying the array contents. The new part already owns an

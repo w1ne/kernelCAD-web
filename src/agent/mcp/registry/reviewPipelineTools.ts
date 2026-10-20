@@ -394,6 +394,8 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
           width: { type: 'integer', minimum: 64, maximum: 2048, description: "Per-view tile width in px (default 768; 1600 under preset: 'publish')." },
           height: { type: 'integer', minimum: 64, maximum: 2048, description: "Per-view tile height in px (default 768; 1200 under preset: 'publish')." },
           environment: { type: 'string', description: "HDRI environment override: preset ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse'), a URL, or 'none' for the default three-light rig." },
+          shading: { type: 'string', enum: ['smooth', 'flat'], description: "Mesh shading: 'smooth' uses the kernel's vertex normals (default); 'flat' uses face normals to expose tessellation / surface wobble." },
+          screenshot_timeout_ms: { type: 'integer', minimum: 1000, maximum: 600000, description: "Playwright screenshot deadline in milliseconds. Default leaves Playwright's 30 s in place; raise it for heavy lofts or a slow machine." },
           no_watermark: { type: 'boolean', description: 'Suppress the kernelCAD version watermark.', default: false },
           no_mechanism_check: { type: 'boolean', description: "Skip the mechanism-truth probe for fast iteration on large assemblies; the preview reports mechanism: 'unverified'. Ignored under KERNELCAD_RENDER_STRICT=1.", default: false },
           base_url: { type: 'string', description: 'Advanced: force a specific render server (e.g. a running studio dev server) instead of the bundled static player.' },

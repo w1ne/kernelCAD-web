@@ -11,7 +11,15 @@ import type { ExecutionApplyDeps } from './executionApplyDeps';
 import type { ViewerDimension } from '../../../shared/intent/viewerDimension';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 
-export type MeshFetchOpts = { keepExistingOnError?: boolean; skipReview?: boolean; liveReview?: boolean };
+export type MeshFetchOpts = {
+    keepExistingOnError?: boolean;
+    skipReview?: boolean;
+    liveReview?: boolean;
+    /** Dev-kernel path only: fetch and paint a coarse preview of the same
+     *  session state first, then replace it with the display payload. A failed
+     *  preview is non-fatal — the display pass is authoritative. */
+    coarseFirst?: boolean;
+};
 
 /** The hosted-mesh branch of `fetchMeshAndReview`: no session token, and the
  *  deploy resolves mesh data via build-time precompute / the hosted mesh
@@ -110,8 +118,40 @@ function fetchDevReview(
         });
 }
 
+/** Apply one dev-kernel mesh payload. `provisional: true` (a coarse first
+ *  paint that the display pass will replace) skips the success bookkeeping:
+ *  the edit is recorded once, when the display payload lands. */
+function applyDevMeshPayload(
+    deps: ExecutionApplyDeps,
+    payload: DevMeshPayload,
+    revision: number,
+    fetchStart: number,
+    opts: MeshFetchOpts | undefined,
+    setRecomputeMs: (ms: number) => void,
+    provisional: boolean,
+): void {
+    deps.setGeometries(featureMeshesToGeometries(payload.features));
+    deps.setGeometryTransformOverrides({});
+    deps.setFeatureRecords(payload.featureRecords ?? []);
+    setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));
+    deps.setScriptParams(Object.values(payload.params ?? {}));
+    if (!opts?.skipReview && !opts?.liveReview) deps.setScriptReview(null);
+    deps.setMeshDimensions(meshDimensionsOf(payload));
+    deps.setSketchesGeometries([]);
+    deps.setPreviewGeometries([]);
+    deps.setError(null);
+    if (!provisional) {
+        deps.setLastSuccessfulRevision(revision);
+        deps.pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: revision });
+    }
+}
+
 /** The dev-kernel / by-script mesh branch of `fetchMeshAndReview` (token or
- *  script query, node dev-kernel `mesh`/`review` routes). */
+ *  script query, node dev-kernel `mesh`/`review` routes). With
+ *  `opts.coarseFirst`, the route is asked for a coarse preview of the same
+ *  session state first — painted immediately — and the display payload that
+ *  follows replaces it. The preview shares the session's lowered solids, so
+ *  the display pass refines triangles only. */
 function fetchDevMeshAndReview(
     deps: ExecutionApplyDeps,
     revision: number,
@@ -131,33 +171,49 @@ function fetchDevMeshAndReview(
             ...(abortController ? { signal: abortController.signal } : {}),
             headers,
         };
-        return fetch(meshUrl, fetchInit)
-            .then(async (response) => {
+        const requestMesh = (url: string): Promise<DevMeshPayload> =>
+            fetch(url, fetchInit).then(async (response) => {
                 const payload = await response.json();
                 if (!response.ok) {
                     const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
                     throw new Error(message);
                 }
                 return payload as DevMeshPayload;
-            })
-            .then((payload) => {
-                if (revision !== deps.mainRevisionRef.current) {
-                    deps.setStaleMainResponsesDropped((prev) => prev + 1);
-                    return;
-                }
-                deps.setGeometries(featureMeshesToGeometries(payload.features));
-                deps.setGeometryTransformOverrides({});
-                deps.setFeatureRecords(payload.featureRecords ?? []);
-                setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));
-                deps.setScriptParams(Object.values(payload.params ?? {}));
-                if (!opts?.skipReview && !opts?.liveReview) deps.setScriptReview(null);
-                deps.setMeshDimensions(meshDimensionsOf(payload));
-                deps.setSketchesGeometries([]);
-                deps.setPreviewGeometries([]);
-                deps.setError(null);
-                deps.setLastSuccessfulRevision(revision);
-                deps.pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: revision });
-                return fetchDevReview(deps, reviewUrl, fetchInit, revision, opts);
+            });
+
+        // Coarse preview leg. A preview failure is non-fatal (the display leg
+        // follows); a stale preview skips the display leg entirely — a newer
+        // revision owns the viewport now.
+        const previewLeg: Promise<boolean> = opts?.coarseFirst
+            ? requestMesh(`${meshUrl}${meshUrl.includes('?') ? '&' : '?'}quality=coarse`)
+                .then((payload) => {
+                    if (revision !== deps.mainRevisionRef.current) {
+                        deps.setStaleMainResponsesDropped((prev) => prev + 1);
+                        return false;
+                    }
+                    applyDevMeshPayload(deps, payload, revision, fetchStart, opts, setRecomputeMs, true);
+                    return true;
+                })
+                .catch((err: unknown) => {
+                    // Superseded run: the same abort signal kills the display
+                    // leg too — surface it as the aborted run instead.
+                    if (isAbortError(err)) throw err;
+                    console.warn('coarse preview fetch failed; waiting for the display pass', err);
+                    return true;
+                })
+            : Promise.resolve(true);
+
+        return previewLeg
+            .then((proceed) => {
+                if (!proceed) return undefined;
+                return requestMesh(meshUrl).then((payload) => {
+                    if (revision !== deps.mainRevisionRef.current) {
+                        deps.setStaleMainResponsesDropped((prev) => prev + 1);
+                        return;
+                    }
+                    applyDevMeshPayload(deps, payload, revision, fetchStart, opts, setRecomputeMs, false);
+                    return fetchDevReview(deps, reviewUrl, fetchInit, revision, opts);
+                });
             })
             .catch((err: unknown) => {
                 if (isAbortError(err)) {

@@ -26,23 +26,51 @@ export function stlNotWatertightDiagnostic(
   report: WatertightReport,
   targetId: string | undefined,
   partName?: string,
+  formatLabel = 'STL mesh',
 ): CompilerDiagnostic {
   const spots = report.clusters
     .map(c => `(${c.center.map(n => n.toFixed(2)).join(', ')})×${c.edgeCount}`)
     .join('; ');
-  const subject = partName !== undefined ? `Part '${partName}' STL mesh` : 'STL mesh';
+  const subject = partName !== undefined ? `Part '${partName}' ${formatLabel}` : formatLabel;
+  const counts =
+    `${report.openEdgeCount} open edge(s)` +
+    (report.nonManifoldEdgeCount > 0 ? ` and ${report.nonManifoldEdgeCount} non-manifold edge(s)` : '');
   return {
     target: 'export-occt',
     code: 'export.mesh.not-watertight',
     featureId: targetId,
     severity: 'error',
-    message: `${subject} is not watertight: ${report.openEdgeCount} open edge(s) in ${report.clusters.length} crack cluster(s) at ${spots}.`,
+    message: `${subject} is not watertight: ${counts} in ${report.clusters.length} crack cluster(s) at ${spots}.`,
     hint: HINT_TEMPLATES['export.mesh.not-watertight'].template,
     nextAction: NEXT_ACTIONS['export.mesh.not-watertight'],
   };
 }
 
 export type GcodeOptions = Extract<ExportOptions, { format: 'gcode' }>;
+
+/**
+ * `export.brep.invalid` — the STEP/backing B-rep failed BRepCheck (invalid
+ * topology such as unorientable faces). The file is still written; the agent
+ * should rebuild the affected region rather than ship invalid topology.
+ */
+export function brepInvalidDiagnostic(
+  targetId: string | undefined,
+  partName?: string,
+): CompilerDiagnostic {
+  const subject = partName !== undefined ? `Part '${partName}'` : 'The exported solid';
+  return {
+    target: 'export-occt',
+    code: 'export.brep.invalid',
+    featureId: targetId,
+    severity: 'error',
+    message:
+      `${subject} fails the B-rep validity check (BRepCheck): invalid topology ` +
+      '(for example an unorientable face). Downstream tools may reject this STEP; ' +
+      'rebuild the affected region with clean operands and re-export.',
+    hint: HINT_TEMPLATES['export.brep.invalid'].template,
+    nextAction: NEXT_ACTIONS['export.brep.invalid'],
+  };
+}
 
 /**
  * `format: 'gcode'` shared dispatch: place `shape` in the build orientation

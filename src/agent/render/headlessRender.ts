@@ -33,6 +33,7 @@ declare const window: {
     updateFeatureTransforms: (transforms: unknown, bounds: unknown) => unknown;
     forceFullOpacity: () => void;
     showOnlyTailFeatures: () => void;
+    setShadingMode: (mode: 'smooth' | 'flat') => void;
     applyObjectVisibilityFilter: (filter: HeadlessObjectFilter) => HeadlessObjectVisibility;
     captureMaskPng: (maxSize?: number) => HeadlessMaskCapture;
     captureInspectionChannels: (input: {
@@ -133,6 +134,12 @@ export interface HeadlessRenderOpts {
   noWatermark?: boolean;
   /** Optional named object filter for RGB render and inspection captures. */
   objectFilter?: HeadlessObjectFilter;
+  /** Mesh shading: kernel vertex normals (default, 'smooth') or face normals
+   *  ('flat') for inspecting tessellation / surface wobble. */
+  shading?: 'smooth' | 'flat';
+  /** Playwright screenshot deadline in milliseconds. Default leaves
+   *  Playwright's 30 s default in place; heavy lofts need more. */
+  screenshotTimeoutMs?: number;
   /** Inspection channels requested by the bundle writer. Defaults to RGB only. */
   inspectionChannels?: readonly HeadlessInspectionChannel[];
   /** Longest-edge cap for the internal mask render (gap #9). Defaults to
@@ -607,6 +614,11 @@ export async function openRenderPage(
       await page.evaluate(() => window.__demoPlayer?.setReferenceImagesVisible(false));
     }
 
+    // 3b2. Optional flat/smooth shading for tessellation inspection.
+    if (opts.shading !== undefined) {
+      await page.evaluate((mode) => window.__demoPlayer?.setShadingMode(mode), opts.shading);
+    }
+
     // 3c. CLI --environment override: takes precedence over the script's
     // setRenderEnvironment() call. 'none' explicitly clears any env. A load
     // failure or hang warns on stderr and keeps the default three-light rig
@@ -660,7 +672,7 @@ async function captureViews(
     if (captureRgb) {
       pngsByView[view] = opts.publish
         ? await capturePublishTile(page, { width: opts.viewportWidth, height: opts.viewportHeight, view })
-        : await normalizeTile(await page.screenshot({ type: 'png' }), opts);
+        : await normalizeTile(await page.screenshot({ type: 'png', timeout: opts.screenshotTimeoutMs }), opts);
     }
     if (captureMask) {
       const mask = await page.evaluate(
@@ -700,6 +712,7 @@ export async function captureEngineeringTiles(
   page: Page,
   size: { width: number; height: number },
   views: readonly RenderView[],
+  screenshotTimeoutMs?: number,
 ): Promise<Partial<Record<RenderView, Buffer>>> {
   const out: Partial<Record<RenderView, Buffer>> = {};
   for (const view of views) {
@@ -707,7 +720,7 @@ export async function captureEngineeringTiles(
       ({ v, a }) => window.__demoPlayer!.setRenderView(v, a),
       { v: view, a: size.width / size.height },
     );
-    out[view] = await cropToAspect(await page.screenshot({ type: 'png' }), size.width, size.height, {});
+    out[view] = await cropToAspect(await page.screenshot({ type: 'png', timeout: screenshotTimeoutMs }), size.width, size.height, {});
   }
   return out;
 }
@@ -738,7 +751,7 @@ async function capturePoses(
         ({ a, e, asp }) => window.__demoPlayer!.setRenderPose(a, e, asp),
         { a: az, e: el, asp: outputAspect },
       );
-      const buf = await normalizeTile(await page.screenshot({ type: 'png' }), opts);
+      const buf = await normalizeTile(await page.screenshot({ type: 'png', timeout: opts.screenshotTimeoutMs }), opts);
       pngsByPose[poseKey] = buf;
     }
   }

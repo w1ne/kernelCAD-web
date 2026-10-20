@@ -52,6 +52,7 @@ export type TabId =
     | 'params'
     | 'validity'
     | 'joints'
+    | 'parts'
     | 'export'
     | 'sections'
     | 'cut'
@@ -76,7 +77,7 @@ export interface StudioRecomputeResult {
     readonly recomputeMs: number;
     /**
      * Raw pairwise interference pairs at the current pose, BEFORE any `ignore`
-     * filtering done by `assembly.solvedModel({ ignore: [...] })`. Inspector
+     * filtering done by `assembly.solvedModel({}, { ignore: [...] })`. Inspector
      * surfaces keep this raw channel for detail, while the status footer
      * prefers `interferenceSummary.actionableCount` and only falls back to
      * locally classifying raw pairs when older review payloads omit the

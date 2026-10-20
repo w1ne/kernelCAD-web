@@ -95,7 +95,12 @@ describe('runAutoExecutionLoop stored artifact', () => {
     apply.executeCode.mockResolvedValue({ geometries: [], sketches: [] });
     await runAutoExecutionLoop(apply, 'return box(1, 2, 3);', 0);
     expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('mesh-artifacts'))).toBe(false);
-    expect(apply.executeCode).toHaveBeenCalledWith('return box(1, 2, 3);');
+    // Worker path: the EXECUTE asks for the coarse preview tier and supplies
+    // the preview-frame handler; the script itself is the first argument.
+    expect(apply.executeCode).toHaveBeenCalledWith(
+      'return box(1, 2, 3);',
+      expect.objectContaining({ quality: 'coarse', onPreview: expect.any(Function) }),
+    );
   });
 
   it('ignores a hint set for another slug', async () => {

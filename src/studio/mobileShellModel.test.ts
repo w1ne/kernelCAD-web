@@ -27,11 +27,13 @@ describe('mobileShellModel', () => {
     it('keeps inspector sheets apart from panes', () => {
         expect(isInspectorSheet('code')).toBe(true);
         expect(isInspectorSheet('validity')).toBe(true);
+        expect(isInspectorSheet('parts')).toBe(true);
         expect(isInspectorSheet('agent')).toBe(false);
         expect(isInspectorSheet('tree')).toBe(false);
         expect(isInspectorSheet(null)).toBe(false);
         expect(sheetForInspectorTab('scene')).toBe('tree');
         expect(sheetForInspectorTab('export')).toBe('export');
+        expect(sheetForInspectorTab('parts')).toBe('parts');
         expect(sheetForInspectorTab('sections')).toBeNull();
     });
 

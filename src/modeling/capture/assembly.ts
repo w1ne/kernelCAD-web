@@ -329,12 +329,24 @@ export class Assembly {
    * Last `ignore` list passed to `solvedModel`. External review surfaces
    * (`reviewCadTool`) read this so the validator they re-run honors the same
    * known-acceptable contacts the script silenced. Empty when no
-   * `solvedModel({ ignore })` has been called yet. Mirrors the `__mates()` /
+   * `solvedModel({}, { ignore })` has been called yet. Mirrors the `__mates()` /
    * `__parts()` underscore-prefixed convention; not part of the agent-facing
    * surface.
    */
   __ignoreInterference(): ReadonlyArray<readonly [string, string]> {
     return this.state.ignoreInterferenceList;
+  }
+
+  /** Last per-pair contact / clearance declarations passed to `solvedModel`.
+   *  External review surfaces re-run the validator with the same budgets. */
+  __pairTolerances(): {
+    contacts: ReadonlyArray<import('../runtime/pairTolerances').PairContactTolerance>;
+    clearances: ReadonlyArray<import('../runtime/pairTolerances').PairClearanceTolerance>;
+  } {
+    return {
+      contacts: this.state.contactTolerances,
+      clearances: this.state.clearanceTolerances,
+    };
   }
 
   /** True once the script called a validating `solvedModel(...)`. */

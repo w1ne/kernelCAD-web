@@ -7,7 +7,7 @@ import type { FeatureLowerer, ShapeBackend } from '../../kernel/backends/backend
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { DependencyGraph } from './dependencyGraph';
-import type { FeatureEventSink } from './featureEvents';
+import type { FeatureEvent, FeatureEventSink } from './featureEvents';
 import { KernelError } from '../../shared/intent/kernelError';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { resolveParams } from '../../shared/runtime/resolveParams';
@@ -93,6 +93,43 @@ function buildRecomputeGraph(records: readonly FeatureRecord[]): {
   return { order, predecessorsOf, idToRecord };
 }
 
+/** Predecessor lists for a record list, exactly as the engine computes them
+ *  for `feature.compiled` events. The meshing layer's refine pass re-meshes a
+ *  seeded (already-lowered) shape without re-running the engine and must
+ *  synthesize the same event fields — this is the one source of truth. */
+export function predecessorsByRecord(records: readonly FeatureRecord[]): Map<FeatureId, FeatureId[]> {
+  return buildRecomputeGraph(records).predecessorsOf;
+}
+
+/** Boolean op for a record, as emitted on `feature.compiled` events. */
+export function booleanOpOfRecord(
+  r: FeatureRecord,
+): 'subtract' | 'union' | 'intersect' | undefined {
+  return r.kind === 'boolean' ? normalizeBooleanOp(r.params.op?.expression) : undefined;
+}
+
+/** Synthesize the `feature.compiled` event for a record whose lowered shape
+ *  already exists — the meshing layer's refine pass re-meshes a seeded shape
+ *  without re-running the engine. Field parity with
+ *  `emitFeatureCompiledEvent` is the point: ownership links, op labels and
+ *  warnings key off these. */
+export function compiledEventForRecord(
+  r: FeatureRecord,
+  shape: ShapeBackend,
+  predecessorsOf: ReadonlyMap<FeatureId, FeatureId[]>,
+): Extract<FeatureEvent, { kind: 'feature.compiled' }> {
+  return {
+    kind: 'feature.compiled',
+    featureId: r.id,
+    featureKind: r.kind,
+    shape,
+    predecessors: predecessorsOf.get(r.id) ?? [],
+    diagnostics: [],
+    health: 'healthy',
+    op: booleanOpOfRecord(r),
+  };
+}
+
 function findGatedLineageWarning(
   record: FeatureRecord,
   opts: RecomputeOptions | undefined,
@@ -148,9 +185,7 @@ function emitFeatureCompiledEvent(
   onEvent: FeatureEventSink | undefined,
 ): number {
   if (onEvent) {
-    const op = r.kind === 'boolean'
-      ? normalizeBooleanOp(r.params.op?.expression)
-      : undefined;
+    const op = booleanOpOfRecord(r);
     onEvent({
       kind: 'feature.compiled',
       featureId: r.id,

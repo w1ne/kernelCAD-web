@@ -284,6 +284,7 @@ function hasOverrides(p?: ParamOverrides): p is ParamOverrides {
 export async function meshSourceDev(
   source: string,
   paramOverrides?: ParamOverrides,
+  opts?: { quality?: 'coarse' },
 ): Promise<BackendMeshPayload> {
   // Route through `apiCall()` so embed-mode hosts (StudioConfigProvider
   // with a `backendUrl`) get the correct prefix; standalone dev with no
@@ -293,7 +294,11 @@ export async function meshSourceDev(
   const response = await fetch(rewritePath('/__kernelcad/mesh', base), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
-    body: JSON.stringify({ source, ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}) }),
+    body: JSON.stringify({
+      source,
+      ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
+      ...(opts?.quality === 'coarse' ? { quality: 'coarse' } : {}),
+    }),
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok) {

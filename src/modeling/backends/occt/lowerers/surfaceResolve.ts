@@ -250,19 +250,19 @@ function buildTrimmedSurface(
 }
 
 /**
- * Resolve a `surfaceTrim` cutter (`byRef`) to a single `replicad.Face`.
+ * Resolve a `surfaceTrim` cutter (`byRef`).
  *  - `{ surfaceId }`: a sibling Surface → resolved through `buildSurfaceById`
  *    and required to be a single face.
- *  - `{ featureRef }`: a lowered feature shape (box / imported solid / sweep)
- *    looked up via `importedGeometry` / `inputs.byKey` → its first TopoDS_Face
- *    is used as the cutter surface (best-effort; the Section only needs a
- *    surface that crosses the base).
+ *  - `{ featureRef }`: a lowered BRep feature (box / imported solid / sweep)
+ *    looked up via `importedGeometry` / `inputs.byKey`. The WHOLE body is the
+ *    section cutter; using just its first face trimmed against an arbitrary
+ *    side rather than the body boundary.
  */
 function resolveTrimCutter(
   ctx: LowerContext,
   trimData: SurfaceTrimData,
   r: FeatureRecord,
-): replicad.Face | undefined {
+): replicad.Face | import('replicad').Shape3D | undefined {
   const byRef = trimData.byRef;
   if ('surfaceId' in byRef) {
     const built = buildSurfaceById(ctx, byRef.surfaceId, r);
@@ -289,8 +289,8 @@ function resolveTrimCutter(
   const featureRef = byRef.featureRef;
   const fid = featureRef.kind === 'feature' ? featureRef.id : featureRef.kind === 'surface' ? featureRef.surfaceId : featureRef.featureId;
   const back =
-    ctx.importedGeometry.get(fid) ??
     (ctx.inputs.byKey[fid] as OcctBackend | undefined) ??
+    ctx.importedGeometry.get(fid) ??
     (ctx.inputs.byKey['by'] as OcctBackend | undefined);
   if (!back) {
     ctx.diagnostics.push({
@@ -303,34 +303,5 @@ function resolveTrimCutter(
     });
     return undefined;
   }
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const oc = (replicad as any).getOC();
-    // `back` is always an OcctBackend at this call site — importedGeometry
-    // and inputs.byKey are both keyed on OcctBackend instances; the union
-    // type is wider than necessary because the accessor type is ShapeBackend.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const raw = ((back as OcctBackend).getReplicadShape() as any).wrapped;
-    const exp = new oc.TopExp_Explorer_2(
-      raw,
-      oc.TopAbs_ShapeEnum.TopAbs_FACE,
-      oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
-    );
-    if (!exp.More()) {
-      throw new Error(`cutter feature ${fid} has no faces`);
-    }
-    const topoFace = oc.TopoDS.Face_1(exp.Current());
-    return new replicad.Face(topoFace);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    ctx.diagnostics.push({
-      target: ctx.target,
-      code: 'feature.invalid-args',
-      featureId: r.id,
-      severity: 'error',
-      message: `surfaceTrim: could not extract a cutter face from feature ${fid}: ${msg}`,
-      hint: 'invalid-args.surfaceTrim.cutter — pass a surface or a shape with at least one planar face.',
-    });
-    return undefined;
-  }
+  return (back as OcctBackend).getReplicadShape();
 }

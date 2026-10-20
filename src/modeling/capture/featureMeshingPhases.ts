@@ -18,7 +18,7 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { SceneBackend, SceneBackendPart } from '../../kernel/backends/sceneBackend';
 import { OcctBackend, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
-import { meshShape } from '../../kernel/backends/occt/meshing';
+import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 import { transformFeatureMesh } from './transformMesh';
@@ -28,6 +28,7 @@ import type {
   AttributeShadowingWarning,
   Bounds,
   FeatureMesh,
+  MeshFeaturesResult,
   PerFaceMaterialWarning,
   ShadowedAttribute,
 } from './featureMeshing';
@@ -40,6 +41,17 @@ export interface MeshBoundsAccumulator {
   maxY: number;
   maxZ: number;
 }
+
+/** Marker for meshes produced by a PREVIEW pass (the coarse first paint of an
+ *  edit). Held on the cached `FeatureMesh` object (WeakSet), so it rides with
+ *  cache entries copied between sessions by `carryReusableMeshes`, never
+ *  reaches the wire (`serializeForBridge` is explicit), and needs no type
+ *  changes anywhere else. A normal display pass refines every marked entry by
+ *  re-meshing its already-lowered seeded shape — it never emits coarse
+ *  triangles as final and never re-lowers geometry. */
+const coarseMeshes = new WeakSet<object>();
+export function markCoarseMesh(mesh: FeatureMesh): void { coarseMeshes.add(mesh); }
+export function isCoarseMesh(mesh: FeatureMesh): boolean { return coarseMeshes.has(mesh); }
 
 /** Aggregate bounds from `faces`' vertices into `bounds` in-place. */
 export function accumulateMeshBounds(
@@ -175,6 +187,12 @@ export interface SceneFanoutCtx {
   ownerIdOfShape?: (shape: ShapeBackend) => FeatureId | undefined;
   recordOrder?: ReadonlyMap<FeatureId, number>;
   accumulateIndexedMeshBounds?: (bounds: MeshBoundsAccumulator, positions: Float32Array) => void;
+  /** A PREVIEW pass's looser tessellation options (the coarse first paint of
+   *  an edit). When set, freshly meshed parts use them and the per-part cache
+   *  is NOT written — a coarse part entry must never satisfy a later display
+   *  pass. Display-cached parts are still reused read-only, so a pose-only
+   *  re-lower paints from cache in either tier. */
+  previewMeshOptions?: MeshOptions;
 }
 
 // SceneBackend (assembly multi-body) → fan out one FeatureMesh per
@@ -325,7 +343,7 @@ function resolveScenePartMesh(
     return { faces: [], mesh, volume: undefined, edges: undefined, link: {}, fromCache: false, partCache };
   }
   const rawShape = ctx.extractRawShape(part.shape);
-  const meshed = meshShape(rawShape);
+  const meshed = meshShape(rawShape, ctx.previewMeshOptions);
   if (!meshed) {
     // Per-part shape failed to mesh. Skip THIS part — the lowerer
     // already populated the part shape, and a single bad part must
@@ -342,7 +360,9 @@ function resolveScenePartMesh(
   const edges = meshed.edges;
   const link = partLinkData(part, rawShape, meshed, ctx);
   let nextCache = partCache;
-  if (ctx.cachedAssemblyPartMeshes !== undefined) {
+  // Preview (coarse) meshes are never cached: the part cache is display-tier
+  // and a coarse entry would satisfy the next display pass as-is.
+  if (!ctx.previewMeshOptions && ctx.cachedAssemblyPartMeshes !== undefined) {
     if (!nextCache) {
       nextCache = new Map();
       ctx.cachedAssemblyPartMeshes.set(featureId, nextCache);
@@ -517,6 +537,12 @@ export function deriveSeedShapes(
 // non-construction-closure records here so the response still carries
 // those records' meshes. Construction-closure records emit only via the
 // assembly fan-out, so they don't need a re-emit here.
+//
+// A cached entry marked `coarse` (a preview-pass first paint) is handed to
+// `refineSeeded` instead: the refiner re-meshes the record's already-lowered
+// seeded shape at the current pass's quality and emits + re-caches the result.
+// Without a refiner a coarse entry falls back to a plain re-emit, so a
+// feature is never missing from the payload.
 export function reEmitSeededFeatureMeshes(
   records: readonly FeatureRecord[],
   seedShapes: ReadonlyMap<FeatureId, ShapeBackend> | undefined,
@@ -525,6 +551,7 @@ export function reEmitSeededFeatureMeshes(
   features: readonly FeatureMesh[],
   emitFeature: (mesh: FeatureMesh) => void,
   meshBounds: MeshBoundsAccumulator,
+  refineSeeded?: (record: FeatureRecord, seededShape: ShapeBackend) => void,
 ): void {
   if (seedShapes === undefined || seedShapes.size === 0 || !cachedFeatureMeshes) return;
   const emittedIds = new Set(features.map((f) => f.featureId));
@@ -535,6 +562,10 @@ export function reEmitSeededFeatureMeshes(
     const cached = cachedFeatureMeshes.get(r.id);
     if (!cached) continue;
     const mesh = cached as FeatureMesh;
+    if (refineSeeded && isCoarseMesh(mesh)) {
+      refineSeeded(r, seedShapes.get(r.id)!);
+      continue;
+    }
     emitFeature(mesh);
     accumulateMeshBounds(meshBounds, mesh.faces);
   }
@@ -547,6 +578,40 @@ export function buildMeshBounds(
   return {
     min: features.length > 0 ? [meshBounds.minX, meshBounds.minY, meshBounds.minZ] : [0, 0, 0],
     max: features.length > 0 ? [meshBounds.maxX, meshBounds.maxY, meshBounds.maxZ] : [0, 0, 0],
+  };
+}
+
+/** Final phase of `meshFeaturesPerFeature`: bounds, shadowing diagnostics
+ *  (logged in order), result object. Kept beside the other phase helpers. */
+export function finishMeshFeatures(
+  features: FeatureMesh[],
+  meshBounds: MeshBoundsAccumulator,
+  failedFeatureIds: FeatureId[],
+  explicitMaterialByFeatureId: ReadonlyMap<FeatureId, PBRMaterial>,
+  colorByFeatureId: ReadonlyMap<FeatureId, string>,
+  warnings: PerFaceMaterialWarning[],
+  shapes: ReadonlyMap<FeatureId, ShapeBackend>,
+): MeshFeaturesResult {
+  const bounds = buildMeshBounds(features, meshBounds);
+  const { materialShadowingWarnings, colorShadowingWarnings } = collectShadowingWarnings(
+    features,
+    explicitMaterialByFeatureId,
+    colorByFeatureId,
+  );
+  for (const w of materialShadowingWarnings) {
+    console.warn(`meshFeaturesPerFeature: material shadowing — ${w.message}`);
+  }
+  for (const w of colorShadowingWarnings) {
+    console.warn(`meshFeaturesPerFeature: color shadowing — ${w.message}`);
+  }
+  return {
+    features,
+    bounds,
+    failedFeatureIds,
+    materialShadowingWarnings,
+    colorShadowingWarnings,
+    shapes,
+    ...(warnings.length > 0 ? { perFaceMaterialWarnings: warnings } : {}),
   };
 }
 

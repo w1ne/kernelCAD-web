@@ -50,7 +50,7 @@ describe('buildStudioCommands', () => {
 
     it('lists every export format and disables what cannot run', () => {
         const ids = buildStudioCommands(state(), actions()).filter((c) => c.section === 'Export').map((c) => c.id);
-        expect(ids).toEqual(['export.stl', 'export.step', 'export.dxf', 'export.3mf', 'export.glb', 'export.obj', 'export.usd', 'export.pdf-drawing']);
+        expect(ids).toEqual(['export.stl', 'export.step', 'export.dxf', 'export.3mf', 'export.glb', 'export.obj', 'export.usd', 'export.pdf-drawing', 'export.order-pack', 'export.bom-csv']);
 
         const noPlanar = buildStudioCommands(state({ hasPlanarGeometry: false }), actions());
         expect(byId(noPlanar, 'export.dxf')?.disabled).toBe(true);
@@ -76,6 +76,15 @@ describe('buildStudioCommands', () => {
         expect(byId(list, 'panels.tab.export')).toBeUndefined();
         byId(list, 'panels.tab.params')?.action();
         expect(a.showTab).toHaveBeenCalledWith('params');
+    });
+
+    it('offers the Parts tab when the assembly has parts', () => {
+        expect(byId(buildStudioCommands(state({ visibleTabs: ['scene', 'code'] }), actions()), 'panels.tab.parts')).toBeUndefined();
+        const a = actions();
+        const list = buildStudioCommands(state({ visibleTabs: ['scene', 'code', 'parts'] }), a);
+        expect(byId(list, 'panels.tab.parts')?.label).toBe('Show parts');
+        byId(list, 'panels.tab.parts')?.action();
+        expect(a.showTab).toHaveBeenCalledWith('parts');
     });
 
     it('hides the current display mode and background', () => {

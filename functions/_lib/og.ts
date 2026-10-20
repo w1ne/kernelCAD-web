@@ -23,6 +23,8 @@ export const DEFAULT_IMAGE = 'https://kernelcad.com/og-image.png';
 export const MADE_WITH = 'Made with kernelCAD.';
 export const PROJECT_DESCRIPTION = `A 3D model you can view, change and download. ${MADE_WITH}`;
 export const GALLERY_DESCRIPTION = `Parametric 3D models people made with kernelCAD. Open one, change it, download it.`;
+export const CONNECT_DESCRIPTION =
+  'Install the kernelCAD plugin in Claude Code, Codex, Gemini CLI or Grok Build, or connect the hosted MCP server to ChatGPT, Claude, Cursor or VS Code.';
 
 /** Upper bound on the API lookup. On timeout the page keeps the generic tags. */
 export const META_TIMEOUT_MS = 1500;
@@ -145,6 +147,16 @@ export function galleryTags(pageUrl: string): OgTags {
     documentTitle: `Gallery · ${SITE_NAME}`,
     title: `Gallery · ${SITE_NAME}`,
     description: GALLERY_DESCRIPTION,
+    image: DEFAULT_IMAGE,
+    url: pageUrl,
+  };
+}
+
+export function connectTags(pageUrl: string): OgTags {
+  return {
+    documentTitle: `Connect your agent · ${SITE_NAME}`,
+    title: `Connect your agent to ${SITE_NAME}`,
+    description: CONNECT_DESCRIPTION,
     image: DEFAULT_IMAGE,
     url: pageUrl,
   };

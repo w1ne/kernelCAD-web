@@ -87,6 +87,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     names: [
       'box', 'cylinder', 'sphere', 'torus', 'spring', 'threadedRod', 'isoThread', 'spurGear', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
       'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect',
+      'filletPolygon', 'prismSide', 'prismSideY', 'prismFront', 'prismPlan',
       'sheetMetal', 'sdf',
       'path', 'moveTo', 'lineTo', 'close', 'label', 'circle',
       'tangentArc', 'threePointsArc', 'sagittaArc', 'bulgeArc', 'radiusArc',
@@ -113,7 +114,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Finish edges',
     blurb: 'Break edges, add draft, hollow out a wall, fold sheet metal.',
-    names: ['fillet', 'chamfer', 'draft', 'shell', 'bend', 'flattenPattern'],
+    names: ['fillet', 'filletIntersection', 'chamfer', 'draft', 'shell', 'bend', 'flattenPattern'],
   },
   {
     task: 'Select geometry',
@@ -162,7 +163,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Parametrize',
     blurb: 'Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef).',
-    names: ['param', 'params', 'add', 'subtract', 'multiply', 'divide', 'negate'],
+    names: ['param', 'params', 'add', 'subtract', 'multiply', 'divide', 'negate', 'min', 'max', 'abs', 'clamp'],
   },
   {
     task: 'Import & export',

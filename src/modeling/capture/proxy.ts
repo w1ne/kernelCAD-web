@@ -9,6 +9,7 @@ import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
+import { captureFilletIntersection } from './filletIntersectionCapture';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import type { Query, FaceMarker, EdgeMarker } from '../../kernel/naming/query';
 import {
@@ -811,6 +812,51 @@ export class Shape {
       return this.session.edgeFeature('chamfer', this, 'distance', distanceOrGroups, edges);
     }
     return this.session.variableEdgeFeature('chamfer', this, 'distance', distanceOrGroups);
+  }
+
+  /**
+   * Solidify an open shell returned by `sew([...])` (or `surface.toShape()`).
+   *
+   * The lowerer runs the same validated offset as `Surface.thicken`: BRepCheck,
+   * one-solid and plausible-volume gates, with a reversed-orientation retry.
+   * A closed solid input is rejected rather than hollowed.
+   */
+  thicken(t: Editable<number>): Shape {
+    if (!isParamRef(t) && !(typeof t === 'number' && t > 0 && Number.isFinite(t))) {
+      invalidArgs({
+        api: 'Shape.thicken(t)',
+        path: 't',
+        got: t,
+        showType: typeof t !== 'number',
+        requires: 'a positive finite wall thickness in mm, or a ParamRef<number>',
+        unit: 'mm',
+        example: 'sewn.thicken(3)',
+        featureId: this.id,
+      });
+    }
+    return this.session.createShape({
+      kind: 'shapeThicken',
+      inputs: { base: { kind: 'feature', id: this.id } },
+      params: { t: toParam(t, 'mm') },
+    });
+  }
+
+  /**
+   * Round the seam where `cutter` met this body. The seam is selected by
+   * proximity to the exact `body ∩ cutter` section, so it does not depend on
+   * face/edge labels that a boolean split can invalidate. First slice:
+   * constant radius, body-side only.
+   */
+  filletIntersection(
+    cutter: Shape,
+    radius: Editable<number>,
+    opts?: {
+      sides?: 'body' | 'both';
+      toleranceMm?: Editable<number>;
+      continuity?: FilletContinuity;
+    },
+  ): Shape {
+    return captureFilletIntersection(this.session, this, cutter, radius, opts);
   }
 
   shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {

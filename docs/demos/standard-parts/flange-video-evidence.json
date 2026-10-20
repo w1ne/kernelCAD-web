@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-10-19T12:05:26.928456+00:00",
+  "video": "flange-demo.mp4",
+  "videoSha256": "200e818a03f53ef80b8569665e8e8665ae652d23eb0636608848246331577677",
+  "durationSec": 23.0,
+  "canvas": "1920x1080",
+  "slides": [
+    {
+      "image": null,
+      "durationSec": 4.0
+    },
+    {
+      "image": "flange.hero.png",
+      "durationSec": 5.0
+    },
+    {
+      "image": "flange-detail.png",
+      "durationSec": 5.0
+    },
+    {
+      "image": null,
+      "durationSec": 5.0
+    },
+    {
+      "image": null,
+      "durationSec": 4.0
+    }
+  ],
+  "sourceModels": {
+    "bolted-flange.kcad.ts": "5cc9ef50d7a0e9f1a83785490097dc7829c961fd9d53ffbff806289f7dec6862"
+  },
+  "inputSha256": {
+    "flange.hero.png": "dbb84d91de0e391179d3ef63f42c89efa43f8744f33f36955584441e02b61d88",
+    "flange-detail.png": "9907de97f2ee664849657aae2369a3387a8a8954387d670bd60ce0fe4b89648b",
+    "flange-front.pose-0-0.png": "d559135ea729a1c4da6f81f599eaee437e0ff8a95d0845408fb7701394401279"
+  },
+  "invocations": [
+    "npx tsx src/agent/cli/index.ts render examples/parts/bolted-flange.kcad.ts --preset publish -o docs/demos/standard-parts/flange.hero.png",
+    "npx tsx src/agent/cli/index.ts render examples/parts/bolted-flange.kcad.ts --preset publish --width 2048 --height 1536 --pose 0,0 -o docs/demos/standard-parts/flange-front.png",
+    "convert flange-front.pose-0-0.png -crop 900x430+660+590 +repage flange-detail.png"
+  ],
+  "provenance": "Annotated still sequence composed from local kernelcad render --preset publish outputs of the committed example source. Not a screen recording, turntable, deployed platform capture, physical hardware or strength test."
+}

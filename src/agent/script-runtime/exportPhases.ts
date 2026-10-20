@@ -26,6 +26,7 @@ import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { sceneToConnectorManifest } from './connectorManifestExport';
+import { exportOrderPack, type OrderPackDeps } from './orderPackExport';
 import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
 import { exportSceneStlAsShells, freeformFuseOverBudget, meshPartsAsShells } from './sceneStlFuse';
 import {
@@ -35,8 +36,11 @@ import {
   threeMfBedDiagnostics,
   threeMfMeshDiagnostics,
   stlNotWatertightDiagnostic,
+  brepInvalidDiagnostic,
   type GcodeOptions,
 } from './exportDiagnostics';
+import { getOC } from 'replicad';
+import { isValidShape } from '../../kernel/backends/occt/booleanRecovery';
 
 import type {
   ExportInput,
@@ -115,6 +119,7 @@ export async function exportAssemblyFormat(
   run: Awaited<ReturnType<typeof runScript>>,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
+  deps?: OrderPackDeps,
 ): Promise<ExportResult | undefined> {
   if (!isAssemblyFormat(format)) return undefined;
   const arm = resolveAssemblyArm(run);
@@ -144,13 +149,16 @@ export async function exportAssemblyFormat(
   if (format === 'bom-csv' || format === 'bom-json') {
     return exportBom(format, arm, run, diagnostics, featureCount);
   }
+  if (format === 'order-pack') {
+    return exportOrderPack(input, run, arm, diagnostics, featureCount, deps);
+  }
   return exportUsdIsaac(input, arm, diagnostics, featureCount);
 }
 
-type AssemblyFormat = 'urdf' | 'srdf' | 'sdf-gazebo' | 'usd-isaac' | 'bom-csv' | 'bom-json';
+type AssemblyFormat = 'urdf' | 'srdf' | 'sdf-gazebo' | 'usd-isaac' | 'bom-csv' | 'bom-json' | 'order-pack';
 
 function isAssemblyFormat(format: ExportInput['format']): format is AssemblyFormat {
-  return format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo' || format === 'usd-isaac' || format === 'bom-csv' || format === 'bom-json';
+  return format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo' || format === 'usd-isaac' || format === 'bom-csv' || format === 'bom-json' || format === 'order-pack';
 }
 
 /** Resolve the captured Assembly for a pure-XML export: the returned Scene's
@@ -334,6 +342,26 @@ export function resolveExportTarget(
 /** Scene-aware export dispatch: STEP/3MF/GLB/OBJ/USD keep per-part identity; STL and
  *  gcode auto-fuse. Returns `undefined` for formats that fall through to the
  *  single-shape path (urdf/srdf/sdf-gazebo). */
+/** Per-part STEP verify: B-rep validity (BRepCheck) first — invalid topology
+ *  (e.g. an unorientable face left by a boolean on an imported body) passes the
+ *  mesh gate but downstream validity gates reject the STEP — then the
+ *  watertight mesh check. Returns the first failing diagnostic, or undefined
+ *  when every part passes both gates. */
+function firstStepVerifyFailure(
+  parts: ReturnType<typeof sceneToWorldFrameParts>,
+  targetId: string,
+): CompilerDiagnostic | undefined {
+  for (const p of parts) {
+    const partName = parts.length > 1 ? p.name : undefined;
+    if (!isValidShape(getOC(), p.shape.getReplicadShape().wrapped)) {
+      return brepInvalidDiagnostic(targetId, partName);
+    }
+    const report = verifyWatertight(meshShapeForExport(p.shape.getReplicadShape()));
+    if (!report.ok) return stlNotWatertightDiagnostic(report, targetId, partName, 'STEP mesh');
+  }
+  return undefined;
+}
+
 export async function exportSceneBackend(
   input: ExportInput,
   format: ExportInput['format'],
@@ -346,7 +374,17 @@ export async function exportSceneBackend(
   featureCount: number,
 ): Promise<ExportResult | undefined> {
   if (format === 'step') {
-    return exportSceneStep(scene, manifestRequest, manifestScene, run, diagnostics, featureCount);
+    const result = await exportSceneStep(scene, manifestRequest, manifestScene, run, diagnostics, featureCount);
+    // STEP exports run the same mesh verify as STL (default-on; options.verify
+    // false skips). Downstream consumers tessellate the STEP and reject
+    // non-manifold meshes (e.g. exact coincident/tangent faces), so surface the
+    // defect at export time — the file is still written for inspection.
+    const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+    if (verify) {
+      const failure = firstStepVerifyFailure(sceneToWorldFrameParts(scene), targetId);
+      if (failure) result.diagnostics.push(failure);
+    }
+    return result;
   }
   if (format === 'dxf') {
     return exportSceneDxf(scene, targetId, input.options, diagnostics, featureCount);

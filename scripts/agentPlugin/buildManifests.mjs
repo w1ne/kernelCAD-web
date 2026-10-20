@@ -30,11 +30,28 @@ export function openaiExtensions(cfg) {
     },
   };
   if (c.testCases) {
+    // The dashboard wants a { positive, negative } object, and tools_triggered as a
+    // comma-separated string ("evaluate_script"), not the config's array form.
+    const caseForZip = (testCase) => {
+      const tools = Array.isArray(testCase.tools_triggered)
+        ? testCase.tools_triggered.join(', ')
+        : testCase.tools_triggered;
+      return {
+        description: testCase.description,
+        prompt: testCase.prompt,
+        ...(tools ? { tools_triggered: tools } : {}),
+        expected_behavior: testCase.expected_behavior,
+      };
+    };
     out.review = {
-      test_cases: [...c.testCases.positive, ...c.testCases.negative],
+      test_cases: {
+        positive: c.testCases.positive.map(caseForZip),
+        negative: c.testCases.negative.map(caseForZip),
+      },
       // Emitted only once the commerce decision is made (see chatgpt.commerceDecision).
       ...(typeof c.commerce === 'boolean' ? { commerce: c.commerce } : {}),
       ...(c.commerceDescription ? { commerce_description: c.commerceDescription } : {}),
+      ...(c.demoRecordingUrl ? { demo_recording_url: c.demoRecordingUrl } : {}),
     };
   }
   if (c.releaseNotes) out.publication = { release_notes: c.releaseNotes };
