@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { DraftingReview } from './DraftingReview';
+import { __resetDraftingPreviewCacheForTests } from './useDraftingReview';
 import * as exporter from '../exportViaServer';
 
 vi.mock('../exportViaServer', async (original) => ({ ...await original<typeof import('../exportViaServer')>(),
@@ -11,6 +12,9 @@ const report = { placed: 1, overlapped: 0, suppressed: 0, byKind: { hole: 1 }, d
   annotations: [{ id: 'hole:1', source: 'auto', kind: 'hole', view: 'front', text: '⌀5 THRU', overlapped: false }] };
 beforeEach(() => {
   localStorage.clear();
+  // The last-preview cache is module-global: a sheet stored by one case must
+  // not appear pre-rendered in the next.
+  __resetDraftingPreviewCacheForTests();
   vi.mocked(exporter.previewDrawingViaServer).mockResolvedValue({ svg: '<svg/>', drawingReport: report, diagnostics: [] });
   vi.mocked(exporter.exportViaServer).mockResolvedValue({ blob: new Blob(['PDF']), downloadName: 'drawing.pdf' });
   vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:preview'), revokeObjectURL: vi.fn() });
@@ -18,6 +22,25 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.clearAllMocks(); vi.unstubAllGlobals(); });
 
 describe('drafting review', () => {
+  it('shows the last sheet instantly when the dialog is reopened', async () => {
+    const first = render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
+    await screen.findByText('1 placed · 0 crowded · 0 hidden');
+    first.unmount();
+
+    // Reopen: the remembered sheet renders without another request.
+    render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
+    expect(await screen.findByText('1 placed · 0 crowded · 0 hidden')).toBeTruthy();
+    expect(screen.getByText(/Preview up to date/)).toBeTruthy();
+    expect(exporter.previewDrawingViaServer).toHaveBeenCalledTimes(1);
+
+    // A different source is not served from the memory of the first.
+    cleanup();
+    render(<DraftingReview code="other-model" onChange={() => {}} onClose={() => {}} />);
+    expect(screen.getByText('Generate the sheet to review dimensions and callouts.')).toBeTruthy();
+    expect(exporter.previewDrawingViaServer).toHaveBeenCalledTimes(1);
+  });
+
   it('shows a live generating status with a spinner while the preview request runs', async () => {
     let release: (value: { svg: string; diagnostics: never[]; drawingReport: typeof report }) => void = () => {};
     vi.mocked(exporter.previewDrawingViaServer).mockImplementationOnce(() => new Promise((resolve) => { release = resolve; }));

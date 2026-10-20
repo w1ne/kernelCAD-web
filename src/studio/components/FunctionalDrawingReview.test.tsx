@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { DraftingReview } from './DraftingReview';
+import { __resetDraftingPreviewCacheForTests } from './useDraftingReview';
 import * as exporter from '../exportViaServer';
 import type { DrawingReview } from '../../shared/intent/drawingReview';
 import { draftingCriteriaFingerprint, type DraftingSettings } from '../draftingSettings';
@@ -22,6 +23,9 @@ const button = (name: string) => screen.getByRole('button', { name }) as HTMLBut
 async function generate() { fireEvent.click(button('Generate preview')); await screen.findByText('1/1 critical covered · 0 unresolved decisions'); }
 beforeEach(() => {
   localStorage.clear();
+  // Cases here rewrite one source repeatedly; a sheet remembered by the
+  // previous case would open this dialog pre-rendered instead of empty.
+  __resetDraftingPreviewCacheForTests();
   vi.mocked(exporter.previewDrawingViaServer).mockResolvedValue(preview());
   vi.mocked(exporter.exportViaServer).mockResolvedValue({ blob: new Blob(['PDF']), downloadName: 'drawing.pdf' });
   vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:preview'), revokeObjectURL: vi.fn() });
