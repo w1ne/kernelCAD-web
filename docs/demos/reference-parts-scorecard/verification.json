@@ -1,0 +1,53 @@
+{
+  "generatedAtUtc": "2026-10-20T18:29:45.063913+00:00",
+  "scope": "local OCCT validation; no deployment or hardware acceptance",
+  "command": [
+    "npm",
+    "run",
+    "test:reference-parts"
+  ],
+  "exitCode": 0,
+  "partCount": 27,
+  "expectedPartCount": 27,
+  "knownFailureIds": [
+    "plate-blind-hole",
+    "plate-counterbore"
+  ],
+  "maxPartMs": 283.3,
+  "scoreSummary": "25/25 expected-pass parts; 2 known failure(s); total 1032.4 ms / 60000 ms.",
+  "renderSettings": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 24,
+    "codec": "H.264 libx264",
+    "crf": 26,
+    "audio": "none",
+    "font": "/System/Library/Fonts/Supplemental/Andale Mono.ttf (or DejaVu Sans Mono fallback)",
+    "sceneDurationsSeconds": [
+      2,
+      6,
+      3
+    ]
+  },
+  "transcriptSha256": "15e9e8737cbc9f09ae2610ccd0704afa445c1a38d7496a525b8cc7f51f3d14eb",
+  "manifestSha256": "605fb64f8ca5c3afae7bb813c158ae9a4163f3e94e4010409d32fa9531e52249",
+  "demoSourceSha256": "0406275ffec5eed5781784e38302db18a0f765cd27ab22c4bbb4dbf86149d224",
+  "videoSha256": "2aac9af770c2337e1a35623942ff8da3d0b34305bd4af8a1657539e3d990e92b",
+  "fullDecodeExitCode": 0,
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080,
+        "avg_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "11.000000",
+      "size": "317490"
+    }
+  }
+}
