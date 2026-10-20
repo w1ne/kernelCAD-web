@@ -5,7 +5,6 @@ date: 2026-10-19
 kind: guide
 status: published
 model: examples/parts/bolted-flange.kcad.ts
-video: docs/demos/standard-parts/flange-demo.mp4
 ---
 
 kernelCAD ships one table of ISO metric fasteners. Socket head, button head, countersunk and hex head screws and bolts, set screws, threaded rod, hex nuts, lock nuts and washers. Sizes run M2 to M20 where the standard has them, and every stocked length is per thread.
@@ -64,8 +63,6 @@ The flange is a ring with eight Ø6.6 bores on an 85 mm bolt circle, 10 mm thick
 
 ![Flange stack detail](../../site/blog/standard-parts-library/flange-detail.png "Under the ring: tail washer, hex nut and 1.4 mm of screw tip. The heads seat flush in the cut countersinks.")
 
-The video after the lede is an annotated still sequence of local renders, not a screen recording.
-
 ## Close, normal or loose
 
 ISO 273 gives three clearance classes per thread. For M6 the bores are 6.4 mm close, 6.6 mm normal and 7.0 mm loose. All three find the thread and each hole reports the class it matched, so a plate drilled for a loose fit still sizes correctly. The match tolerance is 0.1 mm, which keeps a 5.0 mm tap drill from reading as an oversized M4 hole.
@@ -75,21 +72,4 @@ const fitted = await lib.insert(plate, { diameterMm: 7.0, family: 'socket-head-c
 // fitted.holes[0].thread === 'M6', fitted.holes[0].fit === 'loose'
 ```
 
-## What it is not
-
-Envelopes make no claim about thread contact, strength, torque or preload. The countersunk head is the seated ISO 10642 frustum; the other heads are cylinders and the lock washer is a plain annulus without the split. Head and nut dimensions are the standards' maximums where the standards give a range, so an envelope fits a hole that a real part will also fit. Check the supplier drawing before ordering hardware for a production part.
-
-## Reproduce the checks
-
-In a repository checkout with dependencies installed:
-
-```sh
-npx tsx examples/parts/verify.mts
-npx tsx examples/parts/verify-insert.mts
-npx tsx examples/parts/verify-flange.mts
-npx tsx examples/parts/verify-catalog.mts
-```
-
-Each verifier re-evaluates the committed example and writes fresh evidence. The flange check tested 300 part pairs with zero positive-volume overlaps and 1,305 mm³ of countersink removed; the insert check tested 105 pairs and 377.66 mm³. The evidence files are [catalog-evidence.json](/blog/standard-parts-library/catalog-evidence.json) and [flange-evidence.json](/blog/standard-parts-library/flange-evidence.json); the feature tests live in `src/modeling/parts/familyTable.test.ts` and `src/modeling/parts/holeInsert.test.ts`.
-
-The same calls work in Studio, in the browser and through kernelCAD's MCP tools, so an agent can bolt a model together without a CAD file on disk. See the [docs](/docs/) for the API.
+The model above is live: drag it to rotate, and the eight stacks are the parts the examples place. The same calls work in Studio, in the browser and through kernelCAD's MCP tools. See the [docs](/docs/) for the API.

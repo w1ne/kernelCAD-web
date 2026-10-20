@@ -13,6 +13,7 @@ import {
 import { lowerBoolean } from './boolean';
 import { lowerCurve3d, lowerEmbossText, lowerProjectCurve, lowerVariableSweep } from './curves';
 import { lowerChamfer, lowerFillet } from './edgeFeatures';
+import { lowerFilletIntersection } from './filletIntersection';
 import { lowerCutout, lowerHole, lowerHoles } from './holes';
 import { lowerImported, lowerSdfMaterialize } from './imported';
 import { lowerLoft } from './loft';
@@ -57,6 +58,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   // booleans and edge/face features
   boolean: lowerBoolean,
   fillet: lowerFillet,
+  filletIntersection: lowerFilletIntersection,
   chamfer: lowerChamfer,
   shell: lowerShell,
   draft: lowerDraft,

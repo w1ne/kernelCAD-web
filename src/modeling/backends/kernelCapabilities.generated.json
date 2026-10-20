@@ -28,6 +28,7 @@
         "extrude",
         "feaStudy",
         "fillet",
+        "filletIntersection",
         "hole",
         "holes",
         "importedBrep",

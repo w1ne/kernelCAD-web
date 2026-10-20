@@ -181,6 +181,9 @@ export type FeatureKind =
   | 'drawingTolerance'
   | 'drawingDimension'
   | 'drawingReview'
+  // Boolean-relation fillet: round the seam where a cutter met a body,
+  // selected by proximity to the exact body ∩ cutter section curve.
+  | 'filletIntersection'
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'
