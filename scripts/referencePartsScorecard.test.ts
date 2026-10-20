@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { buildModelFromFile } from '../src/modeling/buildModel';
 import { compareMetrics, renderScorecard, type ReferenceMetrics } from './referencePartsScorecard';
@@ -146,6 +147,31 @@ describe('reference-parts OCCT geometry', () => {
     const actual = await measure('sweep-round-prism.kcad.ts');
     expect(actual.volumeMm3).toBeCloseTo(500 * Math.PI, 2);
     expect(actual.surfaceAreaMm2).toBeCloseTo(250 * Math.PI, 2);
+  });
+
+  it('uses the analytic flat, quarter-cylinder, and spherical-octant area for an all-edge fillet', async () => {
+    const actual = await measure('box-all-edge-fillet.kcad.ts');
+    const radius = 3;
+    const core = [40 - 2 * radius, 30 - 2 * radius, 20 - 2 * radius];
+    const flatFaces = 2 * (core[0] * core[1] + core[0] * core[2] + core[1] * core[2]);
+    const quarterCylinderStrips = 2 * Math.PI * radius * (core[0] + core[1] + core[2]);
+    const sphericalOctants = 4 * Math.PI * radius ** 2;
+    const expectedArea = flatFaces + quarterCylinderStrips + sphericalOctants;
+    const expectedVolume = core[0] * core[1] * core[2]
+      + 2 * radius * (core[0] * core[1] + core[0] * core[2] + core[1] * core[2])
+      + Math.PI * radius ** 2 * (core[0] + core[1] + core[2])
+      + (4 / 3) * Math.PI * radius ** 3;
+    const manifest = JSON.parse(
+      await readFile(fileURLToPath(new URL('../assets/reference-parts/scorecard.json', import.meta.url)), 'utf8'),
+    ) as { parts: Array<{ id: string; expected: ReferenceMetrics; provenance: { kind: string; details: string } }> };
+    const part = manifest.parts.find(({ id }) => id === 'rounded-box');
+
+    expect(actual.surfaceAreaMm2).toBeCloseTo(expectedArea, 8);
+    expect(actual.volumeMm3).toBeCloseTo(expectedVolume, 8);
+    expect(part?.expected.surfaceAreaMm2).toBeCloseTo(expectedArea, 8);
+    expect(part?.expected.volumeMm3).toBeCloseTo(expectedVolume, 8);
+    expect(part?.provenance.kind).toBe('analytic');
+    expect(part?.provenance.details).toContain('A=3256+468π');
   });
 
   it('matches the counterbore target or its documented 0.01 mm overcut', async () => {

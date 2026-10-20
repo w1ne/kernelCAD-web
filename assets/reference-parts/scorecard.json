@@ -137,7 +137,7 @@
       "source": "assets/reference-parts/scorecard/box-all-edge-fillet.kcad.ts",
       "expected": { "volumeMm3": 23340.84937505542, "surfaceAreaMm2": 4726.265361880022, "bbox": { "min": [0, 0, 0], "max": [40, 30, 20] } },
       "tolerance": { "volumeRelative": 0.00000001, "surfaceAreaRelative": 0.00000001, "bboxAbsoluteMm": 0.05 },
-      "provenance": { "kind": "mixed", "details": "Volume is the closed-form Steiner expansion of a 34×24×14 core grown by r=3. Surface area is the 2026-10-20 OCCT BRepGProp result for the eight corner blend patches, since the local fillet patches do not match the ideal spherical-octant formula. Bbox uses the preserved outer dimensions." },
+      "provenance": { "kind": "analytic", "details": "For the 40×30×20 box with all edges filleted at r=3, the 34×24×14 core gives the Steiner volume V=34·24·14+2r(34·24+34·14+24·14)+πr²(34+24+14)+(4/3)πr³. Surface area is six flat faces (3256), twelve quarter-cylinder strips (432π), and eight spherical octants (36π): A=3256+468π. Bbox preserves the outer dimensions." },
       "status": "pass"
     },
     {
