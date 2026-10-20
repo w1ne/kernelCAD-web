@@ -34,3 +34,16 @@ Append `?kernel=off` to a Studio URL to force the server path, or
 `?kernel=force` to try the browser kernel even where it is not yet enabled by
 default. The feature is rolling out behind a flag while its measurements are
 verified (see `docs/superpowers/plans/artifacts/2026-10-18-browser-kernel/`).
+
+## Running other people's models
+
+A shared or gallery model is someone else's code. In the browser kernel it
+runs inside a dedicated worker that has no network access: after the worker
+loads its wasm, `fetch`, `XMLHttpRequest`, WebSockets, `EventSource`,
+`importScripts`, nested workers, `BroadcastChannel`, IndexedDB and the Cache
+API are replaced with stubs that throw, so a model cannot send requests as
+you. On the hosted app the worker also has its own Content-Security-Policy
+(`public/_headers`). That policy only allows the app's own static assets, so
+dynamic `import()` cannot reach the API or any other host. A model that tries
+to use the network fails its in-browser build and falls back to the server
+path.

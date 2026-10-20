@@ -1,0 +1,10 @@
+# Cloudflare Pages response headers for the hosted Studio (app.kernelcad.com).
+#
+# The browser kernel worker runs hosted/shared model sources with
+# `new Function`. Its own CSP is the hard boundary for that code: it may load
+# the app's own chunks/wasm (same-origin static assets) and nothing else — no
+# requests to the API origin or any other host, no nested workers. The worker
+# also locks down fetch & co. in JS once its wasm is loaded
+# (src/studio/kernel/workerNetworkLockdown.ts).
+/assets/studioKernelWorker-*
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'; connect-src 'self'; worker-src 'none'

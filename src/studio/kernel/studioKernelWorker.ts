@@ -20,6 +20,7 @@ import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
 import { resolveRootId } from '../../modeling/compute/resolveRootId';
 import { updateModelParams } from '../../modeling/paramUpdate';
 import { createKernelWorkerCore } from './kernelWorkerCore';
+import { lockDownWorkerNetwork } from './workerNetworkLockdown';
 import type { KernelRequest, KernelResponse } from './protocol';
 
 // Kick the wasm off at module load. The host spawns the worker on first
@@ -31,9 +32,18 @@ const enginePromise = initOcct({
   locateFile: (file: string) => (file.endsWith('.wasm') ? wasmUrl : file),
 });
 
+// Model sources are hosted/shared code run with `new Function`; nothing they
+// do may reach the network as this origin. The wasm fetch above is the only
+// request the worker needs, so lock the global down as soon as it resolves
+// and before any script runs. A failed lockdown rejects every build (fail
+// closed): routing then serves the model from the server.
+const sandboxReady = enginePromise.then(() => {
+  lockDownWorkerNetwork(self);
+});
+
 const core = createKernelWorkerCore({
   async runScript({ code, fileName }) {
-    await enginePromise;
+    await sandboxReady;
     // Gallery/Studio sources are TypeScript (.kcad.ts). The default browser
     // transpiler is a JS pass-through that refuses TS syntax by name, so the
     // worker opts into the real compiler via `transpileBrowser.ts` (the node

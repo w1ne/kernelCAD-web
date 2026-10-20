@@ -68,9 +68,20 @@ precomputed-mesh URLs to the CDN.
   file; on localhost it paints in ~110 s. The bin1 precompute (this branch)
   removes most of that once the marketing site ships it.
 - **Cold in-browser warm of the grinder** did not finish inside practical
-  measurement windows in this environment (dev-mode transform graph), and the
-  production preview's worker chunk closed on load without an `onerror`
-  breadcrumb — both need a follow-up measurement on a production build with
-  the worker-chunk lifetime instrumented. The fixture record above isolates
-  the routing performance from that cold-build cost.
+  measurement windows in this environment (dev-mode transform graph). The
+  fixture record above isolates the routing performance from that cold-build
+  cost.
+- **Production preview (re-checked 2026-10-20):** the earlier "worker chunk
+  closed on load" did not reproduce. A production build served by
+  `vite preview` warms the worker (wasm fetched, `studioKernelWorker-*.js`
+  stays alive), and a param edit on `?kernel=force` makes zero mesh POSTs and
+  renders the same geometry as the `?kernel=off` control (two POSTs). Two
+  harness pitfalls look exactly like a dead worker and explain the old note:
+  1. `vite build` defaults to base `/kernelCAD-web/` while `vite preview`
+     serves `/`, so the app never boots — build with `VITE_BASE_PATH=/`.
+  2. `vite preview` has no `/__kernelcad/mesh` dev middleware. Warm-on-open
+     only fires after a successful hosted apply, so without a mesh server the
+     worker is never spawned. Proxy that route to a hosted-mode dev server.
+  The production event sink is a no-op, so no `[kernel]` breadcrumbs appear
+  there either; judge the warm path by mesh POST counts.
 - The E2E's Playwright config is not yet wired into CI.
