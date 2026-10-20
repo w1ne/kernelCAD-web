@@ -1,11 +1,14 @@
 // Roadster front-clip need: trim a patch against the BRep body boundary, not
 // only against another Surface. A whole body is used as the section cutter.
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
 import { createModelingApi } from '../../../../src/modeling/api';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
-import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
+import { OcctBackend, initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 function patch(kcad: ReturnType<typeof createModelingApi>) {
   return kcad.nurbsSurface({
@@ -18,7 +21,17 @@ function patch(kcad: ReturnType<typeof createModelingApi>) {
 }
 
 describe('surface trim against a BRep body', () => {
-  beforeAll(async () => { await initOcct(); });
+  let tmpDir: string;
+  let stepPath: string;
+  beforeAll(async () => {
+    await initOcct();
+    const box = OcctBackend.box(10, 6, 4, false);
+    const bytes = await box.exportSTEPAsync();
+    tmpDir = mkdtempSync(join(tmpdir(), 'kcad-surface-trim-'));
+    stepPath = join(tmpDir, 'body.step');
+    writeFileSync(stepPath, bytes);
+  });
+  afterAll(() => rmSync(tmpDir, { recursive: true, force: true }));
 
   it('trims a patch to the body boundary and keeps the largest piece', async () => {
     const session = new CaptureSession();
@@ -48,6 +61,23 @@ describe('surface trim against a BRep body', () => {
     expect(areaB).toBeGreaterThan(0);
     expect(areaA + areaB).toBeGreaterThan(99);
     expect(areaA + areaB).toBeLessThan(101);
+  }, 120_000);
+
+  it('uses the transformed imported BRep cutter, not the parked import', async () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session, scriptDir: tmpDir });
+    const base = patch(kcad);
+    const body = await kcad.lib.fromSTEP('body.step');
+    const moved = body.translate(5, 2, -2);
+    const trimmed = base.trimTo(moved).toShape();
+    const lowerer = createOcctLowerer(session);
+    const result = await new RecomputeEngine(lowerer).run(session.getRecords());
+    expect(result.diagnostics.filter((d) => d.severity === 'error')).toHaveLength(0);
+    const backend = result.shapes.get(trimmed.id) as OcctBackend | undefined;
+    expect(backend).toBeDefined();
+    const area = backend!.surfaceArea();
+    expect(area).toBeGreaterThan(65);
+    expect(area).toBeLessThan(75);
   }, 120_000);
 
   it('emits no-intersection when the body misses the patch', async () => {

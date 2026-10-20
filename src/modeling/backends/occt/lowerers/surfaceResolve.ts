@@ -289,8 +289,8 @@ function resolveTrimCutter(
   const featureRef = byRef.featureRef;
   const fid = featureRef.kind === 'feature' ? featureRef.id : featureRef.kind === 'surface' ? featureRef.surfaceId : featureRef.featureId;
   const back =
-    ctx.importedGeometry.get(fid) ??
     (ctx.inputs.byKey[fid] as OcctBackend | undefined) ??
+    ctx.importedGeometry.get(fid) ??
     (ctx.inputs.byKey['by'] as OcctBackend | undefined);
   if (!back) {
     ctx.diagnostics.push({
