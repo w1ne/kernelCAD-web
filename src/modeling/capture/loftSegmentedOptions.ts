@@ -5,64 +5,81 @@ import { isValidEditableNumber } from '../../shared/intent/types';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { LoftOptions } from './sketch';
 
+const SEWN_EXAMPLE = "a.loft(b, { mode: 'sewn', spanSize: 3 })";
+
 /** Validate the segmented-loft options. `spanSize` is structural (not a
  *  drivable dimension), so only a literal number can be checked here; the
- *  lowerer re-checks the evaluated value. */
+ *  lowerer re-checks the evaluated value. Checks run in a fixed order:
+ *  continuity, ruled-vs-continuity, mode, spanSize. */
 export function validateLoftSegmentedOptions(opts: LoftOptions, featureId: FeatureId): void {
-  if (opts.continuity !== undefined
-    && opts.continuity !== 'G0' && opts.continuity !== 'G1' && opts.continuity !== 'G2') {
+  validateContinuity(opts, featureId);
+  validateRuledWithContinuity(opts, featureId);
+  validateMode(opts, featureId);
+  validateSpanSize(opts, featureId);
+}
+
+function validateContinuity(opts: LoftOptions, featureId: FeatureId): void {
+  const { continuity } = opts;
+  if (continuity === undefined || continuity === 'G0' || continuity === 'G1' || continuity === 'G2') return;
+  invalidArgs({
+    api: 'Sketch.loft',
+    path: 'opts.continuity',
+    got: continuity,
+    showType: true,
+    requires: "'G0', 'G1' or 'G2'",
+    example: "a.loft(b, { continuity: 'G1' })",
+    featureId,
+  });
+}
+
+function validateRuledWithContinuity(opts: LoftOptions, featureId: FeatureId): void {
+  if (opts.ruled !== true || (opts.continuity !== 'G1' && opts.continuity !== 'G2')) return;
+  invalidArgs({
+    api: 'Sketch.loft',
+    path: 'opts.ruled',
+    got: opts.ruled,
+    requires: "ruled: false (or omitted) with continuity 'G1'/'G2'; a ruled skin creases at every station",
+    example: "a.loft(b, { continuity: 'G2' })",
+    featureId,
+  });
+}
+
+function validateMode(opts: LoftOptions, featureId: FeatureId): void {
+  const { mode } = opts;
+  if (mode === undefined || mode === 'single' || mode === 'sewn') return;
+  invalidArgs({
+    api: 'Sketch.loft',
+    path: 'opts.mode',
+    got: mode,
+    showType: true,
+    requires: "'single' or 'sewn'",
+    example: SEWN_EXAMPLE,
+    featureId,
+  });
+}
+
+function validateSpanSize(opts: LoftOptions, featureId: FeatureId): void {
+  const { spanSize } = opts;
+  if (spanSize === undefined) return;
+  if (!isValidEditableNumber(spanSize)) {
     invalidArgs({
       api: 'Sketch.loft',
-      path: 'opts.continuity',
-      got: opts.continuity,
+      path: 'opts.spanSize',
+      got: spanSize,
       showType: true,
-      requires: "'G0', 'G1' or 'G2'",
-      example: "a.loft(b, { continuity: 'G1' })",
+      requires: 'an integer >= 2 (or a ParamRef<number>)',
+      example: SEWN_EXAMPLE,
       featureId,
     });
   }
-  if (opts.ruled === true && (opts.continuity === 'G1' || opts.continuity === 'G2')) {
+  if (typeof spanSize === 'number' && (!Number.isInteger(spanSize) || spanSize < 2)) {
     invalidArgs({
       api: 'Sketch.loft',
-      path: 'opts.ruled',
-      got: opts.ruled,
-      requires: "ruled: false (or omitted) with continuity 'G1'/'G2'; a ruled skin creases at every station",
-      example: "a.loft(b, { continuity: 'G2' })",
+      path: 'opts.spanSize',
+      got: spanSize,
+      requires: 'an integer >= 2',
+      example: SEWN_EXAMPLE,
       featureId,
     });
-  }
-  if (opts.mode !== undefined && opts.mode !== 'single' && opts.mode !== 'sewn') {
-    invalidArgs({
-      api: 'Sketch.loft',
-      path: 'opts.mode',
-      got: opts.mode,
-      showType: true,
-      requires: "'single' or 'sewn'",
-      example: "a.loft(b, { mode: 'sewn', spanSize: 3 })",
-      featureId,
-    });
-  }
-  if (opts.spanSize !== undefined) {
-    if (!isValidEditableNumber(opts.spanSize)) {
-      invalidArgs({
-        api: 'Sketch.loft',
-        path: 'opts.spanSize',
-        got: opts.spanSize,
-        showType: true,
-        requires: 'an integer >= 2 (or a ParamRef<number>)',
-        example: "a.loft(b, { mode: 'sewn', spanSize: 3 })",
-        featureId,
-      });
-    }
-    if (typeof opts.spanSize === 'number' && (!Number.isInteger(opts.spanSize) || opts.spanSize < 2)) {
-      invalidArgs({
-        api: 'Sketch.loft',
-        path: 'opts.spanSize',
-        got: opts.spanSize,
-        requires: 'an integer >= 2',
-        example: "a.loft(b, { mode: 'sewn', spanSize: 3 })",
-        featureId,
-      });
-    }
   }
 }
