@@ -21,14 +21,14 @@ export function useSharedSelection(
     useEffect(() => {
         if (!sessionToken) return;
         const controller = new AbortController();
-        const bridge = attachSharedSelection(selectionCodeStore, async (method, selection, model_generation, faceSignature) => {
+        const bridge = attachSharedSelection(selectionCodeStore, async (method, selection, model_generation, faceSignature, selections) => {
             const { base, headers } = await apiCall();
             // This repo wires the local route. Hosted ownership/auth wiring is server-side work.
             if (base) throw new Error('Shared selection is currently available in local Studio');
             const response = await fetch(rewritePath(`/__kernelcad/selection?session=${encodeURIComponent(sessionToken)}&studio_remap=1`, base), {
                 method, headers: { ...headers, 'content-type': 'application/json' },
                 signal: AbortSignal.any([controller.signal, AbortSignal.timeout(5000)]),
-                ...(method === 'POST' ? { body: JSON.stringify({ selection, model_generation, face_signature: faceSignature }) } : {}),
+                ...(method === 'POST' ? { body: JSON.stringify({ selection, ...(selections ? { selections } : {}), model_generation, face_signature: faceSignature }) } : {}),
             });
             if (!response.ok && response.status !== 409) throw new Error(`Selection HTTP ${response.status}`);
             return response.json();

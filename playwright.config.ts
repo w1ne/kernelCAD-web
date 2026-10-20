@@ -13,8 +13,9 @@ export default defineConfig({
     workers: 1,
     reporter: 'html',
     use: {
-        // Use IPv4 explicitly: in this sandbox, connecting to ::1 can fail with EPERM.
-        baseURL: 'http://127.0.0.1:5173',
+        // Use IPv4 explicitly by default; capture runs can use studio.test so
+        // Vite and the in-page MCP endpoint share the allowed local hostname.
+        baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:5173',
         trace: 'on-first-retry',
     },
 

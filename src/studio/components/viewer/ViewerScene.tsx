@@ -15,6 +15,7 @@ import type { SnapResult } from "../../features-ui/interaction/SnapManager";
 import type { ViewTarget } from "./controllers/cameraPose";
 import type { ViewportFocusTarget } from "../../store/shellStore";
 import { RendererSnapshotPublisher } from "./RendererSnapshotPublisher";
+import { CameraProbe } from "./CameraProbe";
 import { SceneBackground } from "./SceneBackground";
 import { InteractionHandler } from "./controllers/InteractionHandler";
 import { HighlightOverlay } from "./overlays/HighlightOverlay";
@@ -123,6 +124,7 @@ export function ViewerScene({
         <>
             <RoomEnvironmentRig />
             <RendererSnapshotPublisher />
+            <CameraProbe />
             <SceneBackground mode={viewportBackground} />
 
             {publish

@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-20",
+  "scope": "Local OCCT and MCP integration validation",
+  "testRun": {
+    "runner": "Vitest",
+    "result": "passed",
+    "summary": "14 focused files passed; 122 tests passed",
+    "integrationTest": "tests/integration/mcp/edgeSelectionBlend.test.ts"
+  },
+  "model": {
+    "source": "const body = box(10, 10, 10); return body;",
+    "inputVolumeMm3": 1000,
+    "validBrep": true
+  },
+  "operations": [
+    {
+      "operation": "fillet",
+      "selectedStableEdgeRefs": 2,
+      "radiusMm": 1,
+      "expectedVolumeMm3": 995.7079632679489,
+      "assertion": "sceneSummary.valid is true and volume is close to the expected two-edge fillet volume"
+    },
+    {
+      "operation": "chamfer",
+      "selectedStableEdgeRefs": 2,
+      "distanceMm": 1,
+      "expectedVolumeMm3": 990,
+      "assertion": "sceneSummary.valid is true and volume is close to the expected two-edge chamfer volume"
+    }
+  ],
+  "playwright": {
+    "test": "tests/edge_picking.capture.spec.ts",
+    "result": "capture source added; operator run pending",
+    "captureCommand": "npm run capture:edge-picking"
+  },
+  "mp4": {
+    "result": "not-captured-in-sandbox",
+    "reason": "The opt-in browser capture is intended for the operator's Mac run; it writes and decodes the MP4 before updating this evidence file."
+  }
+}

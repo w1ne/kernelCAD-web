@@ -20,3 +20,8 @@ continuity supports G1 and G2. The tool reports evaluation success and
 diagnostics; it does not extract the generated blend surface's NURBS poles.
 That still requires kernel surface extraction. A successful local evaluation is
 not a deployment or hardware acceptance claim.
+
+For edges selected in Studio, read `get_selection` and pass the selected edge
+`ref` values as a string array in `selector`. Stable refs use the current shape
+feature as owner and a geometry-derived `s<hash>` edge ID. The operation result
+becomes the returned model when the script directly returns `shape_binding`.

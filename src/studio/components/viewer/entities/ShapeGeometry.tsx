@@ -15,30 +15,75 @@ import { featureEdgePositions, publishEdgeColor, PUBLISH_EDGE_OPACITY, type View
 import { pinRoomEnvironment } from "../roomEnvironment";
 import { matrixFromGeometryTransform } from "./geometryTransform";
 import { selectionCodeStore } from "../../../selectionCode/selectionCodeStore";
-import { resolvePickFeature, type GeometryPick } from "../../../selectionCode/geometryLineage";
+import { edgeIndexAtVertex, resolvePickFeature, type GeometryPick } from "../../../selectionCode/geometryLineage";
 import type { FeatureRecord } from "../../../../shared/intent/featureRecord";
+import { hasSelectionModifier, selectEdgeFromFaceClick, selectGeometryEdge } from './shapeTopologyClick';
 
 const EMPTY_PLANES: THREE.Plane[] = [];
 
-/** Geometry → code: publish the clicked face — or the hovered edge of this
- *  shape, which wins when the pointer is on an edge — with the feature that
- *  created it. */
+/** Geometry → code: publish the clicked face with the feature that created it.
+ *  Edge hits are routed through the BREP edge handlers before this runs. */
 function linkClickToCode(
     geometry: GeometryResult,
     shapeIndex: number,
     faceId: number,
     nativeEvent: MouseEvent,
     features: readonly FeatureRecord[],
+    multi = false,
 ): void {
-    const hovered = selectionCodeStore.getPreselect();
-    const pick: GeometryPick = hovered && hovered.kind === 'edge' && hovered.shapeIndex === shapeIndex
-        ? hovered
-        : { shapeIndex, kind: 'face', id: faceId };
-    selectionCodeStore.linkFromGeometry(
+    const pick: GeometryPick = { shapeIndex, kind: 'face', id: faceId };
+    selectionCodeStore.selectFromGeometry(
         pick,
         resolvePickFeature(geometry, pick, features),
         { x: nativeEvent.offsetX, y: nativeEvent.offsetY },
+        multi,
+        undefined,
+        geometry.featureId ?? undefined,
     );
+}
+
+function faceIdAtIntersection(event: ThreeEvent<MouseEvent>): number {
+    const faceMap = event.object.userData.faceMap as number[] | undefined;
+    if (faceMap && event.faceIndex != null) return faceMap[event.faceIndex] ?? -1;
+    return typeof event.object.userData.id === 'number' ? event.object.userData.id : -1;
+}
+
+function useEdgeSelection(
+    geometry: GeometryResult,
+    shapeIndex: number,
+    name: string | undefined,
+    features: readonly FeatureRecord[],
+    setSelectedFace: (selection: { shapeIndex: number; faceId: number } | null) => void,
+    setSelectedSketchName: (name: string | null) => void,
+) {
+    const selectEdgeIndex = useCallback((edgeIndex: number, nativeEvent: MouseEvent) => {
+        selectGeometryEdge(
+            geometry, shapeIndex, name, features, setSelectedFace, setSelectedSketchName,
+            edgeIndex, nativeEvent,
+        );
+    }, [features, geometry, name, setSelectedFace, setSelectedSketchName, shapeIndex]);
+
+    const handleEdgeClick = useCallback((event: ThreeEvent<MouseEvent>) => {
+        event.stopPropagation();
+        selectEdgeIndex(edgeIndexAtVertex(geometry.edgeRanges, event.index ?? -1), event.nativeEvent);
+    }, [geometry.edgeRanges, selectEdgeIndex]);
+
+    return { selectEdgeIndex, handleEdgeClick };
+}
+
+function useShapeEdges(geometry: GeometryResult, displayGeometry: THREE.BufferGeometry | null): THREE.BufferGeometry | null {
+    const edgesGeo = useMemo(() => {
+        if (geometry.edges) {
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(geometry.edges, 3));
+            return geo;
+        }
+        if (!displayGeometry) return null;
+        return new THREE.EdgesGeometry(displayGeometry, 15);
+    }, [displayGeometry, geometry.edges]);
+
+    useEffect(() => () => { edgesGeo?.dispose(); }, [edgesGeo]);
+    return edgesGeo;
 }
 
 interface ShapeProps {
@@ -171,42 +216,30 @@ export function ConsolidatedShape({
     const { geometry: mergedGeometry, faceMap } = useConsolidatedGeometry(geometry.faces);
     const displayGeometry = indexedMesh ?? mergedGeometry;
     const transformMatrix = useMemo(() => matrixFromGeometryTransform(geometry), [geometry]);
-
-    const edgesGeo = useMemo(() => {
-        if (geometry.edges) {
-            const geo = new THREE.BufferGeometry();
-            geo.setAttribute('position', new THREE.BufferAttribute(geometry.edges, 3));
-            return geo;
-        }
-        if (!displayGeometry) return null;
-        return new THREE.EdgesGeometry(displayGeometry, 15);
-    }, [displayGeometry, geometry.edges]);
-
-    useEffect(() => {
-        return () => { edgesGeo?.dispose(); };
-    }, [edgesGeo]);
+    const edgesGeo = useShapeEdges(geometry, displayGeometry);
+    const { selectEdgeIndex, handleEdgeClick } = useEdgeSelection(
+        geometry, shapeIndex, name, featureRecords ?? [], setSelectedFace, setSelectedSketchName,
+    );
 
     const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
         e.stopPropagation();
-        const isMulti = e.metaKey || e.ctrlKey || e.shiftKey;
+        const isMulti = hasSelectionModifier(e.nativeEvent);
 
-        if (name && isMulti) {
-            toggleSelection(name, true);
-            return;
-        }
+        // Face and edge intersections can overlap. Re-run the shared hover
+        // priority on this click's fresh intersections so an edge within the
+        // pixel tolerance wins without depending on the previous hover frame.
+        if (selectEdgeFromFaceClick(e.intersections, shapeIndex, e.nativeEvent, selectEdgeIndex)) return;
+
+        if (name && isMulti) toggleSelection(name, true);
 
         setSelectedSketchName(null);
-        let faceId = -1;
-        if (e.object.userData.faceMap && e.faceIndex != null) {
-            faceId = e.object.userData.faceMap[e.faceIndex] ?? -1;
-        } else if (typeof e.object.userData.id === 'number') {
-            faceId = e.object.userData.id;
-        }
+        const faceId = faceIdAtIntersection(e);
 
         setSelectedFace({ shapeIndex, faceId });
-        if (name) setSelectedItemId(name);
-        linkClickToCode(geometry, shapeIndex, faceId, e.nativeEvent, featureRecords ?? []);
+        if (name && !isMulti) setSelectedItemId(name);
+        linkClickToCode(geometry, shapeIndex, faceId, e.nativeEvent, featureRecords ?? [], isMulti);
 
+        if (isMulti) return;
         const x = e.nativeEvent.clientX;
         const y = e.nativeEvent.clientY;
         setContextMenu({
@@ -214,7 +247,7 @@ export function ConsolidatedShape({
             position: { x, y },
             type: 'FACE'
         });
-    }, [geometry, featureRecords, name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
+    }, [geometry, featureRecords, name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu, selectEdgeIndex]);
 
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;
@@ -248,6 +281,7 @@ export function ConsolidatedShape({
                 clippingPlanes={clippingPlanes ?? EMPTY_PLANES}
                 clipIntersection={clipIntersection ?? false}
                 look={look}
+                onEdgeClick={handleEdgeClick}
             />
             {selectedFace?.shapeIndex === shapeIndex && (
                 <FaceSelectionOverlay
@@ -265,7 +299,7 @@ export function ConsolidatedShape({
  *  viewport background. Under the publish look this full set stays only as
  *  the pick target (`visible: false` skips drawing, not raycasting) and
  *  PublishFeatureEdges draws the creases. */
-function ShapeEdges({ edgesGeo, geometry, shapeIndex, name, color, viewMode3D, clippingPlanes, clipIntersection, look }: {
+function ShapeEdges({ edgesGeo, geometry, shapeIndex, name, color, viewMode3D, clippingPlanes, clipIntersection, look, onEdgeClick }: {
     edgesGeo: THREE.BufferGeometry | null;
     geometry: GeometryResult;
     shapeIndex: number;
@@ -275,9 +309,11 @@ function ShapeEdges({ edgesGeo, geometry, shapeIndex, name, color, viewMode3D, c
     clippingPlanes: THREE.Plane[];
     clipIntersection: boolean;
     look: ViewerLook;
+    onEdgeClick: (event: ThreeEvent<MouseEvent>) => void;
 }) {
-    if (viewMode3D === 'shaded' || !edgesGeo) return null;
+    if (!edgesGeo) return null;
     const publishEdges = look === 'publish' && viewMode3D === 'shadedWithEdges';
+    const pickOnly = viewMode3D === 'shaded';
     return (
         <>
             <lineSegments
@@ -286,10 +322,11 @@ function ShapeEdges({ edgesGeo, geometry, shapeIndex, name, color, viewMode3D, c
                 // Pickable BREP edges: `edgeRanges` maps a raycast hit
                 // to one edge (HoverManager / HighlightOverlay).
                 userData={geometry.edgeRanges ? { type: 'EDGE', id: 'edges', shapeIndex, edgeRanges: geometry.edgeRanges, ownerId: name } : {}}
+                onClick={geometry.edgeRanges ? onEdgeClick : undefined}
             >
                 <lineBasicMaterial
                     color={viewMode3D === 'wireframe' ? color : 0x000000}
-                    visible={!publishEdges}
+                    visible={!publishEdges && !pickOnly}
                     clippingPlanes={clippingPlanes}
                     clipIntersection={clipIntersection}
                 />

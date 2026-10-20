@@ -8,6 +8,7 @@ import {
     isExportRequest,
     isSuccessResponse,
     isErrorResponse,
+    WorkerResponseSchema,
     type WorkerRequest,
     type WorkerResponse
 } from './workerTypes';
@@ -92,6 +93,33 @@ describe('Worker Type Guards', () => {
             expect(isExecutePreviewResponse(preview)).toBe(true);
             expect(isExecutePreviewResponse({ type: 'SUCCESS', id: '1' })).toBe(false);
             expect(isSuccessResponse(preview)).toBe(false);
+        });
+    });
+
+    it('preserves BREP edge picking metadata across the worker response boundary', () => {
+        const response = WorkerResponseSchema.parse({
+            type: 'SUCCESS',
+            id: 'edge-metadata',
+            geometries: {
+                geometries: [{
+                    faces: [],
+                    edges: new Float32Array([0, 0, 0, 1, 0, 0]),
+                    edgeRanges: [0, 2],
+                    edgeOwners: ['feature-root'],
+                    edgeStableIds: ['s0123456789abcdef'],
+                }],
+                sketches: [],
+            },
+        });
+
+        expect(response).toMatchObject({
+            geometries: {
+                geometries: [{
+                    edgeRanges: [0, 2],
+                    edgeOwners: ['feature-root'],
+                    edgeStableIds: ['s0123456789abcdef'],
+                }],
+            },
         });
     });
 });

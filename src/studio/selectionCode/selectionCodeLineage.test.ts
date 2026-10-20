@@ -52,6 +52,13 @@ beforeAll(async () => {
 }, 120_000);
 
 describe('selection ↔ code lineage on box + fillet + hole', () => {
+    it('preserves stable edge IDs through the serialized mesh bridge into Studio geometry', () => {
+        const edgeIndex = terminal.edgeStableIds?.findIndex(id => /^s[0-9a-f]{16}$/.test(id)) ?? -1;
+        expect(edgeIndex).toBeGreaterThanOrEqual(0);
+        expect(terminal.edgeRanges?.slice(edgeIndex * 2, edgeIndex * 2 + 2)).toHaveLength(2);
+        expect(pickOwner(terminal, { shapeIndex: 0, kind: 'edge', id: edgeIndex })).not.toBeNull();
+    });
+
     it('maps every face of the final solid to the call that created it', () => {
         const index = buildFeatureSourceIndex(CODE, records);
         const expected: Record<FaceClass, string> = {

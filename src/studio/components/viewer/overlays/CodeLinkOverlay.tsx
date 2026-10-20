@@ -16,6 +16,7 @@ import {
 import { matrixFromGeometryTransform } from "../entities/geometryTransform";
 import { EdgeRangeLines } from "./EdgeRangeLines";
 import { mergeFaces } from "./mergeFaces";
+import { FaceSelectionOverlay } from "../entities/ShapeGeometry";
 
 function CodeHighlightFaces({ geometry, targets }: { geometry: GeometryResult; targets: HighlightTargets }) {
     const merged = useMemo(() => {
@@ -41,19 +42,19 @@ function CodeHighlightFaces({ geometry, targets }: { geometry: GeometryResult; t
     );
 }
 
-function LinkedEdge({ geometry, pick }: { geometry: GeometryResult | undefined; pick: GeometryPick }) {
+function SelectedTopology({ geometry, pick }: { geometry: GeometryResult | undefined; pick: GeometryPick }) {
     const transformMatrix = useMemo(() => (geometry ? matrixFromGeometryTransform(geometry) : undefined), [geometry]);
-    if (!geometry?.edges || !geometry.edgeRanges) return null;
-    return (
-        <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
-            <EdgeRangeLines
-                positions={geometry.edges}
-                edgeRanges={geometry.edgeRanges}
-                edgeIndex={pick.id}
-                color={CAD_COLORS_HEX.selection}
-            />
-        </group>
-    );
+    if (!geometry) return null;
+    if (pick.kind === 'edge') {
+        if (!geometry.edges || !geometry.edgeRanges) return null;
+        return <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
+            <EdgeRangeLines positions={geometry.edges} edgeRanges={geometry.edgeRanges} edgeIndex={pick.id} color={CAD_COLORS_HEX.selection} />
+        </group>;
+    }
+    const face = geometry.faces.find(candidate => candidate.faceId === pick.id);
+    return face ? <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
+        <FaceSelectionOverlay face={face} isSelected />
+    </group> : null;
 }
 
 const NO_FEATURES: readonly FeatureRecord[] = [];
@@ -66,7 +67,7 @@ const NO_FEATURES: readonly FeatureRecord[] = [];
  *     already drawn by `ConsolidatedShape`).
  */
 export function CodeLinkOverlay({ geometries, itemNames }: { geometries: GeometryResult[]; itemNames: (string | null)[] }) {
-    const { link, codeHighlight } = useSelectionCodeState();
+    const { topologySelections, codeHighlight } = useSelectionCodeState();
     const { featureRecords, hiddenIds, sessionToken, setSelectedFace, lastSuccessfulRevision } = useWorkbench();
     useSharedSelection(sessionToken, setSelectedFace, geometries, lastSuccessfulRevision);
     const features = featureRecords ?? NO_FEATURES;
@@ -83,9 +84,10 @@ export function CodeLinkOverlay({ geometries, itemNames }: { geometries: Geometr
             {targets && geometries.map((g, i) => (
                 isHidden(g, i) ? null : <CodeHighlightFaces key={i} geometry={g} targets={targets} />
             ))}
-            {link?.pick.kind === 'edge' && (
-                <LinkedEdge geometry={geometries[link.pick.shapeIndex]} pick={link.pick} />
-            )}
+            {topologySelections.map((selection, index) => (
+                <SelectedTopology key={`${selection.pick.shapeIndex}:${selection.pick.kind}:${selection.stableId ?? selection.pick.id}:${index}`}
+                    geometry={geometries[selection.pick.shapeIndex]} pick={selection.pick} />
+            ))}
         </group>
     );
 }

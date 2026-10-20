@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { selectionResultSchema, type FaceSignature, type SharedSelection } from '../../shared/selection/sharedSelection';
+import { selectionResultSchema, type FaceSignature, type SharedSelection, type SharedSelectionItem } from '../../shared/selection/sharedSelection';
 import type { SelectionCodeStore } from './selectionCodeStore';
 import type { GeometryResult } from '../../shared/worker/workerTypes';
 import { remapFaceSignature, signatureForSelection } from './faceSignature';
@@ -8,18 +8,18 @@ import { remapFaceSignature, signatureForSelection } from './faceSignature';
 function applySelectionToViewer(
     store: SelectionCodeStore,
     next: SharedSelection,
+    nextSelections: readonly SharedSelectionItem[],
     applyFace: (selection: { shapeIndex: number; faceId: number } | null) => void,
 ): void {
-    const current = store.getSnapshot().link;
-    const currentSelection = current ? { ...current.pick, featureId: current.featureId } : null;
-    if (JSON.stringify(currentSelection) === JSON.stringify(next)) return;
-    if (next) {
-        store.linkFromGeometry({ shapeIndex: next.shapeIndex, kind: next.kind, id: next.id }, next.featureId, null);
-    } else store.clearLink();
+    const snapshot = store.getSnapshot();
+    const currentSelections = snapshot.topologySelections.map(selectionItemFromLink);
+    const currentPrimary = snapshot.link ? selectionItemFromLink(snapshot.link) : null;
+    if (JSON.stringify(currentSelections) === JSON.stringify(nextSelections) && JSON.stringify(currentPrimary) === JSON.stringify(next)) return;
+    store.setTopologySelections(nextSelections, next);
     applyFace(next?.kind === 'face' ? { shapeIndex: next.shapeIndex, faceId: next.id } : null);
 }
 
-type SelectionRequest = (method: 'GET' | 'POST', selection?: SharedSelection, modelGeneration?: number, faceSignature?: FaceSignature | null) => Promise<unknown>;
+type SelectionRequest = (method: 'GET' | 'POST', selection?: SharedSelection, modelGeneration?: number, faceSignature?: FaceSignature | null, selections?: SharedSelectionItem[]) => Promise<unknown>;
 interface BridgeRuntime {
     store: SelectionCodeStore;
     request: SelectionRequest;
@@ -38,7 +38,19 @@ interface BridgeRuntime {
 
 function captureLocalSelection(runtime: BridgeRuntime): SharedSelection {
     const link = runtime.store.getSnapshot().link;
-    return link ? { ...link.pick, featureId: link.featureId } : null;
+    return link ? selectionItemFromLink(link) : null;
+}
+
+function selectionItemFromLink(link: NonNullable<ReturnType<SelectionCodeStore['getSnapshot']>['link']>): SharedSelectionItem {
+    return { ...link.pick, featureId: link.featureId, ...(link.stableId ? { stableId: link.stableId } : {}), ...(link.ref ? { ref: link.ref } : {}) };
+}
+
+function captureLocalSelections(runtime: BridgeRuntime): SharedSelectionItem[] {
+    return runtime.store.getSnapshot().topologySelections.map(selectionItemFromLink);
+}
+
+function selectionsFromResult(result: ReturnType<typeof selectionResultSchema.parse>): SharedSelectionItem[] {
+    return result.selections ?? (result.selection ? [result.selection] : []);
 }
 
 function applyPendingSignature(result: ReturnType<typeof selectionResultSchema.parse>, runtime: BridgeRuntime): boolean {
@@ -71,7 +83,7 @@ async function commitPendingRemap(
     runtime.pendingRemap = null;
     runtime.pendingGeometry = null;
     runtime.applying = true;
-    applySelectionToViewer(runtime.store, committed.selection, runtime.applyFace);
+    applySelectionToViewer(runtime.store, committed.selection, selectionsFromResult(committed), runtime.applyFace);
     return true;
 }
 
@@ -92,7 +104,7 @@ function applyOrdinaryResult(
     else if (!result.ok || runtime.generation !== started || (runtime.pending && !writing)) return;
     else if (writing) runtime.pending = false;
     runtime.applying = true;
-    if (!runtime.pendingRemap) applySelectionToViewer(runtime.store, result.selection, runtime.applyFace);
+    if (!runtime.pendingRemap) applySelectionToViewer(runtime.store, result.selection, selectionsFromResult(result), runtime.applyFace);
 }
 
 /** One request at a time; a click during a read wins over that read. */
@@ -105,11 +117,11 @@ export function attachSharedSelection(
 ) {
     const runtime: BridgeRuntime = { store, request, applyFace, geometries, meshRevision, disposed: false, applying: false,
         pending: false, generation: 0, busy: false, pendingRemap: null, pendingGeometry: null };
-    let lastLink = store.getSnapshot().link;
+    let lastSelections = store.getSnapshot().topologySelections;
     const unsubscribe = store.subscribe(() => {
-        const link = store.getSnapshot().link;
-        if (link === lastLink) return;
-        lastLink = link;
+        const selections = store.getSnapshot().topologySelections;
+        if (selections === lastSelections) return;
+        lastSelections = selections;
         if (!runtime.applying) { runtime.pending = true; runtime.generation += 1; }
     });
     return {
@@ -119,9 +131,10 @@ export function attachSharedSelection(
             const started = runtime.generation;
             const writing = runtime.pending && runtime.modelGeneration !== undefined;
             const selection = captureLocalSelection(runtime);
+            const selections = captureLocalSelections(runtime);
             try {
                 const result = selectionResultSchema.parse(await runtime.request(writing ? 'POST' : 'GET', selection, runtime.modelGeneration,
-                    writing ? signatureForSelection(geometries(), selection) : null));
+                    writing ? signatureForSelection(geometries(), selection) : null, writing ? selections : undefined));
                 if (runtime.disposed) return;
                 if (applyPendingSignature(result, runtime)) return;
                 if (!writing && await commitPendingRemap(result, runtime, started)) return;

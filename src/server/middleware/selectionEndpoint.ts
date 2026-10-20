@@ -2,9 +2,9 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { SessionPool, SessionPoolEntry } from '../sessionPool';
 import { readBody, readQuery, writeJson, type MinimalRes } from './httpUtil';
-import { faceSignatureSchema, sharedSelectionSchema } from '../../shared/selection/sharedSelection';
+import { faceSignatureSchema, sharedSelectionItemSchema, sharedSelectionSchema } from '../../shared/selection/sharedSelection';
 import { remapFaceSignature, signatureForSelection } from '../../shared/selection/faceSignature';
-import type { FaceSignature, SharedSelection } from '../../shared/selection/sharedSelection';
+import type { FaceSignature, SharedSelection, SharedSelectionItem } from '../../shared/selection/sharedSelection';
 import type { GeometryResult } from '../../shared/worker/workerTypes';
 
 interface CurrentFaceVerification { signature: FaceSignature | null; remappedSelection: SharedSelection; }
@@ -39,42 +39,165 @@ function getEntry(pool: SessionPool, url: string | undefined, res: MinimalRes): 
 }
 
 interface SelectionUpdateError { status: number; message: string; }
+interface ParsedSelectionUpdate {
+  modelGeneration: unknown;
+  selection: SharedSelection;
+  selections: SharedSelectionItem[];
+  faceSignature: FaceSignature | null;
+}
+
 async function updateSelection(
   pool: SessionPool, entry: SessionPoolEntry, req: NodeJS.ReadableStream,
   resolver?: (entry: SessionPoolEntry, selection: SharedSelection) => Promise<CurrentFaceVerification>,
 ): Promise<SelectionUpdateError | null> {
-  const body = JSON.parse(await readBody(req, 4096));
-  const parsed = sharedSelectionSchema.safeParse(body.selection);
-  if (!parsed.success) return { status: 400, message: 'invalid selection' };
+  const body = JSON.parse(await readBody(req, 4096)) as Record<string, unknown>;
+  const parsed = parseSelectionUpdate(body);
+  if ('status' in parsed) return parsed;
+  const { modelGeneration, selection, selections, faceSignature } = parsed;
   const acceptedGeneration = entry.selectionModelGeneration;
-  if (body.model_generation !== acceptedGeneration) return generationConflict();
-  const signatureResult = parseSuppliedSignature(body.face_signature);
-  if (!signatureResult.valid) return { status: 400, message: 'invalid face signature' };
+  if (modelGeneration !== acceptedGeneration) return generationConflict();
+
   // Keep generation validation and every selection write under the same lock
   // used by rebuilds. Face verification must stay unlocked to avoid nesting.
-  return pool.runExclusive(async () => {
-    if (body.model_generation !== entry.selectionModelGeneration || acceptedGeneration !== entry.selectionModelGeneration) return generationConflict();
-    if (parsed.data?.kind === 'face') {
-      const verification = await (resolver ? resolver(entry, parsed.data!) : verifyCurrentFaceUnlocked(entry, parsed.data!));
-      if (body.model_generation !== entry.selectionModelGeneration || acceptedGeneration !== entry.selectionModelGeneration) return generationConflict();
-      if (!verification.signature || (signatureResult.signature && !sameFaceSignature(signatureResult.signature, verification.signature))) {
-        return { status: 409, message: 'face signature does not match the current mesh' };
-      }
-      if (entry.selectionPendingSignature && !sameSelection(parsed.data!, verification.remappedSelection)) {
-        return { status: 409, message: 'selection pending rebuild; Studio must publish the unique verified remap' };
-      }
-      entry.selection = parsed.data;
-      entry.selectionFaceSignature = signatureResult.signature ?? verification.signature;
-      entry.selectionPendingSignature = null;
-      entry.selectionRevision += 1;
-      return null;
-    }
-    entry.selection = parsed.data;
-    entry.selectionFaceSignature = null;
-    entry.selectionPendingSignature = null;
-    entry.selectionRevision += 1;
-    return null;
-  });
+  return pool.runExclusive(() => commitSelectionUpdate(
+    entry, modelGeneration, acceptedGeneration, selection, selections, faceSignature, resolver,
+  ));
+}
+
+function parseSelectionUpdate(body: Record<string, unknown>): ParsedSelectionUpdate | SelectionUpdateError {
+  const parsed = sharedSelectionSchema.safeParse(body.selection);
+  if (!parsed.success) return { status: 400, message: 'invalid selection' };
+  const parsedSelections = body.selections === undefined
+    ? { success: true as const, data: parsed.data ? [parsed.data] : [] }
+    : zSelectionArray(body.selections);
+  if (!parsedSelections.success) return { status: 400, message: 'invalid selections' };
+  const signatureResult = parseSuppliedSignature(body.face_signature);
+  if (!signatureResult.valid) return { status: 400, message: 'invalid face signature' };
+  return {
+    modelGeneration: body.model_generation,
+    selection: parsed.data,
+    selections: parsedSelections.data,
+    faceSignature: signatureResult.signature,
+  };
+}
+
+async function commitSelectionUpdate(
+  entry: SessionPoolEntry,
+  modelGeneration: unknown,
+  acceptedGeneration: number,
+  selection: SharedSelection,
+  selections: SharedSelectionItem[],
+  faceSignature: FaceSignature | null,
+  resolver?: (entry: SessionPoolEntry, selection: SharedSelection) => Promise<CurrentFaceVerification>,
+): Promise<SelectionUpdateError | null> {
+  if (isStaleGeneration(entry, modelGeneration, acceptedGeneration)) return generationConflict();
+  const meshError = await validateCurrentSelections(entry, selections, modelGeneration, acceptedGeneration);
+  if (meshError) return meshError;
+  if (selection?.kind === 'face') {
+    return saveVerifiedFaceSelection(entry, modelGeneration, acceptedGeneration, selection, selections, faceSignature, resolver);
+  }
+  saveSelection(entry, selection, selections, null);
+  return null;
+}
+
+function isStaleGeneration(entry: SessionPoolEntry, modelGeneration: unknown, acceptedGeneration: number): boolean {
+  return modelGeneration !== entry.selectionModelGeneration || acceptedGeneration !== entry.selectionModelGeneration;
+}
+
+async function validateCurrentSelections(
+  entry: SessionPoolEntry,
+  selections: SharedSelectionItem[],
+  modelGeneration: unknown,
+  acceptedGeneration: number,
+): Promise<SelectionUpdateError | null> {
+  if (!selections.some(selected => selected.kind === 'edge' && selected.stableId)) return null;
+  const geometries = await currentSelectionGeometries(entry);
+  if (isStaleGeneration(entry, modelGeneration, acceptedGeneration)) return generationConflict();
+  for (const selected of selections) {
+    const geometry = geometries[selected.shapeIndex];
+    if (!geometry) return { status: 409, message: 'selection does not match the current mesh' };
+    const error = validateMeshSelection(selected, geometry);
+    if (error) return error;
+  }
+  return null;
+}
+
+function validateMeshSelection(
+  selected: SharedSelectionItem,
+  geometry: GeometryResult,
+): SelectionUpdateError | null {
+  if (selected.kind === 'face') {
+    return geometry.faces.some(face => face.faceId === selected.id)
+      ? null : { status: 409, message: 'selection does not match the current mesh' };
+  }
+  return validateMeshEdgeSelection(selected, geometry);
+}
+
+function validateMeshEdgeSelection(
+  selected: SharedSelectionItem,
+  geometry: GeometryResult,
+): SelectionUpdateError | null {
+  if (!selected.stableId) return null; // legacy mesh-local edge picks remain accepted
+  if (geometry.edgeStableIds?.[selected.id] !== selected.stableId) {
+    return { status: 409, message: 'edge selection does not match the current mesh' };
+  }
+  const owner = geometry.edgeOwners?.[selected.id] || geometry.featureId || null;
+  const expectedRef = geometry.featureId ? `@kc[${geometry.featureId}/edge/${selected.stableId}]` : undefined;
+  return selected.featureId === owner && (selected.ref === undefined || selected.ref === expectedRef)
+    ? null : { status: 409, message: 'edge reference does not match the current mesh' };
+}
+
+async function saveVerifiedFaceSelection(
+  entry: SessionPoolEntry,
+  modelGeneration: unknown,
+  acceptedGeneration: number,
+  selection: SharedSelectionItem,
+  selections: SharedSelectionItem[],
+  faceSignature: FaceSignature | null,
+  resolver?: (entry: SessionPoolEntry, selection: SharedSelection) => Promise<CurrentFaceVerification>,
+): Promise<SelectionUpdateError | null> {
+  const verification = await (resolver ? resolver(entry, selection) : verifyCurrentFaceUnlocked(entry, selection));
+  if (isStaleGeneration(entry, modelGeneration, acceptedGeneration)) return generationConflict();
+  if (!verification.signature || (faceSignature && !sameFaceSignature(faceSignature, verification.signature))) {
+    return { status: 409, message: 'face signature does not match the current mesh' };
+  }
+  if (entry.selectionPendingSignature && !sameSelection(selection, verification.remappedSelection)) {
+    return { status: 409, message: 'selection pending rebuild; Studio must publish the unique verified remap' };
+  }
+  saveSelection(entry, selection, selections, faceSignature ?? verification.signature);
+  return null;
+}
+
+function saveSelection(
+  entry: SessionPoolEntry,
+  selection: SharedSelection,
+  selections: SharedSelectionItem[],
+  faceSignature: FaceSignature | null,
+): void {
+  entry.selection = selection;
+  entry.selections = selections;
+  entry.selectionFaceSignature = faceSignature;
+  entry.selectionPendingSignature = null;
+  entry.selectionRevision += 1;
+}
+
+function zSelectionArray(value: unknown) {
+  return Array.isArray(value) && value.every(item => sharedSelectionItemSchema.safeParse(item).success)
+    ? { success: true as const, data: value as Exclude<SharedSelection, null>[] }
+    : { success: false as const };
+}
+
+async function currentSelectionGeometries(entry: SessionPoolEntry): Promise<GeometryResult[]> {
+  const { meshFeaturesPerFeature } = await import('../../modeling/capture/featureMeshing');
+  const result = await meshFeaturesPerFeature(entry.model.records, entry.model.session.paramTable, entry.model.session);
+  return result.features.map(feature => ({
+    featureId: feature.featureId,
+    faces: feature.faces,
+    faceOwners: feature.faceOwners,
+    edgeRanges: feature.edgeRanges,
+    edgeOwners: feature.edgeOwners,
+    edgeStableIds: feature.edgeStableIds,
+  })) as GeometryResult[];
 }
 
 async function verifyCurrentFaceUnlocked(entry: SessionPoolEntry, selection: SharedSelection): Promise<CurrentFaceVerification> {
@@ -109,7 +232,7 @@ function selectionError(entry: SessionPoolEntry, message: string) {
 
 function selectionResponse(entry: SessionPoolEntry, url: string | undefined) {
   const studioRemap = readQuery(url, 'studio_remap') === '1';
-  return { ok: true, selection: entry.selection, revision: entry.selectionRevision, modelGeneration: entry.selectionModelGeneration,
+  return { ok: true, selection: entry.selection, selections: entry.selections, revision: entry.selectionRevision, modelGeneration: entry.selectionModelGeneration,
     ...(entry.selectionPendingSignature && !studioRemap ? { error: 'selection pending rebuild' } : {}),
     ...(studioRemap ? { pendingSignature: entry.selectionPendingSignature } : {}) };
 }
