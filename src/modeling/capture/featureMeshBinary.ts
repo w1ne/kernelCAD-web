@@ -44,6 +44,10 @@ export interface FeatureFingerprintInput {
   meshPositions?: NumericBuffer; meshNormals?: NumericBuffer; meshIndices?: NumericBuffer;
   edges?: NumericBuffer;
   transform?: NumericBuffer;
+  /** Canonical JSON of the record's render metadata (material, color, per-face
+   *  materials, owners, op, face plane/cylinder, ...). Without it an edit that only
+   *  restyles a feature keeps its fingerprint and the client keeps the stale style. */
+  meta?: string;
 }
 
 type Plane = NonNullable<FaceGeometry['plane']>;
@@ -102,7 +106,40 @@ export function fingerprintBuffers(input: FeatureFingerprintInput): string {
   add(input.vertices); add(input.normals); add(input.uvs); add(input.indices);
   add(input.meshPositions); add(input.meshNormals); add(input.meshIndices); add(input.edges);
   add(input.transform);
+  if (input.meta !== undefined) {
+    const bytes = new TextEncoder().encode(input.meta);
+    sources.push({ byteLength: bytes.byteLength, parts: [bytes] });
+  }
   return hashSources(input.faceIds, sources);
+}
+
+/** JSON with object keys sorted at every level, so two producers that build the same
+ *  metadata in a different key order agree on the fingerprint. */
+function canonicalJson(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value) ?? 'null';
+  if (Array.isArray(value)) return `[${value.map((item) => canonicalJson(item)).join(',')}]`;
+  const entries = Object.keys(value as Record<string, unknown>)
+    .filter((key) => (value as Record<string, unknown>)[key] !== undefined)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${canonicalJson((value as Record<string, unknown>)[key])}`);
+  return `{${entries.join(',')}}`;
+}
+
+function omitKeys(value: Record<string, unknown>, keys: readonly string[]): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, entry] of Object.entries(value)) if (!keys.includes(key)) out[key] = entry;
+  return out;
+}
+
+/** Everything but geometry bytes and identity that changes how a record renders. */
+function renderMetaKey(
+  feature: Record<string, unknown>,
+  faces: ReadonlyArray<{ plane?: Plane; cylinder?: Cylinder }>,
+): string {
+  return canonicalJson({
+    feature: omitKeys(feature, ['featureId', 'fingerprint']),
+    faces: faces.map((face) => ({ plane: face.plane, cylinder: face.cylinder })),
+  });
 }
 
 function asF32(buffer: NumericBuffer): Float32Array {
@@ -167,6 +204,7 @@ function fingerprintOfNormalized(
   mesh: { positions: Float32Array; normals: Float32Array; indices: Uint32Array } | undefined,
   edges: Float32Array | undefined,
   transform: readonly number[] | undefined,
+  meta: string,
 ): string {
   return fingerprintBuffers({
     faceIds: faces.map((face) => face.faceId),
@@ -177,7 +215,18 @@ function fingerprintOfNormalized(
     ...(mesh !== undefined ? { meshPositions: mesh.positions, meshNormals: mesh.normals, meshIndices: mesh.indices } : {}),
     ...(edges !== undefined ? { edges } : {}),
     ...(transform !== undefined ? { transform: [...transform] } : {}),
+    meta,
   });
+}
+
+/** The `meta` input `fingerprintBuffers` needs to reproduce an encoder-embedded
+ *  fingerprint from a raw, serialized or decoded feature. */
+export function featureRenderMeta(feature: FeatureMeshSerializedInput | FeatureMesh): string {
+  const record = feature as unknown as Record<string, unknown>;
+  return renderMetaKey(
+    omitKeys(record, ['faces', 'mesh', 'edges']),
+    feature.faces as ReadonlyArray<{ plane?: Plane; cylinder?: Cylinder }>,
+  );
 }
 
 /** The 64-bit fingerprint `encodeMeshBinary` would embed for this feature — the decoded
@@ -227,7 +276,10 @@ function normalizeRecord(
   ];
   if (mesh !== undefined) chunks.push(chunkOf([mesh.positions]), chunkOf([mesh.normals]), chunkOf([mesh.indices]));
   if (edges !== undefined) chunks.push(chunkOf([edges]));
-  const fingerprint = fingerprintOfNormalized(faces, hasUv, mesh, edges, feature.transform);
+  const fingerprint = fingerprintOfNormalized(
+    faces, hasUv, mesh, edges, feature.transform,
+    renderMetaKey(feature as unknown as Record<string, unknown>, faces),
+  );
 
   let vertexOffset = 0;
   let indexOffset = 0;

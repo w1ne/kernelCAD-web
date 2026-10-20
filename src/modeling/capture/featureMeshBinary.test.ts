@@ -5,8 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   decodeMeshBinary, encodeMeshBinary, featureFingerprint, fingerprintBuffers,
   MESH_BIN_MAGIC, MESH_BIN_FLAG_PARTIAL, MESH_BIN_VERSION,
-  type FeatureMeshSerializedInput, type MeshBinaryTrailer,
-} from './featureMeshBinary';
+  type FeatureMeshSerializedInput, type MeshBinaryTrailer, featureRenderMeta } from './featureMeshBinary';
 import type { FeatureMesh } from './featureMeshing';
 import type { FeatureMeshSerialized } from './featureMeshSerialize';
 
@@ -204,6 +203,21 @@ describe('encode/decode round-trip', () => {
     expect(sinkOut).toEqual(sink);
     expect(envOut).toEqual(env);
     expect(refOut).toEqual(ref);
+  });
+
+  it('includes render metadata (material, color, per-face materials) in the fingerprint', () => {
+    const base = featureFingerprint(feature());
+    const recolored = featureFingerprint(feature({ color: '#123456' }));
+    const rematerialed = featureFingerprint(feature({
+      material: { baseColor: '#00ff00', metallic: 1, roughness: 0.2 } as never,
+    }));
+    const perFace = featureFingerprint(feature({
+      materialByFaceId: { 7: { baseColor: '#0000ff', metallic: 0, roughness: 0.5 } } as never,
+    }));
+    expect(new Set([base, recolored, rematerialed, perFace]).size).toBe(4);
+    // Same metadata built in a different key order hashes the same.
+    const a = featureFingerprint(feature({ material: { roughness: 0.2, metallic: 1, baseColor: '#00ff00' } as never }));
+    expect(a).toBe(rematerialed);
   });
 
   it('includes the viewport transform in the fingerprint', () => {
@@ -627,6 +641,7 @@ describe('fingerprintBuffers', () => {
       indices: face.indices,
       edges: decoded.edges!,
       transform: decoded.transform!,
+      meta: featureRenderMeta(decoded),
     });
     expect(recomputed).toBe(decoded.fingerprint);
     expect(fingerprintBuffers({
@@ -636,6 +651,7 @@ describe('fingerprintBuffers', () => {
       indices: new Uint32Array([0, 1]),
       edges: decoded.edges!,
       transform: decoded.transform!,
+      meta: featureRenderMeta(decoded),
     })).not.toBe(decoded.fingerprint);
   });
 });
