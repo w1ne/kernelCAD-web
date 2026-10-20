@@ -66,7 +66,7 @@
 
 - [x] Document the version 1 JSON fields, units, validation, prompt attachment, and replay workflow.
 - [x] Add Playwright flows covering snapshot load, rendered markup, JSON save, note placement, and measurement. The capture waits for the viewer display-ready signal (nonempty model geometry rendered for two frames) and confirms note mode before clicking.
-- [x] Record and inspect the local Studio workflow as MP4. On macOS with real Chromium at about 22:35 CEST on 2026-10-20, both specs passed in 20.6 seconds with no retries against the working tree at `8694f07` (readiness fix included). The 323,491-byte, 15.4-second video shows the initial kernel warmup, the Bracket model, the anchored note and picked face, a 20.3 mm distance, and the restored snapshot.
+- [x] Record and inspect the local Studio workflow as MP4. On macOS with real Chromium at 00:04 CEST on 2026-10-21, both specs passed in 18.3 seconds with no retries against the working tree based on `6f339ea` with the camera-only snapshot fixes. The 338,348-byte, 10.8-second video shows the Bracket model, the anchored note, a 9.8 mm distance, the picked face and edge, and the restored snapshot.
 
 ### Task 5: Verification
 

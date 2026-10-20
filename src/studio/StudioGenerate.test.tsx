@@ -77,7 +77,8 @@ describe('StudioGenerate — unified prompt', () => {
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
-    expect(generationSubmit).toHaveBeenCalledWith('a hex planter', undefined, { renderImageUrl: null, proportions: null });
+    expect(generationSubmit).toHaveBeenCalledWith(expect.any(String), undefined, { renderImageUrl: null, proportions: null });
+    expectAgentPrompt(generationSubmit.mock.calls[0]?.[0], 'a hex planter');
   });
 
   it('Build-as-CAD is a FRESH generation even when the editor holds code (not an edit of it)', () => {
@@ -88,7 +89,8 @@ describe('StudioGenerate — unified prompt', () => {
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
-    expect(generationSubmit).toHaveBeenCalledWith('a hex planter', undefined, { renderImageUrl: null, proportions: null });
+    expect(generationSubmit).toHaveBeenCalledWith(expect.any(String), undefined, { renderImageUrl: null, proportions: null });
+    expectAgentPrompt(generationSubmit.mock.calls[0]?.[0], 'a hex planter');
   });
 
   it('Build-as-CAD passes the concept mesh context into the agent submit', () => {
@@ -98,7 +100,8 @@ describe('StudioGenerate — unified prompt', () => {
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
-    expect(generationSubmit).toHaveBeenCalledWith('a bracket', undefined, { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] });
+    expect(generationSubmit).toHaveBeenCalledWith(expect.any(String), undefined, { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] });
+    expectAgentPrompt(generationSubmit.mock.calls[0]?.[0], 'a bracket');
   });
 
   it('Build-as-CAD keeps nonempty markup attached to the concept prompt', () => {
@@ -180,4 +183,17 @@ function expectPromptHasMarkup(prompt: string) {
   const match = prompt.match(/Studio markup snapshot JSON \(schemaVersion 1\):\n(`{3,})json\n([\s\S]*?)\n\1/);
   expect(match?.[2]).toBeTruthy();
   return parseMarkupSnapshot(match![2]!);
+}
+
+function expectAgentPrompt(value: unknown, expectedText: string) {
+  expect(typeof value).toBe('string');
+  const prompt = value as string;
+  const marker = '\n\nStudio markup snapshot JSON (schemaVersion 1):\n';
+  const markerIndex = prompt.indexOf(marker);
+  expect(markerIndex).toBeGreaterThanOrEqual(0);
+  expect(prompt.slice(0, markerIndex)).toBe(expectedText);
+  const snapshot = expectPromptHasMarkup(prompt);
+  expect(snapshot.schemaVersion).toBe(1);
+  expect(snapshot.camera).toMatchObject({ projection: 'perspective', fov: 40, zoom: 1 });
+  return snapshot;
 }

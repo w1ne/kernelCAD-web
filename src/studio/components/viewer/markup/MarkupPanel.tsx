@@ -103,7 +103,7 @@ export function MarkupPanel() {
             <ul className="space-y-2">
               {state.notes.map((note, index) => (
                 <li key={note.id} className="flex items-start gap-1 rounded-control border border-border bg-surface-2 p-1.5">
-                  <textarea aria-label={`Edit note ${index + 1}`} className={`${FIELD} min-h-10`} rows={2} maxLength={MARKUP_NOTE_MAX_LENGTH} value={note.text} onChange={(event) => markupStore.updateNote(note.id, event.currentTarget.value)} />
+                  <textarea aria-label={`Edit note ${index + 1}`} className={`${FIELD} min-h-10`} rows={2} maxLength={MARKUP_NOTE_MAX_LENGTH} value={note.text} onChange={(event) => markupStore.updateNote(note.id, event.currentTarget.value)} onBlur={() => markupStore.commitNote(note.id)} />
                   <button type="button" className={ACTION} aria-label={`Remove note ${index + 1}`} onClick={() => markupStore.removeNote(note.id)}><X size={14} /></button>
                 </li>
               ))}

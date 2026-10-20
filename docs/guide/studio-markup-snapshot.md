@@ -22,13 +22,14 @@ records its diameter. Remove individual measurements from the list, or choose
 **Clear all markup**.
 
 Sending a prompt captures the current camera and markup at that moment and
-attaches it to the prompt as a JSON code block when the snapshot contains any
-picked face or edge, note, or measurement. A camera-only snapshot is omitted,
-because camera position records view state but carries no annotation or
-selection to interpret on its own. Omitting it keeps plain prompts unchanged.
-Changes made after sending do not alter that run's saved context. **Save JSON**
-downloads the current snapshot. **Load JSON** validates the file, restores its
-camera pose, and redisplays saved notes, measurements and topology highlights.
+always attaches it to the prompt as a versioned JSON code block, including when
+the only context is the camera and the selection, measurements and notes arrays
+are empty. The camera records view state rather than markup; Studio includes it
+so the agent can reproduce the view the user saw even when there are no
+annotations or picks. Changes made after sending do not alter that run's saved
+context. **Save JSON** downloads the current snapshot. **Load JSON** validates
+the file, restores its camera pose, and redisplays saved notes, measurements and
+topology highlights.
 
 This is local Studio viewer context. It does not change the CAD script or model.
 Markup stays with the open project and is cleared when you switch projects.

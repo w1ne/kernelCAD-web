@@ -39,6 +39,25 @@ describe('MarkupPanel note editing', () => {
     expect(markupStore.getSnapshot().notes).toEqual([note]);
   });
 
+  it('keeps spaces while typing and trims the note when editing is committed', () => {
+    render(<MarkupPanel />);
+    const editor = screen.getByLabelText('Edit note 1') as HTMLTextAreaElement;
+
+    fireEvent.change(editor, { target: { value: 'foo ' } });
+    expect(editor).toHaveValue('foo ');
+    expect(markupStore.getSnapshot().notes[0]?.text).toBe('foo ');
+
+    fireEvent.change(editor, { target: { value: 'foo bar' } });
+    expect(editor).toHaveValue('foo bar');
+    expect(markupStore.getSnapshot().notes[0]?.text).toBe('foo bar');
+
+    fireEvent.change(editor, { target: { value: ' foo bar ' } });
+    expect(editor).toHaveValue(' foo bar ');
+    fireEvent.blur(editor);
+    expect(editor).toHaveValue('foo bar');
+    expect(markupStore.getSnapshot().notes[0]?.text).toBe('foo bar');
+  });
+
   it('shows a clear error when another note would exceed the snapshot limit', () => {
     for (let index = 1; index < MARKUP_SNAPSHOT_MAX_NOTES; index += 1) {
       markupStore.addNote({ ...note, id: `note-${index}` });

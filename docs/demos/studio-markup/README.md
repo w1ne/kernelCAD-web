@@ -19,28 +19,20 @@ the capture command sets `KCAD_CAPTURE=1`.
 ## Capture evidence
 
 The operator ran `npm run capture:studio-markup` on macOS with real Chromium on
-2026-10-20 at about 22:35 CEST, against the working tree at `8694f07` with the
-readiness fix included. Both specs passed in 20.6 seconds, with no retries. The
-current [`demo.mp4`](demo.mp4) is 323,491 bytes, 1440×900 at 25 fps, and 15.4
-seconds long.
+2026-10-21 at 00:04 CEST, against the working tree based on `6f339ea` with the
+camera-only snapshot, trim-on-blur and measurement-overlay fixes (the commit that
+adds this text). Both specs passed in 18.3 seconds, with no retries. The current
+[`demo.mp4`](demo.mp4) is 338,348 bytes, 1440×900 at 25 fps, and 10.8 seconds long.
 
-I extracted and inspected frames at 2, 6, 10, 14 and 15 seconds. At 2 seconds
-the initial empty project is still warming its geometry kernel. At 6 seconds
-the Bracket model is visible. At 10 seconds the “Keep the mounting face flat”
-note is anchored on the highlighted face, with `Face 0 · shape 1` selected. At
-14 seconds the point-to-point label reads `Distance · 20.3 mm`. At 15 seconds
-the panel says “Snapshot loaded. The camera and markup were restored.” while
-showing the note, measurement, and picked face again.
+Frames were inspected at 4, 8 and 10.5 seconds. At 4 seconds Studio is loading
+the Bracket starter. At 8 seconds the “Keep the mounting face flat” note is
+anchored on the base face with a numbered callout, a `Distance · 9.8 mm`
+measurement is drawn, and the Markup panel lists `Face 5 · shape 0` and
+`Edge 0 · shape 1` as picked topology. At 10.5 seconds, after **Load JSON**, the
+panel reports “Snapshot loaded. The camera and markup were restored.” with the
+note, measurement and picked topology shown again.
 
-This video is local browser evidence for the operator's Mac run at `8694f07`;
-it demonstrates the local replay workflow. No deployment was performed, so it
-does not verify deployed behavior.
-
-This bundle documents the version 1 snapshot fixture and the local Studio
-workflow. The feature code and its prompt handoff test are in
-[`src/studio/markup`](../../../src/studio/markup),
-[`useAgentGeneration`](../../../src/studio/hooks/useAgentGeneration.ts), and
-[`StudioGenerate.test.tsx`](../../../src/studio/StudioGenerate.test.tsx).
+This is local capture evidence; it does not verify deployed behaviour.
 
 ## Snapshot format and manual replay
 

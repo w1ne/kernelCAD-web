@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import {
+  MARKUP_NOTE_MAX_LENGTH,
   MARKUP_SNAPSHOT_MAX_MEASUREMENTS,
   MARKUP_SNAPSHOT_MAX_NOTES,
   MARKUP_SNAPSHOT_MAX_TOPOLOGY_REFS,
@@ -147,11 +148,28 @@ export class StudioMarkupStore {
 
   updateNote(id: string, text: string): void {
     const index = this.state.notes.findIndex((note) => note.id === id);
-    if (index < 0 || !text.trim()) return;
-    const parsed = markupNoteSchema.safeParse({ ...this.state.notes[index], text });
-    if (!parsed.success) return;
-    const next = parsed.data;
+    if (index < 0 || text.length > MARKUP_NOTE_MAX_LENGTH) return;
+    const next = { ...this.state.notes[index]!, text };
     this.state = { ...this.state, notes: this.state.notes.map((note, i) => i === index ? next : note), error: null };
+    this.emit();
+  }
+
+  commitNote(id: string): void {
+    const index = this.state.notes.findIndex((note) => note.id === id);
+    if (index < 0) return;
+    const note = this.state.notes[index]!;
+    const text = note.text.trim();
+    if (!text) {
+      this.removeNote(id);
+      return;
+    }
+    const parsed = markupNoteSchema.safeParse({ ...note, text });
+    if (!parsed.success) return;
+    this.state = {
+      ...this.state,
+      notes: this.state.notes.map((item, i) => i === index ? parsed.data : item),
+      error: null,
+    };
     this.emit();
   }
 

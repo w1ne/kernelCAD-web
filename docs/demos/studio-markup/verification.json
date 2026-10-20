@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-10-20",
+  "checkedAt": "2026-10-21",
   "branch": "feat/studio-markup-snapshot",
   "pullRequest": 1086,
-  "validationRevision": "worktree based on 8694f07 with the topology-pick and duplicate-ID review fixes",
+  "validationRevision": "worktree based on 6f339ea with camera-only snapshots, trim-on-blur note editing and measurement overlay removal",
   "checks": {
     "typecheck": {
       "command": "npx tsc -b --noEmit && npx tsc --noEmit -p tsconfig.site.json",
@@ -17,7 +17,7 @@
       "command": "npx vitest run --configLoader runner src/studio",
       "status": "passed",
       "testFiles": 233,
-      "tests": 1837
+      "tests": 1839
     },
     "qualityAndSiteVitest": {
       "command": "npx vitest run --configLoader runner tests/unit/scripts/qualityRatchet.test.ts tests/unit/site",
@@ -38,9 +38,9 @@
     "playwrightRun": {
       "command": "npm run capture:studio-markup",
       "environment": "macOS with real Chromium",
-      "capturedAt": "2026-10-20 about 22:35 CEST",
-      "capturedRevision": "working tree at 8694f07 with the readiness fix included",
-      "result": "2 passed (20.6s), no retries",
+      "capturedAt": "2026-10-21 00:04 CEST",
+      "capturedRevision": "working tree based on 6f339ea with this round of fixes (the commit that adds this file)",
+      "result": "2 passed (18.3s), no retries",
       "snapshotSpec": "passed",
       "captureSpec": {
         "status": "passed on the first attempt",
@@ -55,28 +55,24 @@
     "command": "npm run capture:studio-markup",
     "recordingSource": "tests/studio_markup_capture.spec.ts",
     "conversion": "/opt/homebrew/bin/ffmpeg converts the WebM recording to H.264 MP4",
-    "fileBytes": 323491,
-    "durationSeconds": 15.4,
+    "fileBytes": 338348,
+    "durationSeconds": 10.8,
     "width": 1440,
     "height": 900,
     "framesPerSecond": 25,
     "inspection": {
       "frameSeconds": [
-        2,
-        6,
-        10,
-        14,
-        15
+        4,
+        8,
+        10.5
       ],
       "observed": [
-        "2s: the initial empty project shows the geometry kernel warming up",
-        "6s: the Bracket model is visible",
-        "10s: Keep the mounting face flat is anchored on the highlighted model face, with Face 0 \u00b7 shape 1 selected",
-        "14s: the point-to-point distance label reads 20.3 mm",
-        "15s: the panel confirms the snapshot loaded and shows the note, measurement, and picked face again"
+        "4s: Studio loading the Bracket starter",
+        "8s: Bracket with the note 'Keep the mounting face flat' anchored on the base face (numbered callout), a Distance 9.8 mm measurement, and picked topology Face 5 / shape 0 and Edge 0 / shape 1 in the Markup panel",
+        "10.5s: after Load JSON the panel reports 'Snapshot loaded. The camera and markup were restored.' with the note, measurement and picked topology shown again"
       ]
     },
-    "scope": "local capture from the operator's real-Chromium Mac run at about 22:35 CEST on 2026-10-20, against the working tree at 8694f07 with the readiness fix included; it does not verify deployed behavior"
+    "scope": "local capture from the operator's real-Chromium Mac run at 00:04 CEST on 2026-10-21; it does not verify deployed behavior"
   },
   "deployment": {
     "status": "not deployed",

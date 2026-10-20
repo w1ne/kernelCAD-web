@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { attachMarkupSnapshotToPrompt } from './markupSnapshot';
+import { attachMarkupSnapshotToPrompt, parseMarkupSnapshot } from './markupSnapshot';
 import {
   MARKUP_NOTE_MAX_STROKE_POINTS,
   MARKUP_SNAPSHOT_MAX_MEASUREMENTS,
@@ -32,7 +32,7 @@ const sample = {
 };
 
 describe('Studio markup snapshots', () => {
-  it('does not attach a camera-only snapshot to a generation prompt', () => {
+  it('attaches a valid camera-only snapshot to a generation prompt', () => {
     const emptySnapshot = {
       ...sample,
       selection: { topologyRefs: [] },
@@ -40,7 +40,16 @@ describe('Studio markup snapshots', () => {
       notes: [],
     };
 
-    expect(attachMarkupSnapshotToPrompt('make a bracket', emptySnapshot)).toBe('make a bracket');
+    const prompt = attachMarkupSnapshotToPrompt('make a bracket', emptySnapshot);
+    expect(prompt).toMatch(/^make a bracket\n\nStudio markup snapshot JSON \(schemaVersion 1\):/);
+    const serialized = prompt.match(/Studio markup snapshot JSON \(schemaVersion 1\):\n(`{3,})json\n([\s\S]*?)\n\1/)?.[2];
+    expect(serialized).toBeTruthy();
+    const parsed = parseMarkupSnapshot(serialized!);
+    expect(parsed.schemaVersion).toBe(1);
+    expect(parsed.camera).toEqual(emptySnapshot.camera);
+    expect(parsed.selection.topologyRefs).toEqual([]);
+    expect(parsed.measurements).toEqual([]);
+    expect(parsed.notes).toEqual([]);
   });
 
   it.each([
@@ -48,7 +57,9 @@ describe('Studio markup snapshots', () => {
     ['measurement', { ...sample, selection: { topologyRefs: [] }, measurements: sample.measurements, notes: [] }],
     ['note', { ...sample, selection: { topologyRefs: [] }, measurements: [], notes: sample.notes }],
   ] as const)('attaches a snapshot when it contains a %s', (_kind, snapshot) => {
-    expect(attachMarkupSnapshotToPrompt('make a bracket', snapshot)).toContain('Studio markup snapshot JSON (schemaVersion 1):');
+    const prompt = attachMarkupSnapshotToPrompt('make a bracket', snapshot);
+    expect(prompt).toContain('Studio markup snapshot JSON (schemaVersion 1):');
+    expect(parseMarkupSnapshot(prompt.match(/Studio markup snapshot JSON \(schemaVersion 1\):\n(`{3,})json\n([\s\S]*?)\n\1/)![2]!)).toMatchObject({ schemaVersion: 1 });
   });
 
   it('serializes, validates, and replays the same camera, selection, notes, and measurements', async () => {

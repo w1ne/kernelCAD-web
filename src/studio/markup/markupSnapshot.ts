@@ -115,22 +115,15 @@ export function serializeMarkupSnapshot(snapshot: MarkupSnapshot): string {
 }
 
 /**
- * Inline a replayable context block only when the snapshot contains a picked
- * topology ref, note, or measurement. A camera pose alone is intentionally
- * omitted to preserve plain-prompt behavior. The final string is checked after
- * appending the snapshot against the composer budget.
+ * Inline a replayable context block with every Studio prompt, including a
+ * camera-only snapshot with empty markup arrays. The final string is checked
+ * after appending the snapshot against the composer budget.
  */
 export function attachMarkupSnapshotToPrompt(prompt: string, snapshot: MarkupSnapshot): string {
   const json = serializeMarkupSnapshot(snapshot);
-  const hasMarkup = snapshot.notes.length > 0
-    || snapshot.measurements.length > 0
-    || snapshot.selection.topologyRefs.length > 0;
-  let finalPrompt = prompt;
-  if (hasMarkup) {
-    const longestFence = Math.max(0, ...(json.match(/`+/g) ?? []).map((run) => run.length));
-    const fence = '`'.repeat(Math.max(3, longestFence + 1));
-    finalPrompt = `${prompt}\n\nStudio markup snapshot JSON (schemaVersion ${snapshot.schemaVersion}):\n${fence}json\n${json}\n${fence}`;
-  }
+  const longestFence = Math.max(0, ...(json.match(/`+/g) ?? []).map((run) => run.length));
+  const fence = '`'.repeat(Math.max(3, longestFence + 1));
+  const finalPrompt = `${prompt}\n\nStudio markup snapshot JSON (schemaVersion ${snapshot.schemaVersion}):\n${fence}json\n${json}\n${fence}`;
   if (finalPrompt.length > STUDIO_AGENT_PROMPT_MAX_CHARS) {
     throw new Error(STUDIO_AGENT_PROMPT_TOO_LARGE_MESSAGE);
   }

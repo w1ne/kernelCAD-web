@@ -299,8 +299,9 @@ function ViewerCanvasContents({
                 itemNames={itemNames}
                 hiddenIds={hiddenIds}
                 onMeasurementAdded={enableMarkup ? (measurement) => {
-                    markupStore.addMeasurement(measurement);
-                    markupStore.setSelection(measurement.refs);
+                    const added = markupStore.addMeasurement(measurement);
+                    if (added) markupStore.setSelection(measurement.refs);
+                    return added;
                 } : undefined}
             /> : null}
             {enableMarkup ? <MarkupTool /> : null}

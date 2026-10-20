@@ -19,7 +19,7 @@ interface MeasureToolProps {
   geometries: readonly GeometryResult[];
   itemNames: readonly (string | null)[];
   hiddenIds: readonly string[];
-  onMeasurementAdded?: (measurement: MarkupMeasurement) => void;
+  onMeasurementAdded?: (measurement: MarkupMeasurement) => boolean;
 }
 
 const SNAP_COLORS = { vertex: CAD_COLORS_HEX.snap, edge: CAD_COLORS_HEX.highlight, face: CAD_COLORS_HEX.guide } as const;
@@ -59,8 +59,8 @@ function Dimensions({ state }: { state: MeasureState }) {
  * Click-to-measure inside the viewer canvas: snaps to edge corners, then edge
  * points, then faces; two clicks draw a dimension, a click on a circular edge
  * reads its diameter at once. Completed values are passed to Studio markup
- * when a persistence callback is supplied; the live preview clears when this
- * tool unmounts.
+ * when a persistence callback is supplied; an accepted value clears the local
+ * preview immediately.
  */
 export function MeasureTool({ geometries, itemNames, hiddenIds, onMeasurementAdded }: MeasureToolProps) {
   const dom = useThree((s) => s.gl.domElement);
@@ -81,24 +81,30 @@ export function MeasureTool({ geometries, itemNames, hiddenIds, onMeasurementAdd
       if (!hit) return;
       const current = stateRef.current;
       const next = applyClick(current, hit, polylines);
-      stateRef.current = next;
-      setState(next);
+      let completed: MarkupMeasurement | null = null;
       if (current.a && !current.b) {
-        onMeasurementAdded?.(makeDistanceMeasurement({
+        completed = makeDistanceMeasurement({
           id: createMarkupId('measure-'),
           a: [...current.a] as [number, number, number],
           b: [...hit.point] as [number, number, number],
           refs: [...current.aRefs, ...hit.refs],
-        }));
+        });
       } else if (next.diameter && next.diameter !== current.diameter) {
-        onMeasurementAdded?.(makeDiameterMeasurement({
+        completed = makeDiameterMeasurement({
           id: createMarkupId('measure-'),
           a: [...next.diameter.a] as [number, number, number],
           b: [...next.diameter.b] as [number, number, number],
           refs: next.diameter.refs,
           value: next.diameter.value,
-        }));
+        });
       }
+      if (completed && onMeasurementAdded?.(completed)) {
+        stateRef.current = EMPTY_MEASURE;
+        setState(EMPTY_MEASURE);
+        return;
+      }
+      stateRef.current = next;
+      setState(next);
     },
     onEscape: () => { stateRef.current = EMPTY_MEASURE; setState(EMPTY_MEASURE); },
   });
