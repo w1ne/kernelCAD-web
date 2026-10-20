@@ -815,6 +815,33 @@ export class Shape {
   }
 
   /**
+   * Solidify an open shell returned by `sew([...])` (or `surface.toShape()`).
+   *
+   * The lowerer runs the same validated offset as `Surface.thicken`: BRepCheck,
+   * one-solid and plausible-volume gates, with a reversed-orientation retry.
+   * A closed solid input is rejected rather than hollowed.
+   */
+  thicken(t: Editable<number>): Shape {
+    if (!isParamRef(t) && !(typeof t === 'number' && t > 0 && Number.isFinite(t))) {
+      invalidArgs({
+        api: 'Shape.thicken(t)',
+        path: 't',
+        got: t,
+        showType: typeof t !== 'number',
+        requires: 'a positive finite wall thickness in mm, or a ParamRef<number>',
+        unit: 'mm',
+        example: 'sewn.thicken(3)',
+        featureId: this.id,
+      });
+    }
+    return this.session.createShape({
+      kind: 'shapeThicken',
+      inputs: { base: { kind: 'feature', id: this.id } },
+      params: { t: toParam(t, 'mm') },
+    });
+  }
+
+  /**
    * Round the seam where `cutter` met this body. The seam is selected by
    * proximity to the exact `body ∩ cutter` section, so it does not depend on
    * face/edge labels that a boolean split can invalidate. First slice:

@@ -371,6 +371,14 @@ export const FEATURE_SURFACES_CODES = {
     group: 'feature',
     description: 'BRepAlgoAPI_Section returned no edges — the two surfaces or solids do not intersect.',
   },
+  'feature.surface-thicken.invalid-solid': {
+    hintTemplate:
+      'The offset produced an untrustworthy solid (BRep-invalid, split, or a volume that is not physically consistent with area × thickness — the self-intersecting-offset signature behind the roadster 3.46e9 mm³ phantom overlap). Reduce the thickness below the local curvature radius, remove tight folds from the patch, or split the panel. The feature fails instead of publishing the bad solid.',
+    nextAction: { kind: 'fix-arg', field: 't' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A surface/shell thicken was rejected: the offset failed BRepCheck, split into multiple solids, or had a volume implausible for area × thickness.',
+  },
   'feature.fillet-intersection.section-failed': {
     hintTemplate:
       'OCCT could not compute body ∩ cutter, so the seam is unknown. Check that both operands are valid closed solids, then retry; if the section still fails, rebuild the cut or simplify the cutter.',

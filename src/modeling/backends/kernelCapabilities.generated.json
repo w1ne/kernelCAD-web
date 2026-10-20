@@ -43,6 +43,7 @@
         "renderEnvironment",
         "revolve",
         "sdfMaterialize",
+        "shapeThicken",
         "sheetMetal",
         "sheetMetalBend",
         "shell",

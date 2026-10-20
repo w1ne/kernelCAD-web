@@ -23,7 +23,7 @@ import { lowerRevolve } from './revolve';
 import { lowerSheetMetal, lowerSheetMetalBend } from './sheetMetal';
 import { lowerDraft, lowerShell } from './shellDraft';
 import { lowerExtrude, lowerSketch } from './sketchExtrude';
-import { lowerSurfaceSew, lowerSurfaceThicken, lowerSurfaceToShape } from './surfaces';
+import { lowerShapeThicken, lowerSurfaceSew, lowerSurfaceThicken, lowerSurfaceToShape } from './surfaces';
 import { lowerSweep } from './sweep';
 import { lowerTube } from './tube';
 import { lowerVirtualRecord } from './virtual';
@@ -82,6 +82,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   surfaceThicken: lowerSurfaceThicken,
   surfaceToShape: lowerSurfaceToShape,
   surfaceSew: lowerSurfaceSew,
+  shapeThicken: lowerShapeThicken,
   // curves and face authoring
   curve3d: lowerCurve3d,
   variableSweep: lowerVariableSweep,
