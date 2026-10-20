@@ -7,12 +7,15 @@ import { repairPrompt } from '../agentRunModel';
 import { shellStore } from '../store/useShellStore';
 import type { AgentRepairWorkflow } from '../store/shellStore';
 import type { SelectedFeatureId } from '../types';
+import type { MarkupSnapshot } from '../markup/markupSnapshot';
+import { attachMarkupSnapshotToPrompt } from '../markup/markupSnapshot';
 
 export interface GenerationReviewSnapshot {
     readonly fromCode: string;
     readonly promptText: string;
     readonly selectedFeatureId: SelectedFeatureId;
     readonly repairWorkflow: AgentRepairWorkflow | null;
+    readonly markupSnapshot: MarkupSnapshot;
 }
 
 type ReferenceImage = GenerateRequest['referenceImage'];
@@ -24,6 +27,7 @@ export interface QueuedPrompt {
     readonly text: string;
     readonly referenceImage?: ReferenceImage;
     readonly attachments?: Attachments;
+    readonly markupSnapshot: MarkupSnapshot;
 }
 
 interface UseAgentGenerationArgs {
@@ -34,21 +38,23 @@ interface UseAgentGenerationArgs {
     readonly selectedFeatureId: SelectedFeatureId;
     readonly agentRepairWorkflow: AgentRepairWorkflow | null;
     readonly conceptBusy: boolean;
+    readonly captureMarkupSnapshot: () => MarkupSnapshot;
 }
 
 type Submit = ReturnType<typeof useGeneration>['submit'];
 
 /** Start a run: edit mode with the current model, or a fresh generation for an empty editor. */
-function dispatchRun(submit: Submit, text: string, fromCode: string, photoReference?: ReferenceImage, attachments?: Attachments): void {
+function dispatchRun(submit: Submit, text: string, fromCode: string, markupSnapshot: MarkupSnapshot, photoReference?: ReferenceImage, attachments?: Attachments): void {
+    const requestText = attachMarkupSnapshotToPrompt(text, markupSnapshot);
     const code = fromCode.trim() ? fromCode : undefined;
     if (attachments?.length) {
-        void submit(text, code, undefined, photoReference, attachments);
+        void submit(requestText, code, undefined, photoReference, attachments);
     } else if (photoReference) {
-        void submit(text, code, undefined, photoReference);
+        void submit(requestText, code, undefined, photoReference);
     } else if (code !== undefined) {
-        void submit(text, code);
+        void submit(requestText, code);
     } else {
-        void submit(text);
+        void submit(requestText);
     }
 }
 
@@ -56,13 +62,14 @@ function dispatchRun(submit: Submit, text: string, fromCode: string, photoRefere
 function useFollowUpQueue() {
     const [queue, setQueue] = useState<readonly QueuedPrompt[]>([]);
     const nextId = useRef(1);
-    const enqueue = useCallback((text: string, referenceImage?: ReferenceImage, attachments?: Attachments) => {
+    const enqueue = useCallback((text: string, referenceImage: ReferenceImage | undefined, attachments: Attachments | undefined, markupSnapshot: MarkupSnapshot) => {
         const id = nextId.current++;
         setQueue((current) => [...current, {
             id,
             text,
             ...(referenceImage ? { referenceImage } : {}),
             ...(attachments?.length ? { attachments } : {}),
+            markupSnapshot,
         }]);
     }, []);
     const removeQueued = useCallback((id: number) => {
@@ -91,6 +98,7 @@ export function useAgentGeneration({
     selectedFeatureId,
     agentRepairWorkflow,
     conceptBusy,
+    captureMarkupSnapshot,
 }: UseAgentGenerationArgs) {
     // The editor source captured at submit time — the "before" side of the diff
     // (so the diff is stable even though `code` changes once we apply).
@@ -116,15 +124,15 @@ export function useAgentGeneration({
         setReviewSnapshot(snapshot);
         setLastReferenceImage(photoReference);
         setLastAttachments(attachments);
-        dispatchRun(submit, text, snapshot.fromCode, photoReference, attachments);
+        dispatchRun(submit, text, snapshot.fromCode, snapshot.markupSnapshot, photoReference, attachments);
     };
 
-    const onSubmit = (message?: string, referenceImage?: ReferenceImage, attachments?: Attachments) => {
+    const onSubmit = (message?: string, referenceImage?: ReferenceImage, attachments?: Attachments, capturedMarkup?: MarkupSnapshot) => {
         const trimmed = (message ?? prompt).trim();
         if (!trimmed || conceptBusy) return;
         if (agentBusy) {
             // A follow-up: it runs after this run's change is reviewed.
-            enqueue(trimmed, referenceImage, attachments);
+            enqueue(trimmed, referenceImage, attachments, capturedMarkup ?? captureMarkupSnapshot());
             return;
         }
         const matchesDraftedRepair =
@@ -148,6 +156,7 @@ export function useAgentGeneration({
             promptText: trimmed,
             selectedFeatureId: runTargetId,
             repairWorkflow: repairWorkflowForRun,
+            markupSnapshot: capturedMarkup ?? captureMarkupSnapshot(),
         }, referenceImage, attachments);
     };
 
@@ -176,7 +185,7 @@ export function useAgentGeneration({
         const next = queue[0];
         if (!next || busy) return;
         removeQueued(next.id);
-        onSubmit(next.text, next.referenceImage, next.attachments);
+        onSubmit(next.text, next.referenceImage, next.attachments, next.markupSnapshot);
     };
 
     return {

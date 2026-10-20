@@ -291,8 +291,8 @@ function useToolbarDrag(barRef: RefObject<HTMLDivElement | null>) {
     return { place, onGripDown, reset };
 }
 
-/** Width of the top-left control cluster (Measure + Dimensions, left-3..left-14+w-9). */
-const CORNER_CONTROLS_RIGHT_PX = 104;
+/** Width of the top-left Studio control cluster (Measure, Dimensions, Markup, Explode). */
+const CORNER_CONTROLS_RIGHT_PX = 220;
 
 /** Publish the toolbar's footprint so corner controls never sit under it.
  *  The inset is 0 when the toolbar does not reach the corner (wide viewport). */

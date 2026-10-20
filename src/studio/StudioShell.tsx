@@ -34,6 +34,7 @@ import { useViewportToggles } from './hooks/useViewportToggles';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
 import { PHONE_QUERY, useIsNarrow } from './hooks/useIsNarrow';
 import { MobileShell } from './MobileShell';
+import { markupStore } from './markup/markupStore';
 
 
 interface EmbedFlags {
@@ -329,11 +330,13 @@ function renderProjectManager(workbench: ReturnType<typeof useWorkbench>) {
 
 function useStudioShellHandlers(workbench: ReturnType<typeof useWorkbench>) {
     const handleToggleMarkingMode = useCallback(() => {
+        if (!shellStore.getSnapshot().markingMode) markupStore.closePanel();
         shellStore.toggleMarkingMode();
     }, []);
     const handleToggleSectionMode = useCallback(() => {
         // Section and marking are independent overlays; turning one on retires
         // the other so the viewport never hosts both at once.
+        markupStore.closePanel();
         if (shellStore.getSnapshot().markingMode) shellStore.setMarkingMode(false);
         shellStore.toggleSectionMode();
     }, []);

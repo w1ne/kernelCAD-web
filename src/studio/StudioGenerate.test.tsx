@@ -5,6 +5,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import type { PreviewPhase } from '../funnel/hooks/useTextTo3dPreview';
+import { DEFAULT_MARKUP_CAMERA, markupStore } from './markup/markupStore';
+import { parseMarkupSnapshot } from './markup/markupSnapshot';
 
 // The localhost guard would blank the whole component in happy-dom.
 vi.mock('./agentAvailability', () => ({ inAppAgentEnabled: () => true }));
@@ -36,6 +38,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   previewPhase = { state: 'idle' };
   mockCode = '';
+  markupStore.clear();
+  markupStore.setCamera(DEFAULT_MARKUP_CAMERA);
 });
 afterEach(() => cleanup());
 
@@ -73,7 +77,8 @@ describe('StudioGenerate — unified prompt', () => {
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
-    expect(generationSubmit).toHaveBeenCalledWith('a hex planter', undefined, { renderImageUrl: null, proportions: null });
+    expect(generationSubmit).toHaveBeenCalledWith(expect.stringContaining('a hex planter'), undefined, { renderImageUrl: null, proportions: null });
+    expectPromptHasMarkup(generationSubmit.mock.calls[0]![0]);
   });
 
   it('Build-as-CAD is a FRESH generation even when the editor holds code (not an edit of it)', () => {
@@ -84,7 +89,8 @@ describe('StudioGenerate — unified prompt', () => {
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: null, proportions: null };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
-    expect(generationSubmit).toHaveBeenCalledWith('a hex planter', undefined, { renderImageUrl: null, proportions: null });
+    expect(generationSubmit).toHaveBeenCalledWith(expect.stringContaining('a hex planter'), undefined, { renderImageUrl: null, proportions: null });
+    expectPromptHasMarkup(generationSubmit.mock.calls[0]![0]);
   });
 
   it('Build-as-CAD passes the concept mesh context into the agent submit', () => {
@@ -94,7 +100,25 @@ describe('StudioGenerate — unified prompt', () => {
     previewPhase = { state: 'done', glbUrl: 'https://t/x.glb', costUsd: null, renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] };
     rerender(<StudioGenerate />);
     fireEvent.click(screen.getByRole('button', { name: /build as parametric cad/i }));
-    expect(generationSubmit).toHaveBeenCalledWith('a bracket', undefined, { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] });
+    expect(generationSubmit).toHaveBeenCalledWith(expect.stringContaining('a bracket'), undefined, { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] });
+    expectPromptHasMarkup(generationSubmit.mock.calls[0]![0]);
+  });
+
+  it('sends the current markup snapshot alongside the agent prompt', () => {
+    markupStore.addNote({
+      id: 'test-note',
+      text: 'Keep this face flat',
+      anchor: [1, 2, 3],
+      refs: [{ shapeIndex: 0, kind: 'face', id: 4 }],
+    });
+    render(<StudioGenerate />);
+    fireEvent.change(screen.getByLabelText('Generate prompt'), { target: { value: 'make a bracket' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Build' }));
+
+    const requestPrompt = generationSubmit.mock.calls[0]![0] as string;
+    expect(requestPrompt).toContain('make a bracket');
+    const snapshot = expectPromptHasMarkup(requestPrompt);
+    expect(snapshot.notes).toEqual([expect.objectContaining({ text: 'Keep this face flat', anchor: [1, 2, 3] })]);
   });
 
   it('disables 3D concept mode when a photo is attached', async () => {
@@ -109,3 +133,9 @@ describe('StudioGenerate — unified prompt', () => {
     expect(screen.getByRole('button', { name: /3d concept/i })).toBeDisabled();
   });
 });
+
+function expectPromptHasMarkup(prompt: string) {
+  const match = prompt.match(/Studio markup snapshot JSON \(schemaVersion 1\):\n(`{3,})json\n([\s\S]*?)\n\1/);
+  expect(match?.[2]).toBeTruthy();
+  return parseMarkupSnapshot(match![2]!);
+}

@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-10-20",
+  "branch": "feat/studio-markup-snapshot",
+  "localStudio": {
+    "url": "http://127.0.0.1:5173/studio",
+    "markupPanel": "observed in the existing Chrome profile",
+    "notePlacement": {
+      "status": "observed",
+      "text": "Keep mounting face flat",
+      "topologyRef": { "shapeIndex": 2, "kind": "edge", "id": 13 }
+    },
+    "measurement": {
+      "status": "blocked",
+      "reason": "The browser security review declined the local CDP pointer event and prohibited retrying through another browser API."
+    }
+  },
+  "checks": {
+    "typecheck": { "command": "npx tsc -b --noEmit", "status": "passed" },
+    "lint": { "status": "passed", "scope": "changed Studio, markup, measurement, guide and test files" },
+    "vitest": {
+      "status": "passed",
+      "testFiles": 10,
+      "tests": 41,
+      "includes": [
+        "markup schema/store",
+        "prompt snapshot payload",
+        "measurement snapping and state",
+        "viewport mounting",
+        "published guide rendering"
+      ]
+    },
+    "playwright": {
+      "command": "npx playwright test tests/studio_markup_snapshot.spec.ts --project=chromium",
+      "status": "not run",
+      "reason": "The browser security review rejected browser automation for the local measurement action."
+    }
+  },
+  "media": {
+    "file": "demo.mp4",
+    "status": "not captured",
+    "reason": "A full note-and-measure workflow recording could not be captured after the browser action was declined."
+  },
+  "deployment": {
+    "status": "not deployed",
+    "reason": "This worktree remains uncommitted and was not pushed."
+  }
+}

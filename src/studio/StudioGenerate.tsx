@@ -21,8 +21,11 @@ import { useFeatureSelection } from './hooks/useFeatureSelection';
 import { useGenerationReview } from './hooks/useGenerationReview';
 import { usePromptDraft } from './hooks/usePromptDraft';
 import { useStagedEditActions } from './hooks/useStagedEditActions';
+import { markupStore } from './markup/markupStore';
 import { useShellStore, shellStore } from './store/useShellStore';
 import type { AgentRepairWorkflow, StagedEdit } from './store/shellStore';
+
+const captureMarkupSnapshot = () => markupStore.captureSnapshot();
 
 /** Web-only gate. No hooks here, so the conditional return is safe. */
 export const StudioGenerate: React.FC = () => {
@@ -181,6 +184,7 @@ function useAgentPane() {
     const conceptBusy = preview.phase.state === 'running';
     const run = useAgentGeneration({
         phase, submit, currentCode, prompt, selectedFeatureId, agentRepairWorkflow, conceptBusy,
+        captureMarkupSnapshot,
     });
     const review = useGenerationReview({
         phase, stagedEdit, currentCode, prompt, selectedFeatureId, agentRepairWorkflow,
@@ -189,6 +193,7 @@ function useAgentPane() {
     const concept = useConceptWorkflow({
         prompt, busy: run.busy, currentCode, selectedFeatureId, agentRepairWorkflow, submit, preview,
         setBaseline: run.setBaseline, setReviewSnapshot: run.setReviewSnapshot,
+        captureMarkupSnapshot,
     });
     const { accept, applied } = useAcceptProposal(phase, stagedEdit, review.stageGeneratedEdit);
     useRepairRollback(phase, agentRepairWorkflow);

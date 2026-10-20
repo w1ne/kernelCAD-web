@@ -5,6 +5,8 @@ import { useGeneration } from '../../funnel/hooks/useGeneration';
 import type { useTextTo3dPreview } from '../../funnel/hooks/useTextTo3dPreview';
 import type { AgentRepairWorkflow } from '../store/shellStore';
 import type { SelectedFeatureId } from '../types';
+import type { MarkupSnapshot } from '../markup/markupSnapshot';
+import { attachMarkupSnapshotToPrompt } from '../markup/markupSnapshot';
 import type { GenerationReviewSnapshot } from './useAgentGeneration';
 
 interface UseConceptWorkflowArgs {
@@ -17,6 +19,7 @@ interface UseConceptWorkflowArgs {
     readonly preview: ReturnType<typeof useTextTo3dPreview>;
     readonly setBaseline: (value: string) => void;
     readonly setReviewSnapshot: (snapshot: GenerationReviewSnapshot | null) => void;
+    readonly captureMarkupSnapshot: () => MarkupSnapshot;
 }
 
 /**
@@ -33,6 +36,7 @@ export function useConceptWorkflow({
     preview,
     setBaseline,
     setReviewSnapshot,
+    captureMarkupSnapshot,
 }: UseConceptWorkflowArgs) {
     // The prompt the last concept was generated from — Build-as-CAD uses what
     // the user actually previewed even if they edited the box afterwards.
@@ -53,11 +57,13 @@ export function useConceptWorkflow({
         // review diff still uses the current editor code as its baseline, so
         // nothing is overwritten without the user accepting.
         setBaseline(currentCode);
+        const markupSnapshot = captureMarkupSnapshot();
         setReviewSnapshot({
             fromCode: currentCode,
             promptText: conceptPrompt,
             selectedFeatureId,
             repairWorkflow: agentRepairWorkflow,
+            markupSnapshot,
         });
         // Read the concept mesh directly from the live preview phase (no mirrored
         // state). A done preview with no Tripo render/fingerprint yields
@@ -66,7 +72,7 @@ export function useConceptWorkflow({
         const mesh = preview.phase.state === 'done'
             ? { renderImageUrl: preview.phase.renderImageUrl, proportions: preview.phase.proportions }
             : undefined;
-        void submit(conceptPrompt, undefined, mesh);
+        void submit(attachMarkupSnapshotToPrompt(conceptPrompt, markupSnapshot), undefined, mesh);
     };
 
     return { onConcept, buildConceptAsCad };

@@ -7,16 +7,29 @@ import { filterClippedIntersections } from '../clipFilter';
 import type { EdgePolyline } from './edgePolylines';
 import { computeSnap, type Projected, type ScreenPoint, type SnapHit } from './measureSnap';
 import type { Vec3 } from './measureMath';
+import type { GeometryResult } from '../../../../shared/worker/geometryEngine';
+import type { TopologyRef } from '../../../markup/markupSnapshot';
 
 /** Nearest visible solid face under the cursor (edge lines and overlays are not faces). */
-function faceUnder(raycaster: THREE.Raycaster, scene: THREE.Scene): { point: Vec3; distance: number } | null {
+function faceUnder(raycaster: THREE.Raycaster, scene: THREE.Scene, geometries: readonly GeometryResult[]): { point: Vec3; distance: number; ref?: TopologyRef } | null {
   const hits = filterClippedIntersections(raycaster.intersectObjects(scene.children, true));
   const hit = hits.find((h) => h.object.userData?.type === 'FACE' && (h.object as THREE.Mesh).isMesh);
-  return hit ? { point: hit.point.toArray() as unknown as Vec3, distance: hit.distance } : null;
+  if (!hit) return null;
+  const data = hit.object.userData;
+  let faceId: number | undefined;
+  if (data.faceMap && hit.faceIndex != null) faceId = data.faceMap[hit.faceIndex];
+  else if (typeof data.id === 'number') faceId = data.id;
+  const shapeIndex = data.shapeIndex;
+  const geometry = typeof shapeIndex === 'number' ? geometries[shapeIndex] : undefined;
+  const featureId = typeof faceId === 'number' ? geometry?.faceOwners?.[faceId] ?? geometry?.featureId : undefined;
+  const ref = typeof shapeIndex === 'number' && typeof faceId === 'number' && faceId >= 0
+    ? { shapeIndex, kind: 'face' as const, id: faceId, ...(featureId ? { featureId } : {}) }
+    : undefined;
+  return { point: hit.point.toArray() as unknown as Vec3, distance: hit.distance, ...(ref ? { ref } : {}) };
 }
 
 /** Screen position -> snapped model point, against the live camera and scene. */
-export function useViewerSnapper(polylines: readonly EdgePolyline[]): (p: ScreenPoint) => SnapHit | null {
+export function useViewerSnapper(polylines: readonly EdgePolyline[], geometries: readonly GeometryResult[]): (p: ScreenPoint) => SnapHit | null {
   const camera = useThree((s) => s.camera);
   const scene = useThree((s) => s.scene);
   const size = useThree((s) => s.size);
@@ -33,6 +46,6 @@ export function useViewerSnapper(polylines: readonly EdgePolyline[]): (p: Screen
       if (v.z < -1 || v.z > 1) return null;
       return { x: ((v.x + 1) / 2) * size.width, y: ((1 - v.y) / 2) * size.height, depth };
     };
-    return computeSnap({ polylines, cursor, project, face: faceUnder(ray, scene) });
-  }, [camera, scene, size, polylines]);
+    return computeSnap({ polylines, cursor, project, face: faceUnder(ray, scene, geometries) });
+  }, [camera, scene, size, polylines, geometries]);
 }

@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { useEffect, useRef } from 'react';
 import Viewer from './components/Viewer';
 import { useWorkbench } from './context/WorkbenchContext';
+import { useOptionalProjectId } from './context/ProjectContext';
 import { useStudioChrome } from './context/StudioChromeContext';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
 import { ParamChips } from './ParamChips';
@@ -10,6 +12,8 @@ import { useStudioConfig } from './config/StudioConfigContext';
 import { StudioEmptyState } from './start/StudioEmptyState';
 import { CoachMarks } from './start/CoachMarks';
 import { firstRunAllowed, isViewportEmpty } from './start/firstRun';
+import { MarkupPanel } from './components/viewer/markup/MarkupPanel';
+import { markupStore } from './markup/markupStore';
 
 /** The first-run layer: the empty-viewport card and the coach marks. Only
  *  in the editable Studio; never on /p/, /g/, embeds or source links. */
@@ -52,6 +56,7 @@ function FirstRun({ geometryCount }: { geometryCount: number }) {
 
 export function Viewport() {
     const { geometries } = useRecomputeResult();
+    const activeProjectId = useOptionalProjectId();
     const {
         viewMode3D,
         sketchesGeometries,
@@ -59,6 +64,13 @@ export function Viewport() {
         previewGeometries,
     } = useWorkbench();
     const { viewportOverlay } = useStudioChrome();
+    const previousProjectId = useRef(activeProjectId);
+    useEffect(() => {
+        if (previousProjectId.current === activeProjectId) return;
+        previousProjectId.current = activeProjectId;
+        markupStore.clear();
+        markupStore.closePanel();
+    }, [activeProjectId]);
 
     return (
         <div data-testid="studio-viewport" className="relative w-full h-full">
@@ -69,11 +81,13 @@ export function Viewport() {
                     sketchesGeometries={sketchesGeometries ?? []}
                     showSketches={showSketches ?? false}
                     viewMode3D={viewMode3D}
+                    enableMarkup
                 />
             </div>
             <div className="absolute inset-0 pointer-events-none">
                 <ParamChips />
                 <SelectionHighlight />
+                <MarkupPanel />
             </div>
             <FirstRun geometryCount={geometries.length} />
             {viewportOverlay && (

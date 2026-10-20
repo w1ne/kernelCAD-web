@@ -2,13 +2,18 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { GeometryResult, SketchGeometry } from "../../shared/worker/geometryEngine";
 import type { ViewMode3D, ViewportBackground } from "../../shared/types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
 import { useUI } from "../context/UIContext";
-import { useShellStore } from "../store/useShellStore";
+import { shellStore, useShellStore } from "../store/useShellStore";
+import { markupStore } from "../markup/markupStore";
+import { MarkupButton } from "./viewer/markup/MarkupButton";
+import { MarkupTool } from "./viewer/markup/MarkupTool";
+import { MarkupLayer } from "./viewer/markup/MarkupLayer";
+import { MarkupCameraBridge } from "./viewer/markup/MarkupCameraBridge";
 
 // Extracted Components
 import { ViewerScene } from "./viewer/ViewerScene";
@@ -60,6 +65,8 @@ interface ViewerProps {
     look?: ViewerLook;
     /** Extra R3F nodes drawn inside the canvas (the embed's Mark & fix pins). */
     canvasExtras?: ReactNode;
+    /** Anchored notes and replayable markup are only enabled in Studio. */
+    enableMarkup?: boolean;
 }
 
 /** Scene state phase: workbench/ui/shell context plus the grid, section-clipping
@@ -155,24 +162,40 @@ function useToolDock(): HTMLElement | null {
     return useSyncExternalStore(subscribeToolDock, currentToolDock, () => null);
 }
 
-function ViewerToolButtons({ measuring, setMeasuring, dims, explode }: {
+function ViewerToolButtons({ measuring, setMeasuring, dims, explode, enableMarkup }: {
     measuring: boolean;
     setMeasuring: (fn: (on: boolean) => boolean) => void;
     dims: ReturnType<typeof useViewerDimensions>;
     explode: ReturnType<typeof useExplodedView>;
+    enableMarkup: boolean;
 }): ReactNode {
     const dock = useToolDock();
+    const markup = useSyncExternalStore(markupStore.subscribe, markupStore.getSnapshot, markupStore.getSnapshot);
     const buttons = (
         <>
-            <MeasureButton docked={dock != null} active={measuring} onToggle={() => setMeasuring((on) => !on)} />
+            {enableMarkup ? <MarkupButton docked={dock != null} left={dims.available ? 'left-24' : 'left-14'} active={markup.panelOpen} onToggle={() => {
+                if (markup.panelOpen) {
+                    markupStore.closePanel();
+                } else {
+                    setMeasuring(() => false);
+                    shellStore.setMarkingMode(false);
+                    shellStore.setSectionMode(false);
+                    markupStore.openPanel();
+                }
+            }} /> : null}
+            <MeasureButton docked={dock != null} active={measuring} onToggle={() => {
+                const next = !measuring;
+                setMeasuring(() => next);
+                if (next) markupStore.setMode('off');
+            }} />
             {dims.available ? <DimensionsButton docked={dock != null} on={dims.on} onToggle={dims.toggle} legacy={dims.legacy} /> : null}
-            {explode.available ? <ExplodeButton docked={dock != null} view={explode} left={dims.available ? 'left-[6.25rem]' : 'left-14'} /> : null}
+            {explode.available ? <ExplodeButton docked={dock != null} view={explode} left={enableMarkup ? (dims.available ? 'left-44' : 'left-24') : (dims.available ? 'left-[6.25rem]' : 'left-14')} /> : null}
         </>
     );
     return dock ? createPortal(buttons, dock) : buttons;
 }
 
-export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background, meshDimensions, showOriginPlanes = true, canvasExtras, look = 'engineering' }: ViewerProps) {
+export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background, meshDimensions, showOriginPlanes = true, canvasExtras, look = 'engineering', enableMarkup = false }: ViewerProps) {
     const {
         meshDimensions: workbenchDimensions, featureRecords, setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
         selectedItemIds, setSelectedItemId, toggleSelection, setContextMenu, viewportBackground,
@@ -183,6 +206,33 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
     const [measuring, setMeasuring] = useState(false);
     const dims = useViewerDimensions(meshDimensions ?? workbenchDimensions);
     const explode = useExplodedView(geometries, featureRecords);
+    const updateSelectedFace = useCallback((selection: { shapeIndex: number; faceId: number } | null) => {
+        setSelectedFace(selection);
+        if (!enableMarkup) return;
+        if (!selection || selection.faceId < 0) {
+            markupStore.setSelection([]);
+            return;
+        }
+        const geometry = explode.geometries[selection.shapeIndex];
+        const hoveredEdge = selectionCodeStore.getPreselect();
+        if (hoveredEdge?.kind === 'edge' && hoveredEdge.shapeIndex === selection.shapeIndex) {
+            const featureId = geometry?.edgeOwners?.[hoveredEdge.id] ?? geometry?.featureId;
+            markupStore.setSelection([{
+                shapeIndex: hoveredEdge.shapeIndex,
+                kind: 'edge',
+                id: hoveredEdge.id,
+                ...(featureId ? { featureId } : {}),
+            }]);
+            return;
+        }
+        const featureId = geometry?.faceOwners?.[selection.faceId] ?? geometry?.featureId;
+        markupStore.setSelection([{
+            shapeIndex: selection.shapeIndex,
+            kind: 'face',
+            id: selection.faceId,
+            ...(featureId ? { featureId } : {}),
+        }]);
+    }, [enableMarkup, explode.geometries, setSelectedFace]);
     const shownPlanes = useMemo(
         () => (showOriginPlanes ? planes : planes.filter((p) => p.type !== 'base')),
         [planes, showOriginPlanes],
@@ -223,7 +273,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     }
                 } as unknown as Partial<THREE.Raycaster>}
                 onPointerMissed={() => {
-                    setSelectedFace(null);
+                    updateSelectedFace(null);
                     setSelectedSketchName(null);
                     setSelectedItemId(null);
                     setContextMenu({ visible: false, position: null, type: 'FACE' });
@@ -252,7 +302,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     snapPoint={snapPoint}
                     setSnapPoint={setSnapPoint}
                     toggleSelection={toggleSelection}
-                    setSelectedFace={setSelectedFace}
+                    setSelectedFace={updateSelectedFace}
                     setSelectedSketchName={setSelectedSketchName}
                     setSelectedItemId={setSelectedItemId}
                     setContextMenu={setContextMenu}
@@ -262,15 +312,26 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     planes={shownPlanes}
                     look={look}
                 />
+                {enableMarkup ? <MarkupCameraBridge /> : null}
                 {dims.on ? <DimensionsOverlay dimensions={dims.dimensions} bounds={dims.bounds} /> : null}
-                {measuring ? <MeasureTool geometries={explode.geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}
+                {measuring ? <MeasureTool
+                    geometries={explode.geometries}
+                    itemNames={itemNames}
+                    hiddenIds={hiddenIds}
+                    onMeasurementAdded={enableMarkup ? (measurement) => {
+                        markupStore.addMeasurement(measurement);
+                        markupStore.setSelection(measurement.refs);
+                    } : undefined}
+                /> : null}
+                {enableMarkup ? <MarkupTool geometries={explode.geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}
+                {enableMarkup ? <MarkupLayer geometries={explode.geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}
                 {canvasExtras}
                 {onDisplayReady ? (
                     <DisplayReadySensor geometries={geometries} onDisplayReady={onDisplayReady} />
                 ) : null}
             </Canvas>
             <CodeLinkLabel />
-            <ViewerToolButtons measuring={measuring} setMeasuring={setMeasuring} dims={dims} explode={explode} />
+            <ViewerToolButtons measuring={measuring} setMeasuring={setMeasuring} dims={dims} explode={explode} enableMarkup={enableMarkup} />
             <ViewGizmo
                 onNavigate={(target) => setNavigationRequest((prev) => ({
                     target,
