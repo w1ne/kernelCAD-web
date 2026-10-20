@@ -12,8 +12,13 @@
 // canvas (never over the model) with the attribution on the left and a Remix
 // button on the right. It uses the semantic colour tokens, so it follows the
 // nearest `data-theme` (the embed root).
+//
+// Inside a host-chat widget (ChatGPT, Claude) the embed is a nested iframe and
+// a plain target=_blank link there does nothing on mobile. With `instanceId`
+// and a widget hello that lists `open-link`, a click asks the widget to open
+// the link through the host instead (see markFix/widgetChannel.ts).
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { GitFork } from 'lucide-react';
 import { buttonClass, cx } from '../../ui';
 import {
@@ -22,6 +27,18 @@ import {
   remixUrl,
   type LinkSurface,
 } from '../../shared/links/attribution';
+import { postOpenLink, useWidgetFeatures } from '../../funnel/markFix/widgetChannel';
+
+/** Click handler for an embed link: opens through the hosting widget when it
+ *  can, else leaves the link to the browser. */
+function useEmbedLinkClick(instanceId: string | undefined): React.MouseEventHandler<HTMLAnchorElement> {
+  const viaWidget = useWidgetFeatures(instanceId)?.includes('open-link') === true;
+  return useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!viaWidget || !instanceId) return;
+    event.preventDefault();
+    postOpenLink(instanceId, event.currentTarget.href);
+  }, [viaWidget, instanceId]);
+}
 
 export interface MadeWithKernelcadProps {
   surface: Extract<LinkSurface, 'embed' | 'share'>;
@@ -29,6 +46,8 @@ export interface MadeWithKernelcadProps {
   className?: string;
   /** Project slug to offer a "Remix in kernelCAD" link for (embeds only). */
   remixSlug?: string;
+  /** Host-chat widget instance this embed runs in, if any. */
+  instanceId?: string;
 }
 
 const LINK_CLASS =
@@ -38,12 +57,15 @@ export function MadeWithKernelcad({
   surface,
   className = 'fixed bottom-2 left-2',
   remixSlug,
+  instanceId,
 }: MadeWithKernelcadProps): React.JSX.Element {
+  const onLinkClick = useEmbedLinkClick(instanceId);
   const madeWith = (placement: string) => (
     <a
       href={attributionUrl(surface)}
       target="_blank"
       rel="noopener"
+      onClick={onLinkClick}
       data-testid="made-with-kernelcad"
       className={`${placement} ${LINK_CLASS}`}
     >
@@ -58,6 +80,7 @@ export function MadeWithKernelcad({
         href={remixUrl(remixSlug)}
         target="_blank"
         rel="noopener"
+        onClick={onLinkClick}
         data-testid="remix-in-kernelcad"
         className={LINK_CLASS}
       >
@@ -71,12 +94,15 @@ export interface EmbedAttributionBarProps {
   /** Project to offer "Remix in kernelCAD" for. No slug, no Remix button
    *  (a missing or private model has nothing to remix). */
   remixSlug?: string;
+  /** Host-chat widget instance this embed runs in, if any. */
+  instanceId?: string;
 }
 
 /** Footer height of the embed attribution bar, in px. The canvas sits above it. */
 export const EMBED_ATTRIBUTION_BAR_PX = 36;
 
-export function EmbedAttributionBar({ remixSlug }: EmbedAttributionBarProps): React.JSX.Element {
+export function EmbedAttributionBar({ remixSlug, instanceId }: EmbedAttributionBarProps): React.JSX.Element {
+  const onLinkClick = useEmbedLinkClick(instanceId);
   return (
     <footer
       data-testid="embed-attribution-bar"
@@ -87,6 +113,7 @@ export function EmbedAttributionBar({ remixSlug }: EmbedAttributionBarProps): Re
         href={attributionUrl('embed')}
         target="_blank"
         rel="noopener"
+        onClick={onLinkClick}
         data-testid="made-with-kernelcad"
         className="min-w-0 truncate rounded px-1 text-xs leading-7 text-fg-2 no-underline hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
@@ -97,6 +124,7 @@ export function EmbedAttributionBar({ remixSlug }: EmbedAttributionBarProps): Re
           href={remixUrl(remixSlug)}
           target="_blank"
           rel="noopener"
+          onClick={onLinkClick}
           data-testid="remix-in-kernelcad"
           aria-label={`Remix in ${KERNELCAD_NAME}`}
           className={cx(buttonClass('primary', 'sm'), 'shrink-0 no-underline hover:bg-accent-hover')}
