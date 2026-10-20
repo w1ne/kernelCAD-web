@@ -276,6 +276,12 @@ describe('ConsolidatedShape scene graph per view mode', () => {
         click(4, 'body_2', 1, { ctrlKey: true });
         expect(markupStore.getSnapshot().topologyRefs).toEqual([]);
         expect(selectedFace).toBeNull();
+
+        selectionCodeStore.setPreselect({ shapeIndex: 5, kind: 'edge', id: 0 });
+        click(5, 'body_3', -1);
+        expect(markupStore.getSnapshot().topologyRefs).toEqual([
+            { shapeIndex: 5, kind: 'edge', id: 0, featureId: 'base-edge-feature' },
+        ]);
     });
 
     it('cutaway props render the same scene graph (smoke)', () => {

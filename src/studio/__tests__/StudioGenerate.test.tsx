@@ -764,6 +764,12 @@ describe('StudioGenerate — agent pane v2', () => {
         mockSelection.selectedFeatureId = 'lid';
         mockCode.code = 'return box(30, 20, 10);';
         const { rerender } = render(<StudioGenerate />);
+        markupStore.addNote({
+            id: 'copied-agent-note',
+            text: 'Keep the mounting face flat',
+            anchor: [1, 2, 3],
+            refs: [],
+        });
         send('add a snap fit');
         mockGeneration.phase = { state: 'error', code: 'timeout', message: 'did not finish within 240 s' };
         rerender(<StudioGenerate />);
@@ -776,6 +782,12 @@ describe('StudioGenerate — agent pane v2', () => {
         expect(text).toContain('"lid"');
         expect(text).toContain('did not finish within 240 s');
         expect(text).toContain('return box(30, 20, 10);');
+        const serializedSnapshot = text.match(/Studio markup snapshot JSON \(schemaVersion 1\):\n(`{3,})json\n([\s\S]*?)\n\1/)?.[2];
+        expect(serializedSnapshot).toBeTruthy();
+        const snapshot = parseMarkupSnapshot(serializedSnapshot!);
+        expect(snapshot.schemaVersion).toBe(1);
+        expect(snapshot.camera).toEqual(DEFAULT_MARKUP_CAMERA);
+        expect(snapshot.notes).toMatchObject([{ text: 'Keep the mounting face flat', anchor: [1, 2, 3] }]);
         expect(await screen.findByText('Copied')).toBeTruthy();
     });
 

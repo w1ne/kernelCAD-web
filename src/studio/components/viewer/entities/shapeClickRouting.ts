@@ -40,7 +40,7 @@ function topologyRefFromClick(geometry: GeometryResult, shapeIndex: number, face
   const pick: GeometryPick = hovered && hovered.kind === 'edge' && hovered.shapeIndex === shapeIndex
     ? hovered
     : { shapeIndex, kind: 'face', id: faceId };
-  if (faceId < 0) return null;
+  if (pick.kind === 'face' && faceId < 0) return null;
   const featureId = pick.kind === 'edge'
     ? geometry.edgeOwners?.[pick.id] ?? geometry.featureId
     : geometry.faceOwners?.[pick.id] ?? geometry.featureId;

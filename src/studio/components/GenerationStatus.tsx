@@ -155,14 +155,25 @@ function FailureDetails({ detail, generationId }: { detail: string; generationId
     );
 }
 
-/** Copy a prompt for the user's own agent, with the result shown under the actions. */
-function useCopyForAgent(prompt: string | null) {
+/** Build and copy a prompt for the user's own agent on demand. */
+function useCopyForAgent(buildPrompt: (() => string) | null) {
     const [state, setState] = useState<CopyState>('idle');
+    const [prompt, setPrompt] = useState<string | null>(null);
+    const [preparationError, setPreparationError] = useState<string | null>(null);
     const copy = async () => {
-        if (prompt === null) return;
-        setState((await copyPrompt(prompt)) ? 'copied' : 'failed');
+        if (buildPrompt === null) return;
+        try {
+            const text = buildPrompt();
+            setPrompt(text);
+            setPreparationError(null);
+            setState((await copyPrompt(text)) ? 'copied' : 'failed');
+        } catch (error) {
+            setPrompt(null);
+            setPreparationError(error instanceof Error ? error.message : 'Could not prepare the prompt.');
+            setState('failed');
+        }
     };
-    return { state, copy };
+    return { state, copy, prompt, preparationError };
 }
 
 const ACTION_ICON = { className: 'size-3.5', strokeWidth: 1.75, 'aria-hidden': true } as const;
@@ -212,18 +223,19 @@ function GenerationFailure({
 }): JSX.Element {
     const view = failureView(phase);
     const stopped = phase.code === 'cancelled';
-    const agentPrompt = ownAgentPrompt ? ownAgentPrompt(view) : null;
-    const { state: copyState, copy } = useCopyForAgent(agentPrompt);
+    const buildAgentPrompt = ownAgentPrompt ? () => ownAgentPrompt(view) : null;
+    const { state: copyState, copy, prompt: agentPrompt, preparationError } = useCopyForAgent(buildAgentPrompt);
     return (
         <div role="alert" className={cx('flex flex-col gap-2 rounded-panel border p-3', stopped ? 'border-border bg-surface-2' : 'border-danger/40 bg-danger-soft')} data-testid="agent-failure">
             <p className={cx('text-ui font-medium', stopped ? 'text-fg' : 'text-danger')}>{view.title}</p>
             <p className="text-ui text-fg-2">{view.body}</p>
             {view.detail && !stopped && <FailureDetails detail={view.detail} generationId={phase.generationId} />}
-            <FailureActions view={view} onRetry={onRetry} onRepair={onRepair} copy={agentPrompt === null ? null : () => void copy()} copyState={copyState} />
+            <FailureActions view={view} onRetry={onRetry} onRepair={onRepair} copy={buildAgentPrompt === null ? null : () => void copy()} copyState={copyState} />
             <p className="text-2xs text-fg-3" aria-live="polite">
                 {copyState === 'copied' && <>Paste it into your own agent with the kernelCAD MCP server. <a className="text-accent underline-offset-2 hover:underline" href="/connect">How to connect</a></>}
-                {copyState === 'failed' && 'Could not copy. Select the prompt below and copy it by hand.'}
+                {copyState === 'failed' && preparationError === null && 'Could not copy. Select the prompt below and copy it by hand.'}
             </p>
+            {preparationError && <p role="alert" className="text-2xs text-danger">Could not prepare prompt: {preparationError}</p>}
             {copyState === 'failed' && agentPrompt !== null && (
                 <textarea readOnly value={agentPrompt} rows={6} aria-label="Prompt for your agent"
                     onFocus={(e) => e.currentTarget.select()}

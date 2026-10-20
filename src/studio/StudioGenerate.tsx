@@ -22,6 +22,7 @@ import { useGenerationReview } from './hooks/useGenerationReview';
 import { usePromptDraft } from './hooks/usePromptDraft';
 import { useStagedEditActions } from './hooks/useStagedEditActions';
 import { markupStore } from './markup/markupStore';
+import { attachMarkupSnapshotToPrompt } from './markup/markupSnapshot';
 import { useShellStore, shellStore } from './store/useShellStore';
 import type { AgentRepairWorkflow, StagedEdit } from './store/shellStore';
 
@@ -204,12 +205,15 @@ function useAgentPane() {
     useQueueRunner(run.queue.length > 0 && agentFree && phase.state !== 'error', run.sendNextQueued);
 
     const snapshot = run.reviewSnapshot;
-    const copyForOwnAgent = (failure: { title: string; detail: string }) => ownAgentPrompt({
-        promptText: snapshot?.promptText ?? prompt,
-        targetId: snapshot ? snapshot.selectedFeatureId : selectedFeatureId,
-        code: snapshot?.fromCode ?? currentCode,
-        failure,
-    });
+    const copyForOwnAgent = (failure: { title: string; detail: string }) => {
+        const markupSnapshot = snapshot?.markupSnapshot ?? captureMarkupSnapshot();
+        return attachMarkupSnapshotToPrompt(ownAgentPrompt({
+            promptText: snapshot?.promptText ?? prompt,
+            targetId: snapshot ? snapshot.selectedFeatureId : selectedFeatureId,
+            code: snapshot?.fromCode ?? currentCode,
+            failure,
+        }), markupSnapshot);
+    };
     return {
         phase, events, liveCode, cancel, currentCode, executeGeometry, selectedFeatureId, selectFeature, stagedEdit,
         prompt, setPrompt, preview, conceptBusy, run, review, concept, accept, applied, agentFree, copyForOwnAgent,
