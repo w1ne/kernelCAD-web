@@ -82,6 +82,12 @@ export async function updateModelParams(
   });
 
   populateCache(session, result.shapes);
+  // This run lowered (or reused) every record under the edited param table,
+  // so it is the session's full lower now. Recording it lets the next
+  // `meshFeaturesPerFeature` mesh the re-lowered shapes instead of lowering
+  // them a second time. `snapshotFullLower` stamps the current param table
+  // and gates, so a later edit invalidates it as before.
+  session.lastFullLower = { ...session.snapshotFullLower(new Map()), shapes: result.shapes };
   // Invalidate mesh caches for records that actually re-lowered. Records in
   // `skipped` reused their cached shape and so their cached triangle mesh is
   // still valid; records in `relowered` produced a fresh shape so their

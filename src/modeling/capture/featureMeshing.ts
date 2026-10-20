@@ -14,7 +14,7 @@ import type { ParamTable } from '../../shared/runtime/paramTable';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
 import type { FeatureEvent } from '../compute/featureEvents';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
-import { RecomputeEngine, predecessorsByRecord, compiledEventForRecord } from '../compute/recomputeEngine';
+import { RecomputeEngine, predecessorsByRecord, compiledEventForRecord, type RecomputeOptions } from '../compute/recomputeEngine';
 import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
@@ -34,6 +34,8 @@ import {
   markCoarseMesh,
   meshIdentityFields,
   metadataNameOf,
+  planFreshLoweredSeeds, releaseBorrowedTriangulation,
+  type FreshLowerSession,
   reEmitSeededFeatureMeshes,
   resolvePerFaceMaterialOverrides,
   splitConnectorRef,
@@ -763,7 +765,7 @@ export async function meshFeaturesPerFeature(
     /** Extra world-space translations keyed by assembly part name, composed
      *  onto each part's solved worldTransform (exploded views). */
     explodeOffsets?: ReadonlyMap<string, readonly [number, number, number]>;
-  },
+  } & FreshLowerSession,
   opts?: MeshFeatureOptions,
 ): Promise<MeshFeaturesResult> {
   await initOcct();
@@ -832,8 +834,9 @@ export async function meshFeaturesPerFeature(
     cachedShapesIn,
     cachedFeatureMeshes,
   );
+  const { meshFromSeed, engineSeeds } = planFreshLoweredSeeds(records, paramTable, session, seedShapes);
 
-  const linkState = newLinkState(records, seedShapes);
+  const linkState = newLinkState(records, engineSeeds);
   const eventCtx: MeshFeatureEventContext = {
     emitFeature,
     meshBounds,
@@ -854,8 +857,8 @@ export async function meshFeaturesPerFeature(
   };
   await engine.run(records, {
     paramTable,
-    ...(seedShapes !== undefined && seedShapes.size > 0 ? { seedShapes } : {}),
     onEvent: (event) => handleMeshFeatureEvent(event, eventCtx),
+    ...engineSeedOptions(engineSeeds, meshFromSeed, refineSeededMesh(eventCtx)),
   });
 
   reEmitSeededFeatureMeshes(
@@ -878,6 +881,27 @@ export async function meshFeaturesPerFeature(
     warnings,
     linkState.shapeById,
   );
+}
+
+/**
+ * Seed options for the meshing pass's engine run. `meshFromSeed` holds records
+ * the session already lowered for these exact inputs (the build or
+ * params.update before this call) that have no cached mesh yet: they are
+ * seeded, and `onSeedHit` meshes each one at the point in engine order where
+ * it would have been lowered, so the output order is unchanged and no record
+ * is lowered twice.
+ */
+function engineSeedOptions(
+  engineSeeds: Map<FeatureId, ShapeBackend> | undefined,
+  meshFromSeed: ReadonlyMap<FeatureId, ShapeBackend>,
+  meshSeeded: (record: FeatureRecord, shape: ShapeBackend) => void,
+): Pick<RecomputeOptions, 'seedShapes' | 'onSeedHit'> {
+  return {
+    ...(engineSeeds !== undefined && engineSeeds.size > 0 ? { seedShapes: engineSeeds } : {}),
+    ...(meshFromSeed.size > 0
+      ? { onSeedHit: (record: FeatureRecord, shape: ShapeBackend) => { if (meshFromSeed.has(record.id)) { meshSeeded(record, shape); releaseBorrowedTriangulation(shape); } } }
+      : {}),
+  };
 }
 
 /** Attach the optional session hooks (imported geometry, NURBS surface
