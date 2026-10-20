@@ -405,7 +405,10 @@ export function makeScene(
   const catalogMetadataByShapeId = catalogPartSceneMetadataByShapeId(session);
   const atOf = partAtFor(state.mates, state.parts, session.paramTable);
   const sceneParts: ScenePart[] = state.parts.map((p: AssemblyPartStored) => {
-    const metadata = catalogMetadataByShapeId.get(p.originalShape.id);
+    const catalogMetadata = catalogMetadataByShapeId.get(p.originalShape.id);
+    const metadata = p.overlay === true || catalogMetadata !== undefined
+      ? { ...(catalogMetadata ?? {}), ...(p.overlay === true ? { overlay: true } : {}) }
+      : undefined;
     return {
       name: p.name,
       shape: p.originalShape,
@@ -498,6 +501,55 @@ async function computeInterferencesForGate(
   const result = detectInterferences(lowered, 0.01, new Set<string>());
   const clearanceResults = measureDeclaredClearances(lowered, state.clearanceTolerances);
   return { pairs: result.pairs, clearances: clearanceResults };
+}
+
+/** Symmetric pair key for ignore-list dedupe. */
+function ignorePairKey(a: string, b: string): string {
+  return a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`;
+}
+
+/** Every pair that has at least one overlay part. */
+function overlayInterferencePairs(
+  parts: readonly AssemblyPartStored[],
+): Array<readonly [string, string]> {
+  const out: Array<readonly [string, string]> = [];
+  const overlays = parts.filter((p) => p.overlay === true);
+  if (overlays.length === 0) return out;
+  const names = parts.map((p) => p.name);
+  for (const overlay of overlays) {
+    for (const other of names) {
+      if (other !== overlay.name) out.push([overlay.name, other]);
+    }
+  }
+  return out;
+}
+
+function mergeIgnorePairs(
+  base: ReadonlyArray<readonly [string, string]>,
+  extra: ReadonlyArray<readonly [string, string]>,
+): Array<readonly [string, string]> {
+  const seen = new Set<string>();
+  const out: Array<readonly [string, string]> = [];
+  for (const pair of [...base, ...extra]) {
+    const key = ignorePairKey(pair[0], pair[1]);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(pair);
+  }
+  return out;
+}
+
+/** One info diagnostic per declared display overlay. */
+function overlayIntentDiagnostics(state: AssemblyState): SceneDiagnostic[] {
+  return state.parts
+    .filter((p) => p.overlay === true)
+    .map((p) => ({
+      code: 'assembly.overlay.intentional' as const,
+      severity: 'info' as const,
+      message: `Part '${p.name}' is a declared display overlay: its overlaps with other parts are excluded from interference validation but it remains in the Scene, export, BOM and render.`,
+      hint: "This is display-clip intent, not a hidden clash. Remove overlay: true to validate it as structure, or use contacts/clearances for measured physical contact.",
+      partName: p.name,
+    }));
 }
 
 export interface SolvedModelOptions {
@@ -602,6 +654,21 @@ function normalizeSolvedModelPoses(poses: Poses | undefined | null): Poses {
   return poses;
 }
 
+/**
+ * Display-clip overlays are intentional by declaration: exclude every pair
+ * that involves an overlay from the validator's interference stream. Shared
+ * by `model()` and `solvedModel()` so model-only review paths see the same
+ * exclusions. The raw detection output still reports them to HUD consumers.
+ */
+export function applyOverlayExclusions(state: AssemblyState): void {
+  const derivedOverlayPairs = overlayInterferencePairs(state.parts);
+  if (derivedOverlayPairs.length === 0) return;
+  state.ignoreInterferenceList = mergeIgnorePairs(
+    state.ignoreInterferenceList ?? [],
+    derivedOverlayPairs,
+  );
+}
+
 function applySolvedModelEntryChecks(state: AssemblyState, opts?: SolvedModelOptions): void {
   if (state.parts.length === 0) {
     throw new KernelError(
@@ -624,6 +691,7 @@ function applySolvedModelEntryChecks(state: AssemblyState, opts?: SolvedModelOpt
   if (opts?.ignore !== undefined) {
     state.ignoreInterferenceList = opts.ignore;
   }
+  applyOverlayExclusions(state);
   // v0.7.4 — validate externalLoads keys at capture entry so agent typos
   // surface immediately, not silently. Per spec open-question 5 resolution
   // (error on typo, not silent ignore).
@@ -842,6 +910,7 @@ async function validateSolvedModelGate(
   } | undefined,
   opts: SolvedModelOptions | undefined,
   envelopeResult: import('../mates/poseEnvelope').PoseEnvelopeReviewResult | undefined,
+  ignoreSnapshot: ReadonlyArray<readonly [string, string]>,
 ): Promise<{ result: import('../mates/validator').ValidatorResult; envelopeDiagnostics: readonly PoseEnvelopeDiagnostic[] }> {
   // v0.7.5 — `validateAssemblyWithMates` 3rd-arg (`poseEnvelopeResult`)
   // is left undefined: the explicit `posesGate: 'envelope'` path keeps
@@ -857,13 +926,17 @@ async function validateSolvedModelGate(
   // envelope-throw aggregation logic below stays the sole consumer of
   // envelope diagnostics (avoids double-folding) while still letting
   // `validateWorkspaceReachability` read the connector AABBs.
+  // Use the per-call snapshot: it is the author's explicit list PLUS the
+  // pairs derived from declared display overlays. Reading shared state here
+  // would race a concurrent solvedModel() on the same assembly.
+  const effectiveIgnore = ignoreSnapshot;
   const result = await validateAssemblyWithMates(
     arm,
     interferenceGate?.pairs,
     undefined,
     opts?.externalLoads,
     envelopeResult?.connectorWorkspace,
-    opts?.ignore,
+    effectiveIgnore.length > 0 ? effectiveIgnore : opts?.ignore,
     opts?.contacts,
     interferenceGate?.clearances,
   );
@@ -974,6 +1047,7 @@ function finalizeSolvedModelScene(
     ...result.diagnostics,
     ...envelopeDiagnostics,
     ...limitWarnings,
+    ...overlayIntentDiagnostics(state),
   ];
   return makeScene(state, sceneShape, aggregated, mateT);
 }
@@ -1081,13 +1155,14 @@ export function recordSolvedModel(
   }
 
   const { interferencePromise, envelopeResultPromise } = gatherSolvedModelGateInputs(state, arm, sceneShape, mode, opts);
+  const ignoreSnapshot = arm.__ignoreInterference();
 
   return Promise.all([
     interferencePromise,
     mateTransformsPromise,
     envelopeResultPromise,
   ]).then(([interferenceGate, mateT, envelopeResult]) =>
-    validateSolvedModelGate(arm, interferenceGate, opts, envelopeResult).then(
+    validateSolvedModelGate(arm, interferenceGate, opts, envelopeResult, ignoreSnapshot).then(
       ({ result, envelopeDiagnostics }) =>
         finalizeSolvedModelScene(state, sceneShape, mode, result, envelopeDiagnostics, mateT, limitWarnings),
     ),
