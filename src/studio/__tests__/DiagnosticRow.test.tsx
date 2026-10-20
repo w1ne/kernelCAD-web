@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { DiagnosticRow } from '../DiagnosticRow';
 import { shellStore } from '../store/useShellStore';
+import { inspectorTabRequests } from '../hooks/studioNavigation';
 import type { ValidatorDiagnostic } from '../../modeling/mates/validator';
 
 afterEach(() => {
@@ -82,5 +83,24 @@ describe('DiagnosticRow', () => {
         const jump = getByLabelText('Jump to jaw-coupling');
         fireEvent.click(jump);
         expect(shellStore.getSnapshot().selectedFeatureId).toBe('jaw-coupling');
+    });
+
+    it('the line chip opens code and a row click does not', () => {
+        const seen: string[] = [];
+        const stop = inspectorTabRequests.subscribe((tab) => seen.push(tab));
+        const { getByRole, queryByRole, rerender } = render(
+            <DiagnosticRow diagnostic={floatingHorn} scriptLine={18} />,
+        );
+
+        fireEvent.click(getByRole('button', { name: 'Show line 18 in code' }));
+        expect(shellStore.getSnapshot().selectedFeatureId).toBe('output-horn');
+        expect(seen).toEqual(['code']);
+
+        seen.length = 0;
+        rerender(<DiagnosticRow diagnostic={mateDiag} />);
+        expect(queryByRole('button', { name: /Show line .* in code/ })).toBeNull();
+        fireEvent.click(getByRole('button', { name: /Diagnostic assembly\.mate\.over-constrained/ }));
+        expect(seen).toEqual([]);
+        stop();
     });
 });

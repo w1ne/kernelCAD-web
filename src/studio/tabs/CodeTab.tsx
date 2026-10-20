@@ -8,6 +8,7 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { EditorEdit, EditorLike } from '../../shared/types/editor';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
+import { codeLineRevealRequests } from '../hooks/studioNavigation';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { currentStudioScript, devMeshAvailable } from '../scriptSource';
 import { scriptCodeEditorIsReadOnly } from '../linkedScriptAutosave';
@@ -150,9 +151,22 @@ export function CodeTab(): JSX.Element {
     // Latest evaluation + source for the link index getter (read lazily, so
     // typing never rebuilds the index).
     const indexInputRef = useRef({ code: workbench.code ?? '', features });
+    const featuresRef = useRef(features);
     useEffect(() => {
         indexInputRef.current = { code: workbench.code ?? '', features };
+        featuresRef.current = features;
     }, [workbench.code, features]);
+
+    useEffect(() => {
+        return codeLineRevealRequests.subscribe((request) => {
+            const editor = editorRef.current;
+            if (!editor) return;
+            const feature = findFeatureById(featuresRef.current, request.featureId);
+            const line = feature?.scriptLocation?.line;
+            if (typeof line !== 'number') return;
+            editor.revealLineInCenter(line);
+        });
+    }, []);
 
     const { beforeMount: handleBeforeMount, attach: attachTypeCheck } = useKcadTypeCheck();
 

@@ -31,6 +31,11 @@ export const viewTargetRequests = new RequestChannel<ViewTarget>();
 /** Inspector tab switches: the inspector shows that tab. */
 export const inspectorTabRequests = new RequestChannel<TabId>();
 
+/** Ask the Code tab to scroll to a feature's call line. The editor does not
+ *  take focus. A request sent while Code is unmounted is applied on mount
+ *  from the selected feature. */
+export const codeLineRevealRequests = new RequestChannel<{ featureId: string }>();
+
 function useChannel<T>(channel: RequestChannel<T>, onRequest: Listener<T>): void {
     const latest = useRef(onRequest);
     useEffect(() => {

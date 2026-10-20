@@ -51,6 +51,8 @@ vi.mock('../../context/GeometryContext', async (importOriginal) => ({
 }));
 
 import { SceneTab } from '../../tabs/SceneTab';
+import { inspectorTabRequests } from '../../hooks/studioNavigation';
+import { shellStore } from '../../store/shellStore';
 
 function partFeature(partName: string): FeatureRecord {
     return {
@@ -151,6 +153,38 @@ describe('SceneTab', () => {
 
         expect(mockSelectFeature).toHaveBeenCalledTimes(1);
         expect(mockSelectFeature).toHaveBeenCalledWith('shoulder');
+    });
+
+    it('shows a line chip only when the feature has a call line, and the chip opens code', () => {
+        const located = partFeature('shoulder');
+        located.scriptLocation = { file: 'm.kcad.ts', line: 12, column: 3 };
+        const plain = partFeature('elbow');
+        mockUseRecomputeResult.mockReturnValue(
+            baseResult({
+                features: [located, plain],
+                validity: validityWithFloating('floating-other'),
+            }),
+        );
+        const seen: string[] = [];
+        const stop = inspectorTabRequests.subscribe((tab) => seen.push(tab));
+
+        render(<SceneTab />);
+
+        expect(screen.queryByRole('button', { name: 'Show line 12 in code' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: /Show line .* in code/ })).toBeTruthy();
+        expect(screen.getAllByRole('button', { name: /Show line .* in code/ })).toHaveLength(1);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Show line 12 in code' }));
+        expect(shellStore.getSnapshot().selectedFeatureId).toBe('shoulder');
+        expect(mockSelectFeature).not.toHaveBeenCalled();
+        expect(seen).toEqual(['code']);
+
+        mockSelectFeature.mockClear();
+        seen.length = 0;
+        fireEvent.click(screen.getByTestId('scene-row-elbow'));
+        expect(mockSelectFeature).toHaveBeenCalledWith('elbow');
+        expect(seen).toEqual([]);
+        stop();
     });
 
     it('marks the row matching selectedFeatureId as selected', () => {

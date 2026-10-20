@@ -4,10 +4,14 @@ import React from 'react';
 import type { ValidatorDiagnostic } from '../modeling/mates/validator';
 import { useFeatureSelection } from './hooks/useFeatureSelection';
 import { routeDiagnosticToSelection } from './logic/diagnosticRouter';
+import { LineChip } from './components/LineChip';
+import { revealFeatureInCode } from './logic/revealFeatureInCode';
 import { plainLine } from './plainLine';
 
 export interface DiagnosticRowProps {
     readonly diagnostic: ValidatorDiagnostic;
+    /** Call line in the original script. Absent when capture did not record one. */
+    readonly scriptLine?: number | null;
 }
 
 function severityDotClass(severity: ValidatorDiagnostic['severity']): string {
@@ -30,9 +34,10 @@ function targetLabel(d: ValidatorDiagnostic): string {
     return '—';
 }
 
-export const DiagnosticRow: React.FC<DiagnosticRowProps> = ({ diagnostic }) => {
+export const DiagnosticRow: React.FC<DiagnosticRowProps> = ({ diagnostic, scriptLine }) => {
     const { selectFeature } = useFeatureSelection();
     const target = targetLabel(diagnostic);
+    const targetId = routeDiagnosticToSelection(diagnostic);
     // The hint says what to do; a diagnostic with no hint still says what is wrong.
     const detail = diagnostic.hint || diagnostic.message;
 
@@ -52,7 +57,7 @@ export const DiagnosticRow: React.FC<DiagnosticRowProps> = ({ diagnostic }) => {
                     onJump();
                 }
             }}
-            className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-[#222] border-b border-[#222] cursor-pointer"
+            className="group flex items-center gap-2 px-3 py-2 text-xs hover:bg-[#222] border-b border-[#222] cursor-pointer"
         >
             <span
                 aria-hidden="true"
@@ -65,6 +70,9 @@ export const DiagnosticRow: React.FC<DiagnosticRowProps> = ({ diagnostic }) => {
             <span className="italic text-gray-400 truncate flex-1" title={detail || undefined}>
                 {detail ? plainLine(detail) : ''}
             </span>
+            {scriptLine != null && targetId != null && (
+                <LineChip line={scriptLine} onReveal={() => revealFeatureInCode(targetId)} />
+            )}
             <button
                 type="button"
                 aria-label={`Jump to ${target}`}

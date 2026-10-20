@@ -11,6 +11,9 @@ import SceneBrowser from '../components/SceneBrowser';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { useGeometry } from '../context/GeometryContext';
 import { extractHistoryItems } from '../../shared/codeGeneration/codeAnalysis';
+import { LineChip } from '../components/LineChip';
+import { scriptLineForId } from '../logic/featureLine';
+import { revealFeatureInCode } from '../logic/revealFeatureInCode';
 import { brokenRowReasons } from '../components/motion/motionBadgeModel';
 import { listDeclaredParams } from '../../modeling/edits/setParamValue';
 import type { JointPoseSnapshot } from '../adapters/featureRecordsToMates';
@@ -35,6 +38,7 @@ interface SceneTabRow {
     readonly rowId: string;
     readonly label: string;
     readonly kind: FeatureRecord['kind'];
+    readonly line: number | null;
 }
 
 function buildRows(features: readonly FeatureRecord[]): SceneTabRow[] {
@@ -58,7 +62,13 @@ function buildRows(features: readonly FeatureRecord[]): SceneTabRow[] {
             label = meta.mateName;
             rowId = meta.mateName;
         }
-        rows.push({ rowId, label, kind: f.kind });
+        const line = f.scriptLocation?.line;
+        rows.push({
+            rowId,
+            label,
+            kind: f.kind,
+            line: typeof line === 'number' && line >= 1 ? line : null,
+        });
     }
     return rows;
 }
@@ -122,6 +132,7 @@ interface SceneTabPartsPanelProps {
     readonly diagnostics: readonly ValidatorDiagnostic[];
     readonly broken: ReadonlyMap<string, string>;
     readonly selectFeature: (id: string) => void;
+    readonly lineFor: (id: string) => number | null;
     readonly toggleVisibility?: (id: string) => void;
 }
 
@@ -135,6 +146,7 @@ function SceneTabPartsPanel({
     diagnostics,
     broken,
     selectFeature,
+    lineFor,
     toggleVisibility,
 }: SceneTabPartsPanelProps): JSX.Element {
     const anyHidden = partNames.some((p) => hiddenIds.includes(p));
@@ -160,12 +172,13 @@ function SceneTabPartsPanel({
                     const isHidden = hiddenIds.includes(partName);
                     const isSelected = selectedFeatureId === partName;
                     const severity = rowSeverity(partName, diagnostics, broken);
+                    const line = lineFor(partName);
                     return (
                         <li key={partName}>
                             <div
                                 data-testid={`part-row-${partName}`}
                                 onClick={() => selectFeature(partName)}
-                                className={`group w-full flex items-center gap-2 px-3 py-1.5 text-gray-300 hover:bg-[#1a1a1a] transition-colors cursor-pointer ${isSelected ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : ''}`}
+                                className={`group relative w-full flex items-center gap-2 px-3 py-1.5 text-gray-300 hover:bg-[#1a1a1a] transition-colors cursor-pointer ${isSelected ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : ''}`}
                             >
                                 <span
                                     className={`inline-block h-2 w-2 rounded-full shrink-0 ${severityDotClasses(severity)}`}
@@ -174,6 +187,11 @@ function SceneTabPartsPanel({
                                 <span className={`truncate flex-1 ${isHidden ? 'text-gray-600 italic' : ''}`} title={rowTitle(partName, partName, broken)}>
                                     {partName}
                                 </span>
+                                {line != null && (
+                                    <span className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 group-hover:pointer-events-auto group-focus-within:pointer-events-auto">
+                                        <LineChip line={line} onReveal={() => revealFeatureInCode(partName)} />
+                                    </span>
+                                )}
                                 <button
                                     type="button"
                                     data-testid={`part-visibility-${partName}`}
@@ -221,7 +239,7 @@ function SceneTabFeatureRows({
                     const severity = rowSeverity(row.rowId, diagnostics, broken);
                     const isSelected = selectedFeatureId === row.rowId;
                     return (
-                        <li key={row.rowId}>
+                        <li key={row.rowId} className="group relative">
                             <button
                                 type="button"
                                 onClick={() => selectFeature(row.rowId)}
@@ -245,6 +263,11 @@ function SceneTabFeatureRows({
                                     {row.kind}
                                 </span>
                             </button>
+                            {row.line != null && (
+                                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 group-hover:pointer-events-auto group-focus-within:pointer-events-auto">
+                                    <LineChip line={row.line} onReveal={() => revealFeatureInCode(row.rowId)} />
+                                </span>
+                            )}
                         </li>
                     );
                 })}
@@ -347,6 +370,7 @@ export function SceneTab(): JSX.Element {
                     diagnostics={validity?.diagnostics ?? []}
                     broken={broken}
                     selectFeature={selectFeature}
+                    lineFor={(id) => scriptLineForId(features, id)}
                     toggleVisibility={workbench.toggleVisibility}
                 />
             </ModelTree>

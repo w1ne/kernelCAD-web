@@ -5,6 +5,9 @@ import { ChevronLeft, X } from 'lucide-react';
 import { useShellStore } from './store/useShellStore';
 import { ValidityDeltaHeader } from './ValidityDeltaHeader';
 import { DiagnosticRow } from './DiagnosticRow';
+import { useRecomputeResult } from './hooks/useRecomputeResult';
+import { routeDiagnosticToSelection } from './logic/diagnosticRouter';
+import { scriptLineForId } from './logic/featureLine';
 import { IconButton } from '../ui/IconButton';
 import { SheetHandle } from '../ui/Sheet';
 import { DEFAULT_SNAPS } from '../ui/sheetModel';
@@ -28,6 +31,7 @@ function readStoredCollapsed(): boolean {
  */
 export const BottomDrawer: React.FC = () => {
     const { currentValidity, previousValidity } = useShellStore();
+    const { features } = useRecomputeResult();
     const [collapsed, setCollapsed] = useState<boolean>(() => readStoredCollapsed());
 
     useEffect(() => {
@@ -54,9 +58,16 @@ export const BottomDrawer: React.FC = () => {
             />
             {!collapsed && (
                 <div className="flex-1 min-h-0 overflow-y-auto">
-                    {currentValidity.diagnostics.map((d, i) => (
-                        <DiagnosticRow key={`${d.code}-${i}`} diagnostic={d} />
-                    ))}
+                    {currentValidity.diagnostics.map((d, i) => {
+                        const targetId = routeDiagnosticToSelection(d);
+                        return (
+                            <DiagnosticRow
+                                key={`${d.code}-${i}`}
+                                diagnostic={d}
+                                scriptLine={targetId == null ? null : scriptLineForId(features, targetId)}
+                            />
+                        );
+                    })}
                 </div>
             )}
         </section>

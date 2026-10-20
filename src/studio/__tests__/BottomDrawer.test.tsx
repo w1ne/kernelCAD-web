@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../hooks/useRecomputeResult', () => ({
+    useRecomputeResult: () => ({ features: [] }),
+}));
 import { cleanup, render } from '@testing-library/react';
 import { BottomDrawer } from '../BottomDrawer';
 import { shellStore } from '../store/useShellStore';

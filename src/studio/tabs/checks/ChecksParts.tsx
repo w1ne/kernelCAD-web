@@ -15,6 +15,9 @@ import { SeverityIcon } from './SeverityIcon';
 import { CopyPromptButton } from './SuggestionCard';
 import { diagnosticTargetLabel } from './repairWorkflow';
 import { plainLine } from '../../plainLine';
+import { routeDiagnosticToSelection } from '../../logic/diagnosticRouter';
+import { LineChip } from '../../components/LineChip';
+import { revealFeatureInCode } from '../../logic/revealFeatureInCode';
 
 /** A titled block of the Checks tab. */
 export function ChecksSection({
@@ -147,6 +150,8 @@ export interface FindingActions {
     readonly onSelect: (d: ValidatorDiagnostic) => void;
     /** Drafts the agent repair for a diagnostic; null when it has no fix hint. */
     readonly fixFor: (d: ValidatorDiagnostic) => { fix: () => void; prompt: string } | null;
+    /** Original-file line for a finding, when capture recorded one. */
+    readonly lineFor?: (d: ValidatorDiagnostic) => number | null;
 }
 
 /** All findings, grouped by category (worst group first). */
@@ -173,8 +178,10 @@ export function FindingsList({ groups, actions }: { groups: readonly CheckGroup[
 function FindingRow({ diagnostic, actions }: { diagnostic: ValidatorDiagnostic; actions: FindingActions }): JSX.Element {
     const target = diagnosticTargetLabel(diagnostic);
     const fix = diagnostic.hint ? actions.fixFor(diagnostic) : null;
+    const line = actions.lineFor?.(diagnostic) ?? null;
+    const targetId = routeDiagnosticToSelection(diagnostic);
     return (
-        <li className="relative border-t border-border first:border-t-0" data-severity={diagnostic.severity}>
+        <li className="group relative border-t border-border first:border-t-0" data-severity={diagnostic.severity}>
             <button
                 type="button"
                 onClick={() => actions.onSelect(diagnostic)}
@@ -201,16 +208,23 @@ function FindingRow({ diagnostic, actions }: { diagnostic: ValidatorDiagnostic; 
                     )}
                 </span>
             </button>
-            {fix != null && (
+            {(line != null || fix != null) && (
                 <div className="absolute right-2 top-1.5 flex items-center">
-                    <IconButton
-                        size="sm"
-                        className="text-agent-fg"
-                        label={`Fix ${diagnostic.code} with agent`}
-                        icon={<Sparkles className="size-3.5" />}
-                        onClick={fix.fix}
-                    />
-                    <CopyPromptButton text={fix.prompt} label={`Copy repair prompt for ${diagnostic.code}`} />
+                    {line != null && targetId != null && (
+                        <LineChip line={line} onReveal={() => revealFeatureInCode(targetId)} />
+                    )}
+                    {fix != null && (
+                        <>
+                            <IconButton
+                                size="sm"
+                                className="text-agent-fg"
+                                label={`Fix ${diagnostic.code} with agent`}
+                                icon={<Sparkles className="size-3.5" />}
+                                onClick={fix.fix}
+                            />
+                            <CopyPromptButton text={fix.prompt} label={`Copy repair prompt for ${diagnostic.code}`} />
+                        </>
+                    )}
                 </div>
             )}
         </li>
