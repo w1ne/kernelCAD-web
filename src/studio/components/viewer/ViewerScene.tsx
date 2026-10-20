@@ -74,6 +74,8 @@ interface ViewerSceneProps {
     /** 'publish' (embed): studio rig + contact shadow instead of the
      *  engineering lights, and no ground grid. */
     look?: ViewerLook;
+    /** Studio owns markup picking; public viewers leave markup state untouched. */
+    enableMarkup?: boolean;
     /** What the camera frames. Default `geometries`. The exploded view draws
      *  moved copies but keeps the camera on the assembled model, so the view
      *  does not jump while parts fly apart. */
@@ -115,6 +117,7 @@ export function ViewerScene({
     viewportBackground,
     planes,
     look = 'engineering',
+    enableMarkup = false,
     cameraGeometries,
     fitPoints,
 }: ViewerSceneProps) {
@@ -153,6 +156,7 @@ export function ViewerScene({
                 selectedItemIds={selectedItemIds}
                 sectionKeepWhole={sectionKeepWhole}
                 clippingPlanes={clippingPlanes}
+                enableMarkup={enableMarkup}
                 look={look}
             />
 

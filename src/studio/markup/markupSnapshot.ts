@@ -70,7 +70,24 @@ export const markupSnapshotSchema = z.object({
   selection: z.object({ topologyRefs: z.array(topologyRefSchema).max(MARKUP_SNAPSHOT_MAX_TOPOLOGY_REFS) }).strict(),
   measurements: z.array(markupMeasurementSchema).max(MARKUP_SNAPSHOT_MAX_MEASUREMENTS),
   notes: z.array(markupNoteSchema).max(MARKUP_SNAPSHOT_MAX_NOTES),
-}).strict();
+}).strict().superRefine((snapshot, context) => {
+  const validateUniqueIds = (items: readonly { id: string }[], field: 'notes' | 'measurements', label: 'note' | 'measurement') => {
+    const seen = new Set<string>();
+    items.forEach((item, index) => {
+      if (seen.has(item.id)) {
+        context.addIssue({
+          code: 'custom',
+          path: [field, index, 'id'],
+          message: `Duplicate ${label} ID "${item.id}". ${label} IDs must be unique.`,
+        });
+      }
+      seen.add(item.id);
+    });
+  };
+
+  validateUniqueIds(snapshot.notes, 'notes', 'note');
+  validateUniqueIds(snapshot.measurements, 'measurements', 'measurement');
+});
 
 export type ModelPoint = z.infer<typeof modelPointSchema>;
 export type TopologyRef = z.infer<typeof topologyRefSchema>;

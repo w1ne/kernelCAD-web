@@ -93,6 +93,26 @@ describe('Studio markup snapshots', () => {
     expect(api.markupSnapshotSchema.safeParse({ ...sample, schemaVersion: 2 }).success).toBe(false);
   });
 
+  it('rejects duplicate note and measurement IDs with a field-specific validation error', async () => {
+    const api = await import('./markupSnapshot');
+    const duplicateNote = { ...sample.notes[0], id: sample.notes[0].id };
+    const duplicateMeasurement = { ...sample.measurements[0], id: sample.measurements[0].id };
+
+    const notes = api.markupSnapshotSchema.safeParse({
+      ...sample,
+      notes: [sample.notes[0], duplicateNote],
+    });
+    const measurements = api.markupSnapshotSchema.safeParse({
+      ...sample,
+      measurements: [sample.measurements[0], duplicateMeasurement],
+    });
+
+    expect(notes.success).toBe(false);
+    expect(notes.error?.issues.map((issue) => issue.message).join(' ')).toMatch(/duplicate note id/i);
+    expect(measurements.success).toBe(false);
+    expect(measurements.error?.issues.map((issue) => issue.message).join(' ')).toMatch(/duplicate measurement id/i);
+  });
+
   it('rejects distance values that disagree with their endpoints beyond tolerance', async () => {
     const api = await import('./markupSnapshot');
     expect(api.markupSnapshotSchema?.safeParse).toEqual(expect.any(Function));

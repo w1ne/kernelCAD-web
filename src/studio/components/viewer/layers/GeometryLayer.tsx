@@ -16,6 +16,7 @@ interface GeometryLayerProps {
     selectedItemIds: string[];
     sectionKeepWhole: ReadonlySet<string>;
     clippingPlanes: THREE.Plane[];
+    enableMarkup?: boolean;
     look?: ViewerLook;
 }
 
@@ -31,6 +32,7 @@ export function GeometryLayer({
     selectedItemIds,
     sectionKeepWhole,
     clippingPlanes,
+    enableMarkup = false,
     look = 'engineering',
 }: GeometryLayerProps) {
     return (
@@ -61,6 +63,7 @@ export function GeometryLayer({
                         clipIntersection={true}
                         isSelected={name ? selectedItemIds.includes(name) : false}
                         name={name ?? undefined}
+                        enableMarkup={enableMarkup}
                         look={look}
                     />
                 );

@@ -19,29 +19,22 @@ the capture command sets `KCAD_CAPTURE=1`.
 ## Capture evidence
 
 The operator ran `npm run capture:studio-markup` on macOS with real Chromium on
-2026-10-20 at about 22:21 CEST, against clean HEAD `9fba5d0`. The snapshot spec
-passed. The capture spec failed on its first attempt because the note editor
-did not appear within five seconds of the click; it passed on retry, which
-produced the current [`demo.mp4`](demo.mp4). The MP4 is 345,765 bytes,
-1440×900 at 25 fps, and 13.8 seconds long.
+2026-10-20 at about 22:35 CEST, against the working tree at `8694f07` with the
+readiness fix included. Both specs passed in 20.6 seconds, with no retries. The
+current [`demo.mp4`](demo.mp4) is 323,491 bytes, 1440×900 at 25 fps, and 15.4
+seconds long.
 
-I extracted and inspected frames at 2, 5, 8 and 11 seconds. The 2-second frame
-shows the old empty project still computing with zero bodies. At 5 seconds the
-Bracket is visible with the anchored “Keep the mounting face flat” note and
-`Face 0 · shape 1` selected. At 8 seconds the distance label reads 20.1 mm;
-at 11 seconds the loaded snapshot shows the note and measurement again. The
-early empty-project frame explains why the former generic “Ready” check could
-race the newly opened model.
+I extracted and inspected frames at 2, 6, 10, 14 and 15 seconds. At 2 seconds
+the initial empty project is still warming its geometry kernel. At 6 seconds
+the Bracket model is visible. At 10 seconds the “Keep the mounting face flat”
+note is anchored on the highlighted face, with `Face 0 · shape 1` selected. At
+14 seconds the point-to-point label reads `Distance · 20.3 mm`. At 15 seconds
+the panel says “Snapshot loaded. The camera and markup were restored.” while
+showing the note, measurement, and picked face again.
 
-The capture now waits for the viewer's display-ready signal: nonempty model
-geometry has rendered for two frames. It also verifies that note placement is
-active before clicking. These changes have local unit coverage, but the video
-above predates them; rerun the capture command to verify the revised gate in
-Chromium.
-
-This is local browser evidence for `9fba5d0` and the passing retry. It does not
-verify the later capture-gate change or deployed behavior; no deployment was
-performed.
+This video is local browser evidence for the operator's Mac run at `8694f07`;
+it demonstrates the local replay workflow. No deployment was performed, so it
+does not verify deployed behavior.
 
 This bundle documents the version 1 snapshot fixture and the local Studio
 workflow. The feature code and its prompt handoff test are in

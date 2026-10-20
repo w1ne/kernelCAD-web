@@ -7,6 +7,7 @@ import {
   MARKUP_NOTE_MAX_LENGTH,
   MARKUP_SNAPSHOT_MAX_MEASUREMENTS,
   MARKUP_SNAPSHOT_MAX_NOTES,
+  MARKUP_SNAPSHOT_MAX_TOPOLOGY_REFS,
 } from './markupLimits';
 
 const sample: MarkupSnapshot = {
@@ -66,6 +67,34 @@ describe('Studio markup store', () => {
 
     expect(() => store.updateNote('n1', 'x'.repeat(MARKUP_NOTE_MAX_LENGTH + 1))).not.toThrow();
     expect(store.getSnapshot().notes).toEqual(sample.notes);
+  });
+
+  it('rejects duplicate note and measurement IDs without duplicating store entries', () => {
+    const store = new StudioMarkupStore();
+    store.addNote(sample.notes[0]!);
+    store.addMeasurement(sample.measurements[0]!);
+
+    expect(store.addNote(sample.notes[0]!)).toBe(false);
+    expect(store.getSnapshot().notes).toEqual(sample.notes);
+    expect(store.getSnapshot().error).toMatch(/note ID.*already exists/i);
+
+    expect(store.addMeasurement(sample.measurements[0]!)).toBe(false);
+    expect(store.getSnapshot().measurements).toEqual(sample.measurements);
+    expect(store.getSnapshot().error).toMatch(/measurement ID.*already exists/i);
+  });
+
+  it('keeps multi-pick topology within the replayable snapshot limit', () => {
+    const store = new StudioMarkupStore();
+    const refs = Array.from({ length: MARKUP_SNAPSHOT_MAX_TOPOLOGY_REFS + 1 }, (_, id) => ({
+      shapeIndex: 0,
+      kind: 'face' as const,
+      id,
+    }));
+
+    store.setSelection(refs);
+
+    expect(store.getSnapshot().topologyRefs).toEqual([]);
+    expect(store.getSnapshot().error).toMatch(/256 faces or edges.*clear some picked topology/i);
   });
 
   it('rejects a note beyond the snapshot limit with an actionable error', () => {

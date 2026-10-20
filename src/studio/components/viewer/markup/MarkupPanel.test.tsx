@@ -77,4 +77,16 @@ describe('MarkupPanel note editing', () => {
     expect(() => fireEvent.click(screen.getByRole('button', { name: /save json/i }))).not.toThrow();
     expect(screen.getByRole('alert')).toHaveTextContent(/could not save snapshot/i);
   });
+
+  it('shows a clear error when Load JSON contains duplicate note IDs', async () => {
+    const snapshot = markupStore.captureSnapshot();
+    const duplicateNotes = { ...snapshot, notes: [note, { ...note }] };
+    render(<MarkupPanel />);
+    const file = new File([JSON.stringify(duplicateNotes)], 'duplicate-notes.json', { type: 'application/json' });
+
+    fireEvent.change(screen.getByLabelText('Choose markup snapshot'), { target: { files: [file] } });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/could not load snapshot.*duplicate note id/i);
+    expect(markupStore.getSnapshot().notes).toEqual([note]);
+  });
 });

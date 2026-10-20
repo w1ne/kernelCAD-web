@@ -2,21 +2,22 @@
   "checkedAt": "2026-10-20",
   "branch": "feat/studio-markup-snapshot",
   "pullRequest": 1086,
+  "validationRevision": "worktree based on 8694f07 with the topology-pick and duplicate-ID review fixes",
   "checks": {
     "typecheck": {
-      "command": "npx tsc -b --noEmit",
+      "command": "npx tsc -b --noEmit && npx tsc --noEmit -p tsconfig.site.json",
       "status": "passed"
     },
     "lint": {
-      "command": "npx eslint src/studio/components/Viewer.tsx src/studio/components/Viewer.test.tsx tests/studio_markup_capture.spec.ts",
+      "command": "npx eslint on changed Studio TypeScript source and tests",
       "status": "passed",
-      "scope": "changed Viewer source/test and opt-in Playwright capture spec"
+      "scope": "changed shape routing, viewer, markup schema/store, and tests"
     },
     "studioVitest": {
       "command": "npx vitest run --configLoader runner src/studio",
       "status": "passed",
       "testFiles": 233,
-      "tests": 1832
+      "tests": 1837
     },
     "qualityAndSiteVitest": {
       "command": "npx vitest run --configLoader runner tests/unit/scripts/qualityRatchet.test.ts tests/unit/site",
@@ -37,43 +38,45 @@
     "playwrightRun": {
       "command": "npm run capture:studio-markup",
       "environment": "macOS with real Chromium",
-      "capturedAt": "2026-10-20 about 22:21 CEST",
-      "capturedRevision": "clean HEAD 9fba5d0",
-      "snapshotSpec": "passed on the first attempt",
+      "capturedAt": "2026-10-20 about 22:35 CEST",
+      "capturedRevision": "working tree at 8694f07 with the readiness fix included",
+      "result": "2 passed (20.6s), no retries",
+      "snapshotSpec": "passed",
       "captureSpec": {
-        "firstAttempt": "failed at tests/studio_markup_capture.spec.ts:101: Edit note 1 did not appear within 5 seconds after the model click",
-        "retry": "passed and produced the current demo.mp4"
+        "status": "passed on the first attempt",
+        "retries": 0
       },
-      "diagnosisAndFix": "The old generic Ready check could still describe the previous empty project. The capture now waits for the viewer display-ready signal, emitted by DisplayReadySensor after nonempty model geometry has rendered for two frames, and confirms that note mode is active before its single click.",
-      "postFixCapture": "pending operator rerun; this MP4 predates the readiness-gate change"
+      "readinessGate": "The capture waits for the viewer display-ready signal, emitted by DisplayReadySensor after nonempty model geometry has rendered for two frames, and confirms that note mode is active before clicking."
     }
   },
   "media": {
     "file": "demo.mp4",
-    "status": "captured by operator on retry and inspected",
+    "status": "captured by operator on the first attempt and inspected",
     "command": "npm run capture:studio-markup",
     "recordingSource": "tests/studio_markup_capture.spec.ts",
     "conversion": "/opt/homebrew/bin/ffmpeg converts the WebM recording to H.264 MP4",
-    "fileBytes": 345765,
-    "durationSeconds": 13.8,
+    "fileBytes": 323491,
+    "durationSeconds": 15.4,
     "width": 1440,
     "height": 900,
     "framesPerSecond": 25,
     "inspection": {
       "frameSeconds": [
         2,
-        5,
-        8,
-        11
+        6,
+        10,
+        14,
+        15
       ],
       "observed": [
-        "2s: previous empty project is still computing and has zero bodies",
-        "5s: Bracket model is displayed with the anchored Keep the mounting face flat note and Face 0 \u00b7 shape 1 selected",
-        "8s: distance measurement is displayed as 20.1 mm",
-        "11s: loaded snapshot redisplays the note and measurement"
+        "2s: the initial empty project shows the geometry kernel warming up",
+        "6s: the Bracket model is visible",
+        "10s: Keep the mounting face flat is anchored on the highlighted model face, with Face 0 \u00b7 shape 1 selected",
+        "14s: the point-to-point distance label reads 20.3 mm",
+        "15s: the panel confirms the snapshot loaded and shows the note, measurement, and picked face again"
       ]
     },
-    "scope": "local capture from the passing retry at clean HEAD 9fba5d0; it predates the readiness-gate change and does not verify deployed behavior"
+    "scope": "local capture from the operator's real-Chromium Mac run at about 22:35 CEST on 2026-10-20, against the working tree at 8694f07 with the readiness fix included; it does not verify deployed behavior"
   },
   "deployment": {
     "status": "not deployed",

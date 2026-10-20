@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { FaceGeometry, GeometryResult } from '../../../../shared/worker/geometryEngine';
 import { markupStore } from '../../../markup/markupStore';
+import { selectionCodeStore } from '../../../selectionCode/selectionCodeStore';
 
 let FaceSelectionOverlay: typeof import('./ShapeGeometry').FaceSelectionOverlay;
 let GhostShape: typeof import('./ShapeGeometry').GhostShape;
@@ -99,6 +100,7 @@ describe('ConsolidatedShape scene graph per view mode', () => {
     afterEach(() => {
         cleanup();
         markupStore.clear();
+        selectionCodeStore.reset();
     });
 
     // BREP edge polylines from the kernel payload (two segments).
@@ -206,6 +208,74 @@ describe('ConsolidatedShape scene graph per view mode', () => {
         } finally {
             vi.unstubAllGlobals();
         }
+    });
+
+    it('routes regular model clicks into snapshot topology selection, including additive picks and deselection', () => {
+        let selectedItemIds: string[] = [];
+        let selectedFace: { shapeIndex: number; faceId: number } | null = null;
+        const geometry: GeometryResult = {
+            faces: [],
+            faceOwners: ['front-feature', 'side-feature'],
+            edgeOwners: ['base-edge-feature'],
+        };
+        const click = (shapeIndex: number, name: string, faceId: number, modifiers: Partial<MouseEvent> = {}) => {
+            const event = {
+                stopPropagation: vi.fn(),
+                point: new THREE.Vector3(1, 2, 3),
+                object: { userData: { faceMap: [faceId] } },
+                faceIndex: 0,
+                metaKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                nativeEvent: new MouseEvent('click'),
+                ...modifiers,
+            } as unknown as ThreeEvent<MouseEvent>;
+            handleShapeModelClick(event, {
+                geometry,
+                shapeIndex,
+                name,
+                selectedItemIds,
+                selectedFace,
+                enableMarkup: true,
+                featureRecords: [],
+                setSelectedFace: (selection) => { selectedFace = selection; },
+                setSelectedSketchName: vi.fn(),
+                setSelectedItemId: (id) => { selectedItemIds = id ? [id] : []; },
+                toggleSelection: (id, multi) => {
+                    selectedItemIds = selectedItemIds.includes(id)
+                        ? selectedItemIds.filter((selected) => selected !== id)
+                        : multi ? [...selectedItemIds, id] : [id];
+                },
+                setContextMenu: vi.fn(),
+            });
+        };
+
+        click(3, 'body_1', 0);
+        expect(markupStore.getSnapshot().topologyRefs).toEqual([
+            { shapeIndex: 3, kind: 'face', id: 0, featureId: 'front-feature' },
+        ]);
+
+        selectionCodeStore.setPreselect({ shapeIndex: 4, kind: 'edge', id: 0 });
+        click(4, 'body_2', 1, { ctrlKey: true });
+        expect(markupStore.getSnapshot().topologyRefs).toEqual([
+            { shapeIndex: 3, kind: 'face', id: 0, featureId: 'front-feature' },
+            { shapeIndex: 4, kind: 'edge', id: 0, featureId: 'base-edge-feature' },
+        ]);
+
+        click(4, 'body_2', 1, { ctrlKey: true });
+        expect(markupStore.getSnapshot().topologyRefs).toEqual([
+            { shapeIndex: 3, kind: 'face', id: 0, featureId: 'front-feature' },
+        ]);
+
+        selectionCodeStore.setPreselect(null);
+        click(4, 'body_2', 1);
+        expect(markupStore.getSnapshot().topologyRefs).toEqual([
+            { shapeIndex: 4, kind: 'face', id: 1, featureId: 'side-feature' },
+        ]);
+
+        click(4, 'body_2', 1, { ctrlKey: true });
+        expect(markupStore.getSnapshot().topologyRefs).toEqual([]);
+        expect(selectedFace).toBeNull();
     });
 
     it('cutaway props render the same scene graph (smoke)', () => {

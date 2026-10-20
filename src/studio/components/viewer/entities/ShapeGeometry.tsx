@@ -26,6 +26,7 @@ interface ShapeProps {
     clipIntersection?: boolean;
     isSelected: boolean;
     name: string | undefined;
+    enableMarkup?: boolean;
     /** 'publish' (the embed): smooth shading, soft feature edges only. */
     look?: ViewerLook;
 }
@@ -131,6 +132,7 @@ export function ConsolidatedShape({
     clipIntersection,
     isSelected,
     name,
+    enableMarkup = false,
     look = 'engineering',
 }: ShapeProps) {
     const {
@@ -138,6 +140,7 @@ export function ConsolidatedShape({
         setSelectedFace,
         setSelectedSketchName,
         setSelectedItemId,
+        selectedItemIds,
         toggleSelection,
         featureRecords,
     } = useWorkbench();
@@ -168,6 +171,9 @@ export function ConsolidatedShape({
             geometry,
             shapeIndex,
             name,
+            selectedItemIds,
+            selectedFace,
+            enableMarkup,
             featureRecords: featureRecords ?? [],
             setSelectedFace,
             setSelectedSketchName,
@@ -175,7 +181,7 @@ export function ConsolidatedShape({
             toggleSelection,
             setContextMenu,
         });
-    }, [geometry, featureRecords, name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
+    }, [geometry, enableMarkup, featureRecords, name, selectedFace, selectedItemIds, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
 
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;

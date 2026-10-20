@@ -3,6 +3,7 @@
 import {
   MARKUP_SNAPSHOT_MAX_MEASUREMENTS,
   MARKUP_SNAPSHOT_MAX_NOTES,
+  MARKUP_SNAPSHOT_MAX_TOPOLOGY_REFS,
 } from './markupLimits';
 import {
   MARKUP_SNAPSHOT_VERSION,
@@ -120,6 +121,10 @@ export class StudioMarkupStore {
 
   setSelection(topologyRefs: readonly TopologyRef[]): void {
     const refs = uniqueRefs(topologyRefs);
+    if (refs.length > MARKUP_SNAPSHOT_MAX_TOPOLOGY_REFS) {
+      this.showError(`Up to ${MARKUP_SNAPSHOT_MAX_TOPOLOGY_REFS} faces or edges can be picked. Clear some picked topology before adding another.`);
+      return;
+    }
     if (JSON.stringify(refs) === JSON.stringify(this.state.topologyRefs)) return;
     this.state = { ...this.state, topologyRefs: refs };
     this.emit();
@@ -127,6 +132,10 @@ export class StudioMarkupStore {
 
   addNote(note: MarkupNote): boolean {
     const parsed = markupNoteSchema.parse(note);
+    if (this.state.notes.some((existing) => existing.id === parsed.id)) {
+      this.showError(`A note ID "${parsed.id}" already exists. Remove the existing note before adding another.`);
+      return false;
+    }
     if (this.state.notes.length >= MARKUP_SNAPSHOT_MAX_NOTES) {
       this.showError(`Up to ${MARKUP_SNAPSHOT_MAX_NOTES} notes are supported. Remove a note before adding another.`);
       return false;
@@ -155,6 +164,10 @@ export class StudioMarkupStore {
 
   addMeasurement(measurement: MarkupMeasurement): boolean {
     const parsed = markupMeasurementSchema.parse(measurement);
+    if (this.state.measurements.some((existing) => existing.id === parsed.id)) {
+      this.showError(`A measurement ID "${parsed.id}" already exists. Remove the existing measurement before adding another.`);
+      return false;
+    }
     if (this.state.measurements.length >= MARKUP_SNAPSHOT_MAX_MEASUREMENTS) {
       this.showError(`Up to ${MARKUP_SNAPSHOT_MAX_MEASUREMENTS} measurements are supported. Remove a measurement before adding another.`);
       return false;

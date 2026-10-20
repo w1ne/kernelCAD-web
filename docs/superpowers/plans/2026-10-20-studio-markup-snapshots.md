@@ -65,13 +65,12 @@
 - Test: `tests/studio_markup_capture.spec.ts`
 
 - [x] Document the version 1 JSON fields, units, validation, prompt attachment, and replay workflow.
-- [x] Add Playwright flows covering snapshot load, rendered markup, JSON save, note placement, and measurement. On macOS with real Chromium at about 22:21 CEST on 2026-10-20, the snapshot spec passed; the capture spec failed once at note placement and passed on retry. The 2-second frame shows why the old generic Ready check could race the new model load; the capture now waits for the viewer display-ready signal and confirms note mode before clicking.
-- [x] Record and inspect the local Studio workflow as MP4. The passing retry at clean HEAD `9fba5d0` produced a 345,765-byte, 13.8-second recording. Inspected frames show the initial empty model computing, then the anchored note, a 20.1 mm distance, and the reloaded snapshot. This recording predates the revised readiness gate.
+- [x] Add Playwright flows covering snapshot load, rendered markup, JSON save, note placement, and measurement. The capture waits for the viewer display-ready signal (nonempty model geometry rendered for two frames) and confirms note mode before clicking.
+- [x] Record and inspect the local Studio workflow as MP4. On macOS with real Chromium at about 22:35 CEST on 2026-10-20, both specs passed in 20.6 seconds with no retries against the working tree at `8694f07` (readiness fix included). The 323,491-byte, 15.4-second video shows the initial kernel warmup, the Bracket model, the anchored note and picked face, a 20.3 mm distance, and the restored snapshot.
 
 ### Task 5: Verification
 
 - [x] Run the Studio Vitest suite and quality/site tests for the current worktree; current counts are recorded in `docs/demos/studio-markup/verification.json`.
-- [x] Record the operator's Studio Playwright result for clean HEAD `9fba5d0`: snapshot passed; capture passed on retry after one note-placement timeout. This is local evidence for that revision, not verification of the later readiness-gate change or deployed behavior.
-- [ ] Have the operator rerun `npm run capture:studio-markup` to verify the revised readiness gate in real Chromium.
-- [x] Run `npx tsc -b --noEmit` and ESLint on changed TypeScript files.
+- [x] Record the operator's Studio Playwright result for the working tree at `8694f07`: both specs passed without retries. This is local evidence for the capture and readiness gate, not verification of deployed behavior.
+- [x] Run `npx tsc -b --noEmit`, `npx tsc --noEmit -p tsconfig.site.json`, and ESLint on changed TypeScript files.
 - [x] Inspect `git diff` and verify that no generated caches or reduced-detail geometry artifacts were added.

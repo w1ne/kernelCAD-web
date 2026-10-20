@@ -290,6 +290,7 @@ function ViewerCanvasContents({
                 viewportBackground={background ?? viewportBackground}
                 planes={shownPlanes}
                 look={look}
+                enableMarkup={enableMarkup}
             />
             {enableMarkup ? <MarkupCameraBridge /> : null}
             {dims.on ? <DimensionsOverlay dimensions={dims.dimensions} bounds={dims.bounds} /> : null}

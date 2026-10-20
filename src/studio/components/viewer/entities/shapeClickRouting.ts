@@ -6,6 +6,8 @@ import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { selectionCodeStore } from '../../../selectionCode/selectionCodeStore';
 import { resolvePickFeature, type GeometryPick } from '../../../selectionCode/geometryLineage';
 import { placeMarkupNoteFromModelHit } from '../../../markup/markupPlacement';
+import { markupStore } from '../../../markup/markupStore';
+import type { TopologyRef } from '../../../markup/markupSnapshot';
 
 function faceIdFromClick(event: ThreeEvent<MouseEvent>): number {
   const data = event.object.userData;
@@ -33,12 +35,48 @@ function linkClickToCode(
   );
 }
 
+function topologyRefFromClick(geometry: GeometryResult, shapeIndex: number, faceId: number): TopologyRef | null {
+  const hovered = selectionCodeStore.getPreselect();
+  const pick: GeometryPick = hovered && hovered.kind === 'edge' && hovered.shapeIndex === shapeIndex
+    ? hovered
+    : { shapeIndex, kind: 'face', id: faceId };
+  if (faceId < 0) return null;
+  const featureId = pick.kind === 'edge'
+    ? geometry.edgeOwners?.[pick.id] ?? geometry.featureId
+    : geometry.faceOwners?.[pick.id] ?? geometry.featureId;
+  return {
+    shapeIndex: pick.shapeIndex,
+    kind: pick.kind,
+    id: pick.id,
+    ...(featureId ? { featureId } : {}),
+  };
+}
+
+function syncMarkupTopologyPick(ref: TopologyRef | null, multi: boolean, deselectingShape: boolean, shapeIndex: number): void {
+  const current = markupStore.getSnapshot().topologyRefs;
+  if (!ref) {
+    markupStore.setSelection([]);
+  } else if (!multi) {
+    markupStore.setSelection([ref]);
+  } else if (deselectingShape) {
+    markupStore.setSelection(current.filter((item) => item.shapeIndex !== shapeIndex));
+  } else {
+    const sameRef = (item: TopologyRef) => item.shapeIndex === ref.shapeIndex && item.kind === ref.kind && item.id === ref.id;
+    markupStore.setSelection(current.some(sameRef)
+      ? current.filter((item) => !sameRef(item))
+      : [...current, ref]);
+  }
+}
+
 export interface ShapeClickActions {
   geometry: GeometryResult;
   shapeIndex: number;
   name: string | undefined;
+  selectedItemIds?: readonly string[];
+  selectedFace?: { shapeIndex: number; faceId: number } | null;
+  enableMarkup?: boolean;
   featureRecords: readonly FeatureRecord[];
-  setSelectedFace: (selection: { shapeIndex: number; faceId: number }) => void;
+  setSelectedFace: (selection: { shapeIndex: number; faceId: number } | null) => void;
   setSelectedSketchName: (name: string | null) => void;
   setSelectedItemId: (id: string | null) => void;
   toggleSelection: (id: string, multi: boolean) => void;
@@ -58,13 +96,18 @@ export function handleShapeModelClick(event: ThreeEvent<MouseEvent>, actions: Sh
   }
 
   const isMulti = event.metaKey || event.ctrlKey || event.shiftKey;
+  const topologyRef = actions.enableMarkup ? topologyRefFromClick(geometry, shapeIndex, faceId) : null;
   if (name && isMulti) {
+    const deselectingShape = actions.selectedItemIds?.includes(name) ?? false;
     actions.toggleSelection(name, true);
+    if (deselectingShape && actions.selectedFace?.shapeIndex === shapeIndex) actions.setSelectedFace(null);
+    if (actions.enableMarkup) syncMarkupTopologyPick(topologyRef, true, deselectingShape, shapeIndex);
     return;
   }
 
   actions.setSelectedSketchName(null);
   actions.setSelectedFace({ shapeIndex, faceId });
+  if (actions.enableMarkup) syncMarkupTopologyPick(topologyRef, isMulti, false, shapeIndex);
   if (name) actions.setSelectedItemId(name);
   linkClickToCode(geometry, shapeIndex, faceId, event.nativeEvent, featureRecords);
 
