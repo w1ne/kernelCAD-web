@@ -131,13 +131,17 @@ export function loftSkinContinuityShortfalls(
   const out: LoftContinuityShortfall[] = [];
   faces.forEach((face, faceIndex) => {
     let got: number | undefined;
+    let adaptor: { VContinuity: () => { value?: number } | number; delete?: () => void } | undefined;
     try {
-      const adaptor = new oc.BRepAdaptor_Surface_2(face.wrapped, true);
-      const raw = adaptor.VContinuity() as { value?: number } | number;
+      adaptor = new oc.BRepAdaptor_Surface_2(face.wrapped, true) as NonNullable<typeof adaptor>;
+      const raw = adaptor.VContinuity();
       got = typeof raw === 'number' ? raw : raw.value;
-      adaptor.delete?.();
     } catch {
       got = undefined;
+    } finally {
+      // Free the wrapper on the failure path too, so repeated recomputes
+      // that hit an unreadable face do not leak OCCT objects.
+      adaptor?.delete?.();
     }
     if (got === undefined) out.push({ faceIndex, got: 'unknown' });
     else if (got < need) out.push({ faceIndex, got: names[got] ?? String(got) });
