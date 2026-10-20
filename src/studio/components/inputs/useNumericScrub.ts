@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { NumericScrubInputProps } from './NumericScrubInput';
 
 function resolveStep(stepProp: number | undefined, min: number | undefined, max: number | undefined): number {
@@ -25,6 +25,13 @@ export function useNumericScrub(props: NumericScrubInputProps) {
     const [displayValue, setDisplayValue] = useState<number>(value);
     const [draft, setDraft] = useState<string>(Number.isFinite(value) ? String(value) : '');
     const [scrubStart, setScrubStart] = useState<{ x: number; baseValue: number } | null>(null);
+    // Last number already handed to onChange. Enter commits and then blurs,
+    // and blur commits again, before React has re-rendered displayValue.
+    // Comparing against this ref keeps that second commit from firing twice.
+    const appliedRef = useRef(value);
+    useEffect(() => {
+        if (!isScrubFocused(name)) appliedRef.current = value;
+    }, [name, value]);
     // Sync draft when external value changes (e.g. another component updated the param).
     // Guard with focus check so user's in-progress typing isn't clobbered. The focus
     // check uses `data-scrub-name` on the active element (no ref-during-render lint).
@@ -45,9 +52,11 @@ export function useNumericScrub(props: NumericScrubInputProps) {
     };
 
     const applyLocalValue = (next: number): void => {
+        const changed = next !== appliedRef.current;
+        appliedRef.current = next;
         setDisplayValue(next);
         setDraft(Number.isFinite(next) ? String(next) : '');
-        if (next !== displayValue) onChange(next);
+        if (changed) onChange(next);
     };
 
     const commit = (raw: string): void => {
@@ -57,8 +66,9 @@ export function useNumericScrub(props: NumericScrubInputProps) {
             return;
         }
         const next = clamp(n);
+        const changed = next !== appliedRef.current;
         applyLocalValue(next);
-        onCommit?.();
+        if (changed) onCommit?.();
     };
 
     const pct = hasRange ? Math.max(0, Math.min(1, (displayValue - min) / (max - min))) : 0;

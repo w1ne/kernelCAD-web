@@ -12,6 +12,13 @@ import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 import { meshParamEdits, type ParamEditValues } from './paramEditsForMesh';
+import { createSingleFlight, type SingleFlight } from './singleFlight';
+
+interface HostedMeshJob {
+    snapshot: ParamEditValues;
+    bakeIntoSource?: boolean;
+    epoch: number;
+}
 
 export interface ParamUpdateOptions {
     /** Stateless path only: write every value into the source and re-run the
@@ -37,6 +44,11 @@ export function useParamUpdate(
     // script through the stateless mesh endpoint with these applied. Cleared
     // when `code` changes (a fresh build starts from the script's defaults).
     const paramOverridesRef = useRef<ParamEditValues>({});
+    // Bumped when `code` changes so a mesh started for the previous script
+    // cannot paint over the new one. A param edit does not change `code`.
+    const codeEpochRef = useRef(0);
+    const hostedRunRef = useRef<(job: HostedMeshJob) => Promise<void>>(async () => {});
+    const hostedFlightRef = useRef<SingleFlight<HostedMeshJob> | null>(null);
 
     // Slice 2E.bridge: callback exposed to consumers (forwarded by
     // `useRecomputeResult`). Awaits the server ack; the SSE push that
@@ -71,6 +83,7 @@ export function useParamUpdate(
     // overrides must not leak onto the new build.
     useEffect(() => {
         paramOverridesRef.current = {};
+        codeEpochRef.current += 1;
     }, [code]);
 
     const updateParam = useCallback(async (
@@ -116,23 +129,39 @@ export function useParamUpdate(
         for (const edit of edits) overrides[edit.name] = edit.value;
         paramOverridesRef.current = overrides;
 
-        const revision = ++deps.mainRevisionRef.current;
-        deps.setCurrentCodeRevision(revision);
-        deps.setIsComputing(true);
-        try {
-            const payload = await meshParamEdits(code, overrides, options?.bakeIntoSource);
-            // Superseded by a newer edit (code change or another param drag).
-            if (revision !== deps.mainRevisionRef.current) return;
-            applyBridgePayload(payload, revision);
-        } catch (err) {
-            if (revision !== deps.mainRevisionRef.current) return;
-            deps.setError(err instanceof Error ? err.message : String(err));
-        } finally {
-            if (revision === deps.mainRevisionRef.current) {
-                deps.setIsComputing(false);
-                deps.setExecutionCount(prev => prev + 1);
+        // One stateless mesh at a time. A second value waits, then runs once.
+        // Two overlapping cold builds of a heavy gallery model exhaust the API,
+        // and bumping the revision up front would drop the first result.
+        hostedRunRef.current = async (job: HostedMeshJob) => {
+            if (job.epoch !== codeEpochRef.current) return;
+            const revision = ++deps.mainRevisionRef.current;
+            deps.setCurrentCodeRevision(revision);
+            deps.setIsComputing(true);
+            try {
+                const payload = await meshParamEdits(code, job.snapshot, job.bakeIntoSource);
+                if (job.epoch !== codeEpochRef.current || revision !== deps.mainRevisionRef.current) return;
+                applyBridgePayload(payload, revision);
+            } catch (err) {
+                if (job.epoch !== codeEpochRef.current || revision !== deps.mainRevisionRef.current) return;
+                deps.setError(err instanceof Error ? err.message : String(err));
+            } finally {
+                const stillCurrent = job.epoch === codeEpochRef.current
+                    && revision === deps.mainRevisionRef.current
+                    && !hostedFlightRef.current?.followUpPending();
+                if (stillCurrent) {
+                    deps.setIsComputing(false);
+                    deps.setExecutionCount(prev => prev + 1);
+                }
             }
+        };
+        if (!hostedFlightRef.current) {
+            hostedFlightRef.current = createSingleFlight((job) => hostedRunRef.current(job));
         }
+        return hostedFlightRef.current.push({
+            snapshot: overrides,
+            bakeIntoSource: options?.bakeIntoSource,
+            epoch: codeEpochRef.current,
+        });
     }, [sessionToken, code, applyBridgePayload, deps]);
 
     // Slice 2E.bridge: smoke hook for browser-console verification (see the
