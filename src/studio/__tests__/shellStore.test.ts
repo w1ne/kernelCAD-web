@@ -19,7 +19,7 @@ describe('ShellStore', () => {
         store = new ShellStore();
         const s = store.getSnapshot();
         expect(s.selectedFeatureId).toBeNull();
-        expect(typeof s.agentRailOpen).toBe('boolean');
+        expect(s.agentRailOpen).toBe(false);
         expect(s.agentDraftPrompt).toBeNull();
         expect(s.agentDraftPromptVersion).toBe(0);
         expect(s.agentRepairWorkflow).toBeNull();

@@ -165,10 +165,9 @@ function writeStoredInspectorOpen(open: boolean): void {
 
 const INITIAL_STATE: ShellState = {
     selectedFeatureId: null,
-    // Open by default ONLY on the hosted web build (where the in-app Generate
-    // agent lives), so it's the first thing a visitor sees. Local/MCP Studio
-    // keeps it closed — the agent there is the developer's own via MCP.
-    agentRailOpen: Boolean(import.meta.env?.VITE_API_BASE_URL),
+    // Closed until the user opens it. The rail used to start open on the
+    // hosted build so Generate was the first thing a visitor saw.
+    agentRailOpen: false,
     agentDraftPrompt: null,
     agentDraftPromptVersion: 0,
     agentRepairWorkflow: null,
