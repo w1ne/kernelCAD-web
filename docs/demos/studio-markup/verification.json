@@ -8,14 +8,15 @@
       "status": "passed"
     },
     "lint": {
+      "command": "npx eslint src/studio/components/Viewer.tsx src/studio/components/Viewer.test.tsx tests/studio_markup_capture.spec.ts",
       "status": "passed",
-      "scope": "all changed Studio markup TypeScript source and test files"
+      "scope": "changed Viewer source/test and opt-in Playwright capture spec"
     },
     "studioVitest": {
       "command": "npx vitest run --configLoader runner src/studio",
       "status": "passed",
       "testFiles": 233,
-      "tests": 1831
+      "tests": 1832
     },
     "qualityAndSiteVitest": {
       "command": "npx vitest run --configLoader runner tests/unit/scripts/qualityRatchet.test.ts tests/unit/site",
@@ -24,9 +25,9 @@
       "tests": 145
     },
     "blogBuild": {
-      "command": "node --import tsx /Users/andrii/worktrees/kcw-studio-markup/site/scripts/build-blog.ts",
+      "command": "tests/unit/site/blogBuild.test.ts",
       "status": "passed",
-      "output": "site/blog/studio-markup-snapshot/index.html"
+      "output": "site/blog/studio-markup-snapshot/index.html matches the page rendered from docs/guide"
     },
     "playwrightDiscovery": {
       "command": "npx playwright test tests/studio_markup_snapshot.spec.ts tests/studio_markup_capture.spec.ts --project=chromium --list",
@@ -35,37 +36,44 @@
     },
     "playwrightRun": {
       "command": "npm run capture:studio-markup",
-      "status": "passed",
-      "testsPassed": [
-        "tests/studio_markup_snapshot.spec.ts",
-        "tests/studio_markup_capture.spec.ts"
-      ],
-      "result": "2 passed (19.1s)",
       "environment": "macOS with real Chromium",
-      "capturedAt": "2026-10-20 about 21:40 CEST",
-      "capturedRevision": "worktree immediately before commit 735d9ee"
+      "capturedAt": "2026-10-20 about 22:21 CEST",
+      "capturedRevision": "clean HEAD 9fba5d0",
+      "snapshotSpec": "passed on the first attempt",
+      "captureSpec": {
+        "firstAttempt": "failed at tests/studio_markup_capture.spec.ts:101: Edit note 1 did not appear within 5 seconds after the model click",
+        "retry": "passed and produced the current demo.mp4"
+      },
+      "diagnosisAndFix": "The old generic Ready check could still describe the previous empty project. The capture now waits for the viewer display-ready signal, emitted by DisplayReadySensor after nonempty model geometry has rendered for two frames, and confirms that note mode is active before its single click.",
+      "postFixCapture": "pending operator rerun; this MP4 predates the readiness-gate change"
     }
   },
   "media": {
     "file": "demo.mp4",
-    "status": "captured by operator and inspected",
+    "status": "captured by operator on retry and inspected",
     "command": "npm run capture:studio-markup",
     "recordingSource": "tests/studio_markup_capture.spec.ts",
     "conversion": "/opt/homebrew/bin/ffmpeg converts the WebM recording to H.264 MP4",
-    "fileBytes": 279499,
-    "durationSeconds": 11.76,
+    "fileBytes": 345765,
+    "durationSeconds": 13.8,
     "width": 1440,
     "height": 900,
     "framesPerSecond": 25,
     "inspection": {
-      "frameAtSeconds": 8,
+      "frameSeconds": [
+        2,
+        5,
+        8,
+        11
+      ],
       "observed": [
-        "Bracket model with an anchored Keep the mounting face flat note callout",
-        "Distance measurement line labeled 9.8 mm",
-        "Picked topology Face 5 · shape 0 and Edge 0 · shape 1"
+        "2s: previous empty project is still computing and has zero bodies",
+        "5s: Bracket model is displayed with the anchored Keep the mounting face flat note and Face 0 \u00b7 shape 1 selected",
+        "8s: distance measurement is displayed as 20.1 mm",
+        "11s: loaded snapshot redisplays the note and measurement"
       ]
     },
-    "scope": "local capture evidence for the revision immediately before 735d9ee; it does not verify later code or deployed behavior"
+    "scope": "local capture from the passing retry at clean HEAD 9fba5d0; it predates the readiness-gate change and does not verify deployed behavior"
   },
   "deployment": {
     "status": "not deployed",

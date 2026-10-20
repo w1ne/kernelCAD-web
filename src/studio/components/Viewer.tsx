@@ -346,11 +346,29 @@ function ViewerCanvas({ look, onPointerMissed, children }: {
     );
 }
 
+function useViewerDisplayReady(
+    geometries: GeometryResult[],
+    onDisplayReady: (() => void) | undefined,
+    trackDisplayReady: boolean,
+) {
+    const [readyGeometries, setReadyGeometries] = useState<GeometryResult[] | null>(null);
+    const markDisplayReady = useCallback(() => {
+        setReadyGeometries(geometries);
+        onDisplayReady?.();
+    }, [geometries, onDisplayReady]);
+
+    return {
+        isDisplayReady: readyGeometries === geometries,
+        onDisplayReady: trackDisplayReady || onDisplayReady ? markDisplayReady : undefined,
+    };
+}
+
 export default function Viewer({
     geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D,
     onDisplayReady, background, meshDimensions, showOriginPlanes = true, canvasExtras,
     look = 'engineering', enableMarkup = false,
 }: ViewerProps) {
+    const displayReady = useViewerDisplayReady(geometries, onDisplayReady, enableMarkup);
     const setup = useViewerSetup(geometries);
     const [measuring, setMeasuring] = useState(false);
     const dims = useViewerDimensions(meshDimensions ?? setup.meshDimensions);
@@ -366,7 +384,12 @@ export default function Viewer({
     );
 
     return (
-        <div className="w-full h-full relative" style={{ cursor: setup.cursor }} data-testid="viewer-container">
+        <div
+            className="w-full h-full relative"
+            style={{ cursor: setup.cursor }}
+            data-testid="viewer-container"
+            data-model-display-ready={enableMarkup ? String(displayReady.isDisplayReady) : undefined}
+        >
             <ViewerCanvas look={look} onPointerMissed={() => {
                 updateSelectedFace(null);
                 setup.setSelectedSketchName(null);
@@ -380,7 +403,7 @@ export default function Viewer({
                     sketchesGeometries={sketchesGeometries}
                     showSketches={showSketches}
                     viewMode3D={viewMode3D}
-                    onDisplayReady={onDisplayReady}
+                    onDisplayReady={displayReady.onDisplayReady}
                     background={background}
                     canvasExtras={canvasExtras}
                     look={look}

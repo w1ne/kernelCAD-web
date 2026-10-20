@@ -65,12 +65,13 @@
 - Test: `tests/studio_markup_capture.spec.ts`
 
 - [x] Document the version 1 JSON fields, units, validation, prompt attachment, and replay workflow.
-- [x] Add Playwright flows covering snapshot load, rendered markup, JSON save, note placement, and measurement. The operator ran both specs on macOS with real Chromium on 2026-10-20; both passed in 19.1 seconds.
-- [x] Record and inspect the local Studio workflow as MP4. The operator capture produced a 279,499-byte MP4; an extracted frame at 8 seconds shows the anchored note, 9.8 mm measurement, and picked face and edge refs.
+- [x] Add Playwright flows covering snapshot load, rendered markup, JSON save, note placement, and measurement. On macOS with real Chromium at about 22:21 CEST on 2026-10-20, the snapshot spec passed; the capture spec failed once at note placement and passed on retry. The 2-second frame shows why the old generic Ready check could race the new model load; the capture now waits for the viewer display-ready signal and confirms note mode before clicking.
+- [x] Record and inspect the local Studio workflow as MP4. The passing retry at clean HEAD `9fba5d0` produced a 345,765-byte, 13.8-second recording. Inspected frames show the initial empty model computing, then the anchored note, a 20.1 mm distance, and the reloaded snapshot. This recording predates the revised readiness gate.
 
 ### Task 5: Verification
 
 - [x] Run the Studio Vitest suite and quality/site tests for the current worktree; current counts are recorded in `docs/demos/studio-markup/verification.json`.
-- [x] Run the Studio Playwright snapshot and capture specs on the operator's Mac; this is local evidence for the revision immediately before `735d9ee`, not verification of later code or deployed behavior.
+- [x] Record the operator's Studio Playwright result for clean HEAD `9fba5d0`: snapshot passed; capture passed on retry after one note-placement timeout. This is local evidence for that revision, not verification of the later readiness-gate change or deployed behavior.
+- [ ] Have the operator rerun `npm run capture:studio-markup` to verify the revised readiness gate in real Chromium.
 - [x] Run `npx tsc -b --noEmit` and ESLint on changed TypeScript files.
 - [x] Inspect `git diff` and verify that no generated caches or reduced-detail geometry artifacts were added.

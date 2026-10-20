@@ -69,9 +69,10 @@ vi.mock('./viewer/ViewerScene', () => ({
 
 vi.mock('./viewer/DisplayReadySensor', () => ({
     DisplayReadySensor: (props: Record<string, unknown>) => (
-        <div
+        <button
             data-testid="display-ready-sensor"
             data-geometry-count={String(Array.isArray(props.geometries) ? props.geometries.length : -1)}
+            onClick={() => (props.onDisplayReady as (() => void) | undefined)?.()}
         />
     ),
 }));
@@ -285,12 +286,40 @@ describe('Viewer', () => {
         expect(screen.getByTestId('viewer-scene').getAttribute('data-focus-id')).toBe('3');
     });
 
-    it('renders DisplayReadySensor only when onDisplayReady is provided', () => {
+    it('tracks the rendered model frame for markup-enabled viewers', () => {
         renderViewer();
         expect(screen.queryByTestId('display-ready-sensor')).toBeNull();
 
-        renderViewer({ onDisplayReady: vi.fn() });
-        expect(screen.getByTestId('display-ready-sensor').getAttribute('data-geometry-count')).toBe('0');
+        cleanup();
+        const { rerender } = renderViewer({ geometries: [{ faces: [] }], enableMarkup: true });
+        const viewer = screen.getByTestId('viewer-container');
+        expect(viewer.getAttribute('data-model-display-ready')).toBe('false');
+        expect(screen.getByTestId('display-ready-sensor').getAttribute('data-geometry-count')).toBe('1');
+
+        fireEvent.click(screen.getByTestId('display-ready-sensor'));
+
+        expect(viewer.getAttribute('data-model-display-ready')).toBe('true');
+
+        rerender(
+            <Viewer
+                geometries={[{ faces: [] }]}
+                previewGeometries={[]}
+                sketchesGeometries={[]}
+                showSketches
+                viewMode3D="shadedWithEdges"
+                enableMarkup
+            />,
+        );
+        expect(viewer.getAttribute('data-model-display-ready')).toBe('false');
+    });
+
+    it('continues notifying an external display-ready callback', () => {
+        const onDisplayReady = vi.fn();
+        renderViewer({ onDisplayReady });
+
+        fireEvent.click(screen.getByTestId('display-ready-sensor'));
+
+        expect(onDisplayReady).toHaveBeenCalledOnce();
     });
 
     it('increments the navigation request id on every gizmo navigation', () => {

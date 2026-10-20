@@ -85,6 +85,10 @@ test.describe('Studio markup capture', () => {
       await page.getByTestId('activity-projects').click();
       await page.getByTestId('projects-pane').getByRole('button', { name: 'Bracket', exact: true }).click();
       await expect(page.getByRole('status').filter({ hasText: 'Bracket is open' })).toBeVisible();
+      // The status bar can still show Ready for the previous empty project.
+      // This signal comes from DisplayReadySensor after nonempty geometry has
+      // rendered for two frames, so the fixed projection can hit the model.
+      await expect(page.getByTestId('viewer-container')).toHaveAttribute('data-model-display-ready', 'true', { timeout: 60_000 });
       await expect(page.getByTestId('status-bar')).toContainText('Ready', { timeout: 60_000 });
 
       const canvas = page.getByTestId('viewer-container').locator('canvas');
@@ -93,6 +97,7 @@ test.describe('Studio markup capture', () => {
       if (!bounds) throw new Error('Studio viewer canvas has no visible bounds.');
 
       await page.getByRole('button', { name: 'Markup', exact: true }).click();
+      await expect(page.getByRole('button', { name: 'Stop placing notes', exact: true })).toHaveAttribute('aria-pressed', 'true');
       await page.getByLabel('New note text').fill(NOTE);
       await canvas.click({ position: {
         x: Math.round(bounds.width * BRACKET_FACE_POINT.x),

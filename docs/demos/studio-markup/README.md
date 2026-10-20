@@ -19,16 +19,29 @@ the capture command sets `KCAD_CAPTURE=1`.
 ## Capture evidence
 
 The operator ran `npm run capture:studio-markup` on macOS with real Chromium on
-2026-10-20 at about 21:40 CEST, against the worktree immediately before commit
-`735d9ee`. Both browser specs passed in 19.1 seconds. The resulting
-[`demo.mp4`](demo.mp4) is 279,499 bytes, 1440×900 at 25 fps, and about 11.76
-seconds long. I extracted and inspected a frame at 8 seconds: it shows the
-Bracket model, the anchored “Keep the mounting face flat” callout, a drawn
-“Distance · 9.8 mm” measurement, and picked topology `Face 5 · shape 0` and
-`Edge 0 · shape 1`.
+2026-10-20 at about 22:21 CEST, against clean HEAD `9fba5d0`. The snapshot spec
+passed. The capture spec failed on its first attempt because the note editor
+did not appear within five seconds of the click; it passed on retry, which
+produced the current [`demo.mp4`](demo.mp4). The MP4 is 345,765 bytes,
+1440×900 at 25 fps, and 13.8 seconds long.
 
-This is local browser evidence for the captured revision. It does not verify
-later code changes or deployed behavior; no deployment was performed.
+I extracted and inspected frames at 2, 5, 8 and 11 seconds. The 2-second frame
+shows the old empty project still computing with zero bodies. At 5 seconds the
+Bracket is visible with the anchored “Keep the mounting face flat” note and
+`Face 0 · shape 1` selected. At 8 seconds the distance label reads 20.1 mm;
+at 11 seconds the loaded snapshot shows the note and measurement again. The
+early empty-project frame explains why the former generic “Ready” check could
+race the newly opened model.
+
+The capture now waits for the viewer's display-ready signal: nonempty model
+geometry has rendered for two frames. It also verifies that note placement is
+active before clicking. These changes have local unit coverage, but the video
+above predates them; rerun the capture command to verify the revised gate in
+Chromium.
+
+This is local browser evidence for `9fba5d0` and the passing retry. It does not
+verify the later capture-gate change or deployed behavior; no deployment was
+performed.
 
 This bundle documents the version 1 snapshot fixture and the local Studio
 workflow. The feature code and its prompt handoff test are in
@@ -58,7 +71,8 @@ also runs it before recording the workflow; run `npm run capture:studio-markup`
 to include its authenticated local prompt flow and produce the MP4.
 
 `verification.json` separates the operator's local browser capture from the
-current local validation. Local results do not establish deployed behavior or
+current local validation and records that the capture gate still needs a
+post-change Chromium run. Local results do not establish deployed behavior or
 hardware acceptance.
 
 The replayable example is [`snapshot-v1.json`](snapshot-v1.json). The captured

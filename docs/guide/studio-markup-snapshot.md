@@ -24,10 +24,11 @@ records its diameter. Remove individual measurements from the list, or choose
 Sending a prompt captures the current camera and markup at that moment and
 attaches it to the prompt as a JSON code block when the snapshot contains any
 picked face or edge, note, or measurement. A camera-only snapshot is omitted,
-so plain prompts keep their existing text unchanged. Changes made after sending
-do not alter that run's saved context. **Save JSON** downloads the current
-snapshot. **Load JSON** validates the file, restores its camera pose, and
-redisplays saved notes, measurements and topology highlights.
+because camera position records view state but carries no annotation or
+selection to interpret on its own. Omitting it keeps plain prompts unchanged.
+Changes made after sending do not alter that run's saved context. **Save JSON**
+downloads the current snapshot. **Load JSON** validates the file, restores its
+camera pose, and redisplays saved notes, measurements and topology highlights.
 
 This is local Studio viewer context. It does not change the CAD script or model.
 Markup stays with the open project and is cleared when you switch projects.
