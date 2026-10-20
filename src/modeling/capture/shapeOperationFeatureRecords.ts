@@ -427,7 +427,8 @@ function edgeSegmentIdFromRef(baseId: FeatureId, ref: string): string {
   }
   if (parsed.owner !== baseId) {
     badRef(ref, `edge refs belong to '${parsed.owner}', but this feature is applied to '${baseId}'.`,
-      'ref-owner-mismatch', `refs selected on '${baseId}' itself, or an EdgeQuery`);
+      'ref-owner-mismatch',
+      `refs selected on '${baseId}' itself (positional e<N> refs are shape-local; stable IDs must come from this shape), or an EdgeQuery`);
   }
   return name;
 }

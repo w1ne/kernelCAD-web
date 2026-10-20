@@ -538,8 +538,28 @@ function resolveMultiSegmentEdgeRef(
   base: OcctBackend,
   ref: Extract<EdgeRef, { kind: 'segments' }>,
 ): EdgeList | { error: CompilerDiagnostic } {
+  const all = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
   const out: Edge[] = [];
   for (const sid of ref.segmentIds) {
+    // Stable IDs were added alongside the legacy positional IDs. Keep the
+    // historical diagnostic for invalid e<N> entries in a segments list.
+    if (!/^s[0-9a-f]{16}$/.test(sid)) {
+      const idx = parseInt(sid.replace(/^e/, ''), 10);
+      if (Number.isNaN(idx) || idx < 0 || idx >= all.length) {
+        return {
+          error: {
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: record.id,
+            severity: 'error',
+            message: `Invalid segment id '${sid}'.`,
+            hint: 'Re-derive segment IDs from the current shape.',
+          },
+        };
+      }
+      out.push(all[idx]);
+      continue;
+    }
     const resolved = resolveSingleSegmentEdgeRef(record, base, { kind: 'segment', segmentId: sid });
     if ('error' in resolved) return resolved;
     out.push(...resolved);

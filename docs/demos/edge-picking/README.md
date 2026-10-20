@@ -1,31 +1,31 @@
 # Edge picking demo bundle
 
+## Capture command
+
+Run `npm run capture:edge-picking` on the Mac with Chromium and
+`/opt/homebrew/bin/ffmpeg` available. The opt-in Playwright spec opens the box
+example in Studio, selects two edges with a modifier click, reads the shared
+selection through MCP, applies an MCP fillet to the stable edge refs, shows the
+MCP endpoint and result, then loads the returned source in Studio to show the
+updated model. It writes `edge-picking.mp4` and fresh geometric evidence in
+`verification.json`; its temporary WebM is removed after encoding.
+The spec is skipped by the normal Playwright suite unless this capture command
+sets `KCAD_CAPTURE=1`.
+
 This bundle documents the local Studio → MCP → fillet workflow. The geometric
 outcome is verified by a real OCCT build; it is local validation, not a
 production deployment or hardware acceptance.
 
 ## Replay
 
-1. Run `npm run dev -- --host 127.0.0.1 --port 5180 --strictPort`.
-2. Open `http://127.0.0.1:5180/studio?script=examples/edge-picking.kcad.ts`.
-3. Click a BREP edge. Shift-click another edge to add it to the selection.
-4. Run `KCAD_STUDIO_URL=http://127.0.0.1:5180 npx tsx docs/demos/edge-picking/capture.ts`.
-   The source reads the current selection with MCP `get_selection`, passes its
-   stable refs to MCP `apply_surface_blend`, and saves the returned script and
-   measured verification values here. No session token is written to the bundle.
-5. Paste `result.kcad.ts` into the Studio editor and run it to see the same
-   operation in the viewer.
+Run `npm run capture:edge-picking`. Playwright starts the configured local
+Studio server, performs the picks, and drives the MCP tools. Open the resulting
+MP4 to review the shared-selection response, blend result, and updated model.
 
-The capture source is [capture.ts](./capture.ts); the MCP geometry assertions
-are in [edgeSelectionBlend.test.ts](../../../tests/integration/mcp/edgeSelectionBlend.test.ts),
+The Playwright recording source is [edge_picking.capture.spec.ts](../../../tests/edge_picking.capture.spec.ts);
+the optional manual MCP helper is [capture.ts](./capture.ts). MCP geometry
+assertions are in [edgeSelectionBlend.test.ts](../../../tests/integration/mcp/edgeSelectionBlend.test.ts),
 with run evidence in [verification.json](./verification.json).
-The interactive script writes `result.kcad.ts` and `verification.json` after a
-successful local run.
-
-An MP4 is not included in this worktree. The headless capture attempt was
-blocked by the browser security review, which denied raw CDP access to the
-local Studio page; the desktop screen recorder was unavailable. No substitute
-or synthetic video is presented as a capture of the Studio workflow. Run the
-steps above in an approved interactive capture session to produce and inspect
-the requested MP4. The Studio mesh remains full detail; video frame scaling
-may reduce only the displayed pixels.
+The capture spec records the actual browser workflow and produces an MP4 when
+the command above is run. The Studio mesh remains full detail; video frame
+scaling changes only the displayed pixels.

@@ -24,4 +24,20 @@ describe('topology multi-selection', () => {
       .toEqual([{ shapeIndex: 1, kind: 'face', id: 8 }]);
     expect(store.getSnapshot().link?.ref).toBeUndefined();
   });
+
+  it('keeps modifier-picked faces and edges in the same topology selection set', () => {
+    const store = new SelectionCodeStore();
+    const edge = { shapeIndex: 0, kind: 'edge' as const, id: 2 };
+    const face = { shapeIndex: 0, kind: 'face' as const, id: 5 };
+
+    store.selectFromGeometry(edge, 'box_1', null, false, 's1111111111111111');
+    store.selectFromGeometry(face, 'box_1', null, true);
+    expect(store.getSnapshot().topologySelections.map(selection => selection.pick.kind))
+      .toEqual(['edge', 'face']);
+    expect(store.getSnapshot().link?.pick).toEqual(face);
+
+    store.selectFromGeometry(face, 'box_1', null, true);
+    expect(store.getSnapshot().topologySelections.map(selection => selection.pick.kind))
+      .toEqual(['edge']);
+  });
 });

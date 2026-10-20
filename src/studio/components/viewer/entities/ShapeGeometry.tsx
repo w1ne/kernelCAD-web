@@ -29,6 +29,7 @@ function linkClickToCode(
     faceId: number,
     nativeEvent: MouseEvent,
     features: readonly FeatureRecord[],
+    multi = false,
 ): void {
     const hovered = selectionCodeStore.getPreselect();
     const pick: GeometryPick = hovered && hovered.kind === 'edge' && hovered.shapeIndex === shapeIndex
@@ -38,10 +39,68 @@ function linkClickToCode(
         pick,
         resolvePickFeature(geometry, pick, features),
         { x: nativeEvent.offsetX, y: nativeEvent.offsetY },
-        false,
+        multi,
         pick.kind === 'edge' ? geometry.edgeStableIds?.[pick.id] : undefined,
         geometry.featureId ?? undefined,
     );
+}
+
+function faceIdAtIntersection(event: ThreeEvent<MouseEvent>): number {
+    const faceMap = event.object.userData.faceMap as number[] | undefined;
+    if (faceMap && event.faceIndex != null) return faceMap[event.faceIndex] ?? -1;
+    return typeof event.object.userData.id === 'number' ? event.object.userData.id : -1;
+}
+
+function hasSelectionModifier(event: MouseEvent): boolean {
+    return event.metaKey || event.ctrlKey || event.shiftKey;
+}
+
+function useEdgeSelection(
+    geometry: GeometryResult,
+    shapeIndex: number,
+    name: string | undefined,
+    features: readonly FeatureRecord[],
+    setSelectedFace: (selection: { shapeIndex: number; faceId: number } | null) => void,
+    setSelectedSketchName: (name: string | null) => void,
+) {
+    const selectEdgeIndex = useCallback((edgeIndex: number, nativeEvent: MouseEvent) => {
+        const stableId = geometry.edgeStableIds?.[edgeIndex];
+        if (edgeIndex < 0 || !stableId) return;
+        const pick: GeometryPick = { shapeIndex, kind: 'edge', id: edgeIndex };
+        const featureId = resolvePickFeature(geometry, pick, features);
+        selectionCodeStore.selectFromGeometry(
+            pick,
+            featureId,
+            { x: nativeEvent.offsetX, y: nativeEvent.offsetY },
+            hasSelectionModifier(nativeEvent),
+            stableId,
+            geometry.featureId ?? name,
+        );
+        setSelectedFace(null);
+        setSelectedSketchName(null);
+    }, [features, geometry, name, setSelectedFace, setSelectedSketchName, shapeIndex]);
+
+    const handleEdgeClick = useCallback((event: ThreeEvent<MouseEvent>) => {
+        event.stopPropagation();
+        selectEdgeIndex(edgeIndexAtVertex(geometry.edgeRanges, event.index ?? -1), event.nativeEvent);
+    }, [geometry.edgeRanges, selectEdgeIndex]);
+
+    return { selectEdgeIndex, handleEdgeClick };
+}
+
+function useShapeEdges(geometry: GeometryResult, displayGeometry: THREE.BufferGeometry | null): THREE.BufferGeometry | null {
+    const edgesGeo = useMemo(() => {
+        if (geometry.edges) {
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(geometry.edges, 3));
+            return geo;
+        }
+        if (!displayGeometry) return null;
+        return new THREE.EdgesGeometry(displayGeometry, 15);
+    }, [displayGeometry, geometry.edges]);
+
+    useEffect(() => () => { edgesGeo?.dispose(); }, [edgesGeo]);
+    return edgesGeo;
 }
 
 interface ShapeProps {
@@ -170,45 +229,18 @@ export function ConsolidatedShape({
 
     const { setContextMenu } = useUI();
 
-    const selectEdgeIndex = useCallback((edgeIndex: number, nativeEvent: MouseEvent) => {
-        const stableId = geometry.edgeStableIds?.[edgeIndex];
-        if (edgeIndex < 0 || !stableId) return;
-        const pick: GeometryPick = { shapeIndex, kind: 'edge', id: edgeIndex };
-        const featureId = resolvePickFeature(geometry, pick, featureRecords ?? []);
-        selectionCodeStore.selectFromGeometry(
-            pick,
-            featureId,
-            { x: nativeEvent.offsetX, y: nativeEvent.offsetY },
-            nativeEvent.metaKey || nativeEvent.ctrlKey || nativeEvent.shiftKey,
-            stableId,
-            geometry.featureId ?? name,
-        );
-        setSelectedFace(null);
-        setSelectedSketchName(null);
-    }, [featureRecords, geometry, name, setSelectedFace, setSelectedSketchName, shapeIndex]);
-
     const indexedMesh = useIndexedMeshGeometry(geometry.mesh);
     const { geometry: mergedGeometry, faceMap } = useConsolidatedGeometry(geometry.faces);
     const displayGeometry = indexedMesh ?? mergedGeometry;
     const transformMatrix = useMemo(() => matrixFromGeometryTransform(geometry), [geometry]);
-
-    const edgesGeo = useMemo(() => {
-        if (geometry.edges) {
-            const geo = new THREE.BufferGeometry();
-            geo.setAttribute('position', new THREE.BufferAttribute(geometry.edges, 3));
-            return geo;
-        }
-        if (!displayGeometry) return null;
-        return new THREE.EdgesGeometry(displayGeometry, 15);
-    }, [displayGeometry, geometry.edges]);
-
-    useEffect(() => {
-        return () => { edgesGeo?.dispose(); };
-    }, [edgesGeo]);
+    const edgesGeo = useShapeEdges(geometry, displayGeometry);
+    const { selectEdgeIndex, handleEdgeClick } = useEdgeSelection(
+        geometry, shapeIndex, name, featureRecords ?? [], setSelectedFace, setSelectedSketchName,
+    );
 
     const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
         e.stopPropagation();
-        const isMulti = e.metaKey || e.ctrlKey || e.shiftKey;
+        const isMulti = hasSelectionModifier(e.nativeEvent);
 
         // The face surface can be marginally closer than its line target even
         // when the pointer is within the edge pixel tolerance. HoverManager
@@ -219,23 +251,16 @@ export function ConsolidatedShape({
             return;
         }
 
-        if (name && isMulti) {
-            toggleSelection(name, true);
-            return;
-        }
+        if (name && isMulti) toggleSelection(name, true);
 
         setSelectedSketchName(null);
-        let faceId = -1;
-        if (e.object.userData.faceMap && e.faceIndex != null) {
-            faceId = e.object.userData.faceMap[e.faceIndex] ?? -1;
-        } else if (typeof e.object.userData.id === 'number') {
-            faceId = e.object.userData.id;
-        }
+        const faceId = faceIdAtIntersection(e);
 
         setSelectedFace({ shapeIndex, faceId });
-        if (name) setSelectedItemId(name);
-        linkClickToCode(geometry, shapeIndex, faceId, e.nativeEvent, featureRecords ?? []);
+        if (name && !isMulti) setSelectedItemId(name);
+        linkClickToCode(geometry, shapeIndex, faceId, e.nativeEvent, featureRecords ?? [], isMulti);
 
+        if (isMulti) return;
         const x = e.nativeEvent.clientX;
         const y = e.nativeEvent.clientY;
         setContextMenu({
@@ -244,12 +269,6 @@ export function ConsolidatedShape({
             type: 'FACE'
         });
     }, [geometry, featureRecords, name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu, selectEdgeIndex]);
-
-    const handleEdgeClick = useCallback((e: ThreeEvent<MouseEvent>) => {
-        e.stopPropagation();
-        const edgeIndex = edgeIndexAtVertex(geometry.edgeRanges, e.index ?? -1);
-        selectEdgeIndex(edgeIndex, e.nativeEvent);
-    }, [geometry.edgeRanges, selectEdgeIndex]);
 
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;

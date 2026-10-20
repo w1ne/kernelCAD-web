@@ -7,7 +7,7 @@ import { HoverManager, type HoverResult } from "../../../features-ui/interaction
 import { SnapManager, type SnapResult } from "../../../features-ui/interaction/SnapManager";
 import { filterClippedIntersections } from "../clipFilter";
 import { pointerIsOver } from "./pointerOver";
-import { edgeRaycastThreshold } from "./edgeRaycastThreshold";
+import { edgePickingTarget, edgeRaycastThreshold } from "./edgeRaycastThreshold";
 
 interface InteractionHandlerProps {
     setHovered: (h: HoverResult | null) => void;
@@ -49,7 +49,7 @@ export function InteractionHandler({ setHovered, setSnap }: InteractionHandlerPr
         }
         cleared.current = false;
         lastPointer.current.copy(pointer);
-        const lineThreshold = edgeRaycastThreshold(camera, gl.domElement.clientHeight);
+        const lineThreshold = edgeRaycastThreshold(camera, gl.domElement.clientHeight, edgePickingTarget(scene, camera));
         raycaster.current.setFromCamera(pointer, camera);
         raycaster.current.params.Line.threshold = lineThreshold;
         raycaster.current.params.Points.threshold = 0.2;

@@ -29,12 +29,12 @@
     }
   ],
   "playwright": {
-    "test": "tests/edge_picking.spec.ts",
-    "result": "not-run-to-completion",
-    "reason": "Bundled headless Chromium could not start in this sandbox."
+    "test": "tests/edge_picking.capture.spec.ts",
+    "result": "capture source added; operator run pending",
+    "captureCommand": "npm run capture:edge-picking"
   },
   "mp4": {
-    "result": "not-captured",
-    "reason": "Browser security review denied raw CDP access to the local Studio page; desktop screen capture was unavailable."
+    "result": "not-captured-in-sandbox",
+    "reason": "The opt-in browser capture is intended for the operator's Mac run; it writes and decodes the MP4 before updating this evidence file."
   }
 }
