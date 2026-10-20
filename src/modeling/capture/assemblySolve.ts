@@ -910,6 +910,7 @@ async function validateSolvedModelGate(
   } | undefined,
   opts: SolvedModelOptions | undefined,
   envelopeResult: import('../mates/poseEnvelope').PoseEnvelopeReviewResult | undefined,
+  ignoreSnapshot: ReadonlyArray<readonly [string, string]>,
 ): Promise<{ result: import('../mates/validator').ValidatorResult; envelopeDiagnostics: readonly PoseEnvelopeDiagnostic[] }> {
   // v0.7.5 — `validateAssemblyWithMates` 3rd-arg (`poseEnvelopeResult`)
   // is left undefined: the explicit `posesGate: 'envelope'` path keeps
@@ -925,10 +926,10 @@ async function validateSolvedModelGate(
   // envelope-throw aggregation logic below stays the sole consumer of
   // envelope diagnostics (avoids double-folding) while still letting
   // `validateWorkspaceReachability` read the connector AABBs.
-  // Use the state's recorded ignore list: it is the author's explicit list
-  // PLUS the pairs derived from declared display overlays. Passing opts.ignore
-  // here would drop the overlay exclusions.
-  const effectiveIgnore = arm.__ignoreInterference();
+  // Use the per-call snapshot: it is the author's explicit list PLUS the
+  // pairs derived from declared display overlays. Reading shared state here
+  // would race a concurrent solvedModel() on the same assembly.
+  const effectiveIgnore = ignoreSnapshot;
   const result = await validateAssemblyWithMates(
     arm,
     interferenceGate?.pairs,
@@ -1154,13 +1155,14 @@ export function recordSolvedModel(
   }
 
   const { interferencePromise, envelopeResultPromise } = gatherSolvedModelGateInputs(state, arm, sceneShape, mode, opts);
+  const ignoreSnapshot = arm.__ignoreInterference();
 
   return Promise.all([
     interferencePromise,
     mateTransformsPromise,
     envelopeResultPromise,
   ]).then(([interferenceGate, mateT, envelopeResult]) =>
-    validateSolvedModelGate(arm, interferenceGate, opts, envelopeResult).then(
+    validateSolvedModelGate(arm, interferenceGate, opts, envelopeResult, ignoreSnapshot).then(
       ({ result, envelopeDiagnostics }) =>
         finalizeSolvedModelScene(state, sceneShape, mode, result, envelopeDiagnostics, mateT, limitWarnings),
     ),
