@@ -84,6 +84,8 @@ describe('NumericScrubInput', () => {
     const input = screen.getByTestId('scrub-input-width') as HTMLInputElement;
     fireEvent.change(input, { target: { value: '88' } });
     fireEvent.keyDown(input, { key: 'Enter' });
+    fireEvent.blur(input);
+    expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith(88);
   });
 

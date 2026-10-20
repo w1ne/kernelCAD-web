@@ -45,6 +45,31 @@ describe('NumericScrubInput', () => {
         expect(onCommit).toHaveBeenCalledTimes(1);
     });
 
+    it('commits a typed value once when Enter also blurs the field', () => {
+        const onChange = vi.fn();
+        const onCommit = vi.fn();
+        render(
+            <NumericScrubInput
+                name="bodyLength"
+                value={140}
+                min={110}
+                max={200}
+                onChange={onChange}
+                onCommit={onCommit}
+            />,
+        );
+
+        const input = screen.getByTestId('scrub-input-bodyLength') as HTMLInputElement;
+        input.focus();
+        fireEvent.change(input, { target: { value: '180' } });
+        fireEvent.keyDown(input, { key: 'Enter' });
+        fireEvent.blur(input);
+
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledWith(180);
+        expect(onCommit).toHaveBeenCalledTimes(1);
+    });
+
     it('uses a tall range hit area so the native thumb is not clipped', () => {
         render(
             <NumericScrubInput
