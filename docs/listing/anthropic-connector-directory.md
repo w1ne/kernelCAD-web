@@ -49,3 +49,20 @@ Still open before submitting:
 - **Reviewer test credentials** (see [reviewer-test-account.md](reviewer-test-account.md)).
 - **Compliance attestation review.** One required statement says tool descriptions must contain no instructions about model behavior, other tools, or external instruction sources. Many kernelCAD descriptions carry usage guidance ("prefer `open_in_studio`", "do not fan out parallel lookups", "never ask the user to rotate"). Decide whether to soften the descriptions or explain them as tool-usage guidance; do not tick the box without that review.
 - **Step 10 submit** requires the owner's attestations.
+
+## Draft state (2026-10-20)
+
+The connector draft is filled through **step 8 of 10** and resumes at that step at `claude.ai/directory/manage/new/connector` (the Submissions list shows only submitted entries, not drafts).
+
+- Connection: kernelCAD selected and connected, 76 tools / 2 resources, OAuth.
+- Tools: **0 to fix**, 3 suggestions (5 missing parameter types fixed in kernelCAD #1068 and deployed).
+- Listing, use cases, company, authentication (deferred sign-in + DCR), data handling, and test instructions are filled.
+- Remaining: reviewer credentials, the self-tested attestation (every tool via MCP Inspector/Claude), the compliance statement about tool-description instructions, and submit.
+
+### Connector picker caveat
+
+The "choose a connector you've already added" list can omit kernelCAD even when the URL exists in the organization. The reliable path is: remove the connector in Customize → Connectors → Yours, then add it through the submission form's **Add custom connector** flow (Step 1 → Step 2: "Sign in when needed" → Add), back out of the kernelCAD OAuth page, and continue; the form then shows **Connected · 76 Tools**.
+
+### Plugin bundle route
+
+The separate plugin-bundle submission (Step 1 of 5, repository) rejects this monorepo: "Repository too large to download" (validation cap: 50 MiB compressed / 256 MiB uncompressed). Submitting the bundle needs a small mirror repo with `plugins/kernelcad` at its root (or the plugin folder moved to one). The connector listing does not have this limit.

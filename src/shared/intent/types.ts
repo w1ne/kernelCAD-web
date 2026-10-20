@@ -154,6 +154,8 @@ export type FeatureKind =
   | 'sheetMetal' | 'sheetMetalBend' | 'sdf' | 'sdfMaterialize'
   // W1.3 NURBS surfaces — escape paths from a `Surface` into the Shape pipeline.
   | 'surfaceThicken' | 'surfaceToShape'
+  // Shell → solid: thicken a sewn multi-patch shell (or surfaceToShape shell).
+  | 'shapeThicken'
   // Slice A: reference-image overlay node (capture-only, no OCCT output).
   | 'referenceImage'
   // W2: HDRI / IBL render-environment node (capture-only, no OCCT output).
@@ -179,6 +181,9 @@ export type FeatureKind =
   | 'drawingTolerance'
   | 'drawingDimension'
   | 'drawingReview'
+  // Boolean-relation fillet: round the seam where a cutter met a body,
+  // selected by proximity to the exact body ∩ cutter section curve.
+  | 'filletIntersection'
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'

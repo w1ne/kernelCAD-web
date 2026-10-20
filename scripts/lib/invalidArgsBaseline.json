@@ -33,7 +33,7 @@
   "src/modeling/backends/occt/lowerers/mirrorPattern.ts": 3,
   "src/modeling/backends/occt/lowerers/revolve.ts": 4,
   "src/modeling/backends/occt/lowerers/sketchExtrude.ts": 3,
-  "src/modeling/backends/occt/lowerers/surfaceResolve.ts": 5,
+  "src/modeling/backends/occt/lowerers/surfaceResolve.ts": 4,
   "src/modeling/backends/occt/lowerers/surfaces.ts": 3,
   "src/modeling/backends/occt/lowerers/sweep.ts": 9,
   "src/modeling/backends/occt/lowerers/transforms.ts": 1,

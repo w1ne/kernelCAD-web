@@ -3,6 +3,8 @@
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
+import { countSolids, isTopologicallyValid } from './edgeFeatureValidity';
+import { volumeOf } from './booleanRecovery';
 import { buildNurbsSketchOnPlane } from './pathNurbsLowerer';
 import { clampedUniformKnots, decomposeKnots } from './nurbsKnots';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
@@ -282,6 +284,119 @@ export interface SkinnedSurface {
  * of faces to remove (used for hollowing an existing solid, e.g. the `shell`
  * feature), which is the wrong shape for the slice-1 NURBS use case.
  */
+export class ThickenedSolidError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ThickenedSolidError';
+  }
+}
+
+/** Surface area of a raw TopoDS face/shell/compound in mm². */
+function rawSurfaceArea(shape: unknown): number {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  const props = new oc.GProp_GProps_1();
+  try {
+    oc.BRepGProp.SurfaceProperties_1(shape, props, false, false);
+    const area = props.Mass();
+    return Number.isFinite(area) ? area : 0;
+  } finally {
+    props.delete?.();
+  }
+}
+
+function buildThickSolidRaw(shellTopo: unknown, t: number): unknown {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  const thicker = new oc.BRepOffsetAPI_MakeThickSolid();
+  const progress = new oc.Message_ProgressRange_1();
+  try {
+    thicker.MakeThickSolidBySimple(shellTopo, t);
+    thicker.Build(progress);
+    if (!thicker.IsDone()) {
+      throw new ThickenedSolidError('BRepOffsetAPI_MakeThickSolid failed (IsDone=false)');
+    }
+    return thicker.Shape();
+  } finally {
+    thicker.delete?.();
+    progress.delete?.();
+  }
+}
+
+/**
+ * Why a thickened result is not trustworthy, or null when it is.
+ *
+ * OCCT can return `IsDone()=true` with a topologically valid solid whose
+ * volume is physically impossible: a self-intersecting offset collapses the
+ * wall (V << area·t) or balloons it (V >> area·t). Those are exactly the
+ * solids that later make the interference checker report an overlap larger
+ * than the source panel (~3.46e9 mm³ on a 2.0e6 mm³ fascia).
+ */
+function thickenedResultProblem(raw: unknown, area: number, t: number): string | null {
+  if (!isTopologicallyValid(raw)) {
+    return 'the result fails the BRep validity check (self-intersecting or open shell)';
+  }
+  const solids = countSolids(raw);
+  if (solids === 0) return 'the result contains no closed solid';
+  if (solids > 1) return `the offset split into ${solids} solids`;
+  const volume = volumeOf(getOC(), raw);
+  if (!Number.isFinite(volume) || volume <= 0) return 'the result has no measurable volume';
+  const expected = area * t;
+  if (!(expected > 0)) return 'the input surface has no measurable area';
+  const ratio = volume / expected;
+  if (ratio < 0.2) {
+    return `the offset collapsed (volume ${volume.toFixed(1)} mm³ is ${(ratio * 100).toFixed(0)}% of area × t; the offset is larger than the local curvature radius)`;
+  }
+  if (ratio > 5) {
+    return `the offset volume is implausible (${volume.toFixed(1)} mm³ is ${ratio.toFixed(1)}× area × t; self-intersecting offset)`;
+  }
+  return null;
+}
+
+/** Build a validated thickened solid from an open shell, trying both
+ *  orientations before failing. Throws {@link ThickenedSolidError}. */
+function thickenShellRaw(shellTopo: unknown, t: number): OcctBackend {
+  const area = rawSurfaceArea(shellTopo);
+  const reasons: string[] = [];
+  for (let pass = 0; pass < 2; pass++) {
+    const reversed = pass === 1 ? (shellTopo as { Reversed: () => unknown }).Reversed() : null;
+    const candidate = reversed ?? shellTopo;
+    let raw: unknown = null;
+    try {
+      raw = buildThickSolidRaw(candidate, t);
+      const problem = thickenedResultProblem(raw, area, t);
+      if (problem === null) {
+        const accepted = raw;
+        raw = null;
+        return new OcctBackend(replicad.cast(accepted) as replicad.Shape3D);
+      }
+      reasons.push(problem);
+    } catch (e) {
+      reasons.push(e instanceof Error ? e.message : String(e));
+    } finally {
+      (raw as { delete?: () => void } | null)?.delete?.();
+      (reversed as { delete?: () => void } | null)?.delete?.();
+    }
+  }
+  throw new ThickenedSolidError(`thicken rejected the result: ${reasons.join(' / ')}`);
+}
+
+/**
+ * Thicken a single-face shell (the NURBS face) or a skinned shell into a
+ * closed solid via `BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple`.
+ *
+ * Inputs: `t` is the total thickness in mm and is passed directly (no `/2`
+ * halving) as the offset distance. `MakeThickSolidBySimple` is the correct
+ * OCCT entry point for "close an open shell into a solid by offsetting one
+ * side" — the resulting solid has thickness ≈ `t` along the surface normal.
+ * The alternative `MakeThickSolidByJoin` requires a solid input plus a list
+ * of faces to remove (used for hollowing an existing solid, e.g. the `shell`
+ * feature), which is the wrong shape for the slice-1 NURBS use case.
+ *
+ * The result is validated (BRepCheck, one solid, plausible volume). When the
+ * first orientation is rejected, the reversed shell is retried; if both fail
+ * the caller gets a {@link ThickenedSolidError} instead of a bad solid.
+ */
 export function thickenFace(surface: replicad.Face | BuiltSurface, t: number): OcctBackend {
   if (!(t > 0 && Number.isFinite(t))) {
     throw new Error(`thickenFace: t must be a positive finite number; got ${t}`);
@@ -310,21 +425,27 @@ export function thickenFace(surface: replicad.Face | BuiltSurface, t: number): O
     shellTopo = shell;
   }
 
-  const thicker = new oc.BRepOffsetAPI_MakeThickSolid();
-  const progress = new oc.Message_ProgressRange_1();
-  // MakeThickSolidBySimple is the right API for "offset an open shell into a
-  // closed solid". MakeThickSolidByJoin requires a solid input + a list of
-  // faces to remove (the existing shell-feature path uses that for hollowing
-  // a solid). For free-surface thickening, the simple-mode call is the
-  // canonical OCCT entry point.
-  thicker.MakeThickSolidBySimple(shellTopo, t);
-  thicker.Build(progress);
-  if (!thicker.IsDone()) {
-    throw new Error('BRepOffsetAPI_MakeThickSolid failed (IsDone=false)');
+  return thickenShellRaw(shellTopo, t);
+}
+
+/**
+ * `Shape.thicken(t)` kernel entry: thicken a sewn multi-patch shell (or a
+ * `surfaceToShape()` shell) into a validated solid.
+ *
+ * Rejects already-solid input: a closed solid has no free surface to offset
+ * from, and OCCT would treat the call as a hollowing join.
+ */
+export function thickenShell(shape: OcctBackend, t: number): OcctBackend {
+  if (!(t > 0 && Number.isFinite(t))) {
+    throw new Error(`thickenShell: t must be a positive finite number; got ${t}`);
   }
-  const solidRaw = thicker.Shape();
-  const solid = replicad.cast(solidRaw) as replicad.Shape3D;
-  return new OcctBackend(solid);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const raw = (shape.getReplicadShape() as any).wrapped;
+  if (!raw) throw new Error('thickenShell: could not access .wrapped on the input shape');
+  if (countSolids(raw) > 0) {
+    throw new ThickenedSolidError('the input is a closed solid; .thicken(t) expects an open shell from sew() or surfaceToShape()');
+  }
+  return thickenShellRaw(raw, t);
 }
 
 /**

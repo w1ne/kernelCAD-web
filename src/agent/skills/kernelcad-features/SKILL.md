@@ -147,6 +147,10 @@ const branded = bottle.union(raised);
 
 ## Hole and cutout vocabulary
 
+### Boolean-seam fillets: `filletIntersection(cutter, r, opts?)`
+
+After `body.subtract(cutter)` the seam has no durable edge name. `body.filletIntersection(cutter, r)` builds the exact `body ∩ cutter` section and rounds the body edges that lie on it (constant radius, G1 by default). Use it for wheel-arch/cockpit/door seams instead of a broad `.fillet(r)`; short segments are reported with `feature.fillet-intersection.short-edge`, and a failed blend never returns a partial solid.
+
 Three subtractive features ship with hard-coded **created face refs** so chained `.fillet()` / `.shell()` / further `.hole()` / `.cutout()` calls can address the new geometry by name without queries.
 
 ```typescript

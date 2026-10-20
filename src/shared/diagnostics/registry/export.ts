@@ -76,6 +76,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A finished STL export failed the post-export edge-adjacency watertight verify (open or over-shared mesh edges remain).',
   },
+  'export.brep.invalid': {
+    hintTemplate:
+      'The exported solid fails the B-rep validity check (BRepCheck) — typically an unorientable face or broken topology left by a boolean on imported geometry. Rebuild the affected region as one clean boolean with well-formed operands (or re-import the source body and apply the change again with >=0.1 mm overlap), then re-export. Downstream tools and benchmark validity gates can reject a STEP that fails this check even when it renders correctly.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'rebuild the BRepCheck-invalid region with clean operands; do not ship invalid topology' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A STEP export produced a B-rep that fails BRepCheck (invalid topology such as unorientable faces), even though the build succeeded.',
+  },
   'export.mesh.fused-seam-fallback': {
     hintTemplate:
       'The fused union of the assembly parts cracked when meshed at the named seams, so the STL carries each part as its own closed shell (watertight; slicers merge overlapping shells). To get one fused shell, give the parts >=0.1 mm of overlap or a clear gap at those seams instead of a few hundredths of a mm, or export per part.',

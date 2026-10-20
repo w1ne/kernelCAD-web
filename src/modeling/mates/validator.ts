@@ -387,7 +387,7 @@ function collectInterferenceDiagnostics(
       code: 'assembly.interference.overlap',
       severity: 'error',
       message: `Parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}${describeOverlapLocation(pair)}.`,
-      hint: `invalid-args.assembly.interference — translate one part along its mating direction, or add a coupling part (washer / spacer / bracket) to clear the overlap. Pass { ignore: [['${pair.a}', '${pair.b}']] } to assembly.solvedModel(...) if the contact is intentional.`,
+      hint: `invalid-args.assembly.interference — translate one part along its mating direction, or add a coupling part (washer / spacer / bracket) to clear the overlap. If the contact is intentional, pass the ignore list as the SECOND argument: assembly.solvedModel({}, { ignore: [['${pair.a}', '${pair.b}']] }). The first argument is the pose map, so solvedModel({ ignore: ... }) is read as a pose and fails with unknown-joint.`,
       partA: pair.a,
       partB: pair.b,
       volumeMm3: pair.volumeMm3,
