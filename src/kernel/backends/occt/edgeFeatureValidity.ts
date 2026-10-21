@@ -74,6 +74,24 @@ const NOOP_REL_TOL = 1e-9;
 const TREND_REL_TOL = 1e-6;
 
 /**
+ * A shell, draft, or similar local op that hands back the input solid has
+ * dropped the operation. Volume inside {@link NOOP_REL_TOL} is not enough on
+ * its own: a hairline fillet moves less volume than that and still adds
+ * faces. Both have to agree before the result counts as unchanged.
+ */
+export function localOpUnchanged(
+  beforeVolume: number,
+  afterVolume: number,
+  beforeFaces: number,
+  afterFaces: number,
+): boolean {
+  if (!Number.isFinite(beforeVolume) || !Number.isFinite(afterVolume)) return false;
+  if (beforeFaces !== afterFaces) return false;
+  const scale = Math.max(Math.abs(beforeVolume), 1);
+  return Math.abs(afterVolume - beforeVolume) / scale <= NOOP_REL_TOL;
+}
+
+/**
  * Why `result` is not an acceptable outcome of a fillet/chamfer on `input`,
  * or `null` when it is. Checks: BRepCheck validity, solid count not grown and
  * non-zero, finite positive volume, the body actually changed (volume moved

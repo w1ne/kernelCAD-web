@@ -79,6 +79,14 @@ export const REFERENCE_CODES = {
     group: 'reference',
     description: 'mesh_to_features returned a reconstruction whose measured volume IoU or surface deviation misses the faithful thresholds (verdict approximate or failed).',
   },
+  'reference.mesh.not-a-single-profile': {
+    hintTemplate:
+      'Leave the mesh as lib.fromSTL or lib.fromSTEP. The measured feature tree is not one editable profile, so it is not returned as a script.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'reference',
+    description: 'mesh_to_features refused to emit a script because the solid is not one extruded or revolved profile.',
+  },
   'reference.mesh.freeform-region-unmatched': {
     hintTemplate:
       'Part of the mesh surface matched no plane, cylinder or supported feature, so it is absent from the emitted script. Model those regions by hand (each has a bbox in unmatchedRegions) or accept the approximation the fidelity numbers describe.',
