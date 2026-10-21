@@ -39,10 +39,10 @@ describe('customizerParamsFrom', () => {
     expect(params[3].step).toBeUndefined();
   });
 
-  it('drops a param publish marked heavy', () => {
+  it('keeps a param publish marked heavy', () => {
     const heavy = { ...entries[0], name: 'Knurl', response: 'heavy' as const };
     expect(customizerParamsFrom([...entries, heavy]).map((p) => p.name)).toEqual([
-      'Width', 'HasLid', 'Screw', 'Label',
+      'Width', 'HasLid', 'Screw', 'Label', 'Knurl',
     ]);
   });
 

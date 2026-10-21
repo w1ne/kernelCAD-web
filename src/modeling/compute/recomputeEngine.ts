@@ -14,6 +14,7 @@ import { resolveParams } from '../../shared/runtime/resolveParams';
 import type { SoftWarningPhase, SoftWarningSink } from '../../shared/runtime/softWarning';
 import { isOcctWasmPoisoned, WASM_POISON_MARKER, describeOcctThrow } from '../../kernel/backends/occt/occtException';
 import { resetOcct } from '../../kernel/backends/occt/occtBackend';
+import { previewSkipsFeature } from '../previewFinish';
 
 function normalizeBooleanOp(expr: string | undefined): 'subtract' | 'union' | 'intersect' | undefined {
   if (!expr) return undefined;
@@ -275,6 +276,13 @@ export interface RecomputeOptions {
    *  seedShapes are skipped (cache hit) — used by `params.update` to reuse
    *  unchanged earlier records' lowered output. */
   seedShapes?: Map<FeatureId, ShapeBackend>;
+  /**
+   * Drag preview. Finish features that do not read `previewEdited` pass
+   * their input solid through instead of lowering. The release update
+   * omits this and rebuilds them.
+   */
+  previewFinish?: boolean;
+  previewEdited?: ReadonlySet<string>;
   /** Called for each record skipped because its shape was in `seedShapes`,
    *  at the point in topological order where the engine would have lowered
    *  it. The meshing pass uses it to mesh a reused shape in the same order a
@@ -498,6 +506,15 @@ export class RecomputeEngine {
     if (!inputsOk) {
       health.set(r.id, 'error');
       return this.emitInputFailure(r, diagnostics, predecessorsOf, onEvent);
+    }
+
+    if (opts?.previewFinish && previewSkipsFeature(r, opts.previewEdited)) {
+      const passthrough = passthroughShape(byKey);
+      if (passthrough) {
+        shapes.set(r.id, passthrough);
+        health.set(r.id, 'healthy');
+        return 0;
+      }
     }
 
     if (this.tryGatedPassthrough(r, prepared.recordForLower, prepared.isGatedOff, byKey, opts, shapes, health)) {

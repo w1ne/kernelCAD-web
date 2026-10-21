@@ -8,7 +8,10 @@ export type ParamEdit = { name: string; value: number | boolean | string };
 /** Shape of the raw `updateParam` plumbed through `GeometryContext` →
  *  `useRecomputeResult`. May be `undefined` before the session token has
  *  resolved (e.g. on first paint), so callers should tolerate a no-op. */
-export type UpdateParamFn = (edits: ParamEdit[]) => Promise<void>;
+export type UpdateParamFn = (
+  edits: ParamEdit[],
+  options?: { preview?: boolean },
+) => Promise<void>;
 
 export interface UseParamUpdateOptions {
   /** Default debounce window for `commitDebounced` in milliseconds. The
@@ -81,11 +84,12 @@ export function useParamUpdate(
     console.warn(`${tag}updateParam failed`, err, edits);
   }, []);
 
-  const fire = useCallback((edits: ParamEdit[]) => {
+  const fire = useCallback((edits: ParamEdit[], preview = false) => {
     if (edits.length === 0) return;
     const fn = updateRef.current;
     if (!fn) return;
-    fn(edits).catch((err: unknown) => handleError(err, edits));
+    const pending = preview ? fn(edits, { preview: true }) : fn(edits);
+    pending.catch((err: unknown) => handleError(err, edits));
   }, [handleError]);
 
   const flush = useCallback(() => {
@@ -113,7 +117,7 @@ export function useParamUpdate(
       timerRef.current = null;
       const batch = [...pendingRef.current.values()];
       pendingRef.current.clear();
-      fire(batch);
+      fire(batch, true);
     }, ms);
   }, [defaultDebounce, fire]);
 

@@ -36,6 +36,11 @@ export interface UpdateModelParamsOptions {
    *  (and a client `/transforms` re-fetch + viewport twitch); the bake emits a
    *  single relower itself after restoring the pre-bake pose. */
   silent?: boolean;
+  /**
+   * Drag preview. Finish features that do not read the edited parameters
+   * pass their input solid through. The release update leaves this unset.
+   */
+  preview?: boolean;
 }
 
 export async function updateModelParams(
@@ -77,6 +82,7 @@ export async function updateModelParams(
   const result = await engine.run(model.records, {
     paramTable: session.paramTable,
     seedShapes,
+    ...(options?.preview ? { previewFinish: true, previewEdited: editedNames } : {}),
     warningSink: (warning: SoftWarning) => session.warnings.push(warning),
     warningPhase: 'update',
     gatedFeatureNames: session.gatedFeatureNames,

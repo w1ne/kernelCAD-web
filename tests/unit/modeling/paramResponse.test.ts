@@ -73,12 +73,12 @@ describe('legalParamStep', () => {
 });
 
 describe('param controls', () => {
-  it('shows local and rigid, hides heavy, and hides an unmeasured param on a hosted page', () => {
+  it('shows every declared param, including heavy and unmeasured', () => {
     expect(paramControlVisible('local', 'hosted')).toBe(true);
     expect(paramControlVisible('rigid', 'editor')).toBe(true);
-    expect(paramControlVisible('heavy', 'editor')).toBe(false);
-    expect(paramControlVisible(undefined, 'hosted')).toBe(false);
-    expect(paramControlVisible(undefined, 'editor')).toBe(true);
+    expect(paramControlVisible('heavy', 'editor')).toBe(true);
+    expect(paramControlVisible('heavy', 'hosted')).toBe(true);
+    expect(paramControlVisible(undefined, 'hosted')).toBe(true);
   });
 
   it('stamps every name heavy when a publish cannot prove a drag', () => {

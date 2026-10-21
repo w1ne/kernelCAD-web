@@ -61,7 +61,7 @@ describe('JointsTab joint slider sweep', () => {
             expect.any(Number),
         ]));
         await waitFor(() =>
-            expect(updateMock).toHaveBeenCalledWith([{ name: 'shoulder', value: 45 }]),
+            expect(updateMock).toHaveBeenCalledWith([{ name: 'shoulder', value: 45 }], { preview: true }),
         );
     });
 

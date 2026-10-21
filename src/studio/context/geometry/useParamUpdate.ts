@@ -2,9 +2,10 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useRef } from 'react';
 import {
-    shouldUseHostedMesh, devMeshAvailable,
+    shouldUseHostedMesh, devMeshAvailable, needsFullKernel,
     type BackendMeshPayload,
 } from '../../scriptSource';
+import { browserCanEditParams, browserParamSource, runBrowserParamEdit } from './browserParamEdit';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import { mergeFeatureGeometries } from './mergeFeatureGeometries';
@@ -18,6 +19,8 @@ import { createSingleFlight, type SingleFlight } from './singleFlight';
 interface HostedMeshJob {
     snapshot: ParamEditValues;
     bakeIntoSource?: boolean;
+    preview?: boolean;
+    warm?: boolean;
     epoch: number;
 }
 
@@ -33,11 +36,29 @@ interface HostedMeshRun {
  *  stays inside the function-length ratchet. */
 async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promise<void> {
     if (job.epoch !== run.epochRef.current) return;
+    if (job.warm) {
+        await meshParamEdits(run.code, {}, false, false, true).catch(() => undefined);
+        return;
+    }
+    const browserSource = browserCanEditParams(run.code, run.deps.engine)
+        ? browserParamSource(run.code, job.snapshot)
+        : null;
+    if (browserSource !== null) {
+        await runBrowserParamEdit(
+            browserSource,
+            run.deps,
+            job.epoch,
+            run.epochRef,
+            run.executionCount,
+            run.followUpPending,
+        );
+        return;
+    }
     const revision = ++run.deps.mainRevisionRef.current;
     run.deps.setCurrentCodeRevision(revision);
     run.deps.setIsComputing(true);
     try {
-        const payload = await meshParamEdits(run.code, job.snapshot, job.bakeIntoSource);
+        const payload = await meshParamEdits(run.code, job.snapshot, job.bakeIntoSource, job.preview);
         if (job.epoch !== run.epochRef.current || revision !== run.deps.mainRevisionRef.current) return;
         applyParamMeshPayload(run.deps, run.executionCount, payload, revision);
     } catch (err) {
@@ -91,6 +112,8 @@ export interface ParamUpdateOptions {
      *  whole script (see `paramEditsForMesh`). The public-page customizer uses
      *  it so the view matches its export. */
     bakeIntoSource?: boolean;
+    /** Drag. Finish features that do not read the edit pass their solid through. */
+    preview?: boolean;
 }
 
 /**
@@ -99,6 +122,12 @@ export interface ParamUpdateOptions {
  * update when a pooled session exists, full stateless re-mesh otherwise),
  * and the DEV-only `window.__kernelcad` smoke-test install.
  */
+/** One background build of a full-kernel model. The stored mesh stays on screen. */
+function warmHostedModel(code: string): void {
+    if (!shouldUseHostedMesh() || !needsFullKernel(code) || !/\bparam\s*\(/.test(code)) return;
+    void meshParamEdits(code, {}, false, false, true).catch(() => undefined);
+}
+
 export function useParamUpdate(
     code: string,
     sessionToken: string | null,
@@ -124,6 +153,8 @@ export function useParamUpdate(
         codeEpochRef.current += 1;
     }, [code]);
 
+    useEffect(() => { warmHostedModel(code); }, [code]);
+
     const updateParam = useCallback(async (
         edits: { name: string; value: number | boolean | string }[],
         options?: ParamUpdateOptions,
@@ -140,7 +171,10 @@ export function useParamUpdate(
                 {
                     method: 'POST',
                     headers: { 'content-type': 'application/json', ...headers },
-                    body: JSON.stringify({ edits }),
+                    body: JSON.stringify({
+                        edits,
+                        ...(options?.preview ? { preview: true } : {}),
+                    }),
                 },
             );
             if (!res.ok) {
@@ -184,6 +218,7 @@ export function useParamUpdate(
         return hostedFlightRef.current.push({
             snapshot: overrides,
             bakeIntoSource: options?.bakeIntoSource,
+            preview: options?.preview,
             epoch: codeEpochRef.current,
         });
     }, [sessionToken, code, executionCount, deps]);

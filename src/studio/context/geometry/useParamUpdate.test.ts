@@ -7,15 +7,18 @@ import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { useParamUpdate } from './useParamUpdate';
 
 const meshParamEdits = vi.hoisted(() => vi.fn());
+const needsFullKernel = vi.hoisted(() => vi.fn(() => true));
 
 vi.mock('../../scriptSource', () => ({
     shouldUseHostedMesh: () => true,
     devMeshAvailable: () => false,
+    needsFullKernel: (code: string) => needsFullKernel(code),
 }));
 
-vi.mock('./paramEditsForMesh', () => ({
-    meshParamEdits,
-}));
+vi.mock('./paramEditsForMesh', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('./paramEditsForMesh')>();
+    return { ...actual, meshParamEdits };
+});
 
 function meshPayload(bodyLength: number) {
     return {
@@ -56,7 +59,28 @@ function makeDeps(): ExecutionApplyDeps {
 }
 
 describe('useParamUpdate hosted mesh', () => {
+    it('edits a plain script in the browser worker and paints the coarse frame first', async () => {
+        needsFullKernel.mockReturnValue(false);
+        meshParamEdits.mockReset();
+        const deps = makeDeps();
+        const executeCode = vi.fn(async (_code: string, opts?: { onPreview?: (result: { geometries: unknown[]; sketches: unknown[] }) => void }) => {
+            opts?.onPreview?.({ geometries: [{ id: 'preview' }], sketches: [] });
+            return { geometries: [{ id: 'final' }], sketches: [] };
+        });
+        deps.engine = { executeCode } as unknown as ExecutionApplyDeps['engine'];
+        const { result } = renderHook(() => useParamUpdate('const w = param("Width", 10); return box(w, 1, 1);', null, 0, deps));
+        await act(async () => {
+            await result.current.updateParam([{ name: 'Width', value: 20 }]);
+        });
+        expect(meshParamEdits).not.toHaveBeenCalled();
+        expect(executeCode).toHaveBeenCalledTimes(1);
+        expect(deps.setGeometries).toHaveBeenCalledWith([{ id: 'preview' }]);
+        expect(deps.setGeometries).toHaveBeenLastCalledWith([{ id: 'final' }]);
+        needsFullKernel.mockReturnValue(true);
+    });
+
     it('applies the mesh already running before it starts the next param value', async () => {
+        needsFullKernel.mockReturnValue(true);
         const first = deferred<ReturnType<typeof meshPayload>>();
         const second = deferred<ReturnType<typeof meshPayload>>();
         meshParamEdits.mockReset();
