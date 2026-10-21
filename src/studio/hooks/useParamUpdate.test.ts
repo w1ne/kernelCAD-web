@@ -63,7 +63,7 @@ describe('useParamUpdate', () => {
         const { result } = renderHook(() => useParamUpdate(update, { debounceMs: 100 }));
         act(() => { result.current.commitDebounced([{ name: 'x', value: 7 }]); });
         act(() => { vi.advanceTimersByTime(100); });
-        expect(update).toHaveBeenCalledExactlyOnceWith([{ name: 'x', value: 7 }]);
+        expect(update).toHaveBeenCalledExactlyOnceWith([{ name: 'x', value: 7 }], { preview: true });
     });
 
     it('commitDebounced() coalesces per-name (last-wins) across burst', () => {
@@ -75,7 +75,7 @@ describe('useParamUpdate', () => {
             result.current.commitDebounced([{ name: 'x', value: 3 }]);
         });
         act(() => { vi.advanceTimersByTime(100); });
-        expect(update).toHaveBeenCalledExactlyOnceWith([{ name: 'x', value: 3 }]);
+        expect(update).toHaveBeenCalledExactlyOnceWith([{ name: 'x', value: 3 }], { preview: true });
     });
 
     it('commitDebounced() batches multiple distinct names into one fire', () => {

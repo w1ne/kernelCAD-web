@@ -18,6 +18,7 @@ import { createSingleFlight, type SingleFlight } from './singleFlight';
 interface HostedMeshJob {
     snapshot: ParamEditValues;
     bakeIntoSource?: boolean;
+    preview?: boolean;
     epoch: number;
 }
 
@@ -37,7 +38,7 @@ async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promi
     run.deps.setCurrentCodeRevision(revision);
     run.deps.setIsComputing(true);
     try {
-        const payload = await meshParamEdits(run.code, job.snapshot, job.bakeIntoSource);
+        const payload = await meshParamEdits(run.code, job.snapshot, job.bakeIntoSource, job.preview);
         if (job.epoch !== run.epochRef.current || revision !== run.deps.mainRevisionRef.current) return;
         applyParamMeshPayload(run.deps, run.executionCount, payload, revision);
     } catch (err) {
@@ -91,6 +92,8 @@ export interface ParamUpdateOptions {
      *  whole script (see `paramEditsForMesh`). The public-page customizer uses
      *  it so the view matches its export. */
     bakeIntoSource?: boolean;
+    /** Drag. Finish features that do not read the edit pass their solid through. */
+    preview?: boolean;
 }
 
 /**
@@ -140,7 +143,10 @@ export function useParamUpdate(
                 {
                     method: 'POST',
                     headers: { 'content-type': 'application/json', ...headers },
-                    body: JSON.stringify({ edits }),
+                    body: JSON.stringify({
+                        edits,
+                        ...(options?.preview ? { preview: true } : {}),
+                    }),
                 },
             );
             if (!res.ok) {
@@ -184,6 +190,7 @@ export function useParamUpdate(
         return hostedFlightRef.current.push({
             snapshot: overrides,
             bakeIntoSource: options?.bakeIntoSource,
+            preview: options?.preview,
             epoch: codeEpochRef.current,
         });
     }, [sessionToken, code, executionCount, deps]);

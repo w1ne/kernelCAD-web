@@ -4,8 +4,7 @@ import type { JSX } from 'react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useParamUpdate, type ParamUpdater } from '../hooks/useParamUpdate';
 import type { ParamEntry } from '../../shared/runtime/paramTable';
-import { paramControlVisible } from '../paramControl';
-import { shouldUseHostedMesh } from '../scriptSource';
+
 import { NumericScrubInput, type ScrubInterference } from '../components/inputs/NumericScrubInput';
 import type { JointPoseSnapshot } from '../adapters/featureRecordsToMates';
 import type { StudioRecomputeResult } from '../types';
@@ -41,8 +40,7 @@ export function ParamsTab(): JSX.Element {
     const entries: ParamEntry[] = paramTable && paramTable.size() > 0
         ? paramTable.list()
         : [];
-    const surface = shouldUseHostedMesh() ? 'hosted' : 'editor';
-    const controls = entries.filter((entry) => paramControlVisible(entry.response, surface));
+    const controls = entries;
 
     const { byParam, allPairs } = buildInterferenceIndex(rawInterferencePairs, joints);
     const unattributedPairs = allPairs.length > 0 && byParam.size === 0 ? allPairs : [];
@@ -54,17 +52,6 @@ export function ParamsTab(): JSX.Element {
                 data-testid="params-empty-state"
             >
                 No script-declared params
-            </div>
-        );
-    }
-
-    if (controls.length === 0) {
-        return (
-            <div
-                className="px-4 py-3 text-sm text-fg-3"
-                data-testid="params-empty-state"
-            >
-                No parameters update while you drag
             </div>
         );
     }

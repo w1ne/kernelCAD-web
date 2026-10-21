@@ -2,9 +2,9 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
 // One rule for Params, joints, chips, and the public customizer.
-// A heavy param is never a control. An unmeasured param is a control in the
-// in-process editor and is hidden on a hosted page, where the only honest
-// class is the one publish wrote down.
+// Every declared parameter is a control. `response` chooses how the drag
+// updates the model (a finish-skipping preview, then an exact release). It
+// does not decide whether the control exists.
 
 import type { ParamResponse } from '../shared/runtime/paramTable';
 
@@ -14,9 +14,9 @@ export function paramControlVisible(
   response: ParamResponse | undefined,
   surface: ParamSurface,
 ): boolean {
-  if (response === 'local' || response === 'rigid') return true;
-  if (response === 'heavy') return false;
-  return surface === 'editor';
+  void response;
+  void surface;
+  return true;
 }
 
 /** A joint row stays when it has no param, or when one of its params is a control. */

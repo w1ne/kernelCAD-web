@@ -39,6 +39,8 @@ type UpdateResult = { relowered?: string[]; skipped?: string[]; warnings?: unkno
 interface CoalescedBatch {
   /** Latest value per param name across all requests merged into this batch. */
   edits: Map<string, ParamEdit>;
+  /** False once any merged request asked for the exact solid. */
+  preview: boolean;
   waiters: Array<{ resolve: (r: UpdateResult) => void; reject: (e: unknown) => void }>;
 }
 
@@ -89,13 +91,14 @@ export function createParamsEndpoint(deps: ParamsEndpointDeps) {
   const inFlight = new Map<string, Promise<void>>();
   const pending = new Map<string, CoalescedBatch>();
 
-  function enqueueUpdate(token: string, edits: ParamEdit[]): Promise<UpdateResult> {
+  function enqueueUpdate(token: string, edits: ParamEdit[], preview: boolean): Promise<UpdateResult> {
     return new Promise<UpdateResult>((resolve, reject) => {
       let batch = pending.get(token);
       if (!batch) {
-        batch = { edits: new Map(), waiters: [] };
+        batch = { edits: new Map(), waiters: [], preview };
         pending.set(token, batch);
       }
+      batch.preview = batch.preview && preview;
       for (const e of edits) batch.edits.set(e.name, e);
       batch.waiters.push({ resolve, reject });
 
@@ -117,9 +120,14 @@ export function createParamsEndpoint(deps: ParamsEndpointDeps) {
                 });
               }
               const session = entry.model.session as unknown as {
-                params: { update: (edits: ParamEdit[]) => Promise<unknown> };
+                params: {
+                  update: (edits: ParamEdit[], options?: { preview?: boolean }) => Promise<unknown>;
+                };
               };
-              const result = (await session.params.update([...next.edits.values()])) as UpdateResult;
+              const result = (await session.params.update(
+                [...next.edits.values()],
+                next.preview ? { preview: true } : undefined,
+              )) as UpdateResult;
               for (const w of next.waiters) w.resolve(result);
             } catch (error) {
               for (const w of next.waiters) w.reject(error);
@@ -160,7 +168,8 @@ export function createParamsEndpoint(deps: ParamsEndpointDeps) {
       }
 
       try {
-        const result = await enqueueUpdate(token, edits as ParamEdit[]);
+        const preview = (parsed as { preview?: unknown }).preview === true;
+        const result = await enqueueUpdate(token, edits as ParamEdit[], preview);
         return writeJson(res, 200, {
           relowered: result.relowered ?? [],
           skipped: result.skipped ?? [],

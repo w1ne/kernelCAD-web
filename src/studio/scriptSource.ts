@@ -287,7 +287,7 @@ function hasOverrides(p?: ParamOverrides): p is ParamOverrides {
 export async function meshSourceDev(
   source: string,
   paramOverrides?: ParamOverrides,
-  opts?: { quality?: 'coarse' },
+  opts?: { quality?: 'coarse'; preview?: boolean },
 ): Promise<BackendMeshPayload> {
   // Route through `apiCall()` so embed-mode hosts (StudioConfigProvider
   // with a `backendUrl`) get the correct prefix; standalone dev with no
@@ -301,6 +301,7 @@ export async function meshSourceDev(
       source,
       ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
       ...(opts?.quality === 'coarse' ? { quality: 'coarse' } : {}),
+      ...(opts?.preview ? { preview: true } : {}),
     }),
   });
   const payload = await response.json().catch(() => null);
@@ -371,7 +372,12 @@ function isBridgePayload(value: unknown): value is BackendMeshPayload {
  *  manifest and relative imports still resolve. Off a project page: source.
  *  Unsaved generated code that imports a generation's file (an attached STL)
  *  also names those generations; the server serves the file to their owner. */
-function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefined, preferSource?: boolean) {
+function hostedMeshBody(
+  source: string,
+  paramOverrides: ParamOverrides | undefined,
+  preferSource?: boolean,
+  preview?: boolean,
+) {
   const project = currentHostedProject();
   const projectRef = project
     ? { projectSlug: project.slug, ...(project.version ? { projectVersion: project.version } : {}) }
@@ -382,6 +388,7 @@ function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefin
     ...(storedRevision ? projectRef : { source, ...(projectRef ?? {}) }),
     ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
     ...(generationIds.length > 0 ? { generationIds } : {}),
+    ...(preview ? { preview: true } : {}),
   };
 }
 
@@ -664,11 +671,12 @@ async function meshViaServer(
   source: string,
   paramOverrides: ParamOverrides | undefined,
   preferSource: boolean | undefined,
+  preview?: boolean,
 ): Promise<BackendMeshPayload> {
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base !== 'string' || base.length === 0) throw new Error(NO_HOSTED_BACKEND);
   try {
-    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource));
+    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource, preview));
   } catch (error) {
     const stored = storedFallbackAllowed(source, paramOverrides, preferSource) ? await storedRevisionMesh(base) : null;
     if (stored) return stored;
@@ -688,12 +696,12 @@ async function meshViaServer(
 export async function meshSourceHosted(
   source: string,
   paramOverrides?: ParamOverrides,
-  options?: { preferSource?: boolean },
+  options?: { preferSource?: boolean; preview?: boolean },
 ): Promise<BackendMeshPayload> {
   const preferSource = options?.preferSource;
   const stored = await meshStoredProject(source, paramOverrides, preferSource);
   if (stored) return stored;
   const gallery = await meshGalleryPrecompute(source, paramOverrides);
   if (gallery) return gallery;
-  return meshViaServer(source, paramOverrides, preferSource);
+  return meshViaServer(source, paramOverrides, preferSource, options?.preview);
 }

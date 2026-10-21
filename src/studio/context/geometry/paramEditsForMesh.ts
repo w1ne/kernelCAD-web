@@ -50,9 +50,10 @@ export function meshParamEdits(
   code: string,
   edits: ParamEditValues,
   bakeAll = false,
+  preview = false,
 ): Promise<BackendMeshPayload> {
   const { source, params } = paramEditsForMesh(code, edits, bakeAll);
   return shouldUseHostedMesh()
-    ? meshSourceHosted(source, params, { preferSource: source !== code })
-    : meshSourceDev(source, params);
+    ? meshSourceHosted(source, params, { preferSource: source !== code, preview })
+    : meshSourceDev(source, params, preview ? { preview: true } : undefined);
 }

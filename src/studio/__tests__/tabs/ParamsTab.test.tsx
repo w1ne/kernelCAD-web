@@ -100,7 +100,7 @@ describe('ParamsTab', () => {
         expect(screen.getByTestId('param-row-chamfered').textContent).toContain('chamfered');
     });
 
-    it('hides a param publish marked heavy and keeps a local one', () => {
+    it('keeps a heavy param as a control', () => {
         const table = new ParamTable();
         table.declare('width', 'number', 10, { min: 1, max: 40 });
         table.declare('knurl', 'number', 36, { min: 10, max: 80 });
@@ -111,21 +111,7 @@ describe('ParamsTab', () => {
         render(<ParamsTab />);
 
         expect(screen.getByTestId('param-row-width')).toBeTruthy();
-        expect(screen.queryByTestId('param-row-knurl')).toBeNull();
-    });
-
-    it('tells the truth when every declared param is heavy', () => {
-        const table = new ParamTable();
-        table.declare('knurl', 'number', 36, { min: 10, max: 80 });
-        table.setResponse('knurl', 'heavy');
-        mockUseRecomputeResult.mockReturnValue(withTable(table));
-
-        render(<ParamsTab />);
-
-        expect(screen.getByTestId('params-empty-state').textContent).toContain(
-            'No parameters update while you drag',
-        );
-        expect(screen.queryByTestId('params-tab')).toBeNull();
+        expect(screen.getByTestId('param-row-knurl')).toBeTruthy();
     });
 
     it('renders a select for choice params and commits on change', () => {
