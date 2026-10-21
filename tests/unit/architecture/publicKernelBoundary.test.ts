@@ -5,7 +5,7 @@ const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
 
 describe('public kernel distribution boundary', () => {
   it('contains no product source, app entry points or product deployment workflows', () => {
-    for (const path of ['src/studio', 'src/funnel', 'src/ui', 'src/server', 'src/index.css',
+    for (const path of ['src/studio', 'src/funnel', 'src/ui', 'src/server', 'src/docs', 'src/index.css',
       'site', 'functions', 'workers', 'index.html', 'vite.config.ts', 'vite.studio.config.ts',
       'vite.mcp-viewer.config.ts', 'vite.pricing-island.config.ts', 'vite.docs-island.config.ts',
       'playwright.config.ts', 'playwright.mesh.config.ts', 'tsconfig.site.json', 'tsr.config.json']) {
