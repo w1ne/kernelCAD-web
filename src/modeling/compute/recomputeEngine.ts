@@ -275,6 +275,12 @@ export interface RecomputeOptions {
    *  seedShapes are skipped (cache hit) — used by `params.update` to reuse
    *  unchanged earlier records' lowered output. */
   seedShapes?: Map<FeatureId, ShapeBackend>;
+  /** Called for each record skipped because its shape was in `seedShapes`,
+   *  at the point in topological order where the engine would have lowered
+   *  it. The meshing pass uses it to mesh a reused shape in the same order a
+   *  fresh lower would have emitted `feature.compiled`. Not called for
+   *  suppressed or virtual records. */
+  onSeedHit?: (record: FeatureRecord, shape: ShapeBackend) => void;
   /** Slice-3 Phase 4: append non-fatal warnings produced during lowering. */
   warningSink?: SoftWarningSink;
   /** Phase tag attached to warnings emitted in this run. */
@@ -402,6 +408,7 @@ export class RecomputeEngine {
     // Skip lowering; mark healthy.
     if (opts?.seedShapes && opts.seedShapes.has(id)) {
       health.set(id, 'healthy');
+      opts.onSeedHit?.(r, opts.seedShapes.get(id)!);
       return null;
     }
 

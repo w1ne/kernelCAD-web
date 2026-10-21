@@ -15,8 +15,9 @@ import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageR
 import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecord';
 import type { ShapeBackend } from '../../kernel/backends/backend';
-import type { SceneBackend, SceneBackendPart } from '../../kernel/backends/sceneBackend';
+import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../../kernel/backends/sceneBackend';
 import { OcctBackend, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
+import { clearTriangulation } from '../../kernel/backends/occt/backendMesh';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
@@ -529,6 +530,94 @@ export function deriveSeedShapes(
         return seed;
       })()
     : undefined;
+}
+
+/**
+ * Shapes the session already lowered for exactly these inputs, for records
+ * that `deriveSeedShapes` did not seed (no cached mesh yet). The meshing pass
+ * meshes them instead of lowering them again — on a first mesh after
+ * `buildModel`, or after `params.update`, that second lower used to repeat
+ * every non-assembly record.
+ *
+ * Conservative by construction; any doubt seeds nothing (a full lower, the old
+ * behaviour):
+ *  - the shapes come from `reusableLoweredPrefix()`, which is empty unless the
+ *    session's last full lower was taken under the current param table, gates
+ *    and record ids / transform counts;
+ *  - the records passed in must be the session's own record objects, and the
+ *    param table (when given) the session's own table, so a caller meshing a
+ *    different record list or param table never sees these shapes;
+ *  - only B-rep, mesh and scene backends are reused (the kinds this pass
+ *    meshes from a lowered shape).
+ */
+export function deriveFreshLoweredSeeds(
+  records: readonly FeatureRecord[],
+  paramTable: unknown,
+  session: FreshLowerSession | undefined,
+  alreadySeeded: ReadonlyMap<FeatureId, ShapeBackend> | undefined,
+): Map<FeatureId, ShapeBackend> {
+  const out = new Map<FeatureId, ShapeBackend>();
+  if (!session?.reusableLoweredPrefix || !session.getRecords) return out;
+  if (paramTable !== undefined && paramTable !== session.paramTable) return out;
+  const own = new Set(session.getRecords());
+  const fresh = session.reusableLoweredPrefix();
+  if (fresh.size === 0) return out;
+  for (const r of records) {
+    if (alreadySeeded?.has(r.id)) continue;
+    if (!own.has(r)) continue;
+    const shape = fresh.get(r.id);
+    if (shape === undefined) continue;
+    if (!(shape instanceof OcctBackend) && !(shape instanceof MeshBackend) && !isSceneBackend(shape)) continue;
+    out.set(r.id, shape);
+  }
+  return out;
+}
+
+/** The session hooks {@link deriveFreshLoweredSeeds} reads (a CaptureSession
+ *  provides all three). */
+export interface FreshLowerSession {
+  /** Validated shapes of the last full lower (`CaptureSession.reusableLoweredPrefix`). */
+  reusableLoweredPrefix?: () => ReadonlyMap<FeatureId, ShapeBackend>;
+  getRecords?: () => readonly FeatureRecord[];
+  paramTable?: unknown;
+}
+
+/** {@link deriveFreshLoweredSeeds}, plus the full seed map for the engine run
+ *  (`seedShapes` and the fresh shapes together). */
+export function planFreshLoweredSeeds(
+  records: readonly FeatureRecord[],
+  paramTable: unknown,
+  session: FreshLowerSession | undefined,
+  seedShapes: ReadonlyMap<FeatureId, ShapeBackend> | undefined,
+): { meshFromSeed: Map<FeatureId, ShapeBackend>; engineSeeds: Map<FeatureId, ShapeBackend> | undefined } {
+  const meshFromSeed = deriveFreshLoweredSeeds(records, paramTable, session, seedShapes);
+  return { meshFromSeed, engineSeeds: mergeSeeds(seedShapes, meshFromSeed) };
+}
+
+/**
+ * Drop the triangulation that meshing a borrowed session shape left on it, so
+ * the session's shape is in the same state as before the pass (OCCT's
+ * `Bnd_Box` tightens to a cached triangulation, and the triangulation holds
+ * memory). Best effort; mesh backends carry none.
+ */
+export function releaseBorrowedTriangulation(shape: ShapeBackend): void {
+  if (isSceneBackend(shape)) {
+    for (const part of shape.parts) releaseBorrowedTriangulation(part.shape);
+    return;
+  }
+  if (!(shape instanceof OcctBackend)) return;
+  clearTriangulation(shape.getReplicadShape());
+}
+
+/** `seedShapes` plus `extra`, without mutating either. */
+export function mergeSeeds(
+  seedShapes: ReadonlyMap<FeatureId, ShapeBackend> | undefined,
+  extra: ReadonlyMap<FeatureId, ShapeBackend>,
+): Map<FeatureId, ShapeBackend> | undefined {
+  if (extra.size === 0) return seedShapes === undefined ? undefined : new Map(seedShapes);
+  const merged = new Map<FeatureId, ShapeBackend>(seedShapes ?? []);
+  for (const [id, shape] of extra) merged.set(id, shape);
+  return merged;
 }
 
 // Records whose lowered shape was passed in `seedShapes` are skipped by the
