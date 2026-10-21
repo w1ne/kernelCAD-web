@@ -6,6 +6,9 @@ import { useParamUpdate } from '../hooks/useParamUpdate';
 import { NumericScrubInput } from '../components/inputs/NumericScrubInput';
 import type { JointPoseSnapshot } from '../adapters/featureRecordsToMates';
 import { computeAssemblyPreviewTransform } from '../assemblyPreviewTransform';
+import { jointControlVisible } from '../paramControl';
+import { shouldUseHostedMesh } from '../scriptSource';
+import type { ParamResponse } from '../../shared/runtime/paramTable';
 
 /**
  * Inspector tab listing assembly mates with declared pose (joints). Each
@@ -24,6 +27,7 @@ export function JointsTab(): JSX.Element {
     const {
         geometries,
         joints,
+        paramTable,
         updateParam,
         setGeometryTransformOverride,
         clearGeometryTransformOverrides,
@@ -32,7 +36,12 @@ export function JointsTab(): JSX.Element {
     // relower per pointer-move on a 50+ part assembly). Route through the
     // debounced commit so 60 FPS drag becomes 10 commits/sec.
     const updater = useParamUpdate(updateParam, { source: 'JointsTab', debounceMs: 700 });
-    const posed = joints ?? [];
+    const surface = shouldUseHostedMesh() ? 'hosted' : 'editor';
+    const responseOf = (name: string): ParamResponse | undefined => {
+        if (!paramTable || !paramTable.has(name)) return undefined;
+        return paramTable.get(name).response;
+    };
+    const posed = (joints ?? []).filter((snap) => jointControlVisible(snap.poseParamNames, responseOf, surface));
 
     if (posed.length === 0) {
         return (

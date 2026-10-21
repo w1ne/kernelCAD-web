@@ -15,6 +15,15 @@ import { useSessionToken } from './useSessionToken';
 import { useRelowerSubscription } from './useRelowerSubscription';
 import { useParamUpdate } from './useParamUpdate';
 
+/** Latest value for readers that run after this render, such as a mesh reply. */
+function useLatest<T>(value: T): MutableRefObject<T> {
+    const ref = useRef(value);
+    useEffect(() => {
+        ref.current = value;
+    }, [value]);
+    return ref;
+}
+
 /** Bounded log of execution outcomes for long sessions. */
 function useExecutionHistory() {
     const [executionHistory, setExecutionHistory] = useState<ExecutionRecord[]>([]);
@@ -62,6 +71,7 @@ export function useScriptExecution(
     const [recomputeMs, setRecomputeMs] = useState<number>(0);
     const [staleMainResponsesDropped, setStaleMainResponsesDropped] = useState(0);
     const mainRevisionRef = useRef(0);
+    const geometriesRef = useLatest(geometries);
 
     const { executionHistory, pushExecutionRecord } = useExecutionHistory();
 
@@ -77,6 +87,7 @@ export function useScriptExecution(
         setIsComputing,
         setStaleMainResponsesDropped,
         setGeometries,
+        geometriesRef,
         setGeometryTransformOverrides,
         setFeatureRecords,
         setScriptParams,
@@ -88,7 +99,7 @@ export function useScriptExecution(
         setLastSuccessfulRevision,
         setExecutionCount,
         pushExecutionRecord,
-    }), [engine, setGeometryTransformOverrides, setPreviewGeometries, pushExecutionRecord]);
+    }), [engine, geometriesRef, setGeometryTransformOverrides, setPreviewGeometries, pushExecutionRecord]);
 
     const { sessionToken, sessionStatus } = useSessionToken(studioScript);
     const { requestMeshAndReview } = useMeshFetch(code, applyDeps, setRecomputeMs);

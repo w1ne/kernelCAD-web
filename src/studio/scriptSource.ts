@@ -99,6 +99,9 @@ export interface BackendMeshPayload {
   rootFeatureIds?: string[];
   /** Declared + automatic 3D dimensions (model mm) for the viewer overlay. */
   dimensions?: ViewerDimension[];
+  /** Feature ids re-lowered by this param edit. When set, `features` holds
+   *  only those meshes and the viewer patches them into the picture it has. */
+  changedFeatureIds?: string[];
   /** Set by the server when it answered from the stored revision artifact
    *  instead of a fresh build: the shape is the published one, approximately. */
   degraded?: 'revision-artifact' | string;

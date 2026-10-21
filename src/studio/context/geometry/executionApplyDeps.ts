@@ -18,6 +18,8 @@ export interface ExecutionApplyDeps {
     setIsComputing: (b: boolean) => void;
     setStaleMainResponsesDropped: Dispatch<SetStateAction<number>>;
     setGeometries: (g: GeometryResult[]) => void;
+    /** Latest geometries, so a partial param mesh can patch instead of replace. */
+    geometriesRef?: MutableRefObject<GeometryResult[]>;
     setGeometryTransformOverrides: (next: Record<string, number[]>) => void;
     setFeatureRecords: (r: FeatureRecord[]) => void;
     setScriptParams: (p: SerializedParamEntry[]) => void;

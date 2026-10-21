@@ -7,6 +7,8 @@
 // the source for export, and name the download.
 
 import { setParamValue } from '../../modeling/edits/setParamValue';
+import { paramControlVisible } from '../paramControl';
+import { shouldUseHostedMesh } from '../scriptSource';
 import type { ParamType, ParamValue, SerializedParamEntry } from '../../shared/runtime/paramTable';
 import { normalizeColor } from '../../shared/runtime/paramColor';
 import type { GeometryResult } from '../../shared/worker/workerTypes';
@@ -136,7 +138,10 @@ export function customizerParamsFrom(
   hints: readonly CustomizerParamHint[] = [],
 ): CustomizerParam[] {
   const hintByName = new Map(hints.map((hint) => [hint.name, hint]));
-  return entries.map((entry) => customizerParamFrom(entry, hintByName.get(entry.name)));
+  const surface = shouldUseHostedMesh() ? 'hosted' : 'editor';
+  return entries
+    .filter((entry) => paramControlVisible(entry.response, surface))
+    .map((entry) => customizerParamFrom(entry, hintByName.get(entry.name)));
 }
 
 export function defaultValues(params: readonly CustomizerParam[]): CustomizerValues {

@@ -7,6 +7,7 @@ import {
 } from '../../scriptSource';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { detectEmptyBuild, featureMeshesToGeometries } from './types';
+import { mergeFeatureGeometries } from './mergeFeatureGeometries';
 import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
@@ -59,11 +60,16 @@ function applyParamMeshPayload(
     payload: BackendMeshPayload,
     revision: number,
 ): void {
-    const geos = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+    const incoming = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+    const previous = deps.geometriesRef?.current ?? [];
+    const geos = payload.changedFeatureIds && previous.length > 0
+        ? mergeFeatureGeometries(previous, incoming, payload.changedFeatureIds)
+        : incoming;
     const recs = (payload.featureRecords as FeatureRecord[]) ?? [];
     const review = payload.review ?? { ok: true, diagnostics: [] };
     const emptyNotice = detectEmptyBuild(geos.length, recs, review);
     deps.setGeometries(geos);
+    if (deps.geometriesRef) deps.geometriesRef.current = geos;
     deps.setGeometryTransformOverrides({});
     deps.setFeatureRecords(recs);
     deps.setScriptParams(Object.values(payload.params ?? {}));

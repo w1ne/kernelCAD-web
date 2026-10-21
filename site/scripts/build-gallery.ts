@@ -22,6 +22,10 @@ import { compactBridgeFeature, encodeBridgePayload } from './compactBridge';
 import { copyMeshoptDecoder, MESHOPT_DECODER_URL } from '../../scripts/lib/meshoptAssets';
 import { optimizeGlb } from '../../scripts/lib/optimizeGlb';
 import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
+import { buildModel } from '../../src/modeling/buildModel';
+import { PARAM_PUBLISH_COLD_MS, heavyParamResponses } from '../../src/modeling/paramResponse';
+import { measureParamResponses } from '../../src/modeling/paramMeasure';
+import type { ParamTable } from '../../src/shared/runtime/paramTable';
 import { meshFeaturesPerFeature } from '../../src/modeling/capture/featureMeshing';
 import { serializeForBridge } from '../../src/modeling/capture/featureMeshSerialize';
 import { evaluateAndBuildScript } from '../../src/agent/cli/commands/evaluate';
@@ -238,9 +242,46 @@ export async function fetchCommunityGallery(
   return cards.sort((a, b) => Number(b.featured) - Number(a.featured));
 }
 
+/** Write `response` onto each param. A slow cold build is not probed. */
+async function stampPublishResponses(
+  source: string,
+  fileName: string,
+  table: ParamTable,
+  coldMs: number,
+): Promise<void> {
+  let names: string[];
+  try {
+    names = table.list().map((entry) => entry.name);
+  } catch (err) {
+    console.warn(
+      `build-gallery: param measure skipped — ${err instanceof Error ? err.message : String(err)}`,
+    );
+    return;
+  }
+  if (names.length === 0) return;
+  const mark = (responses: Record<string, 'rigid' | 'local' | 'heavy'>): void => {
+    for (const [name, response] of Object.entries(responses)) {
+      if (table.has(name)) table.setResponse(name, response);
+    }
+  };
+  if (coldMs > PARAM_PUBLISH_COLD_MS) {
+    mark(heavyParamResponses(names));
+    return;
+  }
+  try {
+    mark(await measureParamResponses(await buildModel({ code: source, fileName })));
+  } catch (err) {
+    console.warn(
+      `build-gallery: param measure failed — ${err instanceof Error ? err.message : String(err)}`,
+    );
+    mark(heavyParamResponses(names));
+  }
+}
+
 async function precomputeGalleryBridge(entry: GalleryEntry, srcScript: string, meshOutDir: string): Promise<boolean> {
   let declaresAnimation = false;
   try {
+    const started = Date.now();
     const sourceText = readFileSync(srcScript, 'utf8');
     const sha = createHash('sha256').update(sourceText, 'utf8').digest('hex');
     const loaded = await loadScriptFeatures(srcScript);
@@ -262,6 +303,7 @@ async function precomputeGalleryBridge(entry: GalleryEntry, srcScript: string, m
       // of the legacy code-history fallback, and the Validity tab reflects
       // actual diagnostics. Reuses the loaded assembly — no re-evaluate.
       const review = await reviewFromLoadedSession(loaded.session, entry.compactBridge);
+      await stampPublishResponses(sourceText, path.basename(srcScript), loaded.paramTable, Date.now() - started);
       const bridgePayload = {
         source: sourceText,
         features: meshing.features.map(f => {
