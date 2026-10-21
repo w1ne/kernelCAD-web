@@ -118,6 +118,25 @@ describe('healImportedStep', () => {
   });
 });
 
+describe('large-import face unification guard', () => {
+  it('allows a bounded face pass only for a large, valid, small-cluster import', () => {
+    expect(__healTest.largeFaceUnifyDecision(1026, true, 3)).toBe(true);
+    expect(__healTest.largeFaceUnifyDecision(1026, true, 8)).toBe(true);
+  });
+
+  it('keeps edge-only normalization for the stall-prone cases', () => {
+    // Too small to pay for the large-import pass.
+    expect(__healTest.largeFaceUnifyDecision(1000, true, 3)).toBe(false);
+    // 206/238/243 class: a same-surface cluster large enough to stall the wasm unifier.
+    expect(__healTest.largeFaceUnifyDecision(1026, true, 9)).toBe(false);
+    expect(__healTest.largeFaceUnifyDecision(1026, true, 12)).toBe(false);
+    // 202/240 class: invalid topology is repaired, not merged.
+    expect(__healTest.largeFaceUnifyDecision(1026, false, 3)).toBe(false);
+    // Nothing to merge.
+    expect(__healTest.largeFaceUnifyDecision(1026, true, 1)).toBe(false);
+  });
+});
+
 describe('pinch notch geometry', () => {
   // Face bounds of the 240 fixture's unorientable ribbon.
   const faceBounds = {

@@ -9,18 +9,18 @@
         "name": null,
         "bboxExact": {
           "min": [
-            -502.6141662597656,
-            -417.06695556640625,
+            -502.61358642578125,
+            -417.06622314453125,
             -110
           ],
           "max": [
-            502.6141662597656,
-            398.4362487792969,
+            502.61016845703125,
+            398.43572998046875,
             110
           ]
         },
-        "volumeMm3": 49946617.62305226,
-        "faceCount": 1027,
+        "volumeMm3": 49946726.9394046,
+        "faceCount": 869,
         "holes": [
           {
             "axisOrigin": [
@@ -36,9 +36,7 @@
             "diameterMm": 120,
             "depthMm": 213,
             "kind": "through",
-            "faceCount": 2,
-            "partial": true,
-            "angularCoverageDeg": 329
+            "faceCount": 1
           },
           {
             "axisOrigin": [
@@ -54,23 +52,7 @@
             "diameterMm": 120,
             "depthMm": 213,
             "kind": "through",
-            "faceCount": 2
-          },
-          {
-            "axisOrigin": [
-              -408.2149910469,
-              159.6012069017,
-              109.99999999997
-            ],
-            "axisDirection": [
-              0,
-              0,
-              -1
-            ],
-            "diameterMm": 50.875688798628,
-            "depthMm": 128,
-            "kind": "through",
-            "faceCount": 2
+            "faceCount": 1
           },
           {
             "axisOrigin": [
@@ -86,7 +68,23 @@
             "diameterMm": 50.875688798628,
             "depthMm": 128,
             "kind": "through",
-            "faceCount": 2
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -408.2149910469,
+              159.6012069017,
+              109.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 50.875688798628,
+            "depthMm": 128,
+            "kind": "through",
+            "faceCount": 1
           },
           {
             "axisOrigin": [
@@ -118,7 +116,7 @@
             "diameterMm": 50.875688798628,
             "depthMm": 126,
             "kind": "through",
-            "faceCount": 2
+            "faceCount": 1
           },
           {
             "axisOrigin": [
@@ -134,7 +132,7 @@
             "diameterMm": 50.875688798628,
             "depthMm": 126,
             "kind": "through",
-            "faceCount": 2
+            "faceCount": 1
           },
           {
             "axisOrigin": [
@@ -150,7 +148,7 @@
             "diameterMm": 50.875688798628,
             "depthMm": 126,
             "kind": "through",
-            "faceCount": 2
+            "faceCount": 1
           },
           {
             "axisOrigin": [
@@ -166,7 +164,7 @@
             "diameterMm": 50.875688798628,
             "depthMm": 126,
             "kind": "through",
-            "faceCount": 2
+            "faceCount": 1
           },
           {
             "axisOrigin": [
@@ -182,7 +180,7 @@
             "diameterMm": 52,
             "depthMm": 126,
             "kind": "through",
-            "faceCount": 2
+            "faceCount": 1
           },
           {
             "axisOrigin": [
@@ -198,7 +196,7 @@
             "diameterMm": 50.875688798628,
             "depthMm": 126,
             "kind": "through",
-            "faceCount": 2
+            "faceCount": 1
           },
           {
             "axisOrigin": [
@@ -214,7 +212,7 @@
             "diameterMm": 50.875688798628,
             "depthMm": 126,
             "kind": "through",
-            "faceCount": 2
+            "faceCount": 1
           },
           {
             "axisOrigin": [
@@ -230,7 +228,7 @@
             "diameterMm": 188,
             "depthMm": 3.416106230590003,
             "kind": "through",
-            "faceCount": 2
+            "faceCount": 1
           },
           {
             "axisOrigin": [
@@ -246,13 +244,13 @@
             "diameterMm": 25,
             "depthMm": 8.000000000009,
             "kind": "blind",
-            "faceCount": 2
+            "faceCount": 1
           }
         ],
-        "holeDetection": "heuristic"
+        "holeDetection": "exact"
       }
     ],
-    "holeDetection": "heuristic"
+    "holeDetection": "exact"
   },
   "diagnostics": []
 }
