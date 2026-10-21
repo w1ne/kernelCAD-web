@@ -5,6 +5,7 @@ import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
+import { trackFullLower } from './fullLowerTracker';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
@@ -1430,12 +1431,12 @@ export class Shape {
     const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
     if (!this.session.importedGeometry.has(this.id)) await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));
-    const pending = this.session.snapshotFullLower(new Map());
+    const track = trackFullLower(this.session, (warning) => this.session.warnings.push(warning));
     const r = await engine.run(
       records as readonly import('../../shared/intent/featureRecord').FeatureRecord[],
       {
         paramTable: this.session.paramTable,
-        warningSink: (warning) => this.session.warnings.push(warning),
+        warningSink: track.warningSink,
         warningPhase: 'build',
         gatedFeatureNames: this.session.gatedFeatureNames,
       },
@@ -1446,7 +1447,7 @@ export class Shape {
     for (const [id, sh] of r.shapes) {
       this.session.cachedShapes.set(id, sh);
     }
-    this.session.lastFullLower = { ...pending, shapes: r.shapes };
+    track.publish(r);
     const shape = r.shapes.get(this.id);
     if (!shape) {
       throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);
