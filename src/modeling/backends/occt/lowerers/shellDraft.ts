@@ -5,6 +5,7 @@ import * as replicad from 'replicad';
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { draftWithHistory } from '../../../../kernel/backends/occt/draftWithHistory';
+import { countFaces, localOpUnchanged } from '../../../../kernel/backends/occt/edgeFeatureValidity';
 import { pickFace } from '../../../../kernel/backends/occt/edgeSelection';
 import {
   discardOcctShape,
@@ -74,6 +75,10 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = replicad.cast(shellResult.shape as any) as replicad.Shape3D;
     shape = new OcctBackend(wrapped, undefined, newMap);
+    if (solidUnchanged(base, shape)) {
+      ctx.diagnostics.push(unchangedOpDiagnostic(r.id, 'shell', thickness));
+      return finished(base);
+    }
     if (shellResult.strategy === 'offset-subtract') {
       ctx.diagnostics.push(shellFallbackDiagnostic(r.id, thickness));
     }
@@ -83,6 +88,29 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     return finished(base);
   }
   return built(shape);
+}
+
+function topoOf(backend: OcctBackend): unknown {
+  return (backend.shape as { wrapped: unknown }).wrapped;
+}
+
+/** True when the op returned a solid with the same volume and the same faces. */
+function solidUnchanged(before: OcctBackend, after: OcctBackend): boolean {
+  return localOpUnchanged(before.volume(), after.volume(), countFaces(topoOf(before)), countFaces(topoOf(after)));
+}
+
+function unchangedOpDiagnostic(featureId: string, op: 'shell' | 'draft', value: number): CompilerDiagnostic {
+  const noun = op === 'shell' ? `shell(${value})` : `draft(${value})`;
+  return {
+    target: 'export-occt',
+    code: op === 'shell' ? 'feature.shell.unchanged' : 'feature.draft.unchanged',
+    featureId,
+    severity: 'error',
+    message: `${noun}: the solid is unchanged, so the operation was dropped.`,
+    hint: op === 'shell'
+      ? 'A shell that leaves the volume and the face count alone did not hollow the body. The wall is thicker than the body can take, or the open face was not cut. The unshellled solid is not a successful shell.'
+      : 'A draft that leaves the volume and the face count alone did not taper the face. Pick a side face and a pull direction that is not parallel to that face.',
+  };
 }
 
 function shellBuilds(base: OcctBackend, faces: { hash: string }[], thickness: number): boolean {
@@ -333,7 +361,12 @@ function applyDraft(
     const newMap = mergeEdgeFeatureHistory(base.historyMap, res);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = replicad.cast(res.shape as any) as replicad.Shape3D;
-    return new OcctBackend(wrapped, undefined, newMap);
+    const drafted = new OcctBackend(wrapped, undefined, newMap);
+    if (solidUnchanged(base, drafted)) {
+      ctx.diagnostics.push(unchangedOpDiagnostic(r.id, 'draft', angleDeg));
+      return undefined;
+    }
+    return drafted;
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'OCCT draft failed';
     ctx.diagnostics.push({

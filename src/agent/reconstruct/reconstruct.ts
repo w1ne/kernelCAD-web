@@ -19,6 +19,8 @@ import { analyseMesh, type MeshAnalysis, type UnmatchedCandidate, type Unmatched
 import { buildPlan, withFillets, type FeaturePlan, type OutlineKind, type PassParams, type RoundsKind } from './plan';
 import { detectEdgeBlends, groupBlends, selectorsForGroup } from './blends';
 import { emitScript, num } from './emit';
+import { dishonestImportReason, importedSolidScript } from './honestImport';
+import { constructionRank, type ManufacturingCounts } from '../../modeling/validation/manufacturingScore';
 import {
   classifyFidelity,
   maxDistanceToMesh,
@@ -91,6 +93,8 @@ export interface PassSummary {
 export interface ReconstructSuccess {
   ok: true;
   script: string;
+  /** `script` is an editable feature tree, or a label that the solid stayed imported. */
+  importKind?: 'script' | 'imported-solid';
   ledger: AssumptionLedger;
   fidelity: FidelityReport;
   unmatchedRegions: UnmatchedRegion[];
@@ -284,9 +288,30 @@ function selectBestOutcome(outcomes: PassOutcome[]): PassOutcome | undefined {
     (a, b) =>
       rank[a.summary.verdict!] - rank[b.summary.verdict!] ||
       Math.round(1e4 * (b.metrics!.volumeIoU - a.metrics!.volumeIoU)) ||
+      constructionRank(countsOf(b)) - constructionRank(countsOf(a)) ||
       a.metrics!.maxDeviationMm - b.metrics!.maxDeviationMm,
   );
   return measured[0];
+}
+
+function countsOf(outcome: PassOutcome): ManufacturingCounts {
+  const holes = outcome.plan.holeSummary;
+  return {
+    plainHoles: holes.filter((hole) => hole.counterbore === undefined).reduce((sum, hole) => sum + hole.count, 0),
+    counterbores: holes.filter((hole) => hole.counterbore !== undefined).reduce((sum, hole) => sum + hole.count, 0),
+    fillets: outcome.plan.ops.filter((op) => op.kind === 'fillet').length,
+    booleanCuts: outcome.plan.ops.filter((op) => op.kind === 'subtractCylinder' || op.kind === 'subtractPrism').length,
+  };
+}
+
+function withholdDishonestScript(result: ReconstructSuccess): ReconstructSuccess {
+  const reason = dishonestImportReason({
+    unmatched: result.unmatchedRegions.length,
+    bodyBlocks: result.features.bodyBlocks,
+    booleanRemainders: result.features.booleanRemainders,
+  });
+  if (reason === null) return { ...result, importKind: 'script' };
+  return { ...result, importKind: 'imported-solid', script: importedSolidScript(reason) };
 }
 
 async function buildReconstructSuccess(
@@ -328,7 +353,7 @@ async function buildReconstructSuccess(
   const ledger = buildMeshLedger(analysis, { ...winner.plan, notRepresented }, soup, unmatched);
   const diagnostics = buildDiagnostics(analysis, fidelity, unmatched);
   const plan = winner.plan;
-  return {
+  return withholdDishonestScript({
     ok: true,
     script,
     ledger,
@@ -357,7 +382,7 @@ async function buildReconstructSuccess(
     passes,
     notRepresented,
     diagnostics,
-  };
+  });
 }
 
 export async function reconstructFromSoup(

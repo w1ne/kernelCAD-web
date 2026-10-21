@@ -39,6 +39,7 @@ export function flattenPattern(
   const { recById, terminal } = resolveFlattenTerminal(records, terminalId);
   const { root, chain } = walkFlattenLineage(recById, terminal);
   const bendRecords = collectBendRecords(chain);
+  assertDevelopedAllowance(root, bendRecords);
   const outer = resolveSketchOutline(recById, root, terminal);
   // Holes / cutouts live only in the lowered blank solid; the caller reads
   // them back (flatBlankInnerLoops on the `flatBlankRecordId` shape).
@@ -169,6 +170,65 @@ function resolveSketchOutline(
     );
   }
   return extractPolylineFromSketch(sketchRec);
+}
+
+/**
+ * A bend with no K-factor, or a K-factor outside (0, 1), still used to return
+ * the sketch outline and call it a flat pattern. The developed length of a
+ * bend is `angleRad * (kFactor * thickness + radius)`. That length has to be
+ * a positive finite number or the pattern is not the blank the bend consumed.
+ */
+function assertDevelopedAllowance(root: FeatureRecord, bends: FeatureRecord[]): void {
+  if (bends.length === 0) return;
+  const kFactor = evaluatedNumber(root, 'kFactor');
+  const thickness = evaluatedNumber(root, 'thickness');
+  if (kFactor === undefined || !(kFactor > 0 && kFactor < 1) || thickness === undefined || !(thickness > 0)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      'flattenPattern: a bend needs a K-factor in (0, 1) and a thickness > 0. Without them the flat outline is not the developed blank.',
+      root.id,
+      'invalid-args.flattenPattern.k-factor — sheetMetal(profile, { thickness, kFactor }) with 0 < kFactor < 1.',
+    );
+  }
+  for (const bend of bends) {
+    const rec = bendRecordOf(bend);
+    const allowance = Math.abs(rec.angleRad) * (kFactor * thickness + rec.radius);
+    if (!(allowance > 0) || !Number.isFinite(allowance)) {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `flattenPattern: bend '${bend.id}' develops to ${allowance} mm, which is not a flat length.`,
+        bend.id,
+        'kernel-failed.flattenPattern.allowance — the bend angle and inner radius have to produce a positive developed length.',
+      );
+    }
+  }
+}
+
+function evaluatedNumber(rec: FeatureRecord, name: string): number | undefined {
+  const param = rec.params[name] as { evaluated?: unknown } | undefined;
+  return typeof param?.evaluated === 'number' ? param.evaluated : undefined;
+}
+
+function bendRecordOf(bend: FeatureRecord): { angleRad: number; radius: number } {
+  const rec = (bend.metadata as { bendRecord?: { angleRad?: unknown; radius?: unknown } } | undefined)?.bendRecord;
+  if (!rec) {
+    throw new KernelError(
+      'feature.invalid-args',
+      'flattenPattern: bend has no bendRecord metadata; lower the shape first.',
+      bend.id,
+      'invalid-args.flattenPattern.unlowered — call evaluate_script or lower the shape before flattenPattern.',
+    );
+  }
+  const { angleRad, radius } = rec;
+  if (typeof angleRad !== 'number' || typeof radius !== 'number') {
+    throw new KernelError(
+      'feature.invalid-args',
+      'flattenPattern: bendRecord has no angle and radius, so its developed length cannot be checked.',
+      bend.id,
+      'invalid-args.flattenPattern.unlowered — call evaluate_script or lower the shape before flattenPattern.',
+    );
+  }
+  return { angleRad, radius };
 }
 
 /** Compute bend-line endpoints from the persisted bendRecord metadata. */

@@ -298,6 +298,17 @@ function assertMateConnectorPair(
   a: { connector: Connector },
   b: { connector: Connector },
 ): void {
+  if (aRef === bRef) {
+    invalidArgs({
+      api: `mate('${name}', aRef, bRef, type)`,
+      path: 'bRef',
+      gotText: `the same connector as aRef ('${aRef}')`,
+      requires:
+        'two different connectors — a joint proposal that names one face for both sides does not mate anything, and the assembly does not keep it',
+      hintSlug: 'invalid-args.assembly.mate-same-connector',
+      example: "arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute')",
+    });
+  }
   if (!isCompatiblePair(type, a.connector.type, b.connector.type)) {
     invalidArgs({
       api: `mate('${name}', aRef, bRef, type)`,
