@@ -85,6 +85,14 @@ function fetchOf(bytes: Buffer, ok = true, status = 200): typeof fetch {
   })) as unknown as typeof fetch;
 }
 
+it('returns the canonical configurator link without affiliate decoration', async () => {
+  const session = new CaptureSession();
+  const url = 'https://igus.partcommunity.com/configurator?part=123#cad';
+  const result = await fetchPartFromUrlHost({ session } as Parameters<typeof fetchPartFromUrlHost>[0], url);
+  expect(result).toMatchObject({ ok: true, kind: 'link_out', url });
+  expect(result).not.toHaveProperty('disclosure');
+});
+
 describe('isAllowedPartUrl', () => {
   it('accepts the trusted host allowlist', () => {
     expect(

@@ -27,7 +27,6 @@ import { VERIFY_OUTPUT_SCHEMA } from './verificationOutputSchema';
 import { MESH_RECONSTRUCT_OUTPUT_SCHEMAS } from './registry/meshReconstructTools.outputSchemas';
 import { MESH_BOOLEAN_OUTPUT_SCHEMAS } from './registry/meshBooleanTools.outputSchemas';
 import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
-import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 import { FEA_OUTPUT_SCHEMAS } from './registry/feaTools.outputSchemas';
 import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outputSchemas';
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
@@ -58,7 +57,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     properties: {
       sceneSummary: SCENE_SUMMARY_SCHEMA,
       ok: { type: 'boolean', description: 'Whether the script compiled and lowered cleanly.' },
-      viewerUrl: { type: 'string', description: 'Live loopback Studio URL; reused on later full builds in the same local MCP process.' },
+      viewerUrl: { type: 'string', description: 'Live loopback viewer URL, available only with an explicitly supplied KERNELCAD_VIEWER_DIST bundle; reused on later local full builds.' },
       viewerError: { type: 'string', description: 'Viewer provisioning error; separate from the CAD build result.' },
       viewerMode: { type: 'string', enum: ['hosted'], description: 'Hosted mode uses open_in_studio instead of a process-local viewer.' },
       viewerHint: { type: 'string', description: 'How to view the built model in hosted Studio.' },
@@ -498,9 +497,8 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       sha256: { type: 'string', description: 'SHA-256 fingerprint of the STEP file (success).' },
       source: { type: 'string', description: "Where the part came from ('local' | 'remote') (success)." },
       kind: { type: 'string', description: "'link_out' when the URL is a vendor configurator the agent must drive by hand." },
-      url: { type: 'string', description: 'Outbound vendor URL (link_out). May carry a referral tag; see disclosure.' },
+      url: { type: 'string', description: 'Canonical outbound configurator URL (link_out).' },
       instruction: { type: 'string', description: 'What to do with the link_out URL.' },
-      disclosure: { type: 'string', description: 'Referral disclosure. Present only when url carries a referral tag; show it with the link.' },
       error: { type: 'string' },
       errorCode: { type: 'string' },
       errorHint: { type: 'string' },
@@ -805,7 +803,6 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
   ...IMPORT_OUTPUT_SCHEMAS,
-  ...FABRICATION_OUTPUT_SCHEMAS,
   ...MANUFACTURING_OUTPUT_SCHEMAS,
   ...NURBS_OUTPUT_SCHEMAS,
   ...SURFACE_BLEND_OUTPUT_SCHEMAS,

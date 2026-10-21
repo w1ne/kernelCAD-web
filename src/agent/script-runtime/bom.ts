@@ -20,7 +20,7 @@
 // fingerprint (volume + surface area + sorted bbox dimensions, rounded), plus
 // the declared material/density — one row carries one density for all of its
 // quantity, so identically-shaped parts with different declared densities
-// split into separate rows instead of silently re-pricing.
+// split into separate rows instead of silently combining records.
 // Quantity is the real count of `assembly.part(...)` instances that share a
 // group, so a pattern loop that calls `.part()` N times with the same source
 // shape (and N distinct names) collapses to one BOM row with quantity N.

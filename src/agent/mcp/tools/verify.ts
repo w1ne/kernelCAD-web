@@ -4,7 +4,6 @@ import { checkAssemblyPathTool } from './checkAssemblyPath';
 import { validateAssemblyTool } from './validateAssembly';
 import { validateUrdfTool } from './validateUrdf';
 import { dfmCheckTool } from './dfmCheck';
-import { dfmPreflightTool } from './dfmPreflight';
 import { checkSweptCollisionTool } from './checkSweptCollision';
 import { checkReachableTool } from './checkReachable';
 import { checkMountingHoleConsistencyTool } from './checkMountingHoleConsistency';
@@ -22,7 +21,6 @@ export type VerifyCheck =
   | 'assembly'
   | 'urdf'
   | 'dfm'
-  | 'dfm-preflight'
   | 'swept-collision'
   | 'reachable'
   | 'mounting-holes'
@@ -41,7 +39,6 @@ export interface VerifyInput {
    * - assembly/swept-collision/reachable/mounting-holes/load-capacity: { file?, code?, assembly?, ... }
    * - urdf: { urdf_path }
    * - dfm: { file?, code? }
-   * - dfm-preflight: { vendor, material, thicknessIn|thicknessMm, ... }
    * Each verifier fails closed on its own missing required params.
    */
   [key: string]: unknown;
@@ -49,7 +46,7 @@ export interface VerifyInput {
 
 /**
  * Unified design-verification entrypoint. Replaces validate_assembly,
- * validate_urdf, dfm_check, dfm_preflight, check_swept_collision,
+ * validate_urdf, dfm_check, check_swept_collision,
  * check_reachable, check_mounting_hole_consistency, check_load_capacity.
  *
  * Pure routing layer: dispatches on `check` and forwards all other params to
@@ -64,7 +61,6 @@ const HANDLERS: Record<VerifyCheck, Handler> = {
   assembly: call(validateAssemblyTool),
   urdf: call(validateUrdfTool),
   dfm: call(dfmCheckTool),
-  'dfm-preflight': call(dfmPreflightTool),
   'swept-collision': call(checkSweptCollisionTool),
   reachable: call(checkReachableTool),
   'mounting-holes': call(checkMountingHoleConsistencyTool),
@@ -85,7 +81,7 @@ export function verifyTool(input: VerifyInput): Promise<unknown> {
   return Promise.reject(
     new Error(
       `Unknown verify check: ${String(check)}. Valid: assembly, urdf, dfm, ` +
-        `dfm-preflight, swept-collision, reachable, mounting-holes, load-capacity, static-hold, motion-load, body-likeness, fastener-installation, geometry-quality, assembly-path, edge-radius.`,
+        `swept-collision, reachable, mounting-holes, load-capacity, static-hold, motion-load, body-likeness, fastener-installation, geometry-quality, assembly-path, edge-radius.`,
     ),
   );
 }

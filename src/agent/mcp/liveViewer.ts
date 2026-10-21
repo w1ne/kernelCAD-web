@@ -5,7 +5,6 @@ import { createServer, type Server, type IncomingMessage, type ServerResponse } 
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import type { BuiltModel } from '../../composition/buildModel';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
@@ -25,10 +24,7 @@ interface ViewerOptions {
 }
 
 function findViewerDist(): string | undefined {
-  if (process.env.KERNELCAD_VIEWER_DIST !== undefined) return process.env.KERNELCAD_VIEWER_DIST;
-  const dir = fileURLToPath(new URL('.', import.meta.url));
-  return [process.env.KERNELCAD_VIEWER_DIST, resolve(dir, '../mcp-viewer'), resolve(dir, '../../../dist/mcp-viewer')]
-    .find(candidate => candidate && existsSync(resolve(candidate, 'index.html')));
+  return process.env.KERNELCAD_VIEWER_DIST;
 }
 
 async function meshModel(model: BuiltModel): Promise<unknown> {
@@ -163,7 +159,7 @@ export function createLiveViewer(options: ViewerOptions = {}) {
   async function start(): Promise<string> {
     const dist = options.dist ?? findViewerDist();
     if (!dist || !existsSync(resolve(dist, 'index.html'))) {
-      throw new Error('Studio viewer bundle missing. Run npm run build:mcp-viewer or reinstall kernelcad.');
+      throw new Error('Viewer unavailable. Set KERNELCAD_VIEWER_DIST to a separately supplied viewer bundle containing index.html. CAD geometry remains available.');
     }
     server = viewerServer(resolve(dist), token, state, options.mesh ?? meshModel, () => url);
     await new Promise<void>((done, fail) => {

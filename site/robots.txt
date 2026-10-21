@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://kernelcad.com/sitemap.xml
-
-# Agent setup instructions: https://kernelcad.com/llms.txt
