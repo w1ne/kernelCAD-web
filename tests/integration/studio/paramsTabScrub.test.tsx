@@ -28,7 +28,7 @@ describe('ParamsTab interactive numeric scrub', () => {
         const slider = screen.getByTestId('scrub-slider-width') as HTMLInputElement;
         fireEvent.change(slider, { target: { value: '75' } });
         await waitFor(() =>
-            expect(updateMock).toHaveBeenCalledWith([{ name: 'width', value: 75 }]),
+            expect(updateMock).toHaveBeenCalledWith([{ name: 'width', value: 75 }], { preview: true }),
         );
     });
 

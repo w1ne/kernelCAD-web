@@ -5,7 +5,7 @@ import {
     shouldUseHostedMesh, devMeshAvailable, needsFullKernel,
     type BackendMeshPayload,
 } from '../../scriptSource';
-import { browserCanEditParams, runBrowserParamEdit } from './browserParamEdit';
+import { browserCanEditParams, browserParamSource, runBrowserParamEdit } from './browserParamEdit';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import { mergeFeatureGeometries } from './mergeFeatureGeometries';
@@ -40,10 +40,12 @@ async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promi
         await meshParamEdits(run.code, {}, false, false, true).catch(() => undefined);
         return;
     }
-    if (browserCanEditParams(run.code, run.deps.engine)) {
+    const browserSource = browserCanEditParams(run.code, run.deps.engine)
+        ? browserParamSource(run.code, job.snapshot)
+        : null;
+    if (browserSource !== null) {
         await runBrowserParamEdit(
-            run.code,
-            job.snapshot,
+            browserSource,
             run.deps,
             job.epoch,
             run.epochRef,

@@ -15,9 +15,17 @@ export function browserCanEditParams(
   return typeof engine.executeCode === 'function' && !needsFullKernel(code);
 }
 
+/** Bake every edit into the source. Null when the script has no such param() call. */
+export function browserParamSource(code: string, snapshot: ParamEditValues): string | null {
+  try {
+    return paramEditsForMesh(code, snapshot, true).source;
+  } catch {
+    return null;
+  }
+}
+
 export async function runBrowserParamEdit(
-  code: string,
-  snapshot: ParamEditValues,
+  source: string,
   deps: ExecutionApplyDeps,
   epoch: number,
   epochRef: { current: number },
@@ -30,7 +38,6 @@ export async function runBrowserParamEdit(
   deps.setIsComputing(true);
   const current = (): boolean => epoch === epochRef.current && revision === deps.mainRevisionRef.current;
   try {
-    const { source } = paramEditsForMesh(code, snapshot, true);
     const result = await deps.engine.executeCode(source, {
       quality: 'coarse',
       onPreview: (preview: ExecutionResult) => {

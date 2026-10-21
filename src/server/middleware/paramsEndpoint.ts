@@ -124,10 +124,10 @@ export function createParamsEndpoint(deps: ParamsEndpointDeps) {
                   update: (edits: ParamEdit[], options?: { preview?: boolean }) => Promise<unknown>;
                 };
               };
-              const result = (await session.params.update(
-                [...next.edits.values()],
-                next.preview ? { preview: true } : undefined,
-              )) as UpdateResult;
+              const batch = [...next.edits.values()];
+              const result = (next.preview
+                ? await session.params.update(batch, { preview: true })
+                : await session.params.update(batch)) as UpdateResult;
               for (const w of next.waiters) w.resolve(result);
             } catch (error) {
               for (const w of next.waiters) w.reject(error);
