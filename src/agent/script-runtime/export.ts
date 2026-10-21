@@ -5,8 +5,8 @@ import { resolveRootId } from '../../composition/buildModel';
 import type { DrawingReviewOptions } from '../../shared/intent/drawingReview';
 import { detectMissingReturn } from '../../modeling/validation/missingReturn';
 import { runScript } from '../../composition/runScript';
-import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
-import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
+import type { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
+import { lowerScriptRun } from './lowerScriptRun';
 import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { partStlBytes } from '../../kernel/backends/occt/partFileExport';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
@@ -427,8 +427,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   }
 
   const run = await runScript({ code, fileName, scriptDir });
-  const engine = new RecomputeEngine(createOcctLowerer(run.session));
-  const r = await engine.run(run.records, { paramTable: run.paramTable });
+  const r = await lowerScriptRun(run);
 
   notifySceneBuild(input, run, r);
   const featureCount = run.records.length;
@@ -568,8 +567,7 @@ export async function resolveWorldFrameScene(
 ): Promise<WorldFrameSceneResult> {
   const { code, fileName, scriptDir } = input;
   const run = await runScript({ code, fileName, scriptDir });
-  const engine = new RecomputeEngine(createOcctLowerer(run.session));
-  const r = await engine.run(run.records, { paramTable: run.paramTable });
+  const r = await lowerScriptRun(run);
   notifySceneBuild(input, run, r);
   const featureCount = run.records.length;
   r.diagnostics = await tubeExportDiagnostics(fabricationFormat, run, r);
