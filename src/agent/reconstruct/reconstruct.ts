@@ -284,14 +284,24 @@ async function runReconstructionPass(
 function selectBestOutcome(outcomes: PassOutcome[]): PassOutcome | undefined {
   const rank = { faithful: 0, approximate: 1, failed: 2 } as const;
   const measured = outcomes.filter((o) => o.metrics);
-  measured.sort(
-    (a, b) =>
-      rank[a.summary.verdict!] - rank[b.summary.verdict!] ||
-      Math.round(1e4 * (b.metrics!.volumeIoU - a.metrics!.volumeIoU)) ||
-      constructionRank(countsOf(b)) - constructionRank(countsOf(a)) ||
-      a.metrics!.maxDeviationMm - b.metrics!.maxDeviationMm,
-  );
+  measured.sort((a, b) => compareOutcomes(a, b, rank));
   return measured[0];
+}
+
+/** Within 0.02 overlap, hole type, fillets, and named cuts beat a lookalike. */
+function compareOutcomes(
+  a: PassOutcome,
+  b: PassOutcome,
+  verdictRank: { faithful: number; approximate: number; failed: number },
+): number {
+  const verdict = verdictRank[a.summary.verdict!] - verdictRank[b.summary.verdict!];
+  if (verdict !== 0) return verdict;
+  const iouGap = b.metrics!.volumeIoU - a.metrics!.volumeIoU;
+  if (Math.abs(iouGap) > 0.02) return iouGap > 0 ? 1 : -1;
+  const features = constructionRank(countsOf(b)) - constructionRank(countsOf(a));
+  if (features !== 0) return features;
+  if (iouGap !== 0) return iouGap > 0 ? 1 : -1;
+  return a.metrics!.maxDeviationMm - b.metrics!.maxDeviationMm;
 }
 
 function countsOf(outcome: PassOutcome): ManufacturingCounts {
