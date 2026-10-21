@@ -26,6 +26,16 @@ import * as replicad from 'replicad';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct, registerOcctResetHook } from '../../kernel/backends/occt/occtBackend';
 import { describeOcctThrow, isOcctOutOfMemory } from '../../kernel/backends/occt/occtException';
+import { healImportedStep } from './healStep';
+
+/** Backends whose STEP import was normalized by `healImportedStep`. Weak so a
+ *  disposed backend is collectable; read by `fromSTEP` to stamp metadata. */
+const healedStepBackends = new WeakSet<object>();
+
+/** Whether this backend came from a STEP import that was topology-normalized. */
+export function isStepBackendHealed(backend: object): boolean {
+  return healedStepBackends.has(backend);
+}
 
 /** Why a STEP byte buffer could not be turned into a 3D solid. Reported so
  *  callers map to their own KernelError code/hint — the cache stays free of
@@ -85,7 +95,9 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
     cache.delete(key);
     cache.set(key, cached);
     hits++;
-    return cached.clone();
+    const clone = cached.clone();
+    if (healedStepBackends.has(cached)) healedStepBackends.add(clone);
+    return clone;
   }
 
   await initOcct();
@@ -124,7 +136,14 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
     throw new StepParseError('no-solid', 'STEP import contained no 3D solid body');
   }
 
-  const master = new OcctBackend(imported as replicad.Shape3D);
+  // Normalize same-domain faces before handing the shape to the backend.
+  // Third-party STEP re-exports carry split/duplicate patches that survive
+  // `BRepCheck` but tessellate into non-manifold edges; unification collapses
+  // them without moving surfaces. A failed/invalid unification returns the
+  // original import untouched.
+  const healed = healImportedStep(imported as replicad.Shape3D);
+  const master = new OcctBackend(healed.shape);
+  if (healed.unified || healed.repaired) healedStepBackends.add(master);
   cache.set(key, master);
   misses++;
 
@@ -139,7 +158,9 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
     evicted?.dispose();
   }
 
-  return master.clone();
+  const out = master.clone();
+  if (healed.unified || healed.repaired) healedStepBackends.add(out);
+  return out;
 }
 
 /** Test-only: parse-cache instrumentation. */
