@@ -16,6 +16,7 @@
 // is needed.
 
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
+import { invalidArgs } from '../../../shared/intent/invalidArgs';
 import { KernelError } from '../../../shared/intent/kernelError';
 import { makeRegion, type Region, type BendLineRecord, type Vec2 } from '../../../shared/intent/region';
 
@@ -179,12 +180,14 @@ function assertDevelopedAllowance(root: FeatureRecord, bends: FeatureRecord[]): 
   const kFactor = evaluatedNumber(root, 'kFactor');
   const thickness = evaluatedNumber(root, 'thickness');
   if (kFactor === undefined || !Number.isFinite(kFactor) || kFactor < 0 || kFactor > 1 || thickness === undefined || !(thickness > 0)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'flattenPattern: a bend needs a K-factor in [0, 1] and a thickness > 0. Without them the flat outline is not the developed blank.',
-      root.id,
-      'invalid-args.flattenPattern.k-factor — sheetMetal(profile, { thickness, kFactor }) with 0 <= kFactor <= 1.',
-    );
+    invalidArgs({
+      api: 'flattenPattern(shape)',
+      path: 'kFactor',
+      gotText: kFactor === undefined ? 'nothing' : String(kFactor),
+      requires: 'a K-factor in [0, 1] and a thickness > 0 on the sheetMetal(...) that owns this bend',
+      example: 'sheetMetal(profile, { thickness: 1.5, kFactor: 0.42 }).bend({ atX: 40 }, 90, 2)',
+      featureId: root.id,
+    });
   }
   for (let i = 0; i < bends.length; i++) {
     const rec = records[i];
@@ -208,21 +211,25 @@ function evaluatedNumber(rec: FeatureRecord, name: string): number | undefined {
 function bendRecordOf(bend: FeatureRecord): { angleRad: number; radius: number } {
   const rec = (bend.metadata as { bendRecord?: { angleRad?: unknown; radius?: unknown } } | undefined)?.bendRecord;
   if (!rec) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'flattenPattern: bend has no bendRecord metadata; lower the shape first.',
-      bend.id,
-      'invalid-args.flattenPattern.unlowered — call evaluate_script or lower the shape before flattenPattern.',
-    );
+    invalidArgs({
+      api: 'flattenPattern(shape)',
+      path: 'bendRecord',
+      gotText: 'no bendRecord metadata',
+      requires: 'a lowered bendRecord — lower the shape before flattenPattern',
+      example: 'sheetMetal(profile, { thickness: 1.5, kFactor: 0.4 }).bend({ atX: 40 }, 90, 2)',
+      featureId: bend.id,
+    });
   }
   const { angleRad, radius } = rec;
   if (typeof angleRad !== 'number' || typeof radius !== 'number') {
-    throw new KernelError(
-      'feature.invalid-args',
-      'flattenPattern: bendRecord has no angle and radius, so its developed length cannot be checked.',
-      bend.id,
-      'invalid-args.flattenPattern.unlowered — call evaluate_script or lower the shape before flattenPattern.',
-    );
+    invalidArgs({
+      api: 'flattenPattern(shape)',
+      path: 'bendRecord',
+      gotText: 'a bendRecord with no angle and radius',
+      requires: 'a lowered bendRecord with a numeric angle and inner radius',
+      example: 'sheetMetal(profile, { thickness: 1.5, kFactor: 0.4 }).bend({ atX: 40 }, 90, 2)',
+      featureId: bend.id,
+    });
   }
   return { angleRad, radius };
 }

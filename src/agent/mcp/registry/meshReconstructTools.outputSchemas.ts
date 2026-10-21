@@ -12,7 +12,7 @@ export const MESH_RECONSTRUCT_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> =
     type: 'object',
     properties: {
       ok: { type: 'boolean' },
-      script: { type: 'string', description: 'The emitted, evaluable .kcad.ts source. Omitted when ok is false because the mesh is not one editable profile.' },
+      script: { type: 'string', description: 'The emitted, evaluable .kcad.ts source (success).' },
       ledger: {
         type: 'object',
         additionalProperties: true,
