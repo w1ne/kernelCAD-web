@@ -31,6 +31,11 @@ export interface WorldFramePart {
   readonly material?: PBRMaterial;
   /** Engineering-material name (e.g. `pla`) from `arm.part(..., { material })`. */
   readonly materialName?: string;
+  /** Identity of the world-frame geometry: the untransformed source shape
+   *  plus a key of the transform applied to it. Two parts with the same
+   *  `source.shape` object and `source.transformKey` are the same geometry,
+   *  so per-part results (viewer dimensions) can be reused. */
+  readonly source?: { readonly shape: object; readonly transformKey: string };
 }
 
 /**
@@ -51,7 +56,11 @@ export function sceneToWorldFrameParts(scene: SceneBackend): WorldFramePart[] {
   }
   return scene.parts.map((p) => {
     const transformed = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
-    const entry: WorldFramePart = { name: p.name, shape: transformed };
+    const entry: WorldFramePart = {
+      name: p.name,
+      shape: transformed,
+      source: { shape: p.shape, transformKey: JSON.stringify(p.worldTransform) },
+    };
     if (p.color !== undefined) {
       (entry as { color?: string }).color = p.color;
     }
@@ -69,5 +78,5 @@ export function sceneToWorldFrameParts(scene: SceneBackend): WorldFramePart[] {
 export function drawingPartsForBackend(lowered: ShapeBackend): WorldFramePart[] {
   return isSceneBackend(lowered)
     ? sceneToWorldFrameParts(lowered)
-    : [{ name: 'part', shape: lowered as OcctBackend }];
+    : [{ name: 'part', shape: lowered as OcctBackend, source: { shape: lowered, transformKey: 'identity' } }];
 }

@@ -768,6 +768,36 @@ export interface RecogniseOptions {
    *  candidate in the radius and chamfer passes; throw from it to abort a
    *  budgeted run. */
   checkpoint?: () => void;
+  /** Return the planar face table (`planar`); default true. False leaves it
+   *  empty and measures a planar face's centre and area only when the
+   *  chamfer pass needs them (the surface integrals dominate recognition);
+   *  holes, radii and chamfers are unchanged. */
+  planar?: boolean;
+}
+
+/**
+ * A planar face's info whose centre, area and offset (surface integrals) are
+ * measured on first read and then kept. Values are the same as measuring them
+ * eagerly; {@link materialisePlanar} turns it into a plain record before it
+ * leaves the recogniser, so no caller holds the face.
+ */
+function lazyPlanarFace(face: Face, index: number): PlanarFaceInfo {
+  const normal = unit(vec(face.normalAt()));
+  const [mn, mx] = face.boundingBox.bounds;
+  let centre: V3 | undefined;
+  let area: number | undefined;
+  const info = { index, normal } as PlanarFaceInfo;
+  Object.defineProperties(info, {
+    centre: { enumerable: true, get: () => (centre ??= vec(face.center)) },
+    area: { enumerable: true, get: () => (area ??= measureArea(face)) },
+    offset: { enumerable: true, get: () => dot(normal, info.centre) },
+  });
+  return Object.assign(info, { min: [mn[0], mn[1], mn[2]] as V3, max: [mx[0], mx[1], mx[2]] as V3 });
+}
+
+/** Plain-data copy of a {@link lazyPlanarFace}, fields in declaration order. */
+function materialisePlanar(p: PlanarFaceInfo): PlanarFaceInfo {
+  return { index: p.index, normal: p.normal, centre: p.centre, area: p.area, offset: p.offset, min: p.min, max: p.max };
 }
 
 export function recogniseDrawingFeatures(backend: OcctBackend, options: RecogniseOptions = {}): DrawingFeatureModel {
@@ -787,18 +817,7 @@ export function recogniseDrawingFeatures(backend: OcctBackend, options: Recognis
     if (facets.has(index)) return;
     const type = (face as unknown as { geomType?: string }).geomType;
     if (type === 'PLANE') {
-      const n = unit(vec(face.normalAt()));
-      const c = vec(face.center);
-      const [mn, mx] = face.boundingBox.bounds;
-      planar.push({
-        index,
-        normal: n,
-        centre: c,
-        area: measureArea(face),
-        offset: dot(n, c),
-        min: [mn[0], mn[1], mn[2]],
-        max: [mx[0], mx[1], mx[2]],
-      });
+      planar.push(lazyPlanarFace(face, index));
     } else if (type === 'CYLINDRE' && wantRadii) {
       const c = cylinderOf(face);
       if (c) cyls.push(c);
@@ -817,7 +836,7 @@ export function recogniseDrawingFeatures(backend: OcctBackend, options: Recognis
   const planarByIndex = new Map(planar.map(p => [p.index, p]));
   const chamfers = wantChamfers ? recogniseChamfers(faces, planarByIndex, options.checkpoint) : [];
   return {
-    planar,
+    planar: options.planar === false ? [] : planar.map(materialisePlanar),
     holes: wantHoles ? holes : [],
     unclassified: wantHoles ? unclassified : [],
     radii,
