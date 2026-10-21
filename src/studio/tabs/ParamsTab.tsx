@@ -61,7 +61,7 @@ export function ParamsTab(): JSX.Element {
     if (controls.length === 0) {
         return (
             <div
-                className="px-4 py-3 text-sm text-gray-500"
+                className="px-4 py-3 text-sm text-fg-3"
                 data-testid="params-empty-state"
             >
                 No parameters update while you drag
