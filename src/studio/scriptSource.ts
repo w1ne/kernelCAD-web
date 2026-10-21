@@ -377,6 +377,7 @@ function hostedMeshBody(
   paramOverrides: ParamOverrides | undefined,
   preferSource?: boolean,
   preview?: boolean,
+  warm?: boolean,
 ) {
   const project = currentHostedProject();
   const projectRef = project
@@ -389,6 +390,7 @@ function hostedMeshBody(
     ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
     ...(generationIds.length > 0 ? { generationIds } : {}),
     ...(preview ? { preview: true } : {}),
+    ...(warm ? { warm: true } : {}),
   };
 }
 
@@ -672,11 +674,12 @@ async function meshViaServer(
   paramOverrides: ParamOverrides | undefined,
   preferSource: boolean | undefined,
   preview?: boolean,
+  warm?: boolean,
 ): Promise<BackendMeshPayload> {
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base !== 'string' || base.length === 0) throw new Error(NO_HOSTED_BACKEND);
   try {
-    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource, preview));
+    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource, preview, warm));
   } catch (error) {
     const stored = storedFallbackAllowed(source, paramOverrides, preferSource) ? await storedRevisionMesh(base) : null;
     if (stored) return stored;
@@ -696,8 +699,9 @@ async function meshViaServer(
 export async function meshSourceHosted(
   source: string,
   paramOverrides?: ParamOverrides,
-  options?: { preferSource?: boolean; preview?: boolean },
+  options?: { preferSource?: boolean; preview?: boolean; warm?: boolean },
 ): Promise<BackendMeshPayload> {
+  if (options?.warm) return meshViaServer(source, undefined, true, false, true);
   const preferSource = options?.preferSource;
   const stored = await meshStoredProject(source, paramOverrides, preferSource);
   if (stored) return stored;

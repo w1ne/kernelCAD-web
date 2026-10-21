@@ -2,9 +2,10 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useRef } from 'react';
 import {
-    shouldUseHostedMesh, devMeshAvailable,
+    shouldUseHostedMesh, devMeshAvailable, needsFullKernel,
     type BackendMeshPayload,
 } from '../../scriptSource';
+import { browserCanEditParams, runBrowserParamEdit } from './browserParamEdit';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import { mergeFeatureGeometries } from './mergeFeatureGeometries';
@@ -19,6 +20,7 @@ interface HostedMeshJob {
     snapshot: ParamEditValues;
     bakeIntoSource?: boolean;
     preview?: boolean;
+    warm?: boolean;
     epoch: number;
 }
 
@@ -34,6 +36,22 @@ interface HostedMeshRun {
  *  stays inside the function-length ratchet. */
 async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promise<void> {
     if (job.epoch !== run.epochRef.current) return;
+    if (job.warm) {
+        await meshParamEdits(run.code, {}, false, false, true).catch(() => undefined);
+        return;
+    }
+    if (browserCanEditParams(run.code, run.deps.engine)) {
+        await runBrowserParamEdit(
+            run.code,
+            job.snapshot,
+            run.deps,
+            job.epoch,
+            run.epochRef,
+            run.executionCount,
+            run.followUpPending,
+        );
+        return;
+    }
     const revision = ++run.deps.mainRevisionRef.current;
     run.deps.setCurrentCodeRevision(revision);
     run.deps.setIsComputing(true);
@@ -102,6 +120,12 @@ export interface ParamUpdateOptions {
  * update when a pooled session exists, full stateless re-mesh otherwise),
  * and the DEV-only `window.__kernelcad` smoke-test install.
  */
+/** One background build of a full-kernel model. The stored mesh stays on screen. */
+function warmHostedModel(code: string): void {
+    if (!shouldUseHostedMesh() || !needsFullKernel(code) || !/\bparam\s*\(/.test(code)) return;
+    void meshParamEdits(code, {}, false, false, true).catch(() => undefined);
+}
+
 export function useParamUpdate(
     code: string,
     sessionToken: string | null,
@@ -126,6 +150,8 @@ export function useParamUpdate(
         paramOverridesRef.current = {};
         codeEpochRef.current += 1;
     }, [code]);
+
+    useEffect(() => { warmHostedModel(code); }, [code]);
 
     const updateParam = useCallback(async (
         edits: { name: string; value: number | boolean | string }[],
