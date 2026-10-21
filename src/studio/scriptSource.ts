@@ -387,7 +387,7 @@ function hostedMeshBody(
   const generationIds = storedRevision ? [] : generationIdsForSource(source);
   return {
     ...(storedRevision ? projectRef : { source, ...(projectRef ?? {}) }),
-    ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
+    ...(hasOverrides(paramOverrides) ? { params: paramOverrides, delta: true } : {}),
     ...(generationIds.length > 0 ? { generationIds } : {}),
     ...(preview ? { preview: true } : {}),
     ...(warm ? { warm: true } : {}),
