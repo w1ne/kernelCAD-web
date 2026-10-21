@@ -1071,14 +1071,20 @@ export class CaptureSession {
   readonly params = {
     list: (): import('../../shared/runtime/paramTable').ParamEntry[] => this.paramTable.list(),
 
-    update: async (edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> => this.runParamUpdate(edits),
+    update: async (
+      edits: ParamUpdateEdit[],
+      options?: { preview?: boolean },
+    ): Promise<ParamUpdateResult> => this.runParamUpdate(edits, options),
   };
 
   /** Compatibility facade for `params.update`. Recompute orchestration lives
    *  in `src/modeling/paramUpdate.ts` (re-exported by `buildModel`) so CLI,
    *  MCP, and direct session updates share the same cache/warning/tail-shape
    *  policy without an edge from this file into the build pipeline. */
-  private async runParamUpdate(edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> {
+  private async runParamUpdate(
+    edits: ParamUpdateEdit[],
+    options?: { preview?: boolean },
+  ): Promise<ParamUpdateResult> {
     const { updateModelParams } = await import('../paramUpdate');
     const records = this.getRecords();
     const shapes = new Map<string, ShapeBackend>();
@@ -1093,7 +1099,7 @@ export class CaptureSession {
       warnings: [],
       tailId,
       tailShape: tailId ? this.cachedShapes.get(tailId) : undefined,
-    }, edits);
+    }, edits, options?.preview ? { preview: true } : undefined);
     return result;
   }
 }
