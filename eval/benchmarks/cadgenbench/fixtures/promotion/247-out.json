@@ -1,0 +1,258 @@
+{
+  "ok": true,
+  "report": {
+    "file": "output.step",
+    "solidCount": 1,
+    "solids": [
+      {
+        "index": 0,
+        "name": null,
+        "bboxExact": {
+          "min": [
+            -502.6141662597656,
+            -417.06695556640625,
+            -110
+          ],
+          "max": [
+            502.6141662597656,
+            398.4362487792969,
+            110
+          ]
+        },
+        "volumeMm3": 49946617.62305226,
+        "faceCount": 1027,
+        "holes": [
+          {
+            "axisOrigin": [
+              323.88475754757,
+              -28.21847122665,
+              107.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 120,
+            "depthMm": 213,
+            "kind": "through",
+            "faceCount": 2,
+            "partial": true,
+            "angularCoverageDeg": 329
+          },
+          {
+            "axisOrigin": [
+              106.2884404303,
+              -256.9916455114,
+              107.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 120,
+            "depthMm": 213,
+            "kind": "through",
+            "faceCount": 2
+          },
+          {
+            "axisOrigin": [
+              -408.2149910469,
+              159.6012069017,
+              109.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 50.875688798628,
+            "depthMm": 128,
+            "kind": "through",
+            "faceCount": 2
+          },
+          {
+            "axisOrigin": [
+              61.101089656766,
+              -371.6290962898,
+              107.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 50.875688798628,
+            "depthMm": 128,
+            "kind": "through",
+            "faceCount": 2
+          },
+          {
+            "axisOrigin": [
+              98.03834896772,
+              -28.21847122665,
+              -105
+            ],
+            "axisDirection": [
+              0,
+              0,
+              1
+            ],
+            "diameterMm": 310,
+            "depthMm": 203,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              247.86667372415,
+              352.99841405437,
+              107.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 50.875688798628,
+            "depthMm": 126,
+            "kind": "through",
+            "faceCount": 2
+          },
+          {
+            "axisOrigin": [
+              411.88708991692,
+              204.89042629821,
+              107.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 50.875688798628,
+            "depthMm": 126,
+            "kind": "through",
+            "faceCount": 2
+          },
+          {
+            "axisOrigin": [
+              -173.2006633677,
+              329.74178787778,
+              107.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 50.875688798628,
+            "depthMm": 126,
+            "kind": "through",
+            "faceCount": 2
+          },
+          {
+            "axisOrigin": [
+              -457.1763093134,
+              -150.5789190551,
+              107.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 50.875688798628,
+            "depthMm": 126,
+            "kind": "through",
+            "faceCount": 2
+          },
+          {
+            "axisOrigin": [
+              -388.8633569903,
+              -54.89546642755,
+              107.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 52,
+            "depthMm": 126,
+            "kind": "through",
+            "faceCount": 2
+          },
+          {
+            "axisOrigin": [
+              -246.6426407674,
+              -180.6799550504,
+              107.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 50.875688798628,
+            "depthMm": 126,
+            "kind": "through",
+            "faceCount": 2
+          },
+          {
+            "axisOrigin": [
+              457.17630931343,
+              -147.6310652205,
+              107.99999999997
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 50.875688798628,
+            "depthMm": 126,
+            "kind": "through",
+            "faceCount": 2
+          },
+          {
+            "axisOrigin": [
+              98.03834896772,
+              -28.21847122665,
+              101.58389376938
+            ],
+            "axisDirection": [
+              0,
+              0,
+              1
+            ],
+            "diameterMm": 188,
+            "depthMm": 3.416106230590003,
+            "kind": "through",
+            "faceCount": 2
+          },
+          {
+            "axisOrigin": [
+              310.52337515362,
+              268.37363909513,
+              -18.000000000029
+            ],
+            "axisDirection": [
+              0,
+              0,
+              1
+            ],
+            "diameterMm": 25,
+            "depthMm": 8.000000000009,
+            "kind": "blind",
+            "faceCount": 2
+          }
+        ],
+        "holeDetection": "heuristic"
+      }
+    ],
+    "holeDetection": "heuristic"
+  },
+  "diagnostics": []
+}
