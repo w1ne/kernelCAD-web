@@ -224,7 +224,7 @@ describe('param overrides (stateless re-run path)', () => {
     expect(String(fetchMock.mock.calls[0][0])).toBe('https://api.example.com/__kernelcad/mesh');
     expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/__kernelcad/mesh', expect.objectContaining({
       method: 'POST',
-      body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 7 } }),
+      body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 7 }, delta: true }),
     }));
   });
 
@@ -240,7 +240,7 @@ describe('param overrides (stateless re-run path)', () => {
 
     expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/__kernelcad/mesh', expect.objectContaining({
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer tok' },
-      body: JSON.stringify({ source, params: { w: 1 }, generationIds: ['gen-1'] }),
+      body: JSON.stringify({ source, params: { w: 1 }, delta: true, generationIds: ['gen-1'] }),
     }));
     clearGenerationAssets();
   });
@@ -278,7 +278,7 @@ describe('param overrides (stateless re-run path)', () => {
       'https://api.example.com/__kernelcad/mesh',
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ projectSlug: 'keycap-123', params: { dishDepth: 1 } }),
+        body: JSON.stringify({ projectSlug: 'keycap-123', params: { dishDepth: 1 }, delta: true }),
       }),
     );
   });
@@ -299,7 +299,7 @@ describe('param overrides (stateless re-run path)', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.example.com/__kernelcad/mesh',
       expect.objectContaining({
-        body: JSON.stringify({ projectSlug: 'keycap-123', projectVersion: 7, params: { dishDepth: 1 } }),
+        body: JSON.stringify({ projectSlug: 'keycap-123', projectVersion: 7, params: { dishDepth: 1 }, delta: true }),
       }),
     );
   });
@@ -445,7 +445,7 @@ describe('param overrides (stateless re-run path)', () => {
     await meshSourceHosted('live updated code', { w: 2 });
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.example.com/__kernelcad/mesh',
-      expect.objectContaining({ body: JSON.stringify({ source: 'live updated code', projectSlug: 'BHEaiMyr', projectVersion: 2, params: { w: 2 } }) }),
+      expect.objectContaining({ body: JSON.stringify({ source: 'live updated code', projectSlug: 'BHEaiMyr', projectVersion: 2, params: { w: 2 }, delta: true }) }),
     );
   });
 
@@ -612,7 +612,7 @@ describe('param overrides (stateless re-run path)', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.example.com/__kernelcad/mesh',
       expect.objectContaining({
-        body: JSON.stringify({ source: "param('Cap', 'round')", projectSlug: 'keycap-123', params: { dishDepth: 1 } }),
+        body: JSON.stringify({ source: "param('Cap', 'round')", projectSlug: 'keycap-123', params: { dishDepth: 1 }, delta: true }),
       }),
     );
   });
