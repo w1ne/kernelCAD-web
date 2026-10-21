@@ -6,7 +6,8 @@ import { flattenPattern } from '../../../src/kernel/backends/occt/flattenPattern
 import { KernelError } from '../../../src/shared/intent/kernelError';
 import type { FeatureRecord } from '../../../src/shared/intent/featureRecord';
 import { chooseConstruction } from '../../../src/modeling/validation/manufacturingScore';
-import { dishonestImportReason, importedSolidScript } from '../../../src/agent/reconstruct/honestImport';
+import { dishonestImportReason } from '../../../src/agent/reconstruct/honestImport';
+import { pickNearOverlap } from '../../../src/modeling/validation/manufacturingScore';
 import { unconstrainedSketchError } from '../../../src/agent/mcp/tools/constraints';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createModelingApi } from '../../../src/modeling/api';
@@ -21,33 +22,18 @@ describe('a local op that returns the same solid', () => {
 
 describe('flattenPattern refuses a bend with no developed length', () => {
   it('throws when the sheet has a bend and no K-factor', () => {
-    const records = [
-      sketchRecord(),
-      {
-        id: 'sm',
-        kind: 'sheetMetal',
-        params: { thickness: { evaluated: 1.5 } },
-        inputs: { sketch: { kind: 'feature', id: 'sk' } },
-        metadata: {},
-      },
-      {
-        id: 'bd',
-        kind: 'sheetMetalBend',
-        params: {},
-        inputs: { base: { kind: 'feature', id: 'sm' } },
-        metadata: {
-          bendRecord: {
-            axisOrigin: [5, 0, 0],
-            axisDirection: [0, 1, 0],
-            edgeLength: 4,
-            angleRad: Math.PI / 2,
-            radius: 1,
-          },
-        },
-      },
-    ] as unknown as FeatureRecord[];
+    const records = bentSheet(undefined);
     expect(() => flattenPattern(records)).toThrow(KernelError);
     expect(() => flattenPattern(records)).toThrow(/K-factor/);
+  });
+
+  it('flattens a bend whose K-factor is 0, and an unlowered bend still names bendRecord', () => {
+    const records = bentSheet(0);
+    expect(flattenPattern(records).bendLines).toHaveLength(1);
+    const unlowered = records.map((record) => record.kind === 'sheetMetalBend'
+      ? { ...record, metadata: {} }
+      : record) as FeatureRecord[];
+    expect(() => flattenPattern(unlowered)).toThrow(/bendRecord/);
   });
 });
 
@@ -69,11 +55,25 @@ describe('chooseConstruction', () => {
 });
 
 describe('honest import', () => {
-  it('keeps one profile and labels everything else as an imported solid', () => {
-    expect(dishonestImportReason({ unmatched: 0, bodyBlocks: 1, booleanRemainders: 0 })).toBeNull();
-    const reason = dishonestImportReason({ unmatched: 2, bodyBlocks: 1, booleanRemainders: 0 });
-    expect(reason).toMatch(/no feature/);
-    expect(importedSolidScript(reason!)).toContain('lib.fromSTEP');
+  it('keeps one extrude and a multi-step revolve, and names a boolean subtract', () => {
+    const one = { body: 'extrude' as const, extrudeBlocks: 1, booleanRemainders: 0, unmatched: 0 };
+    expect(dishonestImportReason(one)).toBeNull();
+    expect(dishonestImportReason({ ...one, body: 'revolve', extrudeBlocks: 3 })).toBeNull();
+    expect(dishonestImportReason({ ...one, extrudeBlocks: 2 })).toMatch(/more than one extruded/);
+    expect(dishonestImportReason({ ...one, booleanRemainders: 1 })).toMatch(/boolean subtract/);
+    expect(dishonestImportReason({ ...one, unmatched: 2 })).toMatch(/no feature/);
+  });
+});
+
+describe('pickNearOverlap', () => {
+  it('picks the same winner regardless of input order', () => {
+    const counts = { plainHoles: 0, counterbores: 0, fillets: 0, booleanCuts: 0 };
+    const a = { verdict: 'approximate' as const, iou: 1, deviationMm: 0.1, counts, value: 'plain' };
+    const b = { verdict: 'approximate' as const, iou: 0.985, deviationMm: 0.1, counts: { ...counts, counterbores: 4 }, value: 'bored' };
+    const c = { verdict: 'approximate' as const, iou: 0.97, deviationMm: 0.1, counts: { ...counts, counterbores: 8 }, value: 'far' };
+    expect(pickNearOverlap([a, b, c])?.value).toBe('bored');
+    expect(pickNearOverlap([c, a, b])?.value).toBe('bored');
+    expect(pickNearOverlap([b, c, a])?.value).toBe('bored');
   });
 });
 
@@ -109,6 +109,37 @@ describe('a joint proposal', () => {
     expect(() => arm.mate('spin', 'base.ax', 'base.ax', 'revolute')).toThrow(/same connector/);
   });
 });
+
+function bentSheet(kFactor: number | undefined): FeatureRecord[] {
+  const sheetParams = kFactor === undefined
+    ? { thickness: { evaluated: 1.5 } }
+    : { thickness: { evaluated: 1.5 }, kFactor: { evaluated: kFactor } };
+  return [
+    sketchRecord(),
+    {
+      id: 'sm',
+      kind: 'sheetMetal',
+      params: sheetParams,
+      inputs: { sketch: { kind: 'feature', id: 'sk' } },
+      metadata: {},
+    },
+    {
+      id: 'bd',
+      kind: 'sheetMetalBend',
+      params: {},
+      inputs: { base: { kind: 'feature', id: 'sm' } },
+      metadata: {
+        bendRecord: {
+          axisOrigin: [5, 0, 0],
+          axisDirection: [0, 1, 0],
+          edgeLength: 4,
+          angleRad: Math.PI / 2,
+          radius: 1,
+        },
+      },
+    },
+  ] as unknown as FeatureRecord[];
+}
 
 function sketchRecord(): FeatureRecord {
   return {

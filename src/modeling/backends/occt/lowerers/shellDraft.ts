@@ -20,7 +20,7 @@ import { drainResolvedWarnings } from './helpers';
 
 /** `shell` — hollows a solid, opening the selected face. */
 export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
-  let shape: ShapeBackend;
+  let shape: OcctBackend;
   const base = ctx.inputs.byKey.base as OcctBackend | undefined;
   if (!base) {
     ctx.diagnostics.push({
@@ -91,7 +91,7 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
 }
 
 function topoOf(backend: OcctBackend): unknown {
-  return (backend.shape as { wrapped: unknown }).wrapped;
+  return backend.getReplicadShape().wrapped;
 }
 
 /** True when the op returned a solid with the same volume and the same faces. */

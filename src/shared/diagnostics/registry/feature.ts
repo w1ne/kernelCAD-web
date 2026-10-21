@@ -37,6 +37,14 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'shell() fell back to offset-and-subtract after every BRepOffsetAPI_MakeThickSolid join mode failed.',
   },
+  'feature.shell.unchanged': {
+    hintTemplate:
+      'A shell that leaves the volume and the face count alone did not hollow the body. The wall is thicker than the body can take, or the open face was not cut. The unshellled solid is not a successful shell.',
+    nextAction: { kind: 'retry-with-smaller-param', param: 'thickness', factor: 0.5 },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'shell() returned a solid with the same volume and the same faces as its input.',
+  },
   // Specific retries (2)
   'feature.revolve.crosses-axis': {
     hintTemplate:
@@ -368,6 +376,14 @@ export const FEATURE_CODES = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'BRepOffsetAPI_DraftAngle could not taper the requested faces.',
+  },
+  'feature.draft.unchanged': {
+    hintTemplate:
+      'A draft that leaves the volume and the face count alone did not taper the face. Pick a side face and a pull direction that is not parallel to that face.',
+    nextAction: { kind: 'fix-arg', field: 'face' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'draft() returned a solid with the same volume and the same faces as its input.',
   },
   'feature.draft.neutral-plane-derived': {
     hintTemplate:

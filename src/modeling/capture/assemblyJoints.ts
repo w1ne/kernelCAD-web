@@ -304,7 +304,7 @@ function assertMateConnectorPair(
       path: 'bRef',
       gotText: `the same connector as aRef ('${aRef}')`,
       requires:
-        'two different connectors — a joint proposal that names one face for both sides does not mate anything, and the assembly does not keep it',
+        'two different connectors — a joint proposal that names one connector for both sides does not mate anything, and the assembly does not keep it',
       hintSlug: 'invalid-args.assembly.mate-same-connector',
       example: "arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute')",
     });

@@ -83,9 +83,7 @@ export interface ListConstraintsOutput {
   constraints: Constraint[];
 }
 
-/** A sketch with lines or circles and no constraints is not finished.
- *  Fixed points are an explicit lock and count. An empty constraint list on
- *  free geometry used to converge, because there was nothing to violate. */
+/** Fixed points are an explicit lock. Free lines or circles with no constraint are not a finished sketch. */
 export function unconstrainedSketchError(
   entities: readonly SketchEntity[],
   constraints: readonly Constraint[],

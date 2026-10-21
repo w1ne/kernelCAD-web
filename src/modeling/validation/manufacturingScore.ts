@@ -21,11 +21,6 @@ export interface ConstructionCandidate<T> {
   value: T;
 }
 
-/** Higher means more named manufacturing features and fewer anonymous cuts. */
-export function constructionRank(counts: ManufacturingCounts): number {
-  return counts.counterbores + counts.fillets + counts.plainHoles - counts.booleanCuts;
-}
-
 /** How far `actual` is from the features the part is supposed to have. */
 export function manufacturingDistance(expected: ManufacturingCounts, actual: ManufacturingCounts): number {
   const depth = expected.depthMm !== undefined && actual.depthMm !== undefined
@@ -37,6 +32,39 @@ export function manufacturingDistance(expected: ManufacturingCounts, actual: Man
     + Math.abs(expected.fillets - actual.fillets)
     + Math.abs(expected.booleanCuts - actual.booleanCuts)
     + depth;
+}
+
+export interface RankedPass {
+  verdict: 'faithful' | 'approximate' | 'failed';
+  iou: number;
+  deviationMm: number;
+  counts: ManufacturingCounts;
+}
+
+/**
+ * Pick one reconstruction. Verdict first. Inside 0.02 of the best overlap
+ * for that verdict, counterbores, then fillets, then fewer boolean cuts,
+ * then plain holes. The band is measured from the best overlap, so the
+ * order does not depend on which pair is compared first.
+ */
+export function pickNearOverlap<T extends RankedPass>(candidates: readonly T[]): T | undefined {
+  if (candidates.length === 0) return undefined;
+  const verdictRank = { faithful: 0, approximate: 1, failed: 2 } as const;
+  const bestVerdict = Math.min(...candidates.map((candidate) => verdictRank[candidate.verdict]));
+  const inVerdict = candidates.filter((candidate) => verdictRank[candidate.verdict] === bestVerdict);
+  const bestIou = Math.max(...inVerdict.map((candidate) => candidate.iou));
+  const band = inVerdict.filter((candidate) => bestIou - candidate.iou <= 0.02);
+  return [...band].sort((a, b) =>
+    featureCompare(a.counts, b.counts) || b.iou - a.iou || a.deviationMm - b.deviationMm
+  )[0];
+}
+
+/** Negative when `a` should come first. Counterbores outrank plain holes. */
+function featureCompare(a: ManufacturingCounts, b: ManufacturingCounts): number {
+  return (b.counterbores - a.counterbores)
+    || (b.fillets - a.fillets)
+    || (a.booleanCuts - b.booleanCuts)
+    || (b.plainHoles - a.plainHoles);
 }
 
 /**

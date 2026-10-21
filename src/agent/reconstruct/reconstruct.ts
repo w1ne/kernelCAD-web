@@ -19,8 +19,8 @@ import { analyseMesh, type MeshAnalysis, type UnmatchedCandidate, type Unmatched
 import { buildPlan, withFillets, type FeaturePlan, type OutlineKind, type PassParams, type RoundsKind } from './plan';
 import { detectEdgeBlends, groupBlends, selectorsForGroup } from './blends';
 import { emitScript, num } from './emit';
-import { dishonestImportReason, importedSolidScript } from './honestImport';
-import { constructionRank, type ManufacturingCounts } from '../../modeling/validation/manufacturingScore';
+import { dishonestImportReason } from './honestImport';
+import { pickNearOverlap, type ManufacturingCounts } from '../../modeling/validation/manufacturingScore';
 import {
   classifyFidelity,
   maxDistanceToMesh,
@@ -93,8 +93,6 @@ export interface PassSummary {
 export interface ReconstructSuccess {
   ok: true;
   script: string;
-  /** `script` is an editable feature tree, or a label that the solid stayed imported. */
-  importKind?: 'script' | 'imported-solid';
   ledger: AssumptionLedger;
   fidelity: FidelityReport;
   unmatchedRegions: UnmatchedRegion[];
@@ -282,26 +280,13 @@ async function runReconstructionPass(
 }
 
 function selectBestOutcome(outcomes: PassOutcome[]): PassOutcome | undefined {
-  const rank = { faithful: 0, approximate: 1, failed: 2 } as const;
-  const measured = outcomes.filter((o) => o.metrics);
-  measured.sort((a, b) => compareOutcomes(a, b, rank));
-  return measured[0];
-}
-
-/** Within 0.02 overlap, hole type, fillets, and named cuts beat a lookalike. */
-function compareOutcomes(
-  a: PassOutcome,
-  b: PassOutcome,
-  verdictRank: { faithful: number; approximate: number; failed: number },
-): number {
-  const verdict = verdictRank[a.summary.verdict!] - verdictRank[b.summary.verdict!];
-  if (verdict !== 0) return verdict;
-  const iouGap = b.metrics!.volumeIoU - a.metrics!.volumeIoU;
-  if (Math.abs(iouGap) > 0.02) return iouGap > 0 ? 1 : -1;
-  const features = constructionRank(countsOf(b)) - constructionRank(countsOf(a));
-  if (features !== 0) return features;
-  if (iouGap !== 0) return iouGap > 0 ? 1 : -1;
-  return a.metrics!.maxDeviationMm - b.metrics!.maxDeviationMm;
+  return pickNearOverlap(outcomes.filter((outcome) => outcome.metrics).map((outcome) => ({
+    verdict: outcome.summary.verdict!,
+    iou: outcome.metrics!.volumeIoU,
+    deviationMm: outcome.metrics!.maxDeviationMm,
+    counts: countsOf(outcome),
+    outcome,
+  })))?.outcome;
 }
 
 function countsOf(outcome: PassOutcome): ManufacturingCounts {
@@ -314,14 +299,27 @@ function countsOf(outcome: PassOutcome): ManufacturingCounts {
   };
 }
 
-function withholdDishonestScript(result: ReconstructSuccess): ReconstructSuccess {
-  const reason = dishonestImportReason({
-    unmatched: result.unmatchedRegions.length,
-    bodyBlocks: result.features.bodyBlocks,
-    booleanRemainders: result.features.booleanRemainders,
-  });
-  if (reason === null) return { ...result, importKind: 'script' };
-  return { ...result, importKind: 'imported-solid', script: importedSolidScript(reason) };
+function refuseDishonestImport(
+  reason: string,
+  passes: PassSummary[],
+  mesh: MeshReport,
+  diagnostics: CompilerDiagnostic[],
+): ReconstructFailure {
+  return {
+    ok: false,
+    error: `mesh_to_features: ${reason}. Leave the mesh as lib.fromSTL or lib.fromSTEP.`,
+    errorCode: 'reference.mesh.not-a-single-profile',
+    passes,
+    mesh,
+    diagnostics: [...diagnostics, {
+      target: 'export-occt',
+      code: 'reference.mesh.not-a-single-profile',
+      severity: 'error',
+      message: reason,
+      hint: 'Leave the mesh as lib.fromSTL or lib.fromSTEP. The measured feature tree is not one editable profile, so it is not returned as a script.',
+      nextAction: NEXT_ACTIONS['reference.mesh.not-a-single-profile'],
+    }],
+  };
 }
 
 async function buildReconstructSuccess(
@@ -330,7 +328,7 @@ async function buildReconstructSuccess(
   winner: PassOutcome,
   thresholds: FidelityThresholds,
   passes: PassSummary[],
-): Promise<ReconstructSuccess> {
+): Promise<ReconstructResult> {
   const { analysis, evaluate, sourceName } = ctx;
   const m = winner.metrics!;
   const verdict = winner.summary.verdict!;
@@ -363,7 +361,7 @@ async function buildReconstructSuccess(
   const ledger = buildMeshLedger(analysis, { ...winner.plan, notRepresented }, soup, unmatched);
   const diagnostics = buildDiagnostics(analysis, fidelity, unmatched);
   const plan = winner.plan;
-  return withholdDishonestScript({
+  const built: ReconstructSuccess = {
     ok: true,
     script,
     ledger,
@@ -392,7 +390,15 @@ async function buildReconstructSuccess(
     passes,
     notRepresented,
     diagnostics,
+  };
+  const reason = dishonestImportReason({
+    body: plan.body.kind,
+    extrudeBlocks: plan.body.kind === 'extrude' ? plan.body.blocks.length : 1,
+    booleanRemainders: built.features.booleanRemainders,
+    unmatched: unmatched.length,
   });
+  if (reason !== null) return refuseDishonestImport(reason, passes, analysis.report, diagnostics);
+  return built;
 }
 
 export async function reconstructFromSoup(

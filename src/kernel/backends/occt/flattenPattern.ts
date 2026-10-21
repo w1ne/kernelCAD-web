@@ -172,32 +172,28 @@ function resolveSketchOutline(
   return extractPolylineFromSketch(sketchRec);
 }
 
-/**
- * A bend with no K-factor, or a K-factor outside (0, 1), still used to return
- * the sketch outline and call it a flat pattern. The developed length of a
- * bend is `angleRad * (kFactor * thickness + radius)`. That length has to be
- * a positive finite number or the pattern is not the blank the bend consumed.
- */
+/** A non-positive developed length is not the blank the bend consumed. */
 function assertDevelopedAllowance(root: FeatureRecord, bends: FeatureRecord[]): void {
   if (bends.length === 0) return;
+  const records = bends.map(bendRecordOf);
   const kFactor = evaluatedNumber(root, 'kFactor');
   const thickness = evaluatedNumber(root, 'thickness');
-  if (kFactor === undefined || !(kFactor > 0 && kFactor < 1) || thickness === undefined || !(thickness > 0)) {
+  if (kFactor === undefined || !Number.isFinite(kFactor) || kFactor < 0 || kFactor > 1 || thickness === undefined || !(thickness > 0)) {
     throw new KernelError(
       'feature.invalid-args',
-      'flattenPattern: a bend needs a K-factor in (0, 1) and a thickness > 0. Without them the flat outline is not the developed blank.',
+      'flattenPattern: a bend needs a K-factor in [0, 1] and a thickness > 0. Without them the flat outline is not the developed blank.',
       root.id,
-      'invalid-args.flattenPattern.k-factor — sheetMetal(profile, { thickness, kFactor }) with 0 < kFactor < 1.',
+      'invalid-args.flattenPattern.k-factor — sheetMetal(profile, { thickness, kFactor }) with 0 <= kFactor <= 1.',
     );
   }
-  for (const bend of bends) {
-    const rec = bendRecordOf(bend);
+  for (let i = 0; i < bends.length; i++) {
+    const rec = records[i];
     const allowance = Math.abs(rec.angleRad) * (kFactor * thickness + rec.radius);
     if (!(allowance > 0) || !Number.isFinite(allowance)) {
       throw new KernelError(
         'feature.kernel-failed',
-        `flattenPattern: bend '${bend.id}' develops to ${allowance} mm, which is not a flat length.`,
-        bend.id,
+        `flattenPattern: bend '${bends[i].id}' develops to ${allowance} mm, which is not a flat length.`,
+        bends[i].id,
         'kernel-failed.flattenPattern.allowance — the bend angle and inner radius have to produce a positive developed length.',
       );
     }
