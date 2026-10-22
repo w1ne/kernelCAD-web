@@ -297,10 +297,29 @@ function isAbortLike(error: unknown): boolean {
   return typeof error === 'object' && error !== null && (error as { name?: unknown }).name === 'AbortError';
 }
 
+type DevMeshOpts = { quality?: 'coarse'; preview?: boolean; doc?: string; generation?: number };
+
+function devMeshBody(source: string, paramOverrides: ParamOverrides | undefined, opts: DevMeshOpts | undefined): string {
+  return JSON.stringify({
+    source,
+    ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
+    ...(opts?.quality === 'coarse' ? { quality: 'coarse' } : {}),
+    ...(opts?.preview ? { preview: true } : {}),
+  });
+}
+
+/** The queue's doc/generation fields, omitted when the caller has none. */
+function rebuildDocFields(opts: { doc?: string; generation?: number } | undefined): { doc?: string; generation?: number } {
+  return {
+    ...(opts?.doc ? { doc: opts.doc } : {}),
+    ...(opts?.generation !== undefined ? { generation: opts.generation } : {}),
+  };
+}
+
 export async function meshSourceDev(
   source: string,
   paramOverrides?: ParamOverrides,
-  opts?: { quality?: 'coarse'; preview?: boolean; doc?: string; generation?: number },
+  opts?: DevMeshOpts,
 ): Promise<BackendMeshPayload> {
   // Route through `apiCall()` so embed-mode hosts (StudioConfigProvider
   // with a `backendUrl`) get the correct prefix; standalone dev with no
@@ -313,16 +332,10 @@ export async function meshSourceDev(
     init: {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...headers },
-      body: JSON.stringify({
-        source,
-        ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
-        ...(opts?.quality === 'coarse' ? { quality: 'coarse' } : {}),
-        ...(opts?.preview ? { preview: true } : {}),
-      }),
+      body: devMeshBody(source, paramOverrides, opts),
     },
     label: rebuildLabel(opts?.quality === 'coarse' ? 'Preview mesh' : 'Model mesh', paramOverrides),
-    ...(opts?.doc ? { doc: opts.doc } : {}),
-    ...(opts?.generation !== undefined ? { generation: opts.generation } : {}),
+    ...rebuildDocFields(opts),
   });
   const payload = response.body as { error?: unknown } | null;
   if (!response.ok) {
