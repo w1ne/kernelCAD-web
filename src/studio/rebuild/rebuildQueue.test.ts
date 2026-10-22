@@ -281,7 +281,7 @@ describe('rebuild queue errors', () => {
 });
 
 describe('rebuild queue crash', () => {
-  it('rejects the running and the queued rebuilds and starts a new transport', async () => {
+  it('rejects the running rebuild and starts the queued one on a new transport', async () => {
     const transports: FakeTransport[] = [];
     const queue = new RebuildQueue({
       createTransport: () => {
@@ -298,15 +298,64 @@ describe('rebuild queue crash', () => {
     transports[0].crash('worker gone');
 
     await expect(running).rejects.toThrow('Rebuild worker crashed: worker gone');
-    await expect(queued).rejects.toThrow('Rebuild worker crashed: worker gone');
     expect(queue.getSnapshot().lastError?.message).toContain('Rebuild worker crashed');
-    expect(queue.getSnapshot().jobs).toHaveLength(0);
     expect(transports[0].disposed).toBe(true);
-
-    const next = queue.fetchJson({ url: '/3', label: 'Three' });
     expect(transports).toHaveLength(2);
+    expect(transports[1].fetches().map((f) => f.url)).toEqual(['/2']);
     transports[1].emit(done(transports[1].fetches()[0].jobId));
+    await expect(queued).resolves.toMatchObject({ ok: true });
+  });
+
+  it('keeps a crash of only speculative reads out of the last error', async () => {
+    const transport = new FakeTransport();
+    const queue = new RebuildQueue({ createTransport: () => transport });
+    const read = queue.fetchJson({ url: '/stored', label: 'Stored', reportErrors: false });
+    transport.crash('gone');
+    await expect(read).rejects.toThrow('Rebuild worker crashed');
+    expect(queue.getSnapshot().lastError).toBeNull();
+  });
+});
+
+describe('rebuild queue slots', () => {
+  it('hands the slot of a caller-cancelled rebuild to the next queued one', async () => {
+    const transport = new FakeTransport();
+    const queue = new RebuildQueue({ createTransport: () => transport, maxConcurrent: 1 });
+    const controller = new AbortController();
+    const first = queue.fetchJson({ url: '/a', label: 'A', signal: controller.signal });
+    const second = queue.fetchJson({ url: '/b', label: 'B' });
+    expect(transport.fetches().map((f) => f.url)).toEqual(['/a']);
+
+    controller.abort();
+    await expect(first).rejects.toMatchObject({ name: 'AbortError' });
+    expect(transport.fetches().map((f) => f.url)).toContain('/b');
+    transport.emit(done(transport.fetches().find((f) => f.url === '/b')!.jobId));
+    await expect(second).resolves.toMatchObject({ ok: true });
+  });
+
+  it('rejects a rebuild whose message cannot be posted and frees its slot', async () => {
+    const transport = new FakeTransport();
+    let refuse = true;
+    const post = transport.post.bind(transport);
+    transport.post = (message) => {
+      if (refuse && message.type === 'fetch') { refuse = false; throw new Error('DataCloneError'); }
+      post(message);
+    };
+    const queue = new RebuildQueue({ createTransport: () => transport, maxConcurrent: 1 });
+    await expect(queue.fetchJson({ url: '/x', label: 'X' })).rejects.toThrow('DataCloneError');
+    const next = queue.fetchJson({ url: '/y', label: 'Y' });
+    transport.emit(done(transport.fetches()[0].jobId));
     await expect(next).resolves.toMatchObject({ ok: true });
+  });
+
+  it('a request without a generation does not cancel a generation-ordered rebuild', async () => {
+    const transport = new FakeTransport();
+    const queue = new RebuildQueue({ createTransport: () => transport });
+    const current = queue.fetchJson({ url: '/edit', label: 'Edit', doc: 'doc-n', generation: 3 });
+    const other = queue.fetchJson({ url: '/plain', label: 'Plain', doc: 'doc-n' });
+    expect(transport.cancels()).toHaveLength(0);
+    for (const fetch of transport.fetches()) transport.emit(done(fetch.jobId));
+    await expect(current).resolves.toMatchObject({ ok: true });
+    await expect(other).resolves.toMatchObject({ ok: true });
   });
 });
 
@@ -402,5 +451,17 @@ describe('speculative reads', () => {
     transport.emit({ type: 'done', jobId: request.jobId, ok: false, status: 404, statusText: 'Not Found', retryAfter: null, body: null });
     await expect(miss).resolves.toMatchObject({ ok: false, status: 404 });
     expect(queue.getSnapshot().lastError).toBeNull();
+  });
+
+  it('do not clear an error the user is looking at when they succeed', async () => {
+    const transport = new FakeTransport();
+    const queue = new RebuildQueue({ createTransport: () => transport });
+    const failing = queue.fetchJson({ url: '/model', label: 'Model' });
+    transport.emit({ type: 'failed', jobId: transport.fetches()[0].jobId, message: 'boom', aborted: false });
+    await expect(failing).rejects.toThrow('boom');
+    const read = queue.fetchJson({ url: '/stored', label: 'Stored', reportErrors: false });
+    transport.emit(done(transport.fetches()[1].jobId));
+    await read;
+    expect(queue.getSnapshot().lastError?.message).toBe('boom');
   });
 });

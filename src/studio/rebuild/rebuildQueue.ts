@@ -146,6 +146,13 @@ function errorTextFromBody(body: unknown, status: number): string {
   return `HTTP ${status}`;
 }
 
+/** True when a job of generation `job` is superseded by a request of
+ *  generation `incoming`. Missing generations only compare with each other. */
+function isOlder(job: number | undefined, incoming: number | undefined): boolean {
+  if (job === undefined || incoming === undefined) return job === undefined && incoming === undefined;
+  return job < incoming;
+}
+
 function byId(a: RebuildJobView, b: RebuildJobView): number {
   return a.id - b.id;
 }
@@ -313,12 +320,13 @@ export class RebuildQueue {
   }
 
   /** Cancel every older job of the same document. Jobs of the same edit
-   *  (equal generation) are its own legs and stay. */
+   *  (equal generation) are its own legs and stay. A request without a
+   *  generation cannot tell which edit is newer, so it only supersedes other
+   *  generation-less jobs. */
   private supersedeDoc(doc: string | null, generation?: number): void {
     if (!doc) return;
     for (const job of [...this.jobs.values()]) {
-      if (job.doc !== doc) continue;
-      if (generation !== undefined && job.generation !== undefined && job.generation >= generation) continue;
+      if (job.doc !== doc || !isOlder(job.generation, generation)) continue;
       this.cancelJob(job, new RebuildSupersededError(job.label));
     }
   }
@@ -330,6 +338,9 @@ export class RebuildQueue {
       this.finishFetchJob(job);
       if (job.state === 'running') this.postCancel(job.id);
       job.reject(error);
+      // The worker's late reply to a cancelled job is ignored, so the slot
+      // it held is handed to the next queued job here.
+      this.pump();
       return true;
     }
     job.settled = true;
@@ -395,7 +406,12 @@ export class RebuildQueue {
       this.failFetchJob(job, this.transportError ?? new Error('The rebuild worker could not be created.'));
       return;
     }
-    transport.post({ type: 'fetch', jobId: job.id, url: job.url, init: job.init });
+    try {
+      transport.post({ type: 'fetch', jobId: job.id, url: job.url, init: job.init });
+    } catch (error) {
+      this.failFetchJob(job, error instanceof Error ? error : new Error(String(error)));
+      this.pump();
+    }
   }
 
   private ensureTransport(): RebuildTransport | null {
@@ -447,10 +463,11 @@ export class RebuildQueue {
     const job = this.jobs.get(message.jobId);
     if (!job || job.kind !== 'fetch' || job.settled) return;
     this.finishFetchJob(job);
-    if (message.ok) {
-      this.lastError = null;
-    } else {
-      if (job.reportErrors) this.setLastError(job.label, errorTextFromBody(message.body, message.status));
+    // A speculative read (reportErrors: false) neither sets nor clears the
+    // error the user is looking at.
+    if (job.reportErrors) {
+      if (message.ok) this.lastError = null;
+      else this.setLastError(job.label, errorTextFromBody(message.body, message.status));
     }
     this.pump();
     this.publish();
@@ -481,7 +498,7 @@ export class RebuildQueue {
   private failFetchJob(job: FetchJob, error: Error): void {
     if (job.settled) return;
     this.finishFetchJob(job);
-    this.setLastError(job.label, error.message);
+    if (job.reportErrors) this.setLastError(job.label, error.message);
     this.publish();
     job.reject(error);
   }
@@ -490,14 +507,17 @@ export class RebuildQueue {
     const message = `Rebuild worker crashed: ${reason}`;
     const failed: FetchJob[] = [];
     for (const job of this.jobs.values()) {
-      if (job.kind === 'fetch') failed.push(job);
+      if (job.kind === 'fetch' && job.state === 'running') failed.push(job);
     }
     for (const job of failed) {
       this.finishFetchJob(job);
       job.reject(new Error(message));
     }
-    this.setLastError(failed[0]?.label ?? 'Rebuild worker', message);
+    const reporting = failed.find((job) => job.reportErrors);
+    if (reporting) this.setLastError(reporting.label, message);
     this.disposeTransport();
+    // Queued jobs never reached the dead worker; they start on a new transport.
+    this.pump();
     this.publish();
   }
 
@@ -545,7 +565,13 @@ export class RebuildQueue {
       jobs: Object.freeze(this.buildViews()),
       lastError: this.lastError,
     });
-    for (const listener of [...this.listeners]) listener();
+    for (const listener of [...this.listeners]) {
+      try {
+        listener();
+      } catch {
+        // A failing subscriber must not leave a rebuild promise unsettled.
+      }
+    }
   }
 
   /** Running jobs first, then the queued ones; each group by id. */

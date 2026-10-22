@@ -113,7 +113,14 @@ export function createRebuildWorkerHandler(deps: RebuildWorkerDeps): (message: R
   ): void => {
     if (state.settled) return;
     state.settled = true;
-    deps.post(message, transfer);
+    try {
+      deps.post(message, transfer);
+    } catch (error) {
+      // A result that cannot be posted (e.g. DataCloneError) still answers
+      // the job, so the main thread never waits forever.
+      if (message.type === 'failed') return;
+      deps.post({ type: 'failed', jobId: message.jobId, message: errorMessage(error), aborted: false }, []);
+    }
   };
 
   const failJob = (state: JobState, jobId: number, error: unknown): void => {

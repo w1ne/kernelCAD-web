@@ -139,6 +139,20 @@ describe('rebuild worker protocol', () => {
     expect(message.message).toBe('network down');
   });
 
+  it('answers with failed when the result cannot be posted', async () => {
+    const posted: Posted[] = [];
+    const handle = createRebuildWorkerHandler({
+      fetchImpl: async () => new Response(JSON.stringify(MESH_BODY), { status: 200 }),
+      post: (message, transfer) => {
+        if (message.type === 'done') throw new Error('DataCloneError');
+        posted.push({ message, transfer });
+      },
+    });
+    handle({ type: 'fetch', jobId: 9, url: 'https://example.test/mesh' });
+    const { message } = await waitForPost(posted);
+    expect(message).toMatchObject({ type: 'failed', jobId: 9, aborted: false, message: 'DataCloneError' });
+  });
+
   it('posts exactly one failed message when a pending fetch is cancelled', async () => {
     const { posted, post } = collector();
     const handle = createRebuildWorkerHandler({

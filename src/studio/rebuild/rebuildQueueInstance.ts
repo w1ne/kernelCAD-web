@@ -144,7 +144,9 @@ export const rebuildQueue = new RebuildQueue({
       try {
         return latchOnCrash(createWorkerTransport());
       } catch {
-        // A browser that refuses module workers still gets the inline path.
+        // A browser that refuses module workers still gets the inline path,
+        // and later rebuilds stop retrying it.
+        workerUnavailable = true;
       }
     }
     return createInlineTransport();
