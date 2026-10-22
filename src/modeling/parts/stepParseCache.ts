@@ -95,9 +95,7 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
     cache.delete(key);
     cache.set(key, cached);
     hits++;
-    const clone = cached.clone();
-    if (healedStepBackends.has(cached)) healedStepBackends.add(clone);
-    return clone;
+    return cloneMaster(cached);
   }
 
   await initOcct();
@@ -158,9 +156,14 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
     evicted?.dispose();
   }
 
-  const out = master.clone();
-  if (healed.unified || healed.repaired) healedStepBackends.add(out);
-  return out;
+  return cloneMaster(master);
+}
+
+/** Clone a cached master, carrying its healed-import mark to the clone. */
+function cloneMaster(master: OcctBackend): OcctBackend {
+  const clone = master.clone();
+  if (healedStepBackends.has(master)) healedStepBackends.add(clone);
+  return clone;
 }
 
 /** Test-only: parse-cache instrumentation. */

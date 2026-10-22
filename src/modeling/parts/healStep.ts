@@ -52,6 +52,35 @@
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 
+import { buildSolid, chordRepair } from './healStepChord';
+import {
+  duplicateBounds,
+  duplicateNotchBoxes,
+  meshGapNotchBoxes,
+  notchBox,
+  pinchNotchBoxes,
+  clusterPoints,
+  shareEndpoint,
+} from './healStepNotch';
+import {
+  areaOf,
+  boundsOf,
+  cutBox,
+  debug,
+  distanceSq,
+  facesOf,
+  isPlanar,
+  isValid,
+  pointsBounds,
+  type Bounds,
+  type OcctHealApi,
+} from './healStepOcct';
+import {
+  LARGE_FACE_UNIFY,
+  largeFaceUnifyDecision,
+  maxSameDomainCluster,
+} from './healStepSameDomain';
+
 export interface StepHealResult {
   /** Shape to hand to the backend: repaired/unified when the heal succeeded, otherwise the input. */
   shape: replicad.Shape3D;
@@ -61,27 +90,6 @@ export interface StepHealResult {
   repaired?: boolean;
 }
 
-type Vec3 = [number, number, number];
-
-interface Bounds {
-  lo: Vec3;
-  hi: Vec3;
-}
-
-/** Edges closer than this are treated as touching (mm). */
-const TOUCH_TOL = 0.05;
-/** Touch points closer than this belong to one pinch cluster (mm). */
-const CLUSTER_TOL = 2;
-/** Clearance added around a pinch cluster (mm). */
-const NOTCH_PAD = 0.6;
-/** A cluster closer than this to the face border extends to the border (mm). */
-const BORDER_NEAR = 2.5;
-/** Extra clearance when extending a notch to the face border (mm). */
-const BORDER_EXTRA = 0.5;
-/** Clearance added around a duplicate-face bounding box (mm). */
-const DUPLICATE_PAD = 0.8;
-/** Tessellation deflection used by the mesh-gap pass (mm). */
-const MESH_DEFLECTION = 0.2;
 /**
  * Face unification is only attempted on imports up to this many faces.
  *
@@ -93,47 +101,6 @@ const MESH_DEFLECTION = 0.2;
  * not move geometry or break watertightness — instead of stalling the import.
  */
 const MAX_FACE_UNIFY = 256;
-/**
- * Above this size a face-unification pass is expensive enough that leaving
- * redundant patches in the import has a visible downstream cost.  Very large
- * valid imports get one bounded attempt, but only when the same-surface
- * adjacency graph is small (see `MAX_SAFE_SAME_DOMAIN_CLUSTER`).
- */
-const LARGE_FACE_UNIFY = 1000;
-/**
- * The wasm unifier's runtime grows sharply with the size of a connected
- * same-surface cluster.  On the corpus inputs, every shape that stalled had a
- * cluster of 12 or more adjacent faces (206: 12, 238: 33, 243: 15); every
- * shape that completed, including 247, stayed at four or fewer.  A large
- * import is only face-unified when its largest cluster is in the mergeable
- * range and small enough to finish quickly.
- */
-const MAX_SAFE_SAME_DOMAIN_CLUSTER = 8;
-/** Maximum distance between two samples of the same underlying surface (mm). */
-const SURFACE_SAMPLE_TOL = 1e-6;
-
-function debug(...args: unknown[]): void {
-  if ((globalThis as { __KCAD_HEAL_DEBUG__?: boolean }).__KCAD_HEAL_DEBUG__) {
-    console.log('[heal]', ...args);
-  }
-}
-
-type OcctHealApi = {
-  BRepCheck_Analyzer: new (shape: unknown, geomControls: boolean, checkSubShape: boolean) => {
-    IsValid_2(): boolean;
-    delete(): void;
-  };
-  ShapeUpgrade_UnifySameDomain_2: new (
-    shape: unknown,
-    unifyEdges: boolean,
-    unifyFaces: boolean,
-    concatBSplines: boolean,
-  ) => {
-    Build(): void;
-    Shape(): unknown;
-    delete(): void;
-  };
-} & Record<string, any>;
 
 /**
  * Normalize an imported STEP solid by merging same-domain faces/edges and, when
@@ -246,21 +213,14 @@ function unifyOnly(oc: OcctHealApi, shape: replicad.Shape3D): StepHealResult {
   }
 }
 
-/** Pure decision rule for the bounded large-import face pass. */
-function largeFaceUnifyDecision(faceCount: number, valid: boolean, cluster: number): boolean {
-  return (
-    faceCount > LARGE_FACE_UNIFY &&
-    valid &&
-    cluster > 1 &&
-    cluster <= MAX_SAFE_SAME_DOMAIN_CLUSTER
-  );
-}
-
 function shouldFaceUnifyLargeImport(oc: OcctHealApi, original: replicad.Shape3D): boolean {
   if (original.faces.length <= LARGE_FACE_UNIFY) return false;
   try {
     if (!isValid(oc, original.wrapped)) return false;
-    const cluster = maxSameDomainCluster(oc, original.wrapped);
+    const cluster = maxSameDomainCluster(
+      oc,
+      () => (replicad.cast(original.wrapped as never) as replicad.Shape3D).faces,
+    );
     debug('large face unify', { faces: original.faces.length, cluster });
     return largeFaceUnifyDecision(original.faces.length, true, cluster);
   } catch (error) {
@@ -269,159 +229,30 @@ function shouldFaceUnifyLargeImport(oc: OcctHealApi, original: replicad.Shape3D)
   }
 }
 
-/**
- * Size of the largest connected group of adjacent faces that lie on the same
- * surface.  Only exact analytic surfaces and a sampled fallback are needed:
- * the value is a runtime guard, not a geometric repair.
- */
-function maxSameDomainCluster(oc: OcctHealApi, rawShape: unknown): number {
-  if (typeof oc.BRepAdaptor_Surface_2 !== 'function') return Number.POSITIVE_INFINITY;
-  const shape = replicad.cast(rawShape as never) as replicad.Shape3D;
-  const faces = shape.faces;
-  const adaptors: any[] = [];
-  try {
-    const owners = new Map<number, number[]>();
-    faces.forEach((face, index) => {
-      for (const edge of (face as any).edges as any[]) {
-        const hash = edge.hashCode as number;
-        const list = owners.get(hash);
-        if (list) list.push(index);
-        else owners.set(hash, [index]);
-      }
-    });
-    const bounds = faces.map((face) => (face as any).UVBounds);
-    for (const face of faces) {
-      adaptors.push(new oc.BRepAdaptor_Surface_2((face as any).wrapped, false));
-    }
-    const parent = faces.map((_, index) => index);
-    const find = (value: number): number => {
-      let root = value;
-      while (parent[root] !== root) root = parent[root];
-      while (parent[value] !== value) {
-        const next = parent[value];
-        parent[value] = root;
-        value = next;
-      }
-      return root;
-    };
-    const union = (a: number, b: number): void => {
-      const rootA = find(a);
-      const rootB = find(b);
-      if (rootA !== rootB) parent[rootA] = rootB;
-    };
-    for (const pair of owners.values()) {
-      if (pair.length !== 2) continue;
-      const [a, b] = pair;
-      if (a !== b && sameDomainSurface(oc, adaptors[a], adaptors[b], bounds[a])) {
-        union(a, b);
-      }
-    }
-    const sizes = new Map<number, number>();
-    for (let index = 0; index < faces.length; index++) {
-      const root = find(index);
-      sizes.set(root, (sizes.get(root) ?? 0) + 1);
-    }
-    let largest = 1;
-    for (const size of sizes.values()) if (size > largest) largest = size;
-    return largest;
-  } finally {
-    for (const adaptor of adaptors) adaptor?.delete?.();
-  }
+interface StageResult {
+  shape: any;
+  changed: boolean;
 }
 
-function sameDomainSurface(
-  oc: OcctHealApi,
-  a: any,
-  b: any,
-  bounds: { uMin: number; uMax: number; vMin: number; vMax: number },
-): boolean {
-  if (a.GetType() !== b.GetType()) return false;
-  const types = oc.GeomAbs_SurfaceType as Record<string, number> | undefined;
-  const type = a.GetType();
-  if (types && type === types.GeomAbs_Plane) {
-    const pa = a.Plane();
-    const pb = b.Plane();
-    const axA = pa.Axis();
-    const axB = pb.Axis();
-    const dirA = axA.Direction();
-    const dirB = axB.Direction();
-    try {
-      const dot = dirA.X() * dirB.X() + dirA.Y() * dirB.Y() + dirA.Z() * dirB.Z();
-      return Math.abs(pa.Distance_3(pb)) < SURFACE_SAMPLE_TOL && Math.abs(Math.abs(dot) - 1) < 1e-7;
-    } finally {
-      dirA.delete?.();
-      dirB.delete?.();
-      axA.delete?.();
-      axB.delete?.();
-      pa.delete?.();
-      pb.delete?.();
-    }
-  }
-  if (types && type === types.GeomAbs_Cylinder) {
-    const ca = a.Cylinder();
-    const cb = b.Cylinder();
-    const axA = ca.Axis();
-    const axB = cb.Axis();
-    try {
-      return (
-        Math.abs(ca.Radius() - cb.Radius()) < SURFACE_SAMPLE_TOL &&
-        axA.IsCoaxial(axB, 1e-7, 1e-7)
-      );
-    } finally {
-      axA.delete?.();
-      axB.delete?.();
-      ca.delete?.();
-      cb.delete?.();
-    }
-  }
-  if (types && type === types.GeomAbs_Sphere) {
-    const ca = a.Sphere();
-    const cb = b.Sphere();
-    const pa = ca.Location();
-    const pb = cb.Location();
-    try {
-      return (
-        Math.abs(ca.Radius() - cb.Radius()) < SURFACE_SAMPLE_TOL &&
-        pa.Distance(pb) < SURFACE_SAMPLE_TOL
-      );
-    } finally {
-      pa.delete?.();
-      pb.delete?.();
-      ca.delete?.();
-      cb.delete?.();
-    }
-  }
-  // Cones, tori, and B-splines: compare a grid of absolute surface samples.
-  const uStep = (bounds.uMax - bounds.uMin) / 3;
-  const vStep = (bounds.vMax - bounds.vMin) / 3;
-  for (let i = 0; i <= 3; i++) {
-    for (let j = 0; j <= 3; j++) {
-      const p = a.Value(bounds.uMin + uStep * i, bounds.vMin + vStep * j);
-      const q = b.Value(bounds.uMin + uStep * i, bounds.vMin + vStep * j);
-      const dx = p.X() - q.X();
-      const dy = p.Y() - q.Y();
-      const dz = p.Z() - q.Z();
-      p.delete?.();
-      q.delete?.();
-      if (dx * dx + dy * dy + dz * dz > SURFACE_SAMPLE_TOL * SURFACE_SAMPLE_TOL) return false;
-    }
-  }
-  return true;
-}
-
-function reconstruct(oc: OcctHealApi, shape: replicad.Shape3D): StepHealResult | null {
-  let current: any = shape.wrapped;
+/** Apply each notch cut in order; a failed cut leaves the shape unchanged. */
+function applyCuts(oc: OcctHealApi, shape: any, boxes: Bounds[], label: string): StageResult {
+  let current = shape;
   let changed = false;
+  for (const box of boxes) {
+    const cut = cutBox(oc, current, box);
+    debug(`${label} cut`, Boolean(cut));
+    if (cut) {
+      current = cut;
+      changed = true;
+    }
+  }
+  return { shape: current, changed };
+}
 
-  const initialFaces = facesOf(oc, current);
-  const initialInvalid = initialFaces.filter((face) => !isValid(oc, face));
-  debug('start', {
-    faces: initialFaces.length,
-    invalid: initialInvalid.length,
-    planar: initialInvalid.filter((face) => isPlanar(oc, face)).length,
-  });
-
-  // 1. Planar bow-tie faces: split along a chord that preserves the area.
+/** Planar bow-tie faces: split along a chord that preserves the area. */
+function repairBowTies(oc: OcctHealApi, shape: any): StageResult {
+  let current = shape;
+  let changed = false;
   for (let guard = 0; guard < 4; guard++) {
     const faces = facesOf(oc, current);
     const target = faces.find((face) => !isValid(oc, face) && isPlanar(oc, face));
@@ -439,23 +270,40 @@ function reconstruct(oc: OcctHealApi, shape: replicad.Shape3D): StepHealResult |
     current = rebuilt;
     changed = true;
   }
+  return { shape: current, changed };
+}
 
-  // 2. Pinched non-planar faces: excise each touch cluster.
-  const remainingInvalid = facesOf(oc, current).filter((face) => !isValid(oc, face));
+/** Notch boxes for every pinch cluster of the remaining invalid non-planar faces. */
+function pinchBoxesOf(oc: OcctHealApi, shape: any): Bounds[] {
+  const remainingInvalid = facesOf(oc, shape).filter((face) => !isValid(oc, face));
   const pinchBoxes: Bounds[] = [];
   for (const face of remainingInvalid) {
     if (isPlanar(oc, face)) continue;
     pinchBoxes.push(...pinchNotchBoxes(oc, face));
   }
   debug('pinch boxes', pinchBoxes.length, pinchBoxes);
-  for (const box of pinchBoxes) {
-    const cut = cutBox(oc, current, box);
-    debug('pinch cut', Boolean(cut));
-    if (cut) {
-      current = cut;
-      changed = true;
-    }
-  }
+  return pinchBoxes;
+}
+
+function reconstruct(oc: OcctHealApi, shape: replicad.Shape3D): StepHealResult | null {
+  let current: any = shape.wrapped;
+
+  const initialFaces = facesOf(oc, current);
+  const initialInvalid = initialFaces.filter((face) => !isValid(oc, face));
+  debug('start', {
+    faces: initialFaces.length,
+    invalid: initialInvalid.length,
+    planar: initialInvalid.filter((face) => isPlanar(oc, face)).length,
+  });
+
+  // 1. Planar bow-tie faces: split along a chord that preserves the area.
+  const bowTies = repairBowTies(oc, current);
+  current = bowTies.shape;
+
+  // 2. Pinched non-planar faces: excise each touch cluster.
+  const pinches = applyCuts(oc, current, pinchBoxesOf(oc, current), 'pinch');
+  current = pinches.shape;
+  const changed = bowTies.changed || pinches.changed;
 
   // 3. Duplicate face pairs left by a translator (identical bounds, one patch
   //    far smaller): the small patch lies on top of the larger one and meshes
@@ -463,14 +311,7 @@ function reconstruct(oc: OcctHealApi, shape: replicad.Shape3D): StepHealResult |
   if (changed && facesOf(oc, current).every((face) => isValid(oc, face))) {
     const duplicates = duplicateNotchBoxes(oc, current);
     debug('duplicate boxes', duplicates.length, duplicates);
-    for (const box of duplicates) {
-      const cut = cutBox(oc, current, box);
-      debug('duplicate cut', Boolean(cut));
-      if (cut) {
-        current = cut;
-        changed = true;
-      }
-    }
+    current = applyCuts(oc, current, duplicates, 'duplicate').shape;
   }
 
   // 4. Mesh gaps: a face whose triangulation boundary is not covered by its
@@ -478,11 +319,7 @@ function reconstruct(oc: OcctHealApi, shape: replicad.Shape3D): StepHealResult |
   if (changed) {
     const gaps = meshGapNotchBoxes(oc, current);
     debug('mesh gap boxes', gaps.length, gaps);
-    for (const box of gaps) {
-      const cut = cutBox(oc, current, box);
-      debug('mesh gap cut', Boolean(cut));
-      if (cut) current = cut;
-    }
+    current = applyCuts(oc, current, gaps, 'mesh gap').shape;
   }
 
   debug('final', { changed, valid: isValid(oc, current) });
@@ -493,542 +330,6 @@ function reconstruct(oc: OcctHealApi, shape: replicad.Shape3D): StepHealResult |
     unified: false,
     repaired: true,
   };
-}
-
-function facesOf(oc: OcctHealApi, shape: any): any[] {
-  const out: any[] = [];
-  const explorer = new oc.TopExp_Explorer_2(
-    shape,
-    oc.TopAbs_ShapeEnum.TopAbs_FACE,
-    oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
-  );
-  try {
-    while (explorer.More()) {
-      out.push(oc.TopoDS.Face_1(explorer.Current()));
-      explorer.Next();
-    }
-  } finally {
-    explorer.delete();
-  }
-  return out;
-}
-
-function edgesOf(oc: OcctHealApi, face: any): any[] {
-  const out: any[] = [];
-  const explorer = new oc.TopExp_Explorer_2(
-    face,
-    oc.TopAbs_ShapeEnum.TopAbs_EDGE,
-    oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
-  );
-  try {
-    while (explorer.More()) {
-      out.push(oc.TopoDS.Edge_1(explorer.Current()));
-      explorer.Next();
-    }
-  } finally {
-    explorer.delete();
-  }
-  return out;
-}
-
-function isValid(oc: OcctHealApi, shape: any): boolean {
-  const analyzer = new oc.BRepCheck_Analyzer(shape, true, true);
-  try {
-    return analyzer.IsValid_2();
-  } finally {
-    analyzer.delete();
-  }
-}
-
-function isPlanar(oc: OcctHealApi, face: any): boolean {
-  const adapter = new oc.BRepAdaptor_Surface_2(face, true);
-  try {
-    const type = adapter.GetType();
-    const plane = oc.GeomAbs_SurfaceType?.GeomAbs_Plane;
-    if (!plane) return false;
-    return type === plane || type?.value === plane?.value;
-  } finally {
-    adapter.delete();
-  }
-}
-
-function boundsOf(oc: OcctHealApi, shape: any): Bounds {
-  const box = new oc.Bnd_Box_1();
-  oc.BRepBndLib.Add(shape, box, false);
-  const min = box.CornerMin();
-  const max = box.CornerMax();
-  const out: Bounds = {
-    lo: [min.X(), min.Y(), min.Z()],
-    hi: [max.X(), max.Y(), max.Z()],
-  };
-  box.delete();
-  return out;
-}
-
-function areaOf(oc: OcctHealApi, face: any): number {
-  const props = new oc.GProp_GProps_1();
-  try {
-    oc.BRepGProp.SurfaceProperties_1(face, props, false, false);
-    return props.Mass();
-  } finally {
-    props.delete();
-  }
-}
-
-function isReversedOrientation(oc: OcctHealApi, edge: any): boolean {
-  const orientation =
-    typeof edge.Orientation === 'function'
-      ? edge.Orientation()
-      : typeof edge.Orientation_1 === 'function'
-        ? edge.Orientation_1()
-        : edge.Orientation;
-  const reversed = oc.TopAbs_Orientation?.TopAbs_REVERSED;
-  if (reversed !== undefined) {
-    return orientation === reversed || orientation?.value === reversed?.value;
-  }
-  // TopAbs_FORWARD=0, TopAbs_REVERSED=1, TopAbs_INTERNAL=2, TopAbs_EXTERNAL=3.
-  return orientation?.value === 1;
-}
-
-/**
- * Sample an edge in wire traversal order. `BRepAdaptor_Curve` always walks the
- * underlying curve, so a REVERSED edge is flipped to match the wire.
- */
-function sampleEdge(oc: OcctHealApi, edge: any, count: number): Vec3[] {
-  const curve = new oc.BRepAdaptor_Curve_2(edge);
-  try {
-    const first = curve.FirstParameter();
-    const last = curve.LastParameter();
-    const out: Vec3[] = [];
-    const span = last - first;
-    for (let i = 0; i < count; i++) {
-      const point = curve.Value(first + (span * i) / (count - 1));
-      out.push([point.X(), point.Y(), point.Z()]);
-    }
-    if (isReversedOrientation(oc, edge)) out.reverse();
-    return out;
-  } finally {
-    curve.delete();
-  }
-}
-
-function distanceSq(a: Vec3, b: Vec3): number {
-  const dx = a[0] - b[0];
-  const dy = a[1] - b[1];
-  const dz = a[2] - b[2];
-  return dx * dx + dy * dy + dz * dz;
-}
-
-/**
- * Order the face edges into a single closed chain by shared endpoints.
- *
- * `TopExp_Explorer` does not guarantee traversal order — on the bow-tie face
- * used by the 202 fixture it lists e0,e1,e2,e3,e4 while the actual loop is
- * e0,e4,e3,e2,e1. Walking by shared endpoints recovers the wire order, and the
- * edge is reversed when the chain needs it.
- */
-function wireChain(
-  oc: OcctHealApi,
-  face: any,
-): { edges: any[]; vertices: Vec3[] } | null {
-  const edges = edgesOf(oc, face);
-  if (edges.length < 3) return null;
-  const ends = edges.map((edge) => sampleEdge(oc, edge, 2));
-  const used = new Array<boolean>(edges.length).fill(false);
-  const chainEdges: any[] = [edges[0]];
-  const vertices: Vec3[] = [ends[0][0]];
-  let current = ends[0][1];
-  used[0] = true;
-
-  for (let step = 1; step < edges.length; step++) {
-    let found = -1;
-    let reverse = false;
-    let best = 1e-10;
-    for (let k = 1; k < edges.length; k++) {
-      if (used[k]) continue;
-      const startDistance = distanceSq(ends[k][0], current);
-      const endDistance = distanceSq(ends[k][1], current);
-      if (startDistance <= best) {
-        best = startDistance;
-        found = k;
-        reverse = false;
-      }
-      if (endDistance <= best) {
-        best = endDistance;
-        found = k;
-        reverse = true;
-      }
-    }
-    if (found < 0) return null;
-    used[found] = true;
-    vertices.push(current);
-    const [start, end] = ends[found];
-    chainEdges.push(reverse ? oc.TopoDS.Edge_1(edges[found].Reversed()) : edges[found]);
-    current = reverse ? start : end;
-  }
-
-  debug('wire close', { edges: edges.length, gap: distanceSq(current, vertices[0]) });
-  if (distanceSq(current, vertices[0]) > 1e-6) return null;
-  return { edges: chainEdges, vertices };
-}
-
-function makeEdge(oc: OcctHealApi, from: Vec3, to: Vec3): any | null {
-  const maker = new oc.BRepBuilderAPI_MakeEdge_3(
-    new oc.gp_Pnt_3(from[0], from[1], from[2]),
-    new oc.gp_Pnt_3(to[0], to[1], to[2]),
-  );
-  try {
-    return maker.IsDone() ? maker.Edge() : null;
-  } finally {
-    maker.delete();
-  }
-}
-
-function makeWire(oc: OcctHealApi, edges: any[]): any | null {
-  const maker = new oc.BRepBuilderAPI_MakeWire_1();
-  try {
-    for (const edge of edges) maker.Add_1(edge);
-    return maker.IsDone() ? maker.Wire() : null;
-  } finally {
-    maker.delete();
-  }
-}
-
-function makeFace(oc: OcctHealApi, wire: any): any | null {
-  const maker = new oc.BRepBuilderAPI_MakeFace_15(wire, true);
-  try {
-    return maker.IsDone() ? maker.Face() : null;
-  } finally {
-    maker.delete();
-  }
-}
-
-/**
- * Split a planar bow-tie face along the first chord whose two halves are both
- * valid and whose areas add up to the original face area.
- */
-function chordRepair(oc: OcctHealApi, face: any): any[] | null {
-  const faceBounds = boundsOf(oc, face);
-  const chain = wireChain(oc, face);
-  if (!chain) return null;
-  const { edges, vertices } = chain;
-  const count = edges.length;
-  const within = (candidate: any): boolean => {
-    const bounds = boundsOf(oc, candidate);
-    return (
-      bounds.lo[0] >= faceBounds.lo[0] - 1e-3 &&
-      bounds.lo[1] >= faceBounds.lo[1] - 1e-3 &&
-      bounds.lo[2] >= faceBounds.lo[2] - 1e-3 &&
-      bounds.hi[0] <= faceBounds.hi[0] + 1e-3 &&
-      bounds.hi[1] <= faceBounds.hi[1] + 1e-3 &&
-      bounds.hi[2] <= faceBounds.hi[2] + 1e-3
-    );
-  };
-  for (let i = 0; i < count; i++) {
-    for (let j = i + 2; j < count; j++) {
-      if (i === 0 && j === count - 1) continue;
-      const chord = makeEdge(oc, vertices[j], vertices[i]);
-      if (!chord) continue;
-      const chordReversed = oc.TopoDS.Edge_1(chord.Reversed());
-      const firstWire = makeWire(oc, [
-        ...edges.slice(i, j),
-        chord,
-      ]);
-      const secondWire = makeWire(oc, [
-        ...edges.slice(j),
-        ...edges.slice(0, i),
-        chordReversed,
-      ]);
-      if (!firstWire || !secondWire) continue;
-      const first = makeFace(oc, firstWire);
-      const second = makeFace(oc, secondWire);
-      if (!first || !second) continue;
-      const firstValid = isValid(oc, first);
-      const secondValid = isValid(oc, second);
-      debug('chord pair', i, j, { firstValid, secondValid });
-      if (!firstValid || !secondValid) continue;
-      // A bow-tie face reports a signed area, so the halves do not add up to
-      // the original. The chord must simply stay inside the face's extent.
-      if (within(first) && within(second)) return [first, second];
-    }
-  }
-  return null;
-}
-
-/** Sew a face list back into a solid. */
-function buildSolid(oc: OcctHealApi, faces: any[]): any | null {
-  const builder = new oc.TopoDS_Builder();
-  const shell = new oc.TopoDS_Shell();
-  builder.MakeShell(shell);
-  for (const face of faces) builder.Add(shell, face);
-  shell.Closed_2(true);
-
-  const sewing = new oc.BRepBuilderAPI_Sewing(1e-6, true, true, true, false);
-  try {
-    sewing.SetSameParameterMode(false);
-    sewing.Add(shell);
-    sewing.Perform(new oc.Message_ProgressRange_1());
-    const sewn = sewing.SewedShape();
-    const outer = oc.TopoDS.Shell_1(sewn);
-    const solid = new oc.TopoDS_Solid();
-    builder.MakeSolid(solid);
-    builder.Add(solid, outer);
-    return isValid(oc, solid) ? solid : null;
-  } finally {
-    sewing.delete();
-  }
-}
-
-function clusterPoints(points: Vec3[], tolerance: number): Vec3[][] {
-  const seen = new Array<boolean>(points.length).fill(false);
-  const limit = tolerance * tolerance;
-  const clusters: Vec3[][] = [];
-  for (let i = 0; i < points.length; i++) {
-    if (seen[i]) continue;
-    const stack = [i];
-    seen[i] = true;
-    const cluster: Vec3[] = [];
-    while (stack.length) {
-      const k = stack.pop() as number;
-      cluster.push(points[k]);
-      for (let j = 0; j < points.length; j++) {
-        if (seen[j]) continue;
-        if (distanceSq(points[k], points[j]) <= limit) {
-          seen[j] = true;
-          stack.push(j);
-        }
-      }
-    }
-    clusters.push(cluster);
-  }
-  return clusters;
-}
-
-function pointsBounds(points: Vec3[]): Bounds {
-  const lo: Vec3 = [Infinity, Infinity, Infinity];
-  const hi: Vec3 = [-Infinity, -Infinity, -Infinity];
-  for (const p of points) {
-    for (let k = 0; k < 3; k++) {
-      if (p[k] < lo[k]) lo[k] = p[k];
-      if (p[k] > hi[k]) hi[k] = p[k];
-    }
-  }
-  return { lo, hi };
-}
-
-/** Turn a pinch region into a notch box, extending it to nearby face borders. */
-function notchBox(region: Bounds, face: Bounds): Bounds {
-  const lo: Vec3 = [0, 0, 0];
-  const hi: Vec3 = [0, 0, 0];
-  for (let k = 0; k < 3; k++) {
-    lo[k] = region.lo[k] - NOTCH_PAD;
-    hi[k] = region.hi[k] + NOTCH_PAD;
-    if (region.lo[k] - face.lo[k] < BORDER_NEAR) lo[k] = face.lo[k] - BORDER_EXTRA;
-    if (face.hi[k] - region.hi[k] < BORDER_NEAR) hi[k] = face.hi[k] + BORDER_EXTRA;
-  }
-  return { lo, hi };
-}
-
-function shareEndpoint(a: Vec3[], b: Vec3[]): boolean {
-  for (const p of a) {
-    for (const q of b) {
-      if (distanceSq(p, q) <= 1e-10) return true;
-    }
-  }
-  return false;
-}
-
-/** Exact closest points between two edges. */
-function closestPoints(oc: OcctHealApi, first: any, second: any): [Vec3, Vec3] | null {
-  const distance = new oc.BRepExtrema_DistShapeShape_1();
-  try {
-    distance.LoadS1(first);
-    distance.LoadS2(second);
-    distance.Perform(new oc.Message_ProgressRange_1());
-    if (!distance.IsDone() || distance.NbSolution() < 1) return null;
-    const from = distance.PointOnShape1(1);
-    const to = distance.PointOnShape2(1);
-    return [
-      [from.X(), from.Y(), from.Z()],
-      [to.X(), to.Y(), to.Z()],
-    ];
-  } catch {
-    return null;
-  } finally {
-    distance.delete();
-  }
-}
-
-/**
- * Find the pinch clusters of a non-planar face and return the notch boxes.
- * Pairs that merely share a wire vertex are the normal edge chain; only curves
- * that touch away from their endpoints are pinches. Largest cluster first: the
- * most degenerate region stabilises the shape before the smaller boolean runs.
- */
-function pinchNotchBoxes(oc: OcctHealApi, face: any): Bounds[] {
-  const faceBounds = boundsOf(oc, face);
-  const edges = edgesOf(oc, face);
-  const ends = edges.map((edge) => sampleEdge(oc, edge, 2));
-  const touches: Vec3[] = [];
-  for (let i = 0; i < edges.length; i++) {
-    for (let j = i + 1; j < edges.length; j++) {
-      if (shareEndpoint(ends[i], ends[j])) continue;
-      const closest = closestPoints(oc, edges[i], edges[j]);
-      if (!closest) continue;
-      if (distanceSq(closest[0], closest[1]) <= TOUCH_TOL * TOUCH_TOL) {
-        touches.push(closest[0], closest[1]);
-      }
-    }
-  }
-
-  if (touches.length === 0) {
-    // No detectable pinch: fall back to removing the whole defective face.
-    return [notchBox(faceBounds, faceBounds)];
-  }
-  const clusters = clusterPoints(touches, CLUSTER_TOL);
-  clusters.sort((a, b) => b.length - a.length);
-  return clusters.map((cluster) => notchBox(pointsBounds(cluster), faceBounds));
-}
-
-/** Duplicate patches: identical bounds, one far smaller than the other. */
-function duplicateBounds(groups: Iterable<{ bounds: Bounds; areas: number[] }>): Bounds[] {
-  const out: Bounds[] = [];
-  for (const { bounds, areas } of groups) {
-    if (areas.length < 2) continue;
-    const min = Math.min(...areas);
-    const max = Math.max(...areas);
-    if (min <= 0 || max / min <= 5) continue;
-    out.push({
-      lo: [bounds.lo[0] - DUPLICATE_PAD, bounds.lo[1] - DUPLICATE_PAD, bounds.lo[2] - DUPLICATE_PAD],
-      hi: [bounds.hi[0] + DUPLICATE_PAD, bounds.hi[1] + DUPLICATE_PAD, bounds.hi[2] + DUPLICATE_PAD],
-    });
-  }
-  return out;
-}
-
-function duplicateNotchBoxes(oc: OcctHealApi, shape: any): Bounds[] {
-  const groups = new Map<string, { bounds: Bounds; areas: number[] }>();
-  for (const face of facesOf(oc, shape)) {
-    const bounds = boundsOf(oc, face);
-    const key = [...bounds.lo, ...bounds.hi]
-      .map((value) => value.toFixed(4))
-      .join(',');
-    const record = groups.get(key) ?? { bounds, areas: [] };
-    record.areas.push(areaOf(oc, face));
-    groups.set(key, record);
-  }
-  return duplicateBounds(groups.values());
-}
-
-function cutBox(oc: OcctHealApi, shape: any, box: Bounds): any | null {
-  let tool: any | null = null;
-  try {
-    const from = new oc.gp_Pnt_3(box.lo[0], box.lo[1], box.lo[2]);
-    const to = new oc.gp_Pnt_3(box.hi[0], box.hi[1], box.hi[2]);
-    tool = new oc.BRepPrimAPI_MakeBox_4(from, to).Shape();
-    const cut = new oc.BRepAlgoAPI_Cut_3(shape, tool, new oc.Message_ProgressRange_1());
-    try {
-      if (!cut.IsDone()) return null;
-      const result = cut.Shape();
-      if (!result || result.IsNull()) return null;
-      if (facesOf(oc, result).length === 0) return null;
-      return result;
-    } finally {
-      cut.delete();
-    }
-  } catch {
-    return null;
-  } finally {
-    tool?.delete?.();
-  }
-}
-
-/**
- * Find faces whose triangulation boundary is not covered by their own edge
- * polygons, and return a notch around the uncovered segments. A seam edge is
- * covered by its polygon, so only genuine gaps survive.
- */
-function meshGapNotchBoxes(oc: OcctHealApi, shape: any): Bounds[] {
-  let mesh: any = null;
-  try {
-    mesh = new oc.BRepMesh_IncrementalMesh_2(shape, MESH_DEFLECTION, false, 0.5, true);
-  } catch {
-    return [];
-  }
-  const location = new oc.TopLoc_Location_1();
-  const out: Bounds[] = [];
-  try {
-    for (const face of facesOf(oc, shape)) {
-      const handle = oc.BRep_Tool.Triangulation(face, location, 0);
-      if (!handle || handle.IsNull?.()) continue;
-      const triangulation = handle.get ? handle.get() : handle;
-      const triangleCount = triangulation.NbTriangles();
-      if (!triangleCount) continue;
-
-      const incidence = new Map<string, number>();
-      const nodePoint = (index: number): Vec3 => {
-        const point = triangulation.Node(index);
-        return [point.X(), point.Y(), point.Z()];
-      };
-      for (let t = 1; t <= triangleCount; t++) {
-        const triangle = triangulation.Triangle(t);
-        const a = triangle.Value(1);
-        const b = triangle.Value(2);
-        const c = triangle.Value(3);
-        for (const [x, y] of [
-          [a, b],
-          [b, c],
-          [c, a],
-        ] as [number, number][]) {
-          const key = x < y ? `${x}:${y}` : `${y}:${x}`;
-          incidence.set(key, (incidence.get(key) ?? 0) + 1);
-        }
-      }
-
-      const meshBoundary: string[] = [];
-      for (const [key, count] of incidence) if (count === 1) meshBoundary.push(key);
-      if (meshBoundary.length === 0) continue;
-
-      const covered = new Set<string>();
-      const edges = edgesOf(oc, face);
-      for (const edge of edges) {
-        const polygonHandle = oc.BRep_Tool.PolygonOnTriangulation_1(edge, handle, location);
-        if (!polygonHandle || polygonHandle.IsNull?.()) continue;
-        const polygon = polygonHandle.get ? polygonHandle.get() : polygonHandle;
-        const nodes = polygon.NbNodes();
-        let previous = polygon.Node(1);
-        for (let i = 2; i <= nodes; i++) {
-          const current = polygon.Node(i);
-          covered.add(previous < current ? `${previous}:${current}` : `${current}:${previous}`);
-          previous = current;
-        }
-      }
-
-      const uncovered: Vec3[][] = [];
-      const edgeSamples = edges.map((edge) => sampleEdge(oc, edge, 16));
-      for (const key of meshBoundary) {
-        if (covered.has(key)) continue;
-        const [a, b] = key.split(':').map(Number);
-        const pa = nodePoint(a);
-        const pb = nodePoint(b);
-        const mid: Vec3 = [(pa[0] + pb[0]) / 2, (pa[1] + pb[1]) / 2, (pa[2] + pb[2]) / 2];
-        let nearest = Infinity;
-        for (const samples of edgeSamples) {
-          for (const sample of samples) nearest = Math.min(nearest, distanceSq(mid, sample));
-        }
-        // A segment lying on the face border is a mesher representation
-        // difference, not a gap. Only segments away from the border are holes.
-        if (nearest > TOUCH_TOL * TOUCH_TOL) uncovered.push([pa, pb]);
-      }
-      if (uncovered.length === 0) continue;
-
-      out.push(notchBox(pointsBounds(uncovered.flat()), boundsOf(oc, face)));
-    }
-  } finally {
-    mesh?.delete?.();
-    location.delete();
-  }
-  return out;
 }
 
 /**
