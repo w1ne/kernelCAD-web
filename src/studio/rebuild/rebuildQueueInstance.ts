@@ -25,6 +25,16 @@ function pageUrl(url: string): string {
   }
 }
 
+function latchOnCrash(transport: RebuildTransport): RebuildTransport {
+  return {
+    ...transport,
+    listen: (onMessage, onCrash) => transport.listen(onMessage, (reason) => {
+      workerUnavailable = true;
+      onCrash(reason);
+    }),
+  };
+}
+
 /** The real worker: the rebuild runs off the UI thread. */
 export function createWorkerTransport(): RebuildTransport {
   const worker = new Worker(new URL('./rebuild.worker.ts', import.meta.url), { type: 'module' });
@@ -121,14 +131,18 @@ export function studioModelDoc(owner: object): string {
  * and again after a crash; where no Worker exists the inline transport keeps
  * the queue working.
  */
+/** Set once the module worker failed (blocked, 404, CSP, crashed): later
+ *  rebuilds use the inline transport instead of retrying a broken Worker. */
+let workerUnavailable = false;
+
 export const rebuildQueue = new RebuildQueue({
   // Bounds network concurrency only; a long server build must not hold up an
   // unrelated stored-mesh read behind it.
   maxConcurrent: 4,
   createTransport: () => {
-    if (typeof Worker !== 'undefined') {
+    if (typeof Worker !== 'undefined' && !workerUnavailable) {
       try {
-        return createWorkerTransport();
+        return latchOnCrash(createWorkerTransport());
       } catch {
         // A browser that refuses module workers still gets the inline path.
       }

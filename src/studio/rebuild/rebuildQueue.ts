@@ -100,6 +100,8 @@ interface FetchJob extends JobBase {
   startedAt: number | null;
   url: string;
   init?: RebuildFetchInit;
+  /** False for speculative reads (a cache miss is not a failed rebuild). */
+  reportErrors: boolean;
   resolve: (response: OffThreadResponse) => void;
   reject: (error: unknown) => void;
   callerSignal?: AbortSignal;
@@ -176,6 +178,9 @@ export class RebuildQueue {
     doc?: string;
     generation?: number;
     signal?: AbortSignal;
+    /** Default true. False keeps a failure out of the UI's last error;
+     *  the caller still gets the response / rejection. */
+    reportErrors?: boolean;
   }): Promise<OffThreadResponse> {
     if (request.signal?.aborted) {
       return Promise.reject(abortError('The rebuild request was cancelled.'));
@@ -272,7 +277,7 @@ export class RebuildQueue {
   }
 
   private createFetchJob(
-    request: { url: string; init?: RebuildFetchInit; label: string; doc?: string; generation?: number },
+    request: { url: string; init?: RebuildFetchInit; label: string; doc?: string; generation?: number; reportErrors?: boolean },
     resolve: (response: OffThreadResponse) => void,
     reject: (error: unknown) => void,
   ): FetchJob {
@@ -287,6 +292,7 @@ export class RebuildQueue {
       startedAt: null,
       url: request.url,
       init: request.init,
+      reportErrors: request.reportErrors !== false,
       resolve,
       reject,
       settled: false,
@@ -444,7 +450,7 @@ export class RebuildQueue {
     if (message.ok) {
       this.lastError = null;
     } else {
-      this.setLastError(job.label, errorTextFromBody(message.body, message.status));
+      if (job.reportErrors) this.setLastError(job.label, errorTextFromBody(message.body, message.status));
     }
     this.pump();
     this.publish();
@@ -464,7 +470,7 @@ export class RebuildQueue {
     const error = new Error(message.message);
     if (message.aborted) {
       error.name = 'AbortError';
-    } else {
+    } else if (job.reportErrors) {
       this.setLastError(job.label, message.message);
     }
     this.pump();

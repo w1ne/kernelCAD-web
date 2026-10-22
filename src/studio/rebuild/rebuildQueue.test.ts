@@ -392,3 +392,15 @@ describe('rebuild queue snapshot', () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('speculative reads', () => {
+  it('keep a cache miss out of the last error but still answer the caller', async () => {
+    const transport = new FakeTransport();
+    const queue = new RebuildQueue({ createTransport: () => transport });
+    const miss = queue.fetchJson({ url: '/gallery.json', label: 'Gallery mesh', reportErrors: false });
+    const [request] = transport.fetches();
+    transport.emit({ type: 'done', jobId: request.jobId, ok: false, status: 404, statusText: 'Not Found', retryAfter: null, body: null });
+    await expect(miss).resolves.toMatchObject({ ok: false, status: 404 });
+    expect(queue.getSnapshot().lastError).toBeNull();
+  });
+});

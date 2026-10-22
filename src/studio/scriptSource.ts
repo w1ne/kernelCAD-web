@@ -468,6 +468,8 @@ async function meshOnServer(
         label: rebuildLabel(body.preview ? 'Preview mesh' : 'Model mesh', body.params),
         ...(doc ? { doc } : {}),
         ...(generation !== undefined ? { generation } : {}),
+        // A 504 mesh.pending is retried; only the final failure is reported.
+        reportErrors: false,
       });
       const payload = response.body as { code?: unknown; error?: unknown; path?: unknown; retryAfterMs?: unknown } | null;
       if (!response.ok) {
@@ -476,7 +478,9 @@ async function meshOnServer(
           await new Promise((resolve) => setTimeout(resolve, pendingWaitMs(response.retryAfter, payload)));
           continue;
         }
-        throw new Error(meshErrorMessage(response.status, payload));
+        const message = meshErrorMessage(response.status, payload);
+        rebuildQueue.reportError(body.preview ? 'Preview mesh' : 'Model mesh', message);
+        throw new Error(message);
       }
       if (!isBridgePayload(payload)) throw new Error('Mesh endpoint did not return features.');
       setMeshNotice({ approximate: payload.degraded === 'revision-artifact' });
@@ -509,6 +513,7 @@ async function fetchBridgePayloadOnce(url: string): Promise<BackendMeshPayload |
     const res = await rebuildQueue.fetchJson({
       url,
       label: 'Stored mesh',
+      reportErrors: false,
       ...(controller ? { signal: controller.signal } : {}),
     });
     if (!res.ok) return null;
@@ -681,7 +686,7 @@ async function meshGalleryPrecompute(
   if (hasOverrides(paramOverrides)) return null;
   try {
     const hash = await sha256Hex(source);
-    const res = await rebuildQueue.fetchJson({ url: galleryPrecomputedMeshUrl(hash), label: 'Gallery mesh' });
+    const res = await rebuildQueue.fetchJson({ url: galleryPrecomputedMeshUrl(hash), label: 'Gallery mesh', reportErrors: false });
     if (!res.ok) return null;
     return isBridgePayload(res.body) ? res.body : null;
   } catch {
