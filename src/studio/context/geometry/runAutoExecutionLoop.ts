@@ -18,6 +18,7 @@ import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import type { ExecutionResult } from '../../../shared/worker/geometryEngine';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
+import { rebuildQueue, STUDIO_MODEL_DOC } from '../../rebuild/rebuildQueueInstance';
 
 /** Applies a hosted/dev-kernel mesh payload to context state, incl. the
  *  empty-build guard. Shared by the hosted and dev-kernel branches of the
@@ -87,7 +88,7 @@ async function runHostedAutoExecution(
     deps.setIsComputing(true);
     let staleRecorded = false;
     try {
-        const payload = await meshSourceHosted(code);
+        const payload = await meshSourceHosted(code, undefined, { doc: STUDIO_MODEL_DOC });
         if (revision !== deps.mainRevisionRef.current) {
             deps.setStaleMainResponsesDropped((prev) => prev + 1);
             staleRecorded = true;
@@ -153,11 +154,11 @@ async function paintDevKernelTwoTier(
     revision: number,
     executionCount: number,
 ): Promise<TwoTierOutcome> {
-    const coarse = await meshSourceDev(code, undefined, { quality: 'coarse' });
+    const coarse = await meshSourceDev(code, undefined, { quality: 'coarse', doc: STUDIO_MODEL_DOC });
     if (revision !== deps.mainRevisionRef.current) return 'stale';
     const emptyNotice = applyAutoRunPayload(deps, revision, executionCount, coarse, { provisional: true });
     if (emptyNotice) return 'empty';
-    const payload = await meshSourceDev(code);
+    const payload = await meshSourceDev(code, undefined, { doc: STUDIO_MODEL_DOC });
     if (revision !== deps.mainRevisionRef.current) return 'stale';
     applyAutoRunPayload(deps, revision, executionCount, payload);
     return 'ok';
@@ -173,13 +174,15 @@ async function paintWorkerTwoTier(
     revision: number,
     executionCount: number,
 ): Promise<TwoTierOutcome> {
-    const result = await deps.engine.executeCode(code, {
+    // The kernel already runs in its own worker; tracking it lists the
+    // rebuild in the Studio and lets a newer edit supersede it.
+    const result = await rebuildQueue.track({ label: 'Kernel rebuild', doc: STUDIO_MODEL_DOC }, () => deps.engine.executeCode(code, {
         quality: 'coarse',
         onPreview: (preview) => {
             if (revision !== deps.mainRevisionRef.current) return;
             applyWorkerExecutionResult(deps, preview, code);
         },
-    });
+    }));
     if (revision !== deps.mainRevisionRef.current) return 'stale';
     applyWorkerExecutionResult(deps, result, code);
     deps.setLastSuccessfulRevision(revision);
@@ -218,7 +221,7 @@ async function runWorkerOrDevKernelAutoExecution(
         // immediately without a wasted round-trip.
         if (!useDevKernel && devMeshAvailable() && /is not defined|is not a function/.test(message)) {
             try {
-                const payload = await meshSourceDev(code);
+                const payload = await meshSourceDev(code, undefined, { doc: STUDIO_MODEL_DOC });
                 if (revision !== deps.mainRevisionRef.current) {
                     deps.setStaleMainResponsesDropped((prev) => prev + 1);
                     staleRecorded = true;

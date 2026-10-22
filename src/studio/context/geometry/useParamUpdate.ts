@@ -15,6 +15,7 @@ import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 import { meshParamEdits, type ParamEditValues } from './paramEditsForMesh';
 import { createSingleFlight, type SingleFlight } from './singleFlight';
+import { STUDIO_MODEL_DOC } from '../../rebuild/rebuildQueueInstance';
 
 interface HostedMeshJob {
     snapshot: ParamEditValues;
@@ -58,7 +59,7 @@ async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promi
     run.deps.setCurrentCodeRevision(revision);
     run.deps.setIsComputing(true);
     try {
-        const payload = await meshParamEdits(run.code, job.snapshot, job.bakeIntoSource, job.preview);
+        const payload = await meshParamEdits(run.code, job.snapshot, job.bakeIntoSource, job.preview, false, STUDIO_MODEL_DOC);
         if (job.epoch !== run.epochRef.current || revision !== run.deps.mainRevisionRef.current) return;
         applyParamMeshPayload(run.deps, run.executionCount, payload, revision);
     } catch (err) {

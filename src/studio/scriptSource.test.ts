@@ -90,11 +90,11 @@ describe('meshSourceDev', () => {
     } as Response);
 
     await expect(meshSourceDev('return box(1,1,1);')).resolves.toEqual(payload);
-    expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', {
+    expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', expect.objectContaining({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ source: 'return box(1,1,1);' }),
-    });
+    }));
   });
 
   it('asks for quality: coarse on a preview pass', async () => {
@@ -109,11 +109,11 @@ describe('meshSourceDev', () => {
     } as Response);
 
     await meshSourceDev('return box(1,1,1);', undefined, { quality: 'coarse' });
-    expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', {
+    expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', expect.objectContaining({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ source: 'return box(1,1,1);', quality: 'coarse' }),
-    });
+    }));
   });
 
   it('throws the endpoint error message on a non-ok response', async () => {
@@ -198,11 +198,11 @@ describe('param overrides (stateless re-run path)', () => {
     const payload = { features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] }, params: { w: 5 } };
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => payload } as Response);
     await meshSourceDev('return box(w,1,1);', { w: 5 });
-    expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', {
+    expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', expect.objectContaining({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 5 } }),
-    });
+    }));
   });
 
   it('meshSourceDev omits params when overrides are empty', async () => {

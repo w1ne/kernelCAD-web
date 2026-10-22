@@ -14,6 +14,7 @@ import { CoachMarks } from './start/CoachMarks';
 import { firstRunAllowed, isViewportEmpty } from './start/firstRun';
 import { MarkupPanel } from './components/viewer/markup/MarkupPanel';
 import { markupStore } from './markup/markupStore';
+import { RebuildActivity } from './rebuild/RebuildActivity';
 
 /** The first-run layer: the empty-viewport card and the coach marks. Only
  *  in the editable Studio; never on /p/, /g/, embeds or source links. */
@@ -88,6 +89,10 @@ export function Viewport() {
                 <ParamChips />
                 <SelectionHighlight />
                 <MarkupPanel />
+                {/* Running and queued rebuilds; the viewer stays interactive. */}
+                <div className="absolute top-3 left-3 z-20">
+                    <RebuildActivity />
+                </div>
             </div>
             <FirstRun geometryCount={geometries.length} />
             {viewportOverlay && (

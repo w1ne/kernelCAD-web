@@ -16,6 +16,7 @@ import { featureMeshesToGeometries } from './types';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import type { ExecutionResult } from '../../../shared/worker/geometryEngine';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
+import { rebuildQueue, STUDIO_MODEL_DOC } from '../../rebuild/rebuildQueueInstance';
 
 /** Applies a stateless mesh-endpoint payload to context state for the
  *  explicit `executeGeometry` (Validate) action. Unlike the auto-run loop's
@@ -68,14 +69,14 @@ async function runDevKernelExecute(
     revision: number,
     executionCount: number,
 ): Promise<void> {
-    const coarse = await meshSourceDev(codeToExecute, undefined, { quality: 'coarse' });
+    const coarse = await meshSourceDev(codeToExecute, undefined, { quality: 'coarse', doc: STUDIO_MODEL_DOC });
     if (revision !== deps.mainRevisionRef.current) {
         deps.setStaleMainResponsesDropped((prev) => prev + 1);
         deps.pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
         return;
     }
     applyExecuteGeometryPayload(deps, revision, executionCount, coarse, true);
-    const payload = await meshSourceDev(codeToExecute);
+    const payload = await meshSourceDev(codeToExecute, undefined, { doc: STUDIO_MODEL_DOC });
     if (revision !== deps.mainRevisionRef.current) {
         deps.setStaleMainResponsesDropped((prev) => prev + 1);
         deps.pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
@@ -91,13 +92,13 @@ async function runWorkerExecute(
     revision: number,
     executionCount: number,
 ): Promise<void> {
-    const result = await deps.engine.executeCode(codeToExecute, {
+    const result = await rebuildQueue.track({ label: 'Kernel rebuild', doc: STUDIO_MODEL_DOC }, () => deps.engine.executeCode(codeToExecute, {
         quality: 'coarse',
         onPreview: (preview) => {
             if (revision !== deps.mainRevisionRef.current) return;
             applyWorkerGeometry(deps, preview, codeToExecute);
         },
-    });
+    }));
     if (revision !== deps.mainRevisionRef.current) {
         deps.setStaleMainResponsesDropped((prev) => prev + 1);
         deps.pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
@@ -122,7 +123,7 @@ async function runHostedExecuteGeometry(
 ): Promise<void> {
     deps.setIsComputing(true);
     try {
-        const payload = await meshSourceHosted(codeToExecute);
+        const payload = await meshSourceHosted(codeToExecute, undefined, { doc: STUDIO_MODEL_DOC });
         if (revision !== deps.mainRevisionRef.current) {
             deps.setStaleMainResponsesDropped((prev) => prev + 1);
             deps.pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
@@ -171,7 +172,7 @@ async function runKernelOrWorkerExecuteGeometry(
         const message = err instanceof Error ? err.message : String(err);
         if (!useDevKernel && devMeshAvailable() && /is not defined|is not a function/.test(message)) {
             try {
-                const payload = await meshSourceDev(codeToExecute);
+                const payload = await meshSourceDev(codeToExecute, undefined, { doc: STUDIO_MODEL_DOC });
                 if (revision !== deps.mainRevisionRef.current) {
                     deps.setStaleMainResponsesDropped((prev) => prev + 1);
                     deps.pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });

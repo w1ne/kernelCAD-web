@@ -8,6 +8,7 @@ import { shouldUseHostedMesh, meshSourceHosted } from '../../scriptSource';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { overlayLiveReview, featureMeshesToGeometries, isAbortError, type ScriptReviewSummary } from './types';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
+import { rebuildQueue, STUDIO_MODEL_DOC } from '../../rebuild/rebuildQueueInstance';
 import type { ViewerDimension } from '../../../shared/intent/viewerDimension';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 
@@ -32,7 +33,7 @@ function fetchHostedMeshAndReview(
     opts: MeshFetchOpts | undefined,
     setRecomputeMs: (ms: number) => void,
 ): Promise<void> {
-    return meshSourceHosted(code)
+    return meshSourceHosted(code, undefined, { doc: STUDIO_MODEL_DOC })
         .then((payload) => {
             if (revision !== deps.mainRevisionRef.current) {
                 deps.setStaleMainResponsesDropped((prev) => prev + 1);
@@ -171,14 +172,22 @@ function fetchDevMeshAndReview(
             ...(abortController ? { signal: abortController.signal } : {}),
             headers,
         };
+        // Fetch, JSON parse and typed-array packing run in the rebuild worker;
+        // a newer rebuild of the model supersedes this one.
         const requestMesh = (url: string): Promise<DevMeshPayload> =>
-            fetch(url, fetchInit).then(async (response) => {
-                const payload = await response.json();
-                if (!response.ok) {
+            rebuildQueue.fetchJson({
+                url,
+                init: { headers },
+                label: url.includes('quality=coarse') ? 'Preview mesh' : 'Model mesh',
+                doc: STUDIO_MODEL_DOC,
+                ...(abortController ? { signal: abortController.signal } : {}),
+            }).then((response) => {
+                const payload = response.body as (DevMeshPayload & { error?: unknown }) | null;
+                if (!response.ok || !payload) {
                     const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
                     throw new Error(message);
                 }
-                return payload as DevMeshPayload;
+                return payload;
             });
 
         // Coarse preview leg. A preview failure is non-fatal (the display leg

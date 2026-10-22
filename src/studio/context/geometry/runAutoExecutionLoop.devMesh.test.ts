@@ -80,8 +80,8 @@ describe('runAutoExecutionLoop two-tier dev-kernel paint', () => {
 
     await runAutoExecutionLoop(d, CODE, 0);
 
-    expect(mocks.meshSourceDev).toHaveBeenNthCalledWith(1, CODE, undefined, { quality: 'coarse' });
-    expect(mocks.meshSourceDev).toHaveBeenNthCalledWith(2, CODE);
+    expect(mocks.meshSourceDev).toHaveBeenNthCalledWith(1, CODE, undefined, expect.objectContaining({ quality: 'coarse' }));
+    expect(mocks.meshSourceDev).toHaveBeenNthCalledWith(2, CODE, undefined, expect.not.objectContaining({ quality: 'coarse' }));
     expect(d.setGeometries).toHaveBeenCalledTimes(2);
     // One execution record per edit: the coarse paint is provisional.
     expect(d.pushExecutionRecord).toHaveBeenCalledTimes(1);

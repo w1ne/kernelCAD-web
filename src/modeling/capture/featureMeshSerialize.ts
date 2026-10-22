@@ -8,12 +8,17 @@ import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageR
 import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecord';
 
+/** JSON carries plain arrays. The Studio's rebuild worker packs them into
+ *  typed arrays off the UI thread before handing the payload over. */
+export type SerializedFloats = number[] | Float32Array;
+export type SerializedIndices = number[] | Uint32Array;
+
 export interface FaceGeometrySerialized {
-  vertices: number[];
-  indices: number[];
-  normals: number[];
+  vertices: SerializedFloats;
+  indices: SerializedIndices;
+  normals: SerializedFloats;
   /** Bbox-planar UVs (one (u,v) per vertex). */
-  uv?: number[];
+  uv?: SerializedFloats;
   faceId: number;
   plane?: FaceGeometry['plane'];
   cylinder?: FaceGeometry['cylinder'];
@@ -28,9 +33,9 @@ export interface FeatureMeshSerialized {
   predecessors: string[];
   op?: 'subtract' | 'union' | 'intersect';
   faces: FaceGeometrySerialized[];
-  mesh?: { positions: number[]; normals: number[]; indices: number[] };
+  mesh?: { positions: SerializedFloats; normals: SerializedFloats; indices: SerializedIndices };
   volume?: number;
-  edges?: number[];
+  edges?: SerializedFloats;
   /** Legacy color attribute (ColorToken or `#rrggbb` hex). Renderer resolves via
    *  ROLE_PALETTE; absent means use the renderer's default material color.
    *  Prefer `material` when present — it carries full PBR data. */
@@ -88,9 +93,19 @@ function serializeIndexedMesh(mesh: FeatureMesh['mesh']): Pick<FeatureMeshSerial
   return { mesh: { positions: Array.from(mesh.positions), normals: Array.from(mesh.normals), indices: Array.from(mesh.indices) } };
 }
 
+/** Already-packed arrays (rebuild worker) are adopted without a copy; plain
+ *  arrays convert exactly as before, so the values are identical either way. */
+function asFloat32(values: SerializedFloats): Float32Array {
+  return values instanceof Float32Array ? values : new Float32Array(values);
+}
+
+function asUint32(values: SerializedIndices): Uint32Array {
+  return values instanceof Uint32Array ? values : new Uint32Array(values);
+}
+
 function rehydrateIndexedMesh(mesh: FeatureMeshSerialized['mesh']): Pick<FeatureMesh, 'mesh'> {
   if (!mesh) return {};
-  return { mesh: { positions: new Float32Array(mesh.positions), normals: new Float32Array(mesh.normals), indices: new Uint32Array(mesh.indices) } };
+  return { mesh: { positions: asFloat32(mesh.positions), normals: asFloat32(mesh.normals), indices: asUint32(mesh.indices) } };
 }
 
 export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
@@ -135,17 +150,17 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
     predecessors: [...s.predecessors] as FeatureMesh['predecessors'],
     op: s.op,
     faces: s.faces.map((f) => ({
-      vertices: new Float32Array(f.vertices),
-      indices: new Uint32Array(f.indices),
-      normals: new Float32Array(f.normals),
-      ...(f.uv !== undefined ? { uv: new Float32Array(f.uv) } : {}),
+      vertices: asFloat32(f.vertices),
+      indices: asUint32(f.indices),
+      normals: asFloat32(f.normals),
+      ...(f.uv !== undefined ? { uv: asFloat32(f.uv) } : {}),
       faceId: f.faceId,
       plane: f.plane,
       cylinder: f.cylinder,
     })),
     ...rehydrateIndexedMesh(s.mesh),
     volume: s.volume,
-    edges: s.edges ? new Float32Array(s.edges) : undefined,
+    edges: s.edges ? asFloat32(s.edges) : undefined,
     ...(s.color !== undefined ? { color: s.color } : {}),
     ...(s.material !== undefined ? { material: s.material } : {}),
     ...(s.materialByFaceId !== undefined ? { materialByFaceId: s.materialByFaceId } : {}),

@@ -52,10 +52,12 @@ export function meshParamEdits(
   bakeAll = false,
   preview = false,
   warm = false,
+  doc?: string,
 ): Promise<BackendMeshPayload> {
   const { source, params } = paramEditsForMesh(code, edits, bakeAll);
   if (warm) return meshSourceHosted(source, undefined, { warm: true });
+  const supersede = doc ? { doc } : {};
   return shouldUseHostedMesh()
-    ? meshSourceHosted(source, params, { preferSource: source !== code, preview })
-    : meshSourceDev(source, params, preview ? { preview: true } : undefined);
+    ? meshSourceHosted(source, params, { preferSource: source !== code, preview, ...supersede })
+    : meshSourceDev(source, params, preview ? { preview: true, ...supersede } : supersede);
 }

@@ -9,6 +9,7 @@ import {
   galleryPrecomputedMeshUrl,
 } from './gallerySource';
 import { apiCall, rewritePath } from './api/apiBase';
+import { rebuildQueue } from './rebuild/rebuildQueueInstance';
 import { bearerAuthHeader, generationIdsForSource } from '../funnel/lib/generationAssets';
 import type { SerializedParamTable } from '../shared/runtime/paramTable';
 import type { ScriptReviewSummary } from './context/GeometryContext';
@@ -284,27 +285,45 @@ function hasOverrides(p?: ParamOverrides): p is ParamOverrides {
   return !!p && Object.keys(p).length > 0;
 }
 
+/** Name of a rebuild in the Studio's running-rebuilds list. */
+function rebuildLabel(kind: string, paramOverrides?: ParamOverrides): string {
+  if (!hasOverrides(paramOverrides)) return kind;
+  const names = Object.keys(paramOverrides);
+  const shown = names.slice(0, 2).join(', ');
+  return `${kind} · ${shown}${names.length > 2 ? ` +${names.length - 2}` : ''}`;
+}
+
+function isAbortLike(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && (error as { name?: unknown }).name === 'AbortError';
+}
+
 export async function meshSourceDev(
   source: string,
   paramOverrides?: ParamOverrides,
-  opts?: { quality?: 'coarse'; preview?: boolean },
+  opts?: { quality?: 'coarse'; preview?: boolean; doc?: string },
 ): Promise<BackendMeshPayload> {
   // Route through `apiCall()` so embed-mode hosts (StudioConfigProvider
   // with a `backendUrl`) get the correct prefix; standalone dev with no
   // embed config resolves to base='' and the URL stays `/__kernelcad/mesh`
   // (matches the existing test contract bit-for-bit).
   const { base, headers } = await apiCall();
-  const response = await fetch(rewritePath('/__kernelcad/mesh', base), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...headers },
-    body: JSON.stringify({
-      source,
-      ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
-      ...(opts?.quality === 'coarse' ? { quality: 'coarse' } : {}),
-      ...(opts?.preview ? { preview: true } : {}),
-    }),
+  // Fetch, JSON parse and typed-array packing run in the rebuild worker.
+  const response = await rebuildQueue.fetchJson({
+    url: rewritePath('/__kernelcad/mesh', base),
+    init: {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify({
+        source,
+        ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
+        ...(opts?.quality === 'coarse' ? { quality: 'coarse' } : {}),
+        ...(opts?.preview ? { preview: true } : {}),
+      }),
+    },
+    label: rebuildLabel(opts?.quality === 'coarse' ? 'Preview mesh' : 'Model mesh', paramOverrides),
+    ...(opts?.doc ? { doc: opts.doc } : {}),
   });
-  const payload = await response.json().catch(() => null);
+  const payload = response.body as { error?: unknown } | null;
   if (!response.ok) {
     const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
     throw new Error(message);
@@ -415,8 +434,8 @@ const MESH_PENDING_MAX_RETRIES = 3;
 const MESH_PENDING_MAX_WAIT_MS = 30_000;
 const MESH_PENDING_DEFAULT_WAIT_MS = 5_000;
 
-function pendingWaitMs(response: Response, payload: { retryAfterMs?: unknown } | null): number {
-  const header = Number(response.headers?.get?.('Retry-After'));
+function pendingWaitMs(retryAfter: string | null, payload: { retryAfterMs?: unknown } | null): number {
+  const header = Number(retryAfter);
   const ms = Number.isFinite(header) && header > 0
     ? header * 1000
     : typeof payload?.retryAfterMs === 'number' && payload.retryAfterMs > 0
@@ -427,21 +446,31 @@ function pendingWaitMs(response: Response, payload: { retryAfterMs?: unknown } |
 
 /** `POST {base}/__kernelcad/mesh`; throws the server's error message. A 504
  *  `mesh.pending` is retried (the build keeps running server-side). */
-async function meshOnServer(base: string, body: ReturnType<typeof hostedMeshBody>): Promise<BackendMeshPayload> {
+async function meshOnServer(
+  base: string,
+  body: ReturnType<typeof hostedMeshBody>,
+  doc?: string,
+): Promise<BackendMeshPayload> {
   // Only a request for generation files needs the caller's identity.
   const auth = body.generationIds ? await bearerAuthHeader() : {};
   try {
     for (let attempt = 0; ; attempt++) {
-      const response = await fetch(`${base}/__kernelcad/mesh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...auth },
-        body: JSON.stringify(body),
+      // Fetch, JSON parse and typed-array packing run in the rebuild worker.
+      const response = await rebuildQueue.fetchJson({
+        url: `${base}/__kernelcad/mesh`,
+        init: {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...auth },
+          body: JSON.stringify(body),
+        },
+        label: rebuildLabel(body.preview ? 'Preview mesh' : 'Model mesh', body.params),
+        ...(doc ? { doc } : {}),
       });
-      const payload = await response.json().catch(() => null);
+      const payload = response.body as { code?: unknown; error?: unknown; path?: unknown; retryAfterMs?: unknown } | null;
       if (!response.ok) {
         if (response.status === 504 && payload?.code === 'mesh.pending' && attempt < MESH_PENDING_MAX_RETRIES) {
           setMeshNotice({ meshing: true });
-          await new Promise((resolve) => setTimeout(resolve, pendingWaitMs(response, payload)));
+          await new Promise((resolve) => setTimeout(resolve, pendingWaitMs(response.retryAfter, payload)));
           continue;
         }
         throw new Error(meshErrorMessage(response.status, payload));
@@ -474,10 +503,13 @@ async function fetchBridgePayloadOnce(url: string): Promise<BackendMeshPayload |
   const controller = typeof AbortController === 'function' ? new AbortController() : null;
   const timer = controller ? setTimeout(() => controller.abort(), ARTIFACT_FETCH_MS) : undefined;
   try {
-    const res = await fetch(url, controller ? { signal: controller.signal } : undefined);
+    const res = await rebuildQueue.fetchJson({
+      url,
+      label: 'Stored mesh',
+      ...(controller ? { signal: controller.signal } : {}),
+    });
     if (!res.ok) return null;
-    const payload = await res.json().catch(() => null);
-    return isBridgePayload(payload) ? payload : null;
+    return isBridgePayload(res.body) ? res.body : null;
   } catch {
     return null;
   } finally {
@@ -646,10 +678,9 @@ async function meshGalleryPrecompute(
   if (hasOverrides(paramOverrides)) return null;
   try {
     const hash = await sha256Hex(source);
-    const res = await fetch(galleryPrecomputedMeshUrl(hash));
+    const res = await rebuildQueue.fetchJson({ url: galleryPrecomputedMeshUrl(hash), label: 'Gallery mesh' });
     if (!res.ok) return null;
-    const payload = await res.json().catch(() => null);
-    return isBridgePayload(payload) ? payload : null;
+    return isBridgePayload(res.body) ? res.body : null;
   } catch {
     return null;
   }
@@ -675,12 +706,15 @@ async function meshViaServer(
   preferSource: boolean | undefined,
   preview?: boolean,
   warm?: boolean,
+  doc?: string,
 ): Promise<BackendMeshPayload> {
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base !== 'string' || base.length === 0) throw new Error(NO_HOSTED_BACKEND);
   try {
-    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource, preview, warm));
+    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource, preview, warm), doc);
   } catch (error) {
+    // A newer rebuild replaced this one: no stored-mesh fallback.
+    if (isAbortLike(error)) throw error;
     const stored = storedFallbackAllowed(source, paramOverrides, preferSource) ? await storedRevisionMesh(base) : null;
     if (stored) return stored;
     throw error;
@@ -699,7 +733,7 @@ async function meshViaServer(
 export async function meshSourceHosted(
   source: string,
   paramOverrides?: ParamOverrides,
-  options?: { preferSource?: boolean; preview?: boolean; warm?: boolean },
+  options?: { preferSource?: boolean; preview?: boolean; warm?: boolean; doc?: string },
 ): Promise<BackendMeshPayload> {
   if (options?.warm) return meshViaServer(source, undefined, true, false, true);
   const preferSource = options?.preferSource;
@@ -707,5 +741,5 @@ export async function meshSourceHosted(
   if (stored) return stored;
   const gallery = await meshGalleryPrecompute(source, paramOverrides);
   if (gallery) return gallery;
-  return meshViaServer(source, paramOverrides, preferSource, options?.preview);
+  return meshViaServer(source, paramOverrides, preferSource, options?.preview, false, options?.doc);
 }
