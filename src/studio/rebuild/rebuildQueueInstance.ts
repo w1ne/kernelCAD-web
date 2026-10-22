@@ -17,6 +17,14 @@ import {
 } from './rebuildProtocol';
 import { RebuildQueue, type RebuildTransport } from './rebuildQueue';
 
+function pageUrl(url: string): string {
+  try {
+    return new URL(url, globalThis.location?.href).href;
+  } catch {
+    return url;
+  }
+}
+
 /** The real worker: the rebuild runs off the UI thread. */
 export function createWorkerTransport(): RebuildTransport {
   const worker = new Worker(new URL('./rebuild.worker.ts', import.meta.url), { type: 'module' });
@@ -36,7 +44,9 @@ export function createWorkerTransport(): RebuildTransport {
 
   return {
     post: (message: RebuildWorkerRequest) => {
-      worker.postMessage(message);
+      // A worker resolves relative URLs against its own script URL, not the
+      // page; pin them to the page so they hit the same endpoint as before.
+      worker.postMessage(message.type === 'fetch' ? { ...message, url: pageUrl(message.url) } : message);
     },
     listen: (listener: (message: RebuildWorkerResponse) => void, crash: (reason: string) => void) => {
       onMessage = listener;
