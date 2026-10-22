@@ -22,17 +22,10 @@
     "kernelcad": "dist/cli/index.js"
   },
   "exports": {
-    "./studio": {
-      "types": "./dist/studio/index.d.ts",
-      "import": "./dist/studio/index.js"
-    },
-    "./studio.css": "./src/index.css",
     "./package.json": "./package.json"
   },
   "files": [
     "dist/cli",
-    "dist/studio",
-    "src/index.css",
     "dist/headless-player",
     "README.md",
     "LICENSE",
@@ -41,16 +34,12 @@
     "licenses/smlibwasm/**",
     "assets/parts/**",
     "assets/reference-parts/**",
-    "assets/parts-seed/**",
-    "dist/mcp-viewer"
+    "assets/parts-seed/**"
   ],
   "scripts": {
-    "dev": "vite",
-    "review-paint:server": "node scripts/review-paint-server.mjs",
-    "prebuild": "tsr generate",
-    "build": "tsc -b && vite build",
+    "dev": "vite --config vite.player.config.ts",
+    "build": "npm run build:cli && npm run build:player",
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node scripts/build-cli.mjs",
-    "build:studio": "vite build --config vite.studio.config.ts",
     "build:player": "vite build -c vite.player.config.ts",
     "dist:skills": "npx tsx scripts/distGenerate.mjs",
     "eval": "npx tsx eval/run.ts",
@@ -68,12 +57,11 @@
     "kernel:capabilities": "npx tsx scripts/buildKernelCapabilities.ts",
     "docs:cheatsheet": "npx tsx scripts/buildCheatSheet.ts",
     "skill:out-of-scope": "npx tsx scripts/buildOutOfScopeSection.ts",
-    "shopcheck:refresh": "npx tsx scripts/refreshCatalog.ts",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "vite preview --config vite.player.config.ts",
     "release": "npx tsx scripts/release.ts",
-    "prepack": "npm run build:cli && npm run build:studio && npm run build:player && npm run build:mcp-viewer",
-    "prepare": "git config core.hooksPath .githooks || true; npm run build:studio && npm run build:player",
+    "prepack": "npm run build",
+    "prepare": "git config core.hooksPath .githooks || true",
     "generate:parts": "npx tsx scripts/generateSeedCatalog.ts assets/parts",
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",
@@ -88,20 +76,8 @@
     "proof:dist-skills": "npm test -- tests/unit/cli/walkSkillTree.test.ts tests/unit/cli/skillInstallRecursion.test.ts tests/unit/cli/skillInstallDeprecation.test.ts tests/unit/scripts/distGenerate.test.ts tests/unit/scripts/distSkillManifest.test.ts tests/unit/scripts/distHarnessAuthor.test.ts tests/unit/scripts/distGrepGate.test.ts tests/unit/scripts/distToolNameGate.test.ts tests/unit/scripts/distFsDiscoverySentinel.test.ts tests/unit/scripts/distReadme.test.ts tests/unit/scripts/distPostinstallScript.test.ts",
     "proof:assembly-contract": "npm run proof:foundation && npm test -- tests/unit/assemblies/assemblyCapture.test.ts tests/unit/backends/occt/assemblyLowerer.test.ts tests/integration/examples/assemblyExamples.test.ts tests/unit/skill/skillGlobalsDrift.test.ts",
     "proof:mates": "npm run proof:assembly-contract && npm test -- src/modeling/mates/ src/shared/numeric/ tests/unit/assemblies/solvedModelValidate.test.ts tests/unit/assemblies/solvedModelGroundingGates.test.ts tests/integration/examples/desktop3axisMates.test.ts tests/integration/examples/desktop3axisMates.interference.test.ts tests/integration/mcp/addConnector.test.ts tests/integration/mcp/addMate.test.ts tests/integration/mcp/listMates.test.ts tests/integration/mcp/validateAssembly.test.ts tests/integration/mcp/solveMates.test.ts tests/unit/cli/evaluateValidateGate.test.ts",
-    "test:e2e": "playwright test",
-    "site:dev": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts && npm run site:build-island && npx tsx site/scripts/build-demo.ts && npx tsx site/scripts/build-gallery.ts && npm run site:build-blog && npm run site:build-docs && bash site/scripts/link-public.sh && cd site && python3 -m http.server 8000",
-    "site:build": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts && npm run site:build-island && npx tsx site/scripts/build-demo.ts && npx tsx site/scripts/build-gallery.ts && npm run site:build-blog && npm run site:build-docs && node site/scripts/render-brand.mjs",
-    "site:build-blog": "npx tsx site/scripts/build-blog.ts",
-    "capture:studio-markup": "CI=1 KCAD_CAPTURE=1 __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS=studio.test VITE_ENABLE_IN_APP_AGENT=true VITE_API_BASE_URL=http://studio.test:5173 VITE_SUPABASE_URL=http://studio.test:5173 VITE_SUPABASE_ANON_KEY=studio-markup-capture npx playwright test tests/studio_markup_snapshot.spec.ts tests/studio_markup_capture.spec.ts --project=chromium --reporter=line && /opt/homebrew/bin/ffmpeg -y -i docs/demos/studio-markup/demo.webm -an -vf \"scale=trunc(iw/2)*2:trunc(ih/2)*2\" -c:v libx264 -preset fast -crf 30 -pix_fmt yuv420p -movflags +faststart docs/demos/studio-markup/demo.mp4 && rm docs/demos/studio-markup/demo.webm",
-
-    "site:build-pricing": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts",
-    "site:build-island": "vite build --config vite.pricing-island.config.ts",
-    "site:render-brand": "node site/scripts/render-brand.mjs",
-    "site:test": "vitest run scripts/lib/selectHeroDemo.test.ts site/scripts/build-demo.test.ts scripts/lib/productionSiteProbe.test.ts",
-    "site:verify-production": "npx tsx scripts/verifyProductionSite.ts",
     "test:watch": "vitest",
-    "pretypecheck": "tsr generate",
-    "typecheck": "tsc -b --noEmit && tsc --noEmit -p tsconfig.site.json",
+    "typecheck": "tsc -b --noEmit && tsc --noEmit -p tsconfig.cli.json",
     "typecheck:examples": "tsx scripts/typecheckExamples.ts examples/gallery/turbojet-engine.kcad.ts examples/gallery/hand-coffee-grinder.kcad.ts tests/e2e/fixtures/twisted-blade.kcad.ts",
     "typecheck:examples:all": "tsx scripts/typecheckExamples.ts --all",
     "test:ratchet": "vitest run tests/unit/scripts/qualityRatchet.test.ts tests/unit/scripts/cycleRatchet.test.ts",
@@ -109,7 +85,6 @@
     "qc:build": "npm run typecheck && npm run build:cli && npm run cookbook:build && npm run skill:out-of-scope && git diff --exit-code src/agent/skills && npm run cookbook:evaluate",
     "qc:test": "npm test",
     "qc": "npm run qc:lint && npm run qc:build && npm run qc:test",
-    "qc:full": "npm run qc && npm run test:e2e && npm run build",
     "listing:zip": "node scripts/agentPlugin/buildChatGptZip.mjs",
     "listing:verify-mcp": "node scripts/listing/verifyHostedMcp.mjs",
     "capture-demo": "npx tsx scripts/captureDemo.ts",
@@ -122,9 +97,7 @@
     "lint-demos": "npx tsx scripts/lint-demos.ts",
     "portfolio:validate": "npm test -- tests/integration/portfolio/portfolioBundle.test.ts tests/unit/portfolio/portfolioMeta.test.ts",
     "portfolio:capture": "npx tsx scripts/capturePortfolioEntry.ts",
-    "site:build-docs": "npx tsx site/scripts/prebake-docs-models.ts && npx tsx site/scripts/build-docs.ts && vite build --config vite.docs-island.config.ts && npx tsx site/scripts/verify-docs-bundle.ts",
-    "docs:site": "npm run site:build-docs",
-    "build:mcp-viewer": "vite build --config vite.mcp-viewer.config.ts"
+    "qc:full": "npm run qc && npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",

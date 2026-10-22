@@ -9,7 +9,6 @@ vi.mock('./checkAssemblyPath', () => ({ checkAssemblyPathTool: vi.fn(async () =>
 vi.mock('./validateAssembly', () => ({ validateAssemblyTool: vi.fn(async () => 'assembly') }));
 vi.mock('./validateUrdf', () => ({ validateUrdfTool: vi.fn(async () => 'urdf') }));
 vi.mock('./dfmCheck', () => ({ dfmCheckTool: vi.fn(async () => 'dfm') }));
-vi.mock('./dfmPreflight', () => ({ dfmPreflightTool: vi.fn(async () => 'dfm-preflight') }));
 vi.mock('./checkSweptCollision', () => ({ checkSweptCollisionTool: vi.fn(async () => 'swept') }));
 vi.mock('./checkReachable', () => ({ checkReachableTool: vi.fn(async () => 'reachable') }));
 vi.mock('./checkMountingHoleConsistency', () => ({ checkMountingHoleConsistencyTool: vi.fn(async () => 'mounting') }));
@@ -25,7 +24,6 @@ import { verifyTool, type VerifyCheck } from './verify';
 import { validateAssemblyTool } from './validateAssembly';
 import { validateUrdfTool } from './validateUrdf';
 import { dfmCheckTool } from './dfmCheck';
-import { dfmPreflightTool } from './dfmPreflight';
 import { checkSweptCollisionTool } from './checkSweptCollision';
 import { checkReachableTool } from './checkReachable';
 import { checkMountingHoleConsistencyTool } from './checkMountingHoleConsistency';
@@ -41,7 +39,6 @@ const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['assembly', validateAssemblyTool as never, 'assembly'],
   ['urdf', validateUrdfTool as never, 'urdf'],
   ['dfm', dfmCheckTool as never, 'dfm'],
-  ['dfm-preflight', dfmPreflightTool as never, 'dfm-preflight'],
   ['swept-collision', checkSweptCollisionTool as never, 'swept'],
   ['reachable', checkReachableTool as never, 'reachable'],
   ['mounting-holes', checkMountingHoleConsistencyTool as never, 'mounting'],
@@ -80,6 +77,11 @@ describe('verify dispatcher', () => {
     await verifyTool({ check: 'geometry-quality', ...params });
     expect(checkGeometryQualityTool).toHaveBeenCalledWith(params);
     expect(checkFastenerInstallationTool).not.toHaveBeenCalled();
+  });
+
+  it('rejects supplier-specific checks while retaining generic DFM', async () => {
+    await expect(verifyTool({ check: 'dfm-preflight' as VerifyCheck })).rejects.toThrow(/Unknown verify check/);
+    await expect(verifyTool({ check: 'dfm', code: 'SRC' })).resolves.toBe('dfm');
   });
 
   it('throws an actionable error on an unknown check', async () => {

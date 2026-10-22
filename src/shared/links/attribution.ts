@@ -8,9 +8,7 @@
 // into geometry), and the public viewer surfaces link back through
 // `attributionUrl()`.
 //
-// Self-hosters and forks: this file and `referral.ts` next to it are the only
-// places to change. Edit the constants below to rename or re-point the
-// attribution. See ATTRIBUTION.md.
+// Edit the constants below to rename or re-point attribution. See ATTRIBUTION.md.
 
 import { kernelcadVersion } from '../runtime/kernelcadVersion';
 
@@ -25,11 +23,10 @@ export const KERNELCAD_APP_URL = 'https://app.kernelcad.com';
 
 /**
  * Where a link or an exported file is shown to a person or an agent. Used as
- * `utm_medium` / `ref` on our own links and per-surface on vendor links.
+ * `utm_medium` / `ref` on project links.
  */
 export type LinkSurface =
   | 'bom'
-  | 'shopcheck'
   | 'part'
   | 'studio'
   | 'embed'
@@ -54,8 +51,7 @@ export function attributionGenerator(version: string = kernelcadVersion()): stri
  * A link to one of OUR OWN pages, tagged with the surface it was shown on:
  * `?ref=<surface>&utm_source=kernelcad&utm_medium=<surface>`.
  *
- * Only for kernelCAD-owned URLs. Vendor links go through `buildVendorUrl()`
- * in `referral.ts`. Existing query parameters and the fragment are kept;
+ * Only for kernelCAD-owned URLs. Existing query parameters and the fragment are kept;
  * calling it twice gives the same URL.
  */
 export function attributionUrl(

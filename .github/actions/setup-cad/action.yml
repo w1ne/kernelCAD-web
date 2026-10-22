@@ -79,7 +79,7 @@ runs:
           .tsbuildinfo
           node_modules/.cache
           node_modules/.vite
-        key: ${{ runner.os }}-buildcache-${{ hashFiles('tsconfig*.json', 'src/**/*.ts', 'src/**/*.tsx', 'vite.config.ts', 'vitest.config.ts') }}
+        key: ${{ runner.os }}-buildcache-${{ hashFiles('tsconfig*.json', 'src/**/*.ts', 'src/**/*.tsx', 'vite.player.config.ts', 'vitest.config.ts') }}
         restore-keys: |
           ${{ runner.os }}-buildcache-
 

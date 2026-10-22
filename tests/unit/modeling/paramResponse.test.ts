@@ -8,7 +8,6 @@ import {
   heavyParamResponses,
   legalParamStep,
 } from '../../../src/modeling/paramResponse';
-import { paramControlVisible } from '../../../src/studio/paramControl';
 
 describe('classifyParamStep', () => {
   it('hides a step that does not change a feature', () => {
@@ -72,15 +71,7 @@ describe('legalParamStep', () => {
   });
 });
 
-describe('param controls', () => {
-  it('shows every declared param, including heavy and unmeasured', () => {
-    expect(paramControlVisible('local', 'hosted')).toBe(true);
-    expect(paramControlVisible('rigid', 'editor')).toBe(true);
-    expect(paramControlVisible('heavy', 'editor')).toBe(true);
-    expect(paramControlVisible('heavy', 'hosted')).toBe(true);
-    expect(paramControlVisible(undefined, 'hosted')).toBe(true);
-  });
-
+describe('heavyParamResponses', () => {
   it('stamps every name heavy when a publish cannot prove a drag', () => {
     expect(heavyParamResponses(['width', 'knurl'])).toEqual({ width: 'heavy', knurl: 'heavy' });
   });

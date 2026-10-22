@@ -1,7 +1,7 @@
 [
   {
     "name": "evaluate_script",
-    "description": "Use this when you need to run a script and check it compiles. Full local builds return viewerUrl: a live Studio link reused and updated on later full builds in the same MCP process. Hosted builds return viewerMode: hosted and viewerHint pointing to open_in_studio; they do not start a loopback viewer. Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics + sceneSummary (BREP validity, volume in mm³, face count, bounding size in mm). When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics, as does a mate connector more than 6 mm outside its part bounding box (assembly.mechanical.connector-not-in-solid, the same error review_cad reports) — a mechanism (any mate or joint) needs every part linked by connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out (e.g. a deliberately free part next to a mechanism). An animation or drive on a fastened joint (mechanism.motion-on-fixed-joint) is broken: animate a revolute/prismatic mate pose. For a model with moving joints or motion intent, `mechanismSummary.statement` is one plain line: \"Motion checked: ...\" names what ran; \"Motion not checked: ...\" is NOT a pass — never call that mechanism working. Every union() is checked too (no opt-out): union.disconnected (the union is several separate solids — a floating operand) and union.member-overlap (two operands that each carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross tube between rails is span minus two rail widths) make ok:false. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks without building solids, DFM gates, or meshing — milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools. To show a measurement in the 3D viewer (e.g. hole spacing), declare it in the script with shape.dimension({ kind: \"linear\", from, to, label }); a full evaluate lists them as dimensions: [{ text, kind, source }], and a shared /p link with ?dims=1 forces them on.",
+    "description": "Use this when you need to run a script and check it compiles. Full local builds return viewerUrl only when KERNELCAD_VIEWER_DIST explicitly supplies a separate viewer bundle; the link is reused on later full builds. Otherwise viewerError explains the missing viewer and geometry remains available. Hosted builds return viewerMode: hosted and viewerHint pointing to open_in_studio; they do not start a loopback viewer. Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics + sceneSummary (BREP validity, volume in mm³, face count, bounding size in mm). When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics, as does a mate connector more than 6 mm outside its part bounding box (assembly.mechanical.connector-not-in-solid, the same error review_cad reports) — a mechanism (any mate or joint) needs every part linked by connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out (e.g. a deliberately free part next to a mechanism). An animation or drive on a fastened joint (mechanism.motion-on-fixed-joint) is broken: animate a revolute/prismatic mate pose. For a model with moving joints or motion intent, `mechanismSummary.statement` is one plain line: \"Motion checked: ...\" names what ran; \"Motion not checked: ...\" is NOT a pass — never call that mechanism working. Every union() is checked too (no opt-out): union.disconnected (the union is several separate solids — a floating operand) and union.member-overlap (two operands that each carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross tube between rails is span minus two rail widths) make ok:false. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks without building solids, DFM gates, or meshing — milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools. To show a measurement in the 3D viewer (e.g. hole spacing), declare it in the script with shape.dimension({ kind: \"linear\", from, to, label }); a full evaluate lists them as dimensions: [{ text, kind, source }], and a shared /p link with ?dims=1 forces them on.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -40,49 +40,7 @@
       "type": "object",
       "properties": {
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "ok": {
           "type": "boolean",
@@ -90,7 +48,7 @@
         },
         "viewerUrl": {
           "type": "string",
-          "description": "Live loopback Studio URL; reused on later full builds in the same local MCP process."
+          "description": "Live loopback viewer URL, available only with an explicitly supplied KERNELCAD_VIEWER_DIST bundle; reused on later local full builds."
         },
         "viewerError": {
           "type": "string",
@@ -785,7 +743,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — static assembly review ({ file | code }, or the session evaluate_script left): mate validator, default-pose interference, joint topology, mechanical plausibility. ok:false with `blocking[]` exactly when review_cad's blocking rules fire on these findings; review_cad also sweeps joint ranges and runs physics.\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions and blocking parts; disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'geometry-quality' — one solid body's BREP tiny faces and short edges (ids, locations, mm²/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates: hole pairs one screw can use (equal, or clearance over a tap drill / hole({ thread }) of the same metric size; hole-free faces are a rigid bond) and fastener holes meeting at the contact face are coaxial. Sides it cannot resolve are info, never mismatches.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'motion-load' — loads on each driven joint (mechanicalJoint on a revolute mate) while the model moves: gravity, inertia from the animationView tracks (finite differences), optional external forces. Mass and inertia come from the solids and density/material, or a part's massKg. Returns per joint peak torque vs the mechanicalJoint torqueNm (margin; < 1x error, < 2x warning), axial / radial force and bending moment on the actuator shaft (checked only against radialLimitN / axialLimitN; without them 'no rating, not checked'), the radial load on each of up to two coaxial supports (each at its station on the shaft: the actuator at the joint origin, else the support's connector on the axis, else the middle of its material nearest the shaft; an ambiguous station is a mechanism.load.not-resolved warning, not a number), the worst pose and a torque-vs-time series ({ file | code, motion_mode?: 'tracks'|'range', sample_ms?, range_samples?, quasi_static?, gravity?, motion_loads?: [{ part, point, force, fromMs?, toMs? }], supports?: { joint: [parts] }, series_points? }). Pass supports to compare with and without a bushing. Rigid bodies, tree mate graphs, no friction.\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — static assembly review ({ file | code }, or the session evaluate_script left): mate validator, default-pose interference, joint topology, mechanical plausibility. ok:false with `blocking[]` exactly when review_cad's blocking rules fire on these findings; review_cad also sweeps joint ranges and runs physics.\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions and blocking parts; disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'geometry-quality' — one solid body's BREP tiny faces and short edges (ids, locations, mm²/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates: hole pairs one screw can use (equal, or clearance over a tap drill / hole({ thread }) of the same metric size; hole-free faces are a rigid bond) and fastener holes meeting at the contact face are coaxial. Sides it cannot resolve are info, never mismatches.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'motion-load' — loads on each driven joint (mechanicalJoint on a revolute mate) while the model moves: gravity, inertia from the animationView tracks (finite differences), optional external forces. Mass and inertia come from the solids and density/material, or a part's massKg. Returns per joint peak torque vs the mechanicalJoint torqueNm (margin; < 1x error, < 2x warning), axial / radial force and bending moment on the actuator shaft (checked only against radialLimitN / axialLimitN; without them 'no rating, not checked'), the radial load on each of up to two coaxial supports (each at its station on the shaft: the actuator at the joint origin, else the support's connector on the axis, else the middle of its material nearest the shaft; an ambiguous station is a mechanism.load.not-resolved warning, not a number), the worst pose and a torque-vs-time series ({ file | code, motion_mode?: 'tracks'|'range', sample_ms?, range_samples?, quasi_static?, gravity?, motion_loads?: [{ part, point, force, fromMs?, toMs? }], supports?: { joint: [parts] }, series_points? }). Pass supports to compare with and without a bushing. Rigid bodies, tree mate graphs, no friction.\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -795,7 +753,6 @@
             "assembly",
             "urdf",
             "dfm",
-            "dfm-preflight",
             "swept-collision",
             "reachable",
             "mounting-holes",
@@ -812,7 +769,7 @@
         },
         "file": {
           "type": "string",
-          "description": "Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius)."
+          "description": "Path to a .kcad.ts script (assembly/dfm/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius)."
         },
         "code": {
           "type": "string",
@@ -982,44 +939,6 @@
         "urdf_path": {
           "type": "string",
           "description": "check:'urdf' — path to the .urdf file."
-        },
-        "dxf": {
-          "type": "string",
-          "description": "check:'dfm-preflight' — path to a DXF file."
-        },
-        "featureId": {
-          "type": "string",
-          "description": "check:'dfm-preflight' — FeatureId to scope to."
-        },
-        "vendor": {
-          "type": "string",
-          "description": "check:'dfm-preflight' — vendor SKU (required for that check)."
-        },
-        "material": {
-          "type": "string",
-          "description": "check:'dfm-preflight' — material SKU (required for that check)."
-        },
-        "thicknessIn": {
-          "type": "number",
-          "description": "check:'dfm-preflight' — material thickness in inches."
-        },
-        "thicknessMm": {
-          "type": "number",
-          "description": "check:'dfm-preflight' — material thickness in millimeters."
-        },
-        "service": {
-          "type": "string",
-          "enum": [
-            "laser",
-            "cnc-router",
-            "waterjet",
-            "bending"
-          ],
-          "description": "check:'dfm-preflight' — service."
-        },
-        "refreshCatalog": {
-          "type": "boolean",
-          "description": "check:'dfm-preflight' — force vendor catalog refresh."
         },
         "directions": {
           "type": "array",
@@ -1913,49 +1832,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -2041,49 +1918,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -2357,49 +2192,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -2630,49 +2423,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -2951,49 +2702,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -3362,49 +3071,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -3569,49 +3236,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -3746,49 +3371,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -4045,49 +3628,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -4173,49 +3714,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -4522,7 +4021,7 @@
   },
   {
     "name": "export",
-    "description": "Use this when you need to export geometry to a file. One exporter, selected by `target`:\n- target:'model' — export the script geometry to one file. Pass { file | code }, a required { output_path }, and { format }. Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (2D cut file for laser / waterjet / CNC: a flat part — plate, panel, extruded profile, in any orientation — exports its outline and holes in its own plane with exact arcs and circles; a sheet-metal part or a returned Region exports its flat pattern; a flat or sheet-metal part also returns sheet { thickness_mm, bend_count }, which a shop needs and the DXF does not carry; options.section { axis: \"x\"|\"y\"|\"z\", at } exports the cross-section of any part in world coordinates (plans, profiles); a multi-part model (cut list) writes all parts side by side on output_path, one layer per part, plus parts/<part>.dxf per part (reported in part_files; options.layout 'sheet' writes the combined sheet only); any other part fails with export.dxf.non-planar), 3mf (slicer-friendly mesh: one named object per part, colours as core-spec basematerials named by the part's engineering material; options.arrange 'plate' packs parts on the bed at Z=0 without overlap (options.orient puts each part's largest flat face down), 'assembled' keeps them together as one multi-part object for multi-colour prints; options.slicer 'bambu' | 'orca' | 'prusa' adds that slicer's per-object name + filament-slot sidecar — slot N is the Nth distinct colour/material), options.infill { fromFea: '<study>' | true, bands?, pattern? } = stress-graded FDM infill (requires the local CalculiX + gmsh toolchain; without it the export fails with fea.solver.unavailable): solves the feaStudy and writes modifier volumes, each with its own infill density (Orca/Bambu format by default; options.slicer 'prusa' writes PrusaSlicer's format instead, since the two are not interchangeable); the result carries infill { bands, saving, images }), gcode (installed OrcaSlicer output; preserves G-code and returns optional gcode_stats with header generator identity and slicer-predicted time/material), glb (web-viewer / AR with PBR materials), obj (Wavefront indexed triangle mesh), usd (ASCII USDA triangle mesh in millimeter, Z-up coordinates; multi-part scenes emit one named mesh per part), svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box, options.autoAnnotate to derive datums A/B/C, grouped hole callouts with position tolerances, hole positions, overall size, radius and chamfer callouts, flatness and an ISO 2768 note from the geometry (the result carries drawing_report with placed / overlapped counts), and options.sections for real section views on any cutting plane). pdf-drawing (the same sheet — views, dashed hidden lines, dimensions, hole callouts, GD&T, sections, parts list — as a printable vector PDF on a standard sheet, one call: ISO a4|a3|a2|a1|a0 or ANSI ansi-a…ansi-e landscape, default a3, or sheet \"auto\" / \"auto-ansi\" for the smallest sheet that holds the views at 1:1; the drawing scale is picked to fit; projection \"third\" (default) or \"first\" arranges the views and draws the matching symbol; a full title block carries title, part name, material, scale, units, sheet size, date and revision, settable through options.title / partName / material / revision / date; autoAnnotate is on unless options.annotations is given). Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, and joint drives only when declared in options.drives { <mate>: { stiffness, damping, maxForce?, targetPosition? } }; options.collisionApproximation is convexHull | convexDecomposition; planar/cylindrical/pin_slot/ball mates fail closed with export.usd.joint-unsupported). bom-csv / bom-json (bill of materials over assembly.model()/solvedModel(): one row per distinct part — grouped by geometry/catalog identity, not name — with real instance quantity, kind, material, density, mass, bbox, fabrication process (`process` + `processSource`), and catalog provenance for purchased parts; same numbers as inspect({ of: 'bom' })). order-pack (a zip: one single-body file per fabricated part — STEP always, plus STL for 3d-print and DXF for sheet-cut rows, per-part drawing PDFs where available — with bom.csv/bom.json, vendor paste handoff texts for purchased rows and a machine-readable manifest; options processes / items narrow which rows are packed; nothing is uploaded). bend-table (tube bender tables over tube() records: one <tube name>.csv per tube with the LRA bend table, XYZ points, cut length and last straight; output_path is a DIRECTORY and the written files are reported in table_files; a script with no tube() fails with export.bend-table.no-tubes, and a script whose tube gates report errors writes nothing). urdf and sdf-gazebo also write one meshes/<part>.stl per link, and usd-isaac one meshes/<part>.usda mesh layer per link, next to output_path (reported in mesh_files) — ship the whole directory to the consumer. STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight (open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. Optional { feature_id } selects which feature to export (default: last). Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit/section/layout, 3mf printUnit/embedSource/arrange/orient/slicer/printer/infill, glb axis/draco).\n- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts (files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default and fails the call with export.mesh.not-watertight; unknown part names fail with export.part.not-found listing the valid names.\nPass { no_verify: true } to skip the watertight gate. All params except `target` are forwarded verbatim; each target fails closed on its own missing required params.",
+    "description": "Use this when you need to export geometry to a file. One exporter, selected by `target`:\n- target:'model' — export the script geometry to one file. Pass { file | code }, a required { output_path }, and { format }. Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (2D cut file for laser / waterjet / CNC: a flat part — plate, panel, extruded profile, in any orientation — exports its outline and holes in its own plane with exact arcs and circles; a sheet-metal part or a returned Region exports its flat pattern; a flat or sheet-metal part also returns sheet { thickness_mm, bend_count }, which a shop needs and the DXF does not carry; options.section { axis: \"x\"|\"y\"|\"z\", at } exports the cross-section of any part in world coordinates (plans, profiles); a multi-part model (cut list) writes all parts side by side on output_path, one layer per part, plus parts/<part>.dxf per part (reported in part_files; options.layout 'sheet' writes the combined sheet only); any other part fails with export.dxf.non-planar), 3mf (slicer-friendly mesh: one named object per part, colours as core-spec basematerials named by the part's engineering material; options.arrange 'plate' packs parts on the bed at Z=0 without overlap (options.orient puts each part's largest flat face down), 'assembled' keeps them together as one multi-part object for multi-colour prints; options.slicer 'bambu' | 'orca' | 'prusa' adds that slicer's per-object name + filament-slot sidecar — slot N is the Nth distinct colour/material), options.infill { fromFea: '<study>' | true, bands?, pattern? } = stress-graded FDM infill (requires the local CalculiX + gmsh toolchain; without it the export fails with fea.solver.unavailable): solves the feaStudy and writes modifier volumes, each with its own infill density (Orca/Bambu format by default; options.slicer 'prusa' writes PrusaSlicer's format instead, since the two are not interchangeable); the result carries infill { bands, saving, images }), gcode (installed OrcaSlicer output; preserves G-code and returns optional gcode_stats with header generator identity and slicer-predicted time/material), glb (web-viewer / AR with PBR materials), obj (Wavefront indexed triangle mesh), usd (ASCII USDA triangle mesh in millimeter, Z-up coordinates; multi-part scenes emit one named mesh per part), svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box, options.autoAnnotate to derive datums A/B/C, grouped hole callouts with position tolerances, hole positions, overall size, radius and chamfer callouts, flatness and an ISO 2768 note from the geometry (the result carries drawing_report with placed / overlapped counts), and options.sections for real section views on any cutting plane). pdf-drawing (the same sheet — views, dashed hidden lines, dimensions, hole callouts, GD&T, sections, parts list — as a printable vector PDF on a standard sheet, one call: ISO a4|a3|a2|a1|a0 or ANSI ansi-a…ansi-e landscape, default a3, or sheet \"auto\" / \"auto-ansi\" for the smallest sheet that holds the views at 1:1; the drawing scale is picked to fit; projection \"third\" (default) or \"first\" arranges the views and draws the matching symbol; a full title block carries title, part name, material, scale, units, sheet size, date and revision, settable through options.title / partName / material / revision / date; autoAnnotate is on unless options.annotations is given). Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, and joint drives only when declared in options.drives { <mate>: { stiffness, damping, maxForce?, targetPosition? } }; options.collisionApproximation is convexHull | convexDecomposition; planar/cylindrical/pin_slot/ball mates fail closed with export.usd.joint-unsupported). bom-csv / bom-json (bill of materials over assembly.model()/solvedModel(): one row per distinct part — grouped by geometry/catalog identity, not name — with real instance quantity, kind, material, density, mass, bbox, fabrication process (`process` + `processSource`), and catalog provenance for purchased parts; same numbers as inspect({ of: 'bom' })). bend-table (tube bender tables over tube() records: one <tube name>.csv per tube with the LRA bend table, XYZ points, cut length and last straight; output_path is a DIRECTORY and the written files are reported in table_files; a script with no tube() fails with export.bend-table.no-tubes, and a script whose tube gates report errors writes nothing). urdf and sdf-gazebo also write one meshes/<part>.stl per link, and usd-isaac one meshes/<part>.usda mesh layer per link, next to output_path (reported in mesh_files) — ship the whole directory to the consumer. STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight (open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. Optional { feature_id } selects which feature to export (default: last). Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit/section/layout, 3mf printUnit/embedSource/arrange/orient/slicer/printer/infill, glb axis/draco).\n- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts (files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default and fails the call with export.mesh.not-watertight; unknown part names fail with export.part.not-found listing the valid names.\nPass { no_verify: true } to skip the watertight gate. All params except `target` are forwarded verbatim; each target fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4564,7 +4063,6 @@
             "usd-isaac",
             "bom-csv",
             "bom-json",
-            "order-pack",
             "bend-table",
             "gcode"
           ],
@@ -4605,49 +4103,7 @@
       "type": "object",
       "properties": {
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "ok": {
           "type": "boolean"
@@ -4953,15 +4409,11 @@
         },
         "url": {
           "type": "string",
-          "description": "Outbound vendor URL (link_out). May carry a referral tag; see disclosure."
+          "description": "Canonical outbound configurator URL (link_out)."
         },
         "instruction": {
           "type": "string",
           "description": "What to do with the link_out URL."
-        },
-        "disclosure": {
-          "type": "string",
-          "description": "Referral disclosure. Present only when url carries a referral tag; show it with the link."
         },
         "error": {
           "type": "string"
@@ -5390,49 +4842,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -5623,49 +5033,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -5931,49 +5299,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -6081,49 +5407,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -6225,49 +5509,7 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "new_code": {
           "type": "string",
@@ -7626,49 +6868,7 @@
       "type": "object",
       "properties": {
         "sceneSummary": {
-          "type": "object",
-          "properties": {
-            "valid": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-            },
-            "volume": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "description": "Volume in mm³; assembly parts summed, including overlaps."
-            },
-            "faceCount": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "description": "BREP faces, summed per assembly part; not mesh triangles."
-            },
-            "size": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "number"
-              },
-              "minItems": 3,
-              "maxItems": 3,
-              "description": "Conservative world AABB size [x,y,z] in mm."
-            }
-          },
-          "required": [
-            "valid",
-            "volume",
-            "faceCount",
-            "size"
-          ],
-          "additionalProperties": false
+          "$ref": "./sceneSummary.schema.json"
         },
         "ok": {
           "type": "boolean",
@@ -8256,49 +7456,7 @@
           "type": "object",
           "properties": {
             "sceneSummary": {
-              "type": "object",
-              "properties": {
-                "valid": {
-                  "type": [
-                    "boolean",
-                    "null"
-                  ],
-                  "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-                },
-                "volume": {
-                  "type": [
-                    "number",
-                    "null"
-                  ],
-                  "description": "Volume in mm³; assembly parts summed, including overlaps."
-                },
-                "faceCount": {
-                  "type": [
-                    "integer",
-                    "null"
-                  ],
-                  "description": "BREP faces, summed per assembly part; not mesh triangles."
-                },
-                "size": {
-                  "type": [
-                    "array",
-                    "null"
-                  ],
-                  "items": {
-                    "type": "number"
-                  },
-                  "minItems": 3,
-                  "maxItems": 3,
-                  "description": "Conservative world AABB size [x,y,z] in mm."
-                }
-              },
-              "required": [
-                "valid",
-                "volume",
-                "faceCount",
-                "size"
-              ],
-              "additionalProperties": false
+              "$ref": "./sceneSummary.schema.json"
             }
           },
           "additionalProperties": true,
@@ -8308,49 +7466,7 @@
           "type": "object",
           "properties": {
             "sceneSummary": {
-              "type": "object",
-              "properties": {
-                "valid": {
-                  "type": [
-                    "boolean",
-                    "null"
-                  ],
-                  "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
-                },
-                "volume": {
-                  "type": [
-                    "number",
-                    "null"
-                  ],
-                  "description": "Volume in mm³; assembly parts summed, including overlaps."
-                },
-                "faceCount": {
-                  "type": [
-                    "integer",
-                    "null"
-                  ],
-                  "description": "BREP faces, summed per assembly part; not mesh triangles."
-                },
-                "size": {
-                  "type": [
-                    "array",
-                    "null"
-                  ],
-                  "items": {
-                    "type": "number"
-                  },
-                  "minItems": 3,
-                  "maxItems": 3,
-                  "description": "Conservative world AABB size [x,y,z] in mm."
-                }
-              },
-              "required": [
-                "valid",
-                "volume",
-                "faceCount",
-                "size"
-              ],
-              "additionalProperties": false
+              "$ref": "./sceneSummary.schema.json"
             }
           },
           "additionalProperties": true,
@@ -9366,126 +8482,6 @@
       "required": [
         "ok",
         "diagnostics"
-      ],
-      "additionalProperties": true
-    }
-  },
-  {
-    "name": "fab_pack",
-    "description": "Use this when the user wants to get a part made: packages the fabrication files into one directory plus a zip, and returns links to public instant-quote pages. Pass { file | code } and output_dir; optional scope ('part', default — one script's files; 'bom' — the whole assembly's BOM: per-part single-body files, per-part drawings, bom.csv/json and vendor handoff texts), name (default 'part'), formats (default step, stl, 3mf, pdf-drawing, bom-csv; add 'dxf' for flat or sheet parts), and processes ('3d-print' | 'cnc' | 'sheet-cut') to filter the links (bom: also narrows which fabricated rows are packed). Each file is written by the export tool, so its gates apply; a format that fails is reported in files[] and the rest still ship. Also writes manifest.json and README.txt. quote_links lists JLC3DP, JLCCNC, PCBWay, Xometry, SendCutSend and Craftcloud with the pack file to upload to each. One body per file: multi-body files are rejected by every shop. DXF is written only for flat or sheet-metal parts. The McMaster handoff text carries part numbers only, because McMaster quantities are packs and pack sizes are not in the catalog yet. These are plain web pages: nothing is uploaded or ordered. The user opens the link and uploads the file. Run dfm_review first if you have not.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "scope": {
-          "type": "string",
-          "enum": [
-            "part",
-            "bom"
-          ],
-          "description": "Default 'part' (a single-part pack). 'bom' packs the whole assembly's BOM: per-part single-body files, per-part drawings, bom.csv/json, vendor handoff texts, and per-process quote links."
-        },
-        "file": {
-          "type": "string",
-          "description": "Path to a .kcad.ts script file."
-        },
-        "code": {
-          "type": "string",
-          "description": "Inline kernelCAD script source."
-        },
-        "output_dir": {
-          "type": "string",
-          "description": "Directory to write the pack into (created if missing)."
-        },
-        "name": {
-          "type": "string",
-          "description": "Base file name (letters, digits, '.', '_', '-'). Default 'part'."
-        },
-        "formats": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "step",
-              "stl",
-              "3mf",
-              "pdf-drawing",
-              "bom-csv",
-              "dxf"
-            ]
-          },
-          "description": "Files to include. Default step, stl, 3mf, pdf-drawing, bom-csv."
-        },
-        "processes": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "3d-print",
-              "cnc",
-              "sheet-cut"
-            ]
-          },
-          "description": "Only return quote links for these processes. Default: all."
-        }
-      },
-      "required": [
-        "output_dir"
-      ]
-    },
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "openWorldHint": true
-    },
-    "outputSchema": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean",
-          "description": "True when every requested file was exported. bom scope: true when the pack has entries."
-        },
-        "output_dir": {
-          "type": "string"
-        },
-        "zip_path": {
-          "type": "string",
-          "description": "Zip holding every written file, manifest.json and README.txt. bom scope: '<name>-order-pack.zip' with the per-part files, BOM, handoffs, manifest and README."
-        },
-        "files": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "description": "{ format, ok, path?, byte_count?, error? } per requested format. bom scope: one { format: \"order-pack\", ok, path, byte_count, part_files } entry for the zip, part_files listing the per-part entry paths."
-        },
-        "quote_links": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "description": "{ service, processes, url, accepts, upload_file? }: public instant-quote pages; nothing is uploaded. bom scope: one link per service whose processes intersect the packed rows, upload_file naming an accepted part file when one was written."
-        },
-        "note": {
-          "type": "string",
-          "description": "Plain-language summary; bom scope covers the pack contents, the public upload pages, and a note count when the manifest carries notes."
-        },
-        "diagnostics": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        },
-        "error": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "ok",
-        "files",
-        "quote_links"
       ],
       "additionalProperties": true
     }
@@ -10668,7 +9664,7 @@
   },
   {
     "name": "write_bom",
-    "description": "Use this when you need to merge a LabWired handoff BOM with optional KernelCAD catalog parts, MPNs and pricing, then write CSV or retrieve Sheets-ready rows. Pass exactly one of handoff, handoff_json or handoff_path. This tool only writes a CSV locally; it makes no Google API calls. Returns headers, tabular rows, CSV contents and the CSV path.",
+    "description": "Use this when you need to merge a LabWired handoff BOM with optional KernelCAD catalog parts and MPNs, then write CSV or retrieve Sheets-ready rows. Pass exactly one of handoff, handoff_json or handoff_path. This tool only writes a CSV locally; it makes no Google API calls. Returns headers, tabular rows, CSV contents and the CSV path.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -10689,7 +9685,7 @@
           "items": {
             "type": "object"
           },
-          "description": "Optional matching KernelCAD catalog entries with id/ref, partNumber, vendor and price."
+          "description": "Optional matching KernelCAD catalog entries with id/ref, partNumber and vendor."
         },
         "output_path": {
           "type": "string",

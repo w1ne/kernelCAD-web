@@ -1,3 +1,5 @@
+> Source scope: this repository contains the reusable CAD runtime, CLI, MCP tools and headless renderer. Hosted product UI and commercial manufacturing services are maintained separately. Build the reusable tools with `npm run build`; use `npm run dev` for the standalone renderer.
+
 # kernelCAD - CAD runtime for agents
 
 **kernelCAD** turns mechanical intent into editable `.kcad.ts` source,

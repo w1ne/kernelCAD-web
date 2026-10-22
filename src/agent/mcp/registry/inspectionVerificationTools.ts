@@ -94,7 +94,6 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'assembly' — static assembly review ({ file | code }, or the session evaluate_script left): mate validator, default-pose interference, joint topology, mechanical plausibility. ok:false with `blocking[]` exactly when review_cad's blocking rules fire on these findings; review_cad also sweeps joint ranges and runs physics.\n" +
       "- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n" +
       "- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n" +
-      "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n" +
       "- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions and blocking parts; disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n" +
       "- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n" +
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
@@ -112,10 +111,10 @@ const verifyToolEntry: ToolRegistryEntry = {
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'motion-load', 'body-likeness', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius'],
+          enum: ['assembly', 'urdf', 'dfm', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'motion-load', 'body-likeness', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius'],
           description: 'Which verification to run.',
         },
-        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius).' },
+        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
         feature_id: { type: 'string', description: "check:'geometry-quality' — body feature to measure; defaults to script return. check:'edge-radius' — lowered feature; default the returned model." },
         tiny_face_area_mm2: { type: 'number', minimum: 0, default: 0.01, description: "check:'geometry-quality' — flag faces strictly below this absolute area; zero disables." },
@@ -151,14 +150,6 @@ const verifyToolEntry: ToolRegistryEntry = {
         toleranceMm: { type: 'number', minimum: 0, description: "check:'fastener-installation' — linear tolerance, default .05 mm." },
         angleToleranceDeg: { type: 'number', minimum: 0, maximum: 90, description: "check:'fastener-installation' — axis tilt tolerance, default 1 degree." },
         urdf_path: { type: 'string', description: "check:'urdf' — path to the .urdf file." },
-        dxf: { type: 'string', description: "check:'dfm-preflight' — path to a DXF file." },
-        featureId: { type: 'string', description: "check:'dfm-preflight' — FeatureId to scope to." },
-        vendor: { type: 'string', description: "check:'dfm-preflight' — vendor SKU (required for that check)." },
-        material: { type: 'string', description: "check:'dfm-preflight' — material SKU (required for that check)." },
-        thicknessIn: { type: 'number', description: "check:'dfm-preflight' — material thickness in inches." },
-        thicknessMm: { type: 'number', description: "check:'dfm-preflight' — material thickness in millimeters." },
-        service: { type: 'string', enum: ['laser', 'cnc-router', 'waterjet', 'bending'], description: "check:'dfm-preflight' — service." },
-        refreshCatalog: { type: 'boolean', description: "check:'dfm-preflight' — force vendor catalog refresh." },
         directions: { type: 'array', maxItems: 64, items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 }, description: "check:'assembly-path' — additional nonzero world-space removal vectors; normalized and deduplicated." },
         disassemblyOrder: { type: 'boolean', description: "check:'assembly-path' — iteratively remove freed parts and return removalOrder or stuckParts." },
         joint: { type: 'string', description: "check:'swept-collision' — joint to sweep; omit to sweep every declared joint. check:'static-hold' — joint to evaluate; omit to evaluate every joint with a declared actuator." },

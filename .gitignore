@@ -117,3 +117,6 @@ eval/benchmarks/cadgenbench/runs/
 # Private workflow comparisons (never published).
 /kernelCAD-private/
 .tmp/
+
+# Local TypeScript build cache
+.cache/

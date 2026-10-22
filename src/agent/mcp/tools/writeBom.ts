@@ -29,8 +29,6 @@ export interface BomCatalogPart {
   name?: string;
   partNumber?: string;
   vendor?: string;
-  price?: number | { amount?: number; currency?: string };
-  currency?: string;
   source?: string;
   notes?: string;
   ref?: string;
@@ -43,7 +41,6 @@ export interface BomRow {
   part: string;
   mpn: string;
   source: string;
-  unit_price: number | '';
   notes: string;
 }
 
@@ -67,17 +64,12 @@ export interface WriteBomOutput {
   error?: string;
 }
 
-export const BOM_HEADERS = ['ref', 'qty', 'part', 'MPN', 'source', 'unit price', 'notes'];
+export const BOM_HEADERS = ['ref', 'qty', 'part', 'MPN', 'source', 'notes'];
 const DEFAULT_CSV_DIR = path.join(process.cwd(), 'artifacts', 'bom');
 
 function mpnValue(value: BomPart['mpn']): string {
   if (typeof value === 'string') return value;
   return value?.value ?? '';
-}
-
-function formatPrice(value: BomCatalogPart['price']): number | '' {
-  const amount = typeof value === 'number' ? value : value?.amount;
-  return typeof amount === 'number' && Number.isFinite(amount) ? amount : '';
 }
 
 function catalogMatches(part: BomPart, extras: BomCatalogPart[]): BomCatalogPart[] {
@@ -130,26 +122,11 @@ function validateHandoff(handoff: BomHandoff): void {
   handoff.parts.forEach((part, index) => validateHandoffPart(part, index));
 }
 
-function validateCatalogPrice(price: unknown, label: string): void {
-  if (price === undefined || price === null) return;
-  if (typeof price === 'number') {
-    if (!Number.isFinite(price) || price < 0) throw new Error(`${label}.price must be a non-negative finite number or a price object with that amount.`);
-    return;
-  }
-  const record = asRecord(price, `${label}.price`);
-  const amount = record.amount;
-  if (typeof amount !== 'number' || !Number.isFinite(amount) || amount < 0) {
-    throw new Error(`${label}.price must be a non-negative finite number or a price object with that amount.`);
-  }
-  requireOptionalText(record, 'currency', `${label}.price`);
-}
-
 function validateCatalogPart(part: BomCatalogPart, index: number): void {
   const label = `catalog_parts[${index}]`;
   const record = asRecord(part, label);
-  validateTextFields(record, ['id', 'name', 'partNumber', 'vendor', 'currency', 'source', 'notes', 'ref'], label);
+  validateTextFields(record, ['id', 'name', 'partNumber', 'vendor', 'source', 'notes', 'ref'], label);
   validatePositiveIntegerFields(record, ['qty'], label);
-  validateCatalogPrice(record.price, label);
 }
 
 function validateCatalogParts(parts: BomCatalogPart[]): void {
@@ -175,7 +152,6 @@ function rowForHandoffPart(part: BomPart, extras: BomCatalogPart[]): BomRow {
     part: part.part ?? part.name ?? match?.name ?? part.catalog_id ?? part.ref,
     mpn: mpnValue(part.mpn) || match?.partNumber || '',
     source: sourcesForPart(part, match),
-    unit_price: formatPrice(match?.price),
     notes: notesForPart(part, match),
   };
 }
@@ -184,13 +160,13 @@ function rowForCatalogPart(part: BomCatalogPart): BomRow {
   return {
     ref: part.ref ?? '', qty: part.qty ?? 1, part: part.name ?? part.id ?? 'Catalog part',
     mpn: part.partNumber ?? '', source: part.vendor ? `KernelCAD:${part.vendor}` : part.source ?? 'KernelCAD',
-    unit_price: formatPrice(part.price), notes: part.notes ?? 'Catalog addition',
+    notes: part.notes ?? 'Catalog addition',
   };
 }
 
 function appendUnmatchedCatalogRows(rows: BomRow[], handoff: BomHandoff, extras: BomCatalogPart[]): void {
   // A handoff part consumes only its primary match. Secondary matches still
-  // represent catalog entries with their own quantity/pricing and must remain
+  // represent catalog entries with their own quantity and must remain
   // visible as catalog rows.
   const primaryMatches = new Set(handoff.parts.map(part => catalogMatches(part, extras)[0]).filter(Boolean));
   extras.filter(extra => !primaryMatches.has(extra)).forEach(extra => rows.push(rowForCatalogPart(extra)));
@@ -217,7 +193,7 @@ export function bomRowsToCsv(rows: BomRow[]): string {
 }
 
 export function bomRowsToSheetsRows(rows: BomRow[]): (string | number)[][] {
-  return rows.map(row => [safeText(row.ref), row.qty, safeText(row.part), safeText(row.mpn), safeText(row.source), row.unit_price, safeText(row.notes)]);
+  return rows.map(row => [safeText(row.ref), row.qty, safeText(row.part), safeText(row.mpn), safeText(row.source), safeText(row.notes)]);
 }
 
 async function loadHandoff(input: WriteBomInput): Promise<BomHandoff> {
@@ -256,7 +232,7 @@ async function writeCsv(csv: string, requestedPath?: string, overwrite = false):
   return finalPath;
 }
 
-/** Merge handoff and optional catalog pricing, then write a CSV with Sheets-ready rows. */
+/** Merge handoff and optional catalog identifiers, then write a CSV with Sheets-ready rows. */
 export async function writeBomTool(input: WriteBomInput): Promise<WriteBomOutput> {
   try {
     const handoff = await loadHandoff(input);

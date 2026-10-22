@@ -10,11 +10,19 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const CLI_BIN = join(__dirname, '..', '..', '..', 'dist', 'cli', 'index.js');
 
 const SKIP = !existsSync(CLI_BIN);
+const PUBLIC_SKILLS = [
+  'kernelcad', 'kernelcad-assemblies', 'kernelcad-authoring', 'kernelcad-drawings',
+  'kernelcad-fea', 'kernelcad-features', 'kernelcad-fields', 'kernelcad-from-reference',
+  'kernelcad-kinematic', 'kernelcad-mcp', 'kernelcad-nurbs', 'kernelcad-params',
+  'kernelcad-parts', 'kernelcad-patterns', 'kernelcad-print', 'kernelcad-repair',
+  'kernelcad-sdformat', 'kernelcad-sheet-metal', 'kernelcad-srdf', 'kernelcad-tubes',
+  'kernelcad-urdf',
+];
 
 describe.skipIf(SKIP)('skill install (built CLI)', () => {
   it('writes SKILL.md to a target directory', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-int-'));
-    execFileSync('node', [CLI_BIN, 'skill', 'install', tmp], { encoding: 'utf8' });
+    execFileSync(process.execPath, [CLI_BIN, 'skill', 'install', tmp], { encoding: 'utf8' });
     // The install command copies each skill into its own subdirectory.
     const target = join(tmp, 'kernelcad', 'SKILL.md');
     expect(existsSync(target)).toBe(true);
@@ -22,23 +30,18 @@ describe.skipIf(SKIP)('skill install (built CLI)', () => {
     expect(content).toMatch(/^---\nname: kernelcad/);
   });
 
-  it('installs all 22 skill subdirectories', () => {
+  it('installs the complete public foundation skill set without commercial policy', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-int-'));
-    execFileSync('node', [CLI_BIN, 'skill', 'install', tmp], { encoding: 'utf8' });
-    const dirs = readdirSync(tmp);
-    // Develop's C2 cull (2026-05-31) removed the deprecated `kernelcad-sdf`
-    // alias (17 → 16); Slice C adds the `kernelcad-parts` skill (16 → 17);
-    // the drawings slice adds `kernelcad-drawings` (17 → 18); the structural
-    // FEA, print-loop, and trace-guided repair slices add `kernelcad-fea`,
-    // `kernelcad-print`, and `kernelcad-repair` (18 → 21); the tube slice
-    // adds `kernelcad-tubes` (21 → 22).
-    expect(dirs.length).toBe(22);
+    execFileSync(process.execPath, [CLI_BIN, 'skill', 'install', tmp], { encoding: 'utf8' });
+    const dirs = readdirSync(tmp).sort();
+    expect(dirs).toEqual(PUBLIC_SKILLS);
+    expect(dirs).not.toContain('kernelcad-shopcheck');
   });
 
   it('writes combined skill content to an explicit path via skill onefile', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-int-'));
     const out = join(tmp, 'context.md');
-    execFileSync('node', [CLI_BIN, 'skill', 'onefile', out], { encoding: 'utf8' });
+    execFileSync(process.execPath, [CLI_BIN, 'skill', 'onefile', out], { encoding: 'utf8' });
     expect(existsSync(out)).toBe(true);
     const content = readFileSync(out, 'utf8');
     expect(content).toMatch(/^---\nname: kernelcad/);

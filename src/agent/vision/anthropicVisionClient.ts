@@ -6,10 +6,7 @@
 // prompts used by the `trace_from_image` vision-LLM backend.
 //
 // Design rules:
-// - **No baked billing.** The caller supplies their own `ANTHROPIC_API_KEY` via
-//   the environment; kernelCAD-web is an open-source codebase and does not
-//   ship hosted billing here. (See `kernelcad_billing_personal_account` for
-//   the hosted-product split.)
+// - The caller supplies their own `ANTHROPIC_API_KEY` via the environment.
 // - **Test seam via `sdkOverride`.** Unit tests inject a stub that matches the
 //   minimal SDK surface used here (`messages.create`).
 // - **Model from `KERNELCAD_VISION_MODEL` env var**, default

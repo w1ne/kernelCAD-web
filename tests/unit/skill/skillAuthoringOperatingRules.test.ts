@@ -58,15 +58,4 @@ describe('kernelCAD agent authoring operating rules', () => {
     }
   });
 
-  it('keeps the public site capability and gallery tag vocabulary distinct', () => {
-    const indexHtml = readFileSync('site/index.html', 'utf8');
-    const gallery = JSON.parse(readFileSync('site/gallery/entries.json', 'utf8'));
-
-    expect(indexHtml).toMatch(/Edit your design/);
-    expect(indexHtml).toMatch(/Check your model/);
-    expect(indexHtml).not.toMatch(/capability-name">Words to Geometry/);
-    for (const slug of ['make-no-mistakes-keycap', 'royal-pop-pocket-watch']) {
-      expect(gallery.entries.find((entry: { slug: string }) => entry.slug === slug)?.tags).toContain('words-to-geometry');
-    }
-  });
 });

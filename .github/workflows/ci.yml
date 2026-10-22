@@ -4,10 +4,8 @@ name: CI
 # CHANGELOG, plus docs/ which is human-written prose). The reference-parts
 # scorecard is an exception: its committed table is checked by a fast OCCT job.
 # Anything that COULD
-# affect runtime — src/, tests/, scripts/, eval/, site/, package*.json,
-# tsconfig*.json, .github/workflows/ — still triggers CI. docs/guide/ and
-# docs/demos/ are exceptions inside docs/: site:build consumes their blog
-# sources, hero packet and videos, so changes there run CI like code.
+# affect runtime — src/, tests/, scripts/, eval/, package*.json,
+# tsconfig*.json, .github/workflows/ — still triggers CI.
 on:
   push:
     branches:
@@ -22,8 +20,6 @@ on:
       - '!LICENSE'
       - '!RELEASE_NOTES.md'
       - '!docs/**'
-      - 'docs/guide/**'
-      - 'docs/demos/**'
       - 'docs/reference-parts-scorecard.md'
       - '!doc/**'
       - '!archive/**'
@@ -46,16 +42,13 @@ concurrency:
   group: ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
-# Three independent QC jobs run in parallel; e2e (master-only) gates on all
-# three being green. See ci-acceleration-design (in kernelCAD-private).
+# Independent kernel QC jobs run in parallel. See ci-acceleration-design (in kernelCAD-private).
 jobs:
   # Docs-only PRs (every file matches the globs below) skip the heavy jobs.
   # This lives INSIDE ci.yml (not a path filter) so the required check names
   # always report: a skipped job reports success, and there is only ever one
   # run per name, so a code-touching PR can never be green-lit by a stand-in.
-  # Keep the case-list in sync with the push `paths` filter above. Blog sources
-  # and demo packets come first and count as build inputs, so content-only PRs
-  # affecting the marketing build still run lint, build and the blog tests.
+  # Keep the case-list in sync with the push `paths` filter above.
   # A scorecard-only docs PR runs only the reference-parts geometry/report gate.
   changes:
     runs-on: ubuntu-latest
@@ -83,7 +76,6 @@ jobs:
               docs_only=true
               while IFS= read -r f; do
                 case "$f" in
-                  docs/guide/*|docs/demos/*) echo "marketing input: $f"; docs_only=false ;;
                   docs/reference-parts-scorecard.md) reference_parts=true ;;
                   README.md|CONTRIBUTING.md|CHANGELOG.md|LICENSE|RELEASE_NOTES.md|docs/*|doc/*|archive/*) ;;
                   *) echo "non-docs file: $f"; docs_only=false; reference_parts=true ;;
@@ -247,33 +239,3 @@ jobs:
         run: |
           NODE_OPTIONS=--max-old-space-size=3072 npx vitest run \
             tests/integration/export/usdIsaacPxr.test.ts
-
-  e2e:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: [lint, build-and-checks, test]
-    if: >
-      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
-      (github.event_name == 'pull_request' && github.base_ref == 'master') ||
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-cad
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-      - name: E2E tests (Playwright)
-        run: npm run test:e2e
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report
-          retention-days: 7
-      - name: Upload Playwright traces (on failure)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-test-results
-          path: test-results
-          retention-days: 7

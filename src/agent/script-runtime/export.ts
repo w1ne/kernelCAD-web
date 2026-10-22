@@ -61,7 +61,6 @@ import {
 } from './stressInfillExport';
 import type { Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { resolvePrinterProfile } from '../../kernel/export/gcode/printerProfiles';
-import type { FabProcess } from '../../shared/fab';
 export type { StressInfillExportOptions, StressInfillReport } from './stressInfillExport';
 export { stlNotWatertightDiagnostic, brepInvalidDiagnostic } from './exportDiagnostics';
 
@@ -70,7 +69,13 @@ export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 export type ExportFormat =
   | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'obj' | 'usd' | 'svg-drawing' | 'pdf-drawing'
   | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode' | 'usd-isaac'
-  | 'bom-csv' | 'bom-json' | 'order-pack' | 'bend-table';
+  | 'bom-csv' | 'bom-json' | 'bend-table';
+
+/** Supported export formats, checked before evaluating untyped caller input. */
+export const EXPORT_FORMATS: readonly ExportFormat[] = [
+  'stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'usd', 'svg-drawing', 'pdf-drawing',
+  'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac', 'bom-csv', 'bom-json', 'bend-table',
+];
 
 /** Per-format option payloads. The union member is selected by `format`. */
 export type ExportOptions =
@@ -166,15 +171,6 @@ export type ExportOptions =
     }
   | { format: 'bom-csv' }
   | { format: 'bom-json' }
-  | {
-      format: 'order-pack';
-      /** Pack name carried by the manifest / README; default 'order'. */
-      name?: string;
-      /** Fabricated rows to pack, by declared/inferred process. Ignored when `items` is given. */
-      processes?: FabProcess[];
-      /** Fabricated rows to pack, by BOM item number; wins over `processes`. */
-      items?: number[];
-    }
   | { format: 'bend-table' };
 
 /**
@@ -413,6 +409,7 @@ function exportMissingReturn(
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
+  if (!EXPORT_FORMATS.includes(input.format)) throw new Error(`Unsupported export format: ${String(input.format)}`);
   // Text derived from the tube report, not a solid: no occt recompute needed.
   if (input.format === 'bend-table') return exportBendTable(input);
   return withOcctPoisonRecovery(async () => {
@@ -445,21 +442,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const regionDxf = exportRegionDxf(input, format, run.returnValue, r.diagnostics, featureCount);
   if (regionDxf !== undefined) return regionDxf;
 
-  // The order pack's per-row drawings are nested full `pdf-drawing` runs.
-  // exportOrderPack cannot import this module (it would close the
-  // export > exportPhases > orderPackExport cycle), so inject the runner.
-  const orderPackDeps = {
-    drawingBytes: (featureId: string) => runAndExport({
-      code,
-      fileName,
-      format: 'pdf-drawing' as const,
-      feature_id: featureId,
-      ...(scriptDir !== undefined ? { scriptDir } : {}),
-      options: { format: 'pdf-drawing' as const },
-    }),
-  };
-
-  const assemblyXml = await exportAssemblyFormat(input, format, run, r.diagnostics, featureCount, orderPackDeps);
+  const assemblyXml = await exportAssemblyFormat(input, format, run, r.diagnostics, featureCount);
   if (assemblyXml !== undefined) return assemblyXml;
 
   r.diagnostics.push(...exportMissingReturn(feature_id, run));

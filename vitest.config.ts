@@ -1,10 +1,9 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
-import { kernelCadEditorTypingsPlugin } from './scripts/editorTypings';
 
 export default defineConfig({
-    plugins: [react(), kernelCadEditorTypingsPlugin()],
+    plugins: [react()],
     resolve: {
         alias: {
             'verb-nurbs': fileURLToPath(
@@ -21,18 +20,9 @@ export default defineConfig({
             'scripts/**/*.test.ts',
             'src/**/*.spec.{ts,tsx}',
             'tests/unit/**/*.test.{ts,tsx}',
-            'tests/funnel/**/*.test.{ts,tsx}',
             'tests/e2e/**/*.test.ts',
             'tests/integration/**/*.test.ts',
-            'tests/integration/studio/**/*.test.tsx',
             'eval/**/*.test.ts',
-            'scripts/**/*.test.ts',
-            'site/functions/**/*.test.ts',
-            'site/scripts/**/*.test.ts',
-            // Without this the island tests are collected by nothing and report
-            // no failures because they never run.
-            'site/island/**/*.test.ts',
-            'workers/**/*.test.ts',
         ],
         exclude: ['**/node_modules/**', '**/dist/**', 'tests/playwright/**', 'playwright-report/**', 'test-results/**', ...(process.env.KCAD_CORPUS ? [] : ['eval/**/*.test.ts']), 'src/dynamics/roadster.test.ts', 'src/dynamics/dynamics.test.ts'],
         deps: {

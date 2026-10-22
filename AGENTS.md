@@ -21,3 +21,7 @@ Before browser work inspect and reuse an already-running Chrome/Chromium or CDP
 session and its login/profile. A missing automation connection does not justify a
 duplicate browser. Give attachment helpers a fixed lifetime and idle timeout; stop
 only their owned processes after each check and keep the user's browser running.
+
+## Commercial source boundary
+
+This repository owns reusable CAD/kernel/tooling and the generic renderer. Hosted product UI, billing/checkout/entitlements, supplier quotes/routing/integrations, commissions, commercial orchestration and proprietary manufacturing policy belong in private repositories, including their tests, fixtures and strategy. Mixed modules stay private until reusable geometry is separated. Audit both source and built npm artifacts; do not restore product deployment workflows or package exports here.
