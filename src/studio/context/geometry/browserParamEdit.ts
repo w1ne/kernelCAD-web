@@ -5,7 +5,7 @@ import { needsFullKernel } from '../../scriptSource';
 import type { ExecutionResult } from '../../../shared/worker/geometryEngine';
 import { paramEditsForMesh, type ParamEditValues } from './paramEditsForMesh';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
-import { rebuildQueue, STUDIO_MODEL_DOC } from '../../rebuild/rebuildQueueInstance';
+import { rebuildQueue, studioModelDoc } from '../../rebuild/rebuildQueueInstance';
 
 /** The legacy browser worker evaluates plain scripts. Assembly and the
  *  arithmetic param helpers stay on the kernel API. */
@@ -39,7 +39,7 @@ export async function runBrowserParamEdit(
   deps.setIsComputing(true);
   const current = (): boolean => epoch === epochRef.current && revision === deps.mainRevisionRef.current;
   try {
-    const result = await rebuildQueue.track({ label: 'Kernel rebuild · parameters', doc: STUDIO_MODEL_DOC }, () => deps.engine.executeCode(source, {
+    const result = await rebuildQueue.track({ label: 'Kernel rebuild · parameters', doc: studioModelDoc(deps.mainRevisionRef), generation: revision }, () => deps.engine.executeCode(source, {
       quality: 'coarse',
       onPreview: (preview: ExecutionResult) => {
         if (!current()) return;

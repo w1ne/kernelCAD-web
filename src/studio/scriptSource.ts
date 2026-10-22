@@ -300,7 +300,7 @@ function isAbortLike(error: unknown): boolean {
 export async function meshSourceDev(
   source: string,
   paramOverrides?: ParamOverrides,
-  opts?: { quality?: 'coarse'; preview?: boolean; doc?: string },
+  opts?: { quality?: 'coarse'; preview?: boolean; doc?: string; generation?: number },
 ): Promise<BackendMeshPayload> {
   // Route through `apiCall()` so embed-mode hosts (StudioConfigProvider
   // with a `backendUrl`) get the correct prefix; standalone dev with no
@@ -322,6 +322,7 @@ export async function meshSourceDev(
     },
     label: rebuildLabel(opts?.quality === 'coarse' ? 'Preview mesh' : 'Model mesh', paramOverrides),
     ...(opts?.doc ? { doc: opts.doc } : {}),
+    ...(opts?.generation !== undefined ? { generation: opts.generation } : {}),
   });
   const payload = response.body as { error?: unknown } | null;
   if (!response.ok) {
@@ -450,6 +451,7 @@ async function meshOnServer(
   base: string,
   body: ReturnType<typeof hostedMeshBody>,
   doc?: string,
+  generation?: number,
 ): Promise<BackendMeshPayload> {
   // Only a request for generation files needs the caller's identity.
   const auth = body.generationIds ? await bearerAuthHeader() : {};
@@ -465,6 +467,7 @@ async function meshOnServer(
         },
         label: rebuildLabel(body.preview ? 'Preview mesh' : 'Model mesh', body.params),
         ...(doc ? { doc } : {}),
+        ...(generation !== undefined ? { generation } : {}),
       });
       const payload = response.body as { code?: unknown; error?: unknown; path?: unknown; retryAfterMs?: unknown } | null;
       if (!response.ok) {
@@ -707,11 +710,12 @@ async function meshViaServer(
   preview?: boolean,
   warm?: boolean,
   doc?: string,
+  generation?: number,
 ): Promise<BackendMeshPayload> {
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base !== 'string' || base.length === 0) throw new Error(NO_HOSTED_BACKEND);
   try {
-    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource, preview, warm), doc);
+    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource, preview, warm), doc, generation);
   } catch (error) {
     // A newer rebuild replaced this one: no stored-mesh fallback.
     if (isAbortLike(error)) throw error;
@@ -733,7 +737,7 @@ async function meshViaServer(
 export async function meshSourceHosted(
   source: string,
   paramOverrides?: ParamOverrides,
-  options?: { preferSource?: boolean; preview?: boolean; warm?: boolean; doc?: string },
+  options?: { preferSource?: boolean; preview?: boolean; warm?: boolean; doc?: string; generation?: number },
 ): Promise<BackendMeshPayload> {
   if (options?.warm) return meshViaServer(source, undefined, true, false, true);
   const preferSource = options?.preferSource;
@@ -741,5 +745,5 @@ export async function meshSourceHosted(
   if (stored) return stored;
   const gallery = await meshGalleryPrecompute(source, paramOverrides);
   if (gallery) return gallery;
-  return meshViaServer(source, paramOverrides, preferSource, options?.preview, false, options?.doc);
+  return meshViaServer(source, paramOverrides, preferSource, options?.preview, false, options?.doc, options?.generation);
 }

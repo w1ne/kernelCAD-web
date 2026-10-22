@@ -87,6 +87,8 @@ interface JobBase {
   id: number;
   /** The document this rebuild belongs to; null when it has none. */
   doc: string | null;
+  /** Edit order within the document (the Studio passes its model revision). */
+  generation?: number;
   label: string;
   queuedAt: number;
   settled: boolean;
@@ -152,6 +154,7 @@ export class RebuildQueue {
   private readonly now: () => number;
   private readonly jobs = new Map<number, QueueJob>();
   private readonly listeners = new Set<Listener>();
+  private readonly latestGeneration = new Map<string, number>();
   private transport: RebuildTransport | null = null;
   private transportError: Error | null = null;
   private lastError: RebuildErrorView | null = null;
@@ -171,6 +174,7 @@ export class RebuildQueue {
     init?: RebuildFetchInit;
     label: string;
     doc?: string;
+    generation?: number;
     signal?: AbortSignal;
   }): Promise<OffThreadResponse> {
     if (request.signal?.aborted) {
@@ -179,9 +183,11 @@ export class RebuildQueue {
     if (this.disposed) {
       return Promise.reject(new Error('The rebuild queue was disposed.'));
     }
+    const late = this.admit(request.doc, request.generation, request.label);
+    if (late) return Promise.reject(late);
     return new Promise<OffThreadResponse>((resolve, reject) => {
       const job = this.createFetchJob(request, resolve, reject);
-      this.supersedeDoc(job.doc);
+      this.supersedeDoc(job.doc, job.generation);
       this.jobs.set(job.id, job);
       this.watchCallerSignal(job, request.signal);
       this.pump();
@@ -194,16 +200,22 @@ export class RebuildQueue {
    * list, with the same per-document supersession. `run` gets an AbortSignal
    * that fires when superseded.
    */
-  track<T>(request: { label: string; doc?: string }, run: (signal: AbortSignal) => Promise<T>): Promise<T> {
+  track<T>(
+    request: { label: string; doc?: string; generation?: number },
+    run: (signal: AbortSignal) => Promise<T>,
+  ): Promise<T> {
     if (this.disposed) {
       return Promise.reject(new Error('The rebuild queue was disposed.'));
     }
+    const late = this.admit(request.doc, request.generation, request.label);
+    if (late) return Promise.reject(late);
     const doc = request.doc ?? null;
     return new Promise<T>((resolve, reject) => {
       const job: TrackedJob = {
         kind: 'tracked',
         id: this.nextId++,
         doc,
+        ...(request.generation !== undefined ? { generation: request.generation } : {}),
         label: request.label,
         state: 'running',
         queuedAt: this.now(),
@@ -213,7 +225,7 @@ export class RebuildQueue {
         reject,
         settled: false,
       };
-      this.supersedeDoc(doc);
+      this.supersedeDoc(doc, request.generation);
       this.jobs.set(job.id, job);
       this.publish();
       this.runTracked(job, run);
@@ -260,7 +272,7 @@ export class RebuildQueue {
   }
 
   private createFetchJob(
-    request: { url: string; init?: RebuildFetchInit; label: string; doc?: string },
+    request: { url: string; init?: RebuildFetchInit; label: string; doc?: string; generation?: number },
     resolve: (response: OffThreadResponse) => void,
     reject: (error: unknown) => void,
   ): FetchJob {
@@ -268,6 +280,7 @@ export class RebuildQueue {
       kind: 'fetch',
       id: this.nextId++,
       doc: request.doc ?? null,
+      ...(request.generation !== undefined ? { generation: request.generation } : {}),
       label: request.label,
       state: 'queued',
       queuedAt: this.now(),
@@ -280,11 +293,26 @@ export class RebuildQueue {
     };
   }
 
-  /** Cancel every older job of the same document. */
-  private supersedeDoc(doc: string | null): void {
+  /**
+   * A request from an older edit that arrives after a newer one started (a
+   * delayed retry, a second leg) must not cancel the newer rebuild: it is
+   * refused as superseded instead. Returns that refusal, or null to admit.
+   */
+  private admit(doc: string | undefined, generation: number | undefined, label: string): Error | null {
+    if (!doc || generation === undefined) return null;
+    const latest = this.latestGeneration.get(doc);
+    if (latest !== undefined && generation < latest) return new RebuildSupersededError(label);
+    this.latestGeneration.set(doc, generation);
+    return null;
+  }
+
+  /** Cancel every older job of the same document. Jobs of the same edit
+   *  (equal generation) are its own legs and stay. */
+  private supersedeDoc(doc: string | null, generation?: number): void {
     if (!doc) return;
     for (const job of [...this.jobs.values()]) {
       if (job.doc !== doc) continue;
+      if (generation !== undefined && job.generation !== undefined && job.generation >= generation) continue;
       this.cancelJob(job, new RebuildSupersededError(job.label));
     }
   }

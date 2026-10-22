@@ -8,7 +8,7 @@ import { shouldUseHostedMesh, meshSourceHosted } from '../../scriptSource';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { overlayLiveReview, featureMeshesToGeometries, isAbortError, type ScriptReviewSummary } from './types';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
-import { rebuildQueue, STUDIO_MODEL_DOC } from '../../rebuild/rebuildQueueInstance';
+import { rebuildQueue, studioModelDoc } from '../../rebuild/rebuildQueueInstance';
 import type { ViewerDimension } from '../../../shared/intent/viewerDimension';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 
@@ -33,7 +33,7 @@ function fetchHostedMeshAndReview(
     opts: MeshFetchOpts | undefined,
     setRecomputeMs: (ms: number) => void,
 ): Promise<void> {
-    return meshSourceHosted(code, undefined, { doc: STUDIO_MODEL_DOC })
+    return meshSourceHosted(code, undefined, { doc: studioModelDoc(deps.mainRevisionRef), generation: revision })
         .then((payload) => {
             if (revision !== deps.mainRevisionRef.current) {
                 deps.setStaleMainResponsesDropped((prev) => prev + 1);
@@ -179,7 +179,7 @@ function fetchDevMeshAndReview(
                 url,
                 init: { headers },
                 label: url.includes('quality=coarse') ? 'Preview mesh' : 'Model mesh',
-                doc: STUDIO_MODEL_DOC,
+                doc: studioModelDoc(deps.mainRevisionRef), generation: revision,
                 ...(abortController ? { signal: abortController.signal } : {}),
             }).then((response) => {
                 const payload = response.body as (DevMeshPayload & { error?: unknown }) | null;

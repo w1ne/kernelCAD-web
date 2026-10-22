@@ -50,6 +50,43 @@ function done(jobId: number, body: unknown = null): RebuildWorkerResponse {
 }
 
 describe('rebuild queue supersession', () => {
+  it('refuses a late request from an older edit instead of cancelling the newer rebuild', async () => {
+    const transport = new FakeTransport();
+    const queue = new RebuildQueue({ createTransport: () => transport });
+
+    const newer = queue.fetchJson({ url: '/edit-2', label: 'Edit 2', doc: 'doc-g', generation: 2 });
+    // Edit 1's delayed retry (or second leg) arrives after edit 2 started.
+    const late = queue.fetchJson({ url: '/edit-1-retry', label: 'Edit 1', doc: 'doc-g', generation: 1 });
+
+    await expect(late).rejects.toBeInstanceOf(RebuildSupersededError);
+    expect(transport.fetches().map((f) => f.url)).not.toContain('/edit-1-retry');
+    expect(transport.cancels()).toHaveLength(0);
+
+    transport.emit(done(transport.fetches()[0].jobId, { features: [] }));
+    await expect(newer).resolves.toMatchObject({ ok: true });
+  });
+
+  it('lets the legs of one edit (same generation) run without cancelling each other', async () => {
+    const transport = new FakeTransport();
+    const queue = new RebuildQueue({ createTransport: () => transport });
+
+    const coarse = queue.fetchJson({ url: '/coarse', label: 'Preview', doc: 'doc-h', generation: 5 });
+    const display = queue.fetchJson({ url: '/display', label: 'Model', doc: 'doc-h', generation: 5 });
+    expect(transport.cancels()).toHaveLength(0);
+    const [first, second] = transport.fetches();
+    transport.emit(done(first.jobId));
+    transport.emit(done(second.jobId));
+    await expect(coarse).resolves.toMatchObject({ ok: true });
+    await expect(display).resolves.toMatchObject({ ok: true });
+
+    // A newer edit still supersedes.
+    const old = queue.fetchJson({ url: '/old', label: 'Old', doc: 'doc-h', generation: 5 });
+    const fresh = queue.fetchJson({ url: '/fresh', label: 'Fresh', doc: 'doc-h', generation: 6 });
+    await expect(old).rejects.toBeInstanceOf(RebuildSupersededError);
+    transport.emit(done(transport.fetches().at(-1)!.jobId));
+    await expect(fresh).resolves.toMatchObject({ ok: true });
+  });
+
   it('cancels the older rebuild of the same document and keeps the newer one', async () => {
     const transport = new FakeTransport();
     const queue = new RebuildQueue({ createTransport: () => transport });

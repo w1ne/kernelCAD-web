@@ -99,6 +99,23 @@ export function createInlineTransport(fetchImpl?: typeof fetch): RebuildTranspor
  */
 export const STUDIO_MODEL_DOC = 'studio-model';
 
+const modelDocs = new WeakMap<object, string>();
+let nextModelDoc = 1;
+
+/**
+ * The document key of one open model. `owner` is the model's revision
+ * counter (one per GeometryProvider), so a remounted Studio, whose revisions
+ * start again at 1, never collides with the edit order of the previous one.
+ */
+export function studioModelDoc(owner: object): string {
+  let doc = modelDocs.get(owner);
+  if (!doc) {
+    doc = `${STUDIO_MODEL_DOC}:${nextModelDoc++}`;
+    modelDocs.set(owner, doc);
+  }
+  return doc;
+}
+
 /**
  * The queue the Studio uses. The worker is created with the first fetch job
  * and again after a crash; where no Worker exists the inline transport keeps
