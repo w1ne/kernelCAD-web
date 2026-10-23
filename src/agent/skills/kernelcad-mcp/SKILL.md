@@ -305,17 +305,6 @@ Renaming offenders is the recovery path; the gate does not loosen.
 
 The structured forms remain valid escape hatches. The `@kc[...]` string form is the preferred handoff because it survives the resolver's two-path lookup (lineage first, then geometry snapshot) and round-trips cleanly through MCP tool envelopes.
 
-### Body likeness (cars / organic envelopes)
-
-Hard gate before success claims (see `docs/agent/adam-quality-bar.md`):
-
-1. `verify({ check: 'body-likeness', body_bbox | code+body_feature_id, wheels, still_verdicts })` — must return publishReady: true
-2. `design_loop({ likenessProfile: 'automotive', bodyLikeness, ... })` — attempts stay non-ok until the gate passes (stills may come from `visualReview.checks`)
-3. Final `open_in_studio` with likeness_profile set to automotive — server refuses success (`reference.likeness.publish-blocked`) when not green. Omit likeness_profile only for WIP previews; never claim likeness success without it.
-
-DX: `reference.likeness.publish-blocked`, `reference.likeness.gate-required`, `reference.likeness.auto-failed`, `reference.likeness.stills-incomplete`, `reference.likeness.still-failed`.
-
-
 ## Tools that emit refs
 
 | MCP tool | Field |

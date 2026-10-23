@@ -12,12 +12,6 @@ import {
   type ReviewCadOutput,
 } from '../../review/reviewPipeline';
 import {
-  assertLikenessPublishReady,
-  type BBox,
-  type StillVerdict,
-  type WheelSpec,
-} from '../../likeness/publishGate';
-import {
   appendRevisionAssistPrompt,
   buildRevisionAssist,
   type RevisionAssist,
@@ -73,19 +67,6 @@ export interface DesignLoopInput {
   requireVisualReview?: boolean;
   requirePhysicalAcceptance?: boolean;
   /**
-   * When 'automotive', accepted visualReview.checks must also cover organic-body
-   * likeness stills (side-body-over-wheels, side-cabin-aft, rear-haunch,
-   * ortho-proportions-vs-reference). Pair with verify({ check: 'body-likeness' }).
-   */
-  likenessProfile?: 'automotive';
-  /**
-   * Body-likeness inputs for the hard publish gate when likenessProfile is
-   * 'automotive'. Still verdicts may also be derived from visualReview.checks
-   * that use the automotive still codes. Missing inputs fail the attempt with
-   * reference.likeness.gate-required — do not claim success.
-   */
-  bodyLikeness?: DesignLoopBodyLikenessInput;
-  /**
    * When true (default), failing attempts with repairable feature diagnostics
    * (boolean miss, oversized fillet, …) run bounded repair_script and attach
    * revisionAssist suggested patches / autoApplied.suggestedCode. Does not
@@ -97,18 +78,6 @@ export interface DesignLoopInput {
   consensus?: boolean;
   outputRecordPath?: string;
   recordTitle?: string;
-}
-
-export interface DesignLoopBodyLikenessInput {
-  body_bbox?: BBox;
-  cabin_bbox?: BBox;
-  wheels?: WheelSpec[];
-  length_axis?: 'x' | 'y';
-  still_verdicts?: StillVerdict[];
-  require_stills?: boolean;
-  footprint_margin_mm?: number;
-  max_body_above_wheel_top_mm?: number;
-  min_overhang_mm?: number;
 }
 
 export interface DesignLoopAttemptResult {
@@ -278,8 +247,6 @@ async function runDesignLoopAttempt(
     review,
     allowReviewWarnings: input.allowReviewWarnings ?? [],
     requireVisualReview: input.requireVisualReview ?? true,
-    likenessProfile: input.likenessProfile,
-    bodyLikeness: input.bodyLikeness,
     visualReview: attempt.visualReview,
     source,
     goal: input.goal,
@@ -385,8 +352,6 @@ function toAttemptResult(input: {
   review: ReviewCadOutput;
   allowReviewWarnings: readonly string[];
   requireVisualReview: boolean;
-  likenessProfile?: DesignLoopInput['likenessProfile'];
-  bodyLikeness?: DesignLoopBodyLikenessInput;
   visualReview?: DesignLoopVisualReview;
   source: string;
   goal: string;
@@ -417,9 +382,7 @@ function toAttemptResult(input: {
       input.requireVisualReview,
       input.visualReview,
       input.allowReviewWarnings,
-      input.likenessProfile,
     ),
-    ...bodyLikenessReviewFacts(input.likenessProfile, input.bodyLikeness, input.visualReview),
   ];
   const functional = input.review.ok;
   const qualityOk = reviewFacts.length === 0;
@@ -598,74 +561,10 @@ function normalizeSeverity(severity: string): string {
   return severity;
 }
 
-const AUTOMOTIVE_LIKENESS_STILL_CODES = [
-  'side-body-over-wheels',
-  'side-cabin-aft',
-  'rear-haunch',
-  'ortho-proportions-vs-reference',
-] as const;
-
-function automotiveStillsFromVisual(
-  visualReview: DesignLoopVisualReview | undefined,
-): StillVerdict[] {
-  return (visualReview?.checks ?? [])
-    .filter((c) => AUTOMOTIVE_LIKENESS_STILL_CODES.includes(c.code as (typeof AUTOMOTIVE_LIKENESS_STILL_CODES)[number]))
-    .map((c) => ({
-      code: c.code,
-      passed: c.passed,
-      finding: c.finding,
-    }));
-}
-
-function resolveAutomotiveStillVerdicts(
-  bodyLikeness: DesignLoopBodyLikenessInput | undefined,
-  visualReview: DesignLoopVisualReview | undefined,
-): StillVerdict[] {
-  const explicit = bodyLikeness?.still_verdicts;
-  if (explicit && explicit.length > 0) return explicit;
-  return automotiveStillsFromVisual(visualReview);
-}
-
-function likenessGateDiagnosticsAsReviewFacts(
-  diagnostics: ReturnType<typeof assertLikenessPublishReady>['diagnostics'],
-): Array<{ code: string; severity: string; message: string; hint?: string }> {
-  return diagnostics.map((d) => ({
-    code: d.code,
-    severity: d.severity === 'error' ? 'warning' : d.severity,
-    message: d.message,
-    hint: d.hint,
-  }));
-}
-
-function bodyLikenessReviewFacts(
-  likenessProfile: DesignLoopInput['likenessProfile'],
-  bodyLikeness: DesignLoopBodyLikenessInput | undefined,
-  visualReview: DesignLoopVisualReview | undefined,
-): Array<{ code: string; severity: string; message: string; hint?: string }> {
-  if (likenessProfile !== 'automotive') return [];
-
-  const gate = assertLikenessPublishReady({
-    likenessProfile: 'automotive',
-    body: bodyLikeness?.body_bbox,
-    cabin: bodyLikeness?.cabin_bbox,
-    wheels: bodyLikeness?.wheels,
-    lengthAxis: bodyLikeness?.length_axis,
-    stillVerdicts: resolveAutomotiveStillVerdicts(bodyLikeness, visualReview),
-    requireStills: bodyLikeness?.require_stills,
-    footprintMarginMm: bodyLikeness?.footprint_margin_mm,
-    maxBodyAboveWheelTopMm: bodyLikeness?.max_body_above_wheel_top_mm,
-    minOverhangMm: bodyLikeness?.min_overhang_mm,
-  });
-
-  if (gate.successClaimable) return [];
-  return likenessGateDiagnosticsAsReviewFacts(gate.diagnostics);
-}
-
 function visualReviewFacts(
   requireVisualReview: boolean,
   visualReview: DesignLoopVisualReview | undefined,
   allowReviewWarnings: readonly string[],
-  likenessProfile?: DesignLoopInput['likenessProfile'],
 ): Array<{ code: string; severity: string; message: string; hint?: string }> {
   const missingCode = 'assembly.visual.review-required';
   const rejectedCode = 'assembly.visual.review-rejected';
@@ -686,7 +585,7 @@ function visualReviewFacts(
     );
   }
   if (visualReview.accepted) {
-    const { missing, checkResults } = visualReviewMissingFields(visualReview, likenessProfile);
+    const { missing, checkResults } = visualReviewMissingFields(visualReview);
     if (missing.length === 0) {
       const failedChecks = checkResults.filter((check) => !check.passed);
       const weakEvidence = checkResults.flatMap((check) => weakVisualCheckEvidence(check));
@@ -727,7 +626,6 @@ function visualReviewFacts(
 
 function visualReviewMissingFields(
   visualReview: DesignLoopVisualReview,
-  likenessProfile?: DesignLoopInput['likenessProfile'],
 ): { missing: string[]; checkResults: DesignLoopVisualReviewCheck[] } {
   const missing: string[] = [];
   if (visualReview.screenshotPath === undefined || visualReview.screenshotPath.trim() === '') {
@@ -740,7 +638,7 @@ function visualReviewMissingFields(
     missing.push('visualReview.checks');
   }
   const checkResults = visualReview.checks ?? [];
-  const missingCheckCodes = requiredVisualReviewCheckCodes(likenessProfile).filter((code) =>
+  const missingCheckCodes = requiredVisualReviewCheckCodes().filter((code) =>
     !checkResults.some((check) => check.code === code),
   );
   if (missingCheckCodes.length > 0) {
@@ -756,7 +654,6 @@ function visualReviewMissingFields(
 }
 
 function requiredVisualReviewCheckCodes(
-  likenessProfile?: DesignLoopInput['likenessProfile'],
 ): readonly string[] {
   const base = [
     'main-object-count',
@@ -768,9 +665,6 @@ function requiredVisualReviewCheckCodes(
     'device-depth-and-construction',
     'canonical-views-physically-coherent',
   ];
-  if (likenessProfile === 'automotive') {
-    return [...base, ...AUTOMOTIVE_LIKENESS_STILL_CODES];
-  }
   return base;
 }
 

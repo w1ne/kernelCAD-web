@@ -106,10 +106,8 @@ describe('diagnostic catalogue invariants', () => {
     // + 3 direct-edit drag: feature.direct-edit.clamped,
     //   feature.direct-edit.delta-wrapper, feature.direct-edit.unresolved = 308.
     // + 1 feature.direct-edit.shared-param-conflict (one param drives multiple
-    //   translated axes with different drag deltas; drag cannot encode it) = 309 + 3 likeness = 318.
-    // + 3 body likeness (verify check body-likeness):
-    //   reference.likeness.auto-failed, reference.likeness.stills-incomplete,
-    //   reference.likeness.still-failed = 318.
+    //   translated axes with different drag deltas; drag cannot encode it) = 309.
+    // (running totals from here on predate removal of 3 reference.likeness.* codes: -3.)
     // + 2 3MF bed fit (arrange 'plate' / 'assembled'): export.3mf.plate-overflow,
     //   export.3mf.exceeds-bed = 320.
     // + 1 feature.hole.cut-missing (fail-closed per-bore hole check) = 321.

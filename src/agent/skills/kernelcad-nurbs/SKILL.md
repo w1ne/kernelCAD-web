@@ -380,11 +380,6 @@ for the rail-loft / surfaceFromCurves stack (not the stylized polyline loft).
 (`feature.loft.rail-miss`). Do not raise rail count. Panel with
 `surfaceFromCurves` / `surfaceFromBoundary`, `.thicken` each panel (or `sew` a closed Surface shell — sew returns a Shape, no `.thicken`), G2 fillet — `lookup_cookbook("network body panels via sew")`.
 
-**Likeness before publish.** For cars / organic envelopes, after ortho stills:
-`verify({ check: 'body-likeness', body_bbox, wheels, still_verdicts })`. Automated
-AABB↔wheel checks + required agent stills (`side-body-over-wheels`,
-`side-cabin-aft`, `rear-haunch`, `ortho-proportions-vs-reference`). Full CV
-silhouette matching is not implemented.
 Derive the curves from a reference photo:
 
 1. **Trace the silhouette.** Run `trace_from_image` (pure-JS contour tracer) on
