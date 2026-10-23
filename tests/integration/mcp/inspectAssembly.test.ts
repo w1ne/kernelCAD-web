@@ -52,6 +52,22 @@ describe('inspect_assembly MCP tool', () => {
     }
   });
 
+  it('does not report a sealed hollow part as disconnected (its cavity wall is the same solid)', async () => {
+    const result = await inspectAssemblyTool({
+      code: `
+        const arm = assembly('sealed shell');
+        arm.part('tank', box(40, 30, 20, true).subtract(box(34, 24, 14, true)));
+        return arm.model();
+      `,
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.parts[0].disconnected).toBeUndefined();
+      expect(result.reviewFacts.map((f) => f.code)).not.toContain('assembly.mechanical.part-disconnected');
+    }
+  });
+
   it('reports visible sub-10mm air gaps between solids as disconnected geometry', async () => {
     const result = await inspectAssemblyTool({
       code: `

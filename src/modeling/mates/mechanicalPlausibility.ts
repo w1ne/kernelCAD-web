@@ -237,6 +237,18 @@ interface MateCheckCounts {
   readonly checkedFastenedMateContactCount: number;
 }
 
+/** A part the kernel holds as one solid is connected, even when its mesh has
+ *  several separate skins: a sealed hollow body (a closed shell, a tank) has
+ *  an outer and an inner one, and the mesh test would read the cavity wall as
+ *  a floating solid one wall thickness away. */
+function isSingleSolid(backend: ShapeBackend): boolean {
+  try {
+    return backend.solidComponents().length === 1;
+  } catch {
+    return false;
+  }
+}
+
 async function collectDisconnectedPartDiagnostics(
   context: PlausibilityContext,
   diagnostics: MechanicalPlausibilityDiagnostic[],
@@ -244,7 +256,7 @@ async function collectDisconnectedPartDiagnostics(
   for (const part of context.arm.__parts()) {
     const backend = await context.backendFor(part.name);
     if (backend === undefined) continue;
-    const disconnected = analyzeDisconnectedMesh(backend.getMesh());
+    const disconnected = isSingleSolid(backend) ? undefined : analyzeDisconnectedMesh(backend.getMesh());
     if (disconnected === undefined) continue;
     const bbox = await context.localBoundsFor(part.name);
     if (bbox === undefined) continue;
