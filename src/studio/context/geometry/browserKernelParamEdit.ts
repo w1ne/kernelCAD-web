@@ -80,6 +80,9 @@ type BrowserEdit = { source: string; params: Record<string, number | boolean> };
 
 /** The stateless edit to send, or null when the server must take it. */
 function browserEditFor(job: BrowserParamEditJob, run: BrowserParamEditRun, scope: string, server: boolean): BrowserEdit | null {
+  // The customizer writes every value into the source: each edit is a new
+  // document the worker has never built, so the server answers it sooner.
+  if (job.bakeIntoSource && server) return null;
   let edit: BrowserEdit;
   try {
     edit = paramEditsForMesh(run.code, job.snapshot, job.bakeIntoSource);

@@ -18,6 +18,7 @@ import { createSingleFlight, type SingleFlight } from './singleFlight';
 import { rebuildQueue, studioModelDoc } from '../../rebuild/rebuildQueueInstance';
 import { browserKernelTakes, runBrowserKernelParamEdit, warmBrowserKernel } from './browserKernelParamEdit';
 import { validateParamEdits } from '../../browserKernel/paramValidation';
+import { browserKernelEnabled } from '../../browserKernel/flag';
 import { appliedDetail, markParamEdit } from '../../browserKernel/paramEditPerf';
 import type { SerializedParamEntry } from '../../../shared/runtime/paramTable';
 
@@ -48,6 +49,13 @@ async function editedInBrowserKernel(job: HostedMeshJob, run: HostedMeshRun): Pr
         },
     });
     return outcome === 'done';
+}
+
+/** The drag flag reaches the stateless edit only for the browser kernel
+ *  (see usePersistentParams); a drag tick that falls back to the server is
+ *  sent exactly as before. */
+function serverPreview(job: HostedMeshJob): boolean | undefined {
+    return browserKernelEnabled() ? undefined : job.preview;
 }
 
 /** A stateless edit can be built: by the server, the dev kernel or the
@@ -84,7 +92,7 @@ async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promi
     run.deps.setIsComputing(true);
     try {
         markParamEdit('request', { generation: revision, kernel: 'server' });
-        const payload = await meshParamEdits(run.code, job.snapshot, job.bakeIntoSource, job.preview, false, studioModelDoc(run.deps.mainRevisionRef), revision);
+        const payload = await meshParamEdits(run.code, job.snapshot, job.bakeIntoSource, serverPreview(job), false, studioModelDoc(run.deps.mainRevisionRef), revision);
         markParamEdit('response', { generation: revision, kernel: 'server' });
         if (job.epoch !== run.epochRef.current || revision !== run.deps.mainRevisionRef.current) return;
         applyParamMeshPayload(run.deps, run.executionCount, payload, revision);

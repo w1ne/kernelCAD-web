@@ -37,3 +37,7 @@ export function browserKernelSupported(): boolean {
 export function browserKernelEnabled(): boolean {
   return browserKernelChoice() === 'browser' && browserKernelSupported();
 }
+
+/** Slider drag debounce while the browser kernel is on (the server path
+ *  keeps its longer one). */
+export const BROWSER_KERNEL_DRAG_DEBOUNCE_MS = 40;

@@ -25,6 +25,10 @@ export interface UseParamUpdateOptions {
   /** Custom error sink. Replaces the default `console.warn` behavior.
    *  Receives the rejection and the edits that failed. */
   onError?: (err: unknown, edits: ParamEdit[]) => void;
+  /** Re-send the last drag tick without `preview` on `flush` (pointer up)
+   *  when it already went out as a preview, so the settled model is built
+   *  at full quality. The browser kernel meshes previews coarse. */
+  settleAfterPreview?: boolean;
 }
 
 export interface ParamUpdater {
@@ -57,7 +61,7 @@ export function useParamUpdate(
   updateParam: UpdateParamFn | undefined,
   opts: UseParamUpdateOptions = {},
 ): ParamUpdater {
-  const { debounceMs: defaultDebounce = 100, source, onError: userOnError } = opts;
+  const { debounceMs: defaultDebounce = 100, source, onError: userOnError, settleAfterPreview = false } = opts;
 
   // Stash callbacks in refs so the returned `commit` / `commitDebounced`
   // identities stay stable across renders. Consumers pass them into
@@ -76,6 +80,8 @@ export function useParamUpdate(
   // Per-name last-wins coalesce buffer. A single debounced flush sends
   // one batch containing the most recent value per param name.
   const pendingRef = useRef<Map<string, ParamEdit>>(new Map());
+  // The last batch sent as a drag preview, until a settled send follows.
+  const lastPreviewRef = useRef<ParamEdit[] | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleError = useCallback((err: unknown, edits: ParamEdit[]) => {
@@ -86,6 +92,7 @@ export function useParamUpdate(
 
   const fire = useCallback((edits: ParamEdit[], preview = false) => {
     if (edits.length === 0) return;
+    lastPreviewRef.current = preview ? edits : null;
     const fn = updateRef.current;
     if (!fn) return;
     const pending = preview ? fn(edits, { preview: true }) : fn(edits);
@@ -97,11 +104,15 @@ export function useParamUpdate(
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-    if (pendingRef.current.size === 0) return;
+    if (pendingRef.current.size === 0) {
+      const settled = settleAfterPreview ? lastPreviewRef.current : null;
+      if (settled) fire(settled);
+      return;
+    }
     const batch = [...pendingRef.current.values()];
     pendingRef.current.clear();
     fire(batch);
-  }, [fire]);
+  }, [fire, settleAfterPreview]);
 
   const commit = useCallback((edits: ParamEdit[]) => {
     if (pendingRef.current.size > 0) flush();

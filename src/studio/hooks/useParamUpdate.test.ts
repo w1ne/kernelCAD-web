@@ -146,4 +146,26 @@ describe('useParamUpdate', () => {
         expect(result.current.commitDebounced).toBe(first.commitDebounced);
         expect(result.current.flush).toBe(first.flush);
     });
+
+    it('settleAfterPreview re-sends the last drag tick as a settled edit on release', () => {
+        const update = vi.fn().mockResolvedValue(undefined);
+        const { result } = renderHook(() => useParamUpdate(update, { debounceMs: 40, settleAfterPreview: true }));
+        act(() => { result.current.commitDebounced([{ name: 'w', value: 7 }]); });
+        act(() => { vi.advanceTimersByTime(40); });
+        expect(update).toHaveBeenLastCalledWith([{ name: 'w', value: 7 }], { preview: true });
+        act(() => { result.current.flush(); });
+        expect(update).toHaveBeenLastCalledWith([{ name: 'w', value: 7 }]);
+        // Only once: a second release has nothing new to settle.
+        act(() => { result.current.flush(); });
+        expect(update).toHaveBeenCalledTimes(2);
+    });
+
+    it('without settleAfterPreview a release after the last tick sends nothing more', () => {
+        const update = vi.fn().mockResolvedValue(undefined);
+        const { result } = renderHook(() => useParamUpdate(update, { debounceMs: 40 }));
+        act(() => { result.current.commitDebounced([{ name: 'w', value: 7 }]); });
+        act(() => { vi.advanceTimersByTime(40); });
+        act(() => { result.current.flush(); });
+        expect(update).toHaveBeenCalledTimes(1);
+    });
 });

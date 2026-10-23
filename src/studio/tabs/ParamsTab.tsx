@@ -3,6 +3,7 @@
 import type { JSX } from 'react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useParamUpdate, type ParamUpdater } from '../hooks/useParamUpdate';
+import { BROWSER_KERNEL_DRAG_DEBOUNCE_MS, browserKernelEnabled } from '../browserKernel/flag';
 import type { ParamEntry } from '../../shared/runtime/paramTable';
 
 import { NumericScrubInput, type ScrubInterference } from '../components/inputs/NumericScrubInput';
@@ -35,7 +36,14 @@ export function ParamsTab(): JSX.Element {
     // a debounced send so slider drag doesn't fire one POST + one full
     // relower per pointer-move; boolean toggles are single high-intent
     // clicks, so they fire immediately via `commit`.
-    const updater = useParamUpdate(updateParam, { source: 'ParamsTab', debounceMs: 700 });
+    // The browser kernel answers a tick in milliseconds and coalesces to one
+    // job in flight plus the latest, so a drag can follow the pointer.
+    const browserKernel = browserKernelEnabled();
+    const updater = useParamUpdate(updateParam, {
+        source: 'ParamsTab',
+        debounceMs: browserKernel ? BROWSER_KERNEL_DRAG_DEBOUNCE_MS : 700,
+        settleAfterPreview: browserKernel,
+    });
 
     const entries: ParamEntry[] = paramTable && paramTable.size() > 0
         ? paramTable.list()
