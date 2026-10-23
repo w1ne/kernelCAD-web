@@ -13,7 +13,7 @@ const EXAMPLE_ABSOLUTE = resolvePath(__dirname, '../../..', EXAMPLE_PATH);
 
 type ValidateResult = Awaited<ReturnType<typeof runValidateCli>>;
 
-describe('Gearfinity-inspired planetary stage gallery example', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('Gearfinity-inspired planetary stage gallery example', () => {
   // Both #348 assertions read the SAME validate run (pure over the script
   // file). The rest-pose interference surface over 24 gear meshes is the
   // heavy part (~150 s); compute it once in beforeAll and share it so the
@@ -29,7 +29,7 @@ describe('Gearfinity-inspired planetary stage gallery example', () => {
       json: true,
       includePhysics: false,
     });
-  }, 300_000);
+  }, 900_000); // KCAD_SLOW-only: slower runners exceed 300 s (see PR #1081)
 
   it('evaluates as a dense mate-driven gear mechanism', async () => {
     const result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
@@ -72,7 +72,7 @@ describe('Gearfinity-inspired planetary stage gallery example', () => {
       ]),
     );
     expect(scene.part('output-fan-wheel').connectors?.some((connector) => connector.name === 'blade-tip')).toBe(true);
-  }, 300_000);
+  }, 900_000);
 
   // Issue #348 RESOLVED (2026-06-09): the gearfinity planetary stage
   // used to time the physics-grounded loop out — 24 parts × 13 pose

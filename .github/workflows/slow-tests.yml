@@ -1,0 +1,35 @@
+name: Slow tests
+
+# Nightly / on-demand run of the KCAD_SLOW-gated suites (see `npm run
+# test:slow`). On PRs they run in ci.yml's `test-slow` job, which is part of
+# the required `test` gate. (GitHub only fires `schedule` from the default
+# branch's copy of this file.)
+on:
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: slow-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  slow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+      - name: Build CLI bundle (required by the validate CLI suites)
+        run: npm run build:cli
+      - name: KCAD_SLOW suites
+        # Only the KCAD_SLOW-gated files; the rest of the suite already runs
+        # in the sharded `test` job.
+        run: |
+          files=$(grep -rlE "skipIf\(!process\.env\.KCAD_SLOW\)" tests src eval --include='*.test.ts' || true)
+          echo "$files"
+          [ -n "$files" ] || { echo "no KCAD_SLOW suites found"; exit 1; }
+          KCAD_SLOW=1 NODE_OPTIONS='--max-old-space-size=8192' npx vitest run $files
