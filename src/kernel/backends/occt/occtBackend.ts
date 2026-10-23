@@ -35,7 +35,7 @@ import {
   extrudeRoundedRectShape,
 } from './backendExtrudeProfiles';
 
-export { initOcct, type InitOcctOptions } from './backendInit';
+export { initOcct, occtHeapBytes, type InitOcctOptions } from './backendInit';
 export { resetOcct, registerOcctResetHook, withOcctPoisonRecovery } from './backendInit';
 export { meshShapeForExport } from './backendMesh';
 

@@ -16,8 +16,7 @@
 //
 // Job logic lives in workerCore.ts (unit-tested); this file only wires it.
 
-import { getOC } from 'replicad';
-import { initOcct } from '../../kernel/backends/occt/occtBackend';
+import { initOcct, occtHeapBytes } from '../../kernel/backends/occt/occtBackend';
 import { createKernelDeps } from './kernelDeps';
 import { installWasmMemoryCap } from './memoryCap';
 import { createKernelWorkerCore } from './workerCore';
@@ -30,6 +29,10 @@ import {
 } from './protocol';
 
 type TransferList = Transferable[];
+
+/** Quiet time after a settled result before its viewer dimensions are
+ *  computed (80-600 ms of synchronous feature recognition on assemblies). */
+const DIMENSIONS_IDLE_MS = 250;
 
 function transferList(message: WorkerToPage): TransferList {
   if (message.type !== 'result') return [];
@@ -62,21 +65,28 @@ async function start(init: KernelInitMessage, port: MessagePort): Promise<void> 
   await initOcct({ wasmBinary: init.wasm });
   const locked = lockDownWorkerGlobals(self);
   // The heap the module started with counts too, not only what it grew to.
-  const heapBytes = (): number => (getOC() as { HEAPU8?: Uint8Array }).HEAPU8?.byteLength ?? 0;
   const core = createKernelWorkerCore(createKernelDeps({
-    bytes: () => Math.max(memory.bytes(), heapBytes()),
+    bytes: () => Math.max(memory.bytes(), occtHeapBytes()),
     capHit: memory.capHit,
   }));
+  let dimensionsTimer: ReturnType<typeof setTimeout> | undefined;
   port.onmessage = (event: MessageEvent<unknown>) => {
     if (!isPageToWorker(event.data)) return;
+    clearTimeout(dimensionsTimer);
+    const receivedAt = performance.timeOrigin + performance.now();
     void core.handle(event.data).then((reply) => {
+      if (reply.type === 'result') {
+        reply.timings.receivedAt = receivedAt;
+        reply.timings.postedAt = performance.timeOrigin + performance.now();
+      }
       send(reply, transferList(reply));
       if (reply.type !== 'result' || reply.quality !== 'display') return;
-      // After the mesh, and only if no newer edit arrived in the meantime.
-      setTimeout(() => {
+      // After the mesh, once the edits pause: the pass cannot be interrupted,
+      // and dimensions of a value the user is still changing are wasted.
+      dimensionsTimer = setTimeout(() => {
         const dimensions = core.pendingDimensions();
         if (dimensions) send(dimensions, []);
-      }, 0);
+      }, DIMENSIONS_IDLE_MS);
     });
   };
   const ready: WorkerToPage = {

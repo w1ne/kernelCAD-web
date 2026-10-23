@@ -91,6 +91,10 @@ export interface JobTimings {
   totalMs: number;
   /** How the model was produced. */
   path: 'cache' | 'incremental' | 'full';
+  /** Wall clock (timeOrigin + now) when the worker received / posted the
+   *  job, so the page can tell queueing and delivery from compute. */
+  receivedAt?: number;
+  postedAt?: number;
 }
 
 export interface RebuildJobResult {
@@ -157,23 +161,34 @@ function isPayload(value: unknown): value is KernelMeshPayload {
 
 const ERROR_CODES: ReadonlySet<string> = new Set(['script', 'server-only', 'memory', 'internal']);
 
+function isReady(m: Record<string, unknown>): boolean {
+  return m.v === BROWSER_KERNEL_PROTOCOL && typeof m.origin === 'string' && Array.isArray(m.locked);
+}
+
+function isResult(m: Record<string, unknown>): boolean {
+  return isPayload(m.payload) && isRecord(m.fingerprints) && isRecord(m.timings)
+    && (m.quality === 'display' || m.quality === 'coarse');
+}
+
+function isError(m: Record<string, unknown>): boolean {
+  return typeof m.code === 'string' && ERROR_CODES.has(m.code)
+    && typeof m.message === 'string' && typeof m.fatal === 'boolean';
+}
+
+const JOB_MESSAGE_CHECKS: Record<string, (m: Record<string, unknown>) => boolean> = {
+  result: isResult,
+  error: isError,
+  dimensions: (m) => Array.isArray(m.dimensions),
+};
+
 /** True only for a well-formed worker message; anything else is dropped. */
 export function isWorkerToPage(value: unknown): value is WorkerToPage {
   if (!isRecord(value)) return false;
-  if (value.type === 'ready') {
-    return value.v === BROWSER_KERNEL_PROTOCOL && typeof value.origin === 'string' && Array.isArray(value.locked);
-  }
-  if (!isJobEnvelope(value)) return false;
-  if (value.type === 'result') {
-    return isPayload(value.payload) && isRecord(value.fingerprints) && isRecord(value.timings)
-      && (value.quality === 'display' || value.quality === 'coarse');
-  }
-  if (value.type === 'dimensions') return Array.isArray(value.dimensions);
-  if (value.type === 'error') {
-    return typeof value.code === 'string' && ERROR_CODES.has(value.code)
-      && typeof value.message === 'string' && typeof value.fatal === 'boolean';
-  }
-  return false;
+  if (value.type === 'ready') return isReady(value);
+  const check = typeof value.type === 'string' && Object.prototype.hasOwnProperty.call(JOB_MESSAGE_CHECKS, value.type)
+    ? JOB_MESSAGE_CHECKS[value.type]
+    : undefined;
+  return !!check && isJobEnvelope(value) && check(value);
 }
 
 /** True only for a well-formed job request (the worker's inbound check). */

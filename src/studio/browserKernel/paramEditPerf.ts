@@ -14,6 +14,8 @@ export type ParamEditStage = 'edit' | 'request' | 'response' | 'applied' | 'inst
 export interface ParamEditPerfEvent {
   stage: ParamEditStage;
   t: number;
+  /** timeOrigin + t, comparable with the worker's clock. */
+  wall?: number;
   generation?: number;
   kernel?: 'browser' | 'server';
   detail?: Record<string, unknown>;
@@ -40,7 +42,7 @@ export function markParamEdit(
 ): void {
   const target = sink();
   if (!target) return;
-  target.events.push({ stage, t: performance.now(), ...fields });
+  target.events.push({ stage, t: performance.now(), wall: performance.timeOrigin + performance.now(), ...fields });
 }
 
 /** What the benchmark checks a settled edit against: the param values the

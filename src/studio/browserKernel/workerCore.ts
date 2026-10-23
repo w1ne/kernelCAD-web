@@ -206,6 +206,37 @@ function respond(
   };
 }
 
+/** The model for this job, built or edited, and how it was produced. The
+ *  warm model is replaced in `state` as a side effect. */
+async function modelFor<M extends CoreModel, R extends CoreMeshing>(
+  deps: KernelWorkerDeps<M, R>,
+  state: { warm: WarmModel<M> | null },
+  request: RebuildJobRequest,
+): Promise<{ model: M; path: JobTimings['path'] }> {
+  const warm = state.warm;
+  if (warm && warm.source === request.source) {
+    const edits = targetEdits(warm.model.session.paramTable.serialize(), request.params);
+    if (edits.length === 0) return { model: warm.model, path: 'incremental' };
+    try {
+      warm.model = await deps.update(warm.model, edits);
+      return { model: warm.model, path: 'incremental' };
+    } catch (error) {
+      if (deps.isFatal(error) || deps.memoryCapHit()) throw error;
+      // The incremental path can refuse an edit a full build accepts; the
+      // full build is the authority.
+      state.warm = null;
+    }
+  }
+  try {
+    const model = await deps.build(request.source, request.params);
+    state.warm = { source: request.source, model };
+    return { model, path: 'full' };
+  } catch (error) {
+    state.warm = null;
+    throw classify(deps, error, true);
+  }
+}
+
 export interface KernelWorkerCore {
   handle(request: RebuildJobRequest): Promise<RebuildJobResult | RebuildJobError>;
   /** Dimensions of the last settled result, once no job is waiting; null
@@ -220,40 +251,15 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
   cacheOptions: RebuildCacheOptions = DEFAULT_REBUILD_CACHE,
 ): KernelWorkerCore {
   const cache = new RebuildCache<CachedRebuild>(cacheOptions, sizeOfRebuild);
-  let warm: WarmModel<M> | null = null;
+  const state: { warm: WarmModel<M> | null } = { warm: null };
   let chain: Promise<unknown> = Promise.resolve();
   let queued = 0;
   let awaitingDimensions: { request: RebuildJobRequest; model: M; meshing: R; entry: CachedRebuild } | null = null;
 
   const reset = (): void => {
-    warm = null;
+    state.warm = null;
     cache.clear();
   };
-
-  /** The model for this job, built or edited; and how it was produced. */
-  async function modelFor(request: RebuildJobRequest): Promise<{ model: M; path: JobTimings['path'] }> {
-    if (warm && warm.source === request.source) {
-      const edits = targetEdits(warm.model.session.paramTable.serialize(), request.params);
-      if (edits.length === 0) return { model: warm.model, path: 'incremental' };
-      try {
-        warm.model = await deps.update(warm.model, edits);
-        return { model: warm.model, path: 'incremental' };
-      } catch (error) {
-        if (deps.isFatal(error) || deps.memoryCapHit()) throw error;
-        // The incremental path can refuse an edit a full build accepts; the
-        // full build is the authority.
-        warm = null;
-      }
-    }
-    try {
-      const model = await deps.build(request.source, request.params);
-      warm = { source: request.source, model };
-      return { model, path: 'full' };
-    } catch (error) {
-      warm = null;
-      throw classify(deps, error, true);
-    }
-  }
 
   async function run(request: RebuildJobRequest): Promise<RebuildJobResult | RebuildJobError> {
     const started = deps.now();
@@ -268,9 +274,9 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
     if (hit) {
       return respond(deps, request, hit, { buildMs: 0, meshMs: 0, serializeMs: 0, totalMs: deps.now() - started, path: 'cache' });
     }
-    let firstBuild = !(warm && warm.source === request.source);
+    let firstBuild = state.warm?.source !== request.source;
     try {
-      const { model, path } = await modelFor(request);
+      const { model, path } = await modelFor(deps, state, request);
       firstBuild = path === 'full';
       const built = deps.now();
       const meshing = await deps.mesh(model, request.quality);

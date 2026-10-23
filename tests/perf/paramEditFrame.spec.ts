@@ -16,8 +16,10 @@
 //
 // The same spec measures any model locally (see PARAM_PERF_* below), e.g.
 //   PARAM_PERF_MODEL=examples/gallery/gearfinity-planetary-stage.kcad.ts \
-//   PARAM_PERF_PARAM=driveAngleDeg PARAM_PERF_VALUES=100,110,120,130,140,150 \
-//   npx playwright test -c playwright.perf.config.ts
+//   PARAM_PERF_TICKS=driveAngleDeg=100,driveAngleDeg=110,driveAngleDeg=120 \
+//   PARAM_PERF_CHECK_BOUNDS=0 npx playwright test -c playwright.perf.config.ts
+// PARAM_PERF_KERNEL=server with PARAM_PERF_BASE_URL pointing at a build made
+// with VITE_HOSTED_MESH=1 measures the server path the same way.
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
@@ -28,10 +30,22 @@ const MODEL = env.PARAM_PERF_MODEL ?? FIXTURE;
 const KERNEL = env.PARAM_PERF_KERNEL ?? 'browser';
 const WARMUP = Number(env.PARAM_PERF_WARMUP ?? 2);
 const TICK_TIMEOUT_MS = Number(env.PARAM_PERF_TICK_TIMEOUT_MS ?? 60_000);
-/** name=value pairs, alternating params when more than one is given. */
-const TICKS: Array<{ name: string; value: number }> = env.PARAM_PERF_PARAM
-  ? (env.PARAM_PERF_VALUES ?? '').split(',').filter(Boolean).map((value) => ({ name: env.PARAM_PERF_PARAM!, value: Number(value) }))
-  : [
+/** Rotationally symmetric edits (a gear turning) need not move the bounds. */
+const CHECK_BOUNDS = env.PARAM_PERF_CHECK_BOUNDS !== '0';
+function parseTicks(): Array<{ name: string; value: number }> | null {
+  if (env.PARAM_PERF_TICKS) {
+    return env.PARAM_PERF_TICKS.split(',').filter(Boolean).map((pair) => {
+      const [name, value] = pair.split('=');
+      return { name: name!, value: Number(value) };
+    });
+  }
+  if (env.PARAM_PERF_PARAM) {
+    return (env.PARAM_PERF_VALUES ?? '').split(',').filter(Boolean).map((value) => ({ name: env.PARAM_PERF_PARAM!, value: Number(value) }));
+  }
+  return null;
+}
+/** `name=value` ticks, in order. */
+const TICKS: Array<{ name: string; value: number }> = parseTicks() ?? [
     { name: 'elbowDeg', value: 10 }, { name: 'width', value: 50 },
     { name: 'elbowDeg', value: 25 }, { name: 'width', value: 60 },
     { name: 'elbowDeg', value: -20 }, { name: 'width', value: 45 },
@@ -40,7 +54,7 @@ const TICKS: Array<{ name: string; value: number }> = env.PARAM_PERF_PARAM
   ];
 const OUT = env.PARAM_PERF_OUT ?? 'test-results/perf/param-edit-frame.json';
 
-interface PerfEvent { stage: string; t: number; kernel?: string; detail?: Record<string, unknown> }
+interface PerfEvent { stage: string; t: number; wall?: number; kernel?: string; detail?: Record<string, unknown> }
 type Bounds = { min: number[]; max: number[] };
 
 interface Sample {
@@ -53,6 +67,11 @@ interface Sample {
   appliedToInstalledMs: number;
   installedToFrameMs: number;
   inputToFrameMs: number;
+  /** Browser kernel only: job waiting to reach the worker, compute, and the
+   *  reply waiting for the page's main thread. */
+  toWorkerMs?: number;
+  workerMs?: number;
+  toPageMs?: number;
   worker?: Record<string, unknown>;
 }
 
@@ -109,9 +128,17 @@ async function tick(page: Page, name: string, value: number): Promise<{ sample: 
       appliedToInstalledMs: Math.max(0, installed.t - applied.t),
       installedToFrameMs: frame.t - installed.t,
       inputToFrameMs: frame.t - input0.t,
+      ...splitWorkerTime(request, response),
       ...(response.detail ? { worker: response.detail } : {}),
     },
   };
+}
+
+function splitWorkerTime(request: PerfEvent, response: PerfEvent): Partial<Sample> {
+  const receivedAt = response.detail?.receivedAt;
+  const postedAt = response.detail?.postedAt;
+  if (typeof receivedAt !== 'number' || typeof postedAt !== 'number' || !request.wall || !response.wall) return {};
+  return { toWorkerMs: receivedAt - request.wall, workerMs: postedAt - receivedAt, toPageMs: response.wall - postedAt };
 }
 
 function summarize(values: number[]): { samples: number; medianMs: number | null; p95Ms: number | null } {
@@ -171,7 +198,10 @@ test('param edit click-to-frame', async ({ page }) => {
       .find((e) => e.name.includes('replicad_single')) as PerformanceResourceTiming | undefined;
     return {
       kernelReady: ev.find((e) => e.stage === 'kernel-ready')?.detail ?? null,
-      firstBuild: ev.find((e) => e.stage === 'first-build')?.detail ?? null,
+      // The Studio builds its starter model before the benchmark model
+      // arrives: the benchmark model's build is the last one.
+      firstBuild: ev.filter((e) => e.stage === 'first-build').at(-1)?.detail ?? null,
+      firstBuilds: ev.filter((e) => e.stage === 'first-build').map((e) => e.detail),
       wasmFetchMs: wasm ? Math.round(wasm.duration) : null,
       wasmBytes: wasm ? wasm.encodedBodySize : null,
     };
@@ -186,7 +216,7 @@ test('param edit click-to-frame', async ({ page }) => {
     const echoed = (applied.detail?.params as Record<string, unknown> | undefined)?.[name];
     expect(echoed, `tick ${index} echoed ${name}`).toBe(value);
     const bounds = applied.detail?.bounds as Bounds | undefined;
-    expect(boundsChanged(previous, bounds), `tick ${index} geometry changed`).toBe(true);
+    if (CHECK_BOUNDS) expect(boundsChanged(previous, bounds), `tick ${index} geometry changed`).toBe(true);
     previous = bounds;
     if (index >= WARMUP) samples.push(sample);
   }
@@ -194,11 +224,18 @@ test('param edit click-to-frame', async ({ page }) => {
   await expect(page.getByText(/is not available|failed to compile/)).toHaveCount(0);
 
   const stages: Array<keyof Sample> = [
-    'inputToRequestMs', 'requestToResponseMs', 'responseToAppliedMs',
+    'inputToRequestMs', 'requestToResponseMs', 'toWorkerMs', 'workerMs', 'toPageMs', 'responseToAppliedMs',
     'appliedToInstalledMs', 'installedToFrameMs', 'inputToFrameMs',
   ];
-  const summary = Object.fromEntries(stages.map((stage) => [stage, summarize(samples.map((s) => s[stage] as number))]));
-  report({ model: MODEL, kernel: KERNEL, firstPaintMs, coldStart, warmup: WARMUP, summary, samples, userAgent: await page.evaluate(() => navigator.userAgent) }, samples);
+  const summary = Object.fromEntries(stages
+    .filter((stage) => samples.some((s) => typeof s[stage] === 'number'))
+    .map((stage) => [stage, summarize(samples.map((s) => s[stage] as number))]));
+  const renderer = await page.evaluate(() => {
+    const gl = document.createElement('canvas').getContext('webgl2');
+    const info = gl?.getExtension('WEBGL_debug_renderer_info');
+    return info ? String(gl!.getParameter(info.UNMASKED_RENDERER_WEBGL)) : 'unknown';
+  });
+  report({ model: MODEL, kernel: KERNEL, firstPaintMs, coldStart, warmup: WARMUP, renderer, summary, samples, userAgent: await page.evaluate(() => navigator.userAgent) }, samples);
   await test.info().attach('param-edit-frame.json', { path: OUT, contentType: 'application/json' });
 });
 

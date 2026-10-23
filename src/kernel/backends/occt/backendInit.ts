@@ -21,6 +21,16 @@ export function isOcctInitialized(): boolean {
   return initialized;
 }
 
+/** Bytes of the OCCT wasm heap; 0 before `initOcct`. */
+export function occtHeapBytes(): number {
+  if (!initialized) return 0;
+  try {
+    return (replicad.getOC() as { HEAPU8?: Uint8Array }).HEAPU8?.byteLength ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 /**
  * Register a callback invoked when the OCCT wasm module is about to be replaced.
  * Hooks must NOT call into OCCT (the heap may already be poisoned). Clear JS-side
