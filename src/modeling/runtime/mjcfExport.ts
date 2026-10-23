@@ -51,7 +51,9 @@
 //     in the runtime check and return `mechanism: 'unverified'` upstream.
 //
 // Springs / actuators:
-//   - All actuators are absent (passive bodies). Single-body springs
+//   - Actuators exist only for `arm.tendon(..., { actuator })`: one
+//     `<motor tendon=... gear="-1">` per driven cable. Everything else is
+//     passive bodies. Single-body springs
 //     declared via the existing kit don't generate joint moment in MuJoCo
 //     either — that's the whole point of P6 surfacing the gap that #361
 //     fixes via closed-loop tendons.
@@ -61,7 +63,7 @@ import type { MateRecord } from '../mates/mate';
 import { parseConnectorRef } from '../mates/mate';
 import type { Connector } from '../mates/connector';
 import { resolveConnectorOrigin } from '../mates/connector';
-import type { TendonRecord } from '../mates/tendon';
+import type { TendonRecord, TendonViaRef } from '../mates/tendon';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { partAtFor } from '../mates/partFrame';
@@ -155,6 +157,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
     );
 
     const tendonBlockLines = emitTendonBlock(resolvedTendons, spatialChildrenByTendon);
+    const actuatorBlockLines = emitActuatorBlock(resolvedTendons);
     const assetBlockLines = emitAssetBlock(parts, collisionMeshes);
     const contactBlockLines = emitContactBlock(mates);
 
@@ -179,6 +182,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
         '  </worldbody>',
         ...tendonBlockLines,
         ...contactBlockLines,
+        ...actuatorBlockLines,
         '</mujoco>',
         '',
     ].join('\n');
@@ -430,14 +434,29 @@ async function resolveTendonSites(
     const spatialChildrenByTendon = new Map<string, string[]>();
     for (const rt of resolvedTendons) {
         const t = rt.record;
-        if (t.wrapGeoms.length === 0) continue;
+        // `via` and the legacy `wrapGeoms` are mutually exclusive (capture-validated).
+        const route: readonly TendonViaRef[] = t.via.length > 0 ? t.via : t.wrapGeoms.map((w) => ({ wrap: w }));
+        if (route.length === 0) continue;
         const [fromE, toE] = rt.endpoints;
         const children: string[] = [`      <site site="${escapeXml(fromE.siteName)}"/>`];
-        t.wrapGeoms.forEach((w, i) => {
+        let prevWasGeom = false;
+        for (const [i, entry] of route.entries()) {
+            if (typeof entry === 'string') {
+                const parsed = parseConnectorRef(entry);
+                const viaPart = partByName.get(parsed.partName);
+                const conn = viaPart?.mateConnectors.find((c) => c.name === parsed.connectorName);
+                if (viaPart === undefined || conn === undefined) continue; // capture-validated
+                const siteName = `${t.name}__via${i}`;
+                addExtraSite(viaPart.name, siteName, (await resolveConnectorOrigin(viaPart.originalShape, conn.origin)).value);
+                children.push(`      <site site="${escapeXml(siteName)}"/>`);
+                prevWasGeom = false;
+                continue;
+            }
+            const w = entry.wrap;
             const ownerPart = partByName.get(w.partName);
             const wg = ownerPart?.wrapGeoms.find((g) => g.name === w.wrapName);
-            if (ownerPart === undefined || wg === undefined) return; // capture-validated
-            if (i > 0) {
+            if (ownerPart === undefined || wg === undefined) continue; // capture-validated
+            if (prevWasGeom) {
                 const sepName = `${t.name}__wrap${i}_sep`;
                 addExtraSite(w.partName, sepName, wg.origin);
                 children.push(`      <site site="${escapeXml(sepName)}"/>`);
@@ -451,7 +470,8 @@ async function resolveTendonSites(
             children.push(
                 `      <geom geom="${escapeXml(mjcfWrapGeomName(w.partName, w.wrapName))}"${sidesiteAttr}/>`,
             );
-        });
+            prevWasGeom = true;
+        }
         children.push(`      <site site="${escapeXml(toE.siteName)}"/>`);
         spatialChildrenByTendon.set(t.name, children);
     }
@@ -618,12 +638,11 @@ function emitTendonBlock(
         tendonBlockLines.push('  <tendon>');
         for (const rt of resolvedTendons) {
             const t = rt.record;
-            const springLenM = t.restLengthMm * MM_TO_M;
-            const stiffnessNm = t.stiffnessNmm * 1000;
+            const springAttrs = tendonSpringAttrs(t);
             const dampingNsm = t.dampingNsmm * 1000;
             const dampingAttr = dampingNsm > 0 ? ` damping="${fmtNum(dampingNsm)}"` : '';
             tendonBlockLines.push(
-                `    <spatial name="${escapeXml(t.name)}" springlength="${fmtNum(springLenM)}" stiffness="${fmtNum(stiffnessNm)}"${dampingAttr}>`,
+                `    <spatial name="${escapeXml(t.name)}"${springAttrs}${dampingAttr}${tendonLookAttrs(t)}>`,
             );
             // P11 Slice 2: emit the routed child sequence (sites + wrap
             // geoms) when this tendon declares wrapGeoms; otherwise the
@@ -641,6 +660,45 @@ function emitTendonBlock(
         tendonBlockLines.push('  </tendon>');
     }
     return tendonBlockLines;
+}
+
+// Spring attrs; an actuated cable without spring fields stays inextensible.
+function tendonSpringAttrs(t: TendonRecord): string {
+    const rest = t.restLengthMm !== undefined ? ` springlength="${fmtNum(t.restLengthMm * MM_TO_M)}"` : '';
+    const stiff = t.stiffnessNmm !== undefined ? ` stiffness="${fmtNum(t.stiffnessNmm * 1000)}"` : '';
+    return rest + stiff;
+}
+
+/** `#rgb` / `#rrggbb` → "r g b 1" in 0..1, or undefined for any other color syntax. */
+function cssHexToRgba(color: string): string | undefined {
+    const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color.trim());
+    if (m === null) return undefined;
+    const h = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1];
+    const ch = [0, 2, 4].map((i) => fmtNum(parseInt(h.slice(i, i + 2), 16) / 255));
+    return `${ch.join(' ')} 1`;
+}
+
+// Strap tendons render as a ribbon of half the strap width; a declared
+// material colors the tendon (MuJoCo's own viewer only).
+function tendonLookAttrs(t: TendonRecord): string {
+    const width = t.visualStyle === 'strap' ? ` width="${fmtNum((t.strapWidthMm / 2) * MM_TO_M)}"` : '';
+    const rgba = t.material !== undefined ? cssHexToRgba(t.material.baseColor) : undefined;
+    return width + (rgba !== undefined ? ` rgba="${rgba}"` : '');
+}
+
+// Motor per actuated tendon. gear=-1: a positive spatial-tendon force
+// lengthens it, so ctrl >= 0 is cable tension (pull).
+function emitActuatorBlock(resolvedTendons: readonly ResolvedTendon[]): string[] {
+    const driven = resolvedTendons.filter((rt) => rt.record.actuator !== undefined);
+    if (driven.length === 0) return [];
+    return [
+        '  <actuator>',
+        ...driven.map((rt) => {
+            const n = escapeXml(rt.record.name);
+            return `    <motor name="${n}" tendon="${n}" gear="-1" ctrllimited="true" ctrlrange="0 ${fmtNum(rt.record.actuator!.maxForceN)}"/>`;
+        }),
+        '  </actuator>',
+    ];
 }
 
 // P11 Slice 1: emit the `<asset>` block before `<worldbody>`. MJCF

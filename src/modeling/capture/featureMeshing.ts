@@ -18,6 +18,7 @@ import { RecomputeEngine, predecessorsByRecord, compiledEventForRecord, type Rec
 import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
+import { buildStrapMesh } from './tendonStrapMesh';
 import { attachMaterialUVs, generatePlanarUVs } from './planarUv';
 import { computeFeatureOwnership } from './featureOwnership';
 import { helixPolylineRouted } from '../mates/helixPolyline';
@@ -216,7 +217,7 @@ interface AssemblyLikeForTendons {
     readonly to: string;
     readonly visualDiameterMm: number;
     /** P10: undefined on pre-P10 callers (fallback to 'line'). */
-    readonly visualStyle?: 'line' | 'coil';
+    readonly visualStyle?: 'line' | 'coil' | 'strap';
     readonly coilTurns?: number;
     readonly coilDiameterMm?: number;
     /** P11 Slice 3: ordered wrap-geom rails the coil routes over. */
@@ -224,6 +225,12 @@ interface AssemblyLikeForTendons {
       readonly partName: string;
       readonly wrapName: string;
     }[];
+    /** Ordered route (connector refs / wrap refs); replaces `wrapGeoms`. */
+    readonly via?: readonly (string | { readonly wrap: { readonly partName: string; readonly wrapName: string } })[];
+    readonly strapWidthMm?: number;
+    readonly strapWidthAxis?: Vec3;
+    readonly material?: { readonly baseColor: string; readonly metalness?: number; readonly roughness?: number };
+    readonly texture?: { readonly path: string; readonly periodMm?: number };
   }[];
   __parts(): readonly {
     readonly name: string;
@@ -574,6 +581,8 @@ interface TendonPath {
   fromWorld: Vec3;
   toWorld: Vec3;
   centerline: Vec3[];
+  /** Owning-part world transform of each centerline point (strap width axis). */
+  frames: (readonly number[])[];
 }
 
 function resolveTendonPath(
@@ -602,21 +611,72 @@ function resolveTendonPath(
   // the to-anchor. With no wrapGeoms this is just [from, to], so straight
   // tendons render identically to the pre-Slice-3 path.
   const centerline: Vec3[] = [fromWorld];
-  for (const w of t.wrapGeoms ?? []) {
-    const wLocal = wrapOriginByRef.get(`${w.partName}.${w.wrapName}`);
-    const wT = transformByPart.get(w.partName);
-    if (wLocal !== undefined && wT !== undefined) {
-      centerline.push(applyMat4ToPoint(wT, wLocal));
+  const frames: (readonly number[])[] = [fromT];
+  // `via` replaces `wrapGeoms` (mutually exclusive); a connector entry is
+  // posed with its owning part's transform exactly like from/to.
+  const route = t.via !== undefined && t.via.length > 0
+    ? t.via
+    : (t.wrapGeoms ?? []).map((w) => ({ wrap: w }));
+  for (const entry of route) {
+    let local: Vec3 | undefined;
+    let partName: string | undefined;
+    if (typeof entry === 'string') {
+      local = originByRef.get(entry);
+      partName = splitConnectorRef(entry)[0];
+    } else {
+      local = wrapOriginByRef.get(`${entry.wrap.partName}.${entry.wrap.wrapName}`);
+      partName = entry.wrap.partName;
+    }
+    const wT = partName === undefined ? undefined : transformByPart.get(partName);
+    if (local !== undefined && wT !== undefined) {
+      centerline.push(applyMat4ToPoint(wT, local));
+      frames.push(wT);
     }
   }
   centerline.push(toWorld);
-  return { fromWorld, toWorld, centerline };
+  frames.push(toT);
+  return { fromWorld, toWorld, centerline, frames };
+}
+
+/** Rotate the strap width axis (given in a part frame) by that part's world transform. */
+function strapWidthDirs(t: TendonLike, path: TendonPath): Vec3[] {
+  const a = t.strapWidthAxis ?? [0, 1, 0];
+  return path.frames.map((m) => [
+    m[0] * a[0] + m[4] * a[1] + m[8] * a[2],
+    m[1] * a[0] + m[5] * a[1] + m[9] * a[2],
+    m[2] * a[0] + m[6] * a[1] + m[10] * a[2],
+  ] as Vec3);
+}
+
+function buildTendonStrap(t: TendonLike, path: TendonPath): FaceGeometry | null {
+  return buildStrapMesh({
+    points: path.centerline,
+    widthDirs: strapWidthDirs(t, path),
+    widthMm: t.strapWidthMm ?? 4,
+    thicknessMm: t.visualDiameterMm,
+    periodMm: t.texture?.periodMm ?? 4,
+  });
+}
+
+/** Tendon PBR: declared material (+ albedo texture) over the dark metallic default. */
+function tendonPbr(t: TendonLike): PBRMaterial {
+  const m = t.material;
+  const pbr: PBRMaterial = m === undefined
+    ? { baseColor: '#2a2e36', metalness: 0.85, roughness: 0.4 }
+    : {
+      baseColor: m.baseColor,
+      ...(m.metalness !== undefined ? { metalness: m.metalness } : {}),
+      ...(m.roughness !== undefined ? { roughness: m.roughness } : {}),
+    };
+  if (t.texture !== undefined) pbr.textures = { albedo: { path: t.texture.path } };
+  return pbr;
 }
 
 function buildTendonFace(t: TendonLike, path: TendonPath): FaceGeometry | null {
   // P10: coil tendons sweep an 8-facet tube along the helix polyline;
   // line tendons fall through to the existing PR #368 cylinder path.
   const style = t.visualStyle ?? 'line';
+  if (style === 'strap') return buildTendonStrap(t, path);
   if (style === 'coil') {
     const turns = t.coilTurns ?? 10;
     const coilDiameter = t.coilDiameterMm ?? 7;
@@ -648,12 +708,7 @@ function collectTendonMeshes(
     const face = buildTendonFace(t, path);
     if (face === null) continue;
     const tendonId = `${sceneFeatureId}__tendon__${t.name}`;
-    // Dark metallic PBR — matches Studio's `TendonRenderer.tsx`.
-    const tendonMaterial: PBRMaterial = {
-      baseColor: '#2a2e36',
-      metalness: 0.85,
-      roughness: 0.4,
-    };
+    const tendonMaterial = tendonPbr(t);
     meshes.push({
       featureId: tendonId,
       // Reuse the SceneBackend's feature-kind so the renderer's existing

@@ -8,12 +8,20 @@ import type { Connector } from '../mates/connector';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
 import {
   TENDON_DEFAULT_COIL_DIAMETER_MM,
+  TENDON_DEFAULT_STRAP_THICKNESS_MM,
+  type TendonVisualStyle,
   TENDON_DEFAULT_COIL_TURNS,
   TENDON_DEFAULT_VISUAL_DIAMETER_MM,
   TENDON_DEFAULT_VISUAL_STYLE,
   type TendonOptions,
   type TendonWrapRef,
 } from '../mates/tendon';
+import {
+  normalizeTendonActuator,
+  normalizeTendonLook,
+  normalizeTendonStrap,
+  resolveTendonVia,
+} from './assemblyTendonRoute';
 import { validateWorkspaceTargetOpts, type WorkspaceTargetOpts } from '../mates/workspaceTarget';
 import type {
   AssemblyConnectorRef,
@@ -422,16 +430,16 @@ function normalizeTendonCoilFields(
   name: string,
   opts: TendonOptions,
   visualDiameter: number,
-): { visualStyle: 'line' | 'coil'; coilTurns: number; coilDiameter: number } {
+): { visualStyle: TendonVisualStyle; coilTurns: number; coilDiameter: number } {
   // P10: coil-visual-style fields. `visualStyle: 'line'` (default)
   // ignores `coilTurns` / `coilDiameterMm`; `'coil'` validates both.
   const visualStyle = opts.visualStyle ?? TENDON_DEFAULT_VISUAL_STYLE;
-  if (visualStyle !== 'line' && visualStyle !== 'coil') {
+  if (visualStyle !== 'line' && visualStyle !== 'coil' && visualStyle !== 'strap') {
     throw new KernelError(
       'feature.invalid-args',
-      `assembly.tendon.invalid-visual-style: tendon '${name}' visualStyle must be 'line' or 'coil'; got ${formatScalarForError(visualStyle as unknown as number)}.`,
+      `assembly.tendon.invalid-visual-style: tendon '${name}' visualStyle must be 'line', 'coil' or 'strap'; got ${formatScalarForError(visualStyle as unknown as number)}.`,
       undefined,
-      `invalid-args.assembly.tendon-invalid-visual-style — pass visualStyle: 'line' for a straight cylinder (default) or 'coil' for an Anglepoise-style helical spring.`,
+      `invalid-args.assembly.tendon-invalid-visual-style — pass visualStyle: 'line' for a straight cylinder (default), 'coil' for an Anglepoise-style helical spring, or 'strap' for a flat braided strap.`,
     );
   }
   const coilTurns = opts.coilTurns ?? TENDON_DEFAULT_COIL_TURNS;
@@ -470,11 +478,14 @@ function normalizeTendonCoilFields(
 function normalizeTendonFields(name: string, opts: TendonOptions): {
   damping: number;
   visualDiameter: number;
-  visualStyle: 'line' | 'coil';
+  visualStyle: TendonVisualStyle;
   coilTurns: number;
   coilDiameter: number;
 } {
-  if (!Number.isFinite(opts.restLengthMm) || opts.restLengthMm <= 0) {
+  // An `actuator` tendon is an inextensible driven cable: spring fields are
+  // optional there, but still validated when given.
+  const springOptional = opts.actuator !== undefined;
+  if (!(springOptional && opts.restLengthMm === undefined) && (!Number.isFinite(opts.restLengthMm) || (opts.restLengthMm as number) <= 0)) {
     throw new KernelError(
       'feature.invalid-args',
       `assembly.tendon.invalid-rest-length: tendon '${name}' restLengthMm must be a positive finite number; got ${formatScalarForError(opts.restLengthMm)}.`,
@@ -482,7 +493,7 @@ function normalizeTendonFields(name: string, opts: TendonOptions): {
       `invalid-args.assembly.tendon-invalid-rest-length — pass restLengthMm: <positive mm>. Typical Anglepoise rest length is 25-50 mm depending on the joint.`,
     );
   }
-  if (!Number.isFinite(opts.stiffnessNmm) || opts.stiffnessNmm <= 0) {
+  if (!(springOptional && opts.stiffnessNmm === undefined) && (!Number.isFinite(opts.stiffnessNmm) || (opts.stiffnessNmm as number) <= 0)) {
     throw new KernelError(
       'feature.invalid-args',
       `assembly.tendon.invalid-stiffness: tendon '${name}' stiffnessNmm must be a positive finite number; got ${formatScalarForError(opts.stiffnessNmm)}.`,
@@ -499,7 +510,8 @@ function normalizeTendonFields(name: string, opts: TendonOptions): {
       `invalid-args.assembly.tendon-invalid-damping — pass dampingNsmm: <non-negative N·s/mm>, or omit it to default to 0.`,
     );
   }
-  const visualDiameter = opts.visualDiameterMm ?? TENDON_DEFAULT_VISUAL_DIAMETER_MM;
+  const visualDiameter = opts.visualDiameterMm
+    ?? (opts.visualStyle === 'strap' ? TENDON_DEFAULT_STRAP_THICKNESS_MM : TENDON_DEFAULT_VISUAL_DIAMETER_MM);
   if (!Number.isFinite(visualDiameter) || visualDiameter <= 0) {
     throw new KernelError(
       'feature.invalid-args',
@@ -606,19 +618,28 @@ export function recordTendon(state: AssemblyState, name: string, opts: TendonOpt
     );
   }
   const { damping, visualDiameter, visualStyle, coilTurns, coilDiameter } = normalizeTendonFields(name, opts);
+  const via = resolveTendonVia(state, name, opts);
   const wrapGeoms = resolveTendonWrapGeoms(state, name, opts);
+  const actuator = normalizeTendonActuator(name, opts);
+  const strap = normalizeTendonStrap(name, opts);
+  const look = normalizeTendonLook(name, opts);
   state.tendons.push({
     name,
     from: opts.from,
     to: opts.to,
-    restLengthMm: opts.restLengthMm,
-    stiffnessNmm: opts.stiffnessNmm,
+    ...(opts.restLengthMm !== undefined ? { restLengthMm: opts.restLengthMm } : {}),
+    ...(opts.stiffnessNmm !== undefined ? { stiffnessNmm: opts.stiffnessNmm } : {}),
     dampingNsmm: damping,
     visualDiameterMm: visualDiameter,
     visualStyle,
     coilTurns,
     coilDiameterMm: coilDiameter,
     wrapGeoms,
+    via,
+    ...(actuator !== undefined ? { actuator } : {}),
+    strapWidthMm: strap.widthMm,
+    strapWidthAxis: strap.widthAxis,
+    ...look,
   });
 }
 
