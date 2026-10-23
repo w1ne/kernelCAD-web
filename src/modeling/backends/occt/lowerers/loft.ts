@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
-import { loftSegmentedFromSketches } from '../../../../kernel/backends/occt/segmentedLoft';
+import { loftSegmentedFromSketches, loftSkinContinuityShortfalls } from '../../../../kernel/backends/occt/segmentedLoft';
 import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
 import { invalidArgs } from '../../../../shared/intent/invalidArgs';
 import { isCurve3DMetadata } from '../../../../shared/intent/curve3dRecord';
@@ -214,6 +214,20 @@ function buildSegmentedLoftBranch(
       hintSlug: 'invalid-args.loft.segmented-with-rails',
     });
   }
+  if (ruled && segmented.continuity !== 'G0') {
+    // A ruled skin is straight between stations, so every station is a
+    // crease: G1/G2 cannot hold. Capture rejects a literal `ruled: true`;
+    // this catches a ParamRef that evaluated to true.
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.loft.continuity-unresolved',
+      featureId: r.id,
+      severity: 'error',
+      message: `loft: continuity '${segmented.continuity}' cannot hold with ruled: true (ruled stations are C0 creases).`,
+      hint: HINT_TEMPLATES['feature.loft.continuity-unresolved'].template,
+    });
+    return { handled: true, shape: undefined };
+  }
   if (segmented.mode === 'sewn' && segmented.continuity !== 'G0') {
     ctx.diagnostics.push({
       target: 'export-occt',
@@ -223,7 +237,7 @@ function buildSegmentedLoftBranch(
       message: `loft: continuity '${segmented.continuity}' cannot be enforced across independently sewn spans; building one multi-span skin instead of mode 'sewn'.`,
       hint: "Use continuity: 'G0' with mode: 'sewn' for the fast C0 path, or drop mode to accept the single smooth skin.",
     });
-    return { handled: true, shape: buildLoftFromSketches(ctx, r, sketches, planes, false, meta) };
+    return { handled: true, shape: buildSmoothSkin(ctx, r, sketches, planes, meta, segmented.continuity) };
   }
   if (segmented.mode === 'sewn') {
     return {
@@ -231,7 +245,38 @@ function buildSegmentedLoftBranch(
       shape: buildSegmentedSewnLoft(ctx, r, sketches, planes, ruled, meta, segmented.spanSize ?? 3),
     };
   }
-  return { handled: true, shape: buildLoftFromSketches(ctx, r, sketches, planes, false, meta) };
+  if (segmented.continuity === 'G0') {
+    return { handled: true, shape: buildLoftFromSketches(ctx, r, sketches, planes, ruled, meta) };
+  }
+  return { handled: true, shape: buildSmoothSkin(ctx, r, sketches, planes, meta, segmented.continuity) };
+}
+
+/** Single multi-span skin for G1/G2, then verify the grade it actually has:
+ *  a face that does not reach it fails the feature with
+ *  `feature.loft.continuity-unresolved` instead of reporting the requested
+ *  grade unchecked. */
+function buildSmoothSkin(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  sketches: OcctBackend[],
+  planes: LoftPlane[],
+  meta: LoftMeta | undefined,
+  continuity: 'G1' | 'G2',
+): ShapeBackend | undefined {
+  const shape = buildLoftFromSketches(ctx, r, sketches, planes, false, meta);
+  if (shape === undefined) return undefined;
+  const shortfalls = loftSkinContinuityShortfalls(shape as OcctBackend, continuity);
+  if (shortfalls.length === 0) return shape;
+  const listed = shortfalls.slice(0, 5).map((s) => `face ${s.faceIndex}: ${s.got}`).join(', ');
+  ctx.diagnostics.push({
+    target: 'export-occt',
+    code: 'feature.loft.continuity-unresolved',
+    featureId: r.id,
+    severity: 'error',
+    message: `loft: requested ${continuity} across stations, but ${shortfalls.length} face(s) of the skin are lower (${listed}).`,
+    hint: HINT_TEMPLATES['feature.loft.continuity-unresolved'].template,
+  });
+  return undefined;
 }
 
 /**
