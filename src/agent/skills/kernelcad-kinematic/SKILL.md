@@ -1,6 +1,6 @@
 ---
 name: kernelcad-kinematic
-description: Use when verifying whether a moving assembly is buildable — sampled-pose collision sweeps across joint ranges, IK reachability for end-effector targets, mounting-hole fastener consistency, and static-load capacity on cantilever-shaped parts. Loads alongside kernelcad-authoring to gate design-time mechanism feasibility.
+description: Use when verifying whether a moving assembly is buildable — sampled-pose collision sweeps across joint ranges, IK reachability for end-effector targets, mounting-hole fastener consistency, and static-load capacity on cantilever-shaped parts, and closed-loop linkages (four-bar, slider-crank, scissor, over-center latch) with branch-flip and lockup findings. Loads alongside kernelcad-authoring to gate design-time mechanism feasibility.
 ---
 
 # kernelcad-kinematic — feasibility gates for moving assemblies
@@ -45,7 +45,7 @@ script. The same surface is reachable from host code via `import * as kinematic 
 |------|-------------------|-----------------|
 | `kinematic.checkMountingHoleConsistency(arm)` | Do fastener holes match across all mates? | `kinematic.mounting-hole.diameter-mismatch` (K9) |
 | `kinematic.checkSweptCollision(arm, opts)` | Does any link pair penetrate across the swept range? | `kinematic.collision.swept` (K1), `kinematic.collision.swept.sample-density-warning` (K2) |
-| `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5) |
+| `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5, analytical IK on a chain that is not closed-form solvable) |
 | `kinematic.checkLoadCapacity(arm, loads, opts)` | Will any beam-shaped element exceed yield under these loads? | `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8) |
 | `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `kinematic.static-hold.no-actuator-declared` |
 | `kinematic.sweepTolerance({ code\|file, params, gates })` | Does the mechanism still pass the standard gates across a param's tolerance range? | `kinematic.sweep-tolerance.combo-cap-exceeded` (plus whatever the swept gates emit per combo) |
@@ -110,7 +110,11 @@ call to confirm.
 | K2 `kinematic.collision.swept.sample-density-warning` | `fix-arg` (`opts.range`) | Halve the step size OR widen the range |
 | K3 `kinematic.unreachable` | conditional by `axis` | `axis: 'position' \| 'both'` → restructure (lengthen link, add DOF, move target). `axis: 'orientation'` → relax orientation tolerance or drop the orientation constraint |
 | K4 `kinematic.reachability.iteration-cap-hit` | `fix-arg` (`opts.maxIterations`) | Bump iterations OR relax tolerances; inspect `closestApproach` to choose |
-| K5 `kinematic.solver.unsupported-config` | `rewrite-feature` | Cut the closed-loop cycle OR switch `preferSolver: 'numeric'`; closed-loop kinematics is a separate slice |
+| K5 `kinematic.solver.unsupported-config` | `rewrite-feature` | Switch `preferSolver: 'numeric'`: the closed-form solver takes serial spherical-wrist chains only (closed loops go through the numeric path) |
+| `kinematic.loop.lockup` | `rewrite-feature` | The loop cannot close past the named pose (dead point / range limit). Limit the driven range to the last closed pose, or change link lengths |
+| `kinematic.loop.branch-flip` | `rewrite-feature` | The loop went over center (or a `loopMode` pin could not hold). If intended, that pose IS the over-center point; else narrow the range or pin the branch |
+| `kinematic.loop.mobility-mismatch` | `fix-arg` (`poses`) | Drive exactly as many loop joints as `mobility` reports (`solve_mates` → `loop.mobility[].independent` lists a valid set) |
+| `kinematic.loop.branch-ambiguous` | `rewrite-feature` | The loop is modeled flat/straight; add `arm.loopMode(loop, { joint, sign })` or model it away from the singular pose |
 | K6 `kinematic.load-exceeds-yield` | `rewrite-feature` | Thicken the cross-section, change material, shorten the moment arm |
 | K7 `kinematic.load.beam-not-applicable` | `fix-arg` (`crossSection`) | Add the part's `crossSection` declaration; only beam-shaped parts qualify for the closed-form path |
 | K8 `kinematic.no-material-declared` | `fix-arg` (`opts.materials`) | Add `materials: { partName: { material: 'steel' \| 'aluminum' \| 'pla' \| 'abs' \| 'pet' } }` for every loaded part |
@@ -166,20 +170,57 @@ timeline-based proves the choreographed cycle is safe and renders it.
 
 These four calls work on any moving assembly, not just robot arms:
 
-- **Linkages** — 4-bar, scissor jacks (closed-loop → K5 /
-  `assembly.solver.did-not-converge`; cut to an open chain to use
-  checkSweptCollision — industrial tables: `lookup_cookbook("scissor lift closed loop")`)
+- **Linkages** — 4-bar, slider-crank, scissor jacks, toggle clamps: author
+  the real closed loop with mates and drive only the input joint (see
+  "Closed loops" below; `09-four-bar-loop-swept`)
 - **Latches** — over-center, pawl-ratchet (`checkSweptCollision` over the
-  latch handle; `checkReachable` for the locking-pin engagement target)
+  latch handle reports the over-center point; `checkReachable` for the
+  locking-pin engagement target — `06-over-center-latch-reachable`)
 - **Hinges** — laptop clamshell, butterfly knife (`checkSweptCollision` over
   the hinge angle)
 - **Watch movements** — gear-train clearance, escapement engagement
   (`checkSweptCollision` over the escape-wheel rotation; `checkLoadCapacity`
   for the mainspring torque)
-- **Scissor jacks** — `checkSweptCollision` over the lift parameter; the
-  closed-loop variant is rejected by K5 — author the open-chain leg
-  (`04-scissor-jack-swept`) or the production open-chain table
-  (`lookup_cookbook("scissor lift closed loop")`); do not invent `joint.scissorLift`
+- **Scissor jacks** — the true closed loop (two crossed links, two sliders)
+  swept over the lift angle (`04-scissor-jack-swept`); do not invent
+  `joint.scissorLift`
+
+## Closed loops
+
+Closed mate loops are solved, not refused. The solver builds a spanning tree
+from the grounded (first) part; every mate the tree leaves out closes one
+loop, and **the loop is named after that mate**. Closure of the cut mate is a
+residual (revolute: pivots meet and axes align; prismatic: no rotation, no
+off-axis offset; ball: pivots meet; fastened: all six), solved by damped least
+squares.
+
+- **Drive only the input.** Pose values you pass (`solvedModel(poses)`,
+  sweep joint, IK) are driven; the other loop mates are solved. Drive as many
+  joints as the loop's mobility (rank of the closure Jacobian) — `solve_mates`
+  reports `loop.mobility[]` with `mobility`, the spatial Grübler count,
+  `drivenDof` and `independent` (a valid set of joints to drive). Over-driven
+  loops whose values disagree fail with `kinematic.loop.mobility-mismatch`.
+- **Author the as-built pose closed** (mate `pose` values or connector
+  origins that already assemble), away from a flat or straight pose. Capture-
+  time poses are the seed, never driven.
+- **Continuation.** A solve far from the as-built pose marches there in ≤ 5°
+  steps; sweeps (`checkSweptCollision`, `motion-load`, IK) seed each pose from
+  the previous one. The mechanism stays in the assembly mode it was modeled
+  in. Crossing a singular configuration stops the sweep with
+  `kinematic.loop.branch-flip` (joint + pose) — it never switches silently.
+  A pose the loop cannot reach stops it with `kinematic.loop.lockup`.
+- **Pin a branch** with `arm.loopMode(loopName, { joint, sign: '+' | '-' })`
+  for a loop modeled flat, or to make "goes over center" a finding: the elbow
+  at `joint` (a revolute mate on that loop) must keep its side. `'+'` = the
+  turn from the link on the joint's `a` side to the link on its `b` side is
+  counter-clockwise about the `a` connector's axis. A sweep that carries the
+  elbow straight and over reports `kinematic.loop.branch-flip` at that pose —
+  for an over-center latch that pose is the design's over-center point.
+- Loads on a joint inside a loop are statically indeterminate: `motion-load`
+  poses the loop but reports that joint `mechanism.load.not-resolved`.
+- The joint graph (`arm.revolute/.prismatic/.ball`) closes loops too: a part
+  with a second parent joint. Child frames sit at their joint, so author the
+  links in the assembled configuration (every joint at 0 closes).
 
 ## Mechanism delivery — non-bypassable
 
@@ -244,7 +285,7 @@ Worked example: `examples/kinematic/luxo-lamp.kcad.ts` ships with `joint.clevis(
 
 ## Cookbook
 
-Eight runnable snippets live in `cookbook/`. Each begins with a `// expected:`
+Nine runnable snippets live in `cookbook/`. Each begins with a `// expected:`
 header listing the diagnostic codes the run should emit. Snippets are
 self-contained `.kcad.ts` files that build their own fixture, run one or two
 `kinematic.check*` calls, and assert the expected outcome in-script with
@@ -256,15 +297,19 @@ self-contained `.kcad.ts` files that build their own fixture, run one or two
    nearby target with a seed-pose hint
 3. `03-cantilever-beam-stress.kcad.ts` — steel-vs-PLA cantilever beam stress
    (steel passes; PLA fires K6)
-4. `04-scissor-jack-swept.kcad.ts` — single-leg cut of a scissor jack swept
-   across the lift parameter (the closed-loop variant would emit K5; production
-   tables → cookbook `scissor-lift-closed-loop`)
+4. `04-scissor-jack-swept.kcad.ts` — closed-loop scissor jack (two loops,
+   mobility 1) swept over the lift angle; platform height checked against
+   `L·sin(lift)`
 5. `05-clamshell-hinge-swept.kcad.ts` — laptop-clamshell hinge across
    [0°, 135°]; K1 fires when the lid touches the table
-6. `06-over-center-latch-reachable.kcad.ts` — over-center latch
-   locking-pin reachability with self-collision avoidance
+6. `06-over-center-latch-reachable.kcad.ts` — over-center draw latch as a
+   closed slider-crank: IK drives only the handle; a `loopMode` pin makes
+   the over-center point (4.41°) a `kinematic.loop.branch-flip` finding
 7. `07-static-hold-servo-arm.kcad.ts` — servo-driven shoulder joint;
    generous actuator passes, undersized actuator fires
    `assembly.joint.static-hold.exceeded`
 8. `08-sweep-tolerance-clearance.kcad.ts` — swept clearance-gap param;
    the interference gate flips pass→fail past the closing threshold
+9. `09-four-bar-loop-swept.kcad.ts` — closed-loop four-bar driven by the
+   crank only; the first crank angle where the rocker hits a stop matches
+   the closed form

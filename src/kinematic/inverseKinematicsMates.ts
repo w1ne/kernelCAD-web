@@ -89,6 +89,18 @@ function articulatedMates(arm: Assembly): MateRecord[] {
   );
 }
 
+/** Mates the IK may drive. On a closed loop only the loop's independent
+ *  joints are driven (the loop solver poses the rest), so the IK never
+ *  over-drives a loop. */
+async function independentMates(arm: Assembly): Promise<MateRecord[]> {
+  const all = articulatedMates(arm);
+  const loop = (await solveMates(arm)).loop;
+  if (loop === undefined) return all;
+  const onLoop = new Set(loop.loops.flatMap((l) => l.joints));
+  const independent = new Set(loop.mobility.flatMap((m) => m.independent));
+  return all.filter((m) => !onLoop.has(m.name) || independent.has(m.name));
+}
+
 /** World position of the tip point at `poses`, via the mate solver. */
 export async function mateTipWorld(
   arm: Assembly,
@@ -113,7 +125,7 @@ export async function solveNumericMates(
   seed: NumericPoses,
   maxIterations: number,
 ): Promise<NumericIKResult> {
-  const dof = articulatedMates(arm);
+  const dof = await independentMates(arm);
   const posTolMm = target.positionToleranceMm ?? 0.5;
   const q: Record<string, number> = {};
   for (const m of dof) q[m.name] = initialPose(m, seed);

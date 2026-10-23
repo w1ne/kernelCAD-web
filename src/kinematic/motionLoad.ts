@@ -19,8 +19,10 @@
 //   5. The wrench splits into actuator torque, axial force and radial force
 //      over the declared coaxial supports (`splitJointLoad`).
 //
-// v1 limits: rigid bodies, tree mate graphs (a joint inside a closed loop is
-// reported as not resolved), revolute driven joints only, no friction, no
+// v1 limits: rigid bodies; closed loops are posed (continuation along the
+// samples, stopping at a branch flip or lockup) but a joint inside a closed
+// loop has statically indeterminate loads and is reported as not resolved;
+// revolute driven joints only, no friction, no
 // contact; accelerations depend on `sampleMs` because a keyframed track has
 // velocity steps at its keys.
 
@@ -44,6 +46,7 @@ import { clampToParam, currentValue, evaluate, exprOf } from '../modeling/runtim
 import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/registry';
 import { Transform } from '../shared/runtime/se3';
 import { localPartMass, type PartMassLocal } from './partMass';
+import { LoopContinuation } from './loopContinuation';
 import {
   add, dot, rotateInertia, scale, splitJointLoad, sub, subtreeJointWrench, unit,
   type BodyLoadState, type M3, type PointLoad, type SupportStation, type V3,
@@ -198,7 +201,8 @@ export async function checkMotionLoad(arm: Assembly, opts: MotionLoadOpts = {}):
   const diagnostics: KinematicDiagnostic[] = [];
   const prepared = await prepareStudy(arm, opts, mode);
   if (typeof prepared === 'string') return emptyResult(mode, quasiStatic, prepared, diagnostics);
-  const { intents, masses, samples, scene, restPlacements, parts } = prepared;
+  const { intents, masses, samples, scene, restPlacements, parts, loopFindings } = prepared;
+  diagnostics.push(...loopFindings);
   const kin = quasiStatic ? undefined : finiteDifferences(samples, parts, stepSeconds(samples, opts.sampleMs));
   const ctx: JointCtx = { arm, masses, samples, kin, parts, gravity: (opts.gravity ?? DEFAULT_GRAVITY) as V3, loads: opts.loads ?? [], mode, scene, restPlacements };
   const joints: MotionLoadJointResult[] = [];
@@ -217,6 +221,9 @@ interface PreparedStudy {
   /** The lowered rest scene and the rest-pose mate placements. */
   readonly scene: SceneBackend;
   readonly restPlacements: ReadonlyMap<string, Transform>;
+  /** Closed-loop findings from continuation along the samples; a branch
+   *  flip or lockup ends the sampled motion at that pose. */
+  readonly loopFindings: KinematicDiagnostic[];
 }
 
 /** Lower, weigh and sample; a string is the reason the study cannot run. */
@@ -228,7 +235,8 @@ async function prepareStudy(arm: Assembly, opts: MotionLoadOpts, mode: 'tracks' 
   const masses = partMasses(arm, scene);
   const poses = mode === 'range' ? rangePoses(arm, intents, opts.rangeSamples) : trackPoses(arm, opts.sampleMs);
   const parts = partIndex(arm, masses);
-  const samples = await solveSamples(arm, scene, masses, parts, poses);
+  const loopFindings: KinematicDiagnostic[] = [];
+  const samples = await solveSamples(arm, scene, masses, parts, poses, loopFindings);
   if (samples.length === 0) return 'Loads not checked: the mates did not solve at any sampled pose.';
   let restPlacements: ReadonlyMap<string, Transform>;
   try {
@@ -236,7 +244,7 @@ async function prepareStudy(arm: Assembly, opts: MotionLoadOpts, mode: 'tracks' 
   } catch {
     return 'Loads not checked: the mates did not solve at the rest pose.';
   }
-  return { intents, masses, samples, scene, restPlacements, parts };
+  return { intents, masses, samples, scene, restPlacements, parts, loopFindings };
 }
 
 /** Timeline step between the first two samples, s. */
@@ -355,14 +363,29 @@ function partIndex(arm: Assembly, masses: ReadonlyMap<string, PartMassLocal>): P
   return { names, index: new Map(names.map((n, i) => [n, i])), massNames, massIndex: new Map(massNames.map((n, i) => [n, i])) };
 }
 
-async function solveSamples(arm: Assembly, scene: SceneBackend, masses: Map<string, PartMassLocal>, parts: PartIndex, poses: readonly PoseAt[]): Promise<Sample[]> {
+async function solveSamples(
+  arm: Assembly,
+  scene: SceneBackend,
+  masses: Map<string, PartMassLocal>,
+  parts: PartIndex,
+  poses: readonly PoseAt[],
+  loopFindings: KinematicDiagnostic[],
+): Promise<Sample[]> {
+  const continuation = new LoopContinuation(arm);
   const atOf = partAtFor(arm.__mates(), arm.__parts(), arm.__session().paramTable);
   const restT = new Map(scene.parts.map((p) => [p.name, p.worldTransform]));
   const out: Sample[] = [];
   for (const p of poses) {
     let solved: ReadonlyMap<string, Transform>;
     try {
-      const r = await solveMates(arm, p.pose);
+      // Continuation: each sample seeds the next, so a closed loop follows
+      // its as-built branch; a flip or lockup ends the motion there.
+      const step = await continuation.step(p.pose);
+      if (step.stop !== undefined) {
+        loopFindings.push(step.stop);
+        break;
+      }
+      const r = step.result;
       if (r.status !== 'solved' && r.status !== 'redundant-ok') continue;
       solved = r.poses;
     } catch {
@@ -382,6 +405,7 @@ async function solveSamples(arm: Assembly, scene: SceneBackend, masses: Map<stri
     });
     out.push({ ...(p.tMs !== undefined ? { tMs: p.tMs } : {}), pose: p.pose, placements, frames });
   }
+  loopFindings.unshift(...continuation.advisories());
   return out;
 }
 

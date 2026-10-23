@@ -3,6 +3,7 @@
 import type { CaptureSession } from './captureSession';
 import type { MateCouplingRecord } from '../mates/coupledPoses';
 import type { MateRecord } from '../mates/mate';
+import type { LoopPin } from '../../shared/kinematics/loopClosure';
 import type { TendonRecord } from '../mates/tendon';
 import type { WorkspaceTargetRecord } from '../mates/workspaceTarget';
 import type { PhysicalUseCaseRecord } from '../mates/physicalUseCase';
@@ -39,6 +40,8 @@ export interface AssemblyState {
   readonly joints: AssemblyJointStored[];
   readonly mates: MateRecord[];
   readonly mateCouplings: MateCouplingRecord[];
+  /** `loopMode(...)` branch pins, in declaration order. */
+  readonly loopModes: LoopPin[];
   readonly tendons: TendonRecord[];
   readonly mechanicalJointIntents: MechanicalJointIntentRecord[];
   readonly jointSupportIntents: JointSupportIntentRecord[];
@@ -74,6 +77,7 @@ export function createAssemblyState(name: string, session: CaptureSession): Asse
     joints: [],
     mates: [],
     mateCouplings: [],
+    loopModes: [],
     tendons: [],
     mechanicalJointIntents: [],
     jointSupportIntents: [],

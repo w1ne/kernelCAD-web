@@ -89,7 +89,9 @@ export interface MountingHoleResult extends KinematicResultBase {
 // ===== checkSweptCollision =====
 
 export interface SweptCollisionOpts {
-  /** Joint name to sweep. Omit to walk every declared joint. (v1 accepts
+  /** Joint or articulated mate name to sweep (the only driven joint; on a
+   *  closed loop the loop solver poses the rest). Omit to walk every
+   *  joint-graph joint and every articulated mate with limits. (v1 accepts
    *  string only; the type position is widened in a follow-up slice once
    *  the Query DSL ships — see workstream notes.) */
   readonly joint?: string;

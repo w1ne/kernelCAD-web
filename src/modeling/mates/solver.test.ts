@@ -141,7 +141,7 @@ describe('solveMates — closed loop (Newton-Raphson)', () => {
     expect(r.status).toBe('over-constrained');
   });
 
-  it('classifies an articulated loop that closes at the default pose as redundant-ok when opted in', async () => {
+  it('solves an articulated loop that closes at the default pose', async () => {
     // Parallelogram 4-bar linkage authored so the loop closes exactly at
     // pose 0: ground pivots 50 apart, crank/rocker pivots 25 apart, coupler
     // pivots 50 apart, all revolute about +Y. The loop-closure residual is
@@ -165,23 +165,28 @@ describe('solveMates — closed loop (Newton-Raphson)', () => {
     arm.mate('crank_coupler', 'crank.couplerPivot', 'coupler.crankPivot', 'revolute');
     arm.mate('coupler_rocker', 'coupler.rockerPivot', 'rocker.couplerPivot', 'revolute');
     arm.mate('rocker_ground', 'rocker.groundPivot', 'ground.rockerPivot', 'revolute');
-    const r = await solveMates(arm, undefined, { acceptConsistentArticulatedLoops: true });
-    expect(r.status).toBe('redundant-ok');
+    const r = await solveMates(arm);
+    expect(r.status).toBe('solved');
     expect(r.poses.get('coupler')!.decomposeToTranslateAndRotate().translate[2]).toBeCloseTo(25);
     expect(r.poses.get('rocker')!.decomposeToTranslateAndRotate().translate[0]).toBeCloseTo(50);
-    // Default (no opt-in) keeps the conservative classification so the
-    // solved-pose consumers (verification sweeps, interference gates) are
-    // not silently opted in by a solver-level behavior change.
-    const conservative = await solveMates(arm);
-    expect(conservative.status).toBe('did-not-converge');
+    // BFS from ground reaches the coupler through the crank first, so the
+    // coupler–rocker mate closes the loop and names it.
+    expect(r.loop?.loops.map((l) => l.name)).toEqual(['coupler_rocker']);
+    expect(r.loop?.mobility[0].mobility).toBe(1);
+    // Driving the crank keeps the parallelogram: the coupler stays parallel
+    // to the ground and translates with the crank tip (25 mm crank, +Y axis).
+    const driven = await solveMates(arm, { crank_ground: 30 });
+    expect(driven.status).toBe('solved');
+    const couplerT = driven.poses.get('coupler')!.decomposeToTranslateAndRotate();
+    expect(couplerT.rotateDeg).toBeCloseTo(0, 6);
+    expect(couplerT.translate[0]).toBeCloseTo(25 * Math.sin((30 * Math.PI) / 180), 6);
+    expect(couplerT.translate[2]).toBeCloseTo(25 * Math.cos((30 * Math.PI) / 180), 6);
   });
 
-  it('reports did-not-converge for an articulated loop whose default pose does NOT close', async () => {
-    // Same parallelogram topology but the ground-side rocker pivot is
-    // authored 10mm away from where the loop lands at pose 0 — the
-    // loop-closure residual is non-zero and the articulated Newton path is
-    // not wired yet, so the solver must refuse rather than ship a broken
-    // configuration.
+  it('closes an articulated loop whose default pose does not close by moving the free joints', async () => {
+    // Same topology but the ground-side rocker pivot is authored 10 mm away
+    // from where the loop lands at pose 0. Nothing is driven, so the loop
+    // solver moves the three free joints the least it can to close it.
     const { arm, kcad } = makeArm();
     const ground = arm.part('ground', kcad.box(60, 10, 10));
     const crank = arm.part('crank', kcad.box(10, 10, 35));
@@ -199,9 +204,42 @@ describe('solveMates — closed loop (Newton-Raphson)', () => {
     arm.mate('crank_coupler', 'crank.couplerPivot', 'coupler.crankPivot', 'revolute');
     arm.mate('coupler_rocker', 'coupler.rockerPivot', 'rocker.couplerPivot', 'revolute');
     arm.mate('rocker_ground', 'rocker.groundPivot', 'ground.rockerPivot', 'revolute');
-    const r = await solveMates(arm, undefined, { acceptConsistentArticulatedLoops: true });
-    expect(r.status).toBe('did-not-converge');
+    const r = await solveMates(arm);
+    expect(r.status).toBe('solved');
+    expect(r.loopResiduals?.[0].mm).toBeLessThan(1e-5);
   });
+
+  it('reports lockup when the driven crank asks for a pose the loop cannot reach', async () => {
+    // Ground 60, crank 25, coupler 50, rocker 25: s + l = 85 > p + q = 75,
+    // so the crank cannot turn all the way round.
+    const { arm, kcad } = makeArm();
+    const ground = arm.part('ground', kcad.box(60, 10, 10));
+    const crank = arm.part('crank', kcad.box(10, 10, 35));
+    const coupler = arm.part('coupler', kcad.box(60, 10, 10));
+    const rocker = arm.part('rocker', kcad.box(10, 10, 35));
+    ground.connector('crankPivot', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+    crank.connector('groundPivot', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+    crank.connector('couplerPivot', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 25] }, axis: [0, 1, 0] });
+    coupler.connector('crankPivot', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+    coupler.connector('rockerPivot', { type: 'axis', origin: { kind: 'vec3', value: [50, 0, 0] }, axis: [0, 1, 0] });
+    rocker.connector('couplerPivot', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 25] }, axis: [0, 1, 0] });
+    rocker.connector('groundPivot', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+    ground.connector('rockerPivot', { type: 'axis', origin: { kind: 'vec3', value: [60, 0, 0] }, axis: [0, 1, 0] });
+    arm.mate('crank_ground', 'ground.crankPivot', 'crank.groundPivot', 'revolute');
+    arm.mate('crank_coupler', 'crank.couplerPivot', 'coupler.crankPivot', 'revolute');
+    arm.mate('coupler_rocker', 'coupler.rockerPivot', 'rocker.couplerPivot', 'revolute');
+    arm.mate('rocker_ground', 'rocker.groundPivot', 'ground.rockerPivot', 'revolute');
+    // |B − O4| = b + c = 75 at sin θ = −0.467: θ = −90° is past the limit.
+    const r = await solveMates(arm, { crank_ground: -90 });
+    expect(r.status).toBe('did-not-converge');
+    const lock = r.loop?.diagnostics.find((d) => d.code === 'kinematic.loop.lockup');
+    expect(lock?.loop).toBe('coupler_rocker');
+    const limit = (Math.asin(-1400 / 3000) * 180) / Math.PI;
+    expect(lock!.pose!.crank_ground as number).toBeLessThan(limit);
+    expect(lock!.pose!.crank_ground as number).toBeGreaterThan(limit - 5);
+    expect(typeof lock?.pose?.crank_ground).toBe('number');
+  });
+
 
   // T7.x will add an assembly-level did-not-converge test once T9 wires
   // pose-driven articulation (revolute/prismatic) — closed loops over

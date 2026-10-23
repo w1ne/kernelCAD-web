@@ -10,13 +10,10 @@
 // Expected console output (last line):
 //   [smoke] swept-collision dispatch OK: cleanPoses=37, dirtyPoses>=13
 //
-// G0 NOTE (2026-05-31): joints declared via the v0.6 mate vocabulary
-// (`arm.connector(...)` + `arm.mate(..., 'revolute', ...)`) after the legacy
-// `arm.revolute(...)` was removed. The `kinematic.checkSweptCollision` entry
-// iterates `arm.__joints()` internally and returns an empty-success envelope
-// on mate-only assemblies — migrating the facade to be mate-aware is a
-// separate follow-up slice. Until then the assertions below are demoted to
-// console.log so the script renders cleanly under `kernelcad render inspect`.
+// The arm is declared with the mate vocabulary (`arm.connector(...)` +
+// `arm.mate(..., 'revolute', ...)`); `kinematic.checkSweptCollision` accepts
+// mate names as the swept joint. The results are logged rather than asserted
+// so the script renders cleanly under `kernelcad render inspect`.
 
 const arm = assembly('swept-collision-smoke');
 
@@ -73,8 +70,7 @@ console.log(
 );
 
 // 2. dirty sweep — shoulder ∈ [120°, 180°] forces the arm to pass through
-//    the base wall. Expect K1 (kinematic.collision.swept) to fire (once the
-//    facade is mate-aware).
+//    the base wall. Expect K1 (kinematic.collision.swept) to fire.
 const dirty = await kinematic.checkSweptCollision(arm, {
   joint: 'shoulder',
   range: [120, 180, 5],
@@ -86,8 +82,7 @@ console.log(
 );
 
 // 3. coarse sweep — 0..90 at step 10 = 10 samples, below the 36-sample
-//    revolute safe floor. Expect K2 sample-density-warning (once facade
-//    is mate-aware).
+//    revolute safe floor. Expect K2 sample-density-warning.
 const coarse = await kinematic.checkSweptCollision(arm, {
   joint: 'shoulder',
   range: [0, 90, 10],

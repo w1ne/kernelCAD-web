@@ -10,6 +10,8 @@
 import { KernelError } from '../../shared/intent/kernelError';
 import type { FeatureId } from '../../shared/intent/types';
 import { Transform, type Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
+import { solveLoops, type LoopJoint, type LoopSolveResult } from '../../shared/kinematics/loopClosure';
 import type { AssemblyJointStored, AssemblyPartStored } from './assembly';
 
 /**
@@ -31,16 +33,19 @@ export type NumericPoses = Record<string, number | [number, number, number]>;
  * wraps it for the in-script case (after running its own pose-shape
  * validation).
  *
- * Throws on malformed graphs (multiple parents, cycles) — same diagnostics
- * as the original Assembly.solve body.
+ * A part with several parent joints closes a kinematic loop: the first
+ * parent joint stays in the tree, the others are loop-closure joints, and
+ * the loop solver poses the joints `poses` does not drive. Throws on a
+ * directed cycle (no root) and on a pose the loop cannot reach.
  */
 export function forwardKinematics(
   parts: readonly AssemblyPartStored[],
   joints: readonly AssemblyJointStored[],
   poses: NumericPoses,
 ): Map<FeatureId, Transform> {
-  // 1. Build the parent-joint index: each part has at most one parent joint.
-  const parentJointByPart = buildParentJointIndex(joints);
+  // 1. Build the parent-joint index: each part's first parent joint is its
+  //    tree edge; any further parent joint closes a kinematic loop.
+  const { parentJointByPart, loopJoints } = buildParentJointIndex(joints);
 
   // 2. Cycle detection via DFS through joint-parent links.
   detectJointGraphCycles(parts, parentJointByPart);
@@ -48,28 +53,81 @@ export function forwardKinematics(
   // 3. Topological sort: roots first, then walk down to leaves via parent-joint links.
   const topoOrder = topoSortParts(parts, parentJointByPart);
 
-  // 4. Forward kinematics: walk in topo order, computing world transform per part.
+  // 4. Closed loops: the posed joints drive, the loop solver poses the rest.
+  if (loopJoints.length > 0) return solveJointLoops(parts, joints, poses);
+
+  // 5. Forward kinematics: walk in topo order, computing world transform per part.
   return computeWorldTransforms(topoOrder, parentJointByPart, poses);
 }
 
-/** Build the parent-joint index: each part has at most one parent joint. */
+/** True when some part has more than one parent joint (a closed loop). */
+export function jointGraphHasLoops(joints: readonly AssemblyJointStored[]): boolean {
+  return buildParentJointIndex(joints).loopJoints.length > 0;
+}
+
+/** Parent-joint index: the first parent joint of each part is its tree
+ *  edge; every later parent joint of the same part closes a loop. */
 function buildParentJointIndex(
   joints: readonly AssemblyJointStored[],
-): Map<FeatureId, AssemblyJointStored> {
+): { parentJointByPart: Map<FeatureId, AssemblyJointStored>; loopJoints: AssemblyJointStored[] } {
   const parentJointByPart = new Map<FeatureId, AssemblyJointStored>();
+  const loopJoints: AssemblyJointStored[] = [];
   for (const j of joints) {
-    if (parentJointByPart.has(j.childPartId)) {
-      const prior = parentJointByPart.get(j.childPartId)!;
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.solve: a part has two parent joints ('${prior.name}' and '${j.name}'); body-tree requires at most one.`,
-        undefined,
-        'invalid-args.solve.multi-parent — restructure with a single parent joint per part, or use fixed joints in a chain.',
-      );
-    }
-    parentJointByPart.set(j.childPartId, j);
+    if (parentJointByPart.has(j.childPartId)) loopJoints.push(j);
+    else parentJointByPart.set(j.childPartId, j);
   }
-  return parentJointByPart;
+  return { parentJointByPart, loopJoints };
+}
+
+function toLoopJoint(j: AssemblyJointStored): LoopJoint {
+  return {
+    name: j.name,
+    kind: j.kind,
+    a: j.parentPartId,
+    b: j.childPartId,
+    aOrigin: j.origin as Se3Vec3,
+    bOrigin: [0, 0, 0],
+    axis: (j.axis ?? [0, 0, 1]) as Se3Vec3,
+  };
+}
+
+/** Loop solve of a joint graph at `poses` (every posed joint is driven,
+ *  the other loop joints start from zero — the as-modeled pose — and are
+ *  solved), or undefined when the graph has no loop. */
+export function solveJointGraphLoops(
+  parts: readonly AssemblyPartStored[],
+  joints: readonly AssemblyJointStored[],
+  poses: NumericPoses,
+): LoopSolveResult | undefined {
+  const { parentJointByPart, loopJoints } = buildParentJointIndex(joints);
+  if (loopJoints.length === 0) return undefined;
+  detectJointGraphCycles(parts, parentJointByPart);
+  const topoOrder = topoSortParts(parts, parentJointByPart);
+  const roots = topoOrder.filter((p) => !parentJointByPart.has(p.id)).map((p) => ({ body: p.id as string, placement: Transform.identity() }));
+  const tree = topoOrder.flatMap((p) => {
+    const j = parentJointByPart.get(p.id);
+    return j === undefined ? [] : [toLoopJoint(j)];
+  });
+  return solveLoops({ model: { roots, tree, cuts: loopJoints.map(toLoopJoint) }, driven: poses, seed: {} });
+}
+
+function solveJointLoops(
+  parts: readonly AssemblyPartStored[],
+  joints: readonly AssemblyJointStored[],
+  poses: NumericPoses,
+): Map<FeatureId, Transform> {
+  const result = solveJointGraphLoops(parts, joints, poses)!;
+  if (result.status !== 'solved') {
+    const finding = result.diagnostics.find((d) => d.severity === 'error' || d.code === 'kinematic.loop.branch-flip');
+    return invalidArgs({
+      api: 'assembly.solve(poses)',
+      path: 'poses',
+      gotText: JSON.stringify(poses),
+      requires: `a pose the closed loop can reach (${finding?.code ?? 'kinematic.loop.lockup'}: ${finding?.message ?? 'the loop does not close'})`,
+      example: `arm.solve({ ${result.mobility[0]?.independent[0] ?? 'crank'}: 10 })`,
+    });
+  }
+  return result.transforms as Map<FeatureId, Transform>;
 }
 
 /** Cycle detection via DFS through joint-parent links. */

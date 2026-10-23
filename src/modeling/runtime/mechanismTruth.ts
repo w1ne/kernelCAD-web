@@ -46,6 +46,7 @@
 //   - Mate graph: `arm.__mates()` is the edge list, `arm.__parts()` is the
 //     node list.
 
+import { jointGraphHasLoops } from '../capture/forwardKinematics';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import type { FeatureId } from '../../shared/intent/types';
@@ -1176,7 +1177,8 @@ async function lowerAssemblySceneForPose(
   // joint (`arm.revolute(...)`); samples only name the mates they move, so
   // stamp the rest at zero, as checkSweptCollision does.
   const jointDefaults: Record<string, number | [number, number, number]> = {};
-  for (const j of arm.__joints()) {
+  // On a closed joint loop the unposed joints are solved, not zero.
+  for (const j of jointGraphHasLoops(arm.__joints()) ? [] : arm.__joints()) {
     if (j.kind === 'fixed') continue;
     jointDefaults[j.name] = j.kind === 'ball' ? [0, 0, 0] : 0;
   }

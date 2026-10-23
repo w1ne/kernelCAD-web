@@ -15,6 +15,12 @@
 //     because it predates this slice; v2 may inline the loop here once we
 //     cache the lowered SceneBackend across poses).
 //
+// Closed loops: each walk (one per swept joint) runs closed-loop
+// continuation (`loopContinuation`), seeding every pose from the previous
+// solved pose and lowering exactly that configuration. A branch flip,
+// lockup or over-driven loop ends the walk at the pose it names; the
+// finding is in `diagnostics` and later poses are not sampled.
+//
 // Diagnostic emission:
 //   - K1 kinematic.collision.swept              — one error per colliding pose
 //     (carries pose context + element=jointName for the swept joint).
@@ -28,6 +34,8 @@ import {
   type DiagnosticCode,
 } from '../shared/diagnostics/registry';
 import { enumeratePoses } from './sweptPoseEnumeration';
+import { LoopContinuation } from './loopContinuation';
+import { jointGraphHasLoops, type NumericPoses as FullPoses } from '../modeling/capture/forwardKinematics';
 import type {
   KinematicDiagnostic,
   NumericPoses,
@@ -61,7 +69,7 @@ export async function checkSweptCollision(
 ): Promise<SweptCollisionResult> {
   const diagnostics: KinematicDiagnostic[] = [];
 
-  const { poses, sparseJoints } = enumeratePoses(arm, opts);
+  const { poses, sparseJoints, walks } = enumeratePoses(arm, opts);
 
   // K2 — one warn per joint whose (range, step) was sparser than the safe
   // floor (D3: 36 revolute / 25 prismatic). The result still computes; the
@@ -82,34 +90,9 @@ export async function checkSweptCollision(
     };
   }
 
-  const collidingPoses: SweptCollidingPose[] = [];
   const epsilon = opts?.collisionToleranceMm3 ?? 0.01;
-
-  // Pre-fill every declared non-fixed joint with a zero default. The
-  // `solvedAssembly` lowerer requires a pose value for every non-fixed
-  // joint (it raises feature.invalid-args otherwise); the swept loop only
-  // varies one joint per pose, so we stamp the rest at zero so the lower
-  // succeeds and the FK still positions all parts deterministically.
-  const fullPoseDefaults: Record<string, number | [number, number, number]> = {};
-  for (const j of arm.__joints()) {
-    if (j.kind === 'fixed') continue;
-    fullPoseDefaults[j.name] = j.kind === 'ball' ? [0, 0, 0] : 0;
-  }
-
-  for (const pose of poses) {
-    const fullPose = { ...fullPoseDefaults, ...pose };
-    // detectInterferencesForPoses currently lowers the whole assembly per
-    // call — fine for v1 correctness, can be cached across poses in v2.
-    // Forward NumericPoses verbatim; the substrate consumes the same shape.
-    const pairs = await detectInterferencesForPoses(arm, fullPose, epsilon);
-    if (pairs.length === 0) continue;
-    const contacts: SweptCollisionContact[] = pairs.map((p) => ({
-      partA: p.a,
-      partB: p.b,
-      volumeMm3: p.volumeMm3,
-    }));
-    collidingPoses.push({ pose: { ...pose }, contacts });
-  }
+  const { collidingPoses, posesSampled, loopDiagnostics } = await sweepWalks(arm, walks, epsilon);
+  diagnostics.push(...loopDiagnostics);
 
   // K1 — one error record. Carries the worst-pose context (first colliding
   // pose encountered; collidingPoses[] holds the full list for the agent).
@@ -118,12 +101,84 @@ export async function checkSweptCollision(
   }
 
   return {
-    ok: collidingPoses.length === 0,
+    ok: collidingPoses.length === 0 && !loopDiagnostics.some((d) => d.severity === 'error'),
     collidingPoses,
-    posesSampled: poses.length,
+    posesSampled,
     diagnostics,
     source: 'local',
   };
+}
+
+/** Joint-graph assemblies get every non-fixed joint stamped at zero: the
+ *  `solvedAssembly` lowerer requires a pose for each, and the sweep only
+ *  varies one joint per pose. Mate poses are never prefilled — on a closed
+ *  loop a prefilled mate would be driven too and over-drive the loop. */
+function jointPoseDefaults(arm: Assembly): FullPoses {
+  const defaults: FullPoses = {};
+  // On a closed joint loop the unposed joints are solved, not zero.
+  if (jointGraphHasLoops(arm.__joints())) return defaults;
+  for (const j of arm.__joints()) {
+    if (j.kind === 'fixed') continue;
+    defaults[j.name] = j.kind === 'ball' ? [0, 0, 0] : 0;
+  }
+  return defaults;
+}
+
+/** Solved loop coordinates restricted to articulated mates (cut-joint
+ *  measurements included). */
+function loopPose(arm: Assembly, coords: Readonly<Record<string, number | readonly [number, number, number]>> | undefined): FullPoses {
+  const out: FullPoses = {};
+  if (coords === undefined) return out;
+  for (const m of arm.__mates()) {
+    const v = coords[m.name];
+    if (v === undefined || m.type === 'fastened' || m.type === 'planar') continue;
+    out[m.name] = typeof v === 'number' ? v : [v[0], v[1], v[2]];
+  }
+  return out;
+}
+
+/** Walk each pose group with closed-loop continuation. A loop finding
+ *  (branch flip, lockup, over-driven) ends that walk at the pose it names;
+ *  poses after it are not sampled. */
+async function sweepWalks(
+  arm: Assembly,
+  walks: ReadonlyArray<ReadonlyArray<NumericPoses>>,
+  epsilon: number,
+): Promise<{ collidingPoses: SweptCollidingPose[]; posesSampled: number; loopDiagnostics: KinematicDiagnostic[] }> {
+  const collidingPoses: SweptCollidingPose[] = [];
+  const loopDiagnostics: KinematicDiagnostic[] = [];
+  const defaults = jointPoseDefaults(arm);
+  const continuation = new LoopContinuation(arm);
+  const hasMates = (arm.__mates?.() ?? []).length > 0;
+  let posesSampled = 0;
+  for (const walk of walks) {
+    continuation.reset();
+    for (const pose of walk) {
+      let lowerPose: FullPoses = pose;
+      if (hasMates) {
+        const step = await continuation.step(pose);
+        if (step.stop !== undefined) {
+          loopDiagnostics.push(step.stop);
+          break;
+        }
+        // Lower exactly the configuration continuation solved: every loop
+        // coordinate is passed, so the lowerer's loop solve is already
+        // closed and cannot pick another branch.
+        lowerPose = { ...pose, ...loopPose(arm, step.result.loop?.coordinates) };
+      }
+      posesSampled++;
+      const pairs = await detectInterferencesForPoses(arm, { ...defaults, ...lowerPose }, epsilon);
+      if (pairs.length === 0) continue;
+      const contacts: SweptCollisionContact[] = pairs.map((p) => ({
+        partA: p.a,
+        partB: p.b,
+        volumeMm3: p.volumeMm3,
+      }));
+      collidingPoses.push({ pose: { ...pose }, contacts });
+    }
+  }
+  loopDiagnostics.unshift(...continuation.advisories());
+  return { collidingPoses, posesSampled, loopDiagnostics };
 }
 
 function buildSparseDensityWarn(

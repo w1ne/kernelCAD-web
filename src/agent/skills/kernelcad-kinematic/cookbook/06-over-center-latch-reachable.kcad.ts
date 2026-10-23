@@ -2,70 +2,80 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // expected: []
 //
-// Snippet 6 — non-robotics mechanism: an over-center latch driving a
-// locking-pin target with `checkReachable`. The latch is modeled as a
-// 3-revolute-joint chain (lever → drive arm → pin carrier). The locking-pin
-// engagement target lives at a known nearby coordinate; we ask the IK
-// whether the latch can reach it. Then we re-ask with a clearly out-of-reach
-// target and assert K3 fires.
+// Snippet 6 — over-center draw latch as a real closed loop (slider-crank):
+// a handle pivots on the housing, a link joins the handle tip to a keeper
+// that slides along the housing. Handle 30 mm, link 100 mm, keeper line
+// offset 10 mm. The latch is modeled closed (handle at −20°), past its
+// over-center point, which is what holds it shut.
+//
+//   1. checkReachable drives only the handle (the loop's independent joint)
+//      to move the keeper to a target; the reached handle angle is checked
+//      against the closed-form slider position.
+//   2. loopMode pins the handle–link elbow to the latched side. Opening the
+//      handle carries the elbow straight and over: checkSweptCollision stops
+//      there with kinematic.loop.branch-flip — the over-center point, a
+//      design finding. It must sit at asin(e / (r + l)) = 4.41°.
+
+const r = 30;   // handle (crank)
+const l = 100;  // link (rod)
+const e = 10;   // keeper line offset
+const handle0 = -20;
+const rad = (d: number) => (d * Math.PI) / 180;
+const deg = (v: number) => (v * 180) / Math.PI;
+// Closed-form keeper position along its slide for a handle angle (deg).
+const keeperX = (t: number) => r * Math.cos(rad(t)) + Math.sqrt(l * l - (r * Math.sin(rad(t)) - e) ** 2);
 
 const arm = assembly('cookbook-over-center-latch');
+const Y: [number, number, number] = [0, -1, 0]; // +angle turns +X toward +Z
+const pin = (x: number) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: [x, 0, 0] as [number, number, number] }, axis: Y });
 
-const baseH = 30;
-const L1 = 80;
-const L2 = 60;
-const L3 = 40;
+const housing = arm.part('housing', box(160, 20, 6, true).translate(70, 0, -30));
+const handleBar = arm.part('handle', box(r, 6, 6, true).translate(r / 2, 10, 0));
+const link = arm.part('link', box(l, 6, 6, true).translate(l / 2, 20, 0));
+const keeper = arm.part('keeper', box(20, 6, 12, true).translate(0, 30, 0));
 
-// Pivot mount on the housing.
-const housing = arm.part('housing', box(40, 40, baseH, true).translate(0, 0, baseH / 2));
+housing.connector('pivot', pin(0));
+housing.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, e] }, axis: [1, 0, 0] });
+handleBar.connector('pivot', pin(0));
+handleBar.connector('tip', pin(r));
+link.connector('base', pin(0));
+link.connector('tip', pin(l));
+keeper.connector('track', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+keeper.connector('pin', pin(0));
 
-// Lever the user pushes — long enough to give an over-center mechanical
-// advantage. Body extends in +X from its leverPivot origin (lever-local x=0).
-// Lifted in +Z so it clears the housing at zero pose.
-const lever = arm.part('lever', box(L1 - 10, 10, 8, true).translate(L1 / 2, 0, 10));
+// As-built (latched) pose: handle at −20°, link aimed at the keeper.
+const B0 = [r * Math.cos(rad(handle0)), r * Math.sin(rad(handle0))];
+const linkAbs0 = deg(Math.atan2(e - B0[1], keeperX(handle0) - B0[0]));
+arm.mate('handle', 'housing.pivot', 'handle.pivot', 'revolute', { pose: handle0, limitsDeg: [-60, 130] });
+arm.mate('slide', 'housing.track', 'keeper.track', 'prismatic', { pose: keeperX(handle0), limitsMm: [60, 140] });
+arm.mate('link', 'handle.tip', 'link.base', 'revolute', { pose: linkAbs0 - handle0, limitsDeg: [-180, 180] });
+arm.mate('latch', 'link.tip', 'keeper.pin', 'revolute', { limitsDeg: [-180, 180] });
 
-// Drive arm — pin carrier swings off the lever's distal end. Body sits
-// further +Z so the drive arm clears the lever at zero pose.
-const drive = arm.part('drive', box(L2 - 10, 8, 8, true).translate(L2 / 2, 0, 12));
+// 1. Reach: draw the keeper in to where handle = −45° puts it (on the
+//    latched side, so the IK does not have to cross over center).
+const targetX = keeperX(-45);
+const reach = await kinematic.checkReachable(arm, { tipLink: 'keeper', target: { position: [targetX, 0, e] }, preferSolver: 'numeric' });
+if (!reach.ok || !reach.pose) throw new Error(`reach: expected ok; codes=${reach.diagnostics.map((d) => d.code).join(',')}`);
+const reachedHandle = reach.pose.handle;
+if (typeof reachedHandle !== 'number') throw new Error('reach: the IK should drive the handle');
+if (Math.abs(keeperX(reachedHandle) - targetX) > 0.5) throw new Error(`reach: handle ${reachedHandle}° puts the keeper at ${keeperX(reachedHandle)}, not ${targetX}`);
+const far = await kinematic.checkReachable(arm, { tipLink: 'keeper', target: { position: [200, 0, e] } });
+if (far.ok || !far.diagnostics.some((d) => d.code === 'kinematic.unreachable')) throw new Error('far: expected kinematic.unreachable');
 
-// Locking pin — extends in +X from the drive's distal end. Lifted further
-// so it clears both the lever and drive at zero pose.
-const pin = arm.part('pin', box(L3 - 10, 6, 6, true).translate(L3 / 2, 0, 12));
+// 2. Pin the latched side of the handle–link elbow, then open the handle.
+//    Elbow sign: turn from the handle to the link about the handle axis.
+const u = B0;
+const w = [keeperX(handle0) - B0[0], e - B0[1]];
+const latchedSide = u[0] * w[1] - u[1] * w[0] > 0 ? '+' : '-';
+arm.loopMode('latch', { joint: 'link', sign: latchedSide });
+const STEP = 2;
+const open = await kinematic.checkSweptCollision(arm, { joint: 'handle', range: [handle0, 120, STEP] });
+const flip = open.diagnostics.find((d) => d.code === 'kinematic.loop.branch-flip');
+if (!flip || !flip.poseContext) throw new Error(`expected the over-center branch flip; codes=${open.diagnostics.map((d) => d.code).join(',')}`);
+const overCenter = deg(Math.asin(e / (r + l)));
+const flipAt = flip.poseContext.handle;
+if (!(flipAt > overCenter && flipAt - STEP <= overCenter)) throw new Error(`over-center at handle=${flipAt}°, closed form ${overCenter.toFixed(2)}°`);
+if (open.collidingPoses.length !== 0) throw new Error('the latch should not collide before it goes over center');
+console.log(`[latch] over-center between handle=${flipAt - STEP}° and ${flipAt}° (closed form ${overCenter.toFixed(2)}°): ${flip.message}`);
 
-housing.connector('leverPivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, baseH + 10] }, axis: [0, 1, 0] });
-lever.connector('leverPivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
-arm.mate('leverPivot', 'housing.leverPivotAxis', 'lever.leverPivotAxis', 'revolute', { limitsDeg: [-90, 90] });
-
-lever.connector('drivePivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [L1, 0, 0] }, axis: [0, 1, 0] });
-drive.connector('drivePivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
-arm.mate('drivePivot', 'lever.drivePivotAxis', 'drive.drivePivotAxis', 'revolute', { limitsDeg: [-160, 160] });
-
-drive.connector('pinPivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [L2, 0, 0] }, axis: [0, 1, 0] });
-pin.connector('pinPivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
-arm.mate('pinPivot', 'drive.pinPivotAxis', 'pin.pinPivotAxis', 'revolute', { limitsDeg: [-160, 160] });
-
-// Reachable target — at zero pose the pin tip sits at housing-local
-// (L1+L2+L3, 0, baseH). Aim for an in-workspace point that needs the chain
-// to bend at one or two joints.
-const reachable = await kinematic.checkReachable(arm, {
-  tipLink: 'pin',
-  target: { position: [100, 0, 80] },
-  preferSolver: 'numeric',
-});
-if (reachable.source !== 'local') throw new Error('reachable: source !== local');
-if (!reachable.ok) {
-  const codes = reachable.diagnostics.map((d) => d.code).join(',');
-  throw new Error(`reachable: expected ok=true; codes=${codes}`);
-}
-if (!reachable.pose) throw new Error('reachable: pose missing on success');
-
-// Unreachable target — 5000 mm out. K3 fires; pose is undefined.
-const unreachable = await kinematic.checkReachable(arm, {
-  tipLink: 'pin',
-  target: { position: [5000, 0, 0] },
-});
-if (unreachable.ok) throw new Error('unreachable: expected ok=false');
-const k3 = unreachable.diagnostics.some((d) => d.code === 'kinematic.unreachable');
-if (!k3) throw new Error('unreachable: expected K3 kinematic.unreachable');
-
-return arm.solvedModel({ leverPivot: 0, drivePivot: 0, pinPivot: 0 });
+return arm.solvedModel({ handle: handle0 });
