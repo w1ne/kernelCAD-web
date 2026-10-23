@@ -3,13 +3,8 @@
 import { lookupCookbookTool } from '../tools/lookupCookbook';
 import { findPartTool } from '../tools/findPart';
 import { fetchPartTool } from '../tools/fetchPart';
-import { fetchPartModelTool, type FetchPartModelInput } from '../tools/fetchPartModel';
+import { fetchPartModelTool, toFetchPartModelInput, type FetchPartModelOptions } from '../tools/fetchPartModel';
 import type { ToolRegistryEntry } from './types';
-
-interface FetchPartModelRequest {
-  url?: string; sha256?: string; source?: string; license?: string; attribution?: string;
-  expectedBboxMm?: number[]; toleranceRatio?: number;
-}
 
 export const catalogToolEntries: ToolRegistryEntry[] = [
   {
@@ -103,21 +98,9 @@ export const catalogToolEntries: ToolRegistryEntry[] = [
       },
     },
     handler: input => {
-      const { includeModel, model, ...fetchInput } = input as Parameters<typeof fetchPartTool>[0] & { includeModel?: boolean; model?: FetchPartModelRequest };
+      const { includeModel, model, ...fetchInput } = input as Parameters<typeof fetchPartTool>[0] & { includeModel?: boolean; model?: FetchPartModelOptions };
       if (!includeModel && !model) return fetchPartTool(fetchInput);
-      const request: FetchPartModelInput = {
-        ...(model?.url ? { url: model.url } : {}),
-        ...(model?.sha256 ? { expected_sha256: model.sha256 } : {}),
-        ...(model?.source ? { source: model.source } : {}),
-        ...(model?.license ? { license: model.license } : {}),
-        ...(model?.attribution ? { attribution: model.attribution } : {}),
-        ...(model?.expectedBboxMm ? { bbox_mm: model.expectedBboxMm } : {}),
-        ...(model?.toleranceRatio !== undefined ? { tolerance_ratio: model.toleranceRatio } : {}),
-        ...(fetchInput.id ? { catalog_id: fetchInput.id } : {}),
-        ...(!fetchInput.id && fetchInput.query ? { mpn: fetchInput.query } : {}),
-        ...(fetchInput.partsBaseUrl ? { partsBaseUrl: fetchInput.partsBaseUrl } : {}),
-      };
-      return fetchPartModelTool(request);
+      return fetchPartModelTool(toFetchPartModelInput(fetchInput, model));
     },
   },
 ];

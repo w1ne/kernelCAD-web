@@ -65,6 +65,34 @@ function binding(name: string): string { return `part_${name.replace(/[^A-Za-z0-
 function anchorName(s: string): string { return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'anchor'; }
 const ASSEMBLY_BINDING = 'blockoutAssembly';
 
+function validateAnchors(anchors: unknown, label: string): string | undefined {
+  if (anchors === undefined) return undefined;
+  if (!Array.isArray(anchors)) return `${label}.anchors must be an array when provided.`;
+  for (const [ai, anchor] of anchors.entries()) {
+    if (!isRecord(anchor) || typeof anchor.name !== 'string' || !anchor.name.trim() || !vec3(anchor.positionMm)) return `${label}.anchors[${ai}] requires a name and finite positionMm [x, y, z].`;
+  }
+  return undefined;
+}
+
+function validateGeometry(raw: Record<string, unknown>, label: string): string | undefined {
+  if (!vec3(raw.bboxMm) || raw.bboxMm.some(n => n <= 0)) return `${label}.bboxMm must contain three positive finite dimensions in mm.`;
+  if (!vec3(raw.positionMm)) return `${label}.positionMm must be a finite [x, y, z] in mm.`;
+  const rotation = raw.rotationDeg;
+  if (rotation !== undefined && !(typeof rotation === 'number' && Number.isFinite(rotation)) && !vec3(rotation)) return `${label}.rotationDeg must be a finite number or Vec3.`;
+  return undefined;
+}
+
+function validatePart(raw: unknown, index: number, names: Set<string>, bindings: Set<string>): string | undefined {
+  const label = `parts[${index}]`;
+  if (!isRecord(raw) || typeof raw.name !== 'string' || !raw.name.trim()) return `${label}.name must be a non-empty string.`;
+  if (names.has(raw.name)) return `duplicate part name '${raw.name}'.`;
+  names.add(raw.name);
+  const partBinding = binding(raw.name);
+  if (bindings.has(partBinding)) return `part name '${raw.name}' collides with another generated binding.`;
+  bindings.add(partBinding);
+  return validateGeometry(raw, label) ?? validateAnchors(raw.anchors, label);
+}
+
 function validate(input: unknown): string | undefined {
   if (!isRecord(input) || !Array.isArray(input.parts) || input.parts.length === 0) return 'parts must be a non-empty array.';
   if (input.name !== undefined && typeof input.name !== 'string') return 'name must be text when provided.';
@@ -72,21 +100,8 @@ function validate(input: unknown): string | undefined {
   const names = new Set<string>();
   const bindings = new Set<string>([ASSEMBLY_BINDING]);
   for (const [index, raw] of input.parts.entries()) {
-    const label = `parts[${index}]`;
-    if (!isRecord(raw) || typeof raw.name !== 'string' || !raw.name.trim()) return `${label}.name must be a non-empty string.`;
-    if (names.has(raw.name)) return `duplicate part name '${raw.name}'.`;
-    names.add(raw.name);
-    const partBinding = binding(raw.name);
-    if (bindings.has(partBinding)) return `part name '${raw.name}' collides with another generated binding.`;
-    bindings.add(partBinding);
-    if (!vec3(raw.bboxMm) || raw.bboxMm.some(n => n <= 0)) return `${label}.bboxMm must contain three positive finite dimensions in mm.`;
-    if (!vec3(raw.positionMm)) return `${label}.positionMm must be a finite [x, y, z] in mm.`;
-    const rotation = raw.rotationDeg;
-    if (rotation !== undefined && !(typeof rotation === 'number' && Number.isFinite(rotation)) && !vec3(rotation)) return `${label}.rotationDeg must be a finite number or Vec3.`;
-    if (raw.anchors !== undefined && !Array.isArray(raw.anchors)) return `${label}.anchors must be an array when provided.`;
-    for (const [ai, anchor] of ((raw.anchors ?? []) as unknown[]).entries()) {
-      if (!isRecord(anchor) || typeof anchor.name !== 'string' || !anchor.name.trim() || !vec3(anchor.positionMm)) return `${label}.anchors[${ai}] requires a name and finite positionMm [x, y, z].`;
-    }
+    const error = validatePart(raw, index, names, bindings);
+    if (error) return error;
   }
   for (const [ci, conn] of ((input.connections ?? []) as unknown[]).entries()) {
     if (!isRecord(conn) || typeof conn.from !== 'string' || typeof conn.to !== 'string') return `connections[${ci}] requires from and to strings ('part.anchor').`;

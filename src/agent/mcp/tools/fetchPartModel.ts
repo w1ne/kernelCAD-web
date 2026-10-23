@@ -387,3 +387,28 @@ export async function fetchPartModelTool(input: FetchPartModelInput): Promise<Fe
     attribution: { source: source.source ?? 'catalog', license: source.license ?? 'unknown', ...(state.url ? { url: state.url } : {}), ...(source.attribution ? { attribution: source.attribution } : {}) },
   };
 }
+
+/** The `model` option object accepted by `fetch_part`. */
+export interface FetchPartModelOptions {
+  url?: string; sha256?: string; source?: string; license?: string; attribution?: string;
+  expectedBboxMm?: number[]; toleranceRatio?: number;
+}
+
+/** Map `fetch_part` inputs (id/query/partsBaseUrl plus `model` options) to a verified-model request. */
+export function toFetchPartModelInput(
+  fetchInput: { id?: string; query?: string; partsBaseUrl?: string },
+  model: FetchPartModelOptions = {},
+): FetchPartModelInput {
+  return {
+    ...(model.url ? { url: model.url } : {}),
+    ...(model.sha256 ? { expected_sha256: model.sha256 } : {}),
+    ...(model.source ? { source: model.source } : {}),
+    ...(model.license ? { license: model.license } : {}),
+    ...(model.attribution ? { attribution: model.attribution } : {}),
+    ...(model.expectedBboxMm ? { bbox_mm: model.expectedBboxMm } : {}),
+    ...(model.toleranceRatio !== undefined ? { tolerance_ratio: model.toleranceRatio } : {}),
+    ...(fetchInput.id ? { catalog_id: fetchInput.id } : {}),
+    ...(!fetchInput.id && fetchInput.query ? { mpn: fetchInput.query } : {}),
+    ...(fetchInput.partsBaseUrl ? { partsBaseUrl: fetchInput.partsBaseUrl } : {}),
+  };
+}
