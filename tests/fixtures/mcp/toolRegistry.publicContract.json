@@ -6177,7 +6177,7 @@
                   },
                   "checks": {
                     "type": "array",
-                    "description": "Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, attachment-plausibility, semantic-orientation-alignment, device-depth-and-construction, canonical-views-physically-coherent. When likenessProfile=automotive also: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference.",
+                    "description": "Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, attachment-plausibility, semantic-orientation-alignment, canonical-views-physically-coherent. When likenessProfile=automotive also: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference.",
                     "items": {
                       "type": "object",
                       "properties": {

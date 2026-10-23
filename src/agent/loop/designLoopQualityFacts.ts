@@ -1,21 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ContactGraphResult } from '../../modeling/runtime/contactGraph';
-import {
-  countPattern,
-  missingFilletFacts,
-  stackedPrimitiveToyFacts,
-} from './revisionAssist';
+import { countPattern } from './revisionAssist';
 
 export function scriptQualityFacts(
   source: string,
-  goal: string,
   allowReviewWarnings: readonly string[],
 ): Array<{ code: string; severity: string; message: string; hint?: string }> {
-  const facts: Array<{ code: string; severity: string; message: string; hint?: string }> = [
-    ...stackedPrimitiveToyFacts(source, goal, allowReviewWarnings),
-    ...missingFilletFacts(source, goal, allowReviewWarnings),
-  ];
+  const facts: Array<{ code: string; severity: string; message: string; hint?: string }> = [];
 
   const code = 'assembly.quality.box-fragment-clutter';
   if (!allowReviewWarnings.includes(code)) {

@@ -1400,10 +1400,10 @@
       }
     },
     "assembly.visual.review-evidence-weak": {
-      "template": "Record concrete screenshot evidence — name interfaces, load paths, seated hardware, dial legibility, casing layers — before accepting the attempt.",
+      "template": "Record a specific screenshot finding for every passed check before accepting the attempt.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "record concrete screenshot evidence (interfaces, load paths, legibility) before accepting"
+        "guidance": "record a specific screenshot finding for every passed check before accepting"
       }
     },
     "assembly.visual.review-incomplete": {
@@ -2996,7 +2996,7 @@
     },
     "assembly.visual.review-evidence-weak": {
       "kind": "rewrite-feature",
-      "guidance": "record concrete screenshot evidence (interfaces, load paths, legibility) before accepting"
+      "guidance": "record a specific screenshot finding for every passed check before accepting"
     },
     "assembly.visual.review-incomplete": {
       "kind": "rewrite-feature",

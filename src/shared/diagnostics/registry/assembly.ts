@@ -525,14 +525,14 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.visual.review-evidence-weak': {
     hintTemplate:
-      "Record concrete screenshot evidence — name interfaces, load paths, seated hardware, dial legibility, casing layers — before accepting the attempt.",
+      "Record a specific screenshot finding for every passed check before accepting the attempt.",
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'record concrete screenshot evidence (interfaces, load paths, legibility) before accepting',
+      guidance: 'record a specific screenshot finding for every passed check before accepting',
     },
     defaultSeverity: 'warn',
     group: 'assembly',
-    description: 'An accepted visual review has check findings without concrete evidence (interfaces, load paths, legibility, casing layers).',
+    description: 'An accepted visual review has passed checks whose findings are too short to be specific evidence.',
   },
   'assembly.visual.review-incomplete': {
     hintTemplate:

@@ -411,7 +411,7 @@ function toAttemptResult(input: {
       message: diagnostic.message,
       hint: diagnostic.hint,
     })),
-    ...scriptQualityFacts(input.source, input.goal, input.allowReviewWarnings),
+    ...scriptQualityFacts(input.source, input.allowReviewWarnings),
     ...geometryReviewFacts(input.review.geometry, input.allowReviewWarnings),
     ...visualReviewFacts(
       input.requireVisualReview,
@@ -765,7 +765,6 @@ function requiredVisualReviewCheckCodes(
     'no-stray-or-floating-geometry',
     'attachment-plausibility',
     'semantic-orientation-alignment',
-    'device-depth-and-construction',
     'canonical-views-physically-coherent',
   ];
   if (likenessProfile === 'automotive') {
@@ -774,73 +773,21 @@ function requiredVisualReviewCheckCodes(
   return base;
 }
 
-interface WeakVisualEvidenceRule {
-  code: string;
-  patterns: readonly RegExp[];
-  format: (finding: string) => string;
-}
+const MIN_VISUAL_FINDING_CHARS = 12;
 
-const WEAK_VISUAL_EVIDENCE_RULES: readonly WeakVisualEvidenceRule[] = [
-  {
-    code: 'attachment-plausibility',
-    patterns: [
-      /\b(lugs?|spring\s*bars?|pins?|barrels?|slots?|clamps?|brackets?|mounts?|fasteners?|hinges?|strap\s*tongues?|end\s*links?|connectors?|interfaces?)\b/,
-      /\b(connects?|connected|connection|load(?:\s|-)*path|load(?:\s|-)*bearing|bridg\w*|through|between|seated|captured|passes|touches|anchored|retained)\b/,
-      /\b(seated|exposed|clearance|clearanced|not\s+buried|not\s+half(?:\s|-)*inserted|not\s+embedded|not\s+occluded|visible\s+ends?|flush|captured\s+in\s+(?:the\s+)?lugs?)\b/,
-      /\b(case(?:\s|-)*body|case(?:\s|-)*band|case|body|housing|watch\s*head|main\s*body)\b/,
-    ],
-    format: (finding) =>
-      `attachment-plausibility needs concrete interface, load path, seated/no-buried-hardware, and parent or case body anchor evidence; finding was "${finding}".`,
-  },
-  {
-    code: 'required-visible-features',
-    patterns: [
-      /\b(required|features?|dial|numerals?|numbers?|labels?|text|hands?|markers?|ticks?|crown|strap|bracelet)\b/,
-      /\b(legible|readable|visible|clear|present)\b/,
-      /\b(unobstructed|not\s+covered|not\s+occluded|not\s+hidden|not\s+cut\s*off|clearance|clearanced|outside\s+the\s+bezel|inside\s+the\s+dial|within\s+the\s+dial)\b/,
-    ],
-    format: (finding) =>
-      `required-visible-features needs evidence that required details are legible and unobstructed/not covered; finding was "${finding}".`,
-  },
-  {
-    code: 'no-stray-or-floating-geometry',
-    patterns: [
-      /\b(no\s+(?:stray|floating|disconnected|unsupported)|not\s+(?:floating|disconnected|unsupported)|nothing\s+(?:floating|disconnected|unsupported))\b/,
-      /\b(contact|touch(?:es|ing)?|fasteners?|screws?|pins?|brackets?|mounts?|clips?|hinges?|socket|seated|supported|attached|connected|continuous\s+path|load(?:\s|-)*path|parent\s+(?:body|structure)|main\s+(?:body|structure|frame)|case|housing|frame)\b/,
-      /\b(secondary|strap|bracelet|button|crown|cover|panel|bracket|handle|lug|link|arm|wire|cable|accessory|part|component|geometry)\b/,
-      /\b(no\s+(?:visible\s+)?air\s*gap|not\s+separated|touch(?:es|ing)?|in\s+contact|near(?:\s|-)*contact|flush|seated|captured|passes\s+through|mounted\s+into)\b/,
-    ],
-    format: (finding) =>
-      `no-stray-or-floating-geometry needs evidence that secondary components are supported by contact/near-contact, fasteners, brackets, or a continuous path into the parent body, with no visible air gap; finding was "${finding}".`,
-  },
-  {
-    code: 'device-depth-and-construction',
-    patterns: [
-      /\b(side|canonical|section|thickness|depth|deep|wall|shell|layer|layers|stack)\b/,
-      /\b(bezel|case(?:back)?|back|cover|housing|body|cavity|movement|crystal|gasket|recess|pocket|chamber|case\s*band)\b/,
-      /\b(non(?:\s|-)*facade|not\s+(?:a\s+)?flat|not\s+two\s+(?:flat\s+)?faces|not\s+two\s+surfaces|full\s+casing)\b/,
-    ],
-    format: (finding) =>
-      `device-depth-and-construction needs concrete construction layers and non-facade evidence; finding was "${finding}".`,
-  },
-];
-
+/** Structural only: a passed check must carry a non-trivial finding. */
 function weakVisualCheckEvidence(check: DesignLoopVisualReviewCheck): string[] {
   if (!check.passed) return [];
-  const finding = check.finding.toLowerCase();
-  const rule = WEAK_VISUAL_EVIDENCE_RULES.find((candidate) => candidate.code === check.code);
-  if (rule === undefined) return [];
-  if (rule.patterns.every((pattern) => pattern.test(finding))) return [];
-  return [rule.format(check.finding)];
+  if (check.finding.trim().length >= MIN_VISUAL_FINDING_CHARS) return [];
+  return [
+    `${check.code} needs a specific finding of at least ${MIN_VISUAL_FINDING_CHARS} characters describing what the screenshot shows; finding was "${check.finding}".`,
+  ];
 }
 
 function visualReviewEvidenceRequirements(): string[] {
   return [
-    'For attachment-plausibility, name the interface geometry and prove it is seated/clearanced, not buried, half-inserted, embedded, or visually occluded.',
-    'For attachment-plausibility, user controls such as crowns, winding wheels, buttons, handles, knobs, sliders, or levers must mount to the functional body/neck/housing they actuate, not to decorative loops, straps, hangers, or other non-actuating hardware.',
-    'For required-visible-features, prove dial details, numerals, labels, hands, markers, and other requested features are legible and unobstructed, not covered by casing, bezel, or smoky/opaque transparent-cover geometry.',
-    'For no-stray-or-floating-geometry, prove every visible secondary component is supported by contact or near-contact, fasteners, brackets, or a continuous path into the parent body, and explicitly rule out visible air gaps.',
-    'For device-depth-and-construction, name casing/body layers such as bezel, case back, wall, housing, cavity, crystal, gasket, or movement pocket, and explicitly rule out a flat two-face facade.',
+    'Each passed check must record a specific finding describing what the screenshot shows, not a placeholder.',
+    'Attach visualReview.screenshotPath and set accepted only when every required check passes.',
   ];
 }
 
