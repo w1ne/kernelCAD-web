@@ -165,7 +165,7 @@ function glbBounds(bytes: Uint8Array): number[] | undefined {
   const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
   let found = false;
   for (const root of roots) if (includeNodeBounds(root, identity, doc, bounds)) found = true;
-  // glTF 2.0 defines linear distances in meters. Handoff bbox values and the
+  // glTF 2.0 defines linear distances in meters. bbox values and the
   // tool output are millimeters, so convert after applying node transforms.
   return found ? bounds.max.map((value, axis) => (value - bounds.min[axis]) * 1000) : undefined;
 }
@@ -332,7 +332,7 @@ async function loadModel(state: ModelFileState, ref?: string): Promise<LoadedMod
 
 async function measureStepBounds(bytes: Buffer, state: ModelFileState): Promise<number[] | string> {
   try {
-    const report = await inspectStepBuffer(bytes, state.path ?? state.url ?? 'handoff STEP');
+    const report = await inspectStepBuffer(bytes, state.path ?? state.url ?? 'part STEP');
     if (!report.solids.length) return 'STEP model contains no measurable solids.';
     const min = [Infinity, Infinity, Infinity];
     const max = [-Infinity, -Infinity, -Infinity];

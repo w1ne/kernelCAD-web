@@ -6,8 +6,6 @@
     "visionResponse": "mocked fixture",
     "outlineNormalizer": "trace silhouette bounds"
   },
-  "input": "tests/fixtures/argon/handoff-drawbot.json",
-  "inputSha256": "d01b26d3e37967be6c472c287a0bff1ad37edb597afdc5a0004254b253a8a9e1",
   "verification": {
     "testCommand": "npx vitest run --configLoader runner src/agent/vision/orchestrator.test.ts",
     "result": "18 tests passed",

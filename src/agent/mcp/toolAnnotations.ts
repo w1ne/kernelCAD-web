@@ -76,7 +76,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Read — but may fetch from a remote parts catalog (KERNELCAD_PARTS_BASE_URL).
   find_part: READ_REMOTE,
   fetch_part: READ_REMOTE,
-  fetch_part_model: READ_REMOTE,
 
   // Authoring — return modified source (side-effect-free, additive).
   set_param: AUTHOR,
@@ -137,10 +136,7 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   ray_pick: READ,
   inspect_nurbs: READ,
   fit_plane: READ,
-  route_wires: READ,
-  // Parses a provided handoff and returns a proposed authoring script.
-  import_handoff: AUTHOR,
   inspect_assembly: READ,
-  // Writes a BOM CSV locally and returns Sheets-ready rows; never contacts a spreadsheet.
-  write_bom: WRITES_FILE,
+  // Pure generator: turns a parts list into a placeholder assembly script; writes nothing.
+  blockout_assembly: AUTHOR,
 };

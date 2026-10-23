@@ -112,9 +112,6 @@ describe('traceFromImage orchestrator', () => {
 
   it('optionally detects labeled parts, maps boxes to the traced outline, and drafts a BOM', async () => {
     const response = JSON.parse(await readFile(join(FIXTURE_DIR, 'argon-grow-parts-response.json'), 'utf8')) as { parts: unknown[] };
-    const handoff = JSON.parse(await readFile(join(__dirname, '../../../tests/fixtures/argon/handoff-drawbot.json'), 'utf8')) as { schema: string; parts: Array<{ ref: string; catalog_id: string }> };
-    expect(handoff.schema).toBe('labwired-kernelcad-handoff/0.1');
-    expect(handoff.parts.length).toBeGreaterThan(0);
     const generate = vi.fn(async () => ({ text: JSON.stringify(response), tokensIn: 10, tokensOut: 10 }));
     const outline: Vec2Normalized[] = [[0.2, 0.2], [0.8, 0.2], [0.8, 0.8], [0.2, 0.8]];
     const out = await traceFromImage({ imageUrl: UNIFORM_FILE_URL, backend: 'opencv', detectParts: true }, {
