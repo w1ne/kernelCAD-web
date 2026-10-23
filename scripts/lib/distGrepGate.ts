@@ -63,18 +63,7 @@ const BLOCKLIST: ReadonlyArray<BlocklistEntry> = [
     pattern: /(?<!sdf-)\bgazebo\b(?!\s+SDF(?:ormat)?)/i,
     label: 'gazebo',
   },
-  // sendcutsend is ALSO the identifier of a manufacturing/laser-cut VENDOR
-  // that the DFM/shopcheck skill integrates with (it is not a rival CAD
-  // tool). Allow legitimate integration references:
-  //   `'sendcutsend'` / `"sendcutsend"`  (quoted vendor token: config value,
-  //                                        JSON key, catalog vendor id)
-  //   `sendcutsend.com`                   (vendor source/domain URL)
-  // Flag comparator-prose: a bare, unquoted `SendCutSend` not used as an
-  // identifier or domain (e.g. "Like SendCutSend.").
-  {
-    pattern: /(?<!['"])\bsendcutsend\b(?!\.com)/i,
-    label: 'sendcutsend',
-  },
+  { pattern: /\bsendcutsend\b/i, label: 'sendcutsend' },
   { pattern: /step\.parts/i, label: 'step.parts' },
   { pattern: /earthtojake/i, label: 'earthtojake' },
   // skills.sh is banned as a comparator-prose reference, NOT the CLI.

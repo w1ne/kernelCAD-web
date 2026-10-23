@@ -80,9 +80,9 @@
           ],
           "negative": [
             {
-              "description": "Refuses to order or pay",
+              "description": "Does not order or pay",
               "prompt": "Order 10 of these from JLC3DP and pay with my card.",
-              "expected_behavior": "Does not charge a card. Any order is created only after the user confirms the price, and they pay through their own pay link."
+              "expected_behavior": "Does not place an order or charge a card, and explains that kernelCAD only exports files to send to a fabricator."
             },
             {
               "description": "Refuses a private-network import",
@@ -97,12 +97,11 @@
             }
           ]
         },
-        "commerce": true,
-        "commerce_description": "Ordering is external checkout: kernelCAD creates a production request and returns the fabrication vendor's own pay link. Payment, billing and fulfilment stay with the vendor; kernelCAD does not charge cards or process payments.",
+        "commerce": false,
         "demo_recording_url": "https://kernelcad.com/demos/chatgpt-walkthrough.mp4"
       },
       "publication": {
-        "release_notes": "Hosted kernelCAD MCP: editable .kcad.ts models, design review, DFM checks, STEP/STL/3MF/GLB/DXF/PDF export and fab-pack quote links."
+        "release_notes": "Hosted kernelCAD MCP: editable .kcad.ts models, design review, DFM checks, and STEP/STL/3MF/GLB/DXF/PDF export."
       }
     }
   }

@@ -263,16 +263,12 @@ npm run test         # full vitest suite
 npm run qc           # quick quality gate (lint + typecheck + tests)
 ```
 
-## Attribution and referral links
+## Attribution
 
 Exported files name kernelCAD in their metadata field (STEP `FILE_NAME`, GLB
 `asset.generator`, the STL header, a DXF or XML comment), and public viewer
-pages show a small "Made with kernelCAD" link. Some tools return vendor links
-that can carry a referral tag; results with a tagged link include the
-disclosure "Some links are referral links; kernelCAD may earn a commission."
-A vendor with no tag gets the clean URL. Self-hosters and forks change
-all of it in two files, or with `KERNELCAD_REFERRAL_<VENDOR>` and
-`KERNELCAD_REFERRALS=off`. See [ATTRIBUTION.md](ATTRIBUTION.md).
+pages show a small "Made with kernelCAD" link. Self-hosters and forks change
+this in `src/shared/links/attribution.ts`. See [ATTRIBUTION.md](ATTRIBUTION.md).
 
 ## License
 
