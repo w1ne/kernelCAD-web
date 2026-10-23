@@ -19,7 +19,7 @@ import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing'
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { generatePlanarUVs } from './planarUv';
-import { computeFeatureOwnership } from './featureOwnership';
+import { computeFeatureOwnership, hasFeatureOwnership } from './featureOwnership';
 import { helixPolylineRouted } from '../mates/helixPolyline';
 import { partAtFor } from '../mates/partFrame';
 import {
@@ -858,7 +858,7 @@ export async function meshFeaturesPerFeature(
   await engine.run(records, {
     paramTable,
     onEvent: (event) => handleMeshFeatureEvent(event, eventCtx),
-    ...engineSeedOptions(engineSeeds, meshFromSeed, refineSeededMesh(eventCtx)),
+    ...engineSeedOptions(engineSeeds, meshFromSeed, refineSeededMesh(eventCtx), constructionClosure),
   });
 
   reEmitSeededFeatureMeshes(
@@ -895,11 +895,25 @@ function engineSeedOptions(
   engineSeeds: Map<FeatureId, ShapeBackend> | undefined,
   meshFromSeed: ReadonlyMap<FeatureId, ShapeBackend>,
   meshSeeded: (record: FeatureRecord, shape: ShapeBackend) => void,
+  constructionClosure: ReadonlySet<FeatureId>,
 ): Pick<RecomputeOptions, 'seedShapes' | 'onSeedHit'> {
+  const hasSeeds = engineSeeds !== undefined && engineSeeds.size > 0;
   return {
-    ...(engineSeeds !== undefined && engineSeeds.size > 0 ? { seedShapes: engineSeeds } : {}),
-    ...(meshFromSeed.size > 0
-      ? { onSeedHit: (record: FeatureRecord, shape: ShapeBackend) => { if (meshFromSeed.has(record.id)) { meshSeeded(record, shape); releaseBorrowedTriangulation(shape); } } }
+    ...(hasSeeds ? { seedShapes: engineSeeds } : {}),
+    ...(meshFromSeed.size > 0 || hasSeeds
+      ? {
+        onSeedHit: (record: FeatureRecord, shape: ShapeBackend) => {
+          if (meshFromSeed.has(record.id)) {
+            meshSeeded(record, shape);
+            releaseBorrowedTriangulation(shape);
+          } else if (constructionClosure.has(record.id) && !hasFeatureOwnership(shape)) {
+            // A construction record lowered by the build or params.update
+            // (not by a mesh pass) has no face owners yet; the assembly part
+            // meshes built from it need them (selection ↔ code link).
+            meshSeeded(record, shape);
+          }
+        },
+      }
       : {}),
   };
 }

@@ -23,3 +23,15 @@ The default font of Text, Lato Regular, is included unmodified (in dist/_fonts.j
   Licensed under the SIL Open Font License, Version 1.1.
 
 The license text is in fonts/OFL.txt.
+
+OpenZCAD
+Copyright the OpenZCAD contributors. Licensed under the Apache License, Version 2.0.
+https://github.com/esaueng/OpenZCAD (commit c1855496197147b80d99ef39b705e907000f6baf)
+
+The Studio's browser kernel worker (src/studio/browserKernel/) adopts the geometry-worker
+design described in OpenZCAD's docs (one worker, document as the source of truth, jobs
+tagged with document/version/request ids, one in flight plus the latest pending, a
+bounded content-keyed rebuild cache, a click-to-frame edit benchmark). rebuildCache.ts and
+tests/perf/paramEditFrame.spec.ts are adapted from OpenZCAD's exactRebuildCache.ts and
+perf-cad-edit.spec.ts. The Apache License 2.0 text is at
+https://www.apache.org/licenses/LICENSE-2.0.

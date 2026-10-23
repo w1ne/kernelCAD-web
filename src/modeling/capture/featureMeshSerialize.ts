@@ -88,9 +88,20 @@ function copyLinkFields(m: LinkFields): LinkFields {
   };
 }
 
-function serializeIndexedMesh(mesh: FeatureMesh['mesh']): Pick<FeatureMeshSerialized, 'mesh'> {
+type FloatOut = (values: Float32Array) => SerializedFloats;
+type IndexOut = (values: Uint32Array) => SerializedIndices;
+
+function arrayWriters(typedArrayCopies: boolean): { floats: FloatOut; indices: IndexOut } {
+  if (typedArrayCopies) return { floats: (v) => v.slice(), indices: (v) => v.slice() };
+  return { floats: (v) => Array.from(v), indices: (v) => Array.from(v) };
+}
+
+function serializeIndexedMesh(
+  mesh: FeatureMesh['mesh'],
+  out: { floats: FloatOut; indices: IndexOut },
+): Pick<FeatureMeshSerialized, 'mesh'> {
   if (!mesh) return {};
-  return { mesh: { positions: Array.from(mesh.positions), normals: Array.from(mesh.normals), indices: Array.from(mesh.indices) } };
+  return { mesh: { positions: out.floats(mesh.positions), normals: out.floats(mesh.normals), indices: out.indices(mesh.indices) } };
 }
 
 /** Already-packed arrays (rebuild worker) are adopted without a copy; plain
@@ -109,23 +120,35 @@ function rehydrateIndexedMesh(mesh: FeatureMeshSerialized['mesh']): Pick<Feature
 }
 
 export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
+  return serializeFeatureMesh(m, false);
+}
+
+/** `serializeForBridge` with typed-array COPIES instead of plain arrays: a
+ *  browser worker transfers them without detaching the buffers its own mesh
+ *  cache still holds. The values are identical. */
+export function serializeForTransfer(m: FeatureMesh): FeatureMeshSerialized {
+  return serializeFeatureMesh(m, true);
+}
+
+function serializeFeatureMesh(m: FeatureMesh, typedArrayCopies: boolean): FeatureMeshSerialized {
+  const out = arrayWriters(typedArrayCopies);
   return {
     featureId: m.featureId,
     featureKind: m.featureKind,
     predecessors: [...m.predecessors],
     op: m.op,
     faces: m.faces.map((f) => ({
-      vertices: Array.from(f.vertices),
-      indices: Array.from(f.indices),
-      normals: Array.from(f.normals),
-      ...(f.uv !== undefined ? { uv: Array.from(f.uv) } : {}),
+      vertices: out.floats(f.vertices),
+      indices: out.indices(f.indices),
+      normals: out.floats(f.normals),
+      ...(f.uv !== undefined ? { uv: out.floats(f.uv) } : {}),
       faceId: f.faceId,
       plane: f.plane,
       cylinder: f.cylinder,
     })),
-    ...serializeIndexedMesh(m.mesh),
+    ...serializeIndexedMesh(m.mesh, out),
     volume: m.volume,
-    edges: m.edges ? Array.from(m.edges) : undefined,
+    edges: m.edges ? out.floats(m.edges) : undefined,
     ...(m.color !== undefined ? { color: m.color } : {}),
     ...(m.material !== undefined ? { material: m.material } : {}),
     ...(m.materialByFaceId !== undefined ? { materialByFaceId: m.materialByFaceId } : {}),

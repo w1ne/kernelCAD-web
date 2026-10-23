@@ -163,6 +163,7 @@
     "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#5ea0fe4f4fc1f38453d228d38aea2eeb09f3dadd",
     "sharp": "^0.33.5",
     "shiki": "^1.29.2",
+    "sucrase": "^3.35.1",
     "three": "^0.184.0",
     "ts-morph": "^27.0.2",
     "typescript": "~5.9.3",

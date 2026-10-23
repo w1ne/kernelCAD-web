@@ -55,12 +55,21 @@ export function registerOcctResetHook(hook: () => void): void {
 export interface InitOcctOptions {
   /** Maps an Emscripten-requested file name to a URL. Browser hosts only. */
   locateFile?: (file: string) => string;
+  /** The wasm bytes, already fetched by the host. A worker that must not
+   *  touch the network (the Studio's browser kernel) is handed these and
+   *  never asks for the file at all. */
+  wasmBinary?: ArrayBuffer;
 }
 
 async function loadAndBindOcct(opts?: InitOcctOptions): Promise<void> {
   // Only forward a module argument when the caller supplied one — passing
   // `{}` is not the same as passing nothing to some Emscripten builds.
-  const moduleArg = opts?.locateFile ? { locateFile: opts.locateFile } : undefined;
+  const moduleArg = opts?.locateFile || opts?.wasmBinary
+    ? {
+      ...(opts.locateFile ? { locateFile: opts.locateFile } : {}),
+      ...(opts.wasmBinary ? { wasmBinary: opts.wasmBinary } : {}),
+    }
+    : undefined;
   let OC: unknown;
   if (typeof opencascade === 'function') {
     OC = await (opencascade as unknown as (m?: unknown) => Promise<unknown>)(moduleArg);
