@@ -39,8 +39,26 @@ import { candidatePath, taskSubmissionDir } from './submission';
 import { isFinished, readTaskState, taskWorkDir, writeTaskState, type TaskState } from './state';
 import { mapPool } from '../../lib/pool';
 import { checkStepValidity, withOcctLock, type StepValidity } from './validity';
+import {
+  classifyEditPromotion,
+  unknownEditPromotion,
+  type EditPromotionResult,
+} from './editPromotion';
 
 export const VALIDITY_GATE = 'cadgenbench-validity';
+export const EDIT_PROMOTION_GATE = 'cadgenbench-edit-promotion';
+
+export interface EditPromotionContext {
+  task: CadGenBenchTask;
+  /** The script that produced the candidate. */
+  scriptPath: string;
+  /** The exported, validity-gated STEP. */
+  stepPath: string;
+  /** The starting solid, copied next to the script by the pipeline. */
+  inputStepPath: string;
+}
+
+export type EditPromotionHook = (ctx: EditPromotionContext) => Promise<EditPromotionResult>;
 
 export interface Prices {
   /** USD per million input tokens. */
@@ -60,8 +78,14 @@ export interface PipelineConfig {
   temperature?: number;
   /** Directory of pre-written `<id>.kcad.ts` scripts; replaces the LLM step. */
   scriptsFrom?: string;
-  /** Editing tasks the LLM cannot finish (or all of them, without a key) submit the input unchanged. */
+  /** No-LLM editing runs submit the input unchanged. Without a key this is the
+   *  intended mode; it is never applied to a real LLM/scripts-from edit that
+   *  failed promotion. */
   editFallback: 'none' | 'passthrough';
+  /** Request-aware editing promotion. `auto` compares the candidate STEP to
+   *  input.step after the validity gate; `off` is for unit tests. A function
+   *  injects a deterministic verdict. */
+  editPromotion?: 'auto' | 'off' | EditPromotionHook;
   /** Write a candidate that fails the pre-check instead of leaving the task missing. */
   keepInvalid: boolean;
   prices?: Prices;
@@ -154,6 +178,86 @@ export function createCandidateGate(cfg: PipelineConfig): CandidateGate {
     const verdicts = [...report.verdicts, verdictFromValidity(v)];
     return { ok: v.valid, verdicts };
   }
+}
+
+/** Inspect input and candidate, then run the pure classifier. Any inspection
+ *  failure is `unknown` rather than a rejection: a missing measurement is not
+ *  evidence that the edit is wrong. */
+async function autoEditPromotion(ctx: EditPromotionContext): Promise<EditPromotionResult> {
+  const before = await withOcctLock(() => inspectStepTool({ file: ctx.inputStepPath }));
+  if (!before.ok || !before.report) {
+    return unknownEditPromotion(`could not inspect the input solid: ${before.error ?? 'no report'}`);
+  }
+  const after = await withOcctLock(() => inspectStepTool({ file: ctx.stepPath }));
+  if (!after.ok || !after.report) {
+    return unknownEditPromotion(`could not inspect the candidate solid: ${after.error ?? 'no report'}`);
+  }
+  return classifyEditPromotion({
+    request: ctx.task.description,
+    before: before.report,
+    after: after.report,
+  });
+}
+
+function promotionVerdict(result: EditPromotionResult): GateVerdict {
+  return {
+    gate: EDIT_PROMOTION_GATE,
+    ok: false,
+    code: `cadgenbench.edit.${result.classification}`,
+    message: result.reason,
+    hint:
+      result.classification === 'no-op'
+        ? 'The exported STEP is the unchanged input. Actually apply the requested edit; do not bank the baseline and do not return input.step as the answer.'
+        : result.classification === 'wrong-direction'
+          ? 'The material moved the opposite way from the request. Recheck whether the feature is an internal void or an outer body, then rebuild the edit.'
+          : result.classification === 'wrong-magnitude'
+            ? 'The edit is in the right direction but has not reached the dimension named in the request. Continue the same edit until that feature matches the requested size; do not stop at a partial change.'
+            : result.classification === 'wrong-topology'
+              ? 'The candidate added or removed a feature the request did not ask for. Preserve every unmentioned hole, boss, fillet, and solid.'
+              : 'The candidate does not satisfy the requested change. Re-read the request and rebuild only that feature.',
+  };
+}
+
+/**
+ * Wrap the validity gate with editing promotion. Promotion runs only after the
+ * STEP is valid, so the repair prompt first sees kernel/validity failures and
+ * then semantic ones. The wrapper keeps its own failure map because the base
+ * gate considers a promotion-rejected candidate valid.
+ */
+function withPromotionGate(base: CandidateGate, cfg: PipelineConfig, task: CadGenBenchTask): CandidateGate {
+  const hook: EditPromotionHook =
+    typeof cfg.editPromotion === 'function' ? cfg.editPromotion : autoEditPromotion;
+  const promotionFailures = new Map<string, GateVerdict>();
+  return {
+    stepPathFor: base.stepPathFor,
+    lastValidity: (p) => base.lastValidity(p),
+    lastFailure: (p) => promotionFailures.get(p) ?? base.lastFailure(p),
+    async run(scriptPath: string): Promise<GateReport> {
+      const report = await base.run(scriptPath);
+      if (!report.ok) {
+        promotionFailures.delete(scriptPath);
+        return report;
+      }
+      let result: EditPromotionResult;
+      try {
+        result = await hook({
+          task,
+          scriptPath,
+          stepPath: base.stepPathFor(scriptPath),
+          inputStepPath: join(taskWorkDir(cfg.runDir, task.id), EDIT_INPUT_NAME),
+        });
+      } catch (e) {
+        result = unknownEditPromotion(`promotion inspection failed: ${e instanceof Error ? e.message : String(e)}`);
+      }
+      if (result.status !== 'failed') {
+        promotionFailures.delete(scriptPath);
+        return report;
+      }
+      const verdict = promotionVerdict(result);
+      promotionFailures.set(scriptPath, verdict);
+      return { ok: false, verdicts: [...report.verdicts, verdict] };
+    },
+  };
 }
 
 interface LoopOutcome {
@@ -261,7 +365,12 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
   // a `missing` entry for tasks that end without a candidate.
   mkdirSync(taskSubmissionDir(cfg.runDir, task.id), { recursive: true });
   const scriptPath = join(workDir, 'model.kcad.ts');
-  const gate = createCandidateGate(cfg);
+  const realEdit = Boolean(cfg.agent || cfg.scriptsFrom);
+  const baseGate = createCandidateGate(cfg);
+  const gate =
+    task.type === 'editing' && realEdit && cfg.editPromotion !== 'off'
+      ? withPromotionGate(baseGate, cfg, task)
+      : baseGate;
 
   const finish = (patch: Partial<TaskState>, checkedScript = scriptPath): TaskState => {
     const s: TaskState = {
@@ -321,13 +430,23 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
       }
     }
 
-    // 3. Accept the gated candidate. An editing task without a valid one
-    //    falls back to the unchanged input when asked to (always without an LLM).
+    // 3. Accept the gated candidate. A promotion-rejected candidate is still a
+    //    valid solid, but it is not an answer to the edit and must not be
+    //    submitted. Passthrough remains only for a run with no producer at all;
+    //    it is never a silent fallback after a real edit failed.
     const checked = produced ? gate.lastValidity(scriptPath) : undefined;
+    const why = gate.lastFailure(scriptPath);
+    const promotionFailed = why?.gate === EDIT_PROMOTION_GATE;
     let status: TaskState['status'] | undefined;
-    if (checked !== undefined) status = acceptCandidate(cfg, task, gate.stepPathFor(scriptPath), checked);
+    if (checked !== undefined && !promotionFailed) {
+      status = acceptCandidate(cfg, task, gate.stepPathFor(scriptPath), checked);
+    }
     const fallback =
-      task.type === 'editing' && status !== 'valid' && (cfg.editFallback === 'passthrough' || (!cfg.agent && !cfg.scriptsFrom));
+      task.type === 'editing' &&
+      status !== 'valid' &&
+      !promotionFailed &&
+      !cfg.agent &&
+      !cfg.scriptsFrom;
     if (fallback) {
       const fallbackPath = join(workDir, 'passthrough.kcad.ts');
       writeFileSync(fallbackPath, passthroughScript());
@@ -345,11 +464,12 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
       );
     }
     if (status !== undefined) return finish({ status });
-    const why = gate.lastFailure(scriptPath);
     return finish({
       status: 'failed',
       error: produced
-        ? `no candidate passed export${why ? ` — ${why.code ?? why.gate}: ${why.message.slice(0, 200)}` : ''}`
+        ? promotionFailed
+          ? `no candidate passed edit promotion — ${why?.code ?? why?.gate}: ${why?.message.slice(0, 200) ?? 'unknown promotion failure'}`
+          : `no candidate passed export${why ? ` — ${why.code ?? why.gate}: ${why.message.slice(0, 200)}` : ''}`
         : 'no script extracted',
     });
   } catch (e) {

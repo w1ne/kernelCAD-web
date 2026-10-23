@@ -12,6 +12,7 @@ import { MockAgentClient } from '../../agent';
 import type { EvaluateResult } from '../../types';
 import type { CadGenBenchTask } from './dataset';
 import { passthroughScript, runAll, runTask, type PipelineConfig } from './pipeline';
+import type { EditPromotionResult } from './editPromotion';
 import { readTaskState } from './state';
 import { candidatePath } from './submission';
 import type { StepValidity } from './validity';
@@ -76,6 +77,7 @@ function cfg(runDir: string, patch: Partial<PipelineConfig> = {}): PipelineConfi
     maxAttempts: 3,
     maxTokens: 1000,
     editFallback: 'none',
+    editPromotion: 'off',
     keepInvalid: false,
     ...stubs(),
     ...patch,
@@ -83,6 +85,26 @@ function cfg(runDir: string, patch: Partial<PipelineConfig> = {}): PipelineConfi
 }
 
 const reply = (code: string, tokens = 10) => ({ text: '```ts\n' + code + '\n```', tokens_in: tokens, tokens_out: tokens / 2 });
+
+function promo(
+  status: EditPromotionResult['status'],
+  classification: EditPromotionResult['classification'],
+  reason: string,
+): EditPromotionResult {
+  return {
+    status,
+    classification,
+    reason,
+    expectedDirection: 'any',
+    volumeDeltaMm3: 0,
+    volumeToleranceMm3: 2,
+    faceDelta: 0,
+    bboxDeltaMm: 0,
+    holeCountBefore: 0,
+    holeCountAfter: 0,
+    holeChangeMm: 0,
+  };
+}
 
 describe('runTask without an LLM', () => {
   it('records generation as needs_key and writes no candidate', async () => {
@@ -147,15 +169,74 @@ describe('runTask with an LLM', () => {
     expect(s.error).toMatch(/cli\.script-exception: ReferenceError: holeRadius/);
   });
 
-  it('falls back to the unchanged input for an editing task when asked', async () => {
+  it('never silently falls back to the unchanged input after a real edit fails', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
     const runDir = join(root, 'run');
     const agent = new MockAgentClient([reply('THROW')]);
     const s = await runTask(tasks(root).edit, cfg(runDir, { agent, maxAttempts: 1, editFallback: 'passthrough' }));
-    expect(s).toMatchObject({ status: 'valid', mode: 'llm', fallback: 'passthrough' });
+    expect(s).toMatchObject({ status: 'failed', mode: 'llm' });
+    expect(s.fallback).toBeUndefined();
+    expect(s.error).toMatch(/cli\.script-exception/);
     // The editing prompt names the import the script must use.
     expect(agent.calls[0].messages[0].content).toMatch(/lib\.fromSTEP\('\.\/input\.step'\)/);
-    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe(passthroughScript());
+    expect(existsSync(candidatePath(runDir, '201'))).toBe(false);
+  });
+
+  it('feeds a no-op promotion verdict back and accepts the repaired edit', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return base;'), reply('return edited;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 2,
+        editPromotion: async ({ scriptPath }) =>
+          readFileSync(scriptPath, 'utf8').includes('base')
+            ? promo('failed', 'no-op', 'the exported solid is unchanged')
+            : promo('accepted', 'edited', 'real edit'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'valid', mode: 'llm', attempts: 2 });
+    expect(agent.calls[1].messages[2].content).toMatch(/cadgenbench\.edit\.no-op/);
+    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return edited;');
+  });
+
+  it('rejects a wrong-direction candidate and repairs it', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return backwards;'), reply('return forwards;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 2,
+        editPromotion: async ({ scriptPath }) =>
+          readFileSync(scriptPath, 'utf8').includes('backwards')
+            ? promo('failed', 'wrong-direction', 'volume moved the wrong way')
+            : promo('accepted', 'edited', 'real edit'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'valid', attempts: 2 });
+    expect(agent.calls[1].messages[2].content).toMatch(/cadgenbench\.edit\.wrong-direction/);
+    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return forwards;');
+  });
+
+  it('submits nothing when every attempt is a no-op', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return base;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 1,
+        editPromotion: async () => promo('failed', 'no-op', 'the exported solid is unchanged'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'failed', mode: 'llm' });
+    expect(s.error).toMatch(/edit promotion.*cadgenbench\.edit\.no-op/);
+    expect(existsSync(candidatePath(runDir, '201'))).toBe(false);
   });
 });
 
