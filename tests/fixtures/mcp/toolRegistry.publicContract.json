@@ -5770,20 +5770,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "gripperAperture": {
-          "type": "object",
-          "description": "Optional fingertip connector refs for gripper aperture travel reporting.",
-          "properties": {
-            "left": {
-              "type": "string",
-              "description": "Left fingertip connector ref such as \"left-finger.tip\"."
-            },
-            "right": {
-              "type": "string",
-              "description": "Right fingertip connector ref such as \"right-finger.tip\"."
-            }
-          }
         }
       }
     },
@@ -5851,10 +5837,6 @@
             "additionalProperties": true
           },
           "description": "Connector workspace bounds."
-        },
-        "gripperAperture": {
-          "type": "object",
-          "additionalProperties": true
         },
         "physicalUseCaseStaticCertificates": {
           "type": "array",
@@ -6339,10 +6321,6 @@
             "type": "string"
           },
           "description": "Connector refs to track across sampled poses."
-        },
-        "gripperAperture": {
-          "type": "object",
-          "description": "Optional gripper aperture request forwarded to review_cad."
         },
         "stopOnPass": {
           "type": "boolean",

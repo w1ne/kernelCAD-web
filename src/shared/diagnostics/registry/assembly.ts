@@ -217,14 +217,6 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'A connector ref tracked by the pose envelope could not be resolved at a sampled pose.',
   },
-  'assembly.gripper-aperture.connector-missing': {
-    hintTemplate:
-      "Gripper-aperture tracking expects two named connector refs on the gripper jaws. Pass { aRef: 'jaw_a.tip', bRef: 'jaw_b.tip' } (or whatever the connector names are) to gripperAperture.",
-    nextAction: { kind: 'fix-arg', field: 'gripperAperture' },
-    defaultSeverity: 'warn',
-    group: 'assembly',
-    description: 'A gripper-aperture request named a connector that does not exist on either jaw.',
-  },
   // Assembly validator — v0.6.2 limit-missing warning (1)
   'assembly.mate.limit-missing': {
     hintTemplate:

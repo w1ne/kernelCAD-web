@@ -545,7 +545,6 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         items: { type: 'object', additionalProperties: true },
         description: 'Connector workspace bounds.',
       },
-      gripperAperture: { type: 'object', additionalProperties: true },
       physicalUseCaseStaticCertificates: {
         type: 'array',
         items: { type: 'object', additionalProperties: true },
