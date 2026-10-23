@@ -47,7 +47,6 @@ describe('two-finger coupled gripper example', () => {
       file: EXAMPLE_PATH,
       includeInterference: false,
       trackConnectors: ['left-finger.tip', 'right-finger.tip'],
-      gripperAperture: { left: 'left-finger.tip', right: 'right-finger.tip' },
     });
 
     const advisory = result.diagnostics.filter((d) =>

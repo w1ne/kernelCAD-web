@@ -8,9 +8,10 @@
 // `BRepCheck_Analyzer` but breaks downstream consumers: split coplanar faces
 // from re-exported booleans, duplicate faces left by a translator, and
 // adjacent same-surface patches that tessellate into non-manifold edges
-// (an edge shared by four triangles). The official CADGenBench validity gate
-// rejects exactly that last class even though the solid is watertight, so a
-// model that imports and renders fine can still be un-submittable.
+// (an edge shared by four triangles). Strict downstream validity checks
+// (e.g. manifold-edge gates for fabrication or benchmark submission) reject
+// exactly that last class even though the solid is watertight, so a model that
+// imports and renders fine can still fail them.
 //
 // Two repair layers run here:
 //

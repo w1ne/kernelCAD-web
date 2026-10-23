@@ -2733,7 +2733,7 @@
   },
   {
     "name": "trace_from_image",
-    "description": "Use this when you need to trace a reference image into normalized waypoints, or turn sketch labels into a catalog-aware draft BOM. Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Set `detectParts: true` to request labeled component boxes, confidence, bundled-catalog candidates and unmatched labels; the BOM is a draft for review. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (vision model; named points/cluttered backgrounds; needs a configured vision endpoint), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto`. Per-feature confidence is reported. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
+    "description": "Use this when you need to trace a reference image into normalized waypoints. Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (vision model; named points/cluttered backgrounds; needs a configured vision endpoint), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto`. Per-feature confidence is reported. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2744,10 +2744,6 @@
         "hint": {
           "type": "string",
           "description": "Optional free-text hint forwarded to vision-LLM backends (e.g. \"a pair of eyewear; trace the upper brow only\")."
-        },
-        "detectParts": {
-          "type": "boolean",
-          "description": "Optional: use the configured vision model to detect labeled component boxes and return detectedParts plus a draftBom, normalized to the traced outline frame."
         },
         "features": {
           "type": "array",
@@ -2907,39 +2903,6 @@
           "type": "object",
           "additionalProperties": true,
           "description": "Assumption ledger: { facts, scale?, unresolvedCount } classifying every fact as visible/inferred/assumed/missing."
-        },
-        "detectedParts": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "description": "Optional labeled component detections: name, quantity, outline-frame position/bbox and confidence."
-        },
-        "draftBom": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "description": "Optional unverified BOM draft grouped by detected part name."
-        },
-        "unmatchedLabels": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "description": "Detected labels without a sufficiently strong bundled-catalog match."
-        },
-        "partDetectionFrame": {
-          "type": "string",
-          "enum": [
-            "outline",
-            "image",
-            "mixed"
-          ],
-          "description": "Coordinate frame used by all detected boxes, or mixed when some boxes fall outside the silhouette and retain image coordinates."
         }
       },
       "required": [
@@ -4350,7 +4313,7 @@
   },
   {
     "name": "fetch_part",
-    "description": "Use this when you need to download a catalog part as a STEP file. Resolve an id (or single-match query) to a part record and write its STEP file to the local cache. Bundled ids resolve offline; non-bundled ids require partsBaseUrl (or KERNELCAD_PARTS_BASE_URL). Returns the cache path plus a sha256 fingerprint.",
+    "description": "Use this when you need to download a catalog part as a STEP file. Resolve an id (or single-match query) to a part record and write its STEP file to the local cache. Bundled ids resolve offline; non-bundled ids require partsBaseUrl (or KERNELCAD_PARTS_BASE_URL). Returns the cache path plus a sha256 fingerprint. Set includeModel (or pass model.url) to instead resolve a verified STEP or GLB model file: a model.url must be public HTTPS with model.sha256 plus model.source and model.license; a catalog id/query (matched as catalog id or MPN) uses the catalog hash. The bytes are hash-checked and cached by SHA-256, optional model.expectedBboxMm is compared with the measured STEP/GLB dimensions (GLB only when POSITION bounds exist, else bbox_check.status is not_checked), and the result is { ok, format, model_path, sha256, cache_hit, bbox_check, attribution } or an errorCode such as model_not_found.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4372,6 +4335,48 @@
         "partsBaseUrl": {
           "type": "string",
           "description": "Opt-in remote endpoint; no default value ships with kernelCAD."
+        },
+        "includeModel": {
+          "type": "boolean",
+          "description": "Resolve a hash-verified STEP/GLB model file instead of the plain catalog STEP record."
+        },
+        "model": {
+          "type": "object",
+          "description": "Verified model options; supplying model implies includeModel.",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Direct public HTTPS .step/.stp/.glb download URL. Requires sha256, source and license."
+            },
+            "sha256": {
+              "type": "string",
+              "description": "Required SHA-256 digest for an explicit URL; for catalog parts it overrides the catalog GLB digest."
+            },
+            "source": {
+              "type": "string",
+              "description": "Catalog or manufacturer name, such as KiCad Packages3D."
+            },
+            "license": {
+              "type": "string",
+              "description": "License string supplied by the source."
+            },
+            "attribution": {
+              "type": "string"
+            },
+            "expectedBboxMm": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Expected [x,y,z] dimensions to compare with the measured model."
+            },
+            "toleranceRatio": {
+              "type": "number",
+              "description": "Relative expected-versus-measured bbox tolerance, default 0.25."
+            }
+          }
         }
       }
     },
@@ -4414,6 +4419,56 @@
         "instruction": {
           "type": "string",
           "description": "What to do with the link_out URL."
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "step",
+            "glb"
+          ],
+          "description": "Model format (includeModel mode)."
+        },
+        "model_path": {
+          "type": "string",
+          "description": "Local cache path of the verified model file (includeModel mode)."
+        },
+        "cache_hit": {
+          "type": "boolean",
+          "description": "Whether the verified model came from the SHA-256 cache (includeModel mode)."
+        },
+        "bbox_check": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "not_checked",
+                "within_tolerance",
+                "outside_tolerance"
+              ]
+            },
+            "expected_mm": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "actual_mm": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "tolerance_ratio": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": true
+        },
+        "attribution": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Model provenance { source, license, url?, attribution? } (includeModel mode)."
         },
         "error": {
           "type": "string"
@@ -5678,20 +5733,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "gripperAperture": {
-          "type": "object",
-          "description": "Optional fingertip connector refs for gripper aperture travel reporting.",
-          "properties": {
-            "left": {
-              "type": "string",
-              "description": "Left fingertip connector ref such as \"left-finger.tip\"."
-            },
-            "right": {
-              "type": "string",
-              "description": "Right fingertip connector ref such as \"right-finger.tip\"."
-            }
-          }
         }
       }
     },
@@ -5759,10 +5800,6 @@
             "additionalProperties": true
           },
           "description": "Connector workspace bounds."
-        },
-        "gripperAperture": {
-          "type": "object",
-          "additionalProperties": true
         },
         "physicalUseCaseStaticCertificates": {
           "type": "array",
@@ -6070,68 +6107,6 @@
     }
   },
   {
-    "name": "review_paint_peek_latest",
-    "description": "Use this when you need to see the latest region the user painted in Studio. Return the newest inpainting-style review packet the user painted in Studio. Studio writes packets to <scriptPath>.review-paint/latest/ as the user marks regions over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the freshest one within a configurable freshness window (default 30 minutes). Returns base64 PNGs of the screenshot + mask in-band so any MCP client can see the marked regions without local-disk Read access. The packet also carries the user's intent — an optional one-line note and preset tags (e.g. \"too thick\", \"missing\", \"wrong angle\") describing WHAT is wrong, not just where. Call this whenever the user says \"look at my mark\", \"check what I painted\", or any equivalent.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "freshness_sec": {
-          "type": "integer",
-          "description": "Maximum packet age in seconds. Default 1800 (30 min). Use a smaller value for \"what did I just paint\" or a larger one for \"earlier today\".",
-          "minimum": 1
-        },
-        "extra_roots": {
-          "type": "array",
-          "description": "Optional extra checkout paths to scan (in addition to ~/projects/kernelCAD-web and ~/projects/kernelCAD-web-worktrees). Use when Studio is hosted from a non-standard location.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "paths_only": {
-          "type": "boolean",
-          "description": "When true, omit base64 PNG fields and return only paths + metadata. Smaller response when the agent will Read the PNGs from disk anyway, or just wants to know \"is there a packet\"."
-        }
-      }
-    },
-    "annotations": {
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
-    },
-    "outputSchema": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean"
-        },
-        "empty": {
-          "type": "boolean",
-          "description": "True when no fresh packet was found."
-        },
-        "packet": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "The freshest review packet (screenshot + mask + metadata)."
-        },
-        "scanned_roots": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Checkout roots that were scanned."
-        },
-        "scanned_candidates": {
-          "type": "number",
-          "description": "Number of candidate packets considered."
-        }
-      },
-      "required": [
-        "ok"
-      ],
-      "additionalProperties": true
-    }
-  },
-  {
     "name": "design_loop",
     "description": "Use this when the goal is complex / production / enclosure / gearbox / robot-arm / multi-body, or when you need evaluate→review/verify→revise until green. PREFERRED over one-shot evaluate_script+open_in_studio for Adam-level parts. Runs a CAD design loop over attempt scripts: review_cad each attempt, continue past functional attempts with unresolved warnings, return repair prompts (nextActionPrompt) plus structured revisionAssist (suggestedPatches / autoApplied.suggestedCode for repairable feature failures; cookbook steers for stacked-primitive toys). Stop on ok or convergence.escalate. To pick among N alternative candidates for one goal without a judge, pass them all as attempts with consensus:true (geometric medoid selection). For organic/car bodies set likenessProfile:\"automotive\" and pass bodyLikeness (or automotive stills on visualReview.checks) — attempts fail closed until body-likeness is publishReady. Optionally write a Studio build record JSON.",
     "inputSchema": {
@@ -6247,10 +6222,6 @@
             "type": "string"
           },
           "description": "Connector refs to track across sampled poses."
-        },
-        "gripperAperture": {
-          "type": "object",
-          "description": "Optional gripper aperture request forwarded to review_cad."
         },
         "stopOnPass": {
           "type": "boolean",
@@ -8978,198 +8949,6 @@
     }
   },
   {
-    "name": "route_wires",
-    "description": "Use this when you need a first-pass orthogonal pin-to-pin wire route estimate and clearance check. Accepts a LabWired handoff or explicit wire positions in millimetres, returns path length and bend count, and reports collisions against part bounding boxes. Wires whose endpoint positions are null are reported as unresolved. Read-only analysis; it does not create or certify a physical harness.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "wires": {
-          "type": "array",
-          "description": "Wire records with from_pos_mm and to_pos_mm as 3D millimetre coordinates.",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        },
-        "handoff": {
-          "type": "object",
-          "description": "LabWired handoff schema labwired-kernelcad-handoff/0.1 with parts, pins and wires.",
-          "additionalProperties": true
-        },
-        "obstacles": {
-          "type": "array",
-          "description": "Axis-aligned obstacle volumes in world millimetres.",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        },
-        "board_surface_z_mm": {
-          "type": "number",
-          "description": "Known world Z of the LabWired board surface. Required to reconcile 2D endpoint coordinates and XY-only part placements for complete clearance analysis."
-        },
-        "clearance_mm": {
-          "type": "number",
-          "description": "Minimum obstacle clearance, default 1 mm."
-        },
-        "bend_radius_mm": {
-          "type": "number",
-          "description": "Requested minimum bend radius, default 2 mm."
-        }
-      }
-    },
-    "annotations": {
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
-    },
-    "outputSchema": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean"
-        },
-        "routes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "route_found": {
-                "type": "boolean"
-              },
-              "route_failure": {
-                "type": "string"
-              },
-              "length_mm": {
-                "type": [
-                  "number",
-                  "null"
-                ]
-              },
-              "bend_count": {
-                "type": [
-                  "integer",
-                  "null"
-                ]
-              },
-              "points_mm": {
-                "type": "array",
-                "items": {
-                  "type": "array",
-                  "items": {
-                    "type": "number"
-                  }
-                }
-              },
-              "collisions": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "clearance_violations": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            },
-            "additionalProperties": true
-          }
-        },
-        "warnings": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "unresolved_wire_count": {
-          "type": "integer"
-        },
-        "clearance_mm": {
-          "type": "number"
-        },
-        "requested_bend_radius_mm": {
-          "type": "number"
-        }
-      },
-      "required": [
-        "ok",
-        "routes",
-        "warnings",
-        "unresolved_wire_count"
-      ],
-      "additionalProperties": true
-    }
-  },
-  {
-    "name": "import_handoff",
-    "description": "Use this when you need to place parts from a LabWired handoff.json into a KernelCAD assembly. Pass the parsed handoff object using schema labwired-kernelcad-handoff/0.1. The tool validates the handoff and returns an evaluable assembly script with corner-anchored bbox placeholder solids, origin/bbox-face/mounting-hole/pin anchors, endpoint connectivity mates for wires whose two endpoint positions are known, and structured cutout_hints from connector faces. These mates express connectivity intent only; no wire geometry or routing is generated. It does not cut enclosure walls or fetch STEP/GLB assets. position_mm locates the bbox lower corner; bbox.center is derived. Null, estimated, proposed, and other non-exact geometry is reported as warnings and omitted or placed at zero as appropriate.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "handoff": {
-          "type": "object",
-          "description": "Parsed handoff.json object using labwired-kernelcad-handoff/0.1."
-        }
-      },
-      "required": [
-        "handoff"
-      ]
-    },
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "openWorldHint": false
-    },
-    "outputSchema": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean"
-        },
-        "device": {
-          "type": "string"
-        },
-        "part_count": {
-          "type": "number"
-        },
-        "wire_mate_count": {
-          "type": "number"
-        },
-        "cutout_hints": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Connector-face cutout hints { ref, feature, face?, cutout_mm }; descriptive input dimensions, not applied wall cuts."
-          }
-        },
-        "script": {
-          "type": "string",
-          "description": "Evaluable .kcad.ts assembly script with bbox placeholder parts and named anchors."
-        },
-        "warnings": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "error": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "ok",
-        "warnings"
-      ],
-      "additionalProperties": true
-    }
-  },
-  {
     "name": "mesh_boolean",
     "description": "Use this when the user wants to union, subtract, or intersect two imported triangle mesh solids (STL, OBJ, or 3MF). Supports union, subtract (A minus B) and intersect. Pass each operand as { file } on the MCP server or { data } with base64 mesh bytes; formats are detected or may be specified. Returns volume in mm³, triangle count and a binary STL as data_base64; pass that payload to import_step to continue modeling. Inputs must be closed, consistently oriented 2-manifold meshes. Open, non-manifold, or invalid meshes return an error. This computes mesh geometry and does not create an editable B-rep feature tree.",
     "inputSchema": {
@@ -9254,7 +9033,7 @@
   },
   {
     "name": "explode_view",
-    "description": "Use this when you need an ordered exploded-view plan for an assembly. Supply parts as {name,center:[x,y,z],size:[x,y,z]} in mm, or a LabWired handoff containing parts with ref, position_mm.value and physical.bbox_mm (also accepts bbox_mm.value). Optional explicit assembly_order takes precedence over handoff assembly_order / assembly.order. Missing order falls back to input part order; parts lacking usable placement or bbox and unlisted/unknown order refs are reported. Choose mode axis (default) or radial; axis follows the requested direction, radial moves parts away from the assembly centroid. The result includes ready-to-paste param_declarations, animation_tracks and reverse_animation_tracks for animationView(), part_transforms for existing shapes, and script_fragment. cameraPlan gives framing guidance.",
+    "description": "Use this when you need an ordered exploded-view plan for an assembly. Supply parts as {name,center:[x,y,z],size:[x,y,z]} in mm. Optional assembly_order sets the sequence; missing order falls back to input part order, and unlisted/unknown order refs are reported. Choose mode axis (default) or radial; axis follows the requested direction, radial moves parts away from the assembly centroid. The result includes ready-to-paste param_declarations, animation_tracks and reverse_animation_tracks for animationView(), part_transforms for existing shapes, and script_fragment. cameraPlan gives framing guidance.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -9290,18 +9069,13 @@
             ],
             "additionalProperties": false
           },
-          "description": "Named assembly parts and measured bbox centers/sizes in mm. Optional when handoff is supplied."
+          "description": "Named assembly parts and measured bbox centers/sizes in mm."
         },
         "assembly_order": {
           "type": "array",
           "items": {
             "type": "string"
           }
-        },
-        "handoff": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "Optional handoff metadata. Assembly order lookup supports assembly_order or assembly.order."
         },
         "mode": {
           "type": "string",
@@ -9536,171 +9310,122 @@
     }
   },
   {
-    "name": "fetch_part_model",
-    "description": "Use this when a LabWired handoff part needs a STEP or GLB model resolved from a verified HTTPS URL plus SHA-256, or from catalog_id / MPN. The tool uses fetch_part/find_part catalog plumbing, stores URL-fetched bytes in a SHA-256 cache, checks the supplied hash, compares measurable model dimensions with bbox_mm, and returns provenance or a model_not_found result. GLB bounds are checked when POSITION accessor bounds are available; otherwise bbox_check.status is not_checked.",
+    "name": "blockout_assembly",
+    "description": "Use this when you have a list of parts with bounding boxes and positions (from a layout, spreadsheet, another tool or a sketch) and need an evaluable placeholder assembly script. Pass parts as { name, bboxMm:[x,y,z], positionMm:[x,y,z], rotationDeg?, anchors? } in mm; positionMm locates the bbox lower corner and anchors are named points in assembly coordinates. Optional connections [{ from, to }] reference anchors as \"part.anchor\" (including built-ins origin, bbox_center, bbox_x_min..bbox_z_max) and become fastened mates that express connectivity intent only; no wire or route geometry is generated. Returns the script (corner-anchored box solids with named connectors) plus warnings. It reads no files and cuts nothing; refine the solids with add_part/add_feature afterwards.",
     "inputSchema": {
       "type": "object",
       "properties": {
-        "url": {
+        "name": {
           "type": "string",
-          "description": "Direct public HTTPS download URL from the handoff step field."
+          "description": "Assembly name, default \"blockout\"."
         },
-        "expected_sha256": {
-          "type": "string",
-          "description": "Required SHA-256 digest for an explicit URL; catalog hashes are used when resolving catalog records."
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "bboxMm": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3,
+                "description": "Box dimensions [x,y,z] in mm."
+              },
+              "positionMm": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3,
+                "description": "Bbox lower corner in assembly coordinates, mm."
+              },
+              "rotationDeg": {
+                "description": "Rotation about Z as a number, or XYZ Euler degrees as [x,y,z].",
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  }
+                ]
+              },
+              "anchors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "positionMm": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "description": "Anchor point in assembly coordinates, mm."
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "positionMm"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "name",
+              "bboxMm",
+              "positionMm"
+            ],
+            "additionalProperties": false
+          }
         },
-        "ref": {
-          "type": "string"
-        },
-        "catalog_id": {
-          "type": "string"
-        },
-        "mpn": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string",
-          "description": "Catalog or manufacturer name, such as KiCad Packages3D."
-        },
-        "license": {
-          "type": "string",
-          "description": "License string supplied by the source."
-        },
-        "attribution": {
-          "type": "string"
-        },
-        "bbox_mm": {
+        "connections": {
           "type": "array",
           "items": {
-            "type": "number"
-          },
-          "description": "Expected [x,y,z] dimensions from the handoff."
-        },
-        "tolerance_ratio": {
-          "type": "number",
-          "description": "Relative expected-versus-measured bbox tolerance, default 0.25."
-        },
-        "partsBaseUrl": {
-          "type": "string",
-          "description": "Optional parts catalog endpoint, passed to find_part/fetch_part."
-        }
-      }
-    },
-    "annotations": {
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": true
-    },
-    "outputSchema": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean"
-        },
-        "ref": {
-          "type": "string"
-        },
-        "errorCode": {
-          "type": "string"
-        },
-        "format": {
-          "type": "string",
-          "enum": [
-            "step",
-            "glb"
-          ]
-        },
-        "model_path": {
-          "type": "string"
-        },
-        "sha256": {
-          "type": "string"
-        },
-        "cache_hit": {
-          "type": "boolean"
-        },
-        "bbox_check": {
-          "type": "object",
-          "properties": {
-            "status": {
-              "type": "string",
-              "enum": [
-                "not_checked",
-                "within_tolerance",
-                "outside_tolerance"
-              ]
-            },
-            "expected_mm": {
-              "type": "array",
-              "items": {
-                "type": "number"
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "\"part.anchor\""
+              },
+              "to": {
+                "type": "string",
+                "description": "\"part.anchor\""
               }
             },
-            "actual_mm": {
-              "type": "array",
-              "items": {
-                "type": "number"
-              }
-            },
-            "tolerance_ratio": {
-              "type": "number"
-            }
-          },
-          "additionalProperties": true
-        },
-        "attribution": {
-          "type": "object",
-          "additionalProperties": true
-        },
-        "error": {
-          "type": "string"
+            "required": [
+              "from",
+              "to"
+            ],
+            "additionalProperties": false
+          }
         }
       },
       "required": [
-        "ok"
-      ],
-      "additionalProperties": true
-    }
-  },
-  {
-    "name": "write_bom",
-    "description": "Use this when you need to merge a LabWired handoff BOM with optional KernelCAD catalog parts and MPNs, then write CSV or retrieve Sheets-ready rows. Pass exactly one of handoff, handoff_json or handoff_path. This tool only writes a CSV locally; it makes no Google API calls. Returns headers, tabular rows, CSV contents and the CSV path.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "handoff": {
-          "type": "object",
-          "description": "Handoff object with a parts array."
-        },
-        "handoff_json": {
-          "type": "string",
-          "description": "Handoff JSON text."
-        },
-        "handoff_path": {
-          "type": "string",
-          "description": "Path to handoff JSON."
-        },
-        "catalog_parts": {
-          "type": "array",
-          "items": {
-            "type": "object"
-          },
-          "description": "Optional matching KernelCAD catalog entries with id/ref, partNumber and vendor."
-        },
-        "output_path": {
-          "type": "string",
-          "description": "Optional CSV destination. Defaults to artifacts/bom/bom-<id>.csv."
-        },
-        "overwrite": {
-          "type": "boolean",
-          "description": "Set true to replace an existing CSV destination. Existing files are otherwise preserved."
-        }
-      }
+        "parts"
+      ]
     },
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": false
     },
     "outputSchema": {
       "type": "object",
@@ -9708,42 +9433,21 @@
         "ok": {
           "type": "boolean"
         },
-        "destination": {
+        "part_count": {
+          "type": "number"
+        },
+        "connection_count": {
+          "type": "number"
+        },
+        "script": {
           "type": "string",
-          "enum": [
-            "csv"
-          ]
+          "description": "Evaluable .kcad.ts assembly script with bbox placeholder parts and named anchors."
         },
-        "rows": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        },
-        "headers": {
+        "warnings": {
           "type": "array",
           "items": {
             "type": "string"
           }
-        },
-        "sheets_rows": {
-          "type": "array",
-          "items": {
-            "type": "array",
-            "items": {
-              "type": [
-                "string",
-                "number"
-              ]
-            }
-          }
-        },
-        "csv": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
         },
         "error": {
           "type": "string"
@@ -9751,11 +9455,7 @@
       },
       "required": [
         "ok",
-        "destination",
-        "rows",
-        "headers",
-        "sheets_rows",
-        "csv"
+        "warnings"
       ],
       "additionalProperties": true
     }

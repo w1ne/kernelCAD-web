@@ -3,7 +3,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { fileReadErrorMessage } from '../../../shared/diagnostics/fileReadError';
-import type { GripperApertureRequest } from '../../../modeling/mates/gripperAperture';
 import type { MechanismFitnessResult } from '../../../modeling/mates/mechanismFitness';
 import {
   runReviewPipeline,
@@ -65,7 +64,6 @@ export interface DesignLoopInput {
   includeInterference?: boolean;
   epsilonMm3?: number;
   trackConnectors?: string[];
-  gripperAperture?: GripperApertureRequest;
   samplesPerMate?: number;
   combinatorial?: boolean;
   stopOnPass?: boolean;
@@ -320,7 +318,6 @@ function buildReviewInput(
     includeInterference: input.includeInterference,
     epsilonMm3: input.epsilonMm3,
     trackConnectors: input.trackConnectors,
-    gripperAperture: input.gripperAperture,
     samplesPerMate: input.samplesPerMate,
     combinatorial: input.combinatorial,
     ...(requirePhysicalAcceptance
@@ -826,12 +823,7 @@ function buildRecord(input: DesignLoopInput, attempts: readonly DesignLoopAttemp
 
 function summarizeAttempt(attempt: DesignLoopAttemptResult): string {
   if (attempt.ok) {
-    const summary = attempt.mechanismSummary;
-    const gripperTravel = summary?.gripperApertureTravelMm;
-    const travelText = gripperTravel !== undefined
-      ? `, gripper aperture moves ${formatMm(gripperTravel)} mm`
-      : '';
-    return `validator clean, pose envelope solved, no interferences${travelText}`;
+    return 'validator clean, pose envelope solved, no interferences';
   }
   if (attempt.functional && !attempt.qualityOk) {
     return `functional but rejected by quality gate after ${attempt.reviewFacts.length} review facts`;
@@ -840,10 +832,6 @@ function summarizeAttempt(attempt: DesignLoopAttemptResult): string {
     return `${attempt.repairMode} required after ${attempt.diagnosticCount} diagnostics`;
   }
   return `${attempt.diagnosticCount} diagnostics`;
-}
-
-function formatMm(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(2);
 }
 
 function publicRecordUrl(outputRecordPath: string): string | undefined {

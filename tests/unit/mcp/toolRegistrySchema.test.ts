@@ -45,18 +45,6 @@ describe('toolRegistry pose-envelope schema options', () => {
     });
   });
 
-  it('review_cad schema declares gripperAperture refs', () => {
-    const def = findTool('review_cad');
-    const prop = def.inputSchema.properties.gripperAperture as {
-      type: string;
-      properties?: Record<string, { type: string }>;
-    };
-    expect(prop).toBeDefined();
-    expect(prop.type).toBe('object');
-    expect(prop.properties?.left?.type).toBe('string');
-    expect(prop.properties?.right?.type).toBe('string');
-  });
-
   it('design_loop visual review schema names every required visual check', () => {
     const def = findTool('design_loop');
     const attempts = def.inputSchema.properties.attempts as {

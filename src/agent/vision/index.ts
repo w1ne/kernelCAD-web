@@ -21,7 +21,7 @@ import {
 } from './types';
 import { defaultVisionClient, type VisionMediaType } from './anthropicVisionClient';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
-import { detectPartsViaLLM, extractFeaturesViaLLM, partsInOutlineFrame, type VisionLlmClient } from './visionLlmBackend';
+import { extractFeaturesViaLLM, type VisionLlmClient } from './visionLlmBackend';
 import { traceHybrid } from './hybridBackend';
 import { extractSilhouettePolyline as defaultExtractSilhouettePolyline } from './opencvBackend';
 import { decideBackend, needsComponentSilhouetteLabels } from './router';
@@ -56,8 +56,6 @@ export type {
   TraceFeatureResult,
   TraceFromImageInput,
   TraceFromImageOutput,
-  DetectedTracePart,
-  DraftBomItem,
   TraceDiagnostic,
 } from './types';
 export { DEFAULT_MAX_WAYPOINTS_PER_FEATURE } from './types';
@@ -169,7 +167,6 @@ export async function traceFromImage(
 
   // Step 5: dispatch (under a hard timeout so a backend can never hang).
   const timeoutMs = opts.backendTimeoutMs ?? backendTimeoutMs();
-  const backendDeadline = Date.now() + timeoutMs;
   try {
     const results = await withBackendTimeout(
       dispatchTraceBackend(
@@ -187,26 +184,6 @@ export async function traceFromImage(
     );
 
     const output = buildTraceOutput(input, results, imageDims, diagnostics);
-    if (input.detectParts) {
-      try {
-        const client = opts.visionClient ?? defaultVisionClient({ timeoutMs });
-        const remainingMs = Math.max(0, backendDeadline - Date.now());
-        if (remainingMs === 0) throw TRACE_TIMEOUT;
-        const rawParts = await withBackendTimeout(
-          detectPartsViaLLM(client, new Uint8Array(imageBytes.buffer, imageBytes.byteOffset, imageBytes.byteLength), mediaType, input.hint),
-          remainingMs,
-        );
-        Object.assign(output, partsInOutlineFrame(rawParts, results));
-      } catch (err) {
-        output.detectedParts = [];
-        output.draftBom = [];
-        output.unmatchedLabels = [];
-        diagnostics.push(makeDiag('tool.trace-from-image.part-detection-failed', 'warn', `optional part detection failed: ${errMsg(err)}`));
-        if (err === TRACE_TIMEOUT) {
-          diagnostics[diagnostics.length - 1].message = `optional part detection exceeded the shared ${timeoutMs}ms backend timeout`;
-        }
-      }
-    }
     return output;
   } catch (err) {
     return traceFailureOutput(err, backend, timeoutMs, imageDims, diagnostics);

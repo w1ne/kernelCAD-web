@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/lib/imageSimilarity/judge.test.ts
+// eval/oracle/judge.test.ts
 //
 // W2 — VisualJudge. Verifies:
 //  1. MockVisualJudge returns its canned score (no API key, no network).

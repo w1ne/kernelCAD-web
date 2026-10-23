@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/lib/imageSimilarity/judge.ts
+// eval/oracle/judge.ts
 //
 // W2 — Harden the oracle. A pluggable VisualJudge.
 //

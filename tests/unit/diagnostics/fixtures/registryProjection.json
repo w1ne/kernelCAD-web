@@ -120,7 +120,6 @@
     "assembly.pose-envelope.clearance-violated",
     "assembly.pose-envelope.clearance-unresolved",
     "assembly.pose-envelope.connector-unresolved",
-    "assembly.gripper-aperture.connector-missing",
     "assembly.mate.limit-missing",
     "assembly.connectivity.floating-moving-part",
     "assembly.connectivity.no-load-path",
@@ -1139,13 +1138,6 @@
       "nextAction": {
         "kind": "fix-arg",
         "field": "connectorRef"
-      }
-    },
-    "assembly.gripper-aperture.connector-missing": {
-      "template": "Gripper-aperture tracking expects two named connector refs on the gripper jaws. Pass { aRef: 'jaw_a.tip', bRef: 'jaw_b.tip' } (or whatever the connector names are) to gripperAperture.",
-      "nextAction": {
-        "kind": "fix-arg",
-        "field": "gripperAperture"
       }
     },
     "assembly.mate.limit-missing": {
@@ -2846,10 +2838,6 @@
     "assembly.pose-envelope.connector-unresolved": {
       "kind": "fix-arg",
       "field": "connectorRef"
-    },
-    "assembly.gripper-aperture.connector-missing": {
-      "kind": "fix-arg",
-      "field": "gripperAperture"
     },
     "assembly.mate.limit-missing": {
       "kind": "fix-arg",

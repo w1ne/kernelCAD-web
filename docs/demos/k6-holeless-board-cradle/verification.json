@@ -2,7 +2,6 @@
   "feature": "K6 holeless board cradle cookbook",
   "date": "2026-10-15",
   "recipe": "examples/cookbook/holeless-board-cradle.kcad.ts",
-  "handoffFixture": "tests/fixtures/argon/handoff-drawbot.json",
   "video": {
     "file": "demo.mp4",
     "command": "python3 docs/demos/k6-holeless-board-cradle/make-demo.py",

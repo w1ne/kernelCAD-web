@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/lib/imageSimilarity/fidelityGates.ts
+// eval/oracle/fidelityGates.ts
 //
 // W2 — Harden the oracle. Boolean fidelity gates that the eval harness ANDs
 // BEFORE any visual (SSIM / silhouette / VLM) score. The point: a wrong object
@@ -14,7 +14,7 @@
 // fill-ratio is fooled the same way (the lens adds the volume back). The only
 // signal invariant to lens insertion is the BREP topology: the frame's front
 // face keeps its inner boundary loops (the lens cutouts) whether or not a lens
-// body sits in them. So the gate consumes `maxFaceInnerLoops` from list_faces.
+// body sits in them. So the gate consumes `maxFaceInnerLoops` from inspect({ of: 'faces' }).
 //
 // Design: gates take ALREADY-PARSED data (small numbers), never file paths or
 // pixels — the harness produces the numbers from the model + render-inspect.
@@ -29,7 +29,7 @@ export interface FidelityGate {
 /**
  * Already-parsed inputs the gates operate on.
  * - `maxFaceInnerLoops` is the maximum inner-loop (hole) count across the
- *   model's faces, from `list_faces` — e.g. 2 for an eyewear front with two
+ *   model's faces, from `inspect({ of: 'faces' })` — e.g. 2 for an eyewear front with two
  *   lens openings, 0 for a solid slab.
  * - `partsCount` / `solidVolume` come from the model's shape info.
  */

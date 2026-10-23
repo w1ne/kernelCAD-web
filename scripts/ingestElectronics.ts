@@ -8,7 +8,7 @@
 // CC-licensed remote (KiCad packages3D) per the manifest — nothing binary is
 // committed to this repo. Each part becomes a catalog record with a MEASURED
 // bbox (not guessed), so the same `find_part` / `fetch_part` path that serves
-// mechanical parts now serves the chips/peripherals LabWired supports.
+// mechanical parts now serves the declared chips and peripherals.
 //
 // Usage:
 //   npx tsx scripts/ingestElectronics.ts <outDir> \

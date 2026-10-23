@@ -7,7 +7,7 @@ description: Turn a vague user ask into a Real Object Brief before writing any g
 
 ## Purpose
 
-A vague ask — "a wayfarer-style frame", "that bottle", "make the same one" —
+A vague ask — "a vintage-style product", "that bottle", "make the same one" —
 produces vague geometry. This sub-skill produces a **Real Object Brief**: a
 structured, numbered record of everything the reference communicates before any
 tool call touches the kernel.
@@ -57,30 +57,30 @@ If the reference photo has a known scale object (a hand, a coin, packaging
 dimensions), record it:
 
 ```
-// Scale: millimetres. Outer frame ~130 mm wide (credit-card width for scale),
-//   bridge gap ~18 mm, arm length ~135 mm, total body depth ~5 mm.
+// Scale: millimetres. Outer body ~130 mm wide (credit-card width for scale),
+//   neck gap ~18 mm, arm length ~135 mm, total body depth ~5 mm.
 ```
 
-If no scale cue exists, estimate from category norms (eyewear: 130–140 mm wide;
+If no scale cue exists, estimate from category norms (handheld device: 130–140 mm wide;
 bottle: 70–90 mm diameter × 200–280 mm tall; USB dongle: 20 × 10 × 6 mm).
 Record the norm and the uncertainty:
 
 ```
 // Scale: millimetres. No scale cue in photo; estimated from category norms.
-//   Assumed 130 mm wide × 48 mm tall × 5 mm deep (typical eyewear silhouette).
+//   Assumed 130 mm wide × 48 mm tall × 5 mm deep (typical handheld silhouette).
 ```
 
 ## Visible facts discipline
 
 Each bullet describes ONE observable thing. Bad examples (do not write these):
 
-> "Frame is black and glossy with rounded edges and also has lenses."
+> "Body is black and glossy with rounded edges and also has cutouts."
 
 Good examples:
 
-> "Outer frame: black, high-gloss acetate. Silhouette is rounded-rectangular
->   with a pronounced brow bump at the top."
-> "Lenses: flat, grey-tinted. Set flush with the frame; no raised rim."
+> "Outer body: black, high-gloss plastic. Silhouette is rounded-rectangular
+>   with a pronounced bump at the top."
+> "Insert panels: flat, grey-tinted. Set flush with the body; no raised rim."
 
 Separate form (shape, silhouette, relative position) from surface (color,
 gloss, texture). The model is built from form facts; material is applied
@@ -92,7 +92,7 @@ Every real object has a back. Enumerate what the back of the reference object
 must contain:
 
 - Continuous enclosures need a case-band (thickness, material).
-- Optical lenses need a lens-seat recess or groove.
+- Inserted panels need a seat recess or groove.
 - Mounted objects need a flat mating face, adhesive pad, or threaded boss.
 - Electronic housings need a PCB pocket and a battery compartment on the reverse.
 
@@ -106,8 +106,8 @@ like:
 
 ```
 // Validation focus:
-//   - Front view: frame outline matches reference silhouette; brow bump above
-//     lens on both sides; bridge gap centered.
+//   - Front view: body outline matches reference silhouette; top bump above
+//     the insert on both sides; neck gap centered.
 //   - Top view: body has real depth (not a flat slab); arms extend laterally.
 //   - Iso view: gloss material reads as specular; no floating elements.
 //   - Score gate: silhouette ≥ 0.45, SSIM ≥ 0.30 (task-specific thresholds).

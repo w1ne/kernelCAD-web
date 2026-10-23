@@ -3,7 +3,6 @@
 import { evaluateSdfTool } from '../tools/evaluateSdf';
 import { designLoopTool } from '../tools/designLoop';
 import { reviewCadTool } from '../tools/reviewCad';
-import { reviewPaintPeekLatestTool } from '../tools/reviewPaint';
 import { flattenPatternTool } from '../tools/flattenPattern';
 import { captureAnimationTool } from '../tools/captureAnimation';
 import { renderPreviewTool } from '../tools/renderPreview';
@@ -72,54 +71,10 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             description: 'Optional connector refs such as ["gripper-plate.tool-tip"] to limit connector workspace reporting.',
             items: { type: 'string' },
           },
-          gripperAperture: {
-            type: 'object',
-            description: 'Optional fingertip connector refs for gripper aperture travel reporting.',
-            properties: {
-              left: { type: 'string', description: 'Left fingertip connector ref such as "left-finger.tip".' },
-              right: { type: 'string', description: 'Right fingertip connector ref such as "right-finger.tip".' },
-            },
-          },
         },
       },
     },
     handler: input => reviewCadTool(input as unknown as Parameters<typeof reviewCadTool>[0]),
-  },
-  {
-    definition: {
-      name: 'review_paint_peek_latest',
-      description:
-        'Use this when you need to see the latest region the user painted in Studio. ' +
-        'Return the newest inpainting-style review packet the user painted in Studio. ' +
-        'Studio writes packets to <scriptPath>.review-paint/latest/ as the user marks regions ' +
-        'over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the ' +
-        'freshest one within a configurable freshness window (default 30 minutes). Returns base64 ' +
-        'PNGs of the screenshot + mask in-band so any MCP client can see the marked regions ' +
-        'without local-disk Read access. The packet also carries the user\'s intent — an optional ' +
-        'one-line note and preset tags (e.g. "too thick", "missing", "wrong angle") describing ' +
-        'WHAT is wrong, not just where. Call this whenever the user says "look at my mark", ' +
-        '"check what I painted", or any equivalent.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          freshness_sec: {
-            type: 'integer',
-            description: 'Maximum packet age in seconds. Default 1800 (30 min). Use a smaller value for "what did I just paint" or a larger one for "earlier today".',
-            minimum: 1,
-          },
-          extra_roots: {
-            type: 'array',
-            description: 'Optional extra checkout paths to scan (in addition to ~/projects/kernelCAD-web and ~/projects/kernelCAD-web-worktrees). Use when Studio is hosted from a non-standard location.',
-            items: { type: 'string' },
-          },
-          paths_only: {
-            type: 'boolean',
-            description: 'When true, omit base64 PNG fields and return only paths + metadata. Smaller response when the agent will Read the PNGs from disk anyway, or just wants to know "is there a packet".',
-          },
-        },
-      },
-    },
-    handler: input => reviewPaintPeekLatestTool(input as Parameters<typeof reviewPaintPeekLatestTool>[0]),
   },
   {
     definition: {
@@ -192,7 +147,6 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             items: { type: 'string' },
             description: 'Connector refs to track across sampled poses.',
           },
-          gripperAperture: { type: 'object', description: 'Optional gripper aperture request forwarded to review_cad.' },
           stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
           consensus: {
             type: 'boolean',
