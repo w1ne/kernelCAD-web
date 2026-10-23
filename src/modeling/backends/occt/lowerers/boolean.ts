@@ -104,7 +104,9 @@ export function lowerBoolean(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     throw new Error(`Unknown boolean op: ${op}`);
   }
   const shape: ShapeBackend = acc;
-  if (volumeBeforeCut !== null) {
+  // A clearance cut (joint.clevis tongue pocket) may legitimately find no
+  // material to remove; it is declared so at capture time.
+  if (volumeBeforeCut !== null && r.metadata?.clearanceCut !== true) {
     const noop = subtractiveNoOpDiagnostic({
       featureId: r.id,
       opLabel: 'boolean difference',

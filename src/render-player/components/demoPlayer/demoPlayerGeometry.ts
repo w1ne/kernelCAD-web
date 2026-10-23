@@ -224,6 +224,8 @@ export function buildMeshFromFace(
   const geom = new THREE.BufferGeometry();
   geom.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
   geom.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
+  // Texture maps (`.wrapTexture()`, `material.textures`) sample this.
+  if (face.uv !== undefined) geom.setAttribute('uv', new THREE.BufferAttribute(face.uv, 2));
   geom.setIndex(new THREE.BufferAttribute(face.indices, 1));
   geom.computeBoundingSphere();
   // MeshPhysicalMaterial — physically-based shading driven by the role

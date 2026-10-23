@@ -82,7 +82,9 @@ export function disposeMaterialDeep(
 
 /** Browser-side URL prefix for the dev-server texture route. */
 function browserTextureUrl(path: string): string {
-  if (/^https?:\/\//i.test(path)) return path;
+  // Inline images (the portable form for hosted scripts) load as-is; only
+  // filesystem paths go through the dev-server texture route.
+  if (/^(https?:\/\/|data:|blob:)/i.test(path)) return path;
   if (path.startsWith('/__kernelcad/')) return path;
   return `/__kernelcad/texture?path=${encodeURIComponent(path)}`;
 }

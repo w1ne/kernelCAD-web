@@ -86,6 +86,12 @@ function hasOwnFinish(r: FeatureRecord | undefined): boolean {
   return r?.metadata?.material !== undefined;
 }
 
+/** Joint-helper hardware (clevis fork / tongue) is fused into its link by
+ *  design, so it never counts as a separate same-stock member. */
+function isJointHardware(r: FeatureRecord | undefined): boolean {
+  return (r?.metadata as Record<string, unknown> | undefined)?.jointHardware !== undefined;
+}
+
 /** Canonical key of a record's own material (key order independent), so two
  *  operands finished with the same token / PBR compare equal. */
 function materialKey(r: FeatureRecord | undefined): string {
@@ -248,7 +254,7 @@ function memberOverlaps(
   namer: OperandNamer,
 ): CompilerDiagnostic[] {
   const members = leaves
-    .filter(l => hasOwnFinish(byId.get(l.id)))
+    .filter(l => hasOwnFinish(byId.get(l.id)) && !isJointHardware(byId.get(l.id)))
     .map(l => ({ leaf: l, shape: asOcct(shapes.get(l.id)) }))
     .filter((m): m is { leaf: Leaf; shape: OcctBackend } => m.shape !== undefined)
     .map(m => ({ ...m, box: m.shape.boundingBox(), stock: materialKey(byId.get(m.leaf.id)) }));

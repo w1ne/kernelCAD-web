@@ -18,7 +18,7 @@ import { RecomputeEngine, predecessorsByRecord, compiledEventForRecord, type Rec
 import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
-import { generatePlanarUVs } from './planarUv';
+import { attachProjectedUVs, generatePlanarUVs } from './planarUv';
 import { computeFeatureOwnership } from './featureOwnership';
 import { helixPolylineRouted } from '../mates/helixPolyline';
 import { partAtFor } from '../mates/partFrame';
@@ -1147,6 +1147,9 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     );
   }
 
+  if (material?.textureProjection !== undefined && material.textures?.albedo !== undefined) {
+    attachProjectedUVs(meshed.faces, material.textureProjection);
+  }
   attachPlanarUVs(meshed.faces);
   const emitted: FeatureMesh = {
     featureId: event.featureId,

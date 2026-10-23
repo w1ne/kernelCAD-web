@@ -318,16 +318,18 @@ async function buildPartAssets(parts: readonly AssemblyPartStored[], sceneShapes
     return { inertials, collisionMeshes, inertiaNotes };
 }
 
-// Resolve mate connector frames (origin + axis) in PARENT-LOCAL
-// coordinates. The hinge/slide `pos` attribute is in the parent
-// body's local frame, so we read the mate's `a` side (which lives
-// on the parent) and use its origin/axis directly. Topology origins
-// are resolved through `resolveConnectorOrigin` (async).
+// Resolve mate connector frames. `origin` / `axis` come from the mate's
+// `a` side (on the parent, PARENT-local); `childOrigin` is the `b`
+// connector's origin in the CHILD's local frame. At rest the solver puts
+// the two connector origins on top of each other, so the child body sits
+// at origin - childOrigin in its parent and its joint anchor is
+// childOrigin. Topology origins resolve through `resolveConnectorOrigin`.
+type ResolvedMateFrame = { origin: Vec3; axis: Vec3; childOrigin: Vec3 };
 async function resolveMateFrames(
     mates: readonly MateRecord[],
     partByName: Map<string, AssemblyPartStored>,
-): Promise<Map<string, { origin: Vec3; axis: Vec3 }>> {
-    const resolvedMateAxes = new Map<string, { origin: Vec3; axis: Vec3 }>();
+): Promise<Map<string, ResolvedMateFrame>> {
+    const resolvedMateAxes = new Map<string, ResolvedMateFrame>();
     for (const m of mates) {
         const aRef = parseConnectorRef(m.a);
         const part = partByName.get(aRef.partName);
@@ -336,7 +338,14 @@ async function resolveMateFrames(
         if (connector === undefined) continue;
         const resolved = await resolveConnectorOrigin(part.originalShape, connector.origin);
         const axis = (connector.axis ?? [0, 0, 1]) as Vec3;
-        resolvedMateAxes.set(m.name, { origin: resolved.value, axis });
+        let childOrigin: Vec3 = [0, 0, 0];
+        const bRef = parseConnectorRef(m.b);
+        const child = partByName.get(bRef.partName);
+        const childConnector = child?.mateConnectors.find((c) => c.name === bRef.connectorName);
+        if (child !== undefined && childConnector !== undefined) {
+            childOrigin = (await resolveConnectorOrigin(child.originalShape, childConnector.origin)).value;
+        }
+        resolvedMateAxes.set(m.name, { origin: resolved.value, axis, childOrigin });
     }
     return resolvedMateAxes;
 }
@@ -456,7 +465,7 @@ function emitWorldbodyBlocks(
     childrenByParent: Map<string, { childName: string; mate: MateRecord }[]>,
     inertials: Map<string, InertiaSpec>,
     collisionMeshes: Map<string, { vertex: string; assetName: string }>,
-    resolvedMateAxes: Map<string, { origin: Vec3; axis: Vec3 }>,
+    resolvedMateAxes: Map<string, ResolvedMateFrame>,
     sitesByPart: Map<string, ResolvedTendonEndpoint[]>,
     jointOrder: { mjcfName: string; mateName: string }[],
     bodyOrder: string[],
@@ -487,14 +496,17 @@ function emitWorldbodyBlocks(
         if (part === undefined) return '';
         const inertial = inertials.get(partName)!;
 
-        // Body position: root uses part.at; non-root uses the mate
-        // connector origin (parent-local). Both in mm; convert to m.
+        // Body position: root uses part.at; non-root sits where its mate
+        // connector lands on the parent's (parent-local origin minus the
+        // child-local origin). Both in mm; convert to m.
         let posMm: Vec3;
         if (mateFromParent === undefined) {
             posMm = partAttachPos(part);
         } else {
             const resolved = resolvedMateAxes.get(mateFromParent.name);
-            posMm = resolved?.origin ?? [0, 0, 0];
+            const o = resolved?.origin ?? [0, 0, 0];
+            const c = resolved?.childOrigin ?? [0, 0, 0];
+            posMm = [o[0] - c[0], o[1] - c[1], o[2] - c[2]];
         }
         const posM = posMm.map((v) => v * MM_TO_M);
         const bodyAttrs = `name="${escapeXml(partName)}" pos="${posM.map(fmtNum).join(' ')}"`;
@@ -704,18 +716,20 @@ interface InertiaSpec {
  * indices back to mate names.
  *
  * MJCF joint placement: the `pos` attribute is the joint anchor in the
- * CHILD body's frame (not the parent). For a hinge mounted at the
- * parent connector origin O (parent-local), the child body itself is
- * positioned at O (via the body's `pos`), and the joint anchor sits at
- * (0, 0, 0) in the child's local frame.
+ * CHILD body's frame (not the parent). For a hinge between parent
+ * connector origin O (parent-local) and child connector origin C
+ * (child-local), the child body is positioned at O - C (via the body's
+ * `pos`) and the joint anchor sits at C in the child's local frame.
  */
 function mateToMjcfJoint(
     mate: MateRecord,
-    resolved: Map<string, { origin: Vec3; axis: Vec3 }>,
+    resolved: Map<string, ResolvedMateFrame>,
     jointOrder: { mjcfName: string; mateName: string }[],
 ): string[] {
-    const frame = resolved.get(mate.name) ?? { origin: [0, 0, 0] as Vec3, axis: [0, 0, 1] as Vec3 };
+    const frame = resolved.get(mate.name) ?? { origin: [0, 0, 0] as Vec3, axis: [0, 0, 1] as Vec3, childOrigin: [0, 0, 0] as Vec3 };
     const axis = frame.axis;
+    // Joint anchor in the child body's frame: the child connector origin.
+    const anchor = frame.childOrigin.map((v) => fmtNum(v * MM_TO_M)).join(' ');
     const mjcfJointName = sanitizeJointName(mate.name);
 
     switch (mate.type) {
@@ -733,7 +747,7 @@ function mateToMjcfJoint(
                 ? ` limited="true" range="${fmtNum(limits[0] * DEG_TO_RAD)} ${fmtNum(limits[1] * DEG_TO_RAD)}"`
                 : '';
             return [
-                `<joint name="${escapeXml(mjcfJointName)}" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="0 0 0"${limitedAttrs}/>`,
+                `<joint name="${escapeXml(mjcfJointName)}" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}/>`,
             ];
         }
         case 'prismatic': {
@@ -743,7 +757,7 @@ function mateToMjcfJoint(
                 ? ` limited="true" range="${fmtNum(limits[0] * MM_TO_M)} ${fmtNum(limits[1] * MM_TO_M)}"`
                 : '';
             return [
-                `<joint name="${escapeXml(mjcfJointName)}" type="slide" axis="${axis.map(fmtNum).join(' ')}" pos="0 0 0"${limitedAttrs}/>`,
+                `<joint name="${escapeXml(mjcfJointName)}" type="slide" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}/>`,
             ];
         }
         case 'planar': {
@@ -757,9 +771,9 @@ function mateToMjcfJoint(
             const perpA = perpendicularAxis(axis);
             const perpB = crossProduct(axis, perpA);
             return [
-                `<joint name="${escapeXml(mjcfJointName)}_x" type="slide" axis="${perpA.map(fmtNum).join(' ')}" pos="0 0 0"/>`,
-                `<joint name="${escapeXml(mjcfJointName)}_y" type="slide" axis="${perpB.map(fmtNum).join(' ')}" pos="0 0 0"/>`,
-                `<joint name="${escapeXml(mjcfJointName)}_rz" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="0 0 0"/>`,
+                `<joint name="${escapeXml(mjcfJointName)}_x" type="slide" axis="${perpA.map(fmtNum).join(' ')}" pos="${anchor}"/>`,
+                `<joint name="${escapeXml(mjcfJointName)}_y" type="slide" axis="${perpB.map(fmtNum).join(' ')}" pos="${anchor}"/>`,
+                `<joint name="${escapeXml(mjcfJointName)}_rz" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"/>`,
             ];
         }
         case 'ball': {
@@ -770,7 +784,7 @@ function mateToMjcfJoint(
             // computes an angle-of-rotation drift from the quaternion.
             jointOrder.push({ mjcfName: mjcfJointName, mateName: mate.name });
             return [
-                `<joint name="${escapeXml(mjcfJointName)}" type="ball" pos="0 0 0"/>`,
+                `<joint name="${escapeXml(mjcfJointName)}" type="ball" pos="${anchor}"/>`,
             ];
         }
     }
