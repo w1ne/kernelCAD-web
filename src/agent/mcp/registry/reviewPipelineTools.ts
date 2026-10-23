@@ -72,14 +72,6 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             description: 'Optional connector refs such as ["gripper-plate.tool-tip"] to limit connector workspace reporting.',
             items: { type: 'string' },
           },
-          gripperAperture: {
-            type: 'object',
-            description: 'Optional fingertip connector refs for gripper aperture travel reporting.',
-            properties: {
-              left: { type: 'string', description: 'Left fingertip connector ref such as "left-finger.tip".' },
-              right: { type: 'string', description: 'Right fingertip connector ref such as "right-finger.tip".' },
-            },
-          },
         },
       },
     },
@@ -192,7 +184,6 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             items: { type: 'string' },
             description: 'Connector refs to track across sampled poses.',
           },
-          gripperAperture: { type: 'object', description: 'Optional gripper aperture request forwarded to review_cad.' },
           stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
           consensus: {
             type: 'boolean',
