@@ -105,6 +105,14 @@ describe('browser kernel worker core (real kernel)', () => {
     expect(core.pendingDimensions()).not.toBeNull();
   });
 
+  it('a first build answered from the warm-up cache still gets its dimensions', async () => {
+    const core = createKernelWorkerCore(createKernelDeps(memory));
+    await core.handle(job({}));
+    const initial = expectResult(await core.handle(job({})));
+    expect(initial.timings.path).toBe('cache');
+    expect(core.pendingDimensions()).toMatchObject({ type: 'dimensions', jobId: initial.jobId });
+  });
+
   it('answers a repeated document from the content-keyed cache', async () => {
     const core = createKernelWorkerCore(createKernelDeps(memory));
     const a = expectResult(await core.handle(job({ elbowDeg: 10 })));

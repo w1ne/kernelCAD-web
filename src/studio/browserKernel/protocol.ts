@@ -140,7 +140,19 @@ export interface RebuildJobDimensions {
   dimensions: ViewerDimension[];
 }
 
-export type WorkerToPage = KernelReadyMessage | RebuildJobResult | RebuildJobError | RebuildJobDimensions;
+/** The worker could not start (OCCT init or the lockdown failed). */
+export interface KernelStartFailedMessage {
+  type: 'start-failed';
+  v: typeof BROWSER_KERNEL_PROTOCOL;
+  message: string;
+}
+
+export type WorkerToPage =
+  | KernelReadyMessage
+  | KernelStartFailedMessage
+  | RebuildJobResult
+  | RebuildJobError
+  | RebuildJobDimensions;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -150,11 +162,22 @@ function isJobEnvelope(m: Record<string, unknown>): boolean {
   return typeof m.jobId === 'number' && typeof m.scope === 'string' && typeof m.generation === 'number';
 }
 
+function isVec3(value: unknown): boolean {
+  return Array.isArray(value) && value.length === 3 && value.every((n) => typeof n === 'number');
+}
+
+function isFeature(value: unknown): boolean {
+  return isRecord(value) && typeof value.featureId === 'string' && Array.isArray(value.faces);
+}
+
+/** Structural check of a result payload: the containers, each feature's id
+ *  and faces, the bounds' numbers. Buffer contents and record/param fields
+ *  are not inspected (the port is private, the payload is the model's own). */
 function isPayload(value: unknown): value is KernelMeshPayload {
   if (!isRecord(value)) return false;
-  return Array.isArray(value.features)
+  return Array.isArray(value.features) && value.features.every(isFeature)
+    && isRecord(value.bounds) && isVec3(value.bounds.min) && isVec3(value.bounds.max)
     && Array.isArray(value.featureRecords)
-    && isRecord(value.bounds)
     && isRecord(value.params)
     && (value.changedFeatureIds === undefined || Array.isArray(value.changedFeatureIds));
 }
@@ -185,6 +208,7 @@ const JOB_MESSAGE_CHECKS: Record<string, (m: Record<string, unknown>) => boolean
 export function isWorkerToPage(value: unknown): value is WorkerToPage {
   if (!isRecord(value)) return false;
   if (value.type === 'ready') return isReady(value);
+  if (value.type === 'start-failed') return value.v === BROWSER_KERNEL_PROTOCOL && typeof value.message === 'string';
   const check = typeof value.type === 'string' && Object.prototype.hasOwnProperty.call(JOB_MESSAGE_CHECKS, value.type)
     ? JOB_MESSAGE_CHECKS[value.type]
     : undefined;

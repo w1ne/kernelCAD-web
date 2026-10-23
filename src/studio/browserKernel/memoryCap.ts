@@ -15,6 +15,17 @@
 //
 // The wrapper is installed non-writable and non-configurable, so model code
 // cannot put the original back.
+//
+// What is and is not capped:
+//   - capped: the OCCT heap's growth (the kernel's only large allocation);
+//   - closed separately: model code creating its own wasm memory or module
+//     (`new WebAssembly.Memory`, compile/instantiate are removed after OCCT
+//     starts, see workerLockdown.ts `lockDownCodeGeneration`);
+//   - NOT capped: plain JavaScript allocations by model code (arrays,
+//     ArrayBuffers, typed arrays, strings). Those are bounded only by the
+//     browser's limits for a worker. A runaway allocation ends the worker
+//     (crash -> respawn -> the server builds the edit), but an engine that
+//     handles worker OOM by killing the renderer would take the tab with it.
 
 export interface MemoryCap {
   /** Bytes currently allocated by the largest memory seen growing. */

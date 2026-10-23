@@ -105,6 +105,29 @@ export interface BrowserKernelStatus {
   infraFailures: number;
 }
 
+/** Grace on top of the spawn's own deadline before the client gives up. */
+const START_GRACE_MS = 2_000;
+
+/** A start that never settles must still fall back to the server. A worker
+ *  that arrives after the deadline is terminated. */
+function withStartDeadline(start: Promise<KernelWorkerHandle>, timeoutMs: number): Promise<KernelWorkerHandle> {
+  return new Promise((resolve, reject) => {
+    let late = false;
+    const timer = setTimeout(() => {
+      late = true;
+      reject(new Error(`The browser kernel did not start within ${Math.round(timeoutMs / 1000)} s.`));
+    }, timeoutMs + START_GRACE_MS);
+    start.then((handle) => {
+      clearTimeout(timer);
+      if (late) handle.terminate();
+      else resolve(handle);
+    }, (error: unknown) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
+}
+
 function sourceKey(source: string): string {
   return `${source.length}:${hashText(source)}`;
 }
@@ -281,13 +304,13 @@ export class BrowserKernelClient {
     if (!this.starting) {
       this.workerScope = scope;
       const spawnStarted = performance.now();
-      this.starting = this.options.spawn(
+      this.starting = withStartDeadline(this.options.spawn(
         {
           onMessage: (message) => { this.onMessage(message); },
           onCrash: (reason) => { this.onCrash(reason); },
         },
         this.options.spawnOptions,
-      ).then((handle) => {
+      ), this.options.spawnOptions.startTimeoutMs).then((handle) => {
         if (this.workerScope !== scope) {
           handle.terminate();
           throw new Error('The document changed while the browser kernel started.');

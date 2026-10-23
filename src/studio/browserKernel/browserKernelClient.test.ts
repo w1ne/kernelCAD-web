@@ -46,7 +46,7 @@ const edit = (generation: number, source = 'return box(1,1,1);') => ({
 });
 
 async function flush(): Promise<void> {
-  for (let i = 0; i < 5; i++) await Promise.resolve();
+  for (let i = 0; i < 20; i++) await Promise.resolve();
 }
 
 describe('BrowserKernelClient', () => {
@@ -154,5 +154,23 @@ describe('BrowserKernelClient', () => {
     await warming;
     expect(kernel.isWarm('doc-1', 'return box(1,1,1);')).toBe(true);
     expect(kernel.isWarm('doc-2', 'return box(1,1,1);')).toBe(false);
+  });
+
+  it('falls back to the server when the worker never finishes starting', async () => {
+    const stalled: SpawnKernelWorker = () => new Promise(() => undefined);
+    const kernel = client(stalled);
+    const job = kernel.rebuild(edit(1));
+    const outcome = job.then(() => 'resolved', (error: unknown) => error);
+    await flush();
+    vi.advanceTimersByTime(1000 + 2000 + 1);
+    await expect(outcome).resolves.toMatchObject({ failure: 'unavailable', fallback: true });
+  });
+
+  it('counts a failed start once', async () => {
+    const failing: SpawnKernelWorker = async () => { throw new Error('start-failed: lockdown'); };
+    const kernel = client(failing);
+    await expect(kernel.rebuild(edit(1))).rejects.toMatchObject({ failure: 'unavailable' });
+    expect(kernel.status().infraFailures).toBe(1);
+    expect(kernel.usable()).toBe(true);
   });
 });

@@ -44,6 +44,9 @@ function applyAutoRunPayload(
     const review = payload.review ?? { ok: true, diagnostics: [] };
     const emptyNotice = detectEmptyBuild(geometries.length, records, review);
     deps.setGeometries(geometries);
+    // Synchronously, like the param-edit apply: a follow-up (the browser
+    // kernel's dimensions, the next edit's patch) checks what is shown.
+    if (deps.geometriesRef) deps.geometriesRef.current = geometries;
     deps.setGeometryTransformOverrides({});
     deps.setFeatureRecords(records);
     deps.setScriptParams(Object.values(payload.params ?? {}));

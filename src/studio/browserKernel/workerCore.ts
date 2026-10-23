@@ -76,6 +76,8 @@ export interface KernelWorkerDeps<M extends CoreModel, R extends CoreMeshing> {
 }
 
 interface CachedRebuild {
+  /** Kept for a display result until its dimensions are computed. */
+  meshingForDimensions?: CoreMeshing;
   features: readonly FeatureMesh[];
   fingerprints: Record<string, string>;
   featureRecords: FeatureRecord[];
@@ -131,8 +133,11 @@ function bytesOfFeatures(features: readonly FeatureMesh[]): number {
   return total;
 }
 
+/** Retained bytes: the mesh buffers plus the JSON-sized rest (records,
+ *  params, fingerprints, dimensions), as UTF-16 string bytes. */
 function sizeOfRebuild(value: CachedRebuild): number {
-  return bytesOfFeatures(value.features) + JSON.stringify(value.featureRecords).length * 2;
+  const rest = JSON.stringify([value.featureRecords, value.params, value.fingerprints, value.dimensions ?? null]);
+  return bytesOfFeatures(value.features) + rest.length * 2;
 }
 
 /** Number/boolean value each declared param must have for this job: the
@@ -237,6 +242,20 @@ async function modelFor<M extends CoreModel, R extends CoreMeshing>(
   }
 }
 
+/** A display cache hit whose dimensions were never computed (the first
+ *  build answered by the background warm-up's entry) gets them under its
+ *  own job id — while the warm model is still exactly that document. */
+function dimensionsForCacheHit<M extends CoreModel, R extends CoreMeshing>(
+  warm: WarmModel<M> | null,
+  request: RebuildJobRequest,
+  hit: CachedRebuild,
+): { request: RebuildJobRequest; model: M; meshing: R; entry: CachedRebuild } | null {
+  const meshing = hit.meshingForDimensions as R | undefined;
+  if (request.quality !== 'display' || hit.dimensions || !meshing || !warm || warm.source !== request.source) return null;
+  if (targetEdits(warm.model.session.paramTable.serialize(), request.params).length > 0) return null;
+  return { request, model: warm.model, meshing, entry: hit };
+}
+
 export interface KernelWorkerCore {
   handle(request: RebuildJobRequest): Promise<RebuildJobResult | RebuildJobError>;
   /** Dimensions of the last settled result, once no job is waiting; null
@@ -272,6 +291,7 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
     awaitingDimensions = null;
     const hit = cache.get(key);
     if (hit) {
+      awaitingDimensions = dimensionsForCacheHit(state.warm, request, hit);
       return respond(deps, request, hit, { buildMs: 0, meshMs: 0, serializeMs: 0, totalMs: deps.now() - started, path: 'cache' });
     }
     let firstBuild = state.warm?.source !== request.source;
@@ -295,7 +315,10 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
         params: model.session.paramTable.serialize(),
       };
       cache.set(key, entry);
-      if (request.quality === 'display') awaitingDimensions = { request, model, meshing, entry };
+      if (request.quality === 'display') {
+        entry.meshingForDimensions = meshing;
+        awaitingDimensions = { request, model, meshing, entry };
+      }
       return respond(deps, request, entry, {
         buildMs: built - started,
         meshMs: meshed - built,
@@ -327,6 +350,7 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
     if (!dimensions) return null;
     // A later cache hit answers with them directly.
     waiting.entry.dimensions = dimensions;
+    delete waiting.entry.meshingForDimensions;
     const { jobId, scope, generation } = waiting.request;
     return { type: 'dimensions', jobId, scope, generation, dimensions };
   }

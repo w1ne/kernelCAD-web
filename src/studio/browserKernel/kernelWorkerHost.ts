@@ -23,6 +23,7 @@ import {
   isWorkerToPage,
   type KernelInitMessage,
   type KernelReadyMessage,
+  type KernelStartFailedMessage,
   type RebuildJobRequest,
   type WorkerToPage,
 } from './protocol';
@@ -34,7 +35,7 @@ export interface KernelWorkerHandle {
 }
 
 export interface KernelWorkerHooks {
-  onMessage(message: Exclude<WorkerToPage, KernelReadyMessage>): void;
+  onMessage(message: Exclude<WorkerToPage, KernelReadyMessage | KernelStartFailedMessage>): void;
   onCrash(reason: string): void;
 }
 
@@ -67,17 +68,30 @@ const BOOTSTRAP = [
 
 const BOOTSTRAP_URL = `data:text/javascript;base64,${btoa(BOOTSTRAP)}`;
 
-async function fetchOk(url: string): Promise<Response> {
-  const response = await fetch(url);
+/** Rejects when `promise` has not settled by `deadline` (ms since epoch). */
+export function beforeDeadline<T>(promise: Promise<T>, deadline: number, what: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`The browser kernel did not start in time (${what}).`));
+    }, Math.max(0, deadline - Date.now()));
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (error: unknown) => { clearTimeout(timer); reject(error); },
+    );
+  });
+}
+
+async function fetchOk(url: string, signal: AbortSignal): Promise<Response> {
+  const response = await fetch(url, { signal });
   if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
   return response;
 }
 
 /** The kernel bundle's text for the isolated bootstrap; null under the dev
  *  server, where the worker is loaded by URL. */
-async function kernelScript(kernelWorkerUrl: string, isolate: boolean): Promise<string | null> {
+async function kernelScript(kernelWorkerUrl: string, isolate: boolean, signal: AbortSignal): Promise<string | null> {
   if (!isolate) return null;
-  return (await fetchOk(new URL(kernelWorkerUrl, globalThis.location?.href).href)).text();
+  return (await fetchOk(new URL(kernelWorkerUrl, globalThis.location?.href).href, signal)).text();
 }
 
 function startWorker(kernelWorkerUrl: string, script: string | null, init: KernelInitMessage, port: MessagePort): Worker {
@@ -92,26 +106,43 @@ function startWorker(kernelWorkerUrl: string, script: string | null, init: Kerne
   return worker;
 }
 
-function waitForReady(port: MessagePort, timeoutMs: number): Promise<KernelReadyMessage> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error(`The browser kernel did not start within ${Math.round(timeoutMs / 1000)} s.`));
-    }, timeoutMs);
+/** The handshake: `ready`, or the worker's own `start-failed`, or an error
+ *  event while it loads, whichever comes first. */
+function waitForReady(port: MessagePort, worker: Worker, deadline: number): Promise<KernelReadyMessage> {
+  const handshake = new Promise<KernelReadyMessage>((resolve, reject) => {
     port.onmessage = (event: MessageEvent<unknown>) => {
-      if (!isWorkerToPage(event.data) || event.data.type !== 'ready') return;
-      clearTimeout(timer);
-      resolve(event.data);
+      if (!isWorkerToPage(event.data)) return;
+      if (event.data.type === 'ready') resolve(event.data);
+      else if (event.data.type === 'start-failed') reject(new Error(`The browser kernel could not start: ${event.data.message}`));
+    };
+    worker.onerror = (event: ErrorEvent) => {
+      event.preventDefault();
+      reject(new Error(event.message || 'The browser kernel worker failed to load.'));
     };
   });
+  return beforeDeadline(handshake, deadline, 'handshake');
 }
 
+/** Download the assets and start the worker; everything, the downloads
+ *  included, must finish by one deadline, or the edit goes to the server. */
 export const spawnKernelWorker: SpawnKernelWorker = async (hooks, options) => {
-  const { kernelWorkerUrl, occtWasmUrl } = await loadAssets();
+  const deadline = Date.now() + options.startTimeoutMs;
+  const abort = new AbortController();
+  const timer = setTimeout(() => { abort.abort(); }, options.startTimeoutMs);
   const isolate = !import.meta.env.DEV;
-  const [script, wasm] = await Promise.all([
-    kernelScript(kernelWorkerUrl, isolate),
-    fetchOk(new URL(occtWasmUrl, globalThis.location?.href).href).then((r) => r.arrayBuffer()),
-  ]);
+  let script: string | null;
+  let wasm: ArrayBuffer;
+  let kernelWorkerUrl: string;
+  try {
+    const assets = await beforeDeadline(loadAssets(), deadline, 'loading the worker');
+    kernelWorkerUrl = assets.kernelWorkerUrl;
+    [script, wasm] = await beforeDeadline(Promise.all([
+      kernelScript(assets.kernelWorkerUrl, isolate, abort.signal),
+      fetchOk(new URL(assets.occtWasmUrl, globalThis.location?.href).href, abort.signal).then((r) => r.arrayBuffer()),
+    ]), deadline, 'downloading the kernel');
+  } finally {
+    clearTimeout(timer);
+  }
   const channel = new MessageChannel();
   const init: KernelInitMessage = {
     type: 'kc-init',
@@ -120,41 +151,44 @@ export const spawnKernelWorker: SpawnKernelWorker = async (hooks, options) => {
     memoryCapBytes: options.memoryCapBytes,
   };
   const worker = startWorker(kernelWorkerUrl, script, init, channel.port2);
-  let alive = true;
-  const crash = (reason: string): void => {
-    if (!alive) return;
-    hooks.onCrash(reason);
-  };
   // Nothing is ever read from the worker object: model code can post there.
   worker.onmessage = null;
-  worker.onerror = (event: ErrorEvent) => {
-    event.preventDefault();
-    crash(event.message || 'The browser kernel worker failed.');
-  };
   let ready: KernelReadyMessage;
   try {
-    ready = await waitForReady(channel.port1, options.startTimeoutMs);
+    ready = await waitForReady(channel.port1, worker, deadline);
     if (options.requireIsolation && isolate && ready.origin !== 'null') {
       throw new Error(`The browser kernel worker is not isolated (origin ${ready.origin}).`);
     }
   } catch (error) {
-    alive = false;
     worker.terminate();
     channel.port1.close();
     throw error;
   }
-  channel.port1.onmessage = (event: MessageEvent<unknown>) => {
-    if (!alive || !isWorkerToPage(event.data) || event.data.type === 'ready') return;
+  return attach(worker, channel.port1, ready, hooks);
+};
+
+/** A started worker: messages and crashes go to `hooks` from now on. */
+function attach(worker: Worker, port: MessagePort, ready: KernelReadyMessage, hooks: KernelWorkerHooks): KernelWorkerHandle {
+  let alive = true;
+  const crash = (reason: string): void => {
+    if (alive) hooks.onCrash(reason);
+  };
+  worker.onerror = (event: ErrorEvent) => {
+    event.preventDefault();
+    crash(event.message || 'The browser kernel worker failed.');
+  };
+  port.onmessage = (event: MessageEvent<unknown>) => {
+    if (!alive || !isWorkerToPage(event.data) || event.data.type === 'ready' || event.data.type === 'start-failed') return;
     hooks.onMessage(event.data);
   };
-  channel.port1.onmessageerror = () => crash('The browser kernel sent a message that could not be read.');
+  port.onmessageerror = () => crash('The browser kernel sent a message that could not be read.');
   return {
     ready,
-    post: (request) => { channel.port1.postMessage(request); },
+    post: (request) => { port.postMessage(request); },
     terminate: () => {
       alive = false;
       worker.terminate();
-      channel.port1.close();
+      port.close();
     },
   };
-};
+}
