@@ -149,12 +149,25 @@ function awaitDimensions(deps: ExecutionApplyDeps, result: RebuildJobResult, rev
   });
 }
 
+/** Record the fingerprints of what the view now shows, so the next edit
+ *  only receives the features that changed. Only shown features count: a
+ *  hidden construction feature the next edit changes is sent like a new one. */
+function rememberShown(deps: ExecutionApplyDeps, result: RebuildJobResult): void {
+  const shown = deps.geometriesRef?.current;
+  if (!shown) return;
+  const held: Record<string, string> = {};
+  for (const geometry of shown) {
+    const id = geometry.featureId;
+    if (id && result.fingerprints[id] !== undefined) held[id] = result.fingerprints[id]!;
+  }
+  shownFingerprints.set(shown, held);
+}
+
 /** Paint a worker result and remember what the view now shows. */
 function applyResult(run: BrowserParamEditRun, result: RebuildJobResult, revision: number): void {
   markParamEdit('response', { generation: revision, kernel: 'browser', detail: { ...result.timings, quality: result.quality, memoryBytes: result.memoryBytes } });
   run.apply(result.payload as BackendMeshPayload, revision, result.payload.dimensions === undefined);
-  const now = run.deps.geometriesRef?.current;
-  if (now) shownFingerprints.set(now, result.fingerprints);
+  rememberShown(run.deps, result);
   awaitDimensions(run.deps, result, revision);
   markParamEdit('applied', { generation: revision, kernel: 'browser', detail: appliedDetail(result.payload) });
 }
@@ -230,6 +243,7 @@ export async function buildWithBrowserKernel(
   if ('fallback' in outcome) return false;
   if (revision === deps.mainRevisionRef.current) {
     apply(outcome.result.payload as BackendMeshPayload);
+    rememberShown(deps, outcome.result);
     awaitDimensions(deps, outcome.result, revision);
   }
   return true;

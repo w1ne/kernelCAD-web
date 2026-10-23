@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import {
     shouldUseHostedMesh, devMeshAvailable, needsFullKernel,
     type BackendMeshPayload,
@@ -177,7 +177,9 @@ export function useParamUpdate(
     // The declarations the last build reported, for checking an edit before
     // it is applied.
     const scriptParamsRef = useRef(scriptParams);
-    useEffect(() => { scriptParamsRef.current = scriptParams; }, [scriptParams]);
+    // A layout effect runs in the same commit, before any later input event,
+    // so an edit fired right after a build is checked against its params.
+    useLayoutEffect(() => { scriptParamsRef.current = scriptParams; }, [scriptParams]);
     const depsRef = useRef(deps);
     useEffect(() => { depsRef.current = deps; }, [deps]);
     // Accumulated param-slider overrides for the no-live-session recompute path

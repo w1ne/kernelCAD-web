@@ -17,7 +17,9 @@ export interface ParamEditPerfEvent {
   /** timeOrigin + t, comparable with the worker's clock. */
   wall?: number;
   generation?: number;
-  kernel?: 'browser' | 'server';
+  /** Which path rebuilt it; `legacy-worker` is the v0.1 in-browser runtime
+   *  for plain scripts (no `applied` mark: the benchmark reports it). */
+  kernel?: 'browser' | 'server' | 'legacy-worker';
   detail?: Record<string, unknown>;
 }
 

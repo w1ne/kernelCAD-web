@@ -6,6 +6,7 @@ import type { ExecutionResult } from '../../../shared/worker/geometryEngine';
 import { paramEditsForMesh, type ParamEditValues } from './paramEditsForMesh';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { rebuildQueue, studioModelDoc } from '../../rebuild/rebuildQueueInstance';
+import { markParamEdit } from '../../browserKernel/paramEditPerf';
 
 /** The legacy browser worker evaluates plain scripts. Assembly and the
  *  arithmetic param helpers stay on the kernel API. */
@@ -39,6 +40,7 @@ export async function runBrowserParamEdit(
   deps.setIsComputing(true);
   const current = (): boolean => epoch === epochRef.current && revision === deps.mainRevisionRef.current;
   try {
+    markParamEdit('request', { generation: revision, kernel: 'legacy-worker' });
     const result = await rebuildQueue.track({ label: 'Kernel rebuild · parameters', doc: studioModelDoc(deps.mainRevisionRef), generation: revision }, () => deps.engine.executeCode(source, {
       quality: 'coarse',
       onPreview: (preview: ExecutionResult) => {
@@ -47,6 +49,7 @@ export async function runBrowserParamEdit(
         if (deps.geometriesRef) deps.geometriesRef.current = preview.geometries;
       },
     }));
+    markParamEdit('response', { generation: revision, kernel: 'legacy-worker' });
     if (!current()) return;
     deps.setGeometries(result.geometries);
     if (deps.geometriesRef) deps.geometriesRef.current = result.geometries;
