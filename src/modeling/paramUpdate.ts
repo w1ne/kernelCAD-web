@@ -18,6 +18,7 @@ import type { BuiltModel, BuiltModelParamUpdate, ParamUpdateEdit } from './build
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { KernelError } from '../shared/intent/kernelError';
 import { affectedFeatureIds } from './paramAffect';
+import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
 
 export function populateCache(session: CaptureSession, shapes: Map<FeatureId, ShapeBackend>): void {
   for (const [id, shape] of shapes) {
@@ -82,6 +83,7 @@ export async function updateModelParams(
   const result = await engine.run(model.records, {
     paramTable: session.paramTable,
     seedShapes,
+    seedSelections: model.selections,
     ...(options?.preview ? { previewFinish: true, previewEdited: editedNames } : {}),
     warningSink: (warning: SoftWarning) => session.warnings.push(warning),
     warningPhase: 'update',
@@ -125,8 +127,13 @@ export async function updateModelParams(
   const nextModel: BuiltModel = {
     ...model,
     shapes: result.shapes,
-    diagnostics: result.diagnostics,
+    // A drag preview skips finish features, so its selections are partial:
+    // keep the last full set as the baseline and report nothing.
+    diagnostics: options?.preview
+      ? result.diagnostics
+      : [...result.diagnostics, ...selectionDriftDiagnostics(model.selections, result.selections)],
     health: result.health,
+    selections: options?.preview ? model.selections : result.selections,
     warnings: session.warnings.slice(warningsBefore),
     tailId,
     tailShape,

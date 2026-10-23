@@ -1096,6 +1096,7 @@ export class CaptureSession {
       shapes,
       diagnostics: [],
       health: new Map(),
+      selections: [],
       warnings: [],
       tailId,
       tailShape: tailId ? this.cachedShapes.get(tailId) : undefined,
