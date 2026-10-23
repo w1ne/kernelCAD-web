@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
-import { disposeMaterialDeep } from './buildMaterialFromPBR';
+import { attachTextures, disposeMaterialDeep } from './buildMaterialFromPBR';
 
 describe('disposeMaterialDeep', () => {
   it('disposes material arrays and every texture map attached to each material', () => {
@@ -31,5 +31,29 @@ describe('disposeMaterialDeep', () => {
     expect(textureCDispose).toHaveBeenCalledTimes(1);
     expect(materialADispose).toHaveBeenCalledTimes(1);
     expect(materialBDispose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('attachTextures', () => {
+  it('decodes one texture per image and shares it across materials and rebuilds', async () => {
+    // attachTextures only runs where the DOM image surface exists.
+    vi.stubGlobal('document', {});
+    vi.stubGlobal('Image', class {});
+    const decoded = new THREE.Texture();
+    const load = vi.spyOn(THREE.TextureLoader.prototype, 'loadAsync').mockResolvedValue(decoded);
+    try {
+      const ref = { path: 'data:image/png;base64,AAAA', repeat: [3, 2] as [number, number] };
+      const a = new THREE.MeshPhysicalMaterial();
+      const b = new THREE.MeshPhysicalMaterial();
+      attachTextures(a, { albedo: ref });
+      attachTextures(b, { albedo: ref });
+      await vi.waitFor(() => expect(b.map).toBe(decoded));
+      expect(a.map).toBe(decoded);
+      expect(load).toHaveBeenCalledTimes(1);
+      expect(decoded.repeat.toArray()).toEqual([3, 2]);
+    } finally {
+      load.mockRestore();
+      vi.unstubAllGlobals();
+    }
   });
 });

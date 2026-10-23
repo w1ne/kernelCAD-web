@@ -116,6 +116,30 @@ function applyUvTransform(tex: THREE.Texture, ref: TextureRef): void {
  * underlying loader needs `XMLHttpRequest`. Tests that need to assert texture
  * wiring should run in jsdom or use the dedicated server-side route.
  */
+// One decoded texture per image + UV transform + colour space, shared by every
+// material that asks for it. Animation capture rebuilds all materials every
+// frame; without the cache each frame decoded every texture again, and a load
+// that landed after its material was disposed was never freed, so the page ran
+// out of GPU memory part way through a textured capture. A shared texture that
+// a material disposal releases is uploaded again by three.js on its next use.
+const textureCache = new Map<string, Promise<THREE.Texture>>();
+
+function cachedTexture(url: string, ref: TextureRef, colorSpace: THREE.ColorSpace): Promise<THREE.Texture> {
+  const key = JSON.stringify([url, ref.repeat ?? null, ref.offset ?? null, ref.rotation ?? null, colorSpace]);
+  let entry = textureCache.get(key);
+  if (entry === undefined) {
+    entry = new THREE.TextureLoader().loadAsync(url).then((tex) => {
+      tex.colorSpace = colorSpace;
+      applyUvTransform(tex, ref);
+      return tex;
+    });
+    // A failed load is not cached, so a transient failure can retry.
+    entry.catch(() => textureCache.delete(key));
+    textureCache.set(key, entry);
+  }
+  return entry;
+}
+
 export function attachTextures(
   material: THREE.MeshPhysicalMaterial,
   textures: TextureSet | undefined,
@@ -124,18 +148,11 @@ export function attachTextures(
   // Guard: only run in environments with the DOM Image surface.
   if (typeof document === 'undefined' || typeof Image === 'undefined') return;
 
-  const loader = new THREE.TextureLoader();
-
   for (const slot of TEXTURE_SLOTS) {
     const ref = textures[slot.key];
     if (ref === undefined) continue;
-    const url = browserTextureUrl(ref.path);
-
-    loader.load(
-      url,
+    cachedTexture(browserTextureUrl(ref.path), ref, slot.colorSpace).then(
       (tex) => {
-        tex.colorSpace = slot.colorSpace;
-        applyUvTransform(tex, ref);
         // Cast: TS sees keyof Material; we already validated `prop` is a known
         // map slot on MeshPhysicalMaterial.
         (material as unknown as Record<string, THREE.Texture | null>)[slot.prop] = tex;
@@ -146,7 +163,6 @@ export function attachTextures(
         }
         material.needsUpdate = true;
       },
-      undefined,
       () => {
         // Load failed; leave the material as-is. The clamper in proxy.ts ran
         // path-existence validation at capture time, so this is most likely a
