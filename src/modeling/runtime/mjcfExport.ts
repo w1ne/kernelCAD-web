@@ -73,6 +73,7 @@ import { xmlAttributionComment } from '../../shared/links/attribution';
 
 const MM_TO_M = 1e-3;
 const DEG_TO_RAD = Math.PI / 180;
+const RAD_TO_DEG = 180 / Math.PI;
 
 /**
  * Default density (kg/m³) when a part doesn't declare one. Aluminum;
@@ -392,6 +393,55 @@ async function resolveTendonEndpoint(
     };
 }
 
+// Route children of a routed `<spatial>`: from-site, then each `via` entry (a
+// site on its owning body, or a wrap geom with optional sidesite; consecutive
+// wrap geoms get a separator site), then the to-site.
+async function routeChildren(
+    t: TendonRecord,
+    endpoints: ResolvedTendon['endpoints'],
+    route: readonly TendonViaRef[],
+    partByName: Map<string, AssemblyPartStored>,
+    addExtraSite: (partName: string, siteName: string, localPosMm: Vec3) => void,
+): Promise<string[]> {
+    const [fromE, toE] = endpoints;
+    const children: string[] = [`      <site site="${escapeXml(fromE.siteName)}"/>`];
+    let prevWasGeom = false;
+    for (const [i, entry] of route.entries()) {
+        if (typeof entry === 'string') {
+            const parsed = parseConnectorRef(entry);
+            const viaPart = partByName.get(parsed.partName);
+            const conn = viaPart?.mateConnectors.find((c) => c.name === parsed.connectorName);
+            if (viaPart === undefined || conn === undefined) continue; // capture-validated
+            const siteName = `${t.name}__via${i}`;
+            addExtraSite(viaPart.name, siteName, (await resolveConnectorOrigin(viaPart.originalShape, conn.origin)).value);
+            children.push(`      <site site="${escapeXml(siteName)}"/>`);
+            prevWasGeom = false;
+            continue;
+        }
+        const w = entry.wrap;
+        const ownerPart = partByName.get(w.partName);
+        const wg = ownerPart?.wrapGeoms.find((g) => g.name === w.wrapName);
+        if (ownerPart === undefined || wg === undefined) continue; // capture-validated
+        if (prevWasGeom) {
+            const sepName = `${t.name}__wrap${i}_sep`;
+            addExtraSite(w.partName, sepName, wg.origin);
+            children.push(`      <site site="${escapeXml(sepName)}"/>`);
+        }
+        let sidesiteAttr = '';
+        if (w.sidesite !== undefined) {
+            const sideName = `${t.name}__wrap${i}_side`;
+            addExtraSite(w.partName, sideName, [w.sidesite[0], w.sidesite[1], w.sidesite[2]]);
+            sidesiteAttr = ` sidesite="${escapeXml(sideName)}"`;
+        }
+        children.push(
+            `      <geom geom="${escapeXml(mjcfWrapGeomName(w.partName, w.wrapName))}"${sidesiteAttr}/>`,
+        );
+        prevWasGeom = true;
+    }
+    children.push(`      <site site="${escapeXml(toE.siteName)}"/>`);
+    return children;
+}
+
 // P7: pre-resolve every tendon endpoint to (partName, site name,
 // local-frame mm position). The site goes inside the owner body's
 // `<body>` element; the `<spatial>` tendon references the sites by
@@ -437,42 +487,7 @@ async function resolveTendonSites(
         // `via` and the legacy `wrapGeoms` are mutually exclusive (capture-validated).
         const route: readonly TendonViaRef[] = t.via.length > 0 ? t.via : t.wrapGeoms.map((w) => ({ wrap: w }));
         if (route.length === 0) continue;
-        const [fromE, toE] = rt.endpoints;
-        const children: string[] = [`      <site site="${escapeXml(fromE.siteName)}"/>`];
-        let prevWasGeom = false;
-        for (const [i, entry] of route.entries()) {
-            if (typeof entry === 'string') {
-                const parsed = parseConnectorRef(entry);
-                const viaPart = partByName.get(parsed.partName);
-                const conn = viaPart?.mateConnectors.find((c) => c.name === parsed.connectorName);
-                if (viaPart === undefined || conn === undefined) continue; // capture-validated
-                const siteName = `${t.name}__via${i}`;
-                addExtraSite(viaPart.name, siteName, (await resolveConnectorOrigin(viaPart.originalShape, conn.origin)).value);
-                children.push(`      <site site="${escapeXml(siteName)}"/>`);
-                prevWasGeom = false;
-                continue;
-            }
-            const w = entry.wrap;
-            const ownerPart = partByName.get(w.partName);
-            const wg = ownerPart?.wrapGeoms.find((g) => g.name === w.wrapName);
-            if (ownerPart === undefined || wg === undefined) continue; // capture-validated
-            if (prevWasGeom) {
-                const sepName = `${t.name}__wrap${i}_sep`;
-                addExtraSite(w.partName, sepName, wg.origin);
-                children.push(`      <site site="${escapeXml(sepName)}"/>`);
-            }
-            let sidesiteAttr = '';
-            if (w.sidesite !== undefined) {
-                const sideName = `${t.name}__wrap${i}_side`;
-                addExtraSite(w.partName, sideName, [w.sidesite[0], w.sidesite[1], w.sidesite[2]]);
-                sidesiteAttr = ` sidesite="${escapeXml(sideName)}"`;
-            }
-            children.push(
-                `      <geom geom="${escapeXml(mjcfWrapGeomName(w.partName, w.wrapName))}"${sidesiteAttr}/>`,
-            );
-            prevWasGeom = true;
-        }
-        children.push(`      <site site="${escapeXml(toE.siteName)}"/>`);
+        const children = await routeChildren(t, rt.endpoints, route, partByName, addExtraSite);
         spatialChildrenByTendon.set(t.name, children);
     }
     return { resolvedTendons, sitesByPart, spatialChildrenByTendon };
@@ -678,10 +693,11 @@ function cssHexToRgba(color: string): string | undefined {
     return `${ch.join(' ')} 1`;
 }
 
-// Strap tendons render as a ribbon of half the strap width; a declared
-// material colors the tendon (MuJoCo's own viewer only).
+// A declared profile sets the tendon's drawn half-width; a material colors it
+// (MuJoCo's own viewer only).
 function tendonLookAttrs(t: TendonRecord): string {
-    const width = t.visualStyle === 'strap' ? ` width="${fmtNum((t.strapWidthMm / 2) * MM_TO_M)}"` : '';
+    const full = t.profile === undefined ? undefined : t.profile.kind === 'round' ? t.profile.diameterMm : t.profile.widthMm;
+    const width = full === undefined ? '' : ` width="${fmtNum((full / 2) * MM_TO_M)}"`;
     const rgba = t.material !== undefined ? cssHexToRgba(t.material.baseColor) : undefined;
     return width + (rgba !== undefined ? ` rgba="${rgba}"` : '');
 }
@@ -769,6 +785,31 @@ interface InertiaSpec {
     readonly inertia6: readonly [number, number, number, number, number, number];
 }
 
+// Joint spring / damping → MJCF SI. The exported joint coordinate has the
+// same sign as the mate pose / limits (no axis flip), so the spring reference
+// maps straight to `springref`.
+//   revolute : N·mm/deg → N·m/rad (× (180/π) / 1000), deg → rad
+//   prismatic: N/mm → N/m (× 1000), N·s/mm → N·s/m (× 1000), mm → m
+function jointDynamicsAttrs(mate: MateRecord): string {
+    let k: number | undefined, ref: number, c: number | undefined;
+    if (mate.type === 'revolute') {
+        const toSi = RAD_TO_DEG / 1000;
+        k = mate.stiffnessNmmPerDeg === undefined ? undefined : mate.stiffnessNmmPerDeg * toSi;
+        c = mate.dampingNmmsPerDeg === undefined ? undefined : mate.dampingNmmsPerDeg * toSi;
+        ref = (mate.springRefDeg ?? 0) * DEG_TO_RAD;
+    } else if (mate.type === 'prismatic') {
+        k = mate.stiffnessNPerMm === undefined ? undefined : mate.stiffnessNPerMm * 1000;
+        c = mate.dampingNsPerMm === undefined ? undefined : mate.dampingNsPerMm * 1000;
+        ref = (mate.springRefMm ?? 0) * MM_TO_M;
+    } else {
+        return '';
+    }
+    let out = '';
+    if (k !== undefined && k > 0) out += ` stiffness="${fmtNum(k)}" springref="${fmtNum(ref)}"`;
+    if (c !== undefined && c > 0) out += ` damping="${fmtNum(c)}"`;
+    return out;
+}
+
 /**
  * Convert one mate to its MJCF <joint> child elements. Pushes one entry
  * per emitted DOF onto `jointOrder` so the caller can map qpos/qfrc
@@ -806,7 +847,7 @@ function mateToMjcfJoint(
                 ? ` limited="true" range="${fmtNum(limits[0] * DEG_TO_RAD)} ${fmtNum(limits[1] * DEG_TO_RAD)}"`
                 : '';
             return [
-                `<joint name="${escapeXml(mjcfJointName)}" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}/>`,
+                `<joint name="${escapeXml(mjcfJointName)}" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
             ];
         }
         case 'prismatic': {
@@ -816,7 +857,7 @@ function mateToMjcfJoint(
                 ? ` limited="true" range="${fmtNum(limits[0] * MM_TO_M)} ${fmtNum(limits[1] * MM_TO_M)}"`
                 : '';
             return [
-                `<joint name="${escapeXml(mjcfJointName)}" type="slide" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}/>`,
+                `<joint name="${escapeXml(mjcfJointName)}" type="slide" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
             ];
         }
         case 'planar': {

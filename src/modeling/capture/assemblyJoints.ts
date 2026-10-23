@@ -8,8 +8,6 @@ import type { Connector } from '../mates/connector';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
 import {
   TENDON_DEFAULT_COIL_DIAMETER_MM,
-  TENDON_DEFAULT_STRAP_THICKNESS_MM,
-  type TendonVisualStyle,
   TENDON_DEFAULT_COIL_TURNS,
   TENDON_DEFAULT_VISUAL_DIAMETER_MM,
   TENDON_DEFAULT_VISUAL_STYLE,
@@ -18,10 +16,10 @@ import {
 } from '../mates/tendon';
 import {
   normalizeTendonActuator,
-  normalizeTendonLook,
-  normalizeTendonStrap,
+  normalizeTendonProfile,
   resolveTendonVia,
 } from './assemblyTendonRoute';
+import { cleanPbrMaterial } from './proxyMaterial';
 import { validateWorkspaceTargetOpts, type WorkspaceTargetOpts } from '../mates/workspaceTarget';
 import type {
   AssemblyConnectorRef,
@@ -279,6 +277,48 @@ interface MateOptions {
   capacity?: MateCapacity;
   /** @deprecated legacy manual-load API */
   maxLoad?: MateLoadLimit;
+  stiffnessNmmPerDeg?: number;
+  springRefDeg?: number;
+  dampingNmmsPerDeg?: number;
+  stiffnessNPerMm?: number;
+  springRefMm?: number;
+  dampingNsPerMm?: number;
+}
+
+const JOINT_DYNAMICS_FIELDS = [
+  'stiffnessNmmPerDeg', 'springRefDeg', 'dampingNmmsPerDeg',
+  'stiffnessNPerMm', 'springRefMm', 'dampingNsPerMm',
+] as const;
+const REVOLUTE_ONLY_FIELDS = new Set<string>(['stiffnessNmmPerDeg', 'springRefDeg', 'dampingNmmsPerDeg']);
+
+/** Joint spring / damping options: revolute takes the Deg trio, prismatic the
+ *  Mm trio; finite numbers, non-negative except the spring reference. */
+function validateJointDynamics(name: string, type: MateType, opts: MateOptions | undefined): void {
+  for (const field of JOINT_DYNAMICS_FIELDS) {
+    const v = opts?.[field];
+    if (v === undefined) continue;
+    const expected = REVOLUTE_ONLY_FIELDS.has(field) ? 'revolute' : 'prismatic';
+    if (type !== expected) {
+      invalidArgs({
+        api: `mate('${name}', aRef, bRef, '${type}', { ${field} })`,
+        path: `opts.${field}`,
+        gotText: `assembly.mate.joint-dynamics-type-mismatch: a ${expected}-only option on a '${type}' mate`,
+        requires: 'stiffnessNmmPerDeg / springRefDeg / dampingNmmsPerDeg on revolute mates, stiffnessNPerMm / springRefMm / dampingNsPerMm on prismatic mates',
+        hintSlug: 'invalid-args.assembly.mate-joint-dynamics-type-mismatch',
+        example: "arm.mate('hinge', 'a.axis', 'b.axis', 'revolute', { stiffnessNmmPerDeg: 3, springRefDeg: -10 })",
+      });
+    }
+    if (typeof v !== 'number' || !Number.isFinite(v) || (!field.startsWith('springRef') && v < 0)) {
+      invalidArgs({
+        api: `mate('${name}', aRef, bRef, '${type}', { ${field} })`,
+        path: `opts.${field}`,
+        gotText: `assembly.mate.invalid-joint-dynamics: ${formatScalarForError(v as number)}`,
+        requires: field.startsWith('springRef') ? 'a finite number' : 'a finite number >= 0',
+        hintSlug: 'invalid-args.assembly.mate-invalid-joint-dynamics',
+        example: "arm.mate('hinge', 'a.axis', 'b.axis', 'revolute', { stiffnessNmmPerDeg: 3, dampingNmmsPerDeg: 0.1 })",
+      });
+    }
+  }
 }
 
 export function recordMate(
@@ -294,6 +334,7 @@ export function recordMate(
   assertMateConnectorPair(name, type, aRef, bRef, a, b);
   validateMatePoseAllowed(name, type, opts);
   validateMateLimits(name, type, opts);
+  validateJointDynamics(name, type, opts);
   validateMateCapacityOptions(name, type, opts);
   state.mates.push(buildMateRecord(name, aRef, bRef, type, opts));
 }
@@ -344,6 +385,12 @@ function validateMatePoseAllowed(name: string, type: MateType, opts: MateOptions
   }
 }
 
+function jointDynamicsOf(opts: MateOptions | undefined): Partial<Record<typeof JOINT_DYNAMICS_FIELDS[number], number>> {
+  const out: Partial<Record<typeof JOINT_DYNAMICS_FIELDS[number], number>> = {};
+  for (const f of JOINT_DYNAMICS_FIELDS) if (opts?.[f] !== undefined) out[f] = opts[f];
+  return out;
+}
+
 function buildMateRecord(
   name: string,
   aRef: string,
@@ -360,6 +407,7 @@ function buildMateRecord(
     ...(opts?.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
     ...(opts?.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
     ...(opts?.exposure !== undefined ? { exposure: opts.exposure } : {}),
+    ...jointDynamicsOf(opts),
     ...(opts?.capacity !== undefined ? { capacity: copyMateCapacity(opts.capacity) } : {}),
     ...(opts?.maxLoad !== undefined
       ? {
@@ -430,16 +478,16 @@ function normalizeTendonCoilFields(
   name: string,
   opts: TendonOptions,
   visualDiameter: number,
-): { visualStyle: TendonVisualStyle; coilTurns: number; coilDiameter: number } {
+): { visualStyle: 'line' | 'coil'; coilTurns: number; coilDiameter: number } {
   // P10: coil-visual-style fields. `visualStyle: 'line'` (default)
   // ignores `coilTurns` / `coilDiameterMm`; `'coil'` validates both.
   const visualStyle = opts.visualStyle ?? TENDON_DEFAULT_VISUAL_STYLE;
-  if (visualStyle !== 'line' && visualStyle !== 'coil' && visualStyle !== 'strap') {
+  if (visualStyle !== 'line' && visualStyle !== 'coil') {
     throw new KernelError(
       'feature.invalid-args',
-      `assembly.tendon.invalid-visual-style: tendon '${name}' visualStyle must be 'line', 'coil' or 'strap'; got ${formatScalarForError(visualStyle as unknown as number)}.`,
+      `assembly.tendon.invalid-visual-style: tendon '${name}' visualStyle must be 'line' or 'coil'; got ${formatScalarForError(visualStyle as unknown as number)}.`,
       undefined,
-      `invalid-args.assembly.tendon-invalid-visual-style — pass visualStyle: 'line' for a straight cylinder (default), 'coil' for an Anglepoise-style helical spring, or 'strap' for a flat braided strap.`,
+      `invalid-args.assembly.tendon-invalid-visual-style — pass visualStyle: 'line' for a straight cylinder (default) or 'coil' for an Anglepoise-style helical spring; use profile for a swept tube or ribbon.`,
     );
   }
   const coilTurns = opts.coilTurns ?? TENDON_DEFAULT_COIL_TURNS;
@@ -478,7 +526,7 @@ function normalizeTendonCoilFields(
 function normalizeTendonFields(name: string, opts: TendonOptions): {
   damping: number;
   visualDiameter: number;
-  visualStyle: TendonVisualStyle;
+  visualStyle: 'line' | 'coil';
   coilTurns: number;
   coilDiameter: number;
 } {
@@ -510,8 +558,7 @@ function normalizeTendonFields(name: string, opts: TendonOptions): {
       `invalid-args.assembly.tendon-invalid-damping — pass dampingNsmm: <non-negative N·s/mm>, or omit it to default to 0.`,
     );
   }
-  const visualDiameter = opts.visualDiameterMm
-    ?? (opts.visualStyle === 'strap' ? TENDON_DEFAULT_STRAP_THICKNESS_MM : TENDON_DEFAULT_VISUAL_DIAMETER_MM);
+  const visualDiameter = opts.visualDiameterMm ?? TENDON_DEFAULT_VISUAL_DIAMETER_MM;
   if (!Number.isFinite(visualDiameter) || visualDiameter <= 0) {
     throw new KernelError(
       'feature.invalid-args',
@@ -621,8 +668,8 @@ export function recordTendon(state: AssemblyState, name: string, opts: TendonOpt
   const via = resolveTendonVia(state, name, opts);
   const wrapGeoms = resolveTendonWrapGeoms(state, name, opts);
   const actuator = normalizeTendonActuator(name, opts);
-  const strap = normalizeTendonStrap(name, opts);
-  const look = normalizeTendonLook(name, opts);
+  const profile = normalizeTendonProfile(name, opts);
+  const material = opts.material !== undefined ? cleanPbrMaterial(opts.material, `tendon '${name}'`, state.session.warnings) : undefined;
   state.tendons.push({
     name,
     from: opts.from,
@@ -637,9 +684,8 @@ export function recordTendon(state: AssemblyState, name: string, opts: TendonOpt
     wrapGeoms,
     via,
     ...(actuator !== undefined ? { actuator } : {}),
-    strapWidthMm: strap.widthMm,
-    strapWidthAxis: strap.widthAxis,
-    ...look,
+    ...(profile !== undefined ? { profile } : {}),
+    ...(material !== undefined ? { material } : {}),
   });
 }
 

@@ -3,13 +3,14 @@
 // A motor-driven FLEXOR strap runs along the palmar side: palm anchor ->
 // pulley loop on the proximal phalanx -> pulley loop on the middle phalanx
 // -> distal tip. Positive ctrl on the `flexor` motor is cable TENSION, so the
-// finger curls toward the palm. A passive DORSAL extensor strap (a spring
-// on the back of the finger, wrapped over the two knuckles) returns it.
+// finger curls toward the palm. A second motor-driven EXTENSOR strap runs over
+// the back of the finger, riding wrap cylinders at the three knuckles. Each
+// joint also carries a torsion spring (stiffnessNmmPerDeg / springRefDeg), the
+// passive return when both motors relax.
 //
 // Exercises arm.tendon routing: `via` connector points + `{ wrap }` entries,
 // `actuator` (inextensible driven cable, no rest length / stiffness),
-// `visualStyle: 'strap'` with a braid texture, and a passive spring that also
-// uses `via`.
+// `profile` (flat ribbon) with a braid texture, and revolute joint compliance.
 //
 // Run with:
 //   npx tsx src/agent/cli/index.ts evaluate examples/kinematic/tendon-finger.kcad.ts
@@ -19,7 +20,7 @@ const mcpDeg = param('mcpDeg', 0, { min: 0, max: 85 });
 const pipDeg = param('pipDeg', 0, { min: 0, max: 100 });
 const dipDeg = param('dipDeg', 0, { min: 0, max: 70 });
 
-// 16x8 braid tile, tiled along the strap every 4 mm of cable.
+// 16x8 braid tile, laid along the strap (u = arc length / strap width).
 const BRAID_TEXTURE =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAICAIAAAB/FOjAAAAAOklEQVR42mNICHO6d+0IBAHZ07oKIAiXOANJqoFsBpJUA0UYSFIN0kCSapAGklSD/ECSalAokaQaiAD9TeCBNViY9gAAAABJRU5ErkJggg==';
 
@@ -97,42 +98,41 @@ arm.part('dist', dip.childGeometry, { density: 1200 })
   .connector('extensorTip', point([16, 0, PULLEY_Z]))
   .wrapGeom('knuckle', { axis: [0, 1, 0], origin: [0, 0, 0], radius: 7.5, halfLengthMm: 4 });
 
-arm.mate('mcp', 'palm.mcpAxis', 'prox.mcpAxis', 'revolute', { pose: mcpDeg, limitsDeg: [0, 85] });
-arm.mate('pip', 'prox.pipAxis', 'mid.pipAxis', 'revolute', { pose: pipDeg, limitsDeg: [0, 100] });
-arm.mate('dip', 'mid.dipAxis', 'dist.dipAxis', 'revolute', { pose: dipDeg, limitsDeg: [0, 70] });
+// Joint torsion springs: zero torque at -10 deg, i.e. preloaded against the
+// 0 deg extension stop, so the finger rests straight and curls only while
+// the flexor out-pulls them. Springref is in the same angle sign as the pose.
+const jointSpring = { stiffnessNmmPerDeg: 3, springRefDeg: -10, dampingNmmsPerDeg: 0.05 };
+
+arm.mate('mcp', 'palm.mcpAxis', 'prox.mcpAxis', 'revolute', { pose: mcpDeg, limitsDeg: [0, 85], ...jointSpring });
+arm.mate('pip', 'prox.pipAxis', 'mid.pipAxis', 'revolute', { pose: pipDeg, limitsDeg: [0, 100], ...jointSpring });
+arm.mate('dip', 'mid.dipAxis', 'dist.dipAxis', 'revolute', { pose: dipDeg, limitsDeg: [0, 70], ...jointSpring });
 
 // Flexor: motor-driven braided strap on the palmar side (inextensible).
 arm.tendon('flexor', {
   from: 'palm.flexorIn',
   via: ['prox.flexorLoop', 'mid.flexorLoop'],
   to: 'dist.flexorTip',
-  actuator: { maxForceN: 40 },
-  visualStyle: 'strap',
-  strapWidthMm: 5,
-  visualDiameterMm: 1.2,
-  strapWidthAxis: [0, 1, 0],
-  material: { baseColor: '#e8dfc8', metalness: 0.1, roughness: 0.75 },
-  texture: { path: BRAID_TEXTURE, periodMm: 4 },
+  actuator: { kind: 'force', maxForceN: 40 },
+  profile: { kind: 'flat', widthMm: 5, thicknessMm: 1.2, widthAxis: [0, 1, 0] },
+  material: { baseColor: '#e8dfc8', metalness: 0.1, roughness: 0.75, textures: { albedo: { path: BRAID_TEXTURE } } },
 });
 
-// Extensor: passive spring strap over the back of the finger, riding the
-// knuckle wrap cylinders of the middle and distal phalanges.
+// Extensor: a second motor-driven strap over the back of the finger, riding
+// the knuckle wrap cylinders so it clears the joints at every curl angle.
+// The joint springs (above) are the passive return when both motors relax.
 arm.tendon('extensor', {
   from: 'palm.extensorIn',
   via: [
+    { wrap: { partName: 'prox', wrapName: 'knuckle', sidesite: [0, 0, 12] } },
     'prox.extensorLoop',
     { wrap: { partName: 'mid', wrapName: 'knuckle', sidesite: [0, 0, 12] } },
     'mid.extensorLoop',
     { wrap: { partName: 'dist', wrapName: 'knuckle', sidesite: [0, 0, 12] } },
   ],
   to: 'dist.extensorTip',
-  restLengthMm: 95,
-  stiffnessNmm: 0.05,
-  dampingNsmm: 0.01,
-  visualStyle: 'strap',
-  strapWidthMm: 4,
-  material: { baseColor: '#9aa3b2', metalness: 0.1, roughness: 0.7 },
-  texture: { path: BRAID_TEXTURE, periodMm: 4 },
+  actuator: { kind: 'force', maxForceN: 20 },
+  profile: { kind: 'flat', widthMm: 4, thicknessMm: 1.2 },
+  material: { baseColor: '#9aa3b2', metalness: 0.1, roughness: 0.7, textures: { albedo: { path: BRAID_TEXTURE } } },
 });
 
 return arm.solvedModel({});

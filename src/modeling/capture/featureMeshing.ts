@@ -18,7 +18,7 @@ import { RecomputeEngine, predecessorsByRecord, compiledEventForRecord, type Rec
 import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
-import { buildStrapMesh } from './tendonStrapMesh';
+import { buildHelixTubeIndices, buildRibbonMesh, buildRoundSweep, flatWidthDirs, helixTubeTangents, writeHelixTubeRings } from './tendonSweepMesh';
 import { attachMaterialUVs, generatePlanarUVs } from './planarUv';
 import { computeFeatureOwnership } from './featureOwnership';
 import { helixPolylineRouted } from '../mates/helixPolyline';
@@ -217,7 +217,7 @@ interface AssemblyLikeForTendons {
     readonly to: string;
     readonly visualDiameterMm: number;
     /** P10: undefined on pre-P10 callers (fallback to 'line'). */
-    readonly visualStyle?: 'line' | 'coil' | 'strap';
+    readonly visualStyle?: 'line' | 'coil';
     readonly coilTurns?: number;
     readonly coilDiameterMm?: number;
     /** P11 Slice 3: ordered wrap-geom rails the coil routes over. */
@@ -227,10 +227,10 @@ interface AssemblyLikeForTendons {
     }[];
     /** Ordered route (connector refs / wrap refs); replaces `wrapGeoms`. */
     readonly via?: readonly (string | { readonly wrap: { readonly partName: string; readonly wrapName: string } })[];
-    readonly strapWidthMm?: number;
-    readonly strapWidthAxis?: Vec3;
-    readonly material?: { readonly baseColor: string; readonly metalness?: number; readonly roughness?: number };
-    readonly texture?: { readonly path: string; readonly periodMm?: number };
+    readonly profile?:
+      | { readonly kind: 'round'; readonly diameterMm: number }
+      | { readonly kind: 'flat'; readonly widthMm: number; readonly thicknessMm: number; readonly widthAxis?: Vec3 };
+    readonly material?: PBRMaterial;
   }[];
   __parts(): readonly {
     readonly name: string;
@@ -408,103 +408,6 @@ function buildHelixTubeMesh(
   };
 }
 
-/** Per-ring tangents (central differences interior; one-sided at ends). */
-function helixTubeTangents(polyline: readonly Vec3[]): Vec3[] {
-  const ringCount = polyline.length;
-  const tangents: Vec3[] = new Array(ringCount);
-  for (let i = 0; i < ringCount; i++) {
-    const prev = polyline[Math.max(0, i - 1)];
-    const next = polyline[Math.min(ringCount - 1, i + 1)];
-    let tx = next[0] - prev[0];
-    let ty = next[1] - prev[1];
-    let tz = next[2] - prev[2];
-    const len = Math.sqrt(tx * tx + ty * ty + tz * tz) || 1;
-    tx /= len; ty /= len; tz /= len;
-    tangents[i] = [tx, ty, tz];
-  }
-  return tangents;
-}
-
-/** Write ring vertices/normals for a tube swept along `polyline` using a
- *  parallel-transport frame. */
-function writeHelixTubeRings(
-  polyline: readonly Vec3[],
-  tangents: readonly Vec3[],
-  radialSegments: number,
-  tubeR: number,
-  vertices: Float32Array,
-  normals: Float32Array,
-): void {
-  const ringCount = polyline.length;
-  // Parallel-transport frame: pick an initial up vector ⊥ tangents[0],
-  // then rotate it forward at each step to stay perpendicular.
-  const seed: Vec3 = Math.abs(tangents[0][2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
-  // initial u = normalize(seed × tangent[0])
-  let ux = seed[1] * tangents[0][2] - seed[2] * tangents[0][1];
-  let uy = seed[2] * tangents[0][0] - seed[0] * tangents[0][2];
-  let uz = seed[0] * tangents[0][1] - seed[1] * tangents[0][0];
-  const uLen0 = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
-  ux /= uLen0; uy /= uLen0; uz /= uLen0;
-  // v = tangent × u
-  let vx = tangents[0][1] * uz - tangents[0][2] * uy;
-  let vy = tangents[0][2] * ux - tangents[0][0] * uz;
-  let vz = tangents[0][0] * uy - tangents[0][1] * ux;
-
-  for (let i = 0; i < ringCount; i++) {
-    const center = polyline[i];
-    if (i > 0) {
-      // Parallel-transport u, v to stay ⊥ tangent[i]: subtract the
-      // component along the new tangent, renormalize, then rebuild v.
-      const tDot = ux * tangents[i][0] + uy * tangents[i][1] + uz * tangents[i][2];
-      ux -= tangents[i][0] * tDot;
-      uy -= tangents[i][1] * tDot;
-      uz -= tangents[i][2] * tDot;
-      const l = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
-      ux /= l; uy /= l; uz /= l;
-      vx = tangents[i][1] * uz - tangents[i][2] * uy;
-      vy = tangents[i][2] * ux - tangents[i][0] * uz;
-      vz = tangents[i][0] * uy - tangents[i][1] * ux;
-    }
-    for (let s = 0; s < radialSegments; s++) {
-      const theta = (s / radialSegments) * 2 * Math.PI;
-      const cosT = Math.cos(theta);
-      const sinT = Math.sin(theta);
-      const nx = ux * cosT + vx * sinT;
-      const ny = uy * cosT + vy * sinT;
-      const nz = uz * cosT + vz * sinT;
-      const vi = (i * radialSegments + s) * 3;
-      vertices[vi + 0] = center[0] + nx * tubeR;
-      vertices[vi + 1] = center[1] + ny * tubeR;
-      vertices[vi + 2] = center[2] + nz * tubeR;
-      normals[vi + 0] = nx;
-      normals[vi + 1] = ny;
-      normals[vi + 2] = nz;
-    }
-  }
-}
-
-/** Two triangles per (ring i → ring i+1, radial s → s+1) quad. */
-function buildHelixTubeIndices(ringCount: number, radialSegments: number): Uint32Array {
-  const quadCount = (ringCount - 1) * radialSegments;
-  const indices = new Uint32Array(quadCount * 6);
-  let idx = 0;
-  for (let i = 0; i < ringCount - 1; i++) {
-    for (let s = 0; s < radialSegments; s++) {
-      const sNext = (s + 1) % radialSegments;
-      const a = i * radialSegments + s;
-      const b = i * radialSegments + sNext;
-      const c = (i + 1) * radialSegments + s;
-      const d = (i + 1) * radialSegments + sNext;
-      indices[idx++] = a;
-      indices[idx++] = c;
-      indices[idx++] = b;
-      indices[idx++] = b;
-      indices[idx++] = c;
-      indices[idx++] = d;
-    }
-  }
-  return indices;
-}
 
 /**
  * P7 — read the Assembly's declared tendons (if any) and pack them into
@@ -638,45 +541,27 @@ function resolveTendonPath(
   return { fromWorld, toWorld, centerline, frames };
 }
 
-/** Rotate the strap width axis (given in a part frame) by that part's world transform. */
-function strapWidthDirs(t: TendonLike, path: TendonPath): Vec3[] {
-  const a = t.strapWidthAxis ?? [0, 1, 0];
-  return path.frames.map((m) => [
-    m[0] * a[0] + m[4] * a[1] + m[8] * a[2],
-    m[1] * a[0] + m[5] * a[1] + m[9] * a[2],
-    m[2] * a[0] + m[6] * a[1] + m[10] * a[2],
-  ] as Vec3);
-}
-
-function buildTendonStrap(t: TendonLike, path: TendonPath): FaceGeometry | null {
-  return buildStrapMesh({
-    points: path.centerline,
-    widthDirs: strapWidthDirs(t, path),
-    widthMm: t.strapWidthMm ?? 4,
-    thicknessMm: t.visualDiameterMm,
-    periodMm: t.texture?.periodMm ?? 4,
-  });
-}
-
-/** Tendon PBR: declared material (+ albedo texture) over the dark metallic default. */
+/** Tendon PBR: the declared material (textures included) or the dark metallic default. */
 function tendonPbr(t: TendonLike): PBRMaterial {
-  const m = t.material;
-  const pbr: PBRMaterial = m === undefined
-    ? { baseColor: '#2a2e36', metalness: 0.85, roughness: 0.4 }
-    : {
-      baseColor: m.baseColor,
-      ...(m.metalness !== undefined ? { metalness: m.metalness } : {}),
-      ...(m.roughness !== undefined ? { roughness: m.roughness } : {}),
-    };
-  if (t.texture !== undefined) pbr.textures = { albedo: { path: t.texture.path } };
-  return pbr;
+  return t.material ?? { baseColor: '#2a2e36', metalness: 0.85, roughness: 0.4 };
 }
 
 function buildTendonFace(t: TendonLike, path: TendonPath): FaceGeometry | null {
   // P10: coil tendons sweep an 8-facet tube along the helix polyline;
   // line tendons fall through to the existing PR #368 cylinder path.
   const style = t.visualStyle ?? 'line';
-  if (style === 'strap') return buildTendonStrap(t, path);
+  const p = t.profile;
+  if (p?.kind === 'flat') {
+    return buildRibbonMesh({
+      points: path.centerline,
+      widthDirs: flatWidthDirs(p.widthAxis ?? [0, 1, 0], path.frames),
+      widthMm: p.widthMm,
+      thicknessMm: p.thicknessMm,
+    });
+  }
+  if (p?.kind === 'round') return buildRoundSweep(path.centerline, p.diameterMm);
+  // A routed 'line' follows its route as a tube; a direct one stays a cylinder.
+  if (style === 'line' && path.centerline.length > 2) return buildRoundSweep(path.centerline, t.visualDiameterMm);
   if (style === 'coil') {
     const turns = t.coilTurns ?? 10;
     const coilDiameter = t.coilDiameterMm ?? 7;

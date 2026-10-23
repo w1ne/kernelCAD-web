@@ -933,6 +933,12 @@ function importSubAssemblyMates(state: AssemblyState, prefix: string, other: Ass
       ...(om.pose !== undefined ? { pose: om.pose } : {}),
       ...(om.limitsDeg !== undefined ? { limitsDeg: om.limitsDeg } : {}),
       ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
+      ...(om.stiffnessNmmPerDeg !== undefined ? { stiffnessNmmPerDeg: om.stiffnessNmmPerDeg } : {}),
+      ...(om.springRefDeg !== undefined ? { springRefDeg: om.springRefDeg } : {}),
+      ...(om.dampingNmmsPerDeg !== undefined ? { dampingNmmsPerDeg: om.dampingNmmsPerDeg } : {}),
+      ...(om.stiffnessNPerMm !== undefined ? { stiffnessNPerMm: om.stiffnessNPerMm } : {}),
+      ...(om.springRefMm !== undefined ? { springRefMm: om.springRefMm } : {}),
+      ...(om.dampingNsPerMm !== undefined ? { dampingNsPerMm: om.dampingNsPerMm } : {}),
       ...(om.capacity !== undefined ? { capacity: copyMateCapacity(om.capacity) } : {}),
       ...(om.maxLoad !== undefined
         ? {

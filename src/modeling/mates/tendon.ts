@@ -32,6 +32,7 @@
  * symmetrically.
  */
 import type { Vec3 } from '../../shared/intent/types';
+import type { PBRMaterial } from '../../shared/intent/material';
 
 /**
  * P11 Slice 2 — a named collision-OFF cylinder declared on a Part for
@@ -104,7 +105,7 @@ export interface TendonRecord {
      *  spanning the two endpoints — the v1 PR #368 behavior. `'coil'`
      *  renders an Anglepoise-style helical spring whose centerline is the
      *  AB line and whose wire sweeps around at radius `coilDiameterMm/2`. */
-    readonly visualStyle: TendonVisualStyle;
+    readonly visualStyle: 'line' | 'coil';
     /** P10: number of full turns along the AB span when `visualStyle ===
      *  'coil'`. Ignored for `'line'`. Must be >= 1. Defaults to 10. */
     readonly coilTurns: number;
@@ -125,36 +126,28 @@ export interface TendonRecord {
     /** Motor pulling the cable (MJCF `<motor tendon=...>`). Undefined =
      *  passive spring. */
     readonly actuator?: TendonActuator;
-    /** Strap width (mm) for `visualStyle: 'strap'`. */
-    readonly strapWidthMm: number;
-    /** Strap width direction, in each route point's owning-part frame. */
-    readonly strapWidthAxis: Vec3;
-    /** Render material; undefined = the dark metallic default. */
-    readonly material?: TendonMaterial;
-    /** Albedo texture; `periodMm` is the arc length of one tile. */
-    readonly texture?: TendonTexture;
+    /** Swept render cross-section; undefined = `visualStyle` / `visualDiameterMm`. */
+    readonly profile?: TendonProfile;
+    /** Render material (the type `.material()` takes, textures included);
+     *  undefined = the dark metallic default. */
+    readonly material?: PBRMaterial;
 }
-
-export type TendonVisualStyle = 'line' | 'coil' | 'strap';
 
 /** One via entry: a connector ref string or a wrap-geom ref. */
 export type TendonViaRef = string | { readonly wrap: TendonWrapRef };
 
+/** Force-driven cable: `ctrl` in `[0, maxForceN]` is cable tension (N). */
 export interface TendonActuator {
-    /** Peak cable tension (N). ctrl in [0, maxForceN]. > 0. */
+    readonly kind: 'force';
     readonly maxForceN: number;
 }
 
-export interface TendonMaterial {
-    readonly baseColor: string;
-    readonly metalness?: number;
-    readonly roughness?: number;
-}
-
-export interface TendonTexture {
-    readonly path: string;
-    readonly periodMm?: number;
-}
+/** Cross-section swept along the routed centerline: `round` = tube, `flat` =
+ *  ribbon whose width direction is `widthAxis` (default [0, 1, 0]) given in
+ *  each route point's owning-part frame. */
+export type TendonProfile =
+    | { readonly kind: 'round'; readonly diameterMm: number }
+    | { readonly kind: 'flat'; readonly widthMm: number; readonly thicknessMm: number; readonly widthAxis?: Vec3 };
 
 /**
  * Agent-facing options for `arm.tendon(name, opts)`. `dampingNsmm` and
@@ -170,27 +163,21 @@ export interface TendonOptions {
     /** Required (>0) unless `actuator` is set. */
     readonly stiffnessNmm?: number;
     readonly dampingNsmm?: number;
-    /** Line/coil: cylinder / wire diameter. Strap: strap THICKNESS (default 1.2). */
     readonly visualDiameterMm?: number;
-    readonly visualStyle?: TendonVisualStyle;
-    /** Ordered route between `from` and `to`. A string is a
+    readonly visualStyle?: 'line' | 'coil';
+    /** Ordered route between `from` and `to`: a string is a
      *  `"part.connector"` ref (vec3-origin connector on any part); an object
      *  `{ wrap: { partName, wrapName, sidesite? } }` routes around a
      *  `part.wrapGeom(...)` cylinder. Cannot be combined with `wrapGeoms`. */
     readonly via?: ReadonlyArray<string | { readonly wrap: TendonWrapRef }>;
-    /** Makes this a motor-driven cable: `ctrl >= 0` is TENSION up to
-     *  `maxForceN`. Makes `restLengthMm` / `stiffnessNmm` optional. */
-    readonly actuator?: { readonly maxForceN: number };
-    /** `visualStyle: 'strap'` width (mm). Default 4. */
-    readonly strapWidthMm?: number;
-    /** Strap width direction in each route point's owning-part frame.
-     *  Default [0, 1, 0]. */
-    readonly strapWidthAxis?: readonly [number, number, number];
-    /** Render material. Default: dark metallic. */
-    readonly material?: TendonMaterial;
-    /** Albedo texture (data:, https: or asset path); tiles every
-     *  `periodMm` of arc length (default 4). */
-    readonly texture?: { readonly path: string; readonly periodMm?: number };
+    /** Motor-driven cable; makes `restLengthMm` / `stiffnessNmm` optional. */
+    readonly actuator?: { readonly kind: 'force'; readonly maxForceN: number };
+    /** Swept cross-section along the route: a tube or a flat ribbon. */
+    readonly profile?: TendonProfile;
+    /** Render material, same type as `.material()`. A `textures.albedo` map is
+     *  laid along the swept length: u = arc length / profile width (or
+     *  circumference), v across the section. */
+    readonly material?: PBRMaterial;
     readonly coilTurns?: number;
     readonly coilDiameterMm?: number;
     /** P11 Slice 2 — wrap-geom rails (in routing order) the cable passes.
@@ -206,12 +193,7 @@ export interface TendonOptions {
 /** Default visual diameter (mm) used when the agent doesn't pass one. */
 export const TENDON_DEFAULT_VISUAL_DIAMETER_MM = 3;
 /** Default visual style — the v1 thin-cylinder render. */
-export const TENDON_DEFAULT_VISUAL_STYLE: TendonVisualStyle = 'line';
-/** Strap defaults: thickness (visualDiameterMm), width, width axis, texture period. */
-export const TENDON_DEFAULT_STRAP_THICKNESS_MM = 1.2;
-export const TENDON_DEFAULT_STRAP_WIDTH_MM = 4;
-export const TENDON_DEFAULT_STRAP_WIDTH_AXIS: Vec3 = [0, 1, 0];
-export const TENDON_DEFAULT_TEXTURE_PERIOD_MM = 4;
+export const TENDON_DEFAULT_VISUAL_STYLE: 'line' | 'coil' = 'line';
 /** Default coil turn count when `visualStyle: 'coil'` is opted into without
  *  an explicit `coilTurns`. 10 turns reads as iconic Anglepoise without
  *  being so dense that the per-turn segments blur into a solid cylinder. */

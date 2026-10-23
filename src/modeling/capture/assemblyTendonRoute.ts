@@ -2,35 +2,33 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/assemblyTendonRoute.ts
 //
-// Capture-time validation for the routed / actuated / strap options of
-// `arm.tendon(...)`: `via` route entries, `actuator`, `strapWidthMm` /
-// `strapWidthAxis`, `material` and `texture`. Split out of
+// Capture-time validation for the routed / actuated options of
+// `arm.tendon(...)`: `via` route entries, `actuator` and `profile`. Split out of
 // `assemblyJoints.ts` (complexity budget); the spring / coil / endpoint
 // checks stay there.
 
-import { KernelError } from '../../shared/intent/kernelError';
+import type { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgsError } from '../../shared/intent/invalidArgs';
 import { formatScalarForError } from '../../shared/intent/types';
 import type { Vec3 } from '../../shared/intent/types';
 import { parseConnectorRef } from '../mates/mate';
-import {
-  TENDON_DEFAULT_STRAP_WIDTH_AXIS,
-  TENDON_DEFAULT_STRAP_WIDTH_MM,
-  type TendonActuator,
-  type TendonMaterial,
-  type TendonOptions,
-  type TendonTexture,
-  type TendonViaRef,
-  type TendonWrapRef,
+import type {
+  TendonActuator,
+  TendonOptions,
+  TendonProfile,
+  TendonViaRef,
+  TendonWrapRef,
 } from '../mates/tendon';
 import type { AssemblyState } from './assemblyState';
 
 function bad(name: string, code: string, detail: string, hint: string): KernelError {
-  return new KernelError(
-    'feature.invalid-args',
-    `assembly.tendon.${code}: tendon '${name}' ${detail}`,
-    undefined,
-    `invalid-args.assembly.tendon-${code} — ${hint}`,
-  );
+  return invalidArgsError({
+    api: `tendon('${name}', opts)`,
+    gotText: `assembly.tendon.${code}: ${detail}`,
+    requires: hint,
+    hintSlug: `invalid-args.assembly.tendon-${code}`,
+    example: "arm.tendon('line', { from: 'a.eye', via: ['b.pulley'], to: 'c.eye', actuator: { kind: 'force', maxForceN: 40 } })",
+  });
 }
 
 function resolveViaConnector(state: AssemblyState, name: string, index: number, ref: string): void {
@@ -91,61 +89,28 @@ export function resolveTendonVia(state: AssemblyState, name: string, opts: Tendo
 }
 
 export function normalizeTendonActuator(name: string, opts: TendonOptions): TendonActuator | undefined {
-  if (opts.actuator === undefined) return undefined;
-  const f = opts.actuator.maxForceN;
-  if (typeof f !== 'number' || !Number.isFinite(f) || f <= 0) {
-    throw bad(name, 'invalid-actuator', `actuator.maxForceN must be a positive finite number; got ${formatScalarForError(f)}.`,
-      `pass actuator: { maxForceN: <positive N> }.`);
+  const act = opts.actuator;
+  if (act === undefined) return undefined;
+  if (act.kind !== 'force' || typeof act.maxForceN !== 'number' || !Number.isFinite(act.maxForceN) || act.maxForceN <= 0) {
+    throw bad(name, 'invalid-actuator', `actuator must be { kind: 'force', maxForceN: <positive finite N> }; got ${JSON.stringify(act)}.`,
+      `pass actuator: { kind: 'force', maxForceN: 40 }.`);
   }
-  return { maxForceN: f };
+  return { kind: 'force', maxForceN: act.maxForceN };
 }
 
-export function normalizeTendonStrap(name: string, opts: TendonOptions): { widthMm: number; widthAxis: Vec3 } {
-  const widthMm = opts.strapWidthMm ?? TENDON_DEFAULT_STRAP_WIDTH_MM;
-  if (!Number.isFinite(widthMm) || widthMm <= 0) {
-    throw bad(name, 'invalid-strap-width', `strapWidthMm must be a positive finite number; got ${formatScalarForError(widthMm)}.`,
-      `pass strapWidthMm: <positive mm>, or omit it to default to ${TENDON_DEFAULT_STRAP_WIDTH_MM} mm.`);
-  }
-  const a = opts.strapWidthAxis ?? TENDON_DEFAULT_STRAP_WIDTH_AXIS;
-  if (!Array.isArray(a) || a.length !== 3 || a.some((x) => !Number.isFinite(x)) || Math.hypot(a[0], a[1], a[2]) === 0) {
-    throw bad(name, 'invalid-strap-axis', `strapWidthAxis must be a finite non-zero [x, y, z].`,
-      `pass strapWidthAxis: [0, 1, 0] (expressed in each route point's part frame), or omit it.`);
-  }
-  return { widthMm, widthAxis: [a[0], a[1], a[2]] };
-}
-
-export function normalizeTendonLook(
-  name: string,
-  opts: TendonOptions,
-): { material?: TendonMaterial; texture?: TendonTexture } {
-  const out: { material?: TendonMaterial; texture?: TendonTexture } = {};
-  const m = opts.material;
-  if (m !== undefined) {
-    if (typeof m.baseColor !== 'string' || m.baseColor.length === 0) {
-      throw bad(name, 'invalid-material', `material.baseColor must be a non-empty color string.`,
-        `pass material: { baseColor: '#c9b037', metalness?, roughness? }.`);
+export function normalizeTendonProfile(name: string, opts: TendonOptions): TendonProfile | undefined {
+  const p = opts.profile;
+  if (p === undefined) return undefined;
+  const pos = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0;
+  if (p.kind === 'round' && pos(p.diameterMm)) return { kind: 'round', diameterMm: p.diameterMm };
+  if (p.kind === 'flat' && pos(p.widthMm) && pos(p.thicknessMm)) {
+    const a = p.widthAxis;
+    if (a !== undefined && (a.length !== 3 || a.some((x) => !Number.isFinite(x)) || Math.hypot(a[0], a[1], a[2]) === 0)) {
+      throw bad(name, 'invalid-profile', `profile.widthAxis must be a finite non-zero [x, y, z].`,
+        `pass widthAxis in the owning part's frame, or omit it for [0, 1, 0].`);
     }
-    const clamp = (v: number | undefined): number | undefined =>
-      v === undefined || !Number.isFinite(v) ? undefined : Math.min(1, Math.max(0, v));
-    const metalness = clamp(m.metalness);
-    const roughness = clamp(m.roughness);
-    out.material = {
-      baseColor: m.baseColor,
-      ...(metalness !== undefined ? { metalness } : {}),
-      ...(roughness !== undefined ? { roughness } : {}),
-    };
+    return { kind: 'flat', widthMm: p.widthMm, thicknessMm: p.thicknessMm, ...(a !== undefined ? { widthAxis: [a[0], a[1], a[2]] as Vec3 } : {}) };
   }
-  const t = opts.texture;
-  if (t !== undefined) {
-    if (typeof t.path !== 'string' || t.path.length === 0) {
-      throw bad(name, 'invalid-texture', `texture.path must be a non-empty string.`,
-        `pass texture: { path: 'data:image/png;base64,...' | 'https://...' | '<asset path>', periodMm? }.`);
-    }
-    if (t.periodMm !== undefined && (!Number.isFinite(t.periodMm) || t.periodMm <= 0)) {
-      throw bad(name, 'invalid-texture', `texture.periodMm must be a positive finite number; got ${formatScalarForError(t.periodMm)}.`,
-        `pass texture.periodMm: <positive mm of arc length per tile>.`);
-    }
-    out.texture = { path: t.path, ...(t.periodMm !== undefined ? { periodMm: t.periodMm } : {}) };
-  }
-  return out;
+  throw bad(name, 'invalid-profile', `profile must be { kind: 'round', diameterMm } or { kind: 'flat', widthMm, thicknessMm, widthAxis? } with positive sizes.`,
+    `pass profile: { kind: 'flat', widthMm: 5, thicknessMm: 1.2 }.`);
 }
