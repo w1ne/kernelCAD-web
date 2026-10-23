@@ -10,6 +10,7 @@ import { summarizeInterferencePairs } from './src/modeling/runtime/interferenceC
 import { resolveExampleScript as resolveExampleScriptAtRoot } from './src/server/middleware/resolveExampleScript';
 import { kernelCadEditorTypingsPlugin } from './scripts/editorTypings';
 import { workerNodeBuiltinStubs } from './scripts/workerNodeStubs';
+import { occtGlueOwnFunction } from './scripts/occtGlueFunction';
 
 const repoRoot = fileURLToPath(new URL('.', import.meta.url));
 const require = createRequire(import.meta.url);
@@ -1002,6 +1003,7 @@ export default defineConfig(({ command }) => ({
       generatedRouteTree: './src/studio/routeTree.gen.ts',
       routeFileIgnorePattern: '\\.test\\.ts$',
     }),
+    occtGlueOwnFunction(),
     kernelCadMeshEndpoint(),
     reviewPaintSaveServer(),
     kernelCadEditorTypingsPlugin(),
@@ -1019,7 +1021,7 @@ export default defineConfig(({ command }) => ({
     // One file per worker: the browser kernel worker runs from a `data:` URL
     // (opaque origin) and cannot load sibling chunks. Guarded node-only
     // imports then resolve to throwing stubs (scripts/workerNodeStubs.ts).
-    plugins: () => [workerNodeBuiltinStubs()],
+    plugins: () => [occtGlueOwnFunction(), workerNodeBuiltinStubs()],
     rollupOptions: {
       output: { inlineDynamicImports: true },
     },
@@ -1063,6 +1065,8 @@ export default defineConfig(({ command }) => ({
     // "does not provide an export named 'Node'"; prebundling it is what makes
     // that lazy chunk load in dev.
     include: ['ts-morph'],
-    exclude: ['typescript'],
+    // The OCCT glue must go through occtGlueOwnFunction (see
+    // scripts/occtGlueFunction.ts), which a pre-bundled dep would skip.
+    exclude: ['typescript', 'replicad-opencascadejs'],
   },
 }))

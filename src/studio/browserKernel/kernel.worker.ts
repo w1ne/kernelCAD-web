@@ -20,7 +20,7 @@ import { initOcct, occtHeapBytes } from '../../kernel/backends/occt/occtBackend'
 import { createKernelDeps } from './kernelDeps';
 import { installWasmMemoryCap } from './memoryCap';
 import { createKernelWorkerCore } from './workerCore';
-import { lockDownWorkerGlobals } from './workerLockdown';
+import { lockDownCodeGeneration, lockDownWorkerGlobals } from './workerLockdown';
 import {
   BROWSER_KERNEL_PROTOCOL,
   isPageToWorker,
@@ -63,7 +63,7 @@ async function start(init: KernelInitMessage, port: MessagePort): Promise<void> 
   const started = performance.now();
   const memory = installWasmMemoryCap(init.memoryCapBytes);
   await initOcct({ wasmBinary: init.wasm });
-  const locked = lockDownWorkerGlobals(self);
+  const locked = [...lockDownWorkerGlobals(self), ...lockDownCodeGeneration(self)];
   // The heap the module started with counts too, not only what it grew to.
   const core = createKernelWorkerCore(createKernelDeps({
     bytes: () => Math.max(memory.bytes(), occtHeapBytes()),
@@ -99,15 +99,24 @@ async function start(init: KernelInitMessage, port: MessagePort): Promise<void> 
   send(ready, []);
 }
 
+/** Taken before any model code exists. */
+const portPostMessage = MessagePort.prototype.postMessage;
+
 const scope = self as unknown as { onmessage: ((event: MessageEvent<unknown>) => void) | null };
 scope.onmessage = (event) => {
   const port = event.ports[0];
   if (!isInit(event.data) || !port) return;
   // One init only; nothing else is ever read from the worker object.
   scope.onmessage = null;
-  start(event.data, port).catch(() => {
-    // The page sees no `ready` and times the start-up out; a worker that
-    // cannot lock itself down must not run anything.
+  start(event.data, port).catch((error: unknown) => {
+    // A worker that cannot start or lock itself down runs nothing: say so
+    // at once (the page sends the edit to the server) and close.
+    const failed: WorkerToPage = {
+      type: 'start-failed',
+      v: BROWSER_KERNEL_PROTOCOL,
+      message: error instanceof Error ? error.message : String(error),
+    };
+    portPostMessage.call(port, failed);
     port.close();
   });
 };

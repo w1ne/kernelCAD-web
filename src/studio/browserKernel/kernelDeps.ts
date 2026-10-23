@@ -24,6 +24,7 @@ import { COARSE_MESH_OPTIONS } from '../../kernel/backends/occt/meshing';
 import { isOcctWasmPoisoned } from '../../kernel/backends/occt/occtException';
 import { KernelError } from '../../shared/intent/kernelError';
 import type { KernelWorkerDeps } from './workerCore';
+import { assertNoModuleLoading } from './moduleLoadingCheck';
 
 /** File name the model runs under (script locations, stack traces). */
 export const BROWSER_MODEL_FILE = 'studio-model.kcad.ts';
@@ -38,6 +39,13 @@ export interface KernelMemoryProbe {
 }
 
 const HOST_FS_CODE = 'cli.host-fs-unavailable';
+
+/** Type stripping, then the refusal of import() / import.meta. */
+function checkedTranspile(source: string, fileName: string): ReturnType<typeof transpileSucrase> {
+  const out = transpileSucrase(source, fileName);
+  assertNoModuleLoading(out.code);
+  return out;
+}
 
 function needsHostFs(model: BuiltModel): boolean {
   if (model.diagnostics.some((d) => d.code === HOST_FS_CODE)) return true;
@@ -55,7 +63,7 @@ export function createKernelDeps(
 ): KernelWorkerDeps<BuiltModel, MeshFeaturesResult> {
   return {
     async build(source, params) {
-      const run = await runScriptInBrowser({ code: source, fileName: BROWSER_MODEL_FILE, transpile: transpileSucrase });
+      const run = await runScriptInBrowser({ code: source, fileName: BROWSER_MODEL_FILE, transpile: checkedTranspile });
       // The server's stateless override: set on the freshly captured table
       // before anything is lowered. Validation happens in ParamTable.set.
       for (const [name, value] of Object.entries(params)) run.paramTable.set(name, value);

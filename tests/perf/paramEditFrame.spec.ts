@@ -101,17 +101,23 @@ async function tick(page: Page, name: string, value: number): Promise<{ sample: 
     }, { once: true, capture: true });
   });
   await input.press('Enter');
-  await page.waitForFunction(() => {
+  // Done when the frame after `applied` is drawn — or at once when another
+  // kernel answered (reported below instead of waiting for a mark it never sends).
+  await page.waitForFunction((expected) => {
     const ev = (globalThis as unknown as { __kernelcadParamPerf: { events: PerfEvent[] } }).__kernelcadParamPerf.events;
+    if (ev.some((e) => e.stage === 'response' && e.kernel !== expected)) return true;
     const applied = ev.findIndex((e) => e.stage === 'applied');
     return applied >= 0 && ev.slice(applied).some((e) => e.stage === 'frame');
-  }, null, { timeout: TICK_TIMEOUT_MS });
+  }, KERNEL, { timeout: TICK_TIMEOUT_MS });
   const ev = await events(page);
+  const answeredBy = ev.find((e) => e.stage === 'response')?.kernel;
+  expect(answeredBy, `${name}=${value} was rebuilt by another kernel`).toBe(KERNEL);
   const at = (stage: string, from = 0) => ev.slice(from).find((e) => e.stage === stage);
   const appliedIndex = ev.findIndex((e) => e.stage === 'applied');
   const input0 = at('input')!;
-  const request = ev.filter((e) => e.stage === 'request').at(-1)!;
-  const response = ev.filter((e) => e.stage === 'response').at(-1)!;
+  const request = ev.filter((e) => e.stage === 'request').at(-1);
+  const response = ev.filter((e) => e.stage === 'response').at(-1);
+  if (!request || !response) throw new Error(`no rebuild request/response marks for ${name}=${value}: the edit took an uninstrumented path`);
   const applied = ev[appliedIndex]!;
   const frameIndex = ev.findIndex((e, i) => i > appliedIndex && e.stage === 'frame');
   const frame = ev[frameIndex]!;
@@ -186,7 +192,7 @@ test('param edit click-to-frame', async ({ page }) => {
   await serveModel(page, 'perf-model', readFileSync(MODEL, 'utf8'));
   const opened = Date.now();
   await page.goto(`/studio?gallery=perf-model&kernel=${KERNEL}`);
-  await page.getByText('Params', { exact: true }).first().click({ timeout: TICK_TIMEOUT_MS });
+  await page.getByTestId('inspector-tabs').getByText('Params', { exact: true }).click({ timeout: TICK_TIMEOUT_MS });
   await expect(page.getByTestId(`scrub-input-${TICKS[0]!.name}`)).toBeVisible({ timeout: TICK_TIMEOUT_MS });
   await page.waitForFunction(() => (globalThis as unknown as { __kernelcadParamPerf: { events: PerfEvent[] } })
     .__kernelcadParamPerf.events.some((e) => e.stage === 'frame'), null, { timeout: TICK_TIMEOUT_MS });
@@ -221,7 +227,6 @@ test('param edit click-to-frame', async ({ page }) => {
     if (index >= WARMUP) samples.push(sample);
   }
   expect(errors).toEqual([]);
-  await expect(page.getByText(/is not available|failed to compile/)).toHaveCount(0);
 
   const stages: Array<keyof Sample> = [
     'inputToRequestMs', 'requestToResponseMs', 'toWorkerMs', 'workerMs', 'toPageMs', 'responseToAppliedMs',
@@ -239,8 +244,28 @@ test('param edit click-to-frame', async ({ page }) => {
   await test.info().attach('param-edit-frame.json', { path: OUT, contentType: 'application/json' });
 });
 
-test('a hostile model in the browser kernel reaches no network, storage or page messaging', async ({ page }) => {
+/** Every request to example.invalid, from the page or any of its workers. */
+function watchProbeRequests(page: Page): string[] {
+  const seen: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('example.invalid')) seen.push(request.url());
+  });
+  return seen;
+}
+
+/** Control: Playwright does see a module import / fetch from an
+ *  opaque-origin `data:` worker, so "no request seen" below means none. */
+async function expectWorkerRequestsAreVisible(page: Page, seen: string[]): Promise<void> {
+  await page.evaluate(() => {
+    const code = "import('https://example.invalid/control-import.js').catch(() => 0); fetch('https://example.invalid/control-fetch').catch(() => 0);";
+    new Worker(`data:text/javascript;base64,${btoa(code)}`, { type: 'module' });
+  });
+  await expect.poll(() => seen.filter((url) => url.includes('/control-')).length, { timeout: 10_000 }).toBeGreaterThanOrEqual(2);
+}
+
+test('a hostile model in the browser kernel reaches no network, storage, page messaging or code generation', async ({ page }) => {
   test.skip(KERNEL !== 'browser' || MODEL !== FIXTURE, 'Runs with the default fixture only.');
+  const seen = watchProbeRequests(page);
   await serveModel(page, 'lockdown-probe', readFileSync('tests/fixtures/browser-kernel/lockdown-probe.kcad.ts', 'utf8'));
   await page.goto('/studio?gallery=lockdown-probe&kernel=browser');
   const probe = page.getByText(/PROBE:\{/).first();
@@ -249,8 +274,25 @@ test('a hostile model in the browser kernel reaches no network, storage or page 
   const report = JSON.parse(text.slice(text.indexOf('PROBE:') + 'PROBE:'.length, text.lastIndexOf('}') + 1)) as Record<string, string>;
   console.log('lockdown probe', report);
   expect(report.origin).toBe('null');
+  for (const capability of ['fetch', 'FunctionImport', 'constructorImport', 'eval', 'AsyncFunction', 'setTimeoutString', 'WebAssemblyMemory']) {
+    expect(report[capability], `${capability} was probed`).toBeDefined();
+  }
   for (const [capability, outcome] of Object.entries(report)) {
     if (capability === 'origin') continue;
     expect(outcome, capability).toBe('blocked');
   }
+  await page.waitForTimeout(500);
+  expect(seen, 'requests the model made').toEqual([]);
+  await expectWorkerRequestsAreVisible(page, seen);
+});
+
+test('a model with a literal import() is refused before it runs and makes no request', async ({ page }) => {
+  test.skip(KERNEL !== 'browser' || MODEL !== FIXTURE, 'Runs with the default fixture only.');
+  const seen = watchProbeRequests(page);
+  await serveModel(page, 'import-probe', readFileSync('tests/fixtures/browser-kernel/import-probe.kcad.ts', 'utf8'));
+  await page.goto('/studio?gallery=import-probe&kernel=browser');
+  await expect(page.getByText(/import\(\) and import\.meta are not available/).first()).toBeVisible({ timeout: TICK_TIMEOUT_MS });
+  await page.waitForTimeout(500);
+  expect(seen, 'requests the model made').toEqual([]);
+  await expectWorkerRequestsAreVisible(page, seen);
 });

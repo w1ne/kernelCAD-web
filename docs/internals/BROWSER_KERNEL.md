@@ -69,13 +69,31 @@ static preview) builds the model itself in the worker.
   EventSource, `importScripts`, IndexedDB, Cache Storage, BroadcastChannel,
   `postMessage` and the rest are replaced on the worker global and its
   prototype chain with non-configurable throwing stubs.
+- Module loading: dynamic `import()` is syntax, not a global, so it cannot be
+  stubbed. The transpiled model is parsed (acorn) before it runs and
+  `import()` / `import.meta` are refused with a clear error (code the parser
+  cannot read is refused too). That check is sufficient because, once OCCT
+  is up, every way to create code from a string is gone: `Function`,
+  `Function.prototype.constructor`, `eval`, the async/generator function
+  constructors and string `setTimeout`/`setInterval`. The realm runner keeps
+  its own reference to `Function` from before. A real-Chromium probe
+  (`tests/perf/paramEditFrame.spec.ts`) checks that neither a literal
+  `import('https://example.invalid/…')` nor `Function('return import(…)')()`
+  makes a request.
 - Messaging: the page reads nothing from the worker object after start-up;
   replies come on the private port, held in a closure model code cannot
   reach, and every message is shape-checked.
 - Memory: `WebAssembly.Memory.prototype.grow` is wrapped before OCCT starts;
-  growth past 1.5 GiB is refused, the job fails with a memory error, the
-  worker is replaced and the server builds the model.
-- Time: the page terminates a worker whose job misses its deadline.
+  OCCT heap growth past 1.5 GiB is refused, the job fails with a memory error,
+  the worker is replaced and the server builds the model. Model code cannot
+  create wasm memory or modules of its own (`new WebAssembly.Memory`,
+  compile and instantiate are removed after start-up). Plain JavaScript
+  allocations by model code (arrays, ArrayBuffers, strings) are **not**
+  capped: only the browser's per-worker limits bound them, and an engine that
+  handles a worker OOM by killing the renderer would lose the tab.
+- Time: the page terminates a worker whose job misses its deadline. Start-up
+  (loading the worker, downloading the script and wasm, the handshake) has
+  one deadline; the worker reports its own start failure at once.
 
 No COOP/COEP headers, no SharedArrayBuffer, no threads.
 
