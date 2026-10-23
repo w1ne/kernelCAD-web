@@ -9,7 +9,7 @@ import { renderScript } from '../../oracle/render';
 import { scoreAgainstReference } from '../../oracle/scoreReference';
 import { scoreMesh } from '../../oracle/scoreMesh';
 import type { HarnessCtx, HarnessResult } from '../../types';
-import { computeFidelityGates, allFidelityGatesPass, type FidelityGate, type FidelityBundle } from '../../../src/lib/imageSimilarity/fidelityGates';
+import { computeFidelityGates, allFidelityGatesPass, type FidelityGate, type FidelityBundle } from '../../oracle/fidelityGates';
 
 // Reference photo: front-right product shot from approximately az=30°, el=15°.
 // See ../../docs/specs/2026-05-15-from-prompt-to-object-eval-loop-roadmap.md

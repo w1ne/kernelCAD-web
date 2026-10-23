@@ -2733,7 +2733,7 @@
   },
   {
     "name": "trace_from_image",
-    "description": "Use this when you need to trace a reference image into normalized waypoints, or turn sketch labels into a catalog-aware draft BOM. Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Set `detectParts: true` to request labeled component boxes, confidence, bundled-catalog candidates and unmatched labels; the BOM is a draft for review. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (vision model; named points/cluttered backgrounds; needs a configured vision endpoint), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto`. Per-feature confidence is reported. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
+    "description": "Use this when you need to trace a reference image into normalized waypoints. Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (vision model; named points/cluttered backgrounds; needs a configured vision endpoint), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto`. Per-feature confidence is reported. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2744,10 +2744,6 @@
         "hint": {
           "type": "string",
           "description": "Optional free-text hint forwarded to vision-LLM backends (e.g. \"a pair of eyewear; trace the upper brow only\")."
-        },
-        "detectParts": {
-          "type": "boolean",
-          "description": "Optional: use the configured vision model to detect labeled component boxes and return detectedParts plus a draftBom, normalized to the traced outline frame."
         },
         "features": {
           "type": "array",
@@ -2907,39 +2903,6 @@
           "type": "object",
           "additionalProperties": true,
           "description": "Assumption ledger: { facts, scale?, unresolvedCount } classifying every fact as visible/inferred/assumed/missing."
-        },
-        "detectedParts": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "description": "Optional labeled component detections: name, quantity, outline-frame position/bbox and confidence."
-        },
-        "draftBom": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "description": "Optional unverified BOM draft grouped by detected part name."
-        },
-        "unmatchedLabels": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "description": "Detected labels without a sufficiently strong bundled-catalog match."
-        },
-        "partDetectionFrame": {
-          "type": "string",
-          "enum": [
-            "outline",
-            "image",
-            "mixed"
-          ],
-          "description": "Coordinate frame used by all detected boxes, or mixed when some boxes fall outside the silhouette and retain image coordinates."
         }
       },
       "required": [
@@ -6139,68 +6102,6 @@
         "ok",
         "featureCount",
         "diagnostics"
-      ],
-      "additionalProperties": true
-    }
-  },
-  {
-    "name": "review_paint_peek_latest",
-    "description": "Use this when you need to see the latest region the user painted in Studio. Return the newest inpainting-style review packet the user painted in Studio. Studio writes packets to <scriptPath>.review-paint/latest/ as the user marks regions over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the freshest one within a configurable freshness window (default 30 minutes). Returns base64 PNGs of the screenshot + mask in-band so any MCP client can see the marked regions without local-disk Read access. The packet also carries the user's intent — an optional one-line note and preset tags (e.g. \"too thick\", \"missing\", \"wrong angle\") describing WHAT is wrong, not just where. Call this whenever the user says \"look at my mark\", \"check what I painted\", or any equivalent.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "freshness_sec": {
-          "type": "integer",
-          "description": "Maximum packet age in seconds. Default 1800 (30 min). Use a smaller value for \"what did I just paint\" or a larger one for \"earlier today\".",
-          "minimum": 1
-        },
-        "extra_roots": {
-          "type": "array",
-          "description": "Optional extra checkout paths to scan (in addition to ~/projects/kernelCAD-web and ~/projects/kernelCAD-web-worktrees). Use when Studio is hosted from a non-standard location.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "paths_only": {
-          "type": "boolean",
-          "description": "When true, omit base64 PNG fields and return only paths + metadata. Smaller response when the agent will Read the PNGs from disk anyway, or just wants to know \"is there a packet\"."
-        }
-      }
-    },
-    "annotations": {
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
-    },
-    "outputSchema": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean"
-        },
-        "empty": {
-          "type": "boolean",
-          "description": "True when no fresh packet was found."
-        },
-        "packet": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "The freshest review packet (screenshot + mask + metadata)."
-        },
-        "scanned_roots": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Checkout roots that were scanned."
-        },
-        "scanned_candidates": {
-          "type": "number",
-          "description": "Number of candidate packets considered."
-        }
-      },
-      "required": [
-        "ok"
       ],
       "additionalProperties": true
     }

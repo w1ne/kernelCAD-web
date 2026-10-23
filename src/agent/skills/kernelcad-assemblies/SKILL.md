@@ -386,19 +386,19 @@ arm.mate('shoulder-bolts',
 );
 ```
 
-Couple scalar articulated mates when one actuator should drive multiple finger/jaw joints. The driven pose is `sourcePose * ratio + offset`; explicit numeric `solve_mates({ poses })` overrides for a driven mate still win for debugging.
+Couple scalar articulated mates when one actuator should drive multiple output joints. The driven pose is `sourcePose * ratio + offset`; explicit numeric `solve_mates({ poses })` overrides for a driven mate still win for debugging.
 
 ```typescript
-arm.mate('grip', 'palm.driver', 'grip-driver.axis', 'revolute', {
+arm.mate('drive', 'body.driver', 'driver-link.axis', 'revolute', {
   limitsDeg: [0, 40],
 });
-arm.mate('left-curl', 'palm.left-hinge', 'left-finger.hinge', 'revolute');
-arm.mate('right-curl', 'palm.right-hinge', 'right-finger.hinge', 'revolute');
-arm.coupleMates('left-curl', { source: 'grip', ratio: 1 });
-arm.coupleMates('right-curl', { source: 'grip', ratio: -1 });
+arm.mate('follow-a', 'body.hinge-a', 'link-a.hinge', 'revolute');
+arm.mate('follow-b', 'body.hinge-b', 'link-b.hinge', 'revolute');
+arm.coupleMates('follow-a', { source: 'drive', ratio: 1 });
+arm.coupleMates('follow-b', { source: 'drive', ratio: -1 });
 ```
 
-Use this for two-finger grippers and simple underactuated fingers before hand-authoring duplicated pose params. Coupling supports scalar mates: `revolute`, `prismatic`, `cylindrical`, and `pin_slot`.
+Use this for symmetric or mirrored output pairs and simple underactuated chains before hand-authoring duplicated pose params. Coupling supports scalar mates: `revolute`, `prismatic`, `cylindrical`, and `pin_slot`.
 
 Capture-time errors throw `KernelError('feature.invalid-args')` with structured hints:
 
@@ -484,7 +484,7 @@ The MCP server exposes assembly-specific tools for runtime introspection:
 - `inspect({ of: 'mates', assembly? })` — return the declared mate records as `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`. Read-only.
 - `verify({ check: 'assembly', assembly? })` — run `validateAssemblyWithMates(arm)` and return `{ status, diagnostics, partCount, jointCount }`. Each diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the mate-graph solver and return `{ status, poses, iterations? }`. `poses` overrides mate pose values by mate name; coupled driven mates are expanded from their source mate before solve.
-- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors? })` — run the deterministic agent review loop: evaluate, validate mates, sample declared pose limits, check that mate connectors touch modeled material, report connector workspace bounds, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Pass `trackConnectors: ['gripper-plate.tool-tip']` to focus workspace output on an end-effector; connector workspace is only computed when pose-envelope sampling is enabled. Tracked connector poses are returned per sample in `connectorPoses`; track two fingertips to measure their separation across the sweep.
+- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors? })` — run the deterministic agent review loop: evaluate, validate mates, sample declared pose limits, check that mate connectors touch modeled material, report connector workspace bounds, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Pass `trackConnectors: ['output.tool-point']` to focus workspace output on an output point; connector workspace is only computed when pose-envelope sampling is enabled. Tracked connector poses are returned per sample in `connectorPoses`; track two connectors to measure their separation across the sweep.
 - `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — run ordered design attempts through `review_cad`, continue past functional attempts that still have unresolved non-visual warnings, return repair prompts, and optionally write a Studio replay record. Visual review is required by default: each accepted attempt must include `visualReview: { accepted, screenshotPath, findings, checks }` after the vision-capable agent renders/opens screenshots and records concrete observations. Accepted reviews must pass these checklist codes: `main-object-count`, `proportions-match-reference`, `required-visible-features`, `no-stray-or-floating-geometry`, `attachment-plausibility`, `semantic-orientation-alignment`, `device-depth-and-construction`, and `canonical-views-physically-coherent`. Missing `screenshotPath`, empty `findings`, missing checklist entries, or blank check findings fails with `assembly.visual.review-incomplete`; weak check evidence fails with `assembly.visual.review-evidence-weak`; failed checks fail with `assembly.visual.review-check-failed`. Visual review warnings cannot be allow-listed. Use `requireVisualReview: false` only for explicit non-visual batch checks. Only use `allowReviewWarnings` when the original prompt explicitly permits that non-visual warning code.
 
 ## Pose-envelope review
@@ -666,14 +666,14 @@ Behavior:
 Mate coupling is not physical transmission. If you use `arm.coupleMates(driven, { source, ratio })`, also declare how motion gets from the actuator/input mate to the driven output:
 
 ```typescript
-arm.transmission('left-finger-drive-linkage', {
+arm.transmission('link-a-drive-linkage', {
   kind: 'link-rod',
-  sourceMate: 'grip',
-  drivenMates: ['left-curl'],
-  actuator: 'grip-servo',
-  input: 'grip-driver',
-  output: 'left-finger',
-  path: ['grip-driver', 'left-hinge-pin', 'left-finger'],
+  sourceMate: 'drive',
+  drivenMates: ['follow-a'],
+  actuator: 'actuator',
+  input: 'driver-link',
+  output: 'link-a',
+  path: ['driver-link', 'hinge-pin-a', 'link-a'],
   ratio: -1,
 });
 ```
@@ -682,17 +682,17 @@ arm.transmission('left-finger-drive-linkage', {
 
 ## Fresh-agent mechanism loop
 
-When a user asks for a robot arm, hand, gripper, linkage, or other physical mechanism, do not start by polishing a mesh. Start from a script that returns an `assembly(...).model()` or `.solvedModel(...)`, then run this loop:
+When a user asks for a linkage, articulated chain, or other physical mechanism, do not start by polishing a mesh. Start from a script that returns an `assembly(...).model()` or `.solvedModel(...)`, then run this loop:
 
-1. Build named, purpose-bearing parts. Every visible solid should be a base, bracket, servo/motor body, shaft/pin, bearing/clevis/knuckle, link, palm, finger, fixture, or clearly named end-effector part.
+1. Build named, purpose-bearing parts. Every visible solid should be a base, bracket, servo/motor body, shaft/pin, bearing/clevis/knuckle, link, output member, fixture, or clearly named tool part.
 2. Declare connector frames and mates on the parts that carry load. Prefer revolute/prismatic/fastened mates with limits over visually aligned free geometry.
-3. If one mate drives another, declare both `coupleMates(...)` and `transmission(...)`; the coupling is the kinematic ratio, the transmission is the physical drive path. Do not jump directly from a servo horn to a distant finger; include the real adjacent horn/link/gear/belt/tendon/support parts in `path`.
+3. If one mate drives another, declare both `coupleMates(...)` and `transmission(...)`; the coupling is the kinematic ratio, the transmission is the physical drive path. Do not jump directly from an actuator horn to a distant output; include the real adjacent horn/link/gear/belt/tendon/support parts in `path`.
 4. Run `inspect({ of: 'assembly', file })`. If `unexplainedGeometry` is non-empty, redesign before continuing unless the original prompt explicitly allows the disconnected geometry and you document why.
 5. Run `review_cad({ file, designGoal, preserveInterfaces, trackConnectors })`. Treat `fitness.functional === false`, `fitness.blockingReasons`, connector-not-in-solid, unsupported revolutes, missing mate contact, missing drive transmission, pose-limit failures, and interference pairs as repair facts, not optional style feedback.
-6. Prefer `design_loop({ goal, attempts, outputRecordPath? })` for complex / robot-arm / multi-body builds — revise from `nextActionPrompt` until green or `convergence.escalate`. Visual review is mandatory by default; a pass means functional, quality-clean, and screenshot-reviewed. A merely renderable model is not enough. Use cookbook `multi-body-mechanism-real-proportions` for machine-element proportions (not sticks).
+6. Prefer `design_loop({ goal, attempts, outputRecordPath? })` for complex / multi-link / multi-body builds — revise from `nextActionPrompt` until green or `convergence.escalate`. Visual review is mandatory by default; a pass means functional, quality-clean, and screenshot-reviewed. A merely renderable model is not enough. Use cookbook `multi-body-mechanism-real-proportions` for machine-element proportions (not sticks).
 7. Only after the deterministic tools are clean should you open Studio or a screenshot for visual review. If the image still shows arbitrary fragments, go back to `inspect({ of: 'assembly' })` and make the fragment inventory explainable.
 
-For robot arms specifically, preserve at least these interfaces between repair attempts when present: base yaw mate, shoulder pitch mate, elbow pitch mate, wrist/grip mate, tool-tip connector, and fingertip connectors. Track the tool-tip and fingertip connectors with `trackConnectors` so the review proves movement, not just static contact.
+For serial chains, preserve at least these interfaces between repair attempts when present: the base mate, each intermediate joint mate, the output mate, the tool-point connector, and any paired end-point connectors. Track the tool-point workspace and paired end-point travel so the review proves movement, not just static contact.
 
 ## Mechanism delivery — non-bypassable
 
@@ -725,7 +725,7 @@ const shoulder = joint.clevis({
 // shoulder.parentConnector / .childConnector carry { origin, axis } for the mate
 ```
 
-See `kernelcad-kinematic/SKILL.md` for the full pattern and the lamp-class worked example (`examples/kinematic/luxo-lamp.kcad.ts`).
+See `kernelcad-kinematic/SKILL.md` for the full pattern and the worked example (`examples/kinematic/luxo-lamp.kcad.ts`, a three-revolute arm).
 
 ## Diagnostic codes
 

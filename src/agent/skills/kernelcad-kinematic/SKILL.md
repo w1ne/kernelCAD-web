@@ -173,9 +173,9 @@ These four calls work on any moving assembly, not just robot arms:
   latch handle; `checkReachable` for the locking-pin engagement target)
 - **Hinges** — laptop clamshell, butterfly knife (`checkSweptCollision` over
   the hinge angle)
-- **Watch movements** — gear-train clearance, escapement engagement
-  (`checkSweptCollision` over the escape-wheel rotation; `checkLoadCapacity`
-  for the mainspring torque)
+- **Gear trains and escapements** — tooth clearance, pawl engagement
+  (`checkSweptCollision` over the driven-wheel rotation; `checkLoadCapacity`
+  for the spring torque)
 - **Scissor jacks** — `checkSweptCollision` over the lift parameter; the
   closed-loop variant is rejected by K5 — author the open-chain leg
   (`04-scissor-jack-swept`) or the production open-chain table
@@ -240,7 +240,7 @@ Authoring discipline that PAIRS with the primitive:
 - Set `style.tongueY ≈ ARM_W` so the tongue's plate thickness matches the beam — the tongue + beam form a continuous solid.
 - For wider swing ranges, the primitive automatically lifts the pivot by `knuckleR · max(|sin|) + 1 mm`; you can opt out with `liftPivot: false` and lift manually.
 
-Worked example: `examples/kinematic/luxo-lamp.kcad.ts` ships with `joint.clevis(...)` at all three revolute joints (shoulder, elbow, wrist) and validates clean under the **kinematic gate** — interference + disconnect + joint-mesh — with zero `ignore[]` entries. It does **not** pass the physics drop-test: the lamp's bare revolutes are braced only by single-body springs (zero joint moment), so the shoulder drifts ~5° under gravity and `mechanism.drops-on-release` fires (the closed-loop tendon fix is #361 — see item 5 above). Caveat on the invocation: the bare `kernelcad validate --include-interference` CLI flag **auto-enables `--include-physics`** (validate.ts defaults the physics tier on whenever interference is on), so that exact command returns `mechanism: broken` / exit 2 on this lamp. To run the kinematic gate alone — the gate this example clears — use `kernelcad validate --include-interference --no-include-physics` (verdict `mechanism: real`, exit 0).
+Worked example: `examples/kinematic/luxo-lamp.kcad.ts` (a three-revolute arm) ships with `joint.clevis(...)` at all three revolute joints (joint-a, joint-b, joint-c) and validates clean under the **kinematic gate** — interference + disconnect + joint-mesh — with zero `ignore[]` entries. It does **not** pass the physics drop-test: the example's bare revolutes are braced only by single-body springs (zero joint moment), so the first joint drifts ~5° under gravity and `mechanism.drops-on-release` fires (the closed-loop tendon fix is #361 — see item 5 above). Caveat on the invocation: the bare `kernelcad validate --include-interference` CLI flag **auto-enables `--include-physics`** (validate.ts defaults the physics tier on whenever interference is on), so that exact command returns `mechanism: broken` / exit 2 on this example. To run the kinematic gate alone — the gate this example clears — use `kernelcad validate --include-interference --no-include-physics` (verdict `mechanism: real`, exit 0).
 
 ## Cookbook
 

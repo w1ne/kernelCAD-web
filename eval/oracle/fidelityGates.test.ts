@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/lib/imageSimilarity/fidelityGates.test.ts
+// eval/oracle/fidelityGates.test.ts
 //
 // W2 fidelity gates. The "expected feature" gate is STRUCTURAL: it consumes the
-// model's max inner-loop (hole) count from list_faces. A frame with two lens
+// model's max inner-loop (hole) count from inspect({ of: 'faces' }). A frame with two lens
 // cutouts reports 2 (whether or not a lens body is inserted); a solid slab
 // reports 0. This is the regression for the slab-hack AND for the lens-insert
 // false-negative that a pixel/fill-ratio heuristic could not handle.
