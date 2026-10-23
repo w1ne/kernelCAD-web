@@ -222,6 +222,7 @@ function ParamRow({ entry, updater, interference }: ParamRowProps): JSX.Element 
                 value={value}
                 min={min}
                 max={max}
+                step={entry.meta?.step}
                 interference={interference}
                 onChange={(next) => {
                     updater.commitDebounced([{ name: entry.name, value: next }]);

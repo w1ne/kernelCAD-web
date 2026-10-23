@@ -15,7 +15,11 @@ import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 import { meshParamEdits, type ParamEditValues } from './paramEditsForMesh';
 import { createSingleFlight, type SingleFlight } from './singleFlight';
-import { studioModelDoc } from '../../rebuild/rebuildQueueInstance';
+import { rebuildQueue, studioModelDoc } from '../../rebuild/rebuildQueueInstance';
+import { browserKernelTakes, runBrowserKernelParamEdit, warmBrowserKernel } from './browserKernelParamEdit';
+import { validateParamEdits } from '../../browserKernel/paramValidation';
+import { markParamEdit } from '../../browserKernel/paramEditPerf';
+import type { SerializedParamEntry } from '../../../shared/runtime/paramTable';
 
 interface HostedMeshJob {
     snapshot: ParamEditValues;
@@ -41,6 +45,15 @@ async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promi
         await meshParamEdits(run.code, {}, false, false, true).catch(() => undefined);
         return;
     }
+    if (browserKernelTakes(run.code)) {
+        const outcome = await runBrowserKernelParamEdit(job, {
+            ...run,
+            apply: (payload, revision, keepDimensions) => {
+                applyParamMeshPayload(run.deps, run.executionCount, payload, revision, { keepDimensions });
+            },
+        });
+        if (outcome === 'done') return;
+    }
     const browserSource = browserCanEditParams(run.code, run.deps.engine)
         ? browserParamSource(run.code, job.snapshot)
         : null;
@@ -59,9 +72,12 @@ async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promi
     run.deps.setCurrentCodeRevision(revision);
     run.deps.setIsComputing(true);
     try {
+        markParamEdit('request', { generation: revision, kernel: 'server' });
         const payload = await meshParamEdits(run.code, job.snapshot, job.bakeIntoSource, job.preview, false, studioModelDoc(run.deps.mainRevisionRef), revision);
+        markParamEdit('response', { generation: revision, kernel: 'server' });
         if (job.epoch !== run.epochRef.current || revision !== run.deps.mainRevisionRef.current) return;
         applyParamMeshPayload(run.deps, run.executionCount, payload, revision);
+        markParamEdit('applied', { generation: revision, kernel: 'server' });
     } catch (err) {
         if (job.epoch !== run.epochRef.current || revision !== run.deps.mainRevisionRef.current) return;
         run.deps.setError(err instanceof Error ? err.message : String(err));
@@ -76,11 +92,14 @@ async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promi
     }
 }
 
-function applyParamMeshPayload(
+/** Paint a param-edit mesh payload. `keepDimensions`: a coarse drag tick
+ *  carries no dimensions; the overlay keeps the last settled ones. */
+export function applyParamMeshPayload(
     deps: ExecutionApplyDeps,
     executionCount: number,
     payload: BackendMeshPayload,
     revision: number,
+    opts?: { keepDimensions?: boolean },
 ): void {
     const incoming = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
     const previous = deps.geometriesRef?.current ?? [];
@@ -96,7 +115,7 @@ function applyParamMeshPayload(
     deps.setFeatureRecords(recs);
     deps.setScriptParams(Object.values(payload.params ?? {}));
     deps.setScriptReview(review);
-    deps.setMeshDimensions(meshDimensionsOf(payload));
+    if (!opts?.keepDimensions) deps.setMeshDimensions(meshDimensionsOf(payload));
     deps.setSketchesGeometries([]);
     deps.setPreviewGeometries([]);
     deps.setError(emptyNotice);
@@ -134,7 +153,14 @@ export function useParamUpdate(
     sessionToken: string | null,
     executionCount: number,
     deps: ExecutionApplyDeps,
+    scriptParams: readonly SerializedParamEntry[] = [],
 ) {
+    // The declarations the last build reported, for checking an edit before
+    // it is applied.
+    const scriptParamsRef = useRef(scriptParams);
+    useEffect(() => { scriptParamsRef.current = scriptParams; }, [scriptParams]);
+    const depsRef = useRef(deps);
+    useEffect(() => { depsRef.current = deps; }, [deps]);
     // Accumulated param-slider overrides for the no-live-session recompute path
     // (hosted viewer / arbitrary edited code). A param edit re-runs the whole
     // script through the stateless mesh endpoint with these applied. Cleared
@@ -155,11 +181,21 @@ export function useParamUpdate(
     }, [code]);
 
     useEffect(() => { warmHostedModel(code); }, [code]);
+    useEffect(() => { warmBrowserKernel(code, depsRef.current); }, [code]);
 
     const updateParam = useCallback(async (
         edits: { name: string; value: number | boolean | string }[],
         options?: ParamUpdateOptions,
     ) => {
+        markParamEdit('edit', { detail: { names: edits.map((edit) => edit.name) } });
+        // An invalid value never starts a rebuild: the model on screen stays
+        // the last valid one and the reason is shown.
+        const invalid = validateParamEdits(scriptParamsRef.current, edits);
+        if (invalid) {
+            deps.setError(invalid);
+            rebuildQueue.reportError('Parameter edit', invalid);
+            return;
+        }
         // Live session (pooled `?script=`): incremental params.update — only the
         // edited feature + downstream re-lower, pushed back over SSE.
         if (sessionToken) {
@@ -193,7 +229,7 @@ export function useParamUpdate(
         // whole script through the stateless mesh endpoint with the param
         // overrides applied. This is what makes a declared parameter actually
         // move the model when there is no pooled kernel session behind the tab.
-        if (!shouldUseHostedMesh() && !devMeshAvailable()) {
+        if (!shouldUseHostedMesh() && !devMeshAvailable() && !browserKernelTakes(code)) {
             throw new Error(
                 'Editing parameters needs a live kernel session or a compute backend.',
             );

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { summarizeInterferencePairs } from './src/modeling/runtime/interferenceClassification';
 import { resolveExampleScript as resolveExampleScriptAtRoot } from './src/server/middleware/resolveExampleScript';
 import { kernelCadEditorTypingsPlugin } from './scripts/editorTypings';
+import { workerNodeBuiltinStubs } from './scripts/workerNodeStubs';
 
 const repoRoot = fileURLToPath(new URL('.', import.meta.url));
 const require = createRequire(import.meta.url);
@@ -1015,6 +1016,13 @@ export default defineConfig(({ command }) => ({
   },
   worker: {
     format: 'es',
+    // One file per worker: the browser kernel worker runs from a `data:` URL
+    // (opaque origin) and cannot load sibling chunks. Guarded node-only
+    // imports then resolve to throwing stubs (scripts/workerNodeStubs.ts).
+    plugins: () => [workerNodeBuiltinStubs()],
+    rollupOptions: {
+      output: { inlineDynamicImports: true },
+    },
   },
   resolve: {
     alias: {

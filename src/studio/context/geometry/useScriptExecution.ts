@@ -123,7 +123,7 @@ export function useScriptExecution(
         setGeometryTransformOverrides, setScriptReview, requestMeshAndReview,
     );
 
-    const { updateParam } = useParamUpdate(code, sessionToken, executionCount, applyDeps);
+    const { updateParam } = useParamUpdate(code, sessionToken, executionCount, applyDeps, scriptParams);
 
     useHostedSourceRun(
         code, studioScript, suspendSourceExecution, applyDeps, executionCount,

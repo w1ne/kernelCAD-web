@@ -19,6 +19,7 @@ import type { ExecutionApplyDeps } from './executionApplyDeps';
 import type { ExecutionResult } from '../../../shared/worker/geometryEngine';
 import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 import { rebuildQueue, studioModelDoc } from '../../rebuild/rebuildQueueInstance';
+import { browserKernelTakes, buildWithBrowserKernel } from './browserKernelParamEdit';
 
 /** Applies a hosted/dev-kernel mesh payload to context state, incl. the
  *  empty-build guard. Shared by the hosted and dev-kernel branches of the
@@ -248,6 +249,38 @@ async function runWorkerOrDevKernelAutoExecution(
     }
 }
 
+/** A build with no server-side kernel (a static preview) builds the model in
+ *  the browser kernel worker when the `?kernel=browser` flag is on. False
+ *  when the worker cannot build it: the caller takes its normal path. */
+async function runBrowserKernelAutoExecution(
+    deps: ExecutionApplyDeps,
+    code: string,
+    revision: number,
+    executionCount: number,
+): Promise<boolean> {
+    deps.setIsComputing(true);
+    let handled = true;
+    try {
+        handled = await buildWithBrowserKernel(code, deps, revision, (payload) => {
+            applyAutoRunPayload(deps, revision, executionCount, payload);
+        });
+    } catch (err: unknown) {
+        if (revision === deps.mainRevisionRef.current) {
+            const message = err instanceof Error ? err.message : String(err);
+            deps.setError(message);
+            deps.pushExecutionRecord({ revision, status: 'error', error: message, executionCountAtRecord: executionCount + 1 });
+        }
+    } finally {
+        if (handled && revision === deps.mainRevisionRef.current) {
+            deps.setIsComputing(false);
+            deps.setExecutionCount(prev => prev + 1);
+        } else if (handled) {
+            deps.setStaleMainResponsesDropped((prev) => prev + 1);
+        }
+    }
+    return handled;
+}
+
 /** Paint the published artifact and skip a worker or server rebuild — only
  *  when `code` is exactly the shown revision's unedited source. A live agent
  *  update, a restore, or an edit is a different model and takes the normal path.
@@ -301,6 +334,10 @@ export async function runAutoExecutionLoop(
     // otherwise a slow or failed worker init would stall a model the
     // worker can't run anyway.
     const routesToDevKernel = devMeshAvailable() && needsFullKernel(code);
+    if (!hosted && !devMeshAvailable() && browserKernelTakes(code)
+        && await runBrowserKernelAutoExecution(deps, code, revision, executionCount)) {
+        return;
+    }
     // Only the legacy in-browser worker (plain-JS `new Function`) needs an
     // acorn syntax pre-check — acorn can't parse TypeScript. The hosted and
     // dev-kernel paths transpile TS server-side and surface their own

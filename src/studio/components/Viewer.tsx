@@ -20,6 +20,8 @@ import { ViewerScene } from "./viewer/ViewerScene";
 import { VIEWER_TONE_MAPPING, VIEWER_TONE_MAPPING_EXPOSURE } from "./viewer/viewerLighting";
 import { PUBLISH_LOOK_EXPOSURE, PUBLISH_LOOK_TONE_MAPPING, type ViewerLook } from "./viewer/publishLook";
 import { DisplayReadySensor } from "./viewer/DisplayReadySensor";
+import { ParamEditFrameProbe } from "./viewer/ParamEditFrameProbe";
+import { paramEditPerfEnabled } from "../browserKernel/paramEditPerf";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
 import { CodeLinkLabel } from "./viewer/overlays/CodeLinkLabel";
 import { MeasureButton } from "./viewer/measure/MeasureButton";
@@ -308,6 +310,7 @@ function ViewerCanvasContents({
             {enableMarkup ? <MarkupLayer geometries={explode.geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}
             {canvasExtras}
             {onDisplayReady ? <DisplayReadySensor geometries={geometries} onDisplayReady={onDisplayReady} /> : null}
+            {paramEditPerfEnabled() ? <ParamEditFrameProbe geometries={geometries} /> : null}
         </>
     );
 }

@@ -1,0 +1,188 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// src/studio/context/geometry/browserKernelParamEdit.ts
+//
+// Declared-parameter edits on the browser kernel worker (behind the
+// `?kernel=browser` flag). The edit is the same stateless edit the server
+// gets — the source with choice/text values written in, number/boolean
+// values as overrides — so the settled mesh is the server's mesh. Drag ticks
+// mesh at the kernel's coarse tessellation profile; the release is always a
+// full display-quality rebuild.
+//
+// Whenever the worker cannot answer (not warm yet, crashed, timed out, out
+// of memory, server-only model, or switched off after repeated failures) the
+// edit goes through the existing server path unchanged — when there is one.
+
+import { browserKernel } from '../../browserKernel/browserKernelInstance';
+import { BrowserKernelError } from '../../browserKernel/browserKernelClient';
+import { browserKernelEnabled } from '../../browserKernel/flag';
+import { markParamEdit } from '../../browserKernel/paramEditPerf';
+import type { RebuildJobResult } from '../../browserKernel/protocol';
+import { rebuildQueue, studioModelDoc } from '../../rebuild/rebuildQueueInstance';
+import { devMeshAvailable, shouldUseHostedMesh, type BackendMeshPayload } from '../../scriptSource';
+import type { GeometryResult } from '../../../shared/worker/geometryEngine';
+import type { ExecutionApplyDeps } from './executionApplyDeps';
+import { paramEditsForMesh, type ParamEditValues } from './paramEditsForMesh';
+import { isAbortError } from './types';
+
+/** Calls that need a filesystem or the server's part library. */
+const SERVER_ONLY_SOURCE = /\blib\s*\.\s*(fromSTEP|fromSTL|fetchPart|standard)\b|\breferenceImage\s*\(|\bfontPath\s*\(/;
+
+/** Fingerprints of the worker features a geometries array shows, so the
+ *  next edit only receives what changed. Keyed by the array: anything that
+ *  replaces the view (a code edit, a server mesh) is a miss and the next
+ *  edit sends everything. */
+const shownFingerprints = new WeakMap<readonly GeometryResult[], Record<string, string>>();
+
+export function browserKernelTakes(code: string): boolean {
+  return browserKernelEnabled()
+    && browserKernel.usable()
+    && !SERVER_ONLY_SOURCE.test(code)
+    && !browserKernel.isServerOnly(code);
+}
+
+/** True when the edit could be served by a server-side kernel. */
+export function serverMeshAvailable(): boolean {
+  return shouldUseHostedMesh() || devMeshAvailable();
+}
+
+/** Build a parametric model in the background so its first slider tick is
+ *  an incremental edit with no network. */
+export function warmBrowserKernel(code: string, deps: ExecutionApplyDeps): void {
+  if (!/\bparam\s*\(/.test(code) || !browserKernelTakes(code)) return;
+  void browserKernel.warm(studioModelDoc(deps.mainRevisionRef), code, deps.mainRevisionRef.current);
+}
+
+export interface BrowserParamEditJob {
+  snapshot: ParamEditValues;
+  bakeIntoSource?: boolean;
+  preview?: boolean;
+  epoch: number;
+}
+
+export interface BrowserParamEditRun {
+  code: string;
+  executionCount: number;
+  deps: ExecutionApplyDeps;
+  epochRef: { current: number };
+  followUpPending: () => boolean;
+  apply: (payload: BackendMeshPayload, revision: number, keepDimensions: boolean) => void;
+}
+
+function editLabel(snapshot: ParamEditValues): string {
+  const names = Object.keys(snapshot);
+  return `Browser rebuild · ${names.slice(0, 2).join(', ')}${names.length > 2 ? ` +${names.length - 2}` : ''}`;
+}
+
+type Outcome = { result: RebuildJobResult } | { fallback: BrowserKernelError };
+
+/**
+ * Run one param edit on the worker. 'fallback': the caller sends it to the
+ * server instead (nothing was painted, no error was shown).
+ */
+export async function runBrowserKernelParamEdit(
+  job: BrowserParamEditJob,
+  run: BrowserParamEditRun,
+): Promise<'done' | 'fallback'> {
+  const { deps } = run;
+  const scope = studioModelDoc(deps.mainRevisionRef);
+  const server = serverMeshAvailable();
+  let edit: { source: string; params: Record<string, number | boolean> };
+  try {
+    edit = paramEditsForMesh(run.code, job.snapshot, job.bakeIntoSource);
+  } catch {
+    return 'fallback';
+  }
+  if (browserKernel.isServerOnly(edit.source)) return 'fallback';
+  if (server && !browserKernel.isWarm(scope, edit.source)) {
+    // Not warm yet: the server takes this edit while the worker builds.
+    void browserKernel.warm(scope, edit.source, deps.mainRevisionRef.current);
+    return 'fallback';
+  }
+  const revision = ++deps.mainRevisionRef.current;
+  deps.setCurrentCodeRevision(revision);
+  deps.setIsComputing(true);
+  const current = (): boolean => job.epoch === run.epochRef.current && revision === deps.mainRevisionRef.current;
+  const shown = deps.geometriesRef?.current;
+  const have = shown ? shownFingerprints.get(shown) ?? null : null;
+  let fellBack = false;
+  try {
+    markParamEdit('request', { generation: revision, kernel: 'browser' });
+    const outcome = await rebuildQueue.track<Outcome>(
+      { label: editLabel(job.snapshot), doc: scope, generation: revision },
+      async (signal) => {
+        try {
+          return {
+            result: await browserKernel.rebuild({
+              scope,
+              generation: revision,
+              source: edit.source,
+              params: edit.params,
+              quality: job.preview ? 'coarse' : 'display',
+              have,
+              signal,
+            }),
+          };
+        } catch (error) {
+          // Kept out of the queue's error: the server is about to take it.
+          if (error instanceof BrowserKernelError && error.fallback && server) return { fallback: error };
+          throw error;
+        }
+      },
+    );
+    if ('fallback' in outcome) {
+      fellBack = current();
+      return fellBack ? 'fallback' : 'done';
+    }
+    const { result } = outcome;
+    markParamEdit('response', { generation: revision, kernel: 'browser', detail: { ...result.timings, quality: result.quality } });
+    if (!current()) return 'done';
+    run.apply(result.payload as BackendMeshPayload, revision, result.payload.dimensions === undefined);
+    const now = deps.geometriesRef?.current;
+    if (now) shownFingerprints.set(now, result.fingerprints);
+    markParamEdit('applied', { generation: revision, kernel: 'browser' });
+    return 'done';
+  } catch (error) {
+    if (isAbortError(error) || !current()) return 'done';
+    // The queue already shows the error; the last valid model stays.
+    deps.setError(error instanceof Error ? error.message : String(error));
+    return 'done';
+  } finally {
+    if (!fellBack && current() && !run.followUpPending()) {
+      deps.setIsComputing(false);
+      deps.setExecutionCount((prev) => prev + 1);
+    }
+  }
+}
+
+/**
+ * Initial build of a model in the browser kernel, for a build with no
+ * server-side kernel at all (a static preview). Returns false when the
+ * worker cannot build it, so the caller takes its normal path.
+ */
+export async function buildWithBrowserKernel(
+  code: string,
+  deps: ExecutionApplyDeps,
+  revision: number,
+  apply: (payload: BackendMeshPayload) => void,
+): Promise<boolean> {
+  const scope = studioModelDoc(deps.mainRevisionRef);
+  const outcome = await rebuildQueue.track<Outcome>(
+    { label: 'Browser rebuild', doc: scope, generation: revision },
+    async (signal) => {
+      try {
+        return {
+          result: await browserKernel.rebuild({
+            scope, generation: revision, source: code, params: {}, quality: 'display', have: null, background: true, signal,
+          }),
+        };
+      } catch (error) {
+        if (error instanceof BrowserKernelError && error.fallback && error.failure !== 'script') return { fallback: error };
+        throw error;
+      }
+    },
+  );
+  if ('fallback' in outcome) return false;
+  if (revision === deps.mainRevisionRef.current) apply(outcome.result.payload as BackendMeshPayload);
+  return true;
+}

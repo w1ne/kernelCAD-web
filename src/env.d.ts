@@ -24,6 +24,10 @@ interface ImportMetaEnv {
   readonly VITE_HOSTED_MESH?: string;
   /** Override for the publish-time mesh CDN. Defaults to https://mesh.kernelcad.com. */
   readonly VITE_MESH_CDN_BASE?: string;
+  /** `browser` lets declared-parameter edits rebuild in the browser kernel
+   *  worker; `server` (the default) keeps them on the server. `?kernel=`
+   *  overrides it per page load. */
+  readonly VITE_STUDIO_BROWSER_KERNEL?: string;
 }
 
 interface ImportMeta {
