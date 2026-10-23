@@ -1,5 +1,5 @@
 {
-  "source": "derived from tests/fixtures/argon/handoff-drawbot.json parts (test fixture only)",
+  "source": "hand-authored labeled-part detections (test fixture only)",
   "parts": [
     {
       "name": "ESP32-DevKitC-32E",

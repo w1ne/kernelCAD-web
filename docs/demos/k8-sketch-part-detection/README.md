@@ -9,7 +9,7 @@ export PATH=/opt/homebrew/opt/node@22/bin:/opt/homebrew/bin:$PATH
 npx tsx docs/demos/k8-sketch-part-detection/capture.ts
 ```
 
-The response fixture is [argon-grow-parts-response.json](../../../tests/fixtures/vision/argon-grow-parts-response.json), derived from the [drawbot handoff](../../../tests/fixtures/argon/handoff-drawbot.json) (`labwired-kernelcad-handoff/0.1`). The script writes `result.json`, a generated sketch image, a result frame, and `demo.mp4` beside itself. The vision response is mocked; only image decode, trace orchestration, bundled-catalog matching and coordinate/BOM post-processing run locally.
+The response fixture is [argon-grow-parts-response.json](../../../tests/fixtures/vision/argon-grow-parts-response.json). The script writes `result.json`, a generated sketch image, a result frame, and `demo.mp4` beside itself. The vision response is mocked; only image decode, trace orchestration, bundled-catalog matching and coordinate/BOM post-processing run locally.
 
 ## Scope
 

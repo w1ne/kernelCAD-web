@@ -32,8 +32,6 @@ import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outp
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
 import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputSchemas';
 import { SURFACE_BLEND_OUTPUT_SCHEMAS } from './registry/surfaceBlendTools.outputSchemas';
-import { PART_MODEL_OUTPUT_SCHEMAS } from './registry/partModelTools.outputSchemas';
-import { BOM_OUTPUT_SCHEMAS } from './registry/bomTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { MECHANISM_SUMMARY, SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -499,6 +497,11 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       kind: { type: 'string', description: "'link_out' when the URL is a vendor configurator the agent must drive by hand." },
       url: { type: 'string', description: 'Canonical outbound configurator URL (link_out).' },
       instruction: { type: 'string', description: 'What to do with the link_out URL.' },
+      format: { type: 'string', enum: ['step', 'glb'], description: 'Model format (includeModel mode).' },
+      model_path: { type: 'string', description: 'Local cache path of the verified model file (includeModel mode).' },
+      cache_hit: { type: 'boolean', description: 'Whether the verified model came from the SHA-256 cache (includeModel mode).' },
+      bbox_check: { type: 'object', properties: { status: { type: 'string', enum: ['not_checked', 'within_tolerance', 'outside_tolerance'] }, expected_mm: { type: 'array', items: { type: 'number' } }, actual_mm: { type: 'array', items: { type: 'number' } }, tolerance_ratio: { type: 'number' } }, additionalProperties: true },
+      attribution: { type: 'object', additionalProperties: true, description: 'Model provenance { source, license, url?, attribution? } (includeModel mode).' },
       error: { type: 'string' },
       errorCode: { type: 'string' },
       errorHint: { type: 'string' },
@@ -805,20 +808,9 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...MANUFACTURING_OUTPUT_SCHEMAS,
   ...NURBS_OUTPUT_SCHEMAS,
   ...SURFACE_BLEND_OUTPUT_SCHEMAS,
-  ...PART_MODEL_OUTPUT_SCHEMAS,
-  ...BOM_OUTPUT_SCHEMAS,
-  route_wires: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean' }, routes: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, route_found: { type: 'boolean' }, route_failure: { type: 'string' }, length_mm: { type: ['number', 'null'] }, bend_count: { type: ['integer', 'null'] }, points_mm: { type: 'array', items: { type: 'array', items: { type: 'number' } } }, collisions: { type: 'array', items: { type: 'string' } }, clearance_violations: { type: 'array', items: { type: 'string' } } }, additionalProperties: true } },
-      warnings: { type: 'array', items: { type: 'string' } },
-      unresolved_wire_count: { type: 'integer' }, clearance_mm: { type: 'number' }, requested_bend_radius_mm: { type: 'number' },
-    }, required: ['ok', 'routes', 'warnings', 'unresolved_wire_count'], additionalProperties: true,
-    },
-  import_handoff: {
+  blockout_assembly: {
     type: 'object', properties: {
-      ok: { type: 'boolean' }, device: { type: 'string' }, part_count: { type: 'number' }, wire_mate_count: { type: 'number' },
-      cutout_hints: { type: 'array', items: { type: 'object', additionalProperties: true, description: 'Connector-face cutout hints { ref, feature, face?, cutout_mm }; descriptive input dimensions, not applied wall cuts.' } },
+      ok: { type: 'boolean' }, part_count: { type: 'number' }, connection_count: { type: 'number' },
       script: { type: 'string', description: 'Evaluable .kcad.ts assembly script with bbox placeholder parts and named anchors.' },
       warnings: { type: 'array', items: { type: 'string' } }, error: { type: 'string' },
     }, required: ['ok', 'warnings'], additionalProperties: true,

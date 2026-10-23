@@ -46,12 +46,6 @@ async function buildForFace(face: string) {
   return evaluateAndBuildScript({ code: faceCode });
 }
 
-const handoff = JSON.parse(readFileSync('tests/fixtures/argon/handoff-drawbot.json', 'utf8')) as {
-  schema: string;
-  device: string;
-  parts: Array<{ catalog_id: string; physical: { bbox_mm: number[] | null; mounting_holes: unknown[] } }>;
-};
-
 beforeAll(async () => {
   await initOcct();
 }, 60_000);
@@ -70,7 +64,7 @@ describe('hole-less board cradle cookbook', () => {
     expect(bbox.max[1] - bbox.min[1]).toBeCloseTo(33, 1);
   }, 180_000);
 
-  it('keeps the handoff-sized board clear between both rails', async () => {
+  it('keeps the 54.4 x 27.9 mm board clear between both rails', async () => {
     const board = 'box(54.4, 27.9, 1.6).translate(2.55, 2.55, 5)';
     await expectNoIntersection(board);
   }, 180_000);
@@ -176,15 +170,6 @@ describe('hole-less board cradle cookbook', () => {
       await expectNoIntersection(outerGap, face);
     }
   }, 180_000);
-
-  it('uses the drawbot handoff as the no-hole DevKit fit reference', () => {
-    expect(handoff.schema).toBe('labwired-kernelcad-handoff/0.1');
-    expect(handoff.device).toMatch(/ESP32 DevKitC/);
-    const devkit = handoff.parts.find((part) => part.catalog_id === 'esp32');
-    expect(devkit).toBeDefined();
-    expect(devkit!.physical.bbox_mm).toEqual([54.4, 27.9, 10]);
-    expect(devkit!.physical.mounting_holes).toEqual([]);
-  });
 
   it('is discoverable for a generic board cradle with connector access', async () => {
     const result = await lookupCookbookTool({ query: 'hole-less PCB development board cradle rail snap clips USB connector opening' });
