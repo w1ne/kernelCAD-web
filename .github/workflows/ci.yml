@@ -161,8 +161,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-cad
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+      # The headless shell only; apt (`--with-deps`, ~8 min) only when the
+      # runner image cannot launch it as it is.
+      - name: Install Playwright Chromium (headless shell)
+        run: |
+          npx playwright install --only-shell chromium
+          node -e "require('@playwright/test').chromium.launch().then((b) => b.close())" \
+            || npx playwright install-deps chromium
       - name: Production build
         env:
           VITE_BASE_PATH: /
