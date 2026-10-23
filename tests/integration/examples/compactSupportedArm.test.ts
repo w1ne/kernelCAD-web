@@ -82,7 +82,7 @@ describe('compact supported robot arm example', () => {
     }
   }, 180_000);
 
-  it.skip('passes review_cad with workspace, gripper aperture, and mechanical fitness — see issues/346', async () => {
+  it.skip('passes review_cad with workspace, fingertip travel, and mechanical fitness — see issues/346', async () => {
     const result = await reviewCadTool({
       file: EXAMPLE_PATH,
       designGoal: 'Build a physically plausible small robot arm with supported joints, load-bearing links, and a functional gripper.',
