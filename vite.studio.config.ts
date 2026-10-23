@@ -73,6 +73,32 @@ function stripGeometryWorkerForEmbed(): Plugin {
     };
 }
 
+/**
+ * Same idea for the Studio's browser kernel worker (`?kernel=browser`): the
+ * embed never runs it, and Vite's worker plugin would bundle the worker, its
+ * kernel graph and the 11 MB wasm before tree-shaking can drop the guarded
+ * dynamic import. Replace the import with a rejection so the assets module is
+ * never seen.
+ */
+function stripBrowserKernelForEmbed(): Plugin {
+    const targetPath = 'src/studio/browserKernel/kernelWorkerHost.ts';
+    return {
+        name: 'kernelcad-strip-browser-kernel-for-embed',
+        enforce: 'pre',
+        transform(code, id) {
+            if (!id.endsWith(targetPath)) return null;
+            const replaced = code.replace(
+                /return import\('\.\/kernelWorkerAssets'\);/,
+                "return Promise.reject(new Error('The browser kernel is not part of the embed library.'));",
+            );
+            if (replaced === code) {
+                this.warn(`${targetPath}: expected browser kernel asset import not found; embed build will include the worker.`);
+            }
+            return replaced;
+        },
+    };
+}
+
 function getGitCommitHashShort(): string {
     try {
         const headPath = new URL('./.git/HEAD', import.meta.url);
@@ -93,6 +119,7 @@ function getGitCommitHashShort(): string {
 export default defineConfig({
     plugins: [
         stripGeometryWorkerForEmbed(),
+        stripBrowserKernelForEmbed(),
         kernelCadEditorTypingsPlugin(),
         react(),
         dts({

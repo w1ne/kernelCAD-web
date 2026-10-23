@@ -209,8 +209,6 @@ function ParamRow({ entry, updater, interference }: ParamRowProps): JSX.Element 
     }
 
     const value = entry.value as number;
-    const min = entry.meta?.min;
-    const max = entry.meta?.max;
 
     return (
         <li
@@ -220,8 +218,8 @@ function ParamRow({ entry, updater, interference }: ParamRowProps): JSX.Element 
             <NumericScrubInput
                 name={entry.name}
                 value={value}
-                min={min}
-                max={max}
+                min={entry.meta?.min}
+                max={entry.meta?.max}
                 step={entry.meta?.step}
                 interference={interference}
                 onChange={(next) => {

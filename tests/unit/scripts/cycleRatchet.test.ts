@@ -48,7 +48,8 @@ describe('cycleRatchet', () => {
       ...r.stale.map((c) => `STALE       ${c} — run: npx tsx scripts/qualityBaselineRegen.ts`),
     ].join('\n');
     expect(r.ok, msg).toBe(true);
-    const knownSkipped = ['replicad', '@mujoco/mujoco', 'tailwindcss', './routeTree.gen', 'virtual:kcad-editor-typings'];
+    // `?worker&url` is a Vite worker-bundle import (the browser kernel worker), resolved by the bundler.
+    const knownSkipped = ['replicad', '@mujoco/mujoco', 'tailwindcss', './routeTree.gen', 'virtual:kcad-editor-typings', '.worker.ts?worker&url'];
     for (const s of skipped) {
       expect(knownSkipped.some((k) => s.includes(k)), `unexpected skipped module: ${s}`).toBe(true);
     }

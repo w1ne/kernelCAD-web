@@ -8,7 +8,8 @@ const finish = param('finish', 'matte', { choices: ['matte', 'gloss'] });
 const arm = assembly('fixture-arm');
 const base = arm.part(
   'base',
-  box(width, 30, 6).union(cylinder(6, 20).translate(0, 0, 6)),
+  // The plate grows towards -X, so a width edit moves the model's bounds.
+  box(width, 30, 6).translate(width.negate(), -15, 0).union(cylinder(6, 20).translate(0, 0, 6)),
   { material: 'aluminum-6061' },
 );
 base.connector('pivot', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 26] }, axis: [0, 1, 0] });

@@ -151,6 +151,60 @@ function targetEdits(
   return edits;
 }
 
+type FaultProbe = Pick<KernelWorkerDeps<CoreModel, CoreMeshing>, 'memoryCapHit' | 'memoryBytes' | 'isFatal'>;
+
+/** The routing code of a failure (see protocol.ts). */
+function classify(deps: FaultProbe, error: unknown, firstBuild: boolean): KernelJobError {
+  if (error instanceof KernelJobError) return error;
+  if (deps.memoryCapHit()) {
+    return new KernelJobError('memory', `The model needs more memory than the browser kernel may use (${Math.round(deps.memoryBytes() / 1048576)} MiB in use). ${errorText(error)}`, true, firstBuild);
+  }
+  if (deps.isFatal(error)) return new KernelJobError('internal', errorText(error), true, firstBuild);
+  if (isServerOnlyError(error)) return new KernelJobError('server-only', errorText(error), false, firstBuild);
+  return new KernelJobError('script', errorText(error), false, firstBuild);
+}
+
+/** A result for `request`: only the features the page does not hold. */
+function respond(
+  deps: Pick<KernelWorkerDeps<CoreModel, CoreMeshing>, 'now' | 'serialize' | 'memoryBytes'>,
+  request: RebuildJobRequest,
+  entry: CachedRebuild,
+  timings: JobTimings,
+): RebuildJobResult {
+  const started = deps.now();
+  const have = request.have;
+  const changed: FeatureMeshSerialized[] = [];
+  const present = new Set<string>();
+  for (const feature of entry.features) {
+    present.add(feature.featureId);
+    if (have && have[feature.featureId] === entry.fingerprints[feature.featureId]) continue;
+    changed.push(deps.serialize(feature));
+  }
+  const payload: KernelMeshPayload = {
+    features: changed,
+    featureRecords: entry.featureRecords,
+    bounds: entry.bounds,
+    params: entry.params,
+    ...(entry.dimensions ? { dimensions: entry.dimensions } : {}),
+  };
+  if (have) {
+    const removed = Object.keys(have).filter((id) => !present.has(id));
+    payload.changedFeatureIds = [...changed.map((f) => f.featureId), ...removed];
+  }
+  const serializeMs = timings.serializeMs + (deps.now() - started);
+  return {
+    type: 'result',
+    jobId: request.jobId,
+    scope: request.scope,
+    generation: request.generation,
+    quality: request.quality,
+    payload,
+    fingerprints: entry.fingerprints,
+    timings: { ...timings, serializeMs, totalMs: timings.totalMs + (deps.now() - started) },
+    memoryBytes: deps.memoryBytes(),
+  };
+}
+
 export interface KernelWorkerCore {
   handle(request: RebuildJobRequest): Promise<RebuildJobResult | RebuildJobError>;
   /** Drop the warm model and the cache (after a fatal error). */
@@ -191,53 +245,8 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
       return { model, path: 'full' };
     } catch (error) {
       warm = null;
-      throw classify(error, true);
+      throw classify(deps, error, true);
     }
-  }
-
-  function classify(error: unknown, firstBuild: boolean): KernelJobError {
-    if (error instanceof KernelJobError) return error;
-    if (deps.memoryCapHit()) {
-      return new KernelJobError('memory', `The model needs more memory than the browser kernel may use (${Math.round(deps.memoryBytes() / 1048576)} MiB in use). ${errorText(error)}`, true, firstBuild);
-    }
-    if (deps.isFatal(error)) return new KernelJobError('internal', errorText(error), true, firstBuild);
-    if (isServerOnlyError(error)) return new KernelJobError('server-only', errorText(error), false, firstBuild);
-    return new KernelJobError('script', errorText(error), false, firstBuild);
-  }
-
-  function respond(request: RebuildJobRequest, entry: CachedRebuild, timings: JobTimings): RebuildJobResult {
-    const started = deps.now();
-    const have = request.have;
-    const changed: FeatureMeshSerialized[] = [];
-    const present = new Set<string>();
-    for (const feature of entry.features) {
-      present.add(feature.featureId);
-      if (have && have[feature.featureId] === entry.fingerprints[feature.featureId]) continue;
-      changed.push(deps.serialize(feature));
-    }
-    const payload: KernelMeshPayload = {
-      features: changed,
-      featureRecords: entry.featureRecords,
-      bounds: entry.bounds,
-      params: entry.params,
-      ...(entry.dimensions ? { dimensions: entry.dimensions } : {}),
-    };
-    if (have) {
-      const removed = Object.keys(have).filter((id) => !present.has(id));
-      payload.changedFeatureIds = [...changed.map((f) => f.featureId), ...removed];
-    }
-    const serializeMs = timings.serializeMs + (deps.now() - started);
-    return {
-      type: 'result',
-      jobId: request.jobId,
-      scope: request.scope,
-      generation: request.generation,
-      quality: request.quality,
-      payload,
-      fingerprints: entry.fingerprints,
-      timings: { ...timings, serializeMs, totalMs: timings.totalMs + (deps.now() - started) },
-      memoryBytes: deps.memoryBytes(),
-    };
   }
 
   async function run(request: RebuildJobRequest): Promise<RebuildJobResult | RebuildJobError> {
@@ -250,7 +259,7 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
     });
     const hit = cache.get(key);
     if (hit) {
-      return respond(request, hit, { buildMs: 0, meshMs: 0, serializeMs: 0, totalMs: deps.now() - started, path: 'cache' });
+      return respond(deps, request, hit, { buildMs: 0, meshMs: 0, serializeMs: 0, totalMs: deps.now() - started, path: 'cache' });
     }
     let firstBuild = !(warm && warm.source === request.source);
     try {
@@ -275,7 +284,7 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
         ...(dimensions ? { dimensions } : {}),
       };
       cache.set(key, entry);
-      return respond(request, entry, {
+      return respond(deps, request, entry, {
         buildMs: built - started,
         meshMs: meshed - built,
         serializeMs: deps.now() - meshed,
@@ -283,7 +292,7 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
         path,
       });
     } catch (error) {
-      const failure = classify(error, firstBuild);
+      const failure = classify(deps, error, firstBuild);
       if (failure.fatal) reset();
       return {
         type: 'error',

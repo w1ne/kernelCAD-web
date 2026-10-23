@@ -146,6 +146,37 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=3072'
         run: npx vitest run tests/integration/modeling/modeledThreadProofs.test.ts
 
+  # Click-to-frame benchmark of an in-browser parameter edit (?kernel=browser):
+  # value entered -> worker request -> response -> meshes installed -> next
+  # rendered frame, on a production build in headless Chromium with a small
+  # fixture. p50/p95 land in the job summary and the `param-edit-frame`
+  # artifact. It fails only on errors or wrong geometry (and runs the browser
+  # kernel lockdown probe), never on timings: runner speed and SwiftShader vary
+  # too much for a wall-time gate. Deliberately NOT a required check.
+  param-edit-benchmark:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        env:
+          VITE_BASE_PATH: /
+        run: npx vite build
+      - name: Click-to-frame benchmark (reported, not gated on time)
+        run: npx playwright test -c playwright.perf.config.ts
+      - name: Upload benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: param-edit-frame
+          path: test-results/perf
+          retention-days: 14
+
   # The vitest suite is sharded across parallel runners so the merge gate stays
   # responsive. Eight shards keep coverage unchanged while cutting duplicated
   # checkout/setup/build work compared with the previous 12-runner fanout.

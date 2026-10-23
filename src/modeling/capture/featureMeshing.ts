@@ -897,25 +897,19 @@ function engineSeedOptions(
   meshSeeded: (record: FeatureRecord, shape: ShapeBackend) => void,
   constructionClosure: ReadonlySet<FeatureId>,
 ): Pick<RecomputeOptions, 'seedShapes' | 'onSeedHit'> {
-  const hasSeeds = engineSeeds !== undefined && engineSeeds.size > 0;
-  return {
-    ...(hasSeeds ? { seedShapes: engineSeeds } : {}),
-    ...(meshFromSeed.size > 0 || hasSeeds
-      ? {
-        onSeedHit: (record: FeatureRecord, shape: ShapeBackend) => {
-          if (meshFromSeed.has(record.id)) {
-            meshSeeded(record, shape);
-            releaseBorrowedTriangulation(shape);
-          } else if (constructionClosure.has(record.id) && !hasFeatureOwnership(shape)) {
-            // A construction record lowered by the build or params.update
-            // (not by a mesh pass) has no face owners yet; the assembly part
-            // meshes built from it need them (selection ↔ code link).
-            meshSeeded(record, shape);
-          }
-        },
-      }
-      : {}),
+  if (engineSeeds === undefined || engineSeeds.size === 0) return {};
+  const onSeedHit = (record: FeatureRecord, shape: ShapeBackend): void => {
+    if (meshFromSeed.has(record.id)) {
+      meshSeeded(record, shape);
+      releaseBorrowedTriangulation(shape);
+    } else if (constructionClosure.has(record.id) && !hasFeatureOwnership(shape)) {
+      // A construction record lowered by the build or params.update (not by
+      // a mesh pass) has no face owners yet; the assembly part meshes built
+      // from it need them (selection ↔ code link).
+      meshSeeded(record, shape);
+    }
   };
+  return { seedShapes: engineSeeds, onSeedHit };
 }
 
 /** Attach the optional session hooks (imported geometry, NURBS surface

@@ -16,7 +16,7 @@
 import { browserKernel } from '../../browserKernel/browserKernelInstance';
 import { BrowserKernelError } from '../../browserKernel/browserKernelClient';
 import { browserKernelEnabled } from '../../browserKernel/flag';
-import { markParamEdit } from '../../browserKernel/paramEditPerf';
+import { appliedDetail, markParamEdit } from '../../browserKernel/paramEditPerf';
 import type { RebuildJobResult } from '../../browserKernel/protocol';
 import { rebuildQueue, studioModelDoc } from '../../rebuild/rebuildQueueInstance';
 import { devMeshAvailable, shouldUseHostedMesh, type BackendMeshPayload } from '../../scriptSource';
@@ -76,6 +76,64 @@ function editLabel(snapshot: ParamEditValues): string {
 
 type Outcome = { result: RebuildJobResult } | { fallback: BrowserKernelError };
 
+type BrowserEdit = { source: string; params: Record<string, number | boolean> };
+
+/** The stateless edit to send, or null when the server must take it. */
+function browserEditFor(job: BrowserParamEditJob, run: BrowserParamEditRun, scope: string, server: boolean): BrowserEdit | null {
+  let edit: BrowserEdit;
+  try {
+    edit = paramEditsForMesh(run.code, job.snapshot, job.bakeIntoSource);
+  } catch {
+    return null;
+  }
+  if (browserKernel.isServerOnly(edit.source)) return null;
+  if (server && !browserKernel.isWarm(scope, edit.source)) {
+    // Not warm yet: the server takes this edit while the worker builds.
+    void browserKernel.warm(scope, edit.source, run.deps.mainRevisionRef.current);
+    return null;
+  }
+  return edit;
+}
+
+/** The worker rebuild, listed in the rebuild queue. A failure the server can
+ *  take resolves as `fallback`, kept out of the queue's error. */
+function trackedRebuild(
+  job: BrowserParamEditJob,
+  edit: BrowserEdit,
+  target: { scope: string; revision: number; have: Record<string, string> | null; server: boolean },
+): Promise<Outcome> {
+  return rebuildQueue.track<Outcome>(
+    { label: editLabel(job.snapshot), doc: target.scope, generation: target.revision },
+    async (signal) => {
+      try {
+        return {
+          result: await browserKernel.rebuild({
+            scope: target.scope,
+            generation: target.revision,
+            source: edit.source,
+            params: edit.params,
+            quality: job.preview ? 'coarse' : 'display',
+            have: target.have,
+            signal,
+          }),
+        };
+      } catch (error) {
+        if (error instanceof BrowserKernelError && error.fallback && target.server) return { fallback: error };
+        throw error;
+      }
+    },
+  );
+}
+
+/** Paint a worker result and remember what the view now shows. */
+function applyResult(run: BrowserParamEditRun, result: RebuildJobResult, revision: number): void {
+  markParamEdit('response', { generation: revision, kernel: 'browser', detail: { ...result.timings, quality: result.quality } });
+  run.apply(result.payload as BackendMeshPayload, revision, result.payload.dimensions === undefined);
+  const now = run.deps.geometriesRef?.current;
+  if (now) shownFingerprints.set(now, result.fingerprints);
+  markParamEdit('applied', { generation: revision, kernel: 'browser', detail: appliedDetail(result.payload) });
+}
+
 /**
  * Run one param edit on the worker. 'fallback': the caller sends it to the
  * server instead (nothing was painted, no error was shown).
@@ -87,18 +145,8 @@ export async function runBrowserKernelParamEdit(
   const { deps } = run;
   const scope = studioModelDoc(deps.mainRevisionRef);
   const server = serverMeshAvailable();
-  let edit: { source: string; params: Record<string, number | boolean> };
-  try {
-    edit = paramEditsForMesh(run.code, job.snapshot, job.bakeIntoSource);
-  } catch {
-    return 'fallback';
-  }
-  if (browserKernel.isServerOnly(edit.source)) return 'fallback';
-  if (server && !browserKernel.isWarm(scope, edit.source)) {
-    // Not warm yet: the server takes this edit while the worker builds.
-    void browserKernel.warm(scope, edit.source, deps.mainRevisionRef.current);
-    return 'fallback';
-  }
+  const edit = browserEditFor(job, run, scope, server);
+  if (!edit) return 'fallback';
   const revision = ++deps.mainRevisionRef.current;
   deps.setCurrentCodeRevision(revision);
   deps.setIsComputing(true);
@@ -108,44 +156,16 @@ export async function runBrowserKernelParamEdit(
   let fellBack = false;
   try {
     markParamEdit('request', { generation: revision, kernel: 'browser' });
-    const outcome = await rebuildQueue.track<Outcome>(
-      { label: editLabel(job.snapshot), doc: scope, generation: revision },
-      async (signal) => {
-        try {
-          return {
-            result: await browserKernel.rebuild({
-              scope,
-              generation: revision,
-              source: edit.source,
-              params: edit.params,
-              quality: job.preview ? 'coarse' : 'display',
-              have,
-              signal,
-            }),
-          };
-        } catch (error) {
-          // Kept out of the queue's error: the server is about to take it.
-          if (error instanceof BrowserKernelError && error.fallback && server) return { fallback: error };
-          throw error;
-        }
-      },
-    );
+    const outcome = await trackedRebuild(job, edit, { scope, revision, have, server });
     if ('fallback' in outcome) {
       fellBack = current();
       return fellBack ? 'fallback' : 'done';
     }
-    const { result } = outcome;
-    markParamEdit('response', { generation: revision, kernel: 'browser', detail: { ...result.timings, quality: result.quality } });
-    if (!current()) return 'done';
-    run.apply(result.payload as BackendMeshPayload, revision, result.payload.dimensions === undefined);
-    const now = deps.geometriesRef?.current;
-    if (now) shownFingerprints.set(now, result.fingerprints);
-    markParamEdit('applied', { generation: revision, kernel: 'browser' });
+    if (current()) applyResult(run, outcome.result, revision);
     return 'done';
   } catch (error) {
-    if (isAbortError(error) || !current()) return 'done';
     // The queue already shows the error; the last valid model stays.
-    deps.setError(error instanceof Error ? error.message : String(error));
+    if (!isAbortError(error) && current()) deps.setError(error instanceof Error ? error.message : String(error));
     return 'done';
   } finally {
     if (!fellBack && current() && !run.followUpPending()) {

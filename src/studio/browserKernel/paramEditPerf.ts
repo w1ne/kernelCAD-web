@@ -41,3 +41,15 @@ export function markParamEdit(
   if (!target) return;
   target.events.push({ stage, t: performance.now(), ...fields });
 }
+
+/** What the benchmark checks a settled edit against: the param values the
+ *  build echoed and the mesh bounds. Only computed when the probe is on. */
+export function appliedDetail(payload: {
+  params?: Record<string, { value: unknown }>;
+  bounds?: unknown;
+}): Record<string, unknown> | undefined {
+  if (!paramEditPerfEnabled()) return undefined;
+  const params: Record<string, unknown> = {};
+  for (const [name, entry] of Object.entries(payload.params ?? {})) params[name] = entry.value;
+  return { params, bounds: payload.bounds };
+}

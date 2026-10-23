@@ -18,7 +18,7 @@ import { createSingleFlight, type SingleFlight } from './singleFlight';
 import { rebuildQueue, studioModelDoc } from '../../rebuild/rebuildQueueInstance';
 import { browserKernelTakes, runBrowserKernelParamEdit, warmBrowserKernel } from './browserKernelParamEdit';
 import { validateParamEdits } from '../../browserKernel/paramValidation';
-import { markParamEdit } from '../../browserKernel/paramEditPerf';
+import { appliedDetail, markParamEdit } from '../../browserKernel/paramEditPerf';
 import type { SerializedParamEntry } from '../../../shared/runtime/paramTable';
 
 interface HostedMeshJob {
@@ -37,6 +37,25 @@ interface HostedMeshRun {
     followUpPending: () => boolean;
 }
 
+/** True when the browser kernel worker answered the edit (`?kernel=browser`);
+ *  false sends it down the server path unchanged. */
+async function editedInBrowserKernel(job: HostedMeshJob, run: HostedMeshRun): Promise<boolean> {
+    if (!browserKernelTakes(run.code)) return false;
+    const outcome = await runBrowserKernelParamEdit(job, {
+        ...run,
+        apply: (payload, revision, keepDimensions) => {
+            applyParamMeshPayload(run.deps, run.executionCount, payload, revision, { keepDimensions });
+        },
+    });
+    return outcome === 'done';
+}
+
+/** A stateless edit can be built: by the server, the dev kernel or the
+ *  browser kernel worker. */
+function statelessEditPossible(code: string): boolean {
+    return shouldUseHostedMesh() || devMeshAvailable() || browserKernelTakes(code);
+}
+
 /** Paint one stateless param mesh. Kept outside the hook so `useParamUpdate`
  *  stays inside the function-length ratchet. */
 async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promise<void> {
@@ -45,15 +64,7 @@ async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promi
         await meshParamEdits(run.code, {}, false, false, true).catch(() => undefined);
         return;
     }
-    if (browserKernelTakes(run.code)) {
-        const outcome = await runBrowserKernelParamEdit(job, {
-            ...run,
-            apply: (payload, revision, keepDimensions) => {
-                applyParamMeshPayload(run.deps, run.executionCount, payload, revision, { keepDimensions });
-            },
-        });
-        if (outcome === 'done') return;
-    }
+    if (await editedInBrowserKernel(job, run)) return;
     const browserSource = browserCanEditParams(run.code, run.deps.engine)
         ? browserParamSource(run.code, job.snapshot)
         : null;
@@ -77,7 +88,7 @@ async function runHostedParamMesh(job: HostedMeshJob, run: HostedMeshRun): Promi
         markParamEdit('response', { generation: revision, kernel: 'server' });
         if (job.epoch !== run.epochRef.current || revision !== run.deps.mainRevisionRef.current) return;
         applyParamMeshPayload(run.deps, run.executionCount, payload, revision);
-        markParamEdit('applied', { generation: revision, kernel: 'server' });
+        markParamEdit('applied', { generation: revision, kernel: 'server', detail: appliedDetail(payload) });
     } catch (err) {
         if (job.epoch !== run.epochRef.current || revision !== run.deps.mainRevisionRef.current) return;
         run.deps.setError(err instanceof Error ? err.message : String(err));
@@ -229,7 +240,7 @@ export function useParamUpdate(
         // whole script through the stateless mesh endpoint with the param
         // overrides applied. This is what makes a declared parameter actually
         // move the model when there is no pooled kernel session behind the tab.
-        if (!shouldUseHostedMesh() && !devMeshAvailable() && !browserKernelTakes(code)) {
+        if (!statelessEditPossible(code)) {
             throw new Error(
                 'Editing parameters needs a live kernel session or a compute backend.',
             );
