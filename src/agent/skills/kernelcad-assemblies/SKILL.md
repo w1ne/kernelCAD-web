@@ -386,19 +386,19 @@ arm.mate('shoulder-bolts',
 );
 ```
 
-Couple scalar articulated mates when one actuator should drive multiple finger/jaw joints. The driven pose is `sourcePose * ratio + offset`; explicit numeric `solve_mates({ poses })` overrides for a driven mate still win for debugging.
+Couple scalar articulated mates when one actuator should drive multiple output joints. The driven pose is `sourcePose * ratio + offset`; explicit numeric `solve_mates({ poses })` overrides for a driven mate still win for debugging.
 
 ```typescript
-arm.mate('grip', 'palm.driver', 'grip-driver.axis', 'revolute', {
+arm.mate('drive', 'body.driver', 'driver-link.axis', 'revolute', {
   limitsDeg: [0, 40],
 });
-arm.mate('left-curl', 'palm.left-hinge', 'left-finger.hinge', 'revolute');
-arm.mate('right-curl', 'palm.right-hinge', 'right-finger.hinge', 'revolute');
-arm.coupleMates('left-curl', { source: 'grip', ratio: 1 });
-arm.coupleMates('right-curl', { source: 'grip', ratio: -1 });
+arm.mate('follow-a', 'body.hinge-a', 'link-a.hinge', 'revolute');
+arm.mate('follow-b', 'body.hinge-b', 'link-b.hinge', 'revolute');
+arm.coupleMates('follow-a', { source: 'drive', ratio: 1 });
+arm.coupleMates('follow-b', { source: 'drive', ratio: -1 });
 ```
 
-Use this for two-finger grippers and simple underactuated fingers before hand-authoring duplicated pose params. Coupling supports scalar mates: `revolute`, `prismatic`, `cylindrical`, and `pin_slot`.
+Use this for symmetric or mirrored output pairs and simple underactuated chains before hand-authoring duplicated pose params. Coupling supports scalar mates: `revolute`, `prismatic`, `cylindrical`, and `pin_slot`.
 
 Capture-time errors throw `KernelError('feature.invalid-args')` with structured hints:
 
@@ -667,14 +667,14 @@ Behavior:
 Mate coupling is not physical transmission. If you use `arm.coupleMates(driven, { source, ratio })`, also declare how motion gets from the actuator/input mate to the driven output:
 
 ```typescript
-arm.transmission('left-finger-drive-linkage', {
+arm.transmission('link-a-drive-linkage', {
   kind: 'link-rod',
-  sourceMate: 'grip',
-  drivenMates: ['left-curl'],
-  actuator: 'grip-servo',
-  input: 'grip-driver',
-  output: 'left-finger',
-  path: ['grip-driver', 'left-hinge-pin', 'left-finger'],
+  sourceMate: 'drive',
+  drivenMates: ['follow-a'],
+  actuator: 'actuator',
+  input: 'driver-link',
+  output: 'link-a',
+  path: ['driver-link', 'hinge-pin-a', 'link-a'],
   ratio: -1,
 });
 ```
@@ -683,17 +683,17 @@ arm.transmission('left-finger-drive-linkage', {
 
 ## Fresh-agent mechanism loop
 
-When a user asks for a robot arm, hand, gripper, linkage, or other physical mechanism, do not start by polishing a mesh. Start from a script that returns an `assembly(...).model()` or `.solvedModel(...)`, then run this loop:
+When a user asks for a linkage, articulated chain, or other physical mechanism, do not start by polishing a mesh. Start from a script that returns an `assembly(...).model()` or `.solvedModel(...)`, then run this loop:
 
-1. Build named, purpose-bearing parts. Every visible solid should be a base, bracket, servo/motor body, shaft/pin, bearing/clevis/knuckle, link, palm, finger, fixture, or clearly named end-effector part.
+1. Build named, purpose-bearing parts. Every visible solid should be a base, bracket, servo/motor body, shaft/pin, bearing/clevis/knuckle, link, output member, fixture, or clearly named tool part.
 2. Declare connector frames and mates on the parts that carry load. Prefer revolute/prismatic/fastened mates with limits over visually aligned free geometry.
-3. If one mate drives another, declare both `coupleMates(...)` and `transmission(...)`; the coupling is the kinematic ratio, the transmission is the physical drive path. Do not jump directly from a servo horn to a distant finger; include the real adjacent horn/link/gear/belt/tendon/support parts in `path`.
+3. If one mate drives another, declare both `coupleMates(...)` and `transmission(...)`; the coupling is the kinematic ratio, the transmission is the physical drive path. Do not jump directly from an actuator horn to a distant output; include the real adjacent horn/link/gear/belt/tendon/support parts in `path`.
 4. Run `inspect({ of: 'assembly', file })`. If `unexplainedGeometry` is non-empty, redesign before continuing unless the original prompt explicitly allows the disconnected geometry and you document why.
 5. Run `review_cad({ file, designGoal, preserveInterfaces, trackConnectors, gripperAperture? })`. Treat `fitness.functional === false`, `fitness.blockingReasons`, connector-not-in-solid, unsupported revolutes, missing mate contact, missing drive transmission, pose-limit failures, and interference pairs as repair facts, not optional style feedback.
-6. Prefer `design_loop({ goal, attempts, outputRecordPath? })` for complex / robot-arm / multi-body builds — revise from `nextActionPrompt` until green or `convergence.escalate`. Visual review is mandatory by default; a pass means functional, quality-clean, and screenshot-reviewed. A merely renderable model is not enough. Use cookbook `multi-body-mechanism-real-proportions` for machine-element proportions (not sticks).
+6. Prefer `design_loop({ goal, attempts, outputRecordPath? })` for complex / multi-link / multi-body builds — revise from `nextActionPrompt` until green or `convergence.escalate`. Visual review is mandatory by default; a pass means functional, quality-clean, and screenshot-reviewed. A merely renderable model is not enough. Use cookbook `multi-body-mechanism-real-proportions` for machine-element proportions (not sticks).
 7. Only after the deterministic tools are clean should you open Studio or a screenshot for visual review. If the image still shows arbitrary fragments, go back to `inspect({ of: 'assembly' })` and make the fragment inventory explainable.
 
-For robot arms specifically, preserve at least these interfaces between repair attempts when present: base yaw mate, shoulder pitch mate, elbow pitch mate, wrist/grip mate, tool-tip connector, and fingertip connectors. Track the tool-tip workspace and gripper aperture so the review proves movement, not just static contact.
+For serial chains, preserve at least these interfaces between repair attempts when present: the base mate, each intermediate joint mate, the output mate, the tool-point connector, and any paired end-point connectors. Track the tool-point workspace and paired end-point travel so the review proves movement, not just static contact.
 
 ## Mechanism delivery — non-bypassable
 
@@ -726,7 +726,7 @@ const shoulder = joint.clevis({
 // shoulder.parentConnector / .childConnector carry { origin, axis } for the mate
 ```
 
-See `kernelcad-kinematic/SKILL.md` for the full pattern and the lamp-class worked example (`examples/kinematic/luxo-lamp.kcad.ts`).
+See `kernelcad-kinematic/SKILL.md` for the full pattern and the worked example (`examples/kinematic/luxo-lamp.kcad.ts`, a three-revolute arm).
 
 ## Diagnostic codes
 
@@ -748,7 +748,7 @@ See `kernelcad-kinematic/SKILL.md` for the full pattern and the lamp-class worke
 | `assembly.pose-envelope.solve-failed` | pose-envelope — solver hit over-constrained / did-not-converge at sample |
 | `assembly.pose-envelope.interference` | pose-envelope — sampled pose overlaps two parts |
 | `assembly.pose-envelope.connector-unresolved` | pose-envelope — tracked connector has topology-based origin |
-| `assembly.gripper-aperture.connector-missing` | pose-envelope — fingertip connector ref not observed |
+| `assembly.gripper-aperture.connector-missing` | pose-envelope — paired tip connector ref not observed |
 | `assembly.visual.review-incomplete` | design_loop — missing screenshot/findings/checklist |
 | `assembly.visual.review-evidence-weak` | design_loop — accepted visual checklist text lacks concrete evidence |
 | `assembly.visual.review-check-failed` | design_loop — a visual checklist check failed |

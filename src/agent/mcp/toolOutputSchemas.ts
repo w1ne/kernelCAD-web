@@ -308,10 +308,6 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       imageDims: { type: 'array', items: { type: 'number' }, description: 'Pixel dimensions [width, height] of the source image.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       ledger: { type: 'object', additionalProperties: true, description: 'Assumption ledger: { facts, scale?, unresolvedCount } classifying every fact as visible/inferred/assumed/missing.' },
-      detectedParts: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Optional labeled component detections: name, quantity, outline-frame position/bbox and confidence.' },
-      draftBom: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Optional unverified BOM draft grouped by detected part name.' },
-      unmatchedLabels: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Detected labels without a sufficiently strong bundled-catalog match.' },
-      partDetectionFrame: { type: 'string', enum: ['outline', 'image', 'mixed'], description: 'Coordinate frame used by all detected boxes, or mixed when some boxes fall outside the silhouette and retain image coordinates.' },
     },
     required: ['ok', 'features', 'imageDims', 'diagnostics', 'ledger'],
     additionalProperties: true,
@@ -629,19 +625,6 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       suggestedRepairPrompt: { type: 'string', description: 'Structured repair prompt (failure / repair path).' },
     },
     required: ['ok', 'featureCount', 'diagnostics'],
-    additionalProperties: true,
-  },
-
-  review_paint_peek_latest: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean' },
-      empty: { type: 'boolean', description: 'True when no fresh packet was found.' },
-      packet: { type: 'object', additionalProperties: true, description: 'The freshest review packet (screenshot + mask + metadata).' },
-      scanned_roots: { type: 'array', items: { type: 'string' }, description: 'Checkout roots that were scanned.' },
-      scanned_candidates: { type: 'number', description: 'Number of candidate packets considered.' },
-    },
-    required: ['ok'],
     additionalProperties: true,
   },
 

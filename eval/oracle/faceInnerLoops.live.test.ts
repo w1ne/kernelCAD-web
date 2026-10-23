@@ -9,7 +9,7 @@ import { writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { getMaxFaceInnerLoops } from './kernelcad-client';
-import { computeFidelityGates, allFidelityGatesPass } from '../../src/lib/imageSimilarity/fidelityGates';
+import { computeFidelityGates, allFidelityGatesPass } from './fidelityGates';
 
 const dir = mkdtempSync(join(tmpdir(), 'faceloops-'));
 function write(name: string, code: string): string {
