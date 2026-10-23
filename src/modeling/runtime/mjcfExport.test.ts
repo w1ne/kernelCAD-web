@@ -99,6 +99,30 @@ describe('regularizeInertia6 / isInertia6PositiveDefinite', () => {
 });
 
 describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
+    it('places a child whose mate connector is off its origin where the connectors meet', async () => {
+        // The wrist connector sits 40 mm behind both parts' origins, so the
+        // palm body belongs at the forearm origin, and a hinge on a child
+        // connector off the child origin is anchored at that connector.
+        await initOcct();
+        const session = new CaptureSession();
+        const kcad = createModelingApi({ session });
+        const arm = kcad.assembly('offset-connectors');
+        arm.part('forearm', kcad.box(60, 30, 30, true).translate(-70, 0, 0))
+            .connector('wrist', { type: 'frame', origin: { kind: 'vec3', value: [-40, 0, 0] } });
+        arm.part('palm', kcad.box(80, 30, 20, true))
+            .connector('wrist', { type: 'frame', origin: { kind: 'vec3', value: [-40, 0, 0] } })
+            .connector('knuckle', { type: 'axis', origin: { kind: 'vec3', value: [45, 0, 0] }, axis: [0, 1, 0] });
+        arm.part('finger', kcad.box(30, 10, 10, true).translate(25, 0, 0))
+            .connector('knuckle', { type: 'axis', origin: { kind: 'vec3', value: [5, 0, 0] }, axis: [0, 1, 0] });
+        arm.mate('wrist', 'forearm.wrist', 'palm.wrist', 'fastened');
+        arm.mate('knuckle', 'palm.knuckle', 'finger.knuckle', 'revolute', { limitsDeg: [0, 90] });
+
+        const { mjcf } = await assemblyToMjcf(arm);
+        expect(mjcf).toMatch(/<body name="palm" pos="0 0 0"/);
+        expect(mjcf).toMatch(/<body name="finger" pos="0\.04(0*) 0 0"/);
+        expect(mjcf).toMatch(/<joint name="knuckle" type="hinge" axis="[^"]*" pos="0\.005(0*) 0 0"/);
+    });
+
     it('round-trips a 1-revolute hinge into a parseable MJCF with 1 qpos slot', async () => {
         await initOcct();
         const session = new CaptureSession();

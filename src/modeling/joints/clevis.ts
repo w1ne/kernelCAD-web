@@ -29,6 +29,7 @@
 
 import type { KernelCadApi } from '../api';
 import type { Shape } from '../capture/proxy';
+import { annotateShapeRecord } from '../capture/recordAnnotation';
 import type { Vec3 } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
 import type {
@@ -497,6 +498,10 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
   //    instead of interpenetrating the child tongue.
   const parentPocket = makeTongueClearancePocket(kc, style, axis, pivotParentLifted, liftDir, liftZ);
   const parentWithClearance = parentWithFork.subtract(parentPocket);
+  // The pocket only clears parent material that happens to sit between the
+  // plates. A parent that carries its fork on spines has none there, and that
+  // empty cut is correct, not a cutter that missed.
+  annotateShapeRecord(parentWithClearance, { clearanceCut: true });
 
   // 6. Drill the pin clearance bore through BOTH the parent fork and the
   //    child tongue (ISO 286 H8/f7 running fit). The hole is co-located in
@@ -646,6 +651,9 @@ function buildFork(
   if (style.forkMaterial !== undefined) {
     fork = fork.material(style.forkMaterial);
   }
+  // Fork plates and webs are fused into the parent by design (webs reach
+  // 1 mm into it), so the same-stock overlap guard must not count them.
+  annotateShapeRecord(fork, { jointHardware: 'clevis-fork' });
   return fork;
 }
 
@@ -679,6 +687,7 @@ function buildTongue(
   if (style.tongueMaterial !== undefined) {
     tongue = tongue.material(style.tongueMaterial);
   }
+  annotateShapeRecord(tongue, { jointHardware: 'clevis-tongue' });
   return tongue;
 }
 

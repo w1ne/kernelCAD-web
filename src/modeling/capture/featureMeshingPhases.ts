@@ -25,6 +25,7 @@ import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 import { transformFeatureMesh } from './transformMesh';
 import { computeFeatureOwnership, type FeatureOwnership } from './featureOwnership';
 import { Transform } from '../../shared/runtime/se3';
+import { attachMaterialUVs } from './planarUv';
 import type {
   AttributeShadowingWarning,
   Bounds,
@@ -403,7 +404,10 @@ function emitScenePartMesh(
     ...(resolved.edges ? { edges: resolved.edges } : {}),
     ...resolved.link,
   };
-  if (!resolved.fromCache) ctx.attachPlanarUVs(local.faces);
+  if (!resolved.fromCache) {
+    attachMaterialUVs(local.faces, part.material);
+    ctx.attachPlanarUVs(local.faces);
+  }
   const extra = ctx.explodeOffsets?.get(part.name);
   const worldT = extra !== undefined
     ? Transform.translation(extra[0], extra[1], extra[2]).compose(part.worldTransform)

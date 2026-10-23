@@ -100,3 +100,31 @@ describe('feaStudy evaluate-time gate', () => {
     expect(r.diagnostics.some(d => d.code === 'fea.mesh.quality-low')).toBe(false);
   }, 600_000);
 });
+
+describe('feaStudy load path', () => {
+  it('rejects a load on faces the study also clamps instead of reporting a zero-stress pass', async () => {
+    if (!toolchain.ok) {
+      requireFeaToolchainIfDemanded(toolchain);
+      console.warn(`[skipped] FEA load-path test needs ${toolchain.missing.join(' and ')}. ${toolchain.hint}`);
+      expect(toolchain.missing.length).toBeGreaterThan(0);
+      return;
+    }
+    const code = `
+const tab = box(60, 12, 3);
+tab.feaStudy({
+  name: 'tab',
+  material: 'pla',
+  fixed: { atX: 0 },
+  loads: [{ faces: { atX: 0 }, force: [0, 0, -50] }],
+  meshSize: 2,
+  minSafetyFactor: 2,
+});
+return tab;
+`;
+    const r = await evaluateScript({ code });
+    expect(r.exitCode).toBe(1);
+    const d = r.diagnostics.find(x => x.code === 'fea.study.load-unresolved');
+    expect(d, 'a load on clamped faces should be rejected').toBeDefined();
+    expect(d!.message).toMatch(/held by the fixed face/);
+  }, 600_000);
+});

@@ -219,7 +219,11 @@ export function resolveSelector(
     return { ok: true, faces: [describe(match, selector)] };
   }
 
-  const matched = resolveFaceQuery(shape, selector as FaceQuery);
+  // `near` orders a query's matches, nearest first. A study face picked
+  // `near` a point means that one face, not every face the other keys match
+  // (`{ ofSurfaceType: 'CYLINDER', near }` would otherwise bind every bore).
+  const sorted = resolveFaceQuery(shape, selector as FaceQuery);
+  const matched = (selector as FaceQuery).near !== undefined ? sorted.slice(0, 1) : sorted;
   if (matched.length === 0) {
     return {
       ok: false,

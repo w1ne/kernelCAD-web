@@ -12,12 +12,15 @@ const EXAMPLE_PATH = 'tests/fixtures/robot-hand/rejected-function-first-three-fi
 const EXAMPLE_ABSOLUTE = resolvePath(__dirname, '../../..', EXAMPLE_PATH);
 
 describe('rejected function-first three-finger robot hand fixture', () => {
-  it('preserves the grasp requirements while rejecting its no-op palm subtraction', async () => {
+  // The palm block the thumb fork hangs from floats 3 mm off the palm. This
+  // used to surface as the clevis pocket's empty cut; the pocket is now a
+  // declared clearance cut, so the union guard names the floating solid.
+  it('preserves the grasp requirements while rejecting its floating palm block', async () => {
     const result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
 
     expect(result.evaluation.exitCode).toBe(1);
     expect(result.evaluation.diagnostics).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'feature.subtractive-noop', severity: 'error' }),
+      expect.objectContaining({ code: 'union.disconnected', severity: 'error' }),
     ]));
 
     const source = await readFile(EXAMPLE_ABSOLUTE, 'utf8');
@@ -54,7 +57,7 @@ describe('rejected function-first three-finger robot hand fixture', () => {
     ]);
   }, 120_000);
 
-  it('keeps the lowering failure blocking in review_cad', async () => {
+  it('keeps the floating palm block blocking in review_cad', async () => {
     const result = await reviewCadTool({
       file: EXAMPLE_PATH,
       includeInterference: true,
@@ -63,9 +66,11 @@ describe('rejected function-first three-finger robot hand fixture', () => {
     });
 
     expect(result.ok).toBe(false);
-    expect(result.diagnostics).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'feature.subtractive-noop', severity: 'error' }),
-    ]));
-    expect(result.fitness).toBeUndefined();
+    // The floating block is named by the union guard, or by the mechanism
+    // probe as an orphan part when that runs first.
+    const codes = result.diagnostics.map((d) => d.code);
+    expect(codes.some((c) => c === 'union.disconnected' || c === 'mechanism.orphan-part')).toBe(true);
+    // It now builds, so review reports grasp fitness, and must not pass it.
+    expect(result.fitness?.functional ?? false).toBe(false);
   }, 180_000);
 });
