@@ -367,6 +367,20 @@ async function meshAndBindFaces(
       );
       return undefined;
     }
+    // A load on faces the study also clamps goes straight into the support:
+    // the solve is a silent zero (no stress, no reaction), not a pass.
+    const held = new Set(fixedBind.nodes);
+    if (bind.nodes.every(n => held.has(n))) {
+      diagnostics.push(
+        diag(
+          'fea.study.load-unresolved',
+          'error',
+          `feaStudy '${study.name}', load '${l.name}': face(s) ${l.faces.map(f => f.ref).join(', ')} are all held by the fixed face(s), so the force would go straight into the support and nothing would be loaded. Select the load and fixed faces so they are different faces.`,
+          owner,
+        ),
+      );
+      return undefined;
+    }
     loads.push({ name: l.name, force: l.force, set: { name: `NLOAD${i}`, nodes: bind.nodes }, tris: bind.tris });
   }
 
