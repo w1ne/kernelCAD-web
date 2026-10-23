@@ -75,7 +75,7 @@ export function resolveTendonVia(state: AssemblyState, name: string, opts: Tendo
     throw bad(name, 'invalid-via', `via must be an array; got ${formatScalarForError(opts.via as unknown as number)}.`,
       `pass via: ['part.connector', { wrap: { partName, wrapName } }, ...].`);
   }
-  return opts.via.map((v, i): TendonViaRef => {
+  const routed = opts.via.map((v, i): TendonViaRef => {
     if (typeof v === 'string') {
       resolveViaConnector(state, name, i, v);
       return v;
@@ -86,6 +86,13 @@ export function resolveTendonVia(state: AssemblyState, name: string, opts: Tendo
     throw bad(name, 'invalid-via', `via[${i}] must be a 'part.connector' string or { wrap: {...} }.`,
       `pass via: ['part.connector', { wrap: { partName, wrapName } }, ...].`);
   });
+  routed.forEach((v, i) => {
+    if (i > 0 && typeof v !== 'string' && typeof routed[i - 1] !== 'string') {
+      throw bad(name, 'consecutive-via-wraps', `via[${i - 1}] and via[${i}] are both wrap entries with nothing between them.`,
+        `put a connector via point between the two wraps (e.g. via: [{ wrap: A }, 'part.waypoint', { wrap: B }]); the exporter does not invent a path point.`);
+    }
+  });
+  return routed;
 }
 
 export function normalizeTendonActuator(name: string, opts: TendonOptions): TendonActuator | undefined {

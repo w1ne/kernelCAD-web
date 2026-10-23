@@ -32,6 +32,12 @@ describe('arm.tendon — via routing', () => {
     expect(() => makeArm().tendon('t', { from: 'a.pa', via: [{ wrap: { partName: 'b', wrapName: 'nope' } }], to: 'c.pc', actuator: { kind: 'force', maxForceN: 5 } })).toThrow(/unknown-wrap-geom/);
   });
 
+  it('rejects two consecutive wrap entries in via, accepts them with a connector between', () => {
+    const w = { wrap: { partName: 'b', wrapName: 'rail' } };
+    expect(() => makeArm().tendon('t', { from: 'a.pa', via: [w, w], to: 'c.pc', actuator: { kind: 'force', maxForceN: 5 } })).toThrow(/consecutive-via-wraps/);
+    expect(() => makeArm().tendon('t', { from: 'a.pa', via: [w, 'b.pb', w], to: 'c.pc', actuator: { kind: 'force', maxForceN: 5 } })).not.toThrow();
+  });
+
   it('rejects via combined with the legacy wrapGeoms option', () => {
     expect(() => makeArm().tendon('t', {
       from: 'a.pa', via: ['b.pb'], to: 'c.pc', restLengthMm: 10, stiffnessNmm: 1,

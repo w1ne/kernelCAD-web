@@ -395,7 +395,17 @@ async function resolveTendonEndpoint(
 
 // Route children of a routed `<spatial>`: from-site, then each `via` entry (a
 // site on its owning body, or a wrap geom with optional sidesite; consecutive
-// wrap geoms get a separator site), then the to-site.
+// wrap geoms get a separator site; only the legacy `wrapGeoms` path can produce
+// those, `via` rejects them at capture), then the to-site.
+/** CAD joint limits are physical stops. MuJoCo's default limit solref (0.02 s) is
+ *  soft for light parts, letting a driven joint overshoot its range by tens of
+ *  degrees. Use a time constant of 2x the timestep (this exporter writes no
+ *  `timestep`, so MuJoCo's default 0.002 s -> 0.004) with damping ratio 1, and a
+ *  stiff impedance. */
+const MJCF_DEFAULT_TIMESTEP_S = 0.002;
+const JOINT_LIMIT_SOLVER_ATTRS =
+    ` solreflimit="${fmtNum(2 * MJCF_DEFAULT_TIMESTEP_S)} 1" solimplimit="0.95 0.99 0.001"`;
+
 async function routeChildren(
     t: TendonRecord,
     endpoints: ResolvedTendon['endpoints'],
@@ -844,7 +854,7 @@ function mateToMjcfJoint(
             jointOrder.push({ mjcfName: mjcfJointName, mateName: mate.name });
             const limits = mate.limitsDeg;
             const limitedAttrs = limits !== undefined
-                ? ` limited="true" range="${fmtNum(limits[0] * DEG_TO_RAD)} ${fmtNum(limits[1] * DEG_TO_RAD)}"`
+                ? ` limited="true" range="${fmtNum(limits[0] * DEG_TO_RAD)} ${fmtNum(limits[1] * DEG_TO_RAD)}"${JOINT_LIMIT_SOLVER_ATTRS}`
                 : '';
             return [
                 `<joint name="${escapeXml(mjcfJointName)}" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
@@ -854,7 +864,7 @@ function mateToMjcfJoint(
             jointOrder.push({ mjcfName: mjcfJointName, mateName: mate.name });
             const limits = mate.limitsMm;
             const limitedAttrs = limits !== undefined
-                ? ` limited="true" range="${fmtNum(limits[0] * MM_TO_M)} ${fmtNum(limits[1] * MM_TO_M)}"`
+                ? ` limited="true" range="${fmtNum(limits[0] * MM_TO_M)} ${fmtNum(limits[1] * MM_TO_M)}"${JOINT_LIMIT_SOLVER_ATTRS}`
                 : '';
             return [
                 `<joint name="${escapeXml(mjcfJointName)}" type="slide" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,

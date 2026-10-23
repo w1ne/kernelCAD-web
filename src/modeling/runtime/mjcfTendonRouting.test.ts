@@ -86,6 +86,11 @@ describe('assemblyToMjcf — tendon via routing + actuator', () => {
         expect(mjcf).toMatch(/<body name="prox"[\s\S]*<site name="cable__via0" pos="0\.020000 0 -0\.008000"\/>/);
     });
 
+    it('emits limited joints with hard-stop limit solver attributes', async () => {
+        const { mjcf } = await assemblyToMjcf(routedArm());
+        expect(mjcf).toMatch(/<joint name="mcp"[^>]*limited="true"[^>]*solreflimit="0\.004000 1" solimplimit="0\.95 0\.99 0\.001"/);
+    });
+
     it('emits a tension motor (gear -1, ctrlrange 0..max) and no spring for an actuated tendon', async () => {
         const arm = routedArm();
         arm.tendon('cable', { from: 'palm.in', via: ['prox.loop'], to: 'dist.tip', actuator: { kind: 'force', maxForceN: 40 } });
