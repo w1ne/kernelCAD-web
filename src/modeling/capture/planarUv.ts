@@ -18,6 +18,7 @@
 
 import type { FaceGeometry } from '../../shared/worker/workerTypes';
 import { computeProjectedUVs, type TextureProjection } from '../../shared/intent/textureProjection';
+import type { PBRMaterial } from '../../shared/intent/material';
 
 /** Determine the dominant axis from the face's normal. Prefer the face's
  *  declared plane normal when available; fall back to averaging vertex
@@ -170,4 +171,11 @@ function splitWrapSeam(face: FaceGeometry): void {
   face.normals = normals;
   face.uv = uvs;
   face.indices = nextIndices;
+}
+
+/** UVs for a body whose material wraps a texture (`.wrapTexture()`); a no-op
+ *  for any other material, which keeps the planar fallback. */
+export function attachMaterialUVs(faces: FaceGeometry[], material: PBRMaterial | undefined): void {
+  const projection = material?.textureProjection;
+  if (projection !== undefined && material?.textures?.albedo !== undefined) attachProjectedUVs(faces, projection);
 }

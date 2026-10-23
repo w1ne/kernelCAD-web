@@ -25,7 +25,7 @@ import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 import { transformFeatureMesh } from './transformMesh';
 import { computeFeatureOwnership, type FeatureOwnership } from './featureOwnership';
 import { Transform } from '../../shared/runtime/se3';
-import { attachProjectedUVs } from './planarUv';
+import { attachMaterialUVs } from './planarUv';
 import type {
   AttributeShadowingWarning,
   Bounds,
@@ -405,10 +405,7 @@ function emitScenePartMesh(
     ...resolved.link,
   };
   if (!resolved.fromCache) {
-    const projection = part.material?.textureProjection;
-    if (projection !== undefined && part.material?.textures?.albedo !== undefined) {
-      attachProjectedUVs(local.faces, projection);
-    }
+    attachMaterialUVs(local.faces, part.material);
     ctx.attachPlanarUVs(local.faces);
   }
   const extra = ctx.explodeOffsets?.get(part.name);

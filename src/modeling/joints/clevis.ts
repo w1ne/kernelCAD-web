@@ -28,7 +28,8 @@
 // Plan: `docs/plans/2026-05-31-mechanism-delivery-G1-joint-clevis-primitive.md`.
 
 import type { KernelCadApi } from '../api';
-import { annotateShapeRecord, type Shape } from '../capture/proxy';
+import type { Shape } from '../capture/proxy';
+import { annotateShapeRecord } from '../capture/recordAnnotation';
 import type { Vec3 } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
 import type {

@@ -458,6 +458,14 @@ async function resolveTendonSites(
     return { resolvedTendons, sitesByPart, spatialChildrenByTendon };
 }
 
+/** A mated child body's position in its parent: the parent-local connector
+ *  origin minus the child-local one (they coincide at rest). */
+function childBodyPos(frame: ResolvedMateFrame | undefined): Vec3 {
+    if (frame === undefined) return [0, 0, 0];
+    const o = frame.origin, c = frame.childOrigin;
+    return [o[0] - c[0], o[1] - c[1], o[2] - c[2]];
+}
+
 // Emit MJCF by recursive body-tree walk.
 function emitWorldbodyBlocks(
     roots: readonly AssemblyPartStored[],
@@ -497,17 +505,10 @@ function emitWorldbodyBlocks(
         const inertial = inertials.get(partName)!;
 
         // Body position: root uses part.at; non-root sits where its mate
-        // connector lands on the parent's (parent-local origin minus the
-        // child-local origin). Both in mm; convert to m.
-        let posMm: Vec3;
-        if (mateFromParent === undefined) {
-            posMm = partAttachPos(part);
-        } else {
-            const resolved = resolvedMateAxes.get(mateFromParent.name);
-            const o = resolved?.origin ?? [0, 0, 0];
-            const c = resolved?.childOrigin ?? [0, 0, 0];
-            posMm = [o[0] - c[0], o[1] - c[1], o[2] - c[2]];
-        }
+        // connector lands on the parent's. Both in mm; convert to m.
+        const posMm: Vec3 = mateFromParent === undefined
+            ? partAttachPos(part)
+            : childBodyPos(resolvedMateAxes.get(mateFromParent.name));
         const posM = posMm.map((v) => v * MM_TO_M);
         const bodyAttrs = `name="${escapeXml(partName)}" pos="${posM.map(fmtNum).join(' ')}"`;
 
