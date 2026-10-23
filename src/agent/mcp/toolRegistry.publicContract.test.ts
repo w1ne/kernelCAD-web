@@ -404,7 +404,7 @@ describe('toolRegistry public contract', () => {
       'apply_surface_blend',
       'blockout_assembly',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(58);
+    expect(TOOL_REGISTRY).toHaveLength(59);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
