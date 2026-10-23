@@ -60,6 +60,11 @@
 - Mark in host chats (ChatGPT apps, Claude / MCP Apps) is paint only. The embed's Mark is a pencil toggle in the viewer toolbar, with Undo and Clear icons once there are marks. There is no note box, Send button, panel, hint or dialog. With the pencil on, a drag that starts on the model paints a stroke that sticks to the surface (constant 24 px brush, one bright colour at 50 % opacity); a drag on the background, right or middle drag, and two fingers still orbit, pan and zoom; a second finger within 150 ms drops the partial stroke; a two-finger tap undoes. Turning the pencil on with touch asks the host for fullscreen so a drag paints instead of scrolling the chat. Each change is posted to the widget as `kernelcad.marks` (stroke paths on the model and on screen, touched faces with share and rough coverage, bounds, camera, viewport, annotated screenshot), and the widget puts it into the host model's context, so the user types the change in the host chat's own composer. Marks stay until Clear or a new revision. The legacy note panel and `kernelcad.edit-request` posting are gone from the embed.
 - FEA automatic mesh refinement is a single re-solve at 0.75x the element size (was up to 2 passes with a step-size formula, a wall-time budget and a peak-convergence trust rule). `KERNELCAD_FEA_REFINE_TIME_MS` and `trust.basis` are gone; `KERNELCAD_FEA_MAX_ELEMENTS` still caps the mesh.
 
+## Removed
+
+- `joint.articulatedDigit` (finger/digit builder), its example and docs. `joint.clevis` and `joint.supportedServoRevolute` stay.
+- The `gripperAperture` option of `review_cad`/`design_loop`, the `gripperAperture*` result and summary fields, the `gripper-aperture-moves` check and the `assembly.gripper-aperture.connector-missing` diagnostic. Use `trackConnectors` and read the tracked connector poses (`poseEnvelope.connectorPoses`) instead.
+
 ## Fixed
 
 - Fixture dimensions now come from the DIN tables instead of nominal values: T-slot nuts follow DIN 508 (a/e/h/k; neck = a min, base = e min) and collar nuts DIN 6331 (s/m/d1/a). The fixture example's channel and stud offsets and its evidence follow the real nut; strap clamps and step blocks have no DIN table and stay nominal kit dimensions.

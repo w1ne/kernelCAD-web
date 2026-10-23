@@ -36,7 +36,6 @@ const HEAVY: ReadonlyMap<string, string> = new Map([
   ['examples/robot-arm/so100/so100-arm.kcad.ts', '13 imported STL solids'],
   ['examples/robot-arm/so100/so100.kcad.ts', '13 imported STL solids'],
   ['examples/robot-hand/functional-clevis-robot-hand.kcad.ts', 'detailed articulated hand geometry'],
-  ['examples/robot-hand/generic-articulated-digit.kcad.ts', 'detailed articulated digit geometry'],
   ['examples/robot-hand/workflow-candidates-comparison.kcad.ts', '0.8 s local multi-candidate comparison board'],
   ['examples/rocket-engine-lines/engine-bare.kcad.ts', 'full engine assembly and tube clearance'],
   ['examples/rocket-engine-lines/engine-routed-twin.kcad.ts', 'full engine assembly and tube clearance'],
