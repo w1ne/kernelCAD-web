@@ -27,9 +27,6 @@ export interface MechanismSummary {
   readonly interferenceCount: number;
   readonly trackedConnectorCount: number;
   readonly maxTrackedTravelMm?: number;
-  readonly gripperApertureMinMm?: number;
-  readonly gripperApertureMaxMm?: number;
-  readonly gripperApertureTravelMm?: number;
   readonly mechanicalPlausibilityIssueCount?: number;
   readonly mechanicalIntentIssueCount?: number;
   readonly mechanicalTransmissionIssueCount?: number;
@@ -76,7 +73,6 @@ const PASSED_CHECKS = {
   poseEnvelopeSolved: 'pose-envelope-solved',
   poseEnvelopeNoInterference: 'pose-envelope-no-interference',
   trackedConnectorsMove: 'tracked-connectors-move',
-  gripperApertureMoves: 'gripper-aperture-moves',
   physicalUseCaseDeclared: 'physical-use-case-declared',
 } as const;
 
@@ -262,7 +258,6 @@ function buildMechanismSummary(
   interferenceCount: number,
   trackedConnectorCount: number,
   maxTrackedTravelMm: number | undefined,
-  poseEnvelope: PoseEnvelopeReviewResult | undefined,
   mechanicalPlausibilityIssueCount: number,
   mechanicalIntentIssueCount: number,
   mechanicalTransmissionIssueCount: number,
@@ -275,11 +270,6 @@ function buildMechanismSummary(
     interferenceCount,
     trackedConnectorCount,
     ...(maxTrackedTravelMm === undefined ? {} : { maxTrackedTravelMm }),
-    ...(poseEnvelope?.gripperAperture === undefined ? {} : {
-      gripperApertureMinMm: poseEnvelope.gripperAperture.minMm,
-      gripperApertureMaxMm: poseEnvelope.gripperAperture.maxMm,
-      gripperApertureTravelMm: poseEnvelope.gripperAperture.travelMm,
-    }),
     ...(mechanicalPlausibilityIssueCount === 0 ? {} : { mechanicalPlausibilityIssueCount }),
     ...(mechanicalIntentIssueCount === 0 ? {} : { mechanicalIntentIssueCount }),
     ...(mechanicalTransmissionIssueCount === 0 ? {} : { mechanicalTransmissionIssueCount }),
@@ -287,25 +277,6 @@ function buildMechanismSummary(
     ...(physicalUseCaseCount === 0 ? {} : { physicalUseCaseCount }),
     ...(physicalUseCaseIssueCount === 0 ? {} : { physicalUseCaseIssueCount }),
   };
-}
-
-function processGripperAperturePhase(
-  poseEnvelope: PoseEnvelopeReviewResult | undefined,
-  addBlockingReason: AddBlockingReasonFn,
-  passedChecks: string[],
-): void {
-  if (poseEnvelope?.gripperApertureRequest !== undefined && poseEnvelope.gripperAperture === undefined) {
-    addBlockingReason(
-      'assembly.mechanism.gripper-aperture-missing',
-      'Requested gripper aperture could not be computed.',
-      'Pass two numeric frame connector refs that are present across pose-envelope samples.',
-      poseEnvelope.gripperApertureRequest,
-    );
-  }
-
-  if (poseEnvelope?.gripperAperture !== undefined && poseEnvelope.gripperAperture.travelMm > 0) {
-    passedChecks.push(PASSED_CHECKS.gripperApertureMoves);
-  }
 }
 
 export function summarizeMechanismFitness(
@@ -356,8 +327,6 @@ export function summarizeMechanismFitness(
     passedChecks,
   );
 
-  processGripperAperturePhase(poseEnvelope, addBlockingReason, passedChecks);
-
   const sampleCount = poseEnvelope?.samples.length ?? 0;
   const interferenceCount = poseEnvelope?.interferencePairs.length ?? 0;
   const mechanicalPlausibilityIssueCount = mechanicalPlausibilityDiagnostics.length;
@@ -378,7 +347,6 @@ export function summarizeMechanismFitness(
       interferenceCount,
       trackedConnectorCount,
       maxTrackedTravelMm,
-      poseEnvelope,
       mechanicalPlausibilityIssueCount,
       mechanicalIntentIssueCount,
       mechanicalTransmissionIssueCount,
