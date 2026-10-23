@@ -84,6 +84,27 @@ describe('browser kernel worker core (real kernel)', () => {
     }
   });
 
+  it('sends viewer dimensions after a settled mesh, never for a drag tick or a superseded edit', async () => {
+    const core = createKernelWorkerCore(createKernelDeps(memory));
+    const settled = expectResult(await core.handle(job({ width: 50 })));
+    expect(settled.payload.dimensions).toBeUndefined();
+    const dims = core.pendingDimensions();
+    expect(dims).toMatchObject({ type: 'dimensions', jobId: settled.jobId });
+    expect(Array.isArray(dims?.dimensions)).toBe(true);
+    // Repeating the document answers with them straight from the cache.
+    expect(expectResult(await core.handle(job({ width: 50 }))).payload.dimensions).toEqual(dims?.dimensions);
+
+    await core.handle(job({ width: 52 }, { quality: 'coarse' }));
+    expect(core.pendingDimensions()).toBeNull();
+
+    const first = core.handle(job({ width: 54 }));
+    const second = core.handle(job({ width: 56 }));
+    await first;
+    expect(core.pendingDimensions()).toBeNull();
+    await second;
+    expect(core.pendingDimensions()).not.toBeNull();
+  });
+
   it('answers a repeated document from the content-keyed cache', async () => {
     const core = createKernelWorkerCore(createKernelDeps(memory));
     const a = expectResult(await core.handle(job({ elbowDeg: 10 })));

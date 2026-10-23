@@ -125,12 +125,34 @@ function trackedRebuild(
   );
 }
 
+/** The settled result whose dimensions are still on their way. */
+let awaitingDimensions: { jobId: number; revision: number; deps: ExecutionApplyDeps; shows: unknown; bounds: RebuildJobResult['payload']['bounds'] } | null = null;
+let dimensionsSubscribed = false;
+
+/** Dimensions follow a settled mesh; they apply only while that same edit
+ *  is still what the viewer shows. */
+function awaitDimensions(deps: ExecutionApplyDeps, result: RebuildJobResult, revision: number): void {
+  if (result.quality !== 'display' || result.payload.dimensions) return;
+  awaitingDimensions = { jobId: result.jobId, revision, deps, shows: deps.geometriesRef?.current, bounds: result.payload.bounds };
+  if (dimensionsSubscribed) return;
+  dimensionsSubscribed = true;
+  browserKernel.onDimensions((message) => {
+    const waiting = awaitingDimensions;
+    if (!waiting || waiting.jobId !== message.jobId) return;
+    awaitingDimensions = null;
+    const { deps } = waiting;
+    if (deps.mainRevisionRef.current !== waiting.revision || deps.geometriesRef?.current !== waiting.shows) return;
+    deps.setMeshDimensions({ dimensions: message.dimensions, bounds: waiting.bounds });
+  });
+}
+
 /** Paint a worker result and remember what the view now shows. */
 function applyResult(run: BrowserParamEditRun, result: RebuildJobResult, revision: number): void {
-  markParamEdit('response', { generation: revision, kernel: 'browser', detail: { ...result.timings, quality: result.quality } });
+  markParamEdit('response', { generation: revision, kernel: 'browser', detail: { ...result.timings, quality: result.quality, memoryBytes: result.memoryBytes } });
   run.apply(result.payload as BackendMeshPayload, revision, result.payload.dimensions === undefined);
   const now = run.deps.geometriesRef?.current;
   if (now) shownFingerprints.set(now, result.fingerprints);
+  awaitDimensions(run.deps, result, revision);
   markParamEdit('applied', { generation: revision, kernel: 'browser', detail: appliedDetail(result.payload) });
 }
 
@@ -203,6 +225,9 @@ export async function buildWithBrowserKernel(
     },
   );
   if ('fallback' in outcome) return false;
-  if (revision === deps.mainRevisionRef.current) apply(outcome.result.payload as BackendMeshPayload);
+  if (revision === deps.mainRevisionRef.current) {
+    apply(outcome.result.payload as BackendMeshPayload);
+    awaitDimensions(deps, outcome.result, revision);
+  }
   return true;
 }

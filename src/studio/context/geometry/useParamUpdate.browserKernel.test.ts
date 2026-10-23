@@ -17,6 +17,7 @@ const kernel = vi.hoisted(() => ({
   isWarm: vi.fn(() => true),
   warm: vi.fn(async () => undefined),
   rebuild: vi.fn(),
+  onDimensions: vi.fn(() => () => undefined),
 }));
 
 vi.mock('../../scriptSource', () => ({

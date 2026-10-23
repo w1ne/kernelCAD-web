@@ -33,6 +33,7 @@ import type {
   KernelMeshPayload,
   MeshQuality,
   ParamValues,
+  RebuildJobDimensions,
   RebuildJobError,
   RebuildJobRequest,
   RebuildJobResult,
@@ -207,6 +208,9 @@ function respond(
 
 export interface KernelWorkerCore {
   handle(request: RebuildJobRequest): Promise<RebuildJobResult | RebuildJobError>;
+  /** Dimensions of the last settled result, once no job is waiting; null
+   *  when there is nothing to send (or a newer job made it moot). */
+  pendingDimensions(): RebuildJobDimensions | null;
   /** Drop the warm model and the cache (after a fatal error). */
   reset(): void;
 }
@@ -218,6 +222,8 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
   const cache = new RebuildCache<CachedRebuild>(cacheOptions, sizeOfRebuild);
   let warm: WarmModel<M> | null = null;
   let chain: Promise<unknown> = Promise.resolve();
+  let queued = 0;
+  let awaitingDimensions: { request: RebuildJobRequest; model: M; meshing: R; entry: CachedRebuild } | null = null;
 
   const reset = (): void => {
     warm = null;
@@ -257,6 +263,7 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
       quality: request.quality,
       kernelVersion: deps.kernelVersion,
     });
+    awaitingDimensions = null;
     const hit = cache.get(key);
     if (hit) {
       return respond(deps, request, hit, { buildMs: 0, meshMs: 0, serializeMs: 0, totalMs: deps.now() - started, path: 'cache' });
@@ -273,7 +280,6 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
       const meshed = deps.now();
       const fingerprints: Record<string, string> = {};
       for (const feature of meshing.features) fingerprints[feature.featureId] = featureMeshFingerprint(feature);
-      const dimensions = request.quality === 'display' ? deps.dimensions(model, meshing) : undefined;
       const entry: CachedRebuild = {
         features: meshing.features,
         fingerprints,
@@ -281,9 +287,9 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
         featureRecords: JSON.parse(JSON.stringify(model.records)) as FeatureRecord[],
         bounds: meshing.bounds,
         params: model.session.paramTable.serialize(),
-        ...(dimensions ? { dimensions } : {}),
       };
       cache.set(key, entry);
+      if (request.quality === 'display') awaitingDimensions = { request, model, meshing, entry };
       return respond(deps, request, entry, {
         buildMs: built - started,
         meshMs: meshed - built,
@@ -307,12 +313,26 @@ export function createKernelWorkerCore<M extends CoreModel, R extends CoreMeshin
     }
   }
 
+  function pendingDimensions(): RebuildJobDimensions | null {
+    const waiting = awaitingDimensions;
+    awaitingDimensions = null;
+    if (!waiting || queued > 0) return null;
+    const dimensions = deps.dimensions(waiting.model, waiting.meshing);
+    if (!dimensions) return null;
+    // A later cache hit answers with them directly.
+    waiting.entry.dimensions = dimensions;
+    const { jobId, scope, generation } = waiting.request;
+    return { type: 'dimensions', jobId, scope, generation, dimensions };
+  }
+
   return {
     handle(request) {
-      const next = chain.then(() => run(request));
+      queued += 1;
+      const next = chain.then(() => run(request)).finally(() => { queued -= 1; });
       chain = next.catch(() => undefined);
       return next;
     },
+    pendingDimensions,
     reset,
   };
 }

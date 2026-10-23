@@ -164,6 +164,18 @@ test('param edit click-to-frame', async ({ page }) => {
   await page.waitForFunction(() => (globalThis as unknown as { __kernelcadParamPerf: { events: PerfEvent[] } })
     .__kernelcadParamPerf.events.some((e) => e.stage === 'frame'), null, { timeout: TICK_TIMEOUT_MS });
   const firstPaintMs = Date.now() - opened;
+  // Cold start of the browser kernel (absent on the server path).
+  const coldStart = await page.evaluate(() => {
+    const ev = (globalThis as unknown as { __kernelcadParamPerf: { events: PerfEvent[] } }).__kernelcadParamPerf.events;
+    const wasm = performance.getEntriesByType('resource')
+      .find((e) => e.name.includes('replicad_single')) as PerformanceResourceTiming | undefined;
+    return {
+      kernelReady: ev.find((e) => e.stage === 'kernel-ready')?.detail ?? null,
+      firstBuild: ev.find((e) => e.stage === 'first-build')?.detail ?? null,
+      wasmFetchMs: wasm ? Math.round(wasm.duration) : null,
+      wasmBytes: wasm ? wasm.encodedBodySize : null,
+    };
+  });
 
   const samples: Sample[] = [];
   let previous: Bounds | undefined;
@@ -186,7 +198,7 @@ test('param edit click-to-frame', async ({ page }) => {
     'appliedToInstalledMs', 'installedToFrameMs', 'inputToFrameMs',
   ];
   const summary = Object.fromEntries(stages.map((stage) => [stage, summarize(samples.map((s) => s[stage] as number))]));
-  report({ model: MODEL, kernel: KERNEL, firstPaintMs, warmup: WARMUP, summary, samples, userAgent: await page.evaluate(() => navigator.userAgent) }, samples);
+  report({ model: MODEL, kernel: KERNEL, firstPaintMs, coldStart, warmup: WARMUP, summary, samples, userAgent: await page.evaluate(() => navigator.userAgent) }, samples);
   await test.info().attach('param-edit-frame.json', { path: OUT, contentType: 'application/json' });
 });
 

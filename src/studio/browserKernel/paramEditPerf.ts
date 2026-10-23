@@ -8,7 +8,8 @@
 // the page defines `globalThis.__kernelcadParamPerf` (the benchmark does, in
 // an init script), so a normal session records nothing.
 
-export type ParamEditStage = 'edit' | 'request' | 'response' | 'applied' | 'installed' | 'frame';
+/** `kernel-ready` / `first-build`: the browser kernel's cold start. */
+export type ParamEditStage = 'edit' | 'request' | 'response' | 'applied' | 'installed' | 'frame' | 'kernel-ready' | 'first-build';
 
 export interface ParamEditPerfEvent {
   stage: ParamEditStage;

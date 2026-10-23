@@ -16,6 +16,7 @@
 //
 // Job logic lives in workerCore.ts (unit-tested); this file only wires it.
 
+import { getOC } from 'replicad';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { createKernelDeps } from './kernelDeps';
 import { installWasmMemoryCap } from './memoryCap';
@@ -60,11 +61,22 @@ async function start(init: KernelInitMessage, port: MessagePort): Promise<void> 
   const memory = installWasmMemoryCap(init.memoryCapBytes);
   await initOcct({ wasmBinary: init.wasm });
   const locked = lockDownWorkerGlobals(self);
-  const core = createKernelWorkerCore(createKernelDeps(memory));
+  // The heap the module started with counts too, not only what it grew to.
+  const heapBytes = (): number => (getOC() as { HEAPU8?: Uint8Array }).HEAPU8?.byteLength ?? 0;
+  const core = createKernelWorkerCore(createKernelDeps({
+    bytes: () => Math.max(memory.bytes(), heapBytes()),
+    capHit: memory.capHit,
+  }));
   port.onmessage = (event: MessageEvent<unknown>) => {
     if (!isPageToWorker(event.data)) return;
     void core.handle(event.data).then((reply) => {
       send(reply, transferList(reply));
+      if (reply.type !== 'result' || reply.quality !== 'display') return;
+      // After the mesh, and only if no newer edit arrived in the meantime.
+      setTimeout(() => {
+        const dimensions = core.pendingDimensions();
+        if (dimensions) send(dimensions, []);
+      }, 0);
     });
   };
   const ready: WorkerToPage = {

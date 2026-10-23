@@ -125,7 +125,18 @@ export interface RebuildJobError {
   firstBuild: boolean;
 }
 
-export type WorkerToPage = KernelReadyMessage | RebuildJobResult | RebuildJobError;
+/** Viewer dimensions of a settled result, sent after it: they take far
+ *  longer than the mesh (feature recognition per part), so the mesh is not
+ *  held back for them. Skipped when a newer edit is already waiting. */
+export interface RebuildJobDimensions {
+  type: 'dimensions';
+  jobId: number;
+  scope: string;
+  generation: number;
+  dimensions: ViewerDimension[];
+}
+
+export type WorkerToPage = KernelReadyMessage | RebuildJobResult | RebuildJobError | RebuildJobDimensions;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -157,6 +168,7 @@ export function isWorkerToPage(value: unknown): value is WorkerToPage {
     return isPayload(value.payload) && isRecord(value.fingerprints) && isRecord(value.timings)
       && (value.quality === 'display' || value.quality === 'coarse');
   }
+  if (value.type === 'dimensions') return Array.isArray(value.dimensions);
   if (value.type === 'error') {
     return typeof value.code === 'string' && ERROR_CODES.has(value.code)
       && typeof value.message === 'string' && typeof value.fatal === 'boolean';

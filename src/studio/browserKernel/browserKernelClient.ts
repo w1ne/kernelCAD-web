@@ -21,9 +21,11 @@
 
 import type { KernelWorkerHandle, SpawnKernelWorker, SpawnOptions } from './kernelWorkerHost';
 import { hashText } from './meshFingerprint';
+import { markParamEdit } from './paramEditPerf';
 import type {
   MeshQuality,
   ParamValues,
+  RebuildJobDimensions,
   RebuildJobError,
   RebuildJobRequest,
   RebuildJobResult,
@@ -120,6 +122,7 @@ export class BrowserKernelClient {
   private readonly serverOnly = new Set<string>();
   private readonly warmSources = new Set<string>();
   private readonly warming = new Map<string, Promise<void>>();
+  private readonly dimensionListeners = new Set<(message: RebuildJobDimensions) => void>();
 
   constructor(options: BrowserKernelClientOptions) {
     this.options = options;
@@ -204,6 +207,12 @@ export class BrowserKernelClient {
     });
   }
 
+  /** Dimensions that follow a settled result (see protocol.ts). */
+  onDimensions(listener: (message: RebuildJobDimensions) => void): () => void {
+    this.dimensionListeners.add(listener);
+    return () => { this.dimensionListeners.delete(listener); };
+  }
+
   /** Stop everything (page teardown, tests). */
   dispose(): void {
     this.rejectPending(new BrowserKernelSupersededError());
@@ -271,6 +280,7 @@ export class BrowserKernelClient {
     }
     if (!this.starting) {
       this.workerScope = scope;
+      const spawnStarted = performance.now();
       this.starting = this.options.spawn(
         {
           onMessage: (message) => { this.onMessage(message); },
@@ -283,6 +293,7 @@ export class BrowserKernelClient {
           throw new Error('The document changed while the browser kernel started.');
         }
         this.worker = handle;
+        markParamEdit('kernel-ready', { kernel: 'browser', detail: { initMs: handle.ready.initMs, spawnMs: performance.now() - spawnStarted } });
         return handle;
       }).finally(() => {
         this.starting = null;
@@ -317,13 +328,18 @@ export class BrowserKernelClient {
     void this.start(job);
   }
 
-  private onMessage(message: RebuildJobResult | RebuildJobError): void {
+  private onMessage(message: RebuildJobResult | RebuildJobError | RebuildJobDimensions): void {
+    if (message.type === 'dimensions') {
+      for (const listener of [...this.dimensionListeners]) listener(message);
+      return;
+    }
     const job = this.running;
     if (!job || message.jobId !== job.request.jobId) return; // stale or foreign: dropped
     this.finish(job);
     if (message.type === 'result') {
       this.infraFailures = 0;
       this.warmSources.add(sourceKey(job.request.source));
+      if (job.background) markParamEdit('first-build', { kernel: 'browser', detail: { ...message.timings, memoryBytes: message.memoryBytes } });
       job.resolve(message);
     } else {
       job.reject(this.errorOf(job, message));
