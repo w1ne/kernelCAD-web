@@ -53,9 +53,8 @@ describe('function-first bar grasp skeleton example', () => {
       file: EXAMPLE_PATH,
       includeInterference: false,
       requirePhysicalUseCase: true,
-      includePhysicalUseCaseReachability: true,
-      includePhysicalUseCaseStatics: true,
-      physicalUseCaseReachabilitySamplesPerMate: 3,
+      physicalUseCaseLevel: 'statics',
+      physicalUseCaseSamplesPerMate: 3,
       trackConnectors: ['thumb-finger.tip', 'index-finger.tip', 'middle-finger.tip'],
       gripperAperture: { left: 'thumb-finger.tip', right: 'index-finger.tip' },
     });
@@ -80,9 +79,8 @@ describe('function-first bar grasp skeleton example', () => {
       file: EXAMPLE_PATH,
       includeInterference: false,
       requirePhysicalUseCase: true,
-      includePhysicalUseCaseJointReactions: true,
-      includePhysicalUseCaseJointStructure: true,
-      physicalUseCaseReachabilitySamplesPerMate: 3,
+      physicalUseCaseLevel: 'reactions',
+      physicalUseCaseSamplesPerMate: 3,
     });
 
     expect(result.ok).toBe(false);

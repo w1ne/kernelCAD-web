@@ -5147,7 +5147,7 @@
         "kind": {
           "type": "string",
           "enum": [
-            "direct-horn",
+            "direct",
             "link-rod",
             "four-bar",
             "gear-pair",
@@ -5634,23 +5634,16 @@
           "type": "boolean",
           "description": "When true, articulated assemblies must declare arm.physicalUseCase(...) evidence: loads, contacts, stable parts, and actuator limits."
         },
-        "includePhysicalUseCaseReachability": {
-          "type": "boolean",
-          "description": "Run targeted physical-use-case reachability sampling over scalar-limited mates named in actuatorLimits. Reject contacts that cannot get within criteria.maxSlipMm and multi-contact use cases that cannot satisfy every contact in the same sampled actuator pose. Samples revolute/cylindrical/pin-slot limitsDeg and prismatic limitsMm. Defaults to requirePhysicalUseCase."
+        "physicalUseCaseLevel": {
+          "type": "string",
+          "enum": [
+            "reachability",
+            "statics",
+            "reactions"
+          ],
+          "description": "Escalating physical-use-case depth; each level includes the previous. 'reachability': targeted sampling over scalar-limited mates named in actuatorLimits, rejecting contacts that cannot get within criteria.maxSlipMm and multi-contact use cases that cannot satisfy every contact in the same sampled actuator pose (revolute/cylindrical/pin-slot limitsDeg, prismatic limitsMm). 'statics': adds pose-bound quasi-static certification at the exact common-contact samples (conservative friction/capacity, world force and moment balance, finite-difference revolute actuator torque); returns physicalUseCaseStaticCertificates on success. 'reactions': adds exact-pose reaction wrenches through uniquely rooted articulated trees, compared against each loaded mate's declared resultant force/moment envelope, and runs the clevis double-shear / pin-bending / bearing / tear-out / net-section check (minimum factor of safety 2) automatically for mates built with joint.clevis. Defaults to 'reachability' when requirePhysicalUseCase is true."
         },
-        "includePhysicalUseCaseStatics": {
-          "type": "boolean",
-          "description": "Run opt-in pose-bound quasi-static certification at the exact common-contact samples: conservative friction/capacity, world force and moment balance, and finite-difference revolute actuator torque. Returns physicalUseCaseStaticCertificates on success; sampled linearized failures remain blocking diagnostics."
-        },
-        "includePhysicalUseCaseJointReactions": {
-          "type": "boolean",
-          "description": "Derive exact-pose reaction wrenches through uniquely rooted articulated trees and compare every loaded mate against a complete declared resultant force/moment envelope. Implies physical-use-case reachability and statics."
-        },
-        "includePhysicalUseCaseJointStructure": {
-          "type": "boolean",
-          "description": "Run geometry/material clevis double-shear, pin-bending, bearing, tear-out, and net-section checks with minimum factor of safety 2. Unsupported axial or perpendicular-moment load cases remain blockers. Implies joint reactions, statics, and reachability."
-        },
-        "physicalUseCaseReachabilitySamplesPerMate": {
+        "physicalUseCaseSamplesPerMate": {
           "type": "integer",
           "minimum": 1,
           "description": "Samples per scalar-limited actuator mate for physical-use-case contact reachability. Samples revolute/cylindrical/pin-slot limitsDeg and prismatic limitsMm. Default 3; total targeted combinations are capped."

@@ -34,10 +34,10 @@ const TONGUE_Y = 10;
 const PIN_R = 3.5;
 const PIN_LEN = FORK_GAP_Y + 2 * FORK_PLATE_T + 8; // 28
 
-export function buildPreFixLuxoShoulder(): { arm: Assembly; session: CaptureSession } {
+export function buildThinForkShoulder(): { arm: Assembly; session: CaptureSession } {
   const session = new CaptureSession();
   const kcad = createModelingApi({ session });
-  const arm = kcad.assembly('luxo-pre');
+  const arm = kcad.assembly('thin-fork');
 
   // Parent: clevis fork (two plates straddling Y=0) + pin (cylinder along Y).
   // The fork's pin-hole is implied by the fact that the tongue sits between
@@ -74,7 +74,7 @@ export function buildPreFixLuxoShoulder(): { arm: Assembly; session: CaptureSess
       origin: { kind: 'vec3', value: [0, 0, 0] },
       axis: [0, 1, 0],
     });
-  arm.mate('shoulder', `${parent.name}.hinge`, `${child.name}.hinge`, 'revolute');
+  arm.mate('shoulder', `${parent.name}.hinge`, `${child.name}.hinge`, 'revolute', { exposure: 'exposed' });
 
   return { arm, session };
 }

@@ -83,12 +83,11 @@ const screw   = await lib.part({ family: 'socket-head-cap-screw', thread: 'M5', 
 const stack   = await lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
 const fitted  = await lib.insert(plate, { diameterMm: 5.5, family: 'socket-head-cap-screw', mode: 'bolt' });
 
-// 4. Machining-fixture hardware.
-const set     = await lib.fixture.clampSet({ thread: 'M10', workpieceHeightMm: 36 });
-const tNut    = await lib.fixture.tSlotNut({ thread: 'M10' });
-const stud    = await lib.fixture.clampStud({ thread: 'M10', lengthMm: 80 });
-const clamp   = await lib.fixture.strapClamp({ thread: 'M10' });
-const block   = await lib.fixture.stepBlock({ thread: 'M10' });
+// 4. Machining-fixture hardware (same lib.part path, fixture families).
+const tNut    = await lib.part({ family: 't-slot-nut', thread: 'M10' });
+const stud    = await lib.part({ family: 'clamping-stud', thread: 'M10', lengthMm: 80 });
+const clamp   = await lib.part({ family: 'strap-clamp', thread: 'M10' });
+const block   = await lib.part({ family: 'step-block', thread: 'M10' });
 ```
 
 `lib.fetchPart('iso-4762-m3x12')` and
@@ -152,37 +151,32 @@ Two bores need a second look:
   reported as `existingSeatMm`; `seat: 'auto'` then leaves the hole alone
   instead of cutting a second seat into it.
 
-## Machining-fixture hardware — lib.fixture
+## Machining-fixture hardware — lib.part
 
-`lib.fixture.*` is the clamping kit for a T-slot machine table, keyed by the
-thread the hardware uses (M8 / M10 / M12). T-slot nuts follow the DIN 508
-table and collar nuts DIN 6331; strap clamps and step blocks have no DIN table
-and stay nominal kit dimensions. Check the supplier drawing before ordering.
+The clamping kit for a T-slot machine table is reached through
+`lib.part({ family, thread, lengthMm? })`, keyed by the thread the hardware
+uses (M8 / M10 / M12). T-slot nuts follow the DIN 508 table and collar nuts
+DIN 6331; strap clamps and step blocks have no DIN table and stay nominal kit
+dimensions. Check the supplier drawing before ordering. Place the members
+yourself with `translate` and the connectors below.
 
-- `tSlotNut({ thread })` — T-slot nut (DIN 508): slot 10 / 12 / 14 mm for
+- `t-slot-nut` — T-slot nut (DIN 508): slot 10 / 12 / 14 mm for
   M8 / M10 / M12; heights 12 / 14 / 16 mm, head height 6 / 7 / 8 mm. Bore
   axis +Z, top face flush at z = 0, base below.
   Connectors: `mating-face` (wing tops), `top-face`, `thread-bore`.
-- `clampStud({ thread, lengthMm })` — clamping stud (DIN 6379 form); stocked
+- `clamping-stud` (needs `lengthMm`) — clamping stud (DIN 6379 form); stocked
   lengths 63 / 100 (M8), 80 / 125 (M10), 100 / 160 (M12). Connectors:
   `table-end`, `clamp-end`, `axis`.
-- `flangeNut({ thread })` — collar (flange) nut (DIN 6331 form) for the
-  clamp top: across flats 13 / 16 / 18 mm, height 12 / 15 / 18 mm, collar
+- `flange-nut` — collar (flange) nut (DIN 6331 form) for the clamp top:
+  across flats 13 / 16 / 18 mm, height 12 / 15 / 18 mm, collar
   18 / 22 / 25 mm.
   Connectors: `mating-face`, `top-face`, `inner-bore`.
-- `strapClamp({ thread })` — strap clamp; the slot center is the origin and
-  the nose points toward -X, so `slot-axis` is where the stud goes.
+- `strap-clamp` — strap clamp; the slot center is the origin and the nose
+  points toward -X, so `slot-axis` is where the stud goes.
   Connectors: `nose-bearing`, `tail-bearing`, `slot-axis`, `top-face`.
-- `stepBlock({ thread })` — step block; treads rise along +X at 10 / 20 / 30 /
-  40 (M8), 12 / 24 / 36 / 48 (M10), 15 / 30 / 45 / 60 (M12). Connectors:
+- `step-block` — step block; treads rise along +X at 10 / 20 / 30 / 40 (M8),
+  12 / 24 / 36 / 48 (M10), 15 / 30 / 45 / 60 (M12). Connectors:
   `base-face`, `step-1` … `step-4` on the treads.
-- `clampSet({ thread, workpieceHeightMm })` — one call for a complete set:
-  T-slot nut, clamping stud, strap clamp, step block and flange nut, placed in
-  one frame (stud axis at the origin, table surface at z = 0, workpiece toward
-  -X, block at +X, clamp level with the workpiece). The workpiece height must
-  equal a stocked tread of that thread's block; the stud is the shortest
-  stocked length that clears clamp + nut. Returns `{ studLengthMm, treadMm,
-  clampTopMm, members }`; mirror the set for the other side of the workpiece.
 
 ## Pre-shipped connector convention
 
@@ -292,7 +286,7 @@ Bundled tier coverage (671 records on the seed catalog):
 - Machining-fixture hardware M8 / M10 / M12: T-slot nuts (slot 10 / 12 /
   14 mm), clamping studs (63–160 mm), flange nuts, strap clamps (100 / 125 /
   160 mm) and step blocks (40 / 48 / 60 mm of treads), envelope solids with
-  placement connectors (`lib.fixture.*`).
+  placement connectors (`lib.part` fixture families).
 
 Bundled parts ship under kernelCAD's MIT license — see `record.license`.
 

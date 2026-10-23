@@ -37,6 +37,7 @@ describe('joint.clevis — G1 design locks', () => {
     const lowerBody = kc.box(200, 20, 20, true).translate(100, 0, 0);
 
     const j = kc.joint.clevis({
+      style: { knuckleR: 12 },
       parentBody: baseBody,
       childBody: lowerBody,
       axis: 'Y',
@@ -79,6 +80,7 @@ describe('joint.clevis — G1 design locks', () => {
     const childBody = kc.box(50, 20, 20, true).translate(25, 0, 0);
 
     const j = kc.joint.clevis({
+      style: { knuckleR: 12 },
       parentBody: baseBody,
       childBody: childBody,
       axis: 'Y',
@@ -113,7 +115,7 @@ describe('joint.clevis — G1 design locks', () => {
   });
 
   it('3. pivot-lift math is monotonic in |limitsDeg| (limits expanding ⇒ lift grows)', () => {
-    const style = withDefaults({});
+    const style = withDefaults({ knuckleR: 12 });
     const liftNarrow = computePivotLift(style, [-10, 10]);
     const liftMedium = computePivotLift(style, [-45, 45]);
     const liftWide = computePivotLift(style, [-90, 90]);
@@ -175,6 +177,7 @@ describe('joint.clevis — G1 design locks', () => {
     const childBody = kc.box(60, 18, 18, true).translate(30, 0, 0);
 
     const j = kc.joint.clevis({
+      style: { knuckleR: 12 },
       parentBody: baseBody,
       childBody,
       axis: 'Y',
@@ -220,7 +223,7 @@ describe('joint.clevis — G1 design locks', () => {
     // The defaults should produce internally consistent (i.e., buildable)
     // geometry at both ends of the typical scale range. We assert the
     // invariants the constructor checks at withDefaults() time.
-    for (const knuckleR of [3, 8, 12, 18, 25]) {
+    for (const knuckleR of [3, 8, 12, 18, 25, 40]) {
       const style = withDefaults({ knuckleR });
       expect(style.knuckleR).toBe(knuckleR);
       // tongueY < forkGapY (tongue slips in)
@@ -240,11 +243,10 @@ describe('joint.clevis — G1 design locks', () => {
       // least one shaft radius beyond the fork outer face.
       expect(style.pinCapThickness - 0.5).toBeGreaterThanOrEqual(style.pinR);
     }
-    // Out-of-range knuckleR is clamped, not rejected.
-    const tooSmall = withDefaults({ knuckleR: 0.1 });
-    expect(tooSmall.knuckleR).toBe(3);
-    const tooLarge = withDefaults({ knuckleR: 999 });
-    expect(tooLarge.knuckleR).toBe(25);
+    // knuckleR is the scale input and is required; it is never defaulted or clamped.
+    expect(() => withDefaults({} as never)).toThrow(/style\.knuckleR/);
+    expect(() => withDefaults(undefined)).toThrow(/style\.knuckleR/);
+    expect(withDefaults({ knuckleR: 40 }).knuckleR).toBe(40);
 
     // Smoke test at the small end: build a real clevis with small style.
     const sessionA = new CaptureSession();
@@ -358,6 +360,7 @@ describe('joint.clevis — G1 design locks', () => {
     const session = new CaptureSession();
     const kc = createModelingApi({ session });
     const result = kc.joint.clevis({
+      style: { knuckleR: 12 },
       parentBody: kc.box(40, 40, 20, true),
       childBody: kc.box(50, 20, 20, true),
       axis: 'Y',
@@ -379,6 +382,7 @@ describe('joint.clevis — G1 design locks', () => {
     const session = new CaptureSession();
     const kc = createModelingApi({ session });
     expect(() => kc.joint.clevis({
+      style: { knuckleR: 12 },
       parentBody: kc.box(40, 40, 20, true),
       childBody: kc.box(50, 20, 20, true),
       axis: 'Y',
@@ -395,6 +399,7 @@ describe('joint.clevis — G1 design locks', () => {
     const session = new CaptureSession();
     const kc = createModelingApi({ session });
     expect(() => kc.joint.clevis({
+      style: { knuckleR: 12 },
       parentBody: kc.box(40, 40, 20, true),
       childBody: kc.box(50, 20, 20, true),
       axis: 'Y',
@@ -412,6 +417,7 @@ describe('joint.clevis — G1 design locks', () => {
     const kc = createModelingApi({ session });
     expect(() =>
       kc.joint.clevis({
+        style: { knuckleR: 12 },
         parentBody: kc.box(10, 10, 10, true),
         childBody: kc.box(10, 10, 10, true),
         axis: [0, 0, 0],
@@ -425,6 +431,7 @@ describe('joint.clevis — G1 design locks', () => {
     const kc = createModelingApi({ session });
     expect(() =>
       kc.joint.clevis({
+        style: { knuckleR: 12 },
         parentBody: kc.box(10, 10, 10, true),
         childBody: kc.box(10, 10, 10, true),
         axis: 'Y',
@@ -434,11 +441,11 @@ describe('joint.clevis — G1 design locks', () => {
   });
 
   it('rejects style with tongueY >= forkGapY (tongue would not slip in)', () => {
-    expect(() => withDefaults({ tongueY: 10, forkGapY: 8 })).toThrow(/tongueY/);
+    expect(() => withDefaults({ knuckleR: 12, tongueY: 10, forkGapY: 8 })).toThrow(/tongueY/);
   });
 
   it('rejects style with forkGapY too small for a positive tongue clearance pocket', () => {
-    expect(() => withDefaults({ tongueY: 0.05, forkGapY: 0.1 })).toThrow(/forkGapY/);
+    expect(() => withDefaults({ knuckleR: 12, tongueY: 0.05, forkGapY: 0.1 })).toThrow(/forkGapY/);
   });
 
   it('rejects style with pinR + clearance >= knuckleR (drill would consume the knuckle)', () => {
@@ -474,8 +481,9 @@ describe('joint.clevis — G1 design locks', () => {
       childBody: kc.box(60, 18, 18, true),
       axis: 'Y',
       pivotParent: [0, 0, 15],
+      style: { knuckleR: 12 },
     });
-    // Default limits ±90° → lift = knuckleR + 1 = 13 mm (at default knuckleR=12).
+    // Default limits ±90° → lift = knuckleR + 1 = 13 mm (knuckleR=12).
     const style = j.style;
     expect(j.parentConnector.origin[2]).toBeCloseTo(15 + style.knuckleR + 1, 6);
   });

@@ -183,7 +183,7 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
           source: { type: 'string', description: "relation:'coupling' — source mate name." },
           ratio: { type: 'number', description: "relation:'coupling' — driven pose = source pose * ratio + offset." },
           offset: { type: 'number', description: "relation:'coupling' — optional pose offset." },
-          kind: { type: 'string', enum: ['direct-horn', 'link-rod', 'four-bar', 'gear-pair', 'belt', 'tendon'], description: "relation:'transmission' — transmission kind." },
+          kind: { type: 'string', enum: ['direct', 'link-rod', 'four-bar', 'gear-pair', 'belt', 'tendon'], description: "relation:'transmission' — transmission kind." },
           sourceMate: { type: 'string', description: "relation:'transmission' — source mate name." },
           drivenMates: { type: 'array', items: { type: 'string' }, description: "relation:'transmission' — driven mate names." },
           actuator: { type: 'string', description: "relation:'transmission' — optional actuator." },

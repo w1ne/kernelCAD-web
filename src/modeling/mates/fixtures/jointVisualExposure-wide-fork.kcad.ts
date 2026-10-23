@@ -28,10 +28,10 @@ const TONGUE_Y = 6;
 const PIN_R = 3.5;
 const PIN_LEN = FORK_GAP_Y + 2 * FORK_PLATE_T + 14; // 38
 
-export function buildPostFixLuxoShoulder(): { arm: Assembly; session: CaptureSession } {
+export function buildWideForkShoulder(): { arm: Assembly; session: CaptureSession } {
   const session = new CaptureSession();
   const kcad = createModelingApi({ session });
-  const arm = kcad.assembly('luxo-post');
+  const arm = kcad.assembly('wide-fork');
 
   const plateOffsetY = FORK_GAP_Y / 2 + FORK_PLATE_T / 2;
   const platePos = kcad.box(FORK_PLATE_X, FORK_PLATE_T, FORK_PLATE_Z, true)
@@ -60,7 +60,7 @@ export function buildPostFixLuxoShoulder(): { arm: Assembly; session: CaptureSes
       origin: { kind: 'vec3', value: [0, 0, 0] },
       axis: [0, 1, 0],
     });
-  arm.mate('shoulder', `${parent.name}.hinge`, `${child.name}.hinge`, 'revolute');
+  arm.mate('shoulder', `${parent.name}.hinge`, `${child.name}.hinge`, 'revolute', { exposure: 'exposed' });
 
   return { arm, session };
 }

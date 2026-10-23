@@ -325,10 +325,7 @@ function buildReviewInput(
     combinatorial: input.combinatorial,
     ...(requirePhysicalAcceptance
       ? {
-          includePhysicalUseCaseReachability: true,
-          includePhysicalUseCaseStatics: true,
-          includePhysicalUseCaseJointReactions: true,
-          includePhysicalUseCaseJointStructure: true,
+          physicalUseCaseLevel: 'reactions' as const,
           requirePhysicalUseCase: true,
         }
       : {}),
