@@ -46,11 +46,8 @@ function angleDeg(a: Vec3, b: Vec3, signed: boolean): number {
   return (Math.acos(c) * 180) / Math.PI;
 }
 
-export function compareFingerprints(
-  before: BindingFingerprint,
-  after: BindingFingerprint,
-  partDiagonal: number,
-): BindingComparison {
+/** Identity triggers: any difference here means a different entity. */
+function identityReasons(before: BindingFingerprint, after: BindingFingerprint): string[] {
   const reasons: string[] = [];
   if (before.entityKind !== after.entityKind) reasons.push(`entity kind ${before.entityKind} -> ${after.entityKind}`);
   if (before.geomType !== after.geomType) reasons.push(`type ${before.geomType} -> ${after.geomType}`);
@@ -58,13 +55,16 @@ export function compareFingerprints(
     reasons.push(`producing feature ${before.producer ?? 'unknown'} -> ${after.producer ?? 'unknown'}`);
   }
   if (before.role !== after.role) reasons.push(`name ${before.role ?? 'unnamed'} -> ${after.role ?? 'unnamed'}`);
+  return reasons;
+}
 
+/** Size and position deltas above the "moved" thresholds. */
+function geometryDeltas(
+  before: BindingFingerprint,
+  after: BindingFingerprint,
+  partDiagonal: number,
+): BindingComparison['deltas'] {
   const deltas: BindingComparison['deltas'] = {};
-  if (before.direction && after.direction) {
-    const a = angleDeg(before.direction, after.direction, before.entityKind === 'face');
-    if (a > CHANGED_ANGLE_DEG) reasons.push(`direction turned ${a.toFixed(1)} deg`);
-    else if (a > MOVED_ANGLE_DEG) deltas.angleDeg = a;
-  }
   if (before.radius !== undefined && after.radius !== undefined) {
     const r = relative(before.radius, after.radius);
     if (r > MOVED_SIZE_RELATIVE) deltas.radiusRelative = r;
@@ -73,7 +73,21 @@ export function compareFingerprints(
   if (s > MOVED_SIZE_RELATIVE) deltas.sizeRelative = s;
   const c = dist(before.centroid, after.centroid);
   if (c > Math.max(MOVED_CENTROID_MM, MOVED_CENTROID_DIAGONAL * partDiagonal)) deltas.centroidMm = c;
+  return deltas;
+}
 
+export function compareFingerprints(
+  before: BindingFingerprint,
+  after: BindingFingerprint,
+  partDiagonal: number,
+): BindingComparison {
+  const reasons = identityReasons(before, after);
+  const deltas = geometryDeltas(before, after, partDiagonal);
+  if (before.direction && after.direction) {
+    const a = angleDeg(before.direction, after.direction, before.entityKind === 'face');
+    if (a > CHANGED_ANGLE_DEG) reasons.push(`direction turned ${a.toFixed(1)} deg`);
+    else if (a > MOVED_ANGLE_DEG) deltas.angleDeg = a;
+  }
   if (reasons.length > 0) return { verdict: 'changed', reasons, deltas };
   return { verdict: Object.keys(deltas).length > 0 ? 'moved' : 'same', reasons, deltas };
 }

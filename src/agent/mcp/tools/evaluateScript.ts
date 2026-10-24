@@ -182,13 +182,8 @@ export async function evaluateScriptTool(
   if (input.dryRun) return evaluateDryRun(input);
 
   const before = capturePreviousStep();
-  // Re-evaluating the file the active session was built from: its selections
-  // are the baseline, so a selector an edit re-bound is reported.
-  const previous = getActiveMcpSession();
-  const baseline = input.baseline
-    ?? (input.file !== undefined && previous?.file === input.file ? previous.selections : undefined);
   const { evaluation, model, dfmReport, tubeReport, portReport } = await evaluateAndBuildScript(
-    { ...(input as EvaluateInput), ...(baseline !== undefined ? { baseline } : {}) },
+    withSelectionBaseline(input),
   );
   // Authoring intent lint (usage triage 2026-10-03): info-only hints naming
   // the API for intent the source states but builds by hand. Agents skip
@@ -343,6 +338,16 @@ function didBuildSucceed(
     model !== undefined &&
     model.diagnostics.every(d => d.severity !== 'error' || gateDiagnostics.has(d) || d.code.startsWith('union.'))
   );
+}
+
+/** The evaluate input with its selection baseline: the caller's, or, when
+ *  re-evaluating the file the active session was built from, that session's
+ *  selections, so a selector an edit re-bound is reported. */
+function withSelectionBaseline(input: EvaluateScriptInput): EvaluateInput {
+  const previous = getActiveMcpSession();
+  const baseline = input.baseline
+    ?? (input.file !== undefined && previous?.file === input.file ? previous.selections : undefined);
+  return { ...(input as EvaluateInput), ...(baseline !== undefined ? { baseline } : {}) };
 }
 
 function refreshActiveSession(model: BuildOutcome['model'], buildSucceeded: boolean, file: string | undefined): void {

@@ -44,6 +44,21 @@ export interface UpdateModelParamsOptions {
   preview?: boolean;
 }
 
+/** Diagnostics and selections of a param update. A drag preview skips finish
+ *  features, so its selections are partial: keep the last full set as the
+ *  baseline and report nothing. */
+function selectionsAfterUpdate(
+  model: BuiltModel,
+  result: { diagnostics: BuiltModel['diagnostics']; selections: BuiltModel['selections'] },
+  preview: boolean,
+): Pick<BuiltModel, 'diagnostics' | 'selections'> {
+  if (preview) return { diagnostics: result.diagnostics, selections: model.selections };
+  return {
+    diagnostics: [...result.diagnostics, ...selectionDriftDiagnostics(model.selections, result.selections)],
+    selections: result.selections,
+  };
+}
+
 export async function updateModelParams(
   model: BuiltModel,
   edits: ParamUpdateEdit[],
@@ -127,13 +142,8 @@ export async function updateModelParams(
   const nextModel: BuiltModel = {
     ...model,
     shapes: result.shapes,
-    // A drag preview skips finish features, so its selections are partial:
-    // keep the last full set as the baseline and report nothing.
-    diagnostics: options?.preview
-      ? result.diagnostics
-      : [...result.diagnostics, ...selectionDriftDiagnostics(model.selections, result.selections)],
+    ...selectionsAfterUpdate(model, result, options?.preview === true),
     health: result.health,
-    selections: options?.preview ? model.selections : result.selections,
     warnings: session.warnings.slice(warningsBefore),
     tailId,
     tailShape,
