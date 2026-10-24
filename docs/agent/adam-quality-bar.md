@@ -34,20 +34,8 @@ complex / enclosure / gearbox / housing.
 
 ### 3. Organic body
 
-Only via automotive / sew path (`automotive-body-envelope`,
-`network-body-panels-via-sew`). Success claims require
-`verify({ check: 'body-likeness' })` **publishReady** before
-`open_in_studio` with `likeness_profile: 'automotive'` (hard gate).
-
-## DX codes (likeness publish gate)
-
-| Code | Meaning |
-|------|---------|
-| `reference.likeness.publish-blocked` | `open_in_studio` refused success claim — likeness not green |
-| `reference.likeness.gate-required` | `design_loop` / profile set but body-likeness input missing |
-| `reference.likeness.auto-failed` | AABB↔wheel automated check failed |
-| `reference.likeness.stills-incomplete` | Required still codes missing |
-| `reference.likeness.still-failed` | Still verdict failed or evidence too thin |
+Only via the automotive / sew path (`automotive-body-envelope`,
+`network-body-panels-via-sew`); inspect ortho stills before claiming success.
 
 ## Agent loop (complex builds)
 
@@ -57,11 +45,7 @@ For complex / production / enclosure / gearbox / robot-arm prompts:
 2. Author → `evaluate_script` → fix
 3. Prefer `design_loop({ goal, attempts, … })` — revise source on
    `nextActionPrompt` until `ok` or `convergence.escalate`
-4. Organic: `likenessProfile: 'automotive'` + `verify({ check: 'body-likeness' })`
-5. Final `open_in_studio` — pass `likeness_profile: 'automotive'` when organic
-   (gate auto-runs / checks session attest)
-
-WIP previews may omit likeness_profile; never claim likeness success without it.
+4. Final `open_in_studio` once review is green
 
 ## Solid-only mechanical scripts
 

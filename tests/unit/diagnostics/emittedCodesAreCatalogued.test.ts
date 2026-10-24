@@ -296,8 +296,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       feature.direct-edit.delta-wrapper,
     //       feature.direct-edit.unresolved = 308.
     //  + 1 feature.direct-edit.shared-param-conflict (one param drives
-    //       multiple translated axes with different drag deltas) = 309 + 3 likeness = 318.
-    // + 3 body likeness: reference.likeness.auto-failed / stills-incomplete / still-failed = 318.
+    //       multiple translated axes with different drag deltas) = 309.
+    // (running totals from here on predate removal of 3 reference.likeness.* codes: -3.)
     // + 2 3MF bed fit: export.3mf.plate-overflow, export.3mf.exceeds-bed = 320.
     // + 1 feature.hole.cut-missing (fail-closed per-bore hole check) = 321.
     // + 3 dogfood friction round 3: feature.result.absurd-geometry (post-feature

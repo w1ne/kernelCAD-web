@@ -72,6 +72,10 @@
 - `joint.articulatedDigit` (finger/digit builder), its example and docs. `joint.clevis` and `joint.supportedServoRevolute` stay.
 - The `gripperAperture` option of `review_cad`/`design_loop`, the `gripperAperture*` result and summary fields, the `gripper-aperture-moves` check and the `assembly.gripper-aperture.connector-missing` diagnostic. Use `trackConnectors` and read the tracked connector poses (`poseEnvelope.connectorPoses`) instead.
 
+## Removed
+
+- Automotive body-likeness gate. `verify({ check: 'body-likeness' })` and its car-only inputs (`body_bbox`, `body_feature_id`, `cabin_bbox`, `wheels`, `length_axis`, `still_verdicts`, `require_stills`), `design_loop` `likenessProfile` / `bodyLikeness`, and the `reference.likeness.*` diagnostics are gone. The generic `visualReview.checks` mechanism is unchanged.
+
 ## Fixed
 
 - Fixture dimensions now come from the DIN tables instead of nominal values: T-slot nuts follow DIN 508 (a/e/h/k; neck = a min, base = e min) and collar nuts DIN 6331 (s/m/d1/a). The fixture example's channel and stud offsets and its evidence follow the real nut; strap clamps and step blocks have no DIN table and stay nominal kit dimensions.
