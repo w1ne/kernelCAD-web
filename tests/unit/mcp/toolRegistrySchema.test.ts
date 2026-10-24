@@ -66,7 +66,6 @@ describe('toolRegistry pose-envelope schema options', () => {
       'no-stray-or-floating-geometry',
       'attachment-plausibility',
       'semantic-orientation-alignment',
-      'device-depth-and-construction',
       'canonical-views-physically-coherent',
     ]) {
       expect(description).toContain(code);

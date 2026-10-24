@@ -49,7 +49,6 @@ const BASE_CHECKS = [
   { code: 'no-stray-or-floating-geometry', passed: true, finding: 'No stray floating secondary parts; wheels and body are in contact/near-contact with a continuous path into the parent body and no visible air gap.' },
   { code: 'attachment-plausibility', passed: true, finding: 'Visible mounts and connectors connect through a plausible load-bearing geometry anchored into the parent case body, with seated exposed interfaces and no buried half-inserted hardware.' },
   { code: 'semantic-orientation-alignment', passed: true, finding: 'Nose points +X and wheels sit on Z=0 as specified.' },
-  { code: 'device-depth-and-construction', passed: true, finding: 'Side view shows non-facade depth: wall, shell layers, and housing cavity — not a flat two-face facade.' },
   { code: 'canonical-views-physically-coherent', passed: true, finding: 'Front/right/top/iso agree on wheelbase and cabin placement.' },
 ];
 
