@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
 // Native geometry + placement evidence for the T-slot clamp-set example:
-// every part from lib.fixture, placed by its stock dimensions, no overlaps.
+// every part from lib.part, placed by its stock dimensions, no overlaps.
 // Run from the repository root:
 //   npx tsx examples/fixture/verify-fixture.mts
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -113,7 +113,7 @@ const evidence = {
   positiveVolumeOverlaps: interferences,
   parts: rows,
   set: {
-    hardware: 'lib.fixture M10: tSlotNut, clampStud 80, strapClamp, stepBlock, flangeNut',
+    hardware: 'lib.part M10: t-slot-nut, clamping-stud 80, strap-clamp, step-block, flange-nut',
     tableMm: [400, 130, 24],
     channel: { openingMm: 12, openingDepthMm: 7.6, internalWidthMm: 18.3, internalDepthMm: 7.4 },
     workpieceMm: [50, 70, 36],

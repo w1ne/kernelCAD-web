@@ -16,23 +16,39 @@
 //   4. FAIL — pin escapes hole (child connector origin sits OFF the joint axis)
 //   5. FAIL — bearing not coplanar (tongue too thin to meet fork inner cheek)
 //   6. SKIP — fastened + ball mates (out of scope for G2)
-//   7. REGRESSION — post-G1 Luxo lamp shoulder mate (records pass/fail; either
-//      outcome is acceptable per spec §G2 test 7)
+//   7. SKIP — a revolute without the joint.clevis record is not evaluated
 
 import { describe, it, expect } from 'vitest';
+import type { ClevisStructuralModel } from '../joints/types';
 import { CaptureSession } from '../capture/captureSession';
 import { createModelingApi } from '../api';
 import type { Assembly } from '../capture/assembly';
 import type { Vec3 } from '../../shared/intent/types';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateJointAxisBindingWithCache } from './jointAxisBinding';
-import { buildPostFixLuxoShoulder } from './fixtures/jointVisualExposure-luxo-post-8e2f0da7.kcad.ts';
+import { buildThinForkShoulder } from './fixtures/jointVisualExposure-thin-fork.kcad.ts';
 
 /**
  * Run Gate 6 against an assembly, reusing Gate 2's lowered-shape cache via
  * `validateJointAxisBindingWithCache`. This is the path the validator
  * actually wires up in production.
  */
+/** Structural record equivalent to what joint.clevis emits, for hand-built hinges. */
+function clevisRecord(d: { pinR: number; plateT: number; tongueY: number; forkGapY: number; knuckleR: number }): ClevisStructuralModel {
+  return {
+    kind: 'clevis-double-shear-v1',
+    source: 'joint.clevis',
+    pinDiameterMm: 2 * d.pinR,
+    boreDiameterMm: 2 * (d.pinR + 0.2),
+    forkPlateThicknessMm: d.plateT,
+    forkPlateCount: 2,
+    tongueThicknessMm: d.tongueY,
+    forkGapMm: d.forkGapY,
+    supportSpanMm: d.forkGapY + d.plateT,
+    edgeDistanceMm: d.knuckleR,
+  };
+}
+
 async function runGate6(arm: Assembly) {
   const cache = await validateJointAxisBindingWithCache(arm);
   return validateMatePhysicalRealization(arm, cache.worldShapes, cache.worldTransforms);
@@ -122,6 +138,7 @@ function buildHandBuiltClevis(opts?: {
     .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
   arm.mate('hinge', 'parent.hinge', 'child.hinge', 'revolute', {
     limitsDeg: [-90, 90],
+    capacity: { structure: clevisRecord({ pinR, plateT, tongueY, forkGapY, knuckleR: Math.max(pinR * 3, 5) }) },
   });
 
   return { arm, session };
@@ -130,7 +147,7 @@ function buildHandBuiltClevis(opts?: {
 /**
  * Build a clevis via the joint.clevis(...) primitive — the constructive
  * primitive G1 introduced. This MUST pass Gate 6 by construction. The
- * assembly is shaped after the Luxo shoulder mate.
+ * assembly is shaped like a typical shoulder clevis.
  */
 function buildClevisPrimitiveAssembly(): { arm: Assembly; session: CaptureSession } {
   const session = new CaptureSession();
@@ -138,7 +155,7 @@ function buildClevisPrimitiveAssembly(): { arm: Assembly; session: CaptureSessio
   const arm = kcad.assembly('clevis-primitive');
 
   // The column terminates below the clevis pivot with enough clearance for
-  // the fork plates and the tongue's swing envelope. Mirrors the Luxo lamp
+  // the fork plates and the tongue's swing envelope. Mirrors a typical arm
   // convention (COLUMN_TERMINATE_Z = pivot - knuckleR - ARM_T - 2 = pivot
   // - 34). Without that clearance the column overlaps the tongue when
   // the mate solver aligns the child, producing an artificial
@@ -186,6 +203,7 @@ function buildClevisPrimitiveAssembly(): { arm: Assembly; session: CaptureSessio
     });
   arm.mate('hinge', 'parent.hinge', 'child.hinge', 'revolute', {
     limitsDeg: [-30, 90],
+    capacity: { structure: clev.structural },
   });
 
   return { arm, session };
@@ -235,6 +253,7 @@ function buildOverConstrainedClevis(): { arm: Assembly; session: CaptureSession 
     .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
   arm.mate('hinge', 'parent.hinge', 'child.hinge', 'revolute', {
     limitsDeg: [-30, 90],
+    capacity: { structure: clevisRecord({ pinR: 3.5, plateT: 4, tongueY: 6, forkGapY: 6.2, knuckleR: 10.5 }) },
   });
   return { arm, session };
 }
@@ -289,6 +308,7 @@ function buildPinEscapesHoleClevis(): { arm: Assembly; session: CaptureSession }
     .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
   arm.mate('hinge', 'parent.hinge', 'child.hinge', 'revolute', {
     limitsDeg: [-90, 90],
+    capacity: { structure: clevisRecord({ pinR: 3.5, plateT: 4, tongueY: 6, forkGapY: 6.2, knuckleR: 10.5 }) },
   });
 
   return { arm, session };
@@ -343,6 +363,7 @@ function buildBearingNotCoplanarClevis(): { arm: Assembly; session: CaptureSessi
     .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
   arm.mate('hinge', 'parent.hinge', 'child.hinge', 'revolute', {
     limitsDeg: [-30, 30],
+    capacity: { structure: clevisRecord({ pinR, plateT, tongueY, forkGapY, knuckleR: Math.max(pinR * 3, 5) }) },
   });
   return { arm, session };
 }
@@ -418,27 +439,9 @@ describe('validateMatePhysicalRealization (Gate 6)', () => {
     expect(diags.filter((d) => d.code === 'assembly.mate.not-physically-realized')).toHaveLength(0);
   });
 
-  it('7. REGRESSION — post-G1 Luxo lamp shoulder mate (records outcome)', async () => {
-    const { arm } = buildPostFixLuxoShoulder();
+  it('7. SKIP — a revolute without the joint.clevis record is not evaluated', async () => {
+    const { arm } = buildThinForkShoulder();
     const diags = await runGate6(arm);
-    const myDiags = diags.filter((d) => d.code === 'assembly.mate.not-physically-realized');
-    // Per spec §G2 test 7: this is a snapshot test — record pass/fail
-    // outcome so reviewers notice when it flips. Either outcome is
-    // acceptable; what matters is that the gate runs and produces a
-    // deterministic result for the lamp fixture.
-    //
-    // Snapshot: at G2 ship time, the post-G1 Luxo shoulder mate
-    // produces `myDiags.length` diagnostics. If a future PR changes this
-    // count, the reviewer should eyeball whether the change is intentional.
-    expect(myDiags.length).toBeGreaterThanOrEqual(0); // tautological — the
-    // real signal is the diagnostic codes/messages we attach below.
-    if (myDiags.length > 0) {
-      // Document the failure mode in the test output so the regression
-      // signal is visible without re-running the test.
-      console.log(`Gate 6 — Luxo lamp shoulder: ${myDiags.length} diagnostic(s) emitted.`);
-      for (const d of myDiags) {
-        console.log(`  - ${d.code}: ${d.message}`);
-      }
-    }
+    expect(diags.filter((d) => d.code === 'assembly.mate.not-physically-realized')).toHaveLength(0);
   });
 });

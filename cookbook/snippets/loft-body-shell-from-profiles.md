@@ -10,10 +10,10 @@ keywords:
   - fuselage loft
   - cross-section stations
   - stylized printable shell
-when_to_use: Stylized / mechanism-demo shell ONLY — recognizable printable boxy loft from polyline stations (toy car, boat hull demo, fuselage blockout). NOT for berlinetta / sports-car / organic automotive likeness. For organic car bodies use automotive-body-envelope instead (lookup_cookbook("automotive body envelope")).
+when_to_use: Stylized / mechanism-demo shell ONLY — recognizable printable boxy loft from polyline stations (toy car, boat hull demo, fuselage blockout). NOT for sports-car / organic automotive bodies. For organic car bodies use automotive-body-envelope instead (lookup_cookbook("automotive body envelope")).
 ---
 
-**Scope:** stylized / mechanism-demo shell only. For berlinetta / Ferrari-class /
+**Scope:** stylized / mechanism-demo shell only. For sports-car /
 organic car bodies, use `automotive-body-envelope` (`lookup_cookbook("automotive
 body envelope")`) — spline/rail loft or surfaceFromCurves + sew + thicken, not
 this polyline loft.

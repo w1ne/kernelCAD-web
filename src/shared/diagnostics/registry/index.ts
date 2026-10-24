@@ -225,7 +225,6 @@ const LEGACY_CODE_ORDER = [
   'assembly.pose-envelope.clearance-violated',
   'assembly.pose-envelope.clearance-unresolved',
   'assembly.pose-envelope.connector-unresolved',
-  'assembly.gripper-aperture.connector-missing',
   'assembly.mate.limit-missing',
   'assembly.connectivity.floating-moving-part',
   'assembly.connectivity.no-load-path',

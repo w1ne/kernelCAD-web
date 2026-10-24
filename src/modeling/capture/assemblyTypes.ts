@@ -264,7 +264,7 @@ export interface JointSupportIntentRecord extends JointSupportIntentOpts {
 }
 
 export type TransmissionKind =
-  | 'direct-horn'
+  | 'direct'
   | 'link-rod'
   | 'four-bar'
   | 'gear-pair'

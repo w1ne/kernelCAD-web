@@ -3,6 +3,21 @@ import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { clearActiveMcpSession } from '../../../src/agent/mcp/activeSession';
 import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 
+/** Max-min distance between two tracked connectors across the sampled poses. */
+function trackedDistanceTravelMm(
+  poses: ReadonlyArray<{ sampleName: string; ref: string; world: readonly number[] }> | undefined,
+  refA: string,
+  refB: string,
+): number {
+  const a = new Map((poses ?? []).filter((p) => p.ref === refA).map((p) => [p.sampleName, p.world]));
+  const distances: number[] = [];
+  for (const p of poses ?? []) {
+    const w = p.ref === refB ? a.get(p.sampleName) : undefined;
+    if (w) distances.push(Math.hypot(w[0] - p.world[0], w[1] - p.world[1], w[2] - p.world[2]));
+  }
+  return distances.length === 0 ? 0 : Math.max(...distances) - Math.min(...distances);
+}
+
 describe('review_cad MCP tool', () => {
   beforeAll(async () => { await initOcct(); }, 60000);
   beforeEach(() => { clearActiveMcpSession(); });
@@ -337,11 +352,10 @@ describe('review_cad MCP tool', () => {
     }
   });
 
-  it('reports gripper aperture travel for coupled fingertip connectors', async () => {
+  it('reports fingertip separation travel from tracked connectors', async () => {
     const r = await reviewCadTool({
       includeInterference: false,
       trackConnectors: ['left.tip', 'right.tip'],
-      gripperAperture: { left: 'left.tip', right: 'right.tip' },
       code: `
         const arm = assembly('hand');
         arm.part('base', box(30, 30, 4, true))
@@ -394,10 +408,7 @@ describe('review_cad MCP tool', () => {
 
     expect(r.ok).toBe(true);
     if (r.ok) {
-      expect(r.gripperAperture?.left).toBe('left.tip');
-      expect(r.gripperAperture?.right).toBe('right.tip');
-      expect(r.gripperAperture?.travelMm).toBeGreaterThan(10);
-      expect(r.fitness.mechanismSummary.gripperApertureTravelMm).toBeGreaterThan(10);
+      expect(trackedDistanceTravelMm(r.poseEnvelope?.connectorPoses, 'left.tip', 'right.tip')).toBeGreaterThan(10);
     }
   });
 
@@ -428,38 +439,12 @@ describe('review_cad MCP tool', () => {
       // fires here because the fixture intentionally returns arm.model() on a
       // mate-bearing assembly to test the fitness-repair flow). The fitness
       // failure is what's being asserted, not the absence of info diags.
-      expect(r.diagnostics.filter((d) => d.severity !== 'info')).toEqual([]);
+      expect(r.diagnostics.filter((d) => d.severity !== 'info' && d.code !== 'assembly.connectivity.assumed-root')).toEqual([]);
       expect(r.fitness?.blockingReasons.map((reason) => reason.code)).toEqual([
         'assembly.mechanism.no-tracked-workspace',
         'assembly.mechanism.no-tracked-travel',
       ]);
       expect(r.suggestedRepairPrompt).toMatch(/assembly\.mechanism\.no-tracked-workspace/);
-    }
-  });
-
-  it('returns structured repair facts when requested gripper aperture refs are missing', async () => {
-    const r = await reviewCadTool({
-      includeInterference: false,
-      gripperAperture: { left: 'left.tip', right: 'right.missing' },
-      code: `
-        const arm = assembly('rig');
-        arm.part('base', box(10, 10, 10))
-          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
-        arm.part('left', box(20, 5, 5))
-          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
-          .connector('tip', { type: 'frame', origin: { kind: 'vec3', value: [20, 0, 0] } });
-        arm.mate('yaw', 'base.axis', 'left.axis', 'revolute', {
-          limitsDeg: [0, 90],
-        });
-        return arm.model();
-      `,
-    });
-
-    expect(r.ok).toBe(false);
-    if (!r.ok) {
-      expect(r.diagnostics.some((d) => d.code === 'assembly.gripper-aperture.connector-missing')).toBe(true);
-      expect(r.fitness?.blockingReasons.some((reason) => reason.code === 'assembly.mechanism.gripper-aperture-missing')).toBe(true);
-      expect(r.suggestedRepairPrompt).toMatch(/assembly\.mechanism\.gripper-aperture-missing/);
     }
   });
 

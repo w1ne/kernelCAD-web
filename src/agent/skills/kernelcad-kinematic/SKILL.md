@@ -178,9 +178,9 @@ These four calls work on any moving assembly, not just robot arms:
   locking-pin engagement target — `06-over-center-latch-reachable`)
 - **Hinges** — laptop clamshell, butterfly knife (`checkSweptCollision` over
   the hinge angle)
-- **Watch movements** — gear-train clearance, escapement engagement
-  (`checkSweptCollision` over the escape-wheel rotation; `checkLoadCapacity`
-  for the mainspring torque)
+- **Gear trains and escapements** — tooth clearance, pawl engagement
+  (`checkSweptCollision` over the driven-wheel rotation; `checkLoadCapacity`
+  for the spring torque)
 - **Scissor jacks** — the true closed loop (two crossed links, two sliders)
   swept over the lift angle (`04-scissor-jack-swept`); do not invent
   `joint.scissorLift`
@@ -227,8 +227,8 @@ squares.
 A mechanism build is **not deliverable** if any of these fail. No `ignore[]` workarounds for joint pairs; no shipping with a render that looks right while the assembly is broken.
 
 1. `kernelcad validate --include-interference` returns CLEAN (this flag also **auto-enables the physics gate**, item 5 — so a deliverable mechanism must hold under gravity too; run `--include-interference --no-include-physics` to assert the kinematic gate alone: interference + disconnect + joint-mesh). `ignore[]` is reserved for true intra-part design contacts (a spring "bolted" to a beam, a captured washer); joint-pair contacts (the parts on either side of a `revolute` / `prismatic` mate) **may not be ignored** — they are the test signal for whether the mechanism is physically realized.
-2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Surfaces an advisory `assembly.mate.not-physically-realized` (`info` severity; revolute / prismatic only; `fastened` mates are exempt). The merge gates under the physics-grounded loop are `mechanism.disconnect` and `mechanism.interpenetration`, which fire under motion at validate-time. `joint.clevis(...)` passes by construction only when its returned geometry and connectors are actually used.
-3. Every revolute joint passes Gate 4 (visual exposure): the hinge mechanism reads as a hinge from at least one canonical view.
+2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Surfaces an advisory `assembly.mate.not-physically-realized` (`info` severity) only for revolute mates built with `joint.clevis(...)` whose `clevis.structural` is attached as `capacity: { structure }` on the mate; its pin, plate and knuckle dimensions come from that record. Other mates are not evaluated. The merge gates under the physics-grounded loop are `mechanism.disconnect` and `mechanism.interpenetration`, which fire under motion at validate-time. `joint.clevis(...)` passes by construction only when its returned geometry and connectors are actually used.
+3. Every revolute joint passes Gate 4 (visual exposure) when it opts in with `exposure: 'exposed'` on the mate: the hinge mechanism reads as a hinge (fork daylight + pin stickout). Mates without the declaration are not checked.
 4. The render-inspect loop is followed: a `kernelcad render inspect` pass after every geometry change, with visible issues called out.
 5. (Opt-in) `kernelcad validate --include-interference --include-physics` exercises the MuJoCo-based physics gate (criteria 5+6). Adds two failure modes: `mechanism.unstable-under-gravity` (non-finite required torque at a sampled pose → singular kinematic configuration) and `mechanism.drops-on-release` (any joint drifts > 5° or any body translates > 50 mm in a 0.5 s drop-test from rest). Bare revolutes without a closed-loop spring / actuator fail this gate by construction — single-body "spring" parts fastened to one arm produce zero restoring moment around the joint they should brace. The closed-loop tendon API tracked in issue #361 is the kit-level fix.
 
@@ -281,7 +281,7 @@ Authoring discipline that PAIRS with the primitive:
 - Set `style.tongueY ≈ ARM_W` so the tongue's plate thickness matches the beam — the tongue + beam form a continuous solid.
 - For wider swing ranges, the primitive automatically lifts the pivot by `knuckleR · max(|sin|) + 1 mm`; you can opt out with `liftPivot: false` and lift manually.
 
-Worked example: `examples/kinematic/luxo-lamp.kcad.ts` ships with `joint.clevis(...)` at all three revolute joints (shoulder, elbow, wrist) and validates clean under the **kinematic gate** — interference + disconnect + joint-mesh — with zero `ignore[]` entries. It does **not** pass the physics drop-test: the lamp's bare revolutes are braced only by single-body springs (zero joint moment), so the shoulder drifts ~5° under gravity and `mechanism.drops-on-release` fires (the closed-loop tendon fix is #361 — see item 5 above). Caveat on the invocation: the bare `kernelcad validate --include-interference` CLI flag **auto-enables `--include-physics`** (validate.ts defaults the physics tier on whenever interference is on), so that exact command returns `mechanism: broken` / exit 2 on this lamp. To run the kinematic gate alone — the gate this example clears — use `kernelcad validate --include-interference --no-include-physics` (verdict `mechanism: real`, exit 0).
+Worked example: `examples/kinematic/luxo-lamp.kcad.ts` (a three-revolute arm) ships with `joint.clevis(...)` at all three revolute joints (joint-a, joint-b, joint-c) and validates clean under the **kinematic gate** — interference + disconnect + joint-mesh — with zero `ignore[]` entries. It does **not** pass the physics drop-test: the example's bare revolutes are braced only by single-body springs (zero joint moment), so the first joint drifts ~5° under gravity and `mechanism.drops-on-release` fires (the closed-loop tendon fix is #361 — see item 5 above). Caveat on the invocation: the bare `kernelcad validate --include-interference` CLI flag **auto-enables `--include-physics`** (validate.ts defaults the physics tier on whenever interference is on), so that exact command returns `mechanism: broken` / exit 2 on this example. To run the kinematic gate alone — the gate this example clears — use `kernelcad validate --include-interference --no-include-physics` (verdict `mechanism: real`, exit 0).
 
 ## Cookbook
 
