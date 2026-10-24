@@ -31,6 +31,7 @@ import {
 } from '../../modeling/mates/mechanicalTransmission';
 import {
   reviewPhysicalUseCasesWithReachability,
+  type PhysicalUseCaseLevel,
   type PhysicalUseCaseDiagnostic,
   type PhysicalUseCaseJointStructuralCertificate,
 } from '../../modeling/mates/physicalUseCase';
@@ -82,11 +83,13 @@ export interface ReviewCadInput {
   samplesPerMate?: number;
   combinatorial?: boolean;
   requirePhysicalUseCase?: boolean;
-  includePhysicalUseCaseReachability?: boolean;
-  includePhysicalUseCaseStatics?: boolean;
-  includePhysicalUseCaseJointReactions?: boolean;
-  includePhysicalUseCaseJointStructure?: boolean;
-  physicalUseCaseReachabilitySamplesPerMate?: number;
+  /** Escalating physical-use-case depth; each level includes the previous:
+   *  `reachability` < `statics` < `reactions` (joint reactions, plus the
+   *  clevis structural check for joint.clevis mates). Defaults to
+   *  `reachability` when `requirePhysicalUseCase` is true. */
+  physicalUseCaseLevel?: PhysicalUseCaseLevel;
+  /** Samples per scalar-limited actuator mate for physical-use-case reachability. */
+  physicalUseCaseSamplesPerMate?: number;
   /**
    * Wall-clock budget for the whole review (ms). Heavy stages (pose envelope,
    * physical use case, mechanism sweep) are skipped once it is spent, and the
@@ -546,24 +549,17 @@ async function runPhysicalUseCaseStage(
   input: Pick<
     ReviewCadInput,
     | 'requirePhysicalUseCase'
-    | 'includePhysicalUseCaseReachability'
-    | 'includePhysicalUseCaseStatics'
-    | 'includePhysicalUseCaseJointReactions'
-    | 'includePhysicalUseCaseJointStructure'
-    | 'physicalUseCaseReachabilitySamplesPerMate'
+    | 'physicalUseCaseLevel'
+    | 'physicalUseCaseSamplesPerMate'
   >,
   poseEnvelope: PoseEnvelopeReviewResult | undefined,
 ) {
-  const includeReachability =
-    input.includePhysicalUseCaseReachability ?? input.requirePhysicalUseCase === true;
+  const level = input.physicalUseCaseLevel ?? (input.requirePhysicalUseCase === true ? 'reachability' : undefined);
   return reviewPhysicalUseCasesWithReachability(arm, {
     requirePhysicalUseCase: input.requirePhysicalUseCase,
     poseEnvelope,
-    includeReachability,
-    includeStatics: input.includePhysicalUseCaseStatics,
-    includeJointReactions: input.includePhysicalUseCaseJointReactions,
-    includeJointStructure: input.includePhysicalUseCaseJointStructure,
-    reachabilitySamplesPerMate: input.physicalUseCaseReachabilitySamplesPerMate,
+    level,
+    reachabilitySamplesPerMate: input.physicalUseCaseSamplesPerMate,
   });
 }
 

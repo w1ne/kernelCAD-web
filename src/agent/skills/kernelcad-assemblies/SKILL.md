@@ -144,12 +144,9 @@ interface Assembly {
       limitsDeg?: [number, number];
       limitsMm?: [number, number];
       pose?: Editable<number> | [number, number, number];
-      /** Gate 4 (joint visual exposure) declaration. Default 'exposed':
-       *  the revolute must read as a hinge (fork daylight + pin stickout).
-       *  Declare 'concealed' ONLY for mechanisms enclosed by design —
-       *  valve rotors in bores, internal spindles, worm shafts — where
-       *  fork daylight is structurally impossible. Never use it to
-       *  silence a hinge that should be visible. */
+      /** Opt-in Gate 4 (joint visual exposure) check. Default: not run.
+       *  Declare 'exposed' to require the revolute to read as a hinge
+       *  (fork daylight + pin stickout). 'concealed' equals undeclared. */
       exposure?: 'exposed' | 'concealed';
     },
   ): AssemblyMateRef;
@@ -678,7 +675,7 @@ arm.transmission('link-a-drive-linkage', {
 });
 ```
 
-`kind` is one of `direct-horn`, `link-rod`, `four-bar`, `gear-pair`, `belt`, or `tendon`. The `path` names the physical parts that transmit motion/load. A coupled mate without a matching transmission fails `review_cad` with `assembly.transmission.missing-for-coupled-mate`. Consecutive `path` parts must also stay near-contact adjacent across sampled mate travel; a jump through empty space or a visible air gap fails with `assembly.transmission.path-disconnected`.
+`kind` is one of `direct`, `link-rod`, `four-bar`, `gear-pair`, `belt`, or `tendon`. The `path` names the physical parts that transmit motion/load. A coupled mate without a matching transmission fails `review_cad` with `assembly.transmission.missing-for-coupled-mate`. Consecutive `path` parts must also stay near-contact adjacent across sampled mate travel; a jump through empty space or a visible air gap fails with `assembly.transmission.path-disconnected`.
 
 ## Fresh-agent mechanism loop
 
@@ -699,8 +696,8 @@ For serial chains, preserve at least these interfaces between repair attempts wh
 A mechanism build is **not deliverable** if any of these fail. No `ignore[]` workarounds for joint pairs; no shipping with a render that looks right while the assembly is broken.
 
 1. `kernelcad validate --include-interference` returns CLEAN. `ignore[]` is reserved for true intra-part design contacts (a spring "bolted" to a beam, a captured washer); joint-pair contacts (the parts on either side of a `revolute` / `prismatic` mate) **may not be ignored** — they are the test signal for whether the mechanism is physically realized.
-2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Surfaces an advisory `assembly.mate.not-physically-realized` (`info` severity; revolute / prismatic only; `fastened` mates are exempt). The merge gates under the physics-grounded loop are `mechanism.disconnect` and `mechanism.interpenetration`, which fire under motion at validate-time. `joint.clevis(...)` passes by construction only when its returned geometry and connectors are actually used.
-3. Every revolute joint passes Gate 4 (visual exposure): the hinge mechanism reads as a hinge from at least one canonical view. Enclosed-by-design rotors (valve tubes in bores, internal spindles) declare `exposure: 'concealed'` on the mate instead of faking fork daylight.
+2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Surfaces an advisory `assembly.mate.not-physically-realized` (`info` severity) only for revolute mates built with `joint.clevis(...)` whose `clevis.structural` is attached as `capacity: { structure }` on the mate; its pin, plate and knuckle dimensions come from that record. Other mates are not evaluated. The merge gates under the physics-grounded loop are `mechanism.disconnect` and `mechanism.interpenetration`, which fire under motion at validate-time. `joint.clevis(...)` passes by construction only when its returned geometry and connectors are actually used.
+3. Every revolute joint passes Gate 4 (visual exposure) when it opts in with `exposure: 'exposed'` on the mate: the hinge mechanism reads as a hinge (fork daylight + pin stickout). Mates without the declaration are not checked.
 4. The render-inspect loop is followed: a `kernelcad render inspect` pass after every geometry change, with visible issues called out.
 5. (Opt-in) `kernelcad validate --include-interference --include-physics` adds the MuJoCo-based physics gate. Two extra failure codes: `mechanism.unstable-under-gravity` (non-finite required torque at a sampled pose) and `mechanism.drops-on-release` (joints drift > 5° or bodies translate > 50 mm in a 0.5 s drop-test from rest). Bare revolutes without a closed-loop spring / declared actuator fail this gate; single-body springs fastened to one arm don't help — see issue #361 (closed-loop tendon API).
 
@@ -753,7 +750,7 @@ See `kernelcad-kinematic/SKILL.md` for the full pattern and the worked example (
 | `assembly.joint-axis.unbound` | solvedModel — advisory (`info`): revolute/prismatic/cylindrical axis floats outside both bound parts' BREP. Merge gate: `mechanism.dof-mismatch`. |
 | `assembly.joint.load-exceeded` | solvedModel({validate:'error'}, { externalLoads }) — declared `maxLoad` exceeded by external force/torque |
 | `assembly.mounting-hole.mismatch` | solvedModel — advisory (`info`): `fastened` mate's two bound faces lack compatible hole features. Merge gate: `mechanism.disconnect`. |
-| `assembly.joint.not-visible` | solvedModel({validate:'error'}) — revolute joint's fork+tongue+pin collapses into one visual block (fork-plate gap < 15% of plate extent OR pin stickout < 1.0 × PIN_R). Hint payload carries actual gap ratio and pin-stickout numbers so the agent can widen FORK_GAP_Y / shrink TONGUE_Y / extend PIN_LEN directly. Microscale joints (combined bounding sphere < 5 mm) skip the gate. |
+| `assembly.joint.not-visible` | solvedModel({validate:'error'}), only for mates declaring `exposure: 'exposed'` — revolute joint's fork+tongue+pin collapses into one visual block (fork-plate gap < 15% of plate extent OR pin stickout < 1.0 × PIN_R). Hint payload carries actual gap ratio and pin-stickout numbers so the agent can widen the fork gap / thin the tongue / extend the pin directly. A warning-severity variant reports that the pin radius could not be measured. Microscale joints (combined bounding sphere < 5 mm) skip the gate. |
 | `assembly.workspace.unreachable` | solvedModel({validate:'error', posesGate:'envelope'}) — `arm.workspace(...)` declared target lies outside the connector's sampled pose-envelope AABB (minus toleranceMm). Severity is `info` when the gate runs without an envelope (declarations are inert until `posesGate:'envelope'`). AABB-only containment in v0.7 Slice 1; convex-hull check queued for Slice 2 |
 
 ## Cookbook — Query DSL for assemblies

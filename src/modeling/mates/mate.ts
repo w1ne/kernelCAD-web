@@ -71,14 +71,10 @@ export interface MateRecord {
   readonly capacity?: MateCapacity;
   /** @deprecated legacy manual-load API */
   readonly maxLoad?: MateLoadLimit;
-  /** Visual-exposure declaration read by Gate 4 (`jointVisualExposure`).
-   *  Default `'exposed'`: the joint must read as a hinge (fork daylight +
-   *  pin stickout thresholds). Declare `'concealed'` for mechanisms that
-   *  are enclosed BY DESIGN — valve rotors in bores, internal spindles,
-   *  worm shafts — where fork daylight is structurally impossible and the
-   *  hinge-visibility heuristic only emits false positives. An explicit
-   *  per-mate declaration, not a threshold change: exposed hinges keep
-   *  the full Gate 4 guard. */
+  /** Opt-in switch for the Gate 4 hinge-visibility check
+   *  (`jointVisualExposure`). Default (undeclared): the check does not run.
+   *  Declare `'exposed'` to require the revolute to read as a hinge (fork
+   *  daylight + pin stickout). `'concealed'` is equivalent to undeclared. */
   readonly exposure?: 'exposed' | 'concealed';
 }
 

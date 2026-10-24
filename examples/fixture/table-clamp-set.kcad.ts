@@ -4,7 +4,7 @@
 // A 36 mm tall workpiece clamped on a T-slot table with two M10 clamp sets:
 // T-slot nut in the channel, clamping stud, strap clamp over the workpiece,
 // step block under the tail, flange nut on top. All hardware comes from
-// lib.fixture (nominal envelope solids).
+// lib.part (nominal envelope solids) via lib.part.
 const tableT = 24;
 const slot = 12; // channel opening for M10 T-slot nuts
 const clampT = 12; // M10 strap clamp thickness
@@ -34,11 +34,11 @@ fixture.part('workpiece', work);
 for (const side of ['left', 'right'] as const) {
   const x = side === 'left' ? -spacing : spacing;
   const outward = side === 'left' ? -1 : 1;
-  const tNut = await lib.fixture.tSlotNut({ thread: 'M10' });
-  const stud = await lib.fixture.clampStud({ thread: 'M10', lengthMm: 80 });
-  const clamp = await lib.fixture.strapClamp({ thread: 'M10' });
-  const block = await lib.fixture.stepBlock({ thread: 'M10' });
-  const nut = await lib.fixture.flangeNut({ thread: 'M10' });
+  const tNut = await lib.part({ family: 't-slot-nut', thread: 'M10' });
+  const stud = await lib.part({ family: 'clamping-stud', thread: 'M10', lengthMm: 80 });
+  const clamp = await lib.part({ family: 'strap-clamp', thread: 'M10' });
+  const block = await lib.part({ family: 'step-block', thread: 'M10' });
+  const nut = await lib.part({ family: 'flange-nut', thread: 'M10' });
 
   fixture.part(`${side}-t-nut`, tNut.translate(x, 0, tableT - 0.6).finish('steel'));
   fixture.part(`${side}-stud`, stud.translate(x, 0, studBottom).finish('stainless'));

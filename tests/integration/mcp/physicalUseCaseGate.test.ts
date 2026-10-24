@@ -149,8 +149,8 @@ describe('generic physical use-case gate', () => {
       code: poseBoundStaticRig(25),
       includePoseEnvelope: false,
       includeInterference: false,
-      includePhysicalUseCaseStatics: true,
-      physicalUseCaseReachabilitySamplesPerMate: 1,
+      physicalUseCaseLevel: 'statics',
+      physicalUseCaseSamplesPerMate: 1,
     });
 
     expect(result.diagnostics).toEqual(expect.arrayContaining([
@@ -167,8 +167,8 @@ describe('generic physical use-case gate', () => {
       code: poseBoundStaticRig(35),
       includePoseEnvelope: false,
       includeInterference: false,
-      includePhysicalUseCaseStatics: true,
-      physicalUseCaseReachabilitySamplesPerMate: 1,
+      physicalUseCaseLevel: 'statics',
+      physicalUseCaseSamplesPerMate: 1,
     });
 
     expect(result.diagnostics.some((diagnostic) =>
@@ -190,9 +190,8 @@ describe('generic physical use-case gate', () => {
       code: ratedClevisPhysicalRig(),
       includePoseEnvelope: false,
       includeInterference: false,
-      includePhysicalUseCaseJointReactions: true,
-      includePhysicalUseCaseJointStructure: true,
-      physicalUseCaseReachabilitySamplesPerMate: 3,
+      physicalUseCaseLevel: 'reactions',
+      physicalUseCaseSamplesPerMate: 3,
     });
 
     expect(result.physicalUseCaseJointReactionCertificates).toEqual([
@@ -448,7 +447,7 @@ describe('generic physical use-case gate', () => {
     const result = await reviewCadTool({
       includePoseEnvelope: false,
       includeInterference: false,
-      includePhysicalUseCaseReachability: true,
+      physicalUseCaseLevel: 'reachability',
       requirePhysicalUseCase: true,
       code: `
         const arm = assembly('targeted reachability rig');

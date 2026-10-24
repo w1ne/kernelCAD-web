@@ -7,13 +7,7 @@
 // constructive primitive; G2+ will add `joint.prismatic`, `joint.ball`, etc.
 
 import type { KernelCadApi } from '../api';
-import type { Assembly } from '../capture/assembly';
 import { makeJointNamespace as makeClevisJointNamespace } from './clevis';
-import {
-  supportedServoRevolute,
-  type SupportedServoRevoluteOptions,
-  type SupportedServoRevoluteResult,
-} from './supportedServoRevolute';
 import type {
   ClevisJoint as ClevisJointResult,
   ClevisJointOptions as ClevisJointOpts,
@@ -21,13 +15,9 @@ import type {
 
 export function makeJointNamespace(kc: KernelCadApi): {
   clevis(opts: ClevisJointOpts): ClevisJointResult;
-  supportedServoRevolute(arm: Assembly, opts: SupportedServoRevoluteOptions): SupportedServoRevoluteResult;
 } {
   return {
     ...makeClevisJointNamespace(kc),
-    supportedServoRevolute(arm, opts): SupportedServoRevoluteResult {
-      return supportedServoRevolute(kc, arm, opts);
-    },
   };
 }
 
@@ -42,7 +32,3 @@ export type {
   ResolvedClevisStyle,
   StructuralMaterial,
 } from './types';
-export type {
-  SupportedServoRevoluteOptions,
-  SupportedServoRevoluteResult,
-} from './supportedServoRevolute';

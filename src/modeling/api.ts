@@ -36,7 +36,6 @@ import type { FindPartOpts, FindPartResult } from './parts/findPart';
 import type { StandardParts } from './parts/standardParts';
 import type { PartRequest, StackRequest } from './parts/familyTable';
 import type { InsertRequest, InsertResult } from './parts/holeInsert';
-import type { FixtureParts } from './parts/fixtureParts';
 import type { PlacedStack } from './parts/placePart';
 import type { FromDXFOptions, FromSVGOptions } from './parts/fromVectorFormats';
 import type { ShapeList } from './selection/shapeList';
@@ -50,8 +49,6 @@ import { makeJointNamespace } from './joints';
 import type {
   ClevisJoint,
   ClevisJointOptions,
-  SupportedServoRevoluteOptions,
-  SupportedServoRevoluteResult,
 } from './joints';
 import {
   makePrimitiveMethods,
@@ -137,9 +134,6 @@ export interface PartsLib {
    * Returns the shape with seats applied plus one placed stack per hole.
    */
   insert(shape: Shape, request: InsertRequest): Promise<InsertResult>;
-  /** Machining-fixture hardware: T-slot nuts, clamping studs, flange nuts, strap
-   *  clamps and step blocks, keyed by the thread their clamping parts use. */
-  fixture: FixtureParts;
   standard: StandardParts;
 }
 
@@ -700,20 +694,9 @@ export interface KernelCadApi {
    * `box`/`cylinder`/`union` — hand-rolled clevises are the leading cause
    * of mechanism-delivery failures (see `kernelcad-kinematic` SKILL.md
    * "Mechanism delivery — non-bypassable").
-   *
-   * `joint.supportedServoRevolute(arm, { name, mate, support, supportMount,
-   * output, axis, ... })` adds a seated servo actuator part, fastens its
-   * mount to a frame connector on the support part, and declares the
-   * `mechanicalJoint(...)` support contract for the driven revolute mate.
-   * The helper preflights names, refs, mate type, support/output presence,
-   * supportMount frame type, `axis` as the support-side axis connector of
-   * the named revolute mate, and body dimensions before mutating the
-   * assembly.
-   *
    */
   joint: {
     clevis(opts: ClevisJointOptions): ClevisJoint;
-    supportedServoRevolute(arm: Assembly, opts: SupportedServoRevoluteOptions): SupportedServoRevoluteResult;
   };
 }
 
