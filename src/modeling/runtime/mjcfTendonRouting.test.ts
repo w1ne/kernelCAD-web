@@ -104,7 +104,7 @@ describe('assemblyToMjcf — tendon via routing + actuator', () => {
         const arm = routedArm();
         arm.tendon('spring', { from: 'palm.in', via: ['prox.loop'], to: 'dist.tip', restLengthMm: 30, stiffnessNmm: 0.5 });
         const { mjcf } = await assemblyToMjcf(arm);
-        expect(mjcf).toMatch(/<spatial name="spring" springlength="0\.030000" stiffness="500\.000000"/);
+        expect(mjcf).toMatch(/<spatial name="spring" springlength="0 0\.030000" stiffness="500\.000000"/);
         expect(mjcf).not.toContain('<actuator>');
     });
 
