@@ -730,7 +730,7 @@ If any of these fail, iterate the design until they pass. Do not widen `ignore[]
 
 ### Use `joint.clevis(...)` for revolute joints — do not hand-roll forks
 
-The `kc.joint.clevis({...})` primitive builds the canonical revolute-joint hardware (two fork plates on the parent, one tongue on the child, a pin drilled through both knuckles) guaranteed correct by construction: bridge tabs outside the tongue's swing envelope, through-hole drilled in a single subtract after the fork and tongue are unioned in, and pin cap heads flush against the outer fork faces.
+The `kc.joint.clevis({...})` primitive (it requires `style.knuckleR`, the scale every other clevis dimension derives from) builds the canonical revolute-joint hardware (two fork plates on the parent, one tongue on the child, a pin drilled through both knuckles) guaranteed correct by construction: bridge tabs outside the tongue's swing envelope, through-hole drilled in a single subtract after the fork and tongue are unioned in, and pin cap heads flush against the outer fork faces.
 
 ```ts
 const shoulder = joint.clevis({
