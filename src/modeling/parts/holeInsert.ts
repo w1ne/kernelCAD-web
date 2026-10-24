@@ -29,6 +29,8 @@ import {
   FLATHEAD_HEAD,
   SHCS_HEAD,
   planStackFor,
+  resolveDetail,
+  type FastenerDetail,
   stockedScrewLengths,
 } from './familyTable';
 import { placeStackFor } from './placePart';
@@ -60,6 +62,9 @@ export interface InsertRequest {
   /** Head-side hint: the bore end nearest this point takes the head. Defaults
    *  to the end nearest `near`, then the end with the larger Z. */
   headAt?: Vec3;
+  /** Geometric detail of the placed stacks; default `'full'`. The seats and
+   *  every fit check use the nominal envelope either way. */
+  detail?: FastenerDetail;
 }
 
 export interface InsertedHole {
@@ -336,6 +341,7 @@ export function resolveInsert(request: InsertRequest): ResolvedInsert {
       example: INSERT_EXAMPLE,
     });
   }
+  resolveDetail(request.detail, 'lib.insert(shape, { detail, ... })');
   const mode = request.mode ?? 'bolt';
   if (mode !== 'screw' && mode !== 'bolt') {
     invalidArgs({
@@ -583,6 +589,7 @@ export async function insertFasteners(
       thread: plan.thread,
       gripMm: stackGrip,
       mode: resolved.mode,
+      ...(request.detail !== undefined ? { detail: request.detail } : {}),
     });
     holes.push({
       centerMm: plan.centerMm,

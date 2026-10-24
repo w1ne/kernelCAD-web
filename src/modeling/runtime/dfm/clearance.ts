@@ -40,7 +40,7 @@
 
 import { getOC } from 'replicad';
 import type { SceneBackend } from '../../../kernel/backends/sceneBackend';
-import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
+import { analysisBodyOf, type OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { pairKey } from '../detectInterferences';
 import { brepExtremaDistance, wrappedShape } from '../brepDistance';
@@ -177,7 +177,7 @@ export function transformScenePart(
   diagnostics: CompilerDiagnostic[],
 ): TransformedPart {
   try {
-    const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
+    const clone = (analysisBodyOf(p.shape) as OcctBackend).clone().applyTransform(p.worldTransform);
     return { name: p.name, shape: clone, bbox: clone.boundingBox() };
   } catch (e) {
     diagnostics.push({

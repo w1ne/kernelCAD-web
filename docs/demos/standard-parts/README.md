@@ -59,9 +59,15 @@ Evidence:
 - `src/modeling/runtime/browserRuntime.test.ts` covers the browser path
   ("lib.part builds an envelope without a filesystem").
 
-Scope: envelope solids only (head plus shank; no helical thread), no thread
-contact, strength, torque or preload. The committed catalog STEPs are exported
-from the same family table, so the on-disk and in-memory paths agree. Digital
+Scope: the evidence JSON files, `demo.mp4`, `flange-demo.mp4` and the `*.hero.png`
+stills predate modeled threads and show envelope solids (head plus shank, no
+helical thread). Since 2026-10-24 `lib.part` defaults to `detail: 'full'`
+(sockets, chamfers, ISO 68-1 threads); the guide's images in
+`docs/guide/standard-parts-library/` are renders of that geometry, and
+`fastener-lineup.kcad.ts` pins `detail: 'envelope'` so its video still matches.
+Fit and clash checks measure the envelope at either detail. No thread contact,
+strength, torque or preload. The committed catalog STEPs hold the envelope
+detail and come from the same builder as the in-memory solids. Digital
 geometry and placement only; no physical hardware was fabricated or measured.
 The `frames/` directory holds the exact slides the encoder consumed (the
 flange video uses `flange-frames/`). The guide page is

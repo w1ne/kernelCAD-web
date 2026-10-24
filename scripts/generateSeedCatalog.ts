@@ -14,7 +14,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct } from '../src/kernel/backends/occt/occtBackend';
-import { countersunkScrewSolid, headlessSolid, hexHeadBoltSolid } from '../src/modeling/parts/headSolids';
+import { fastenerSolid } from '../src/modeling/parts/fastenerGeometry';
 import type { PartRecord } from '../src/shared/parts/types';
 import type {
   ConnectorEntry,
@@ -39,6 +39,7 @@ import {
   fixtureVariants,
   isFixtureKind,
   resolvePart,
+  type PartRequest,
 } from '../src/modeling/parts/familyTable';
 import { fixtureSolid } from '../src/modeling/parts/fixtureSolids';
 
@@ -118,32 +119,24 @@ const HEADER_127 = { pitch: 1.27, postHeight: 6.0, postWidth: 0.4, baseHeight: 1
 // JST-XH housing dims (1 row, 2.5 mm pitch).
 const JST_XH = { pitch: 2.5, depth: 6.0, height: 8.6, baseHeight: 1.5 };
 
+/** STEP of a catalog fastener from the shared builder (fastenerGeometry.ts).
+ *  The bundled catalog carries the ENVELOPE detail: it is the analysis body
+ *  every fit check measures, and a modeled thread on each of the ~500
+ *  stocked screws would cost ~1 GB of STEP and tens of minutes per build.
+ *  lib.part's default 'full' detail builds the threaded solid from the same
+ *  builder in memory. */
+function catalogFastenerStep(request: PartRequest): Promise<Uint8Array> {
+  return fastenerSolid(resolvePart(request), 'envelope').exportSTEPAsync();
+}
+
 function fastenerStep(
+  family: string,
   thread: string,
   lengthMm: number,
   head: { D: number; K: number },
-  countersunk = false,
 ): Promise<{ bytes: Uint8Array; tNum: number; headD: number; headK: number }> {
   const tNum = parseFloat(thread.slice(1));
-  const headD = head.D;
-  const headK = head.K;
-  // Cylindrical heads sit on the seat plane (Z=0..K). A countersunk head seats
-  // in its cone: rim on Z=0, cone down to the nominal Ø at Z=-K.
-  const fused = countersunk
-    ? countersunkScrewSolid(tNum, headD, headK, lengthMm)
-    : OcctBackend.cylinder(headK, headD / 2).union(
-        OcctBackend.cylinder(lengthMm, tNum / 2).translate(0, 0, -lengthMm),
-      );
-  return fused.exportSTEPAsync().then((bytes) => ({ bytes, tNum, headD, headK }));
-}
-
-function washerStep(
-  thread: string,
-  dims: { Dout: number; Din: number; t: number },
-): Promise<Uint8Array> {
-  const outer = OcctBackend.cylinder(dims.t, dims.Dout / 2);
-  const inner = OcctBackend.cylinder(dims.t, dims.Din / 2);
-  return outer.subtract(inner).exportSTEPAsync();
+  return catalogFastenerStep({ family, thread, lengthMm }).then((bytes) => ({ bytes, tNum, headD: head.D, headK: head.K }));
 }
 
 function bearingStep(dims: {
@@ -154,32 +147,6 @@ function bearingStep(dims: {
   const outer = OcctBackend.cylinder(dims.B, dims.D / 2);
   const inner = OcctBackend.cylinder(dims.B, dims.d / 2);
   return outer.subtract(inner).exportSTEPAsync();
-}
-
-async function hexNutStep(
-  thread: string,
-  dims: { S: number; m: number },
-): Promise<Uint8Array> {
-  const tNum = parseFloat(thread.slice(1));
-  // Hex prism via extrudePolygon. The vertices start at 30 degrees so a FLAT
-  // faces +X, the same orientation the in-memory envelope builds (nutSolid);
-  // both doors must produce the same solid.
-  const r = dims.S / Math.sqrt(3);
-  const pts: [number, number][] = [];
-  for (let i = 0; i < 6; i++) {
-    const a = (Math.PI / 3) * i + Math.PI / 6;
-    pts.push([r * Math.cos(a), r * Math.sin(a)]);
-  }
-  const prism = OcctBackend.extrudePolygon(pts, dims.m);
-  const bore = OcctBackend.cylinder(dims.m, tNum / 2);
-  return prism.subtract(bore).exportSTEPAsync();
-}
-
-async function lockNutStep(
-  thread: string,
-  dims: { S: number; m: number },
-): Promise<Uint8Array> {
-  return hexNutStep(thread, dims);
 }
 
 async function heatsetInsertStep(args: {
@@ -366,6 +333,7 @@ function socketHeadCapScrew(): SeedFamily {
     async generate({ thread, lengthMm }) {
       const head = SHCS_HEAD[(thread as string).replace('.', '_')];
       const { bytes, tNum, headD, headK } = await fastenerStep(
+        'socket-head-cap-screw',
         thread as string,
         lengthMm as number,
         head,
@@ -411,6 +379,7 @@ function buttonHeadCapScrew(): SeedFamily {
     async generate({ thread, lengthMm }) {
       const head = BHCS_HEAD[thread as string];
       const { bytes, headD, headK } = await fastenerStep(
+        'button-head-cap-screw',
         thread as string,
         lengthMm as number,
         head,
@@ -455,10 +424,10 @@ function flatHeadCountersunk(): SeedFamily {
     async generate({ thread, lengthMm }) {
       const head = FLATHEAD_HEAD[thread as string];
       const { bytes, headD, headK } = await fastenerStep(
+        'flat-head-countersunk',
         thread as string,
         lengthMm as number,
         head,
-        true,
       );
       const id = `iso-10642-${threadSlug(thread as string)}x${lengthMm}`;
       return {
@@ -498,7 +467,7 @@ function hexNut(): SeedFamily {
     variants,
     async generate({ thread }) {
       const dims = HEX_NUT[(thread as string).replace('.', '_')];
-      const bytes = await hexNutStep(thread as string, dims);
+      const bytes = await catalogFastenerStep({ family: 'hex-nut', thread: thread as string });
       const id = `iso-4032-${threadSlug(thread as string)}`;
       return {
         stepBytes: bytes,
@@ -537,7 +506,7 @@ function lockNut(): SeedFamily {
     variants,
     async generate({ thread }) {
       const dims = LOCK_NUT[(thread as string).replace('.', '_')];
-      const bytes = await lockNutStep(thread as string, dims);
+      const bytes = await catalogFastenerStep({ family: 'lock-nut', thread: thread as string });
       const id = `din-985-${threadSlug(thread as string)}`;
       return {
         stepBytes: bytes,
@@ -576,7 +545,7 @@ function flatWasher(): SeedFamily {
     variants,
     async generate({ thread }) {
       const dims = FLAT_WASHER[(thread as string).replace('.', '_')];
-      const bytes = await washerStep(thread as string, dims);
+      const bytes = await catalogFastenerStep({ family: 'flat-washer', thread: thread as string });
       const id = `iso-7089-${threadSlug(thread as string)}`;
       return {
         stepBytes: bytes,
@@ -616,7 +585,7 @@ function lockWasher(): SeedFamily {
     variants,
     async generate({ thread }) {
       const dims = LOCK_WASHER[(thread as string).replace('.', '_')];
-      const bytes = await washerStep(thread as string, dims);
+      const bytes = await catalogFastenerStep({ family: 'lock-washer', thread: thread as string });
       const id = `din-127b-${threadSlug(thread as string)}`;
       return {
         stepBytes: bytes,
@@ -972,8 +941,7 @@ function hexHeadBolt(): SeedFamily {
     async generate({ thread, lengthMm }) {
       const head = HEX_BOLT_HEAD[(thread as string).replace('.', '_')];
       const tNum = parseFloat(String(thread).slice(1));
-      const fused = hexHeadBoltSolid(tNum, head.S, head.K, Number(lengthMm));
-      const bytes = await fused.exportSTEPAsync();
+      const bytes = await catalogFastenerStep({ family: 'hex-head-bolt', thread: String(thread), lengthMm: Number(lengthMm) });
       const id = `iso-4017-${threadSlug(String(thread))}x${lengthMm}`;
       return {
         stepBytes: bytes,
@@ -1024,7 +992,7 @@ function headlessFamily(args: {
     variants,
     async generate({ thread, lengthMm }) {
       const tNum = parseFloat(String(thread).slice(1));
-      const bytes = await headlessSolid(tNum, Number(lengthMm)).exportSTEPAsync();
+      const bytes = await catalogFastenerStep({ family: args.family, thread: String(thread), lengthMm: Number(lengthMm) });
       const id = `${args.idPrefix}-${threadSlug(String(thread))}x${lengthMm}`;
       return {
         stepBytes: bytes,

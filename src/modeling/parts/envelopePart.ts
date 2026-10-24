@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Build a fastener envelope in memory. Used when the generated STEP file is
-// not on disk, and by the browser, which has no host filesystem.
+// Build a standard part in memory at the requested detail. The browser has
+// no host filesystem, so this is its only door; on the host it is also the
+// door for 'full' detail (the bundled catalog STEPs hold the envelopes).
+// Geometry comes from fastenerGeometry.ts, the builder the catalog generator
+// uses too.
 
-import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
+import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import type { Shape } from '../capture/proxy';
 import type { CaptureSession } from '../capture/captureSession';
 import { snapshotCatalogPart, type PartRecord } from '../../shared/parts/types';
-import { isFixtureKind, type ResolvedPart } from './familyTable';
-import { countersunkScrewSolid, headlessSolid, hexHeadBoltSolid } from './headSolids';
-import { fixtureSolid } from './fixtureSolids';
+import { isFixtureKind, type FastenerDetail, type ResolvedPart } from './familyTable';
+import { cachedFastenerSolid, threadFormFor } from './fastenerGeometry';
 
 export interface EnvelopeCtx {
   session: CaptureSession;
@@ -32,56 +34,6 @@ function envelopeDigest(text: string): string {
   return out.slice(0, 64);
 }
 
-function screwSolid(part: ResolvedPart): OcctBackend {
-  if (part.family === 'flat-head-countersunk') {
-    return countersunkScrewSolid(
-      part.nominalMm,
-      part.headDiameterMm,
-      part.headHeightMm,
-      part.lengthMm,
-    );
-  }
-  if (part.family === 'hex-head-bolt') {
-    return hexHeadBoltSolid(
-      part.nominalMm,
-      part.acrossFlatsMm,
-      part.headHeightMm,
-      part.lengthMm,
-    );
-  }
-  if (part.family === 'set-screw' || part.family === 'threaded-rod') {
-    return headlessSolid(part.nominalMm, part.lengthMm);
-  }
-  const head = OcctBackend.cylinder(part.headHeightMm, part.headDiameterMm / 2);
-  const shank = OcctBackend.cylinder(part.lengthMm, part.nominalMm / 2).translate(0, 0, -part.lengthMm);
-  return head.union(shank);
-}
-
-function washerSolid(part: ResolvedPart): OcctBackend {
-  const outer = OcctBackend.cylinder(part.headHeightMm, part.headDiameterMm / 2);
-  const inner = OcctBackend.cylinder(part.headHeightMm, part.innerDiameterMm / 2);
-  return outer.subtract(inner);
-}
-
-function nutSolid(part: ResolvedPart): OcctBackend {
-  const radius = part.acrossFlatsMm / Math.sqrt(3);
-  const pts: [number, number][] = [];
-  for (let i = 0; i < 6; i++) {
-    const angle = (Math.PI / 3) * i + Math.PI / 6;
-    pts.push([radius * Math.cos(angle), radius * Math.sin(angle)]);
-  }
-  const prism = OcctBackend.extrudePolygon(pts, part.headHeightMm);
-  const bore = OcctBackend.cylinder(part.headHeightMm, part.nominalMm / 2);
-  return prism.subtract(bore);
-}
-
-function solidFor(part: ResolvedPart): OcctBackend {
-  if (isFixtureKind(part.kind)) return fixtureSolid(part.kind, part.dims ?? {}, part.nominalMm);
-  if (part.kind === 'washer') return washerSolid(part);
-  if (part.kind === 'nut') return nutSolid(part);
-  return screwSolid(part);
-}
-
 /** Fixture envelopes carry their own dimensions; fold them into the digest so
  *  two different fixture geometries cannot hash alike. */
 function dimsKey(part: ResolvedPart): string {
@@ -92,12 +44,36 @@ function dimsKey(part: ResolvedPart): string {
     .join(',');
 }
 
-export async function synthesizeEnvelope(ctx: EnvelopeCtx, part: ResolvedPart): Promise<Shape> {
+/** Whether `detail` changes this part's solid (fixtures and flat washers are
+ *  the same at both levels). */
+function hasDetail(part: ResolvedPart): boolean {
+  return !isFixtureKind(part.kind) && part.family !== 'flat-washer';
+}
+
+function detailAttributes(part: ResolvedPart, detail: FastenerDetail): Record<string, string | number> {
+  if (!hasDetail(part)) return {};
+  const form = detail === 'full' ? threadFormFor(part) : 'none';
+  return {
+    detail,
+    ...(part.iso ? { pitchMm: part.iso.pitchMm } : {}),
+    ...(part.iso?.threadLengthMm !== undefined ? { threadLengthMm: part.iso.threadLengthMm } : {}),
+    ...(form !== 'none' ? { threadForm: form } : {}),
+  };
+}
+
+export async function synthesizeEnvelope(
+  ctx: EnvelopeCtx,
+  part: ResolvedPart,
+  detail: FastenerDetail = 'full',
+): Promise<Shape> {
   await initOcct();
-  const backend = solidFor(part);
+  const effective: FastenerDetail = hasDetail(part) ? detail : 'envelope';
+  const backend = cachedFastenerSolid(part, effective);
+  // Every fit / clash / installation check measures the nominal envelope.
+  if (effective === 'full') backend.analysisBody = cachedFastenerSolid(part, 'envelope');
   const dims = dimsKey(part);
   const digest = envelopeDigest(
-    `${part.id}|${part.headDiameterMm}|${part.headHeightMm}|${part.lengthMm}${dims === '' ? '' : `|${dims}`}`,
+    `${part.id}|${part.headDiameterMm}|${part.headHeightMm}|${part.lengthMm}${dims === '' ? '' : `|${dims}`}${effective === 'full' ? '|full' : ''}`,
   );
   const record: PartRecord = {
     id: part.id,
@@ -111,6 +87,7 @@ export async function synthesizeEnvelope(ctx: EnvelopeCtx, part: ResolvedPart): 
       ...(part.lengthMm > 0 ? { lengthMm: part.lengthMm } : {}),
       nominalMm: part.nominalMm,
       ...(part.dims ?? {}),
+      ...detailAttributes(part, effective),
     },
     sha256: digest,
     source: 'local-catalog',
@@ -128,7 +105,7 @@ export async function synthesizeEnvelope(ctx: EnvelopeCtx, part: ResolvedPart): 
     kind: 'importedStep',
     params: {},
     inputs: {},
-    metadata: { sourcePath: `envelope:${part.id}` },
+    metadata: { sourcePath: `envelope:${part.id}${effective === 'full' ? ':full' : ''}` },
   });
   ctx.session.importedGeometry.set(shape.id, backend);
   ctx.session.attachCatalogConnectors(shape.id, part.connectors);

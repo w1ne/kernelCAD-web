@@ -25,7 +25,7 @@
 // cache. See `IncrementalInterferenceOptions` there.
 
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend, analysisBodyOf } from '../../kernel/backends/occt/occtBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { invalidArgsText } from '../../shared/intent/invalidArgs';
 import { pairKey, type InterferencePair } from './detectInterferences';
@@ -176,8 +176,8 @@ function measureOnePair(
   let posedA: OcctBackend | undefined;
   let posedB: OcctBackend | undefined;
   try {
-    posedA = (a.shape as OcctBackend).clone().applyTransform(a.worldTransform);
-    posedB = (b.shape as OcctBackend).clone().applyTransform(b.worldTransform);
+    posedA = (analysisBodyOf(a.shape) as OcctBackend).clone().applyTransform(a.worldTransform);
+    posedB = (analysisBodyOf(b.shape) as OcctBackend).clone().applyTransform(b.worldTransform);
     const lowerBound = bboxGap(posedA.boundingBox(), posedB.boundingBox());
     if (lowerBound >= minMm) {
       return { a: aName, b: bName, minMm, distanceMm: lowerBound, status: 'ok' };
