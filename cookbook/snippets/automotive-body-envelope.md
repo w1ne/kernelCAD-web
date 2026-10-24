@@ -9,7 +9,6 @@ keywords:
   - sedan hatchback body
   - car from open source model
   - station sections from reference mesh
-  - berlinetta body
   - sports car body shell
   - rail loft body
   - spline loft sections
@@ -18,9 +17,8 @@ keywords:
   - fairing body envelope
   - car body with glass separate
   - wheel arches wheels in arches
-  - body likeness gate
   - network body panels via sew
-when_to_use: You need a car / van / berlinetta / fairing body that reads as a REAL vehicle, not a child-like extruded side outline with a box roof. Copy this ported hatchback (station tables measured from an open CC-BY model) and re-param it; for a different car, measure its stations from an open reference instead of free-handing. Degree-3 nurbsSegment sections lofted in short runs, greenhouse as a second loft, glass/lamps as thin separate skins, wheels in arches.
+when_to_use: You need a car / van / fairing body that reads as a REAL vehicle, not a child-like extruded side outline with a box roof. Copy this ported hatchback (station tables measured from an open CC-BY model) and re-param it; for a different car, measure its stations from an open reference instead of free-handing. Degree-3 nurbsSegment sections lofted in short runs, greenhouse as a second loft, glass/lamps as thin separate skins, wheels in arches.
 ---
 
 The main block below is a **real car**: a generic five-door compact hatchback
@@ -80,7 +78,7 @@ blueprint, section drawing): `s` along the length, half-widths `w` and heights
 // Compact hatchback ported from OSRF gazebo_models `hatchback` (CC-BY 3.0).
 // Full provenance + extraction script: examples/from-reference/hatchback/.
 // Check: render side --pose 180,0, front --pose -90,0, 3/4 --pose -130,22
-// (nose is at x = 0, the car runs along +x), then verify body-likeness.
+// (nose is at x = 0, the car runs along +x).
 
 // --- Editable parameters (defaults = source model) ---------------------------
 const length = param('length', 4001, { min: 3600, max: 4600, description: 'overall length, bumper to bumper (mm)' });
@@ -293,18 +291,3 @@ rails do not apply `planes[].origin` to NURBS sections. When you need more
 guides, split the body into panels (`surfaceFromCurves` /
 `surfaceFromBoundary`), thicken each Surface (or `sew` a closed shell), then
 G2 fillet — see `lookup_cookbook("network body panels via sew")`.
-
-**Before publish / open_in_studio (likeness gate)**
-
-Silhouette-weak evidence is not success. After `evaluate_script` +
-`render_preview` (or CLI stills for this model: side `--pose 180,0`, front `--pose -90,0`,
-3/4 front `--pose -130,22` — the nose sits at x = 0), call:
-
-`verify({ check: 'body-likeness', body_bbox, wheels, still_verdicts })`
-
-Required still codes: `side-body-over-wheels`, `side-cabin-aft`, `rear-haunch`,
-`ortho-proportions-vs-reference` (concrete findings, not empty strings).
-
-Automated: wheel footprint, rocker vs tire top, wheelbase span, optional cabin-aft
-(when `cabin_bbox` given). Agent-required: the four still codes. Full CV
-silhouette IoU is **not** implemented — do not claim it.

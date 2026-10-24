@@ -358,11 +358,11 @@ export function fixtureVariants(family: string): Array<{ thread: string; lengthM
   const spec = FIXTURES[family];
   if (spec === undefined) {
     invalidArgs({
-      api: 'lib.fixture.*',
+      api: 'lib.part',
       path: 'family',
       got: family,
       requires: `a stocked fixture family: ${FIXTURE_FAMILY_NAMES.join(', ')}`,
-      example: "lib.fixture.tSlotNut({ thread: 'M10' })",
+      example: "lib.part({ family: 't-slot-nut', thread: 'M10' })",
     });
   }
   return Object.keys(spec.threads).flatMap((key) => {

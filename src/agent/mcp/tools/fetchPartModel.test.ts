@@ -112,7 +112,7 @@ describe('fetch_part_model', () => {
     expect(result.error).toContain('public');
   });
 
-  it('rejects an explicit model whose bytes do not match the handoff hash', async () => {
+  it('rejects an explicit model whose bytes do not match the expected hash', async () => {
     setFetchDepsForTest({
       resolve: async () => [{ address: '93.184.216.34', family: 4 }],
       request: ((opts: { hostname?: string; path?: string }, cb: (res: unknown) => void) => {
@@ -129,7 +129,7 @@ describe('fetch_part_model', () => {
     expect(result).toMatchObject({ ok: false, errorCode: 'model.hash-mismatch' });
   });
 
-  it('measures GLB POSITION accessor bounds against the handoff bbox', async () => {
+  it('measures GLB POSITION accessor bounds against the expected bbox', async () => {
     cacheDir = await mkdtemp(join(tmpdir(), 'fetch-part-model-glb-'));
     vi.stubEnv('KERNELCAD_CACHE_DIR', cacheDir);
     // Standard glTF coordinates are meters; a 30 x 20 x 10 mm part is
@@ -214,7 +214,7 @@ describe('fetch_part_model', () => {
     expect(result).toMatchObject({ ok: false, errorCode: 'model.invalid-glb' });
   });
 
-  it('compares measured STEP bounds with a handoff bbox', async () => {
+  it('compares measured STEP bounds with an expected bbox', async () => {
     await initOcct();
     cacheDir = await mkdtemp(join(tmpdir(), 'fetch-part-model-step-'));
     vi.stubEnv('KERNELCAD_CACHE_DIR', cacheDir);
@@ -448,44 +448,5 @@ describe('fetch_part_model', () => {
     const result = await fetchPartModelTool({ catalog_id: 'fetch-only-glb' });
     expect(result).toMatchObject({ ok: false, errorCode: 'model.catalog-glb-hash-required' });
     expect(fetchBytes).not.toHaveBeenCalled();
-  });
-
-  it('uses the Argon LabWired handoff fixture and reports unresolved part models', async () => {
-    const handoff = JSON.parse(await readFile(new URL('../../../../tests/fixtures/argon/handoff-drawbot.json', import.meta.url), 'utf8')) as {
-      schema: string;
-      parts: Array<{ ref: string; catalog_id?: string; mpn?: { value?: string | null }; physical: { bbox_mm?: number[] | null; step_url?: string | null; expected_sha256?: string | null; source?: string | null; license?: string | null } }>;
-    };
-    expect(handoff.schema).toBe('labwired-kernelcad-handoff/0.1');
-    const fetchPart = vi.fn(async () => ({ ok: false as const, error: 'no catalog model found', errorCode: 'parts.not-found', errorHint: '' }));
-    const findPart = vi.fn(async () => ({ ok: true as const, results: [], totalMatches: 0, source: 'local' as const, remoteEnabled: false }));
-    const fixtureStep = await readFile(new URL('../../../../scripts/parts/authored/components/barrel_jack.step', import.meta.url));
-    cacheDir = await mkdtemp(join(tmpdir(), 'fetch-part-model-handoff-'));
-    vi.stubEnv('KERNELCAD_CACHE_DIR', cacheDir);
-    setFetchPartModelDepsForTest({
-      fetchPart: fetchPart as unknown as typeof import('./fetchPart').fetchPartTool,
-      findPart: findPart as unknown as typeof import('./findPart').findPartTool,
-      fetchBytes: vi.fn(async () => fixtureStep) as unknown as typeof import('./importStepFetch').fetchPublicBytes,
-    });
-    // The shared handoff fixture names the J1 stand-in STEP URL but pins no digest or licence;
-    // the caller pins them (KiCad Packages3D is CC-BY-SA-4.0).
-    const pinned: Record<string, { expected_sha256: string; license: string }> = {
-      J1: { expected_sha256: 'b7ce6d1a3c3c351ebf2fe143053b8de575da2270a7d3a1b5d08eec4caad5d4df', license: 'CC-BY-SA-4.0' },
-    };
-    const results = await Promise.all(handoff.parts.map(part => fetchPartModelTool({
-      ref: part.ref,
-      ...(part.physical.step_url ? { url: part.physical.step_url } : {}),
-      ...((part.physical.expected_sha256 ?? pinned[part.ref]?.expected_sha256) ? { expected_sha256: part.physical.expected_sha256 ?? pinned[part.ref]?.expected_sha256 } : {}),
-      ...(part.physical.source ? { source: part.physical.source } : {}),
-      ...((part.physical.license ?? pinned[part.ref]?.license) ? { license: part.physical.license ?? pinned[part.ref]?.license } : {}),
-      ...(part.catalog_id ? { catalog_id: part.catalog_id } : {}),
-      ...(part.mpn?.value ? { mpn: part.mpn.value } : {}),
-      ...(part.physical.bbox_mm ? { bbox_mm: part.physical.bbox_mm } : {}),
-    })));
-    expect(fetchPart).toHaveBeenCalledTimes(handoff.parts.length - handoff.parts.filter(part => part.physical.step_url).length);
-    expect(findPart).not.toHaveBeenCalled();
-    expect(results.filter(result => result.ref !== 'J1').every(result => !result.ok)).toBe(true);
-    expect(results.find(result => result.ref === 'J1')).toMatchObject({ ok: true, format: 'step', sha256: 'b7ce6d1a3c3c351ebf2fe143053b8de575da2270a7d3a1b5d08eec4caad5d4df', attribution: { source: expect.stringContaining('KiCad Connector_BarrelJack'), license: 'CC-BY-SA-4.0' } });
-    expect(results.filter(result => result.ref !== 'J1').every(result => result.errorCode === 'parts.not-found')).toBe(true);
-    expect(results.map(result => result.ref)).toEqual(handoff.parts.map(part => part.ref));
   });
 });

@@ -30,13 +30,10 @@ import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools'
 import { importToolEntries } from './registry/importTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
-import { bomToolEntries } from './registry/bomTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
-import { handoffToolEntries } from './registry/handoffTools';
 import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
-import { partModelToolEntries } from './registry/partModelTools';
-import { wireRoutingToolEntries } from './registry/wireRoutingTools';
+import { blockoutToolEntries } from './registry/blockoutTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { explodeViewToolEntries } from './registry/explodeViewTools';
 
@@ -73,7 +70,6 @@ const EXPECTED_TOOL_NAMES = [
   'set_scene_return',
   'solve_mates',
   'review_cad',
-  'review_paint_peek_latest',
   'design_loop',
   'flatten_pattern',
   'evaluate_sdf',
@@ -98,13 +94,10 @@ const EXPECTED_TOOL_NAMES = [
   'ray_pick',
   'inspect_nurbs',
   'fit_plane',
-  'route_wires',
-  'import_handoff',
   'mesh_boolean',
   'explode_view',
   'apply_surface_blend',
-  'fetch_part_model',
-  'write_bom',
+  'blockout_assembly',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -199,7 +192,7 @@ describe('toolRegistry public contract', () => {
     expect(names).toEqual(['inspect', 'verify', 'why_did_this_fail', 'query', 'repair_script']);
     expect(TOOL_REGISTRY.slice(2, 5)).toEqual(inspectionVerificationPreludeToolEntries);
     expect(TOOL_REGISTRY[16]).toEqual(inspectionVerificationQueryToolEntries[0]);
-    expect(TOOL_REGISTRY[42]).toEqual(inspectionVerificationRepairToolEntries[0]);
+    expect(TOOL_REGISTRY[41]).toEqual(inspectionVerificationRepairToolEntries[0]);
   });
 
   it('composes reference and export tools from the reference export registry module', () => {
@@ -318,14 +311,13 @@ describe('toolRegistry public contract', () => {
 
     expect(names).toEqual([
       'review_cad',
-      'review_paint_peek_latest',
       'design_loop',
       'flatten_pattern',
       'evaluate_sdf',
       'capture_animation',
       'render_preview',
     ]);
-    expect(TOOL_REGISTRY.slice(31, 38)).toEqual(reviewPipelineToolEntries);
+    expect(TOOL_REGISTRY.slice(31, 37)).toEqual(reviewPipelineToolEntries);
   });
 
   it('appends the reference-ledger tools at the tail of TOOL_REGISTRY', () => {
@@ -336,58 +328,58 @@ describe('toolRegistry public contract', () => {
     const names = referenceLedgerToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['resolve_assumptions']);
-    expect(TOOL_REGISTRY.slice(38, 39)).toEqual(referenceLedgerToolEntries);
+    expect(TOOL_REGISTRY.slice(37, 38)).toEqual(referenceLedgerToolEntries);
   });
 
   it('composes the structural-FEA tools last, so existing tool indices never shift', () => {
     const names = feaToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['run_fea', 'fea_summary']);
-    expect(TOOL_REGISTRY.slice(39, 41)).toEqual(feaToolEntries);
+    expect(TOOL_REGISTRY.slice(38, 40)).toEqual(feaToolEntries);
   });
 
   it('composes the send_to_printer tool from the print registry module, appended last', () => {
     expect(printToolEntries.map(entry => entry.definition.name)).toEqual(['send_to_printer']);
-    expect(TOOL_REGISTRY.slice(41, 42)).toEqual(printToolEntries);
+    expect(TOOL_REGISTRY.slice(40, 41)).toEqual(printToolEntries);
   });
 
   it('composes the mechanism-sim tail slice from the mechanism-sim registry module', () => {
     const names = mechanismSimToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['sweep_tolerance']);
-    expect(TOOL_REGISTRY.slice(43, 44)).toEqual(mechanismSimToolEntries);
+    expect(TOOL_REGISTRY.slice(42, 43)).toEqual(mechanismSimToolEntries);
   });
 
   it('composes the geometry diff family at the registry tail, after every pre-existing family', () => {
     const names = geometryDiffToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['diff_geometry']);
-    expect(TOOL_REGISTRY.slice(44, 45)).toEqual(geometryDiffToolEntries);
+    expect(TOOL_REGISTRY.slice(43, 44)).toEqual(geometryDiffToolEntries);
   });
 
   it('composes the drawing-import family at the registry tail, after every pre-existing family', () => {
     const names = drawingImportToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['drawing_to_cad']);
-    expect(TOOL_REGISTRY.slice(45, 46)).toEqual(drawingImportToolEntries);
+    expect(TOOL_REGISTRY.slice(44, 45)).toEqual(drawingImportToolEntries);
   });
 
   it('composes the mesh reconstruction family at the registry tail, after the drawing-import family', () => {
     const names = meshReconstructToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['mesh_to_features']);
-    expect(TOOL_REGISTRY.slice(46, 47)).toEqual(meshReconstructToolEntries);
+    expect(TOOL_REGISTRY.slice(45, 46)).toEqual(meshReconstructToolEntries);
   });
 
   it('composes the cookbook-execution family at the registry tail, after mesh reconstruction', () => {
     const names = cookbookExecutionToolEntries.map(entry => entry.definition.name);
 
     expect(names).toEqual(['execute_cookbook']);
-    expect(TOOL_REGISTRY.slice(47, 48)).toEqual(cookbookExecutionToolEntries);
+    expect(TOOL_REGISTRY.slice(46, 47)).toEqual(cookbookExecutionToolEntries);
   });
 
   it('keeps the historical entries stable and appends new families in merge order', () => {
-    expect(TOOL_REGISTRY.slice(38).map(entry => entry.definition.name)).toEqual([
+    expect(TOOL_REGISTRY.slice(37).map(entry => entry.definition.name)).toEqual([
       'resolve_assumptions',
       'run_fea',
       'fea_summary',
@@ -405,38 +397,35 @@ describe('toolRegistry public contract', () => {
       'ray_pick',
       'inspect_nurbs',
       'fit_plane',
-      'route_wires',
-      'import_handoff',
       'mesh_boolean',
       'explode_view',
       'apply_surface_blend',
-      'fetch_part_model',
-      'write_bom',
+      'blockout_assembly',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(62);
+    expect(TOOL_REGISTRY).toHaveLength(58);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
     expect(importToolEntries.map(entry => entry.definition.name)).toEqual(['import_step']);
-    expect(TOOL_REGISTRY.slice(50, 51)).toEqual(importToolEntries);
+    expect(TOOL_REGISTRY.slice(49, 50)).toEqual(importToolEntries);
     expect(getToolDefinition('import_step')?._meta).toEqual({ 'openai/fileParams': ['upload'] });
   });
   it('composes the manufacturability review family at the registry tail', () => {
     expect(manufacturingToolEntries.map(entry => entry.definition.name)).toEqual(['dfm_review']);
-    expect(TOOL_REGISTRY.slice(51, 52)).toEqual(manufacturingToolEntries);
+    expect(TOOL_REGISTRY.slice(50, 51)).toEqual(manufacturingToolEntries);
   });
   it('composes ray picking before NURBS inspection at the registry tail', () => {
-    expect(TOOL_REGISTRY.slice(52, 53).map(entry => entry.definition.name)).toEqual(['ray_pick']);
+    expect(TOOL_REGISTRY.slice(51, 52).map(entry => entry.definition.name)).toEqual(['ray_pick']);
     expect(nurbsToolEntries.map(entry => entry.definition.name)).toEqual(['inspect_nurbs']);
-    expect(TOOL_REGISTRY.slice(53, 54)).toEqual(nurbsToolEntries);
-    expect(TOOL_REGISTRY.slice(54, 55)).toEqual(pointCloudToolEntries);
+    expect(TOOL_REGISTRY.slice(52, 53)).toEqual(nurbsToolEntries);
+    expect(TOOL_REGISTRY.slice(53, 54)).toEqual(pointCloudToolEntries);
   });
 
   it('composes ray picking at the registry tail', () => {
-    expect(TOOL_REGISTRY.slice(52, 53).map(entry => entry.definition.name)).toEqual(['ray_pick']);
+    expect(TOOL_REGISTRY.slice(51, 52).map(entry => entry.definition.name)).toEqual(['ray_pick']);
   });
-  it('composes the point-cloud analysis family before wire routing', () => {
-    expect(TOOL_REGISTRY.slice(54, 55)).toEqual(pointCloudToolEntries);
+  it('composes the point-cloud analysis family before mesh boolean', () => {
+    expect(TOOL_REGISTRY.slice(53, 54)).toEqual(pointCloudToolEntries);
   });
 
   it('dispatches plane fitting through the MCP registry', async () => {
@@ -446,47 +435,33 @@ describe('toolRegistry public contract', () => {
 
   it('composes ray picking from the ray-pick registry module', () => {
     expect(rayPickToolEntries.map(entry => entry.definition.name)).toEqual(['ray_pick']);
-    expect(TOOL_REGISTRY.slice(52, 53)).toEqual(rayPickToolEntries);
+    expect(TOOL_REGISTRY.slice(51, 52)).toEqual(rayPickToolEntries);
   });
 
-  it('appends the wire routing tool after the point-cloud family', () => {
-    expect(wireRoutingToolEntries.map(entry => entry.definition.name)).toEqual(['route_wires']);
-    expect(TOOL_REGISTRY.slice(55, 56)).toEqual(wireRoutingToolEntries);
-  });
-
-  it('appends the handoff importer after the wire routing tool', () => {
-    expect(handoffToolEntries.map(entry => entry.definition.name)).toEqual(['import_handoff']);
-    expect(TOOL_REGISTRY.slice(56, 57)).toEqual(handoffToolEntries);
-    expect(handoffToolEntries[0].definition.description).toMatch(/^Use this when /);
-  });
   it('composes ray picking at the registry tail', () => {
     expect(rayPickToolEntries.map(entry => entry.definition.name)).toEqual(['ray_pick']);
-    expect(TOOL_REGISTRY.slice(52, 53)).toEqual(rayPickToolEntries);
+    expect(TOOL_REGISTRY.slice(51, 52)).toEqual(rayPickToolEntries);
   });
-  it('composes the BOM writer at the registry tail', () => {
-    expect(bomToolEntries.map(entry => entry.definition.name)).toEqual(['write_bom']);
-    expect(TOOL_REGISTRY.slice(-bomToolEntries.length)).toEqual(bomToolEntries);
-  });
-
-  it('appends the mesh boolean tool after the handoff importer', async () => {
+  it('appends the mesh boolean tool after the point-cloud family', async () => {
     expect(meshBooleanToolEntries.map(entry => entry.definition.name)).toEqual(['mesh_boolean']);
-    expect(TOOL_REGISTRY.slice(57, 58)).toEqual(meshBooleanToolEntries);
+    expect(TOOL_REGISTRY.slice(54, 55)).toEqual(meshBooleanToolEntries);
     await expect(callMcpTool('mesh_boolean', { operation: 'bad' })).resolves.toMatchObject({ ok: false });
   });
 
   it('appends the exploded-view planner after the mesh boolean tool', () => {
     expect(explodeViewToolEntries.map(entry => entry.definition.name)).toEqual(['explode_view']);
-    expect(TOOL_REGISTRY.slice(58, 59)).toEqual(explodeViewToolEntries);
-    expect(TOOL_REGISTRY[58]?.definition.name).toBe('explode_view');
+    expect(TOOL_REGISTRY.slice(55, 56)).toEqual(explodeViewToolEntries);
+    expect(TOOL_REGISTRY[55]?.definition.name).toBe('explode_view');
   });
 
-  it('appends the surface blend authoring tool before the part-model fetcher', () => {
-    expect(TOOL_REGISTRY.slice(59, 60)).toEqual(surfaceBlendToolEntries);
+  it('appends the surface blend authoring tool before the blockout tool', () => {
+    expect(TOOL_REGISTRY.slice(56, 57)).toEqual(surfaceBlendToolEntries);
   });
 
-  it('appends the handoff model fetcher after all existing tool families', () => {
-    expect(partModelToolEntries.map(entry => entry.definition.name)).toEqual(['fetch_part_model']);
-    expect(TOOL_REGISTRY.slice(60, 61)).toEqual(partModelToolEntries);
+  it('appends the generic blockout assembly generator at the registry tail', () => {
+    expect(blockoutToolEntries.map(entry => entry.definition.name)).toEqual(['blockout_assembly']);
+    expect(TOOL_REGISTRY.slice(-blockoutToolEntries.length)).toEqual(blockoutToolEntries);
+    expect(blockoutToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

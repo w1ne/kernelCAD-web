@@ -35,26 +35,14 @@ describe('toolRegistry pose-envelope schema options', () => {
     expect(prop.type).toBe('boolean');
   });
 
-  it('review_cad schema declares reaction and clevis structure review flags', () => {
+  it('review_cad schema declares one escalating physical-use-case level', () => {
     const def = findTool('review_cad');
-    expect(def.inputSchema.properties.includePhysicalUseCaseJointReactions).toMatchObject({
-      type: 'boolean',
+    expect(def.inputSchema.properties.physicalUseCaseLevel).toMatchObject({
+      type: 'string',
+      enum: ['reachability', 'statics', 'reactions'],
     });
-    expect(def.inputSchema.properties.includePhysicalUseCaseJointStructure).toMatchObject({
-      type: 'boolean',
-    });
-  });
-
-  it('review_cad schema declares gripperAperture refs', () => {
-    const def = findTool('review_cad');
-    const prop = def.inputSchema.properties.gripperAperture as {
-      type: string;
-      properties?: Record<string, { type: string }>;
-    };
-    expect(prop).toBeDefined();
-    expect(prop.type).toBe('object');
-    expect(prop.properties?.left?.type).toBe('string');
-    expect(prop.properties?.right?.type).toBe('string');
+    expect(def.inputSchema.properties.includePhysicalUseCaseJointReactions).toBeUndefined();
+    expect(def.inputSchema.properties.includePhysicalUseCaseJointStructure).toBeUndefined();
   });
 
   it('design_loop visual review schema names every required visual check', () => {
@@ -78,7 +66,6 @@ describe('toolRegistry pose-envelope schema options', () => {
       'no-stray-or-floating-geometry',
       'attachment-plausibility',
       'semantic-orientation-alignment',
-      'device-depth-and-construction',
       'canonical-views-physically-coherent',
     ]) {
       expect(description).toContain(code);

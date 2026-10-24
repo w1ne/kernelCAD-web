@@ -10,7 +10,6 @@ import {
   summarizeMechanismFitness,
   type MechanismFitnessResult,
 } from '../../modeling/mates/mechanismFitness';
-import type { GripperApertureRequest } from '../../modeling/mates/gripperAperture';
 import type { PoseEnvelopeDiagnostic, PoseEnvelopeReviewResult } from '../../modeling/mates/poseEnvelope';
 import { reviewPoseEnvelope } from '../../modeling/mates/poseEnvelope';
 import { suggestLimitFix } from '../../modeling/mates/limitFixSuggest';
@@ -32,6 +31,7 @@ import {
 } from '../../modeling/mates/mechanicalTransmission';
 import {
   reviewPhysicalUseCasesWithReachability,
+  type PhysicalUseCaseLevel,
   type PhysicalUseCaseDiagnostic,
   type PhysicalUseCaseJointStructuralCertificate,
 } from '../../modeling/mates/physicalUseCase';
@@ -80,15 +80,16 @@ export interface ReviewCadInput {
   includePhysics?: boolean;
   epsilonMm3?: number;
   trackConnectors?: string[];
-  gripperAperture?: GripperApertureRequest;
   samplesPerMate?: number;
   combinatorial?: boolean;
   requirePhysicalUseCase?: boolean;
-  includePhysicalUseCaseReachability?: boolean;
-  includePhysicalUseCaseStatics?: boolean;
-  includePhysicalUseCaseJointReactions?: boolean;
-  includePhysicalUseCaseJointStructure?: boolean;
-  physicalUseCaseReachabilitySamplesPerMate?: number;
+  /** Escalating physical-use-case depth; each level includes the previous:
+   *  `reachability` < `statics` < `reactions` (joint reactions, plus the
+   *  clevis structural check for joint.clevis mates). Defaults to
+   *  `reachability` when `requirePhysicalUseCase` is true. */
+  physicalUseCaseLevel?: PhysicalUseCaseLevel;
+  /** Samples per scalar-limited actuator mate for physical-use-case reachability. */
+  physicalUseCaseSamplesPerMate?: number;
   /**
    * Wall-clock budget for the whole review (ms). Heavy stages (pose envelope,
    * physical use case, mechanism sweep) are skipped once it is spent, and the
@@ -150,7 +151,6 @@ export type ReviewCadOutput = ReviewTimingReport & (
       };
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
-      gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       physicalUseCaseStaticCertificates?: readonly PhysicalUseCaseStaticCertificate[];
       physicalUseCaseJointReactionCertificates?: readonly PhysicalUseCaseJointReactionCertificate[];
       physicalUseCaseJointStructuralCertificates?: readonly PhysicalUseCaseJointStructuralCertificate[];
@@ -195,7 +195,6 @@ export type ReviewCadOutput = ReviewTimingReport & (
       };
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
-      gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       physicalUseCaseStaticCertificates?: readonly PhysicalUseCaseStaticCertificate[];
       physicalUseCaseJointReactionCertificates?: readonly PhysicalUseCaseJointReactionCertificate[];
       physicalUseCaseJointStructuralCertificates?: readonly PhysicalUseCaseJointStructuralCertificate[];
@@ -321,7 +320,6 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     },
     ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
     ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
-    ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
     physicalUseCaseStaticCertificates: physicalUseCases.staticCertificates,
     physicalUseCaseJointReactionCertificates: physicalUseCases.jointReactionCertificates,
     physicalUseCaseJointStructuralCertificates: physicalUseCases.jointStructuralCertificates,
@@ -517,7 +515,7 @@ async function runMechanicalReviewStage(
 async function runPoseEnvelopeStage(
   arm: Assembly,
   model: BuiltModel,
-  input: Pick<ReviewCadInput, 'includeInterference' | 'epsilonMm3' | 'trackConnectors' | 'gripperAperture' | 'samplesPerMate' | 'combinatorial'>,
+  input: Pick<ReviewCadInput, 'includeInterference' | 'epsilonMm3' | 'trackConnectors' | 'samplesPerMate' | 'combinatorial'>,
   includePoseEnvelope: boolean,
 ): Promise<PoseEnvelopeReviewResult | undefined> {
   const dfm = findDfmSpec(model.records);
@@ -532,7 +530,6 @@ async function runPoseEnvelopeStage(
         includeInterference: input.includeInterference ?? true,
         epsilonMm3: input.epsilonMm3,
         trackConnectors: mergeConnectorRefs(input.trackConnectors, physicalUseCaseConnectorRefs(arm)),
-        gripperAperture: input.gripperAperture,
         samplesPerMate: input.samplesPerMate,
         combinatorial: input.combinatorial,
         loweredScene,
@@ -552,24 +549,17 @@ async function runPhysicalUseCaseStage(
   input: Pick<
     ReviewCadInput,
     | 'requirePhysicalUseCase'
-    | 'includePhysicalUseCaseReachability'
-    | 'includePhysicalUseCaseStatics'
-    | 'includePhysicalUseCaseJointReactions'
-    | 'includePhysicalUseCaseJointStructure'
-    | 'physicalUseCaseReachabilitySamplesPerMate'
+    | 'physicalUseCaseLevel'
+    | 'physicalUseCaseSamplesPerMate'
   >,
   poseEnvelope: PoseEnvelopeReviewResult | undefined,
 ) {
-  const includeReachability =
-    input.includePhysicalUseCaseReachability ?? input.requirePhysicalUseCase === true;
+  const level = input.physicalUseCaseLevel ?? (input.requirePhysicalUseCase === true ? 'reachability' : undefined);
   return reviewPhysicalUseCasesWithReachability(arm, {
     requirePhysicalUseCase: input.requirePhysicalUseCase,
     poseEnvelope,
-    includeReachability,
-    includeStatics: input.includePhysicalUseCaseStatics,
-    includeJointReactions: input.includePhysicalUseCaseJointReactions,
-    includeJointStructure: input.includePhysicalUseCaseJointStructure,
-    reachabilitySamplesPerMate: input.physicalUseCaseReachabilitySamplesPerMate,
+    level,
+    reachabilitySamplesPerMate: input.physicalUseCaseSamplesPerMate,
   });
 }
 

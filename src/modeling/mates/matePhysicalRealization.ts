@@ -17,9 +17,12 @@
 // advisory; validate-time merge gates such as `mechanism.disconnect` and
 // `mechanism.interpenetration` are the hard blockers.
 //
-// `fastened` mates skip the gate. `ball` / `planar` / `pin_slot` /
-// `cylindrical` mates are out of scope for the G2 slice (revolute +
-// prismatic only). `joint.clevis(...)`-built mates pass by construction.
+// The gate is clevis-only: it evaluates a mate only when that mate carries
+// the `joint.clevis(...)` structural record as `capacity.structure`
+// (source `'joint.clevis'`). The pin radius, plate thickness and knuckle
+// radius come from that record; nothing is inferred or defaulted. Mates
+// without the record (hand-built hinges, prismatic, ball, planar, ...)
+// are not evaluated.
 //
 // ## Sub-checks (ordered by cost, ascending — first failure short-circuits)
 //
@@ -61,13 +64,9 @@
 //   consumes that cache directly via `loweredShapes` — no re-lowering.
 // - **Mate axis lifting**: same pattern as Gate 4
 //   (`resolveConnectorOrigin` + `Transform.point/axisDir`).
-// - **Inferred pin radius**: smallest perpendicular-AABB face across the
-//   parent + child shapes whose AABB straddles the joint origin. Same
-//   heuristic Gate 4 uses (`inferPinRadius` in `jointVisualExposure.ts`).
-//   Implemented locally here so Gate 4's helper stays private to its
-//   module.
 
 import type { Vec3 } from '../../shared/intent/types';
+import type { ClevisStructuralModel } from '../joints/types';
 import { Transform } from '../../shared/runtime/se3';
 import type { Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
@@ -95,21 +94,6 @@ const DEFAULT_POSE_SAMPLES = 8;
  * sensitivity for kernelCAD's mm-scale parts.
  */
 const PARALLEL_DIRECTION_EPSILON = 1e-4;
-
-/**
- * Fallback pin radius (mm) when the proxy inference collapses to near-zero
- * on a degenerate child. Matches the typical M6-clevis pin radius used by
- * the Luxo example. Same convention as Gate 4's `PIN_R_FALLBACK_MM`.
- */
-const PIN_R_FALLBACK_MM = 3.5;
-
-/**
- * Fallback plate thickness (mm) when no plate-like faces are found on the
- * parent. Matches the Luxo example's `plateT = 4`. Used only to scale the
- * coplanarity tolerance — when there is no plate, the bearing-coplanar
- * subcheck does not fire anyway.
- */
-const PLATE_T_FALLBACK_MM = 4;
 
 /**
  * Joints whose combined parent+child bounding-sphere radius is below this
@@ -180,6 +164,7 @@ export async function validateMatePhysicalRealization(
 
     const result = analyzeMate({
       mate: gated.mate,
+      structure: gated.structure,
       parent: gated.parent,
       child: gated.child,
       axisOrigin: gated.axisOrigin,
@@ -203,6 +188,7 @@ export async function validateMatePhysicalRealization(
 
 interface GatedMate {
   readonly mate: MateRecord;
+  readonly structure: ClevisStructuralModel;
   readonly parent: OcctBackend;
   readonly child: OcctBackend;
   readonly axisOrigin: Vec3;
@@ -219,9 +205,11 @@ async function prepareGatedMate(
   loweredShapes: ReadonlyMap<string, OcctBackend>,
   worldTransforms: ReadonlyMap<string, Transform>,
 ): Promise<GatedMate | undefined> {
-  // Out of scope: fastened (no axis); ball / planar / cylindrical /
-  // pin_slot (G2 covers revolute + prismatic only).
-  if (mate.type !== 'revolute' && mate.type !== 'prismatic') return undefined;
+  // Clevis-only: the mate must carry the joint.clevis structural record,
+  // which supplies the real pin / plate / knuckle dimensions.
+  if (mate.type !== 'revolute') return undefined;
+  const structure = mate.capacity?.structure;
+  if (structure === undefined || structure.source !== 'joint.clevis') return undefined;
 
   const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
   const sideB = await resolveSide(mate.b, partsByName, worldTransforms);
@@ -243,6 +231,7 @@ async function prepareGatedMate(
 
   return {
     mate,
+    structure,
     parent: parentShape,
     child: childShape,
     axisOrigin: sideA.origin,
@@ -262,6 +251,7 @@ interface MateAnalysis {
 
 interface AnalyzeMateInput {
   readonly mate: MateRecord;
+  readonly structure: ClevisStructuralModel;
   readonly parent: OcctBackend;
   readonly child: OcctBackend;
   readonly axisOrigin: Vec3;
@@ -272,20 +262,19 @@ interface AnalyzeMateInput {
 }
 
 function analyzeMate(input: AnalyzeMateInput): MateAnalysis {
-  const { mate, parent, child, axisOrigin, axisOriginChild, axisDir, tolFraction, samples } = input;
+  const { mate, structure, parent, child, axisOrigin, axisOriginChild, axisDir, tolFraction, samples } = input;
 
-  // Heuristic pin radius — smallest face-AABB perpendicular extent that
-  // straddles the joint origin. Same proxy Gate 4 uses (kept local so
-  // Gate 4's helper stays private to its module).
-  const inferredPinR = inferPinRadius(parent, child, axisOrigin, axisDir);
-  const inferredKnuckleR = Math.max(inferredPinR * 3, 5); // proxy for "joint hardware radius"
+  // Real dimensions from the joint.clevis record (no inference/defaults).
+  const inferredPinR = structure.pinDiameterMm / 2;
+  const inferredKnuckleR = structure.edgeDistanceMm;
+  const plateT = structure.forkPlateThicknessMm;
 
   // ── Sub-check 1: no-shared-pin-feature ───────────────────────────────
   const pinFeature = checkSharedPinFeature(axisOrigin, parent, child);
   if (pinFeature !== undefined) return pinFeature;
 
   // ── Sub-check 2: bearing-not-coplanar (revolute only) ────────────────
-  const bearing = checkBearingAlignment(mate, parent, child, axisOrigin, axisDir, inferredPinR, tolFraction);
+  const bearing = checkBearingAlignment(mate, parent, child, axisOrigin, axisDir, inferredPinR, plateT, tolFraction);
   if (bearing !== undefined) return bearing;
 
   // ── Sub-check 3: pin-escapes-hole-at-pose ────────────────────────────
@@ -342,12 +331,12 @@ function checkBearingAlignment(
   axisOrigin: Vec3,
   axisDir: Vec3,
   inferredPinR: number,
+  plateT: number,
   tolFraction: number,
 ): MateAnalysis | undefined {
   if ((mate.type as string) !== 'revolute') return undefined;
   const bearing = measureBearingCoplanarity(parent, child, axisOrigin, axisDir, inferredPinR);
   if (bearing !== undefined && bearing.forkGapY !== undefined && bearing.tongueAxialCentre !== undefined && bearing.forkAxialCentre !== undefined) {
-    const plateT = bearing.plateT ?? PLATE_T_FALLBACK_MM;
     // Tolerance on tongue concentricity: 5 % of forkGapY (per spec lock,
     // expressed as a fraction of the bearing's NATURAL scale — the gap
     // through which the tongue slides), with an absolute floor at
@@ -812,64 +801,6 @@ function buildAxisCylinder(
 // private to each module)
 // =============================================================================
 
-function projectFacePerpendicular(
-  aabbMin: Vec3,
-  aabbMax: Vec3,
-  axisOrigin: Vec3,
-  u: Vec3,
-  v: Vec3,
-): { uMin: number; uMax: number; vMin: number; vMax: number } {
-  let uMin = Infinity, uMax = -Infinity, vMin = Infinity, vMax = -Infinity;
-  for (let i = 0; i < 8; i++) {
-    const p: Vec3 = [
-      ((i & 1) === 0 ? aabbMin[0] : aabbMax[0]) - axisOrigin[0],
-      ((i & 2) === 0 ? aabbMin[1] : aabbMax[1]) - axisOrigin[1],
-      ((i & 4) === 0 ? aabbMin[2] : aabbMax[2]) - axisOrigin[2],
-    ];
-    const uu = p[0] * u[0] + p[1] * u[1] + p[2] * u[2];
-    const vv = p[0] * v[0] + p[1] * v[1] + p[2] * v[2];
-    if (uu < uMin) uMin = uu;
-    if (uu > uMax) uMax = uu;
-    if (vv < vMin) vMin = vv;
-    if (vv > vMax) vMax = vv;
-  }
-  return { uMin, uMax, vMin, vMax };
-}
-
-function candidatePinHalfExtent(
-  aabbMin: Vec3,
-  aabbMax: Vec3,
-  axisOrigin: Vec3,
-  u: Vec3,
-  v: Vec3,
-): number | undefined {
-  const { uMin, uMax, vMin, vMax } = projectFacePerpendicular(aabbMin, aabbMax, axisOrigin, u, v);
-  const halfU = 0.5 * (uMax - uMin);
-  const halfV = 0.5 * (vMax - vMin);
-  const halfMax = Math.max(halfU, halfV);
-  if (halfMax < PARALLEL_DIRECTION_EPSILON) return undefined;
-  // Face perpendicular AABB must straddle the joint axis (so it's a
-  // candidate pin feature, not an off-axis prism).
-  if (uMin > 0 || uMax < 0 || vMin > 0 || vMax < 0) return undefined;
-  return halfMax;
-}
-
-function inferPinRadius(parent: OcctBackend, child: OcctBackend, axisOrigin: Vec3, axisDir: Vec3): number {
-  const { u, v } = buildPerpendicularFrame(axisDir);
-  let smallestHalf = Infinity;
-  for (const shape of [parent, child]) {
-    const replicadShape = shape.getReplicadShape();
-    for (const face of replicadShape.faces) {
-      const bb = face.boundingBox.bounds;
-      const aabbMin = bb[0] as Vec3;
-      const aabbMax = bb[1] as Vec3;
-      const halfMax = candidatePinHalfExtent(aabbMin, aabbMax, axisOrigin, u, v);
-      if (halfMax !== undefined && halfMax < smallestHalf) smallestHalf = halfMax;
-    }
-  }
-  return smallestHalf < Infinity ? smallestHalf : PIN_R_FALLBACK_MM;
-}
-
 // =============================================================================
 // Geometric / vector helpers
 // =============================================================================
@@ -986,7 +917,7 @@ function buildHint(mate: MateRecord, result: MateAnalysis): string {
   return (
     `invalid-args.assembly.mate-not-physically-realized — mate '${mate.name}' (${mate.type}) `
     + `failure '${result.failure ?? 'unknown'}': ${causeText}. `
-    + `Build the mate with joint.clevis(...) (or the prismatic/cylindrical equivalent) `
+    + `Build the mate with joint.clevis(...) `
     + `so a real pin/shaft is unioned into both parts and the through-hole is drilled in `
     + `one pass — see kernelcad-kinematic SKILL.md "Mechanism delivery — non-bypassable".`
   );

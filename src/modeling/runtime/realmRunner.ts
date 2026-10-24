@@ -6,6 +6,12 @@ import { wrapOffsetOf } from './isolationTypes';
 /** Prologue this runner puts in front of the user's script under `wrapReturn`.
  *  `"use strict";` shares the line with the IIFE header so the user's first
  *  line lands at a position the wrap offset below describes exactly. */
+/** The Function constructor as it was when this module loaded. A host that
+ *  locks code generation down afterwards (the Studio's browser kernel worker
+ *  removes `Function` / `eval` before any model runs) still runs scripts
+ *  through this reference, which model code cannot reach. */
+const RealmFunction = Function;
+
 const WRAP_PROLOGUE = '"use strict"; return (async function() { ';
 
 /** Displacement `WRAP_PROLOGUE` applies to call-site positions. Consumed by the
@@ -85,7 +91,7 @@ export function runInRealm(
     : `"use strict";\n${code}\n//# sourceURL=${fileName}`;
 
   // eslint-disable-next-line no-new-func -- the one sanctioned realm runner.
-  const fn = new Function(...argNames, body) as (...args: unknown[]) => unknown;
+  const fn = new RealmFunction(...argNames, body) as (...args: unknown[]) => unknown;
   const returnValue = fn(...argValues);
 
   return { returnValue: opts.wrapReturn ? returnValue : undefined };

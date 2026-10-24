@@ -315,7 +315,7 @@ function isMateType(value: unknown): value is MateType {
 }
 
 function isTransmissionKind(value: unknown): value is TransmissionKind {
-  return value === 'direct-horn' ||
+  return value === 'direct' ||
     value === 'link-rod' ||
     value === 'four-bar' ||
     value === 'gear-pair' ||

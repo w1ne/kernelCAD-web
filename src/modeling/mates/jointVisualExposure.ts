@@ -12,8 +12,7 @@
 // distinguishable as a hinge: the fork plates must show a measurable air-
 // gap around the pivot pin, and the pivot pin's caps must protrude beyond
 // the outer fork-plate face. When either threshold collapses — when the
-// hinge mechanism reads as one solid block (the 2026-05-30 Luxo lamp
-// failure that motivated this gate) — Gate 4 emits an
+// hinge mechanism reads as one solid block (a hinge modelled as a solid block) — Gate 4 emits an
 // `assembly.joint.not-visible` diagnostic with the actual measurements
 // in the hint so the agent can widen the gap / extend the pin without
 // re-rendering.
@@ -49,19 +48,18 @@
 //   5. **gap_ratio** = `min(daylight_+, daylight_-) / parent_perpendicular_extent`.
 //      The parent's perpendicular extent is the larger of the two
 //      axis-perpendicular AABB dimensions — for a typical clevis fork
-//      that's the plate's vertical extent (FORK_PLATE_Z = 30 mm in the
-//      Luxo example).
+//      that's the plate's vertical extent.
 //   6. **pin_stickout** = average over both sides of `max(child_axis_max,
 //      parent_axis_max) − parent_axis_max` for the positive side and
 //      mirrored for the negative side. (The pin lives with either part;
 //      the measurement is symmetric across the union.)
 //
-// The Luxo regression numbers fall straight out of this:
+// Worked example (thin vs wide fork):
 //
-//   Pre-8e2f0da7:  daylight = (12-10)/2 = 1 mm, parent_perp_extent = 30 mm
+//   Thin fork:  daylight = (12-10)/2 = 1 mm, parent_perp_extent = 30 mm
 //                  → gap_ratio = 0.033 → FAILS MIN_GAP_RATIO = 0.15.
 //                  pin_stickout = (28 - 12 - 2*4)/2 = 4 mm.
-//   Post-8e2f0da7: daylight = (18-6)/2 = 6 mm → gap_ratio = 0.2 → passes.
+//   Wide fork: daylight = (18-6)/2 = 6 mm → gap_ratio = 0.2 → passes.
 //                  pin_stickout = (38 - 18 - 2*3)/2 = 7 mm → passes.
 //
 // ## Microscale skip
@@ -129,13 +127,6 @@ export const RAY_SAMPLES = 8;
  */
 const PARALLEL_DIRECTION_EPSILON = 1e-4;
 
-/**
- * Fallback pivot-pin radius (mm) when the proxy inference collapses to
- * near-zero on a degenerate child. Matches the typical M6-clevis pin
- * radius used by the Luxo example so the diagnostic stays meaningful.
- */
-const PIN_R_FALLBACK_MM = 3.5;
-
 /** Inputs passed by `validateAssemblyWithMates` to Gate 4. */
 export interface JointVisualExposureInput {
   readonly arm: Assembly;
@@ -178,6 +169,18 @@ export async function validateJointVisualExposure(
     if (joint === undefined) continue;
 
     const inferredPinR = inferPinRadius(joint.parentShape, joint.childShape, joint.axisOrigin, joint.axisDir);
+    if (inferredPinR === undefined) {
+      // Opted in, but no pin-like feature straddles the joint axis. Do not
+      // guess a radius: report the missing dimension instead.
+      out.push({
+        code: 'assembly.joint.not-visible',
+        severity: 'warning',
+        mateName: mate.name,
+        message: `Joint '${mate.name}' (revolute) opted in to the visual-exposure check but its pin radius could not be measured.`,
+        hint: `Mate '${mate.name}' declares exposure: 'exposed', but no pin-like face straddles the joint axis in either part, so the pin-stickout threshold has no radius to scale from. Model the pin as geometry on the joint axis, or drop exposure: 'exposed' from the mate.`,
+      });
+      continue;
+    }
     const measurements = measureJointVisuals(
       joint.parentShape,
       joint.childShape,
@@ -225,16 +228,11 @@ async function resolveExposedJoint(
   // their own gates later if they exhibit the same failure mode.
   if (mate.type !== 'revolute') return undefined;
 
-  // Concealed-by-design skip — `exposure: 'concealed'` is the script's
-  // explicit declaration that this revolute is an ENCLOSED mechanism
-  // (valve rotor in a bore, internal spindle, worm shaft) where fork
-  // daylight is structurally impossible. The hinge-visibility
-  // measurement below assumes fork+tongue+pin construction and only
-  // produces false positives on such joints (the daylight is
-  // normalized by the parent's perpendicular extent, so a compact
-  // rotor inside a large body can never pass). Exposed hinges — the
-  // Luxo failure class this gate guards — never set this flag.
-  if (mate.exposure === 'concealed') return undefined;
+  // Opt-in only. The hinge-visibility measurement assumes
+  // fork+tongue+pin construction and is an aesthetic rule, so it runs
+  // only for mates that declare `exposure: 'exposed'`. Undeclared and
+  // `'concealed'` mates are not evaluated.
+  if (mate.exposure !== 'exposed') return undefined;
 
   const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
   const sideB = await resolveSide(mate.b, partsByName, worldTransforms);
@@ -409,7 +407,7 @@ function measureJointVisuals(
   //   (b) max perpendicular AABB extent ≥ PLATE_PERP_FACTOR × pinR —
   //       excludes the pin's cap faces (whose perpendicular AABB equals
   //       the pin cross-section ≈ 2 × pinR, much smaller than a fork
-  //       plate's perpendicular extent for typical Luxo-scale clevis
+  //       plate's perpendicular extent for typical clevis
   //       hardware).
   //   (c) The face's perpendicular AABB substantially OVERLAPS the
   //       child's perpendicular AABB in the (u, v) frame — a real fork
@@ -665,10 +663,8 @@ function combinedBoundingSphereRadius(a: OcctBackend, b: OcctBackend): number {
  * pin-lateral faces (same perpendicular AABB) while ignoring fork
  * plates (their perpendicular AABBs are large).
  *
- * Falls back to `PIN_R_FALLBACK_MM` (3.5 mm — the Luxo M6-clevis
- * default) when no candidate face is found or the proxy collapses to
- * near-zero on a degenerate geometry. The spec calls 3.5 mm out
- * explicitly as the reference for `MIN_PIN_STICKOUT_FACTOR × PIN_R`.
+ * Returns `undefined` (no guessed default) when no candidate face is
+ * found; the caller reports the missing dimension.
  */
 function projectFacePerpendicular(
   aabbMin: Vec3,
@@ -724,7 +720,7 @@ function inferPinRadius(
   child: OcctBackend,
   axisOrigin: Vec3,
   axisDir: Vec3,
-): number {
+): number | undefined {
   const { u, v } = buildPerpendicularFrame(axisDir);
   const originU = axisOrigin[0] * u[0] + axisOrigin[1] * u[1] + axisOrigin[2] * u[2];
   const originV = axisOrigin[0] * v[0] + axisOrigin[1] * v[1] + axisOrigin[2] * v[2];
@@ -739,7 +735,7 @@ function inferPinRadius(
       if (halfMax !== undefined && halfMax < smallestHalf) smallestHalf = halfMax;
     }
   }
-  return smallestHalf < Infinity ? smallestHalf : PIN_R_FALLBACK_MM;
+  return smallestHalf >= PARALLEL_DIRECTION_EPSILON && smallestHalf < Infinity ? smallestHalf : undefined;
 }
 
 function buildHint(
@@ -760,7 +756,7 @@ function buildHint(
       : `pin stickout is ${stickout} mm beyond the outer fork face (need >= ${minStickout} mm); gap ratio ${gapPct}% is OK`;
   return (
     `invalid-args.assembly.joint-not-visible — revolute mate '${mate.name}' collapses to a single visual block: ${causeText}. `
-    + `Widen FORK_GAP_Y versus TONGUE_Y and/or extend PIN_LEN so the hinge mechanism is visible at typical viewing distance.`
+    + `Widen the gap between the fork plates and the tongue and/or extend the pin so the hinge mechanism is visible at typical viewing distance.`
   );
 }
 

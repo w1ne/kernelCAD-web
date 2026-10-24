@@ -20,7 +20,6 @@
 //   `[1.4, 0.2]` we cannot silently clamp because the agent has no way to know
 //   what part of the image fell off the edge. Surface the error.
 
-import type { PartRecord } from '../../shared/parts/types';
 import type {
   AnthropicVisionClient,
   VisionMediaType,
@@ -28,167 +27,11 @@ import type {
   VisionResponse,
 } from './anthropicVisionClient';
 import type {
-  DraftBomItem,
-  DetectedTracePart,
   TraceFeatureKind,
   TraceFeatureRequest,
   TraceFeatureResult,
   Vec2Normalized,
 } from './types';
-import { loadCatalog } from '../../modeling/parts/catalog';
-
-export interface RawDetectedPart {
-  name: string;
-  quantity: number;
-  bbox: [number, number, number, number];
-  confidence: number;
-}
-
-/** One bounded vision pass for labeled boxes on a hand sketch. */
-export async function detectPartsViaLLM(
-  client: VisionLlmClient,
-  imageBytes: Uint8Array,
-  mediaType: VisionMediaType,
-  hint?: string,
-): Promise<RawDetectedPart[]> {
-  const prompt = [
-    'Inspect this hand sketch of a device and detect labeled component boxes or text labels such as ESP32, DHT22, LCD, or buttons x4.',
-    'Return only JSON: {"parts":[{"name":"ESP32","quantity":1,"bbox":[xmin,ymin,xmax,ymax],"confidence":0.9}]}.',
-    'Coordinates are normalized [0,1] to the full image, origin top-left. bbox is the box around the component drawing or its label.',
-    'Only report components explicitly labeled or clearly drawn as labeled component boxes. Do not invent parts. quantity defaults to 1; parse counts such as x4. Confidence must be 0..1.',
-    hint ? `Context: ${hint}` : '',
-  ].filter(Boolean).join('\n');
-  const response = await client.generate({ prompt, imageBytes, mediaType });
-  const parsed = JSON.parse(stripCodeFences(response.text)) as { parts?: unknown };
-  if (!Array.isArray(parsed?.parts)) throw new Error('visionLlmBackend: parts response missing parts array');
-  return parsed.parts.map((entry, i) => validateDetectedPart(entry, i));
-}
-
-function validateDetectedPart(value: unknown, index: number): RawDetectedPart {
-  if (!value || typeof value !== 'object') throw new Error(`visionLlmBackend: part ${index} is not an object`);
-  const part = value as { name?: unknown; quantity?: unknown; bbox?: unknown; confidence?: unknown };
-  if (typeof part.name !== 'string' || !part.name.trim()) throw new Error(`visionLlmBackend: part ${index} has no name`);
-  const bbox = part.bbox;
-  if (!Array.isArray(bbox) || bbox.length !== 4 || !bbox.every((n) => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 1)) {
-    throw new Error(`visionLlmBackend: part ${index} bbox must be four normalized coordinates`);
-  }
-  const [xmin, ymin, xmax, ymax] = bbox as number[];
-  if (xmin >= xmax || ymin >= ymax) throw new Error(`visionLlmBackend: part ${index} bbox is inverted or empty`);
-  const quantity = typeof part.quantity === 'number' && Number.isInteger(part.quantity) && part.quantity > 0 ? part.quantity : 1;
-  const confidence = typeof part.confidence === 'number' && Number.isFinite(part.confidence) ? Math.max(0, Math.min(1, part.confidence)) : 0.5;
-  return { name: part.name.trim(), quantity, bbox: [xmin, ymin, xmax, ymax], confidence };
-}
-
-/** Convert in-outline boxes into silhouette coordinates, retain outside boxes in image coordinates, and draft the BOM. */
-export function partsInOutlineFrame(
-  rawParts: RawDetectedPart[],
-  features: TraceFeatureResult[],
-): { detectedParts: DetectedTracePart[]; draftBom: DraftBomItem[]; unmatchedLabels: import('./types').UnmatchedTraceLabel[]; partDetectionFrame: 'outline' | 'image' | 'mixed' } {
-  const silhouette = features.find((feature) => feature.kind === 'silhouette' && feature.waypoints.length > 0);
-  const partDetectionFrame = silhouette ? 'outline' : 'image';
-  const xs = silhouette?.waypoints.map(([x]) => x) ?? [0, 1];
-  const ys = silhouette?.waypoints.map(([, y]) => y) ?? [0, 1];
-  const left = Math.min(...xs), right = Math.max(...xs), top = Math.min(...ys), bottom = Math.max(...ys);
-  const width = Math.max(right - left, Number.EPSILON), height = Math.max(bottom - top, Number.EPSILON);
-  const catalog = loadCatalog();
-  const detectedParts = rawParts.map((part) => {
-    const [x1, y1, x2, y2] = part.bbox;
-    const outsideOutline = Boolean(silhouette && (
-      x1 < left || y1 < top || x2 > right || y2 > bottom ||
-      !bboxInsidePolygon([x1, y1, x2, y2], silhouette.waypoints)
-    ));
-    const coordinateFrame: 'outline' | 'image' = silhouette && !outsideOutline ? 'outline' : 'image';
-    const bbox: [number, number, number, number] = coordinateFrame === 'outline' ? [
-      (x1 - left) / width, (y1 - top) / height,
-      (x2 - left) / width, (y2 - top) / height,
-    ] : [...part.bbox];
-    const catalogMatch = findCatalogMatch(part.name, catalog.records);
-    return {
-      ...part,
-      ...(catalogMatch ? { catalogMatch, matchedCatalogId: catalogMatch.id } : {}),
-      bbox,
-      position: [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2] as [number, number],
-      coordinateFrame,
-      ...(outsideOutline ? { outsideOutline: true } : {}),
-    };
-  });
-  const partFrames = new Set(detectedParts.map((part) => part.coordinateFrame));
-  const outputFrame: 'outline' | 'image' | 'mixed' = partFrames.size > 1 ? 'mixed' : (partFrames.values().next().value ?? partDetectionFrame);
-  const unmatchedLabels = unmatchedLabelsFor(detectedParts);
-  return { detectedParts, draftBom: groupDraftBom(detectedParts), unmatchedLabels, partDetectionFrame: outputFrame };
-}
-
-/** Require all box corners and edge midpoints to lie in the actual polygon. */
-function bboxInsidePolygon(bbox: [number, number, number, number], polygon: Vec2Normalized[]): boolean {
-  const [x1, y1, x2, y2] = bbox;
-  const points: Vec2Normalized[] = [
-    [x1, y1], [(x1 + x2) / 2, y1], [x2, y1], [x2, (y1 + y2) / 2],
-    [x2, y2], [(x1 + x2) / 2, y2], [x1, y2], [x1, (y1 + y2) / 2],
-  ];
-  return points.every(([x, y]) => pointInPolygon(x, y, polygon));
-}
-
-function pointInPolygon(x: number, y: number, polygon: Vec2Normalized[]): boolean {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const [xi, yi] = polygon[i], [xj, yj] = polygon[j];
-    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
-  }
-  return inside;
-}
-
-export function groupDraftBom(detectedParts: readonly DetectedTracePart[]): DraftBomItem[] {
-  const grouped = new Map<string, DraftBomItem>();
-  for (const part of detectedParts) {
-    const key = part.matchedCatalogId ? `catalog:${part.matchedCatalogId}` : `unmatched:${part.name.toLocaleLowerCase()}`;
-    const item = grouped.get(key);
-    if (item) { item.qty += part.quantity; item.confidence = Math.min(item.confidence, part.confidence); }
-    else grouped.set(key, {
-      partName: part.catalogMatch?.name ?? part.name,
-      qty: part.quantity,
-      confidence: part.confidence,
-      ...(part.catalogMatch ? { catalogMatch: part.catalogMatch, matchedCatalogId: part.catalogMatch.id } : {}),
-    });
-  }
-  return [...grouped.values()];
-}
-
-function unmatchedLabelsFor(detectedParts: readonly DetectedTracePart[]): import('./types').UnmatchedTraceLabel[] {
-  return detectedParts.filter((part) => !part.catalogMatch).map((part) => ({
-    label: part.name, quantity: part.quantity, confidence: part.confidence, reason: 'no-bundled-catalog-match' as const,
-  }));
-}
-
-export function findCatalogMatch(
-  label: string,
-  records: readonly PartRecord[],
-): { id: string; name: string; confidence: number } | undefined {
-  const candidate = records
-    .map((record) => ({ record, match: catalogMatchScore(label, record) }))
-    .sort((a, b) => b.match.priority - a.match.priority || b.match.confidence - a.match.confidence)[0];
-  if (!candidate || candidate.match.confidence < 0.6) return undefined;
-  return { id: candidate.record.id, name: candidate.record.name, confidence: candidate.match.confidence };
-}
-
-function catalogMatchScore(label: string, candidate: PartRecord): { priority: number; confidence: number } {
-  const normalize = (value: string) => value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-  const compact = (value: string) => normalize(value).replace(/\s+/g, '');
-  const left = normalize(label);
-  const mpn = Object.entries(candidate.attributes).filter(([key]) => /^(mpn|manufacturer part number)$/i.test(key)).map(([, value]) => String(value));
-  const identifyingAliases = [candidate.id, candidate.name, candidate.standard ?? '', ...candidate.tags, ...mpn];
-  const compactLabel = compact(label);
-  if (!left) return { priority: 0, confidence: 0 };
-  if (identifyingAliases.some((alias) => compact(alias) === compactLabel)) return { priority: 3, confidence: 1 };
-  const right = normalize([candidate.id, candidate.name, candidate.standard ?? '', ...candidate.tags].join(' '));
-  // A substring of an alias is not evidence that the detected label names the
-  // same part (e.g. "ESP32" inside "ESP32 DevKitC-32E"). Exact normalized
-  // identity above is safe; everything else must use the lower-confidence
-  // token overlap below.
-  const leftTokens = new Set(left.split(/\s+/));
-  const rightTokens = new Set(right.split(/\s+/));
-  const intersection = [...leftTokens].filter((token) => rightTokens.has(token)).length;
-  return { priority: 1, confidence: intersection / new Set([...leftTokens, ...rightTokens]).size };
-}
 
 /** Minimal client surface used here — accepts the real client or a test mock. */
 export interface VisionLlmClient {
