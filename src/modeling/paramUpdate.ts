@@ -18,6 +18,7 @@ import type { BuiltModel, BuiltModelParamUpdate, ParamUpdateEdit } from './build
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { KernelError } from '../shared/intent/kernelError';
 import { affectedFeatureIds } from './paramAffect';
+import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
 
 export function populateCache(session: CaptureSession, shapes: Map<FeatureId, ShapeBackend>): void {
   for (const [id, shape] of shapes) {
@@ -41,6 +42,21 @@ export interface UpdateModelParamsOptions {
    * pass their input solid through. The release update leaves this unset.
    */
   preview?: boolean;
+}
+
+/** Diagnostics and selections of a param update. A drag preview skips finish
+ *  features, so its selections are partial: keep the last full set as the
+ *  baseline and report nothing. */
+function selectionsAfterUpdate(
+  model: BuiltModel,
+  result: { diagnostics: BuiltModel['diagnostics']; selections: BuiltModel['selections'] },
+  preview: boolean,
+): Pick<BuiltModel, 'diagnostics' | 'selections'> {
+  if (preview) return { diagnostics: result.diagnostics, selections: model.selections };
+  return {
+    diagnostics: [...result.diagnostics, ...selectionDriftDiagnostics(model.selections, result.selections)],
+    selections: result.selections,
+  };
 }
 
 export async function updateModelParams(
@@ -82,6 +98,7 @@ export async function updateModelParams(
   const result = await engine.run(model.records, {
     paramTable: session.paramTable,
     seedShapes,
+    seedSelections: model.selections,
     ...(options?.preview ? { previewFinish: true, previewEdited: editedNames } : {}),
     warningSink: (warning: SoftWarning) => session.warnings.push(warning),
     warningPhase: 'update',
@@ -125,7 +142,7 @@ export async function updateModelParams(
   const nextModel: BuiltModel = {
     ...model,
     shapes: result.shapes,
-    diagnostics: result.diagnostics,
+    ...selectionsAfterUpdate(model, result, options?.preview === true),
     health: result.health,
     warnings: session.warnings.slice(warningsBefore),
     tailId,

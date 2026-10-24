@@ -145,6 +145,18 @@ export class Assembly {
       capacity?: MateCapacity;
       /** @deprecated legacy manual-load API */
       maxLoad?: MateLoadLimit;
+      /** Revolute only: torsional spring N·mm/deg (>= 0). */
+      stiffnessNmmPerDeg?: number;
+      /** Revolute only: spring zero-torque angle (deg); may lie outside limitsDeg. */
+      springRefDeg?: number;
+      /** Revolute only: viscous damping N·mm·s/deg (>= 0). */
+      dampingNmmsPerDeg?: number;
+      /** Prismatic only: linear spring N/mm (>= 0). */
+      stiffnessNPerMm?: number;
+      /** Prismatic only: zero-force position (mm); may lie outside limitsMm. */
+      springRefMm?: number;
+      /** Prismatic only: viscous damping N·s/mm (>= 0). */
+      dampingNsPerMm?: number;
     },
   ): this {
     recordMate(this.state, name, aRef, bRef, type, opts);

@@ -15,6 +15,7 @@
 import type { FeatureLowerer, ShapeBackend } from '../kernel/backends/backend';
 import type { FeatureRecord } from '../shared/intent/featureRecord';
 import type { FeatureId } from '../shared/intent/types';
+import type { SelectionRecord } from '../shared/intent/selectionRecord';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import type { CaptureSession } from './capture/captureSession';
 import type { BuiltModel } from './buildModel';
@@ -88,6 +89,7 @@ export function assembleBuiltModel(
     shapes: Map<FeatureId, ShapeBackend>;
     diagnostics: CompilerDiagnostic[];
     health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+    selections: SelectionRecord[];
   },
   warningsBefore: number,
   code: string,
@@ -104,6 +106,7 @@ export function assembleBuiltModel(
     shapes: result.shapes,
     diagnostics: result.diagnostics,
     health: result.health,
+    selections: result.selections,
     warnings: session.warnings.slice(warningsBefore),
     tailId,
     tailShape,

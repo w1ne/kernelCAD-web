@@ -32,6 +32,7 @@
  * symmetrically.
  */
 import type { Vec3 } from '../../shared/intent/types';
+import type { PBRMaterial } from '../../shared/intent/material';
 
 /**
  * P11 Slice 2 — a named collision-OFF cylinder declared on a Part for
@@ -86,9 +87,11 @@ export interface TendonRecord {
     readonly to: string;
     /** Resting length of the spring (mm). Spring force is zero when the
      *  endpoint-to-endpoint distance equals this. >0. */
-    readonly restLengthMm: number;
-    /** Spring stiffness (N/mm). MJCF emits this as N/m (×1000). >0. */
-    readonly stiffnessNmm: number;
+    readonly restLengthMm?: number;
+    /** Spring stiffness (N/mm). MJCF emits this as N/m (×1000). >0.
+     *  Undefined only for an `actuator` tendon (inextensible driven cable:
+     *  no spring, no rest length) — consumers treat it as zero spring force. */
+    readonly stiffnessNmm?: number;
     /** Optional viscous damping (N·s/mm). MJCF emits this as N·s/m
      *  (×1000). >=0; defaults to 0. */
     readonly dampingNsmm: number;
@@ -116,7 +119,35 @@ export interface TendonRecord {
      *  between its two endpoints. Empty for a straight `<spatial>` tendon
      *  (the pre-Slice-2 behavior). */
     readonly wrapGeoms: readonly TendonWrapRef[];
+    /** Ordered route between `from` and `to`: `"part.connector"` refs or
+     *  wrap-geom refs. Empty for a direct tendon. Mutually exclusive with
+     *  `wrapGeoms`. */
+    readonly via: readonly TendonViaRef[];
+    /** Motor pulling the cable (MJCF `<motor tendon=...>`). Undefined =
+     *  passive spring. */
+    readonly actuator?: TendonActuator;
+    /** Swept render cross-section; undefined = `visualStyle` / `visualDiameterMm`. */
+    readonly profile?: TendonProfile;
+    /** Render material (the type `.material()` takes, textures included);
+     *  undefined = the dark metallic default. */
+    readonly material?: PBRMaterial;
 }
+
+/** One via entry: a connector ref string or a wrap-geom ref. */
+export type TendonViaRef = string | { readonly wrap: TendonWrapRef };
+
+/** Force-driven cable: `ctrl` in `[0, maxForceN]` is cable tension (N). */
+export interface TendonActuator {
+    readonly kind: 'force';
+    readonly maxForceN: number;
+}
+
+/** Cross-section swept along the routed centerline: `round` = tube, `flat` =
+ *  ribbon whose width direction is `widthAxis` (default [0, 1, 0]) given in
+ *  each route point's owning-part frame. */
+export type TendonProfile =
+    | { readonly kind: 'round'; readonly diameterMm: number }
+    | { readonly kind: 'flat'; readonly widthMm: number; readonly thicknessMm: number; readonly widthAxis?: Vec3 };
 
 /**
  * Agent-facing options for `arm.tendon(name, opts)`. `dampingNsmm` and
@@ -127,11 +158,26 @@ export interface TendonRecord {
 export interface TendonOptions {
     readonly from: string;
     readonly to: string;
-    readonly restLengthMm: number;
-    readonly stiffnessNmm: number;
+    /** Required (>0) unless `actuator` is set. */
+    readonly restLengthMm?: number;
+    /** Required (>0) unless `actuator` is set. */
+    readonly stiffnessNmm?: number;
     readonly dampingNsmm?: number;
     readonly visualDiameterMm?: number;
     readonly visualStyle?: 'line' | 'coil';
+    /** Ordered route between `from` and `to`: a string is a
+     *  `"part.connector"` ref (vec3-origin connector on any part); an object
+     *  `{ wrap: { partName, wrapName, sidesite? } }` routes around a
+     *  `part.wrapGeom(...)` cylinder. Cannot be combined with `wrapGeoms`. */
+    readonly via?: ReadonlyArray<string | { readonly wrap: TendonWrapRef }>;
+    /** Motor-driven cable; makes `restLengthMm` / `stiffnessNmm` optional. */
+    readonly actuator?: { readonly kind: 'force'; readonly maxForceN: number };
+    /** Swept cross-section along the route: a tube or a flat ribbon. */
+    readonly profile?: TendonProfile;
+    /** Render material, same type as `.material()`. A `textures.albedo` map is
+     *  laid along the swept length: u = arc length / profile width (or
+     *  circumference), v across the section. */
+    readonly material?: PBRMaterial;
     readonly coilTurns?: number;
     readonly coilDiameterMm?: number;
     /** P11 Slice 2 — wrap-geom rails (in routing order) the cable passes.

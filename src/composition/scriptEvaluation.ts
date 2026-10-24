@@ -44,6 +44,8 @@ import type { SweepEvaluator } from '../kinematic/sweepTolerance';
 import { createScriptApi } from './scriptApi';
 import { viewerDimensionsForModel } from './viewerDimensionsForModel';
 import type { ViewerDimension } from '../shared/intent/viewerDimension';
+import type { SelectionRecord } from '../shared/intent/selectionRecord';
+import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
 
 export interface EvaluateInput {
   file?: string;
@@ -54,6 +56,11 @@ export interface EvaluateInput {
   /** Solid-modeling kernel (default 'occt'). An unavailable kernel yields a
    *  `recompute.kernel.unavailable` diagnostic instead of a build. */
   kernel?: KernelId;
+  /** Selections of a previous evaluation of the same model (the `selections`
+   *  of an earlier result). A selector that now binds to a different entity
+   *  is reported as `selector.binding-changed`; one whose entity only moved or
+   *  resized as `selector.binding-moved`. */
+  baseline?: SelectionRecord[];
 }
 
 export interface EvaluateOptions {
@@ -98,6 +105,11 @@ export interface EvaluateResult {
   /** Dimensions declared with `shape.dimension()`, as the viewer will label
    *  them. Present only when the script declares at least one. */
   dimensions?: DeclaredDimensionSummary[];
+  /** What each feature's selectors bound to (entity kind, surface type,
+   *  producing feature, direction, size, centroid). Pass it back as
+   *  `baseline` after an edit to learn which selectors now point elsewhere.
+   *  Absent when no feature used a selector. */
+  selections?: SelectionRecord[];
 }
 
 export interface DeclaredDimensionSummary {
@@ -285,6 +297,7 @@ export async function evaluateAndBuildScript(
   const built = await buildModelForInput(input, apiFactory);
   if ('evaluation' in built) return { evaluation: built.evaluation };
   const model = built.model;
+  if (input.baseline !== undefined) model.diagnostics.push(...selectionDriftDiagnostics(input.baseline, model.selections));
   const fatal = model.diagnostics.some(d => d.severity === 'error');
 
   // Agent-parts-discipline: flag multi-body models authored as loose
@@ -323,6 +336,7 @@ export async function evaluateAndBuildScript(
       diagnostics: withNextActions(model.diagnostics),
       featureHealth: nonHealthyFeatures(model.health),
       ...(dimensions.length > 0 ? { dimensions } : {}),
+      ...(model.selections.length > 0 ? { selections: model.selections } : {}),
     },
     model,
     ...gates,

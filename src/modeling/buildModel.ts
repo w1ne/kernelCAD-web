@@ -8,6 +8,8 @@ import { createLowerer, resolveKernel } from './backends/kernelRegistry';
 import type { KernelId } from '../shared/types/backendTarget';
 import { RecomputeEngine } from './compute/recomputeEngine';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
+import type { SelectionRecord } from '../shared/intent/selectionRecord';
+import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
 import type { FeatureRecord } from '../shared/intent/featureRecord';
 import type { FeatureId } from '../shared/intent/types';
 import type { CaptureSession } from './capture/captureSession';
@@ -46,6 +48,9 @@ export interface BuiltModel {
   diagnostics: CompilerDiagnostic[];
   health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
   warnings: SoftWarning[];
+  /** What every feature's selectors bound to in this build. The baseline for
+   *  the next evaluation of the same model: see `selectionDriftDiagnostics`. */
+  selections: SelectionRecord[];
   tailId?: FeatureId;
   /**
    * WARNING — last-CREATED record, NOT the script's return value. Mutating
@@ -188,7 +193,7 @@ export async function rebuildModelIncremental(
     // discarded; `buildModel` re-runs the script in a fresh session. Re-running
     // is acceptable: capture is cheap and re-running guarantees the fallback is
     // byte-identical to the normal build path (no half-seeded state leaks).
-    return buildModel(input, opts);
+    return withSelectionDrift(prevModel.selections, await buildModel(input, opts));
   }
 
   // 3. Seed the engine with the previous build's cached prefix shapes and lower
@@ -199,7 +204,7 @@ export async function rebuildModelIncremental(
     // Defensive: computePrefixReuse already verified presence, but a missing
     // entry here would mean lowering a record whose upstream shape we promised
     // to seed — fall back rather than risk it.
-    if (!cached) return buildModel(input, opts);
+    if (!cached) return withSelectionDrift(prevModel.selections, await buildModel(input, opts));
     seedShapes.set(id, cached);
   }
 
@@ -209,12 +214,20 @@ export async function rebuildModelIncremental(
   const result = await engine.run(run.records, {
     paramTable: session.paramTable,
     seedShapes,
+    seedSelections: prevModel.selections,
     warningSink: warning => session.warnings.push(warning),
     warningPhase: 'build',
     gatedFeatureNames: session.gatedFeatureNames,
   });
 
-  return assembleBuiltModel(session, run, result, warningsBefore, input.code);
+  return withSelectionDrift(prevModel.selections, assembleBuiltModel(session, run, result, warningsBefore, input.code));
+}
+
+/** `next` with the drift of its selectors from `baseline` appended to its
+ *  diagnostics. Mutates nothing in `baseline`. */
+export function withSelectionDrift(baseline: readonly SelectionRecord[], next: BuiltModel): BuiltModel {
+  next.diagnostics.push(...selectionDriftDiagnostics(baseline, next.selections));
+  return next;
 }
 
 export async function buildModelFromFile(

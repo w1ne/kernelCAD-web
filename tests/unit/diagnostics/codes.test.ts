@@ -136,9 +136,10 @@ describe('diagnostic catalogue invariants', () => {
     //   tube.branch.axis-not-square, tube.branch.od-too-large = 358.
     // + 1 drafting review: drawing.annotation.override-missing = 359.
     // + 1 kernel selection: recompute.kernel.unavailable = 363.
+    // + 2 selector binding drift: selector.binding-moved, selector.binding-changed = 365.
     // + 4 closed-loop kinematics: kinematic.loop.branch-flip,
     //   kinematic.loop.lockup, kinematic.loop.mobility-mismatch,
-    //   kinematic.loop.branch-ambiguous.
+    //   kinematic.loop.branch-ambiguous = 376 (DIAGNOSTIC_CODES.length; the running total above lags codes added without a comment).
     expect(new Set(DIAGNOSTIC_CODES).size).toBe(DIAGNOSTIC_CODES.length);
     expect(DIAGNOSTIC_CODES).toContain('feature.boolean.recovered');
     expect(DIAGNOSTIC_CODES).toContain('feature.shell.boolean-fallback');
@@ -149,6 +150,8 @@ describe('diagnostic catalogue invariants', () => {
     expect(DIAGNOSTIC_CODES).toContain('assembly.connectivity.assumed-root');
     expect(DIAGNOSTIC_CODES).toContain('script.no-return');
     expect(DIAGNOSTIC_CODES).toContain('recompute.kernel.guard-fallback');
+    expect(DIAGNOSTIC_CODES).toContain('selector.binding-moved');
+    expect(DIAGNOSTIC_CODES).toContain('selector.binding-changed');
   });
 
   it('every code has a non-empty hint template', () => {

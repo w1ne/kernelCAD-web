@@ -41,6 +41,7 @@ async function buildWrappedHinge() {
     const baseBody = kcad.box(40, 40, 30, true).translate(0, 0, -15);
     const armBody = kcad.box(120, 20, 20, true).translate(70, 0, 0);
     const j = kcad.joint.clevis({
+        style: { knuckleR: 12 },
         parentBody: baseBody,
         childBody: armBody,
         axis: 'Y',
@@ -124,6 +125,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf — wrap-geom routing (P
         const baseBody = kcad.box(40, 40, 30, true).translate(0, 0, -15);
         const armBody = kcad.box(120, 20, 20, true).translate(70, 0, 0);
         const j = kcad.joint.clevis({
+            style: { knuckleR: 12 },
             parentBody: baseBody,
             childBody: armBody,
             axis: 'Y',

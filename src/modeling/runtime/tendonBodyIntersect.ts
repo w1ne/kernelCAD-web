@@ -116,7 +116,19 @@ function collectTendonPath(
 ): { excluded: Set<string>; waypoints: V3[] } {
   const excluded = new Set<string>();
   const waypoints: V3[] = [aWorld];
-  for (const w of t.wrapGeoms) {
+  // `via` replaces the legacy `wrapGeoms` (mutually exclusive): connector
+  // entries are waypoints on their owner part, wrap entries as below.
+  const route = t.via.length > 0 ? t.via : t.wrapGeoms.map((w) => ({ wrap: w }));
+  for (const entry of route) {
+    if (typeof entry === 'string') {
+      const via = endpointWorld(entry, partByName, sample);
+      if (via !== undefined) {
+        excluded.add(via.partName);
+        waypoints.push(via.world);
+      }
+      continue;
+    }
+    const w = entry.wrap;
     excluded.add(w.partName);
     const owner = partByName.get(w.partName);
     const wg = owner?.wrapGeoms.find((g) => g.name === w.wrapName);

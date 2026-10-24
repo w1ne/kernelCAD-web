@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureId } from '../../shared/intent/types';
+import type { SelectionRecord } from '../../shared/intent/selectionRecord';
 import type { BackendTarget } from '../../shared/types/backendTarget';
 import type { FeatureLowerer, ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
@@ -237,6 +238,9 @@ export interface RecomputeResult {
   shapes: Map<FeatureId, ShapeBackend>;
   diagnostics: CompilerDiagnostic[];
   health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+  /** What each lowered feature's selectors bound to, in evaluation order.
+   *  Features reused from `seedShapes` carry over `seedSelections`. */
+  selections: SelectionRecord[];
   /**
    * Physics-grounded loop verdict (P0 of the physics-loop slice).
    *
@@ -276,6 +280,9 @@ export interface RecomputeOptions {
    *  seedShapes are skipped (cache hit) — used by `params.update` to reuse
    *  unchanged earlier records' lowered output. */
   seedShapes?: Map<FeatureId, ShapeBackend>;
+  /** Selections of the seeded features, from the build that produced the
+   *  seeds. Entries for features that are not seeded are ignored. */
+  seedSelections?: readonly SelectionRecord[];
   /**
    * Drag preview. Finish features that do not read `previewEdited` pass
    * their input solid through instead of lowering. The release update
@@ -492,11 +499,12 @@ export class RecomputeEngine {
       shapes: Map<FeatureId, ShapeBackend>;
       diagnostics: CompilerDiagnostic[];
       health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+      selections: SelectionRecord[];
       onEvent: FeatureEventSink | undefined;
       opts: RecomputeOptions | undefined;
     },
   ): Promise<number> {
-    const { idToRecord, predecessorsOf, shapes, diagnostics, health, onEvent, opts } = ctx;
+    const { idToRecord, predecessorsOf, shapes, diagnostics, health, selections, onEvent, opts } = ctx;
     const r = idToRecord.get(id)!;
     const prepared = this.prepareRecord(id, r, opts, health);
     if (prepared === null) return 0;
@@ -523,7 +531,7 @@ export class RecomputeEngine {
 
     // Lower
     return this.lowerAndEmit(prepared.recordForLower, r, records, byKey, {
-      predecessorsOf, shapes, diagnostics, health, onEvent, paramTable: opts?.paramTable,
+      predecessorsOf, shapes, diagnostics, health, selections, onEvent, paramTable: opts?.paramTable,
     });
   }
 
@@ -540,11 +548,12 @@ export class RecomputeEngine {
       shapes: Map<FeatureId, ShapeBackend>;
       diagnostics: CompilerDiagnostic[];
       health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+      selections: SelectionRecord[];
       onEvent: FeatureEventSink | undefined;
       paramTable: ParamTable | undefined;
     },
   ): Promise<number> {
-    const { predecessorsOf, shapes, diagnostics, health, onEvent, paramTable } = ctx;
+    const { predecessorsOf, shapes, diagnostics, health, selections, onEvent, paramTable } = ctx;
     // `records` are unresolved; a lowerer that reads an upstream record's numbers resolves it through this.
     const resolveRecord = (rec: FeatureRecord): FeatureRecord =>
       (paramTable ? resolveParams(rec, paramTable) as FeatureRecord : rec);
@@ -553,6 +562,7 @@ export class RecomputeEngine {
         byKey, records, resolveRecord, ...(paramTable !== undefined ? { paramTable } : {}),
       });
       diagnostics.push(...res.diagnostics);
+      if (res.selections) selections.push(...res.selections);
       const featureDiags = res.diagnostics;
       if (featureDiags.some((d) => d.severity === 'error')) {
         health.set(r.id, 'error');
@@ -582,6 +592,7 @@ export class RecomputeEngine {
     const shapes = opts?.seedShapes ? new Map(opts.seedShapes) : new Map<FeatureId, ShapeBackend>();
     const diagnostics: CompilerDiagnostic[] = [];
     const health = new Map<FeatureId, 'healthy' | 'warning' | 'error'>();
+    const selections: SelectionRecord[] = (opts?.seedSelections ?? []).filter((s) => shapes.has(s.consumerFeatureId));
     const onEvent = opts?.onEvent;
     opts?.gatedFeatureNames?.clear();
 
@@ -591,7 +602,7 @@ export class RecomputeEngine {
 
     for (const id of order) {
       emittedCount += await this.processRecord(id, records, {
-        idToRecord, predecessorsOf, shapes, diagnostics, health, onEvent, opts,
+        idToRecord, predecessorsOf, shapes, diagnostics, health, selections, onEvent, opts,
       });
     }
 
@@ -615,6 +626,7 @@ export class RecomputeEngine {
           shapes,
           diagnostics,
           health,
+          selections,
           mechanism: verdict.mechanism,
           mechanismFailures: verdict.failures,
         };
@@ -634,6 +646,7 @@ export class RecomputeEngine {
           shapes,
           diagnostics,
           health,
+          selections,
           mechanism: 'unverified',
           mechanismFailures: [],
         };
@@ -644,6 +657,7 @@ export class RecomputeEngine {
       shapes,
       diagnostics,
       health,
+      selections,
       mechanism: 'unverified',
       mechanismFailures: [],
     };

@@ -71,6 +71,21 @@ export interface MateRecord {
   readonly capacity?: MateCapacity;
   /** @deprecated legacy manual-load API */
   readonly maxLoad?: MateLoadLimit;
+  /** Revolute torsional spring (N·mm per degree), >= 0. Torque is
+   *  `-k·(θ - springRefDeg)`; exported to MJCF `<joint stiffness springref>`. */
+  readonly stiffnessNmmPerDeg?: number;
+  /** Angle (deg, same sign as `pose` / `limitsDeg`) where the spring torque
+   *  is zero; may lie outside `limitsDeg` (preloads against an end stop).
+   *  Default 0. */
+  readonly springRefDeg?: number;
+  /** Revolute viscous damping (N·mm·s per degree), >= 0. */
+  readonly dampingNmmsPerDeg?: number;
+  /** Prismatic linear spring (N per mm), >= 0; force is `-k·(x - springRefMm)`. */
+  readonly stiffnessNPerMm?: number;
+  /** Position (mm, same sign as `pose` / `limitsMm`) of zero spring force. Default 0. */
+  readonly springRefMm?: number;
+  /** Prismatic viscous damping (N·s per mm), >= 0. */
+  readonly dampingNsPerMm?: number;
   /** Opt-in switch for the Gate 4 hinge-visibility check
    *  (`jointVisualExposure`). Default (undeclared): the check does not run.
    *  Declare `'exposed'` to require the revolute to read as a hinge (fork

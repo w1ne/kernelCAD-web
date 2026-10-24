@@ -9,6 +9,7 @@ import {
   type EvaluateResult,
   type FeatureHealthEntry,
 } from '../../cli/commands/evaluate';
+import type { SelectionRecord } from '../../../shared/intent/selectionRecord';
 import { tubesOutput } from '../../../composition/scriptEvaluation';
 import { KernelUnavailableError, resolveKernel } from '../../../modeling/backends/kernelRegistry';
 import type { KernelId } from '../../../shared/types/backendTarget';
@@ -59,6 +60,9 @@ export interface EvaluateScriptInput {
    *  today). Any other value returns ok:false with a
    *  `recompute.kernel.unavailable` diagnostic, on dry and full runs alike. */
   kernel?: KernelId;
+  /** Selections of an earlier evaluation of this model (the `selections` field
+   *  of its result). Defaults to the previous evaluation of the same `file`. */
+  baseline?: SelectionRecord[];
 }
 
 export interface EvaluateScriptOutput extends McpViewerResult {
@@ -97,6 +101,13 @@ export interface EvaluateScriptOutput extends McpViewerResult {
   /** Dimensions declared with `shape.dimension()`, as the viewer labels them.
    *  Present only on a full evaluation of a script that declares any. */
   dimensions?: NonNullable<EvaluateResult['dimensions']>;
+  /** What each feature's selectors bound to: entity kind, surface type,
+   *  producing feature, direction, size, centroid. Re-evaluating the same
+   *  `file` compares against the previous evaluation and reports
+   *  `selector.binding-changed` (a selector now points at a different
+   *  entity) or `selector.binding-moved` (same entity, moved or resized).
+   *  Absent when no feature used a selector. */
+  selections?: NonNullable<EvaluateResult['selections']>;
   /** Tube line report (`lines`: bend table, cut length, clearance, mass, flow;
    *  `systems`: per-system totals). Present only when the model has tubes.
    *  The gate's diagnostics are already in `diagnostics`. */
@@ -171,7 +182,9 @@ export async function evaluateScriptTool(
   if (input.dryRun) return evaluateDryRun(input);
 
   const before = capturePreviousStep();
-  const { evaluation, model, dfmReport, tubeReport, portReport } = await evaluateAndBuildScript(input as EvaluateInput);
+  const { evaluation, model, dfmReport, tubeReport, portReport } = await evaluateAndBuildScript(
+    withSelectionBaseline(input),
+  );
   // Authoring intent lint (usage triage 2026-10-03): info-only hints naming
   // the API for intent the source states but builds by hand. Agents skip
   // lookup_cookbook, but every agent reads this result.
@@ -186,7 +199,7 @@ export async function evaluateScriptTool(
   // dfm fix. Genuine build failures (model missing or non-dfm errors)
   // still clear the session — its shapes would be stale or absent.
   const buildSucceeded = didBuildSucceed(model, [dfmReport, tubeReport]);
-  refreshActiveSession(model, buildSucceeded);
+  refreshActiveSession(model, buildSucceeded, input.file);
   // Assembly-built scene: surface the named-part roster so agents can
   // confirm the model carries part identity. Absent for single-shape /
   // non-assembly returns.
@@ -234,6 +247,7 @@ export async function evaluateScriptTool(
     diagnostics: mergedDiagnostics,
     featureHealth: r.featureHealth,
     ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
+    ...(r.selections !== undefined ? { selections: r.selections } : {}),
     ...(tubes !== undefined ? { tubes } : {}),
     ...(portReport !== undefined ? { ports: portReport } : {}),
     ...(parts !== undefined ? { parts } : {}),
@@ -326,9 +340,22 @@ function didBuildSucceed(
   );
 }
 
-function refreshActiveSession(model: BuildOutcome['model'], buildSucceeded: boolean): void {
+/** The evaluate input with its selection baseline: the caller's, or, when
+ *  re-evaluating the file the active session was built from, that session's
+ *  selections, so a selector an edit re-bound is reported. */
+function withSelectionBaseline(input: EvaluateScriptInput): EvaluateInput {
+  const previous = getActiveMcpSession();
+  const baseline = input.baseline
+    ?? (input.file !== undefined && previous?.file === input.file ? previous.selections : undefined);
+  return { ...(input as EvaluateInput), ...(baseline !== undefined ? { baseline } : {}) };
+}
+
+function refreshActiveSession(model: BuildOutcome['model'], buildSucceeded: boolean, file: string | undefined): void {
   if (buildSucceeded && model !== undefined) {
     setActiveMcpSession({
+      ...(file !== undefined ? { file } : {}),
+      ...(model.code !== undefined ? { code: model.code } : {}),
+      selections: model.selections,
       stepEvidenceSupported: !Array.isArray(model.returnValue),
       session: model.session,
       tailId: model.tailId,

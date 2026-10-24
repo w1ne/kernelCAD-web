@@ -35,6 +35,7 @@ import { PARTS_CODES } from './parts';
 import { DFM_CODES } from './dfm';
 import { KINEMATIC_CODES } from './kinematic';
 import { QUERY_CODES } from './query';
+import { SELECTOR_CODES } from './selector';
 import { ANIMATION_CODES } from './animation';
 import { DRAWING_CODES } from './drawing';
 import { REFERENCE_CODES } from './reference';
@@ -67,6 +68,7 @@ export const DIAGNOSTIC_REGISTRY = {
   ...DFM_CODES,
   ...KINEMATIC_CODES,
   ...QUERY_CODES,
+  ...SELECTOR_CODES,
   ...ANIMATION_CODES,
   ...DRAWING_CODES,
   ...REFERENCE_CODES,

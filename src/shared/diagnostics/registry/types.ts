@@ -15,6 +15,7 @@ export type DiagnosticGroup =
   | 'parts'
   | 'dfm'
   | 'query'
+  | 'selector'
   | 'kinematic'
   | 'mechanism'
   | 'animation'

@@ -16,6 +16,7 @@ import { normalizeAxis } from './lowerers/helpers';
 import { finishLowering } from './lowerers/transforms';
 import { MeshBackend } from '../../../kernel/backends/meshBackend';
 import { invalidArgsText } from '../../../shared/intent/invalidArgs';
+import { closeSelectionSink, openSelectionSink } from '../../../kernel/naming/selectionSink';
 
 // `normalizeAxis` and `applyVariableEdgeFeature` moved into lowerers/;
 // re-exported here so the public import path stays
@@ -149,7 +150,13 @@ export class OcctLowerer implements FeatureLowerer {
         ],
       };
     }
-    return finishLowering(ctx, r, await lowerKind(ctx, r));
+    const selections = openSelectionSink(r);
+    try {
+      const lowered = finishLowering(ctx, r, await lowerKind(ctx, r));
+      return selections.length > 0 ? { ...lowered, selections } : lowered;
+    } finally {
+      closeSelectionSink(r);
+    }
   }
 }
 
