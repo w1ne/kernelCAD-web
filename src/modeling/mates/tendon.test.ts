@@ -155,13 +155,13 @@ describe('arm.tendon(name, opts) — capture validation', () => {
     const arm = makeArm();
     expect(() =>
       arm.tendon('s', { from: 'a.topA', to: 'b.topB', maxLengthMm: 0 }),
-    ).toThrow(/assembly\.tendon\.invalid-max-length/);
+    ).toThrow(/maxLengthMm.*positive finite/);
     expect(() =>
       arm.tendon('s2', { from: 'a.topA', to: 'b.topB', maxLengthMm: -1 }),
-    ).toThrow(/assembly\.tendon\.invalid-max-length/);
+    ).toThrow(/maxLengthMm.*positive finite/);
     expect(() =>
       arm.tendon('s3', { from: 'a.topA', to: 'b.topB', maxLengthMm: Number.NaN }),
-    ).toThrow(/assembly\.tendon\.invalid-max-length/);
+    ).toThrow(/maxLengthMm.*positive finite/);
   });
 
   it('rejects duplicate tendon name', () => {

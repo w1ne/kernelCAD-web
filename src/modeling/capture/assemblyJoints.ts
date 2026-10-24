@@ -520,33 +520,25 @@ function normalizeTendonCoilFields(
 }
 
 /** Validate the optional hard length limit. Undefined = no limit. */
-function normalizeTendonMaxLength(name: string, opts: TendonOptions): number | undefined {
+function normalizeTendonMaxLength(_name: string, opts: TendonOptions): number | undefined {
   if (opts.maxLengthMm === undefined) return undefined;
   if (!Number.isFinite(opts.maxLengthMm) || opts.maxLengthMm <= 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly.tendon.invalid-max-length: tendon '${name}' maxLengthMm must be a positive finite number; got ${formatScalarForError(opts.maxLengthMm)}.`,
-      undefined,
-      `invalid-args.assembly.tendon-invalid-max-length — pass maxLengthMm: <positive mm>, or omit it for an unlimited cable.`,
-    );
+    invalidArgs({
+      api: 'tendon(name, { maxLengthMm })',
+      path: 'opts.maxLengthMm',
+      got: opts.maxLengthMm,
+      requires: 'a positive finite cable length, or omit it for an unlimited cable',
+      example: "arm.tendon('strap', { from: 'a.topA', to: 'b.topB', maxLengthMm: 31 })",
+      unit: 'mm',
+      hintSlug: 'invalid-args.assembly.tendon-invalid-max-length',
+    });
   }
   return opts.maxLengthMm;
 }
 
-/** Validate + normalize a tendon's scalar/style fields (all of `opts` except
- *  the endpoint refs and wrap geoms). Split out of `recordTendon` to keep
- *  each function's branching complexity under the quality-ratchet budget;
- *  no behavior change from the inline version it replaces. */
-function normalizeTendonFields(name: string, opts: TendonOptions): {
-  damping: number;
-  visualDiameter: number;
-  visualStyle: 'line' | 'coil';
-  coilTurns: number;
-  coilDiameter: number;
-} {
-  // An `actuator` tendon is an inextensible driven cable and a
-  // `maxLengthMm` tendon is an inextensible strap: spring fields are
-  // optional for both, but still validated when given.
+/** Spring fields are optional for an actuator tendon (inextensible driven
+ *  cable) and for a `maxLengthMm` strap, but validated when given. */
+function validateTendonSpringFields(name: string, opts: TendonOptions): void {
   const springOptional = opts.actuator !== undefined || opts.maxLengthMm !== undefined;
   if (!(springOptional && opts.restLengthMm === undefined) && (!Number.isFinite(opts.restLengthMm) || (opts.restLengthMm as number) <= 0)) {
     throw new KernelError(
@@ -564,6 +556,20 @@ function normalizeTendonFields(name: string, opts: TendonOptions): {
       `invalid-args.assembly.tendon-invalid-stiffness — pass stiffnessNmm: <positive N/mm>. Typical Anglepoise spring stiffness is 0.3-1.0 N/mm.`,
     );
   }
+}
+
+/** Validate + normalize a tendon's scalar/style fields (all of `opts` except
+ *  the endpoint refs and wrap geoms). Split out of `recordTendon` to keep
+ *  each function's branching complexity under the quality-ratchet budget;
+ *  no behavior change from the inline version it replaces. */
+function normalizeTendonFields(name: string, opts: TendonOptions): {
+  damping: number;
+  visualDiameter: number;
+  visualStyle: 'line' | 'coil';
+  coilTurns: number;
+  coilDiameter: number;
+} {
+  validateTendonSpringFields(name, opts);
   const damping = opts.dampingNsmm ?? 0;
   if (!Number.isFinite(damping) || damping < 0) {
     throw new KernelError(
