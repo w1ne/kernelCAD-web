@@ -89,9 +89,14 @@ export interface TendonRecord {
      *  when longer than this and goes slack (zero force) when shorter. >0. */
     readonly restLengthMm?: number;
     /** Spring stiffness (N/mm). MJCF emits this as N/m (×1000). >0.
-     *  Undefined only for an `actuator` tendon (inextensible driven cable:
-     *  no spring, no rest length) — consumers treat it as zero spring force. */
+     *  Undefined only for an `actuator` or `maxLengthMm` tendon
+     *  (inextensible cable: no spring, no rest length) — consumers treat
+     *  it as zero spring force. */
     readonly stiffnessNmm?: number;
+    /** Hard upper bound on the cable's routed length (mm). MJCF emits this
+     *  as a tendon limit (`limited="true" range="0 L"`), so a strap can go
+     *  slack but cannot stretch past L. >0. Undefined = no limit. */
+    readonly maxLengthMm?: number;
     /** Optional viscous damping (N·s/mm). MJCF emits this as N·s/m
      *  (×1000). >=0; defaults to 0. */
     readonly dampingNsmm: number;
@@ -158,10 +163,14 @@ export type TendonProfile =
 export interface TendonOptions {
     readonly from: string;
     readonly to: string;
-    /** Required (>0) unless `actuator` is set. */
+    /** Required (>0) unless `actuator` or `maxLengthMm` is set. */
     readonly restLengthMm?: number;
-    /** Required (>0) unless `actuator` is set. */
+    /** Required (>0) unless `actuator` or `maxLengthMm` is set. */
     readonly stiffnessNmm?: number;
+    /** Hard upper bound on the routed cable length (mm). Makes the strap
+     *  inextensible past this length while still allowing it to go slack.
+     *  Can be combined with a spring (elastic up to the limit). >0. */
+    readonly maxLengthMm?: number;
     readonly dampingNsmm?: number;
     readonly visualDiameterMm?: number;
     readonly visualStyle?: 'line' | 'coil';

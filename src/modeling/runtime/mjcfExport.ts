@@ -666,6 +666,7 @@ function emitWorldbodyBlocks(
 //   restLengthMm    → springlength (m)   = "0 L", L = mm × 1e-3: a
 //                     deadband below L, so the cable pulls but never pushes
 //   stiffnessNmm    → stiffness   (N/m)  = N/mm × 1e3
+//   maxLengthMm     → limited="true" range="0 L": a one-sided hard cap
 //   dampingNsmm     → damping     (N·s/m) = N·s/mm × 1e3
 function emitTendonBlock(
     resolvedTendons: readonly ResolvedTendon[],
@@ -677,10 +678,11 @@ function emitTendonBlock(
         for (const rt of resolvedTendons) {
             const t = rt.record;
             const springAttrs = tendonSpringAttrs(t);
+            const limitAttrs = tendonLimitAttrs(t);
             const dampingNsm = t.dampingNsmm * 1000;
             const dampingAttr = dampingNsm > 0 ? ` damping="${fmtNum(dampingNsm)}"` : '';
             tendonBlockLines.push(
-                `    <spatial name="${escapeXml(t.name)}"${springAttrs}${dampingAttr}${tendonLookAttrs(t)}>`,
+                `    <spatial name="${escapeXml(t.name)}"${springAttrs}${limitAttrs}${dampingAttr}${tendonLookAttrs(t)}>`,
             );
             // P11 Slice 2: emit the routed child sequence (sites + wrap
             // geoms) when this tendon declares wrapGeoms; otherwise the
@@ -707,6 +709,14 @@ function tendonSpringAttrs(t: TendonRecord): string {
     const rest = t.restLengthMm !== undefined ? ` springlength="0 ${fmtNum(t.restLengthMm * MM_TO_M)}"` : '';
     const stiff = t.stiffnessNmm !== undefined ? ` stiffness="${fmtNum(t.stiffnessNmm * 1000)}"` : '';
     return rest + stiff;
+}
+
+// A strap can go slack but cannot stretch past its braided length. MuJoCo
+// enforces the upper bound as a one-sided tendon-limit constraint.
+function tendonLimitAttrs(t: TendonRecord): string {
+    return t.maxLengthMm !== undefined
+        ? ` limited="true" range="0 ${fmtNum(t.maxLengthMm * MM_TO_M)}"`
+        : '';
 }
 
 /** `#rgb` / `#rrggbb` → "r g b 1" in 0..1, or undefined for any other color syntax. */

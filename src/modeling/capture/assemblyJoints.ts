@@ -519,6 +519,20 @@ function normalizeTendonCoilFields(
   return { visualStyle, coilTurns, coilDiameter };
 }
 
+/** Validate the optional hard length limit. Undefined = no limit. */
+function normalizeTendonMaxLength(name: string, opts: TendonOptions): number | undefined {
+  if (opts.maxLengthMm === undefined) return undefined;
+  if (!Number.isFinite(opts.maxLengthMm) || opts.maxLengthMm <= 0) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.tendon.invalid-max-length: tendon '${name}' maxLengthMm must be a positive finite number; got ${formatScalarForError(opts.maxLengthMm)}.`,
+      undefined,
+      `invalid-args.assembly.tendon-invalid-max-length — pass maxLengthMm: <positive mm>, or omit it for an unlimited cable.`,
+    );
+  }
+  return opts.maxLengthMm;
+}
+
 /** Validate + normalize a tendon's scalar/style fields (all of `opts` except
  *  the endpoint refs and wrap geoms). Split out of `recordTendon` to keep
  *  each function's branching complexity under the quality-ratchet budget;
@@ -530,9 +544,10 @@ function normalizeTendonFields(name: string, opts: TendonOptions): {
   coilTurns: number;
   coilDiameter: number;
 } {
-  // An `actuator` tendon is an inextensible driven cable: spring fields are
-  // optional there, but still validated when given.
-  const springOptional = opts.actuator !== undefined;
+  // An `actuator` tendon is an inextensible driven cable and a
+  // `maxLengthMm` tendon is an inextensible strap: spring fields are
+  // optional for both, but still validated when given.
+  const springOptional = opts.actuator !== undefined || opts.maxLengthMm !== undefined;
   if (!(springOptional && opts.restLengthMm === undefined) && (!Number.isFinite(opts.restLengthMm) || (opts.restLengthMm as number) <= 0)) {
     throw new KernelError(
       'feature.invalid-args',
@@ -638,6 +653,7 @@ function resolveTendonWrapGeoms(state: AssemblyState, name: string, opts: Tendon
  *   - both endpoints on same part          → assembly.tendon.same-body-endpoints
  *   - restLengthMm <= 0 or non-finite      → assembly.tendon.invalid-rest-length
  *   - stiffnessNmm <= 0 or non-finite      → assembly.tendon.invalid-stiffness
+ *   - maxLengthMm <= 0 or non-finite       → assembly.tendon.invalid-max-length
  *   - dampingNsmm < 0 or non-finite        → assembly.tendon.invalid-damping
  *   - visualDiameterMm <= 0 or non-finite  → assembly.tendon.invalid-visual-diameter
  *
@@ -665,6 +681,7 @@ export function recordTendon(state: AssemblyState, name: string, opts: TendonOpt
     );
   }
   const { damping, visualDiameter, visualStyle, coilTurns, coilDiameter } = normalizeTendonFields(name, opts);
+  const maxLength = normalizeTendonMaxLength(name, opts);
   const via = resolveTendonVia(state, name, opts);
   const wrapGeoms = resolveTendonWrapGeoms(state, name, opts);
   const actuator = normalizeTendonActuator(name, opts);
@@ -676,6 +693,7 @@ export function recordTendon(state: AssemblyState, name: string, opts: TendonOpt
     to: opts.to,
     ...(opts.restLengthMm !== undefined ? { restLengthMm: opts.restLengthMm } : {}),
     ...(opts.stiffnessNmm !== undefined ? { stiffnessNmm: opts.stiffnessNmm } : {}),
+    ...(maxLength !== undefined ? { maxLengthMm: maxLength } : {}),
     dampingNsmm: damping,
     visualDiameterMm: visualDiameter,
     visualStyle,
