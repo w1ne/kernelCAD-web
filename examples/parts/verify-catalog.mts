@@ -10,15 +10,24 @@ import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { evaluateAndBuildScript } from '../../src/agent/cli/commands/evaluate';
 import { isSceneBackend } from '../../src/kernel/backends/sceneBackend';
-import { HEX_BOLT_HEAD, SHCS_HEAD } from '../../src/modeling/parts/familyTable';
+import { analysisBodyOf } from '../../src/kernel/backends/occt/occtBackend';
+import { HEX_BOLT_HEAD, HEX_NUT, SHCS_HEAD } from '../../src/modeling/parts/familyTable';
+
+
+// Overlaps are measured the way the product's clash checks measure them:
+// through each part's nominal analysis body (analysisBodyOf). A modeled
+// thread in its nut, or an ISO 4762 under-head fillet (da up to 5.7 mm on M5)
+// against an ISO 7089 washer bore (5.3 mm), is not a clash.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fitBody = (shape: any): any => analysisBodyOf(shape);
 
 const dir = new URL('.', import.meta.url).pathname;
-const TOL = 1e-6;
+const TOL = 1e-4; // exact OCCT bounds carry ~1e-6 mm float noise
 
 interface SceneLike {
   parts: readonly {
     name: string;
-    shape: { boundingBox(): { min: number[]; max: number[] }; volume(): number };
+    shape: { boundingBox(opts?: { exact?: boolean }): { min: number[]; max: number[] }; volume(): number };
   }[];
 }
 
@@ -29,7 +38,7 @@ assert(isSceneBackend(scene), 'the lineup is not an assembly');
 const source = scene as unknown as SceneLike;
 
 const rows = source.parts.map((part) => {
-  const bounds = part.shape.boundingBox();
+  const bounds = part.shape.boundingBox({ exact: true });
   return {
     name: part.name,
     min: [bounds.min[0], bounds.min[1], bounds.min[2]] as [number, number, number],
@@ -63,7 +72,7 @@ const spans: Record<string, [number, number]> = {
   'flat-head': [0, 30],
   'button-head': [0, 25 + 3.3],
   'set-screw': [0, 30],
-  'hex-nut': [0, 8],
+  'hex-nut': [0, HEX_NUT.M10!.m], // ISO 4032 m max
   'lock-nut': [0, 10],
   'flat-washer': [0, 2],
   'lock-washer': [0, 2.2],
@@ -72,7 +81,10 @@ const spans: Record<string, [number, number]> = {
 for (const [name, [lo, hi]] of Object.entries(spans)) {
   const row = byName.get(name)!;
   assert(Math.abs(row.min[2] - lo) < TOL, `${name} z min ${row.min[2]}, expected ${lo}`);
-  assert(Math.abs(row.max[2] - hi) < TOL, `${name} z max ${row.max[2]}, expected ${hi}`);
+  // The ISO 7380 socket opens through the button dome's apex, so its top sits
+  // a little below K.
+  const below = name === 'button-head' ? 0.5 : 0;
+  assert(row.max[2] < hi + TOL && row.max[2] > hi - below - TOL, `${name} z max ${row.max[2]}, expected ${hi}`);
 }
 
 const interferences: Array<{ a: string; b: string; volumeMm3: number }> = [];
@@ -82,7 +94,7 @@ for (let i = 0; i < source.parts.length; i++) {
     pairs++;
     const a = source.parts[i]!;
     const b = source.parts[j]!;
-    const volume = Math.abs(a.shape.intersect(b.shape).volume());
+    const volume = Math.abs(fitBody(a.shape).intersect(fitBody(b.shape)).volume());
     if (volume > TOL) interferences.push({ a: a.name, b: b.name, volumeMm3: volume });
   }
 }

@@ -29,7 +29,7 @@ import {
   type ConnectorManifest,
   type HashBoundConnectorManifest,
 } from '../../shared/parts/connectorManifest';
-import { formatTopoRef } from '../../kernel/naming';
+import { attachPartConnectors } from './catalogConnectorAttach';
 import { inspectStepBuffer } from '../../kernel/import/inspectStep';
 import { synthesizeConnectorsFromReport } from './synthesizeConnectors';
 
@@ -536,20 +536,7 @@ function attachManifestConnectors(
   shape: Shape,
   manifest: ConnectorManifest,
 ): string[] {
-  ctx.session.attachCatalogConnectors(shape.id, manifest.connectors);
-  const conns = manifest.connectors.map((c) => ({
-    name: c.name,
-    ref: formatTopoRef({
-      owner: shape.id,
-      kind: 'connector',
-      segments: [c.name],
-    }),
-    origin: c.origin,
-    axis: c.type === 'axis' ? c.axis : c.normal,
-    type: 'frame' as const,
-  }));
-  ctx.session.attachAutoConnectors(shape.id, conns);
-  return conns.map((connector) => connector.name);
+  return attachPartConnectors(ctx.session, shape.id, manifest.connectors);
 }
 
 /**

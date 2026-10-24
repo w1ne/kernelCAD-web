@@ -146,6 +146,9 @@ describe('examples evaluate through the kernel', () => {
     ['examples/gallery/kspray-klift.kcad.ts', 30_000],
     ['examples/roadster/roadster.kcad.ts', 30_000],
     ['examples/kinematic/four-bar-swept.kcad.ts', 60_000],
+    // Eleven catalog fasteners at the default 'full' detail: 211 modelled
+    // thread solids, about 32 s locally and 37 s in CI.
+    ['examples/parts/catalog-lineup.kcad.ts', 90_000],
   ]);
   const evaluationExamples = examples.filter(file => !HEAVY.has(relativeExample(file)) && !EVALUATION_EXEMPT.has(relativeExample(file)));
   for (const file of evaluationExamples) {

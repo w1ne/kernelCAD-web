@@ -96,7 +96,8 @@ const block   = await lib.part({ family: 'step-block', thread: 'M10' });
 `lib.standard.boltSHCS({ thread: 'M3', lengthMm: 12 })` resolve to the same
 record; pick the typed call when arguments are static, the generic call
 when ids are computed. `lib.part` resolves the same catalog ids from the
-family table and builds the envelope in memory when no STEP is on disk.
+family table; the `lib.standard` fastener shortcuts go through `lib.part`, so
+they take `detail` too.
 
 ## Fastener table — lib.part and lib.stack
 
@@ -108,15 +109,47 @@ headless set screws (ISO 4026, M3–M12) and threaded rod (DIN 975, M3–M12 ×
 washers (ISO 7089, M2–M20) and lock washers (DIN 127B, M3–M12). Screws need
 a stocked length, and the stocked lengths are per thread (the standard's
 preferred series), not one list for every size; an unknown family, thread or
-length fails with a diagnostic that names the stocked values. Every solid is
-an envelope (head plus shank), no helical thread.
+length fails with a diagnostic that names the stocked values.
 
-`lib.stack({ thread, gripMm, mode })` returns `lengthMm` plus the members,
+`detail` picks the solid, on `lib.part`, `lib.stack`, `lib.insert` and the
+`lib.standard` fasteners:
+
+- `'full'` (default): the hardware as its standard draws it. Hex socket with
+  a 118° drill point, ISO 4762 head chamfer and under-head fillet, ISO 7380
+  dome, ISO 10642 90° cone, ISO 4017 30° crown chamfer and washer face, ISO
+  4032 nut chamfered and countersunk on both faces with an internal thread,
+  ISO 4026 flat point, DIN 127B split. Threads are the ISO 68-1 profile at
+  the ISO 261 coarse pitch with a chamfered start; ISO 4762 / ISO 10642
+  screws carry the partial thread length b by a rule close to the standard's
+  table. Threads over 100 turns (all DIN 975 rod) are the profile revolved as
+  rings, flagged `threadForm: 'annular'` on the part record.
+- `'envelope'`: nominal head plus a nominal-Ø shank, a nut with a nominal
+  bore. Fast; use it for big assemblies.
+
+Cost of `'full'`: ~4–6 s for the first build of each distinct part (copies
+after that are cached, so 8 M6 bolts + nuts add ~12 s), and 3 s (M3 × 10) to
+27 s (M20 × 100) to mesh one threaded part for display or render.
+
+Interference, installation, pair-tolerance, DFM-clearance and rest-pose
+checks measure the nominal envelope at either detail: a modeled thread in its
+clearance hole, tapped hole or nut is not a clash. The envelope follows moves
+and rotations; a boolean on the fastener drops it. Mass and BOM volume use the
+drawn solid (the envelope overestimates a threaded screw by ~20 %). The
+bundled catalog STEP files hold the envelope detail.
+
+`lib.stack({ thread, gripMm, mode, protrusionPitches? })` returns `lengthMm` plus the members,
 each positioned against a seat at z = 0 (the grip's top face).
 `mode: 'screw'` places the screw alone; `mode: 'bolt'` adds a washer under
 the head and a washer plus hex nut on the back. The screw length is the
-shortest stocked one at or above grip + washer + nut (for socket heads —
-the only family `lib.stack` plans).
+shortest stocked one at or above head washer + grip + tail washer + nut +
+`protrusionPitches` × pitch (default 2 pitches of thread past the nut's outer
+face; socket heads are the only family `lib.stack` plans, and `lib.insert`
+applies the same rule to its through-bolt stacks). Bolt-mode results carry
+`protrusionMm`, the tip's distance past the nut. A grip no stocked length can
+reach fails with `invalid-args` naming the length it needed; it never falls
+back to a short bolt. Nut heights are ISO 4032 m max (M5 4.7, M6 5.2, M8 6.8,
+M10 8.4 mm). Example: a 12 mm M5 grip needs 1 + 12 + 1 + 4.7 + 1.6 = 20.3 mm,
+so the stack takes an M5 × 25.
 
 ## Hole-driven insert — lib.insert
 

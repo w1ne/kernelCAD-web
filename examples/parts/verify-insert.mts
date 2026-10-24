@@ -11,6 +11,15 @@ import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { evaluateAndBuildScript } from '../../src/agent/cli/commands/evaluate';
 import { isSceneBackend } from '../../src/kernel/backends/sceneBackend';
+import { analysisBodyOf } from '../../src/kernel/backends/occt/occtBackend';
+
+
+// Overlaps are measured the way the product's clash checks measure them:
+// through each part's nominal analysis body (analysisBodyOf). A modeled
+// thread in its nut, or an ISO 4762 under-head fillet (da up to 5.7 mm on M5)
+// against an ISO 7089 washer bore (5.3 mm), is not a clash.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fitBody = (shape: any): any => analysisBodyOf(shape);
 
 const dir = new URL('.', import.meta.url).pathname;
 const TOL = 1e-6;
@@ -18,7 +27,7 @@ const TOL = 1e-6;
 interface SceneLike {
   parts: readonly {
     name: string;
-    shape: { boundingBox(): { min: number[]; max: number[] }; volume(): number };
+    shape: { boundingBox(opts?: { exact?: boolean }): { min: number[]; max: number[] }; volume(): number };
   }[];
 }
 
@@ -39,7 +48,7 @@ interface PartRow {
 
 function rowsFor(scene: SceneLike): PartRow[] {
   return scene.parts.map((part) => {
-    const bounds = part.shape.boundingBox();
+    const bounds = part.shape.boundingBox({ exact: true });
     return {
       name: part.name,
       min: [bounds.min[0], bounds.min[1], bounds.min[2]],
@@ -63,13 +72,14 @@ assert.deepEqual(names, ['plate', ...expectedM5, ...expectedM3].sort());
 // Flat heads cut the seat and take no washer under the head.
 assert(!names.some((name) => name.includes('head-washer')));
 
-// M5 countersunk bolts: grip 8 + washer 1 + nut 4 -> M5 x 14. The seated head
-// rim is flush with the plate top (z = 4) and the tip sits 1 mm past the nut.
+// M5 countersunk bolts: grip 8 + washer 1 + ISO 4032 nut 4.7 + 2 pitches
+// (1.6 mm) = 15.3 -> M5 x 16. The seated head rim is flush with the plate top
+// (z = 4) and the tip sits 2.3 mm past the nut.
 const m5 = byName.get('m5-1-screw')!;
 assert(Math.abs(m5.max[2] - 4) < TOL, `M5 head top ${m5.max[2]}`);
-assert(Math.abs(m5.min[2] - -10) < TOL, `M5 tip ${m5.min[2]}`);
+assert(Math.abs(m5.min[2] - -12) < TOL, `M5 tip ${m5.min[2]}`);
 const nut = byName.get('m5-1-nut')!;
-assert(Math.abs(nut.min[2] - -9) < TOL, `nut bottom ${nut.min[2]}`);
+assert(Math.abs(nut.min[2] - -9.7) < TOL, `nut bottom ${nut.min[2]}`);
 const washer = byName.get('m5-1-tail-washer')!;
 assert(Math.abs(washer.max[2] - -4) < TOL, `washer top ${washer.max[2]}`);
 
@@ -115,7 +125,7 @@ for (let i = 0; i < scene.parts.length; i++) {
     pairs++;
     const a = scene.parts[i]!;
     const b = scene.parts[j]!;
-    const volume = Math.abs(a.shape.intersect(b.shape).volume());
+    const volume = Math.abs(fitBody(a.shape).intersect(fitBody(b.shape)).volume());
     if (volume > TOL) interferences.push({ a: a.name, b: b.name, volumeMm3: volume });
   }
 }
@@ -133,7 +143,7 @@ const evidence = {
   positiveVolumeOverlaps: interferences,
   parts: rows,
   insert: {
-    m5: { holes: 4, thread: 'M5', lengthMm: 14, family: 'flat-head-countersunk', seat: 'countersink Ø11.2 x 90°' },
+    m5: { holes: 4, thread: 'M5', lengthMm: 16, family: 'flat-head-countersunk', seat: 'countersink Ø11.2 x 90°' },
     m3: { holes: 2, thread: 'M3', lengthMm: 8, family: 'socket-head-cap-screw', seat: 'none' },
     countersinkRemovedMm3: removed,
     plainPlateVolumeMm3: plainVolume,

@@ -3,8 +3,9 @@
 //
 // A bolted flange ring. Eight Ø6.6 bores sit on an 85 mm bolt circle; lib.insert
 // sizes every one to M6, cuts the 90° countersink the flat head needs and places
-// the screw, tail washer and nut. Grip 10 mm: 10 + 1.6 washer + 5 nut = 16.6,
-// so the stocked screw is M6 × 18. Pair: examples/parts/bolt-stack.kcad.ts.
+// the screw, tail washer and nut. Grip 10 mm: 10 + 1.6 washer + 5.2 nut + 2
+// pitches (2 mm) past the nut = 18.8, so the stocked screw is M6 × 20.
+// Pair: examples/parts/bolt-stack.kcad.ts.
 const outerR = 55;
 const innerR = 27.5;
 const thickness = 10;

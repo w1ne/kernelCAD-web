@@ -4,9 +4,10 @@
 // The current fastener catalog on a display base: hex head bolt, socket head,
 // countersunk, button head and set screw standing in the back row; hex nut,
 // lock nut and the two washers lying in the middle; an M8 × 250 threaded rod
-// in front. Geometry is the table envelope: head plus shank, no helical
-// thread. The classic eight-part lineup stays in fastener-lineup.kcad.ts so
-// its committed demo video still matches its source.
+// in front. Default 'full' detail: sockets, chamfers and modeled ISO
+// threads; the 250 mm rod (200 turns) draws its thread as revolved rings.
+// The classic eight-part lineup stays in fastener-lineup.kcad.ts (at
+// 'envelope') so its committed demo video still matches its source.
 const baseW = 320;
 const baseD = 110;
 

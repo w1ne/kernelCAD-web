@@ -43,7 +43,8 @@ describe('lib parts surface — script-runtime integration', () => {
     const screw = await api.lib.part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 });
     expect(screw).toBeDefined();
     const stack = await api.lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
-    expect(stack.lengthMm).toBe(16);
+    expect(stack.lengthMm).toBe(20);
+    expect(stack.protrusionMm).toBeCloseTo(3.3, 6);
     expect(stack.screw).toBeDefined();
     expect(stack.headWasher).toBeDefined();
     expect(stack.nut).toBeDefined();
