@@ -58,6 +58,7 @@ const EMITTING_FILES = [
   'agent/mcp/tools/inspectCurvature.ts',
   'agent/script-runtime/export.ts',
   'kernel/naming/resolveFaceRef.ts',
+  'kernel/naming/selectionDrift.ts', // selector.binding-moved / selector.binding-changed
   'kernel/backends/occt/drawingAnnotations.ts',
   'agent/script-runtime/bom.ts',
   'agent/mcp/tools/renderPreview.ts',

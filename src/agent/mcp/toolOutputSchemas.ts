@@ -77,6 +77,11 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         },
         description: 'Per-feature health degradations — ONLY features that fell back to a passthrough (warning) or failed to lower (error). Empty when every feature is healthy. Surfaces which feature degraded even when ok is true.',
       },
+      selections: {
+        type: 'array',
+        items: { type: 'object', additionalProperties: true },
+        description: 'What each feature\'s selectors bound to: { consumerFeatureId, selectorText, syntax: lineage | topoRef | query, fingerprints[] (entity kind, surface type, producing feature, direction, radius, size, centroid), partDiagonal }. Pass back as `baseline` to learn which selectors an edit re-bound. Omitted when no feature used a selector.',
+      },
       dimensions: {
         type: 'array',
         items: {

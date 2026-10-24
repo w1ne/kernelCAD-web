@@ -109,6 +109,8 @@ export interface ResolvedInputs {
 export interface LowerResult {
   shape: ShapeBackend;
   diagnostics: CompilerDiagnostic[];
+  /** What the feature's selectors bound to while lowering (one per resolved selector). */
+  selections?: import('../../shared/intent/selectionRecord').SelectionRecord[];
 }
 
 export interface FeatureLowerer {

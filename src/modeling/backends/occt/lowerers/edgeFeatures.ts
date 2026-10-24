@@ -7,6 +7,7 @@ import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { computeDihedralPublic } from '../../../../kernel/backends/occt/edgeQueries';
 import { pickEdges } from '../../../../kernel/backends/occt/edgeSelection';
+import { aliasSelectionSink } from '../../../../kernel/naming/selectionSink';
 import {
   chamferWithHistory,
   discardOcctShape,
@@ -265,6 +266,7 @@ function resolveVariableEdgeGroup(
     suppressed: false,
   };
 
+  aliasSelectionSink(synth, feature);
   const edgesResult = pickEdges(synth, vc.base, vc.allRecords);
   if ('error' in edgesResult) {
     // Forward the underlying selection diagnostic verbatim — its code
