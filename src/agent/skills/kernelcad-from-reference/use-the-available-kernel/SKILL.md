@@ -13,11 +13,11 @@ primitive Y.
 ## Rule 1 — Non-uniform corner radii → variable fillet
 
 If the reference shows a product where different corners have visibly different
-radii (Wayfarer brow: 4 mm at temple, 8 mm at outer-top wing corner; bottle
+radii (upper contour: 4 mm at the inner corner, 8 mm at the outer-top corner; bottle
 shoulders; controller grips), USE the variable-radius form:
 
 ```ts
-// Top rim at z = 12; the temple sits at x < 20, the outer wing at x > 20.
+// Top rim at z = 12; the inner corner sits at x < 20, the outer corner at x > 20.
 shape.fillet([
   { edges: { atZ: 12, within: { xMin: 20 } }, radius: 8 },
   { edges: { atZ: 12, within: { xMax: 20 } }, radius: 4 },
@@ -35,7 +35,7 @@ mismatch in the silhouette gate.
 
 ## Rule 2 — Symmetric parts → mirror, author one side
 
-If the reference is symmetric about a cardinal plane (eyewear: YZ; most bottles:
+If the reference is symmetric about a cardinal plane (most handheld products: YZ; most bottles:
 ZY axis; most consumer products: some cardinal plane), build the right half
 explicitly and call `.mirror('YZ')`:
 
@@ -50,15 +50,15 @@ break on the opposite side of the model.
 
 ## Rule 3 — Cross-section varies along the body → surfaceFromCurves
 
-If the body is visibly thicker at one end and thinner at another (acetate
+If the body is visibly thicker at one end and thinner at another (molded
 frames, handle grips, bottle necks), USE `surfaceFromCurves` with 2–3
 cross-section profiles and `.thicken(t)`:
 
 ```ts
 const body = surfaceFromCurves([
-  outlineAtTemple,
-  outlineAtBridge,
-  outlineAtTemple.mirror('YZ'),
+  outlineAtEnd,
+  outlineAtMid,
+  outlineAtEnd.mirror('YZ'),
 ]).thicken(15);
 ```
 
@@ -68,11 +68,11 @@ fails because the depth profile is wrong.
 
 ## Rule 4 — Organic curves → smoothSpline
 
-For silhouettes with smooth, non-arc transitions (Wayfarer brows, ergonomic
+For silhouettes with smooth, non-arc transitions (smooth upper contours, ergonomic
 grips, sneaker silhouettes), USE the C1-smooth spline:
 
 ```ts
-const brow = path()
+const contour = path()
   .moveTo(-28, 0)
   .smoothSpline(-14, 5)
   .smoothSpline(0, 6)
@@ -89,10 +89,10 @@ cliffs at sub-arc joins — the tangent discontinuity at each join becomes a
 sub-mm coplanar edge that breaks downstream fillet/chamfer. Round-6 empirical:
 Agent D found the operating window for chained sagittaArcs is sagitta=0..2.9
 mm, with a hard cliff at 2.95; Agent R15 had to fall back to ellipse-shaped
-lens openings because their multi-arc brow kept failing. smoothSpline does
+openings because their multi-arc contour kept failing. smoothSpline does
 not have this failure mode.
 
-Do NOT fake a curved brow with a single long arc — the chord bulge is visible
+Do NOT fake a curved contour with a single long arc — the chord bulge is visible
 in the top view. Do NOT use lineTo for organic curves — the SSIM score tanks.
 
 ## Rule 5 — 4-bounded patches → surfaceFromBoundary
@@ -121,7 +121,7 @@ shape.material({
   roughness: 0.15,
   clearcoat: 0.8,
   clearcoatRoughness: 0.05,
-  ior: 1.55,    // acetate IOR
+  ior: 1.55,    // glossy plastic IOR
 });
 ```
 
@@ -156,11 +156,11 @@ The eval scorer automatically excludes reference images during scoring
 ## Rule 8 — Trust the chamfer/fillet auto-skip; don't pre-disable
 
 When you call `.chamfer(d)` or `.fillet(r)` on a body with post-cut topology
-(e.g., front-face perimeter after lens openings were subtracted), the kernel
+(e.g., front-face perimeter after openings were subtracted), the kernel
 will auto-skip any target edges shorter than 2 × d (or 2 × r) and emit a
 warning naming the skipped count. The chamfer **succeeds** on the long edges.
 
-Pre-empirical pattern (BAD — leaves the acetate bevel off entirely):
+Pre-empirical pattern (BAD — leaves the bevel off entirely):
 
 ```ts
 // "the kernel will reject this, skip and document" — DO NOT do this
@@ -175,7 +175,7 @@ const bodyFinished = bodyWithBores.chamfer(0.6);
 //   WARN [feature.edge-feature.short-edges-skipped] chamfer_3:
 //   chamfer skipped 8 of 24 target edges shorter than 2 × distance = 1.20 mm;
 //   chamfering the remaining 16.
-// The 16 long edges are correctly chamfered. The 8 short ones (lens-corner
+// The 16 long edges are correctly chamfered. The 8 short ones (opening-corner
 // transitions) were never going to chamfer at d=0.6 anyway.
 ```
 
@@ -189,7 +189,7 @@ informational, not an error.
 
 Round-6 agent eval revealed the 2D-pixel scorer (`scoreRenderVsReference`)
 is gameable. R5 inflated body depth 10→75mm and scored #1 vs photo (composite
-0.580); R16 left lens cuts disconnected and scored higher than the fixed
+0.580); R16 left cutouts disconnected and scored higher than the fixed
 version; R18 added a floating bbox-extending box outside the body and gained
 +0.5 silhouette IoU. All three "hacks" optimize against render artifacts,
 not against geometry.

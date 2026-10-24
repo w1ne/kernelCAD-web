@@ -120,7 +120,6 @@
     "assembly.pose-envelope.clearance-violated",
     "assembly.pose-envelope.clearance-unresolved",
     "assembly.pose-envelope.connector-unresolved",
-    "assembly.gripper-aperture.connector-missing",
     "assembly.mate.limit-missing",
     "assembly.connectivity.floating-moving-part",
     "assembly.connectivity.no-load-path",
@@ -1141,13 +1140,6 @@
         "field": "connectorRef"
       }
     },
-    "assembly.gripper-aperture.connector-missing": {
-      "template": "Gripper-aperture tracking expects two named connector refs on the gripper jaws. Pass { aRef: 'jaw_a.tip', bRef: 'jaw_b.tip' } (or whatever the connector names are) to gripperAperture.",
-      "nextAction": {
-        "kind": "fix-arg",
-        "field": "gripperAperture"
-      }
-    },
     "assembly.mate.limit-missing": {
       "template": "Declare limitsDeg:[min,max] (or limitsMm for prismatic) on this mate so the kernel can verify the mechanism does not self-collide across its declared range.",
       "nextAction": {
@@ -1400,10 +1392,10 @@
       }
     },
     "assembly.visual.review-evidence-weak": {
-      "template": "Record concrete screenshot evidence — name interfaces, load paths, seated hardware, dial legibility, casing layers — before accepting the attempt.",
+      "template": "Record a specific screenshot finding for every passed check before accepting the attempt.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "record concrete screenshot evidence (interfaces, load paths, legibility) before accepting"
+        "guidance": "record a specific screenshot finding for every passed check before accepting"
       }
     },
     "assembly.visual.review-incomplete": {
@@ -2847,10 +2839,6 @@
       "kind": "fix-arg",
       "field": "connectorRef"
     },
-    "assembly.gripper-aperture.connector-missing": {
-      "kind": "fix-arg",
-      "field": "gripperAperture"
-    },
     "assembly.mate.limit-missing": {
       "kind": "fix-arg",
       "field": "limitsDeg"
@@ -2996,7 +2984,7 @@
     },
     "assembly.visual.review-evidence-weak": {
       "kind": "rewrite-feature",
-      "guidance": "record concrete screenshot evidence (interfaces, load paths, legibility) before accepting"
+      "guidance": "record a specific screenshot finding for every passed check before accepting"
     },
     "assembly.visual.review-incomplete": {
       "kind": "rewrite-feature",

@@ -60,7 +60,6 @@
   "src/modeling/capture/topoRefNormalize.ts": 5,
   "src/modeling/capture/virtualFeatureRecords.ts": 4,
   "src/modeling/export/usd/usdIsaacSerializer.ts": 2,
-  "src/modeling/joints/articulatedDigit.ts": 1,
   "src/modeling/joints/clevis.ts": 17,
   "src/modeling/joints/supportedServoRevolute.ts": 1,
   "src/modeling/mates/solver.ts": 9,

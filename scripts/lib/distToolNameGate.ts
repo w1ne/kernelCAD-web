@@ -55,6 +55,14 @@ const CLI_REF = /`kernelcad\s+([a-z][a-z0-9-]*)/g;
 const NON_TOOL_ALLOWLIST = new Set<string>([
   // Mate type values (assembly mate type enumeration).
   'pin_slot',
+  // Built-in connector names emitted by blockout_assembly.
+  'bbox_center',
+  'bbox_x_min',
+  'bbox_x_max',
+  'bbox_y_min',
+  'bbox_y_max',
+  'bbox_z_min',
+  'bbox_z_max',
   // Example-variable identifiers used in code prose.
   'new_code',
   'old_code',

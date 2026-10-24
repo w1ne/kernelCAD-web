@@ -78,7 +78,7 @@ export const MAX_SERVED_STEP_BYTES = 20 * 1024 * 1024;
 /** Above this source-STEP size, tessellating to a web GLB is unreliable — it can
  *  take many minutes and blow the per-part export timeout. Such heavy parts are
  *  useful only to the kernelCAD CAD path (B-rep STEP), NOT to the web 3D viewer
- *  (labwired doesn't render them), so adding a GLB and serving a STEP are
+ *  (the web viewer doesn't render them), so adding a GLB and serving a STEP are
  *  DECOUPLED: we skip the web GLB for these, and — because their STEP also
  *  exceeds Cloudflare Pages' 25 MB per-file limit — drop it from the served set
  *  rather than fail the whole catalog build/deploy. */
@@ -129,7 +129,7 @@ function isAuthored(p: ManifestPart): boolean {
 /**
  * Every part that carries geometry gets a web-loadable GLB — not just boards.
  *
- * The web 3D viewer (labwired's scene3d, kernelCAD/proto.cat 3D tabs) prefers
+ * The web 3D viewer (kernelCAD and other web 3D tabs) prefers
  * `glbUrl` and only falls back to parsing raw STEP in-browser via a 7.6 MB OCCT
  * wasm. Baking a GLB for EVERY geometry part means the browser never needs OCCT:
  * it loads a small pre-tessellated mesh through three.js. So the target is any
@@ -207,7 +207,7 @@ export async function buildBoardGlbs(
     const rawGlb = join(tmp, `${part.id}.raw.glb`);
     const finalGlb = join(glbDir, `${part.id}.glb`);
 
-    // Decouple "add a web GLB" (labwired) from "serve a STEP" (kernelCAD): a part
+    // Decouple "add a web GLB" (web viewer) from "serve a STEP" (kernelCAD): a part
     // whose STEP is too large to tessellate in bounded time gets NO web GLB, and
     // since that STEP also overflows Cloudflare Pages' 25 MB limit we drop it +
     // its stepUrl so the deploy doesn't choke. The part stays in the catalog as
@@ -227,13 +227,13 @@ export async function buildBoardGlbs(
 
     // A single part failing to tessellate must NOT abort the whole catalog build —
     // it just keeps its STEP (for kernelCAD) and, for the web viewer, falls back to
-    // the procedural stand-in. This holds for boards too: labwired renders GLBs, so
+    // the procedural stand-in. This holds for boards too: the web viewer renders GLBs, so
     // one board that can't produce a GLB is a logged gap, not a build-stopping bug.
     try {
       // 1. Produce a full-resolution GLB.
       // - Authored parts compile their `.kcad.ts` (colors come from `.color()`).
       // - url-sourced BOARDS keep the proven wrap-STEP + kernel export path
-      //   (labwired recolors board solids by shape).
+      //   (the web viewer recolors board solids by shape).
       // - url-sourced NON-BOARD parts (sensors/displays) go through the
       //   color-preserving OCCT converter, because the kernel's `fromSTEP` drops
       //   AP214 face colors — a sensor must keep its real colors, not go grey.

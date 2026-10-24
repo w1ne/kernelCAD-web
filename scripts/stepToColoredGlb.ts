@@ -3,7 +3,7 @@
 // scripts/stepToColoredGlb.ts
 //
 // Convert a STEP file to a small COLORED GLB at catalog-build time, so the web
-// 3D viewer (labwired scene3d etc.) can load a pre-tessellated mesh through
+// 3D viewer (web 3D tabs) can load a pre-tessellated mesh through
 // three.js and NEVER download the 7.6 MB OCCT wasm decoder.
 //
 // Why not the kernelCAD kernel's own `fromSTEP -> export glb`? It discards the
@@ -11,7 +11,7 @@
 // sensor STEPs carry 18-24 real colors; dropping them would render every sensor
 // as a grey blob (worse than the procedural stand-in it replaces).
 //
-// This reads the STEP with occt-import-js (the SAME decoder labwired runs in the
+// This reads the STEP with occt-import-js (the SAME decoder the web viewer runs in the
 // browser) and ports its per-face color grouping (stepLoader.ts "Path A"): one
 // GLB primitive + material per unique face color. So the colors survive, done
 // ONCE here instead of on every page load.

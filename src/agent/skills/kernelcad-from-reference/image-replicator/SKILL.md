@@ -66,8 +66,8 @@ Read the per-gate numbers and decide:
 
 | Gate | Low score means |
 |------|----------------|
-| `silhouette` | The 2D silhouette outline does not match: wrong overall shape, missing brow bumps, wrong arm angles, wrong aspect ratio. Fix: adjust params, fix the path outline. |
-| `ssim` | The rendered image is structurally different from the reference: wrong depth, wrong material (flat vs. glossy), missing lens geometry, wrong body proportion. Fix: apply PBR material (Rule 6), add depth (Rule 3), fix booleans. |
+| `silhouette` | The 2D silhouette outline does not match: wrong overall shape, missing bumps, wrong arm angles, wrong aspect ratio. Fix: adjust params, fix the path outline. |
+| `ssim` | The rendered image is structurally different from the reference: wrong depth, wrong material (flat vs. glossy), missing cutout geometry, wrong body proportion. Fix: apply PBR material (Rule 6), add depth (Rule 3), fix booleans. |
 | `phash` | Perceptual hash mismatch: high-level appearance differs. Usually a proxy for "the object reads as a different product category." Fix: re-read the brief, re-check primary mass arrangement. |
 
 **Chase the lowest gate first.** A 0.20 silhouette score means the silhouette
@@ -79,7 +79,7 @@ internal structure, depth, or material is wrong. The most common causes:
 
 1. Material is flat color instead of PBR gloss → apply Rule 6.
 2. Body depth is too thin (looks like a card) → increase `bodyDepth` param.
-3. Missing internal structure (lens recess, bezel step) → add booleans.
+3. Missing internal structure (panel recess, bezel step) → add booleans.
 
 ### Step 4 — Make one targeted change per iteration
 
@@ -91,7 +91,7 @@ changes and then wonder which one moved the score. Candidates in priority order:
 3. Correct body depth from a slab to a real solid → Rule 3.
 4. Apply variable fillet where visible corners differ → Rule 1.
 5. Apply mirror if one side is authored twice → Rule 2.
-6. Add missing sub-component (lens, hinge, crown, etc.).
+6. Add missing sub-component (panel, hinge, crown, etc.).
 7. Refine a sub-component position or scale.
 
 ### Step 5 — Decide: continue or stop
@@ -112,14 +112,14 @@ SSIM and silhouette IoU are **selectors and gates only** — use them to pick th
 better of two candidates and to gate "is this even the right object," never as a
 quantity to iteratively maximize. They are gameable: a past run inflated body
 depth into a featureless slab and scored top on silhouette IoU while producing
-an object with **no lens openings at all** — geometrically not eyewear. Pixel
+an object with **no through-openings at all** — geometrically not the reference object. Pixel
 similarity decoupled from the real goal.
 
 Therefore:
 
 - **Fidelity gates AND before any visual score.** Before the silhouette/SSIM
   numbers count, the build must pass boolean fidelity gates (the expected
-  distinctive feature is visible at the pose — e.g. lens openings; the parts
+  distinctive feature is visible at the pose — e.g. through-openings; the parts
   count matches; the solid is non-degenerate). If any fidelity gate fails, the
   visual scored items are forced to fail regardless of how high the pixel
   similarity is.

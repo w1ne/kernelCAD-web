@@ -995,11 +995,6 @@ function foldEnvelopeDiagnostics(
 ): void {
   if (!envelope) return;
   for (const ed of envelope.diagnostics) {
-    // Skip codes that don't belong in the validator union (defensive: the
-    // `gripper-aperture.connector-missing` envelope code is not folded —
-    // it's a UX-layer aperture-tracking diagnostic, not a structural
-    // validity concern).
-    if (ed.code === 'assembly.gripper-aperture.connector-missing') continue;
     out.push({
       code: ed.code,
       severity: ed.severity,

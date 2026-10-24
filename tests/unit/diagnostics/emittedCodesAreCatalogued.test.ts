@@ -324,7 +324,6 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // + 4 tube branch rules: tube.branch.not-on-straight, tube.branch.too-close,
     //   tube.branch.axis-not-square, tube.branch.od-too-large = 358.
     // + 1 drafting review: drawing.annotation.override-missing = 359.
-    expect(catalogue.has('tool.trace-from-image.part-detection-failed')).toBe(true);
     expect(catalogue.has('feature.boolean.recovered')).toBe(true);
     expect(catalogue.has('feature.shell.boolean-fallback')).toBe(true);
     expect(catalogue.has('feature.sheetMetal.crossing-bends')).toBe(true);
