@@ -7,9 +7,7 @@
 // constructive primitive; G2+ will add `joint.prismatic`, `joint.ball`, etc.
 
 import type { KernelCadApi } from '../api';
-import type { Assembly } from '../capture/assembly';
 import { makeJointNamespace as makeClevisJointNamespace } from './clevis';
-import {
 import type {
   ClevisJoint as ClevisJointResult,
   ClevisJointOptions as ClevisJointOpts,
