@@ -26,7 +26,7 @@ const a = 40;   // crank
 const b = 120;  // coupler
 const c = 80;   // rocker
 const d = 100;  // ground pivot spacing
-const STEP = 2; // sweep step, degrees
+const STEP = 4; // sweep step, degrees (164° first contact is on the grid)
 
 // Closed-form rocker angle (rad) for crank angle t2 (rad), open branch:
 // |C − B| = b with B = a(cos t2, sin t2), C = (d, 0) + c(cos t4, sin t4).

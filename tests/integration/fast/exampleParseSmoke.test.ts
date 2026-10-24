@@ -138,12 +138,14 @@ describe('examples evaluate through the kernel', () => {
   // 4.5 s budget flaked under parallel full-suite load (single examples run in
   // 0.3-4.8 s, some 10x slower when the machine is busy). Heavy examples get
   // a longer one: roboto-01 loads about 40 MB of STL meshes and
-  // kspray-facade-robot builds 342 features.
+  // kspray-facade-robot builds 342 features; four-bar-swept checks collision
+  // at 51 crank poses of a closed loop.
   const SLOW_EXAMPLE_TIMEOUT_MS = new Map<string, number>([
     ['examples/gallery/roboto-01.kcad.ts', 30_000],
     ['examples/gallery/kspray-facade-robot.kcad.ts', 30_000],
     ['examples/gallery/kspray-klift.kcad.ts', 30_000],
     ['examples/roadster/roadster.kcad.ts', 30_000],
+    ['examples/kinematic/four-bar-swept.kcad.ts', 60_000],
   ]);
   const evaluationExamples = examples.filter(file => !HEAVY.has(relativeExample(file)) && !EVALUATION_EXEMPT.has(relativeExample(file)));
   for (const file of evaluationExamples) {
