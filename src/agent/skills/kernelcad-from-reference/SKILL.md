@@ -34,10 +34,10 @@ Have a reference photo only? ──┬─ Extract numeric dimensions FIRST
                                   the geometric scorer (scripts/scoreMeshVsMesh.ts)
                                   if an STL reference is shipped.
 
-Building an organic-curve outline (brow, grip, sneaker)?
+Building an organic-curve outline (upper contour, grip, sneaker)?
    → use path().smoothSpline() — chained sagittaArc hits solver cliffs.
 
-Building an acetate-bevel-style chamfer on post-cut topology?
+Building an bevel-style chamfer on post-cut topology?
    → just call .chamfer(d). The kernel auto-skips edges shorter than 2×d
      and emits a clean warning. Do NOT "skip and document."
 
@@ -135,7 +135,7 @@ single extrusion or revolve rebuilds as the best prism and says so in an
 2. `prepare-prompt/SKILL.md` — turn the user's ask into a Real Object Brief.
 3. `photo-to-device/SKILL.md` — only for a scaled, simple front-on consumer device or passive enclosure. Load it before blockout: its hosted-vs-local asset rule controls `referenceImage()` use, the current Studio/server handoff, photo-only limits, and real-part rules.
 4. `blockout-model/SKILL.md` — coarse parametric blockout in canonical views.
-5. `kernelcad-trace-from-image/SKILL.md` — convert pixel-space curves on a reference photo into normalized waypoints. Load only when an organic-curve outline (eyewear brow, ergonomic handle, sneaker midsole) would take more than ~60 seconds to eyeball off the photo.
+5. `kernelcad-trace-from-image/SKILL.md` — convert pixel-space curves on a reference photo into normalized waypoints. Load only when an organic-curve outline (upper contour, ergonomic handle, sneaker midsole) would take more than ~60 seconds to eyeball off the photo.
 6. `image-replicator/SKILL.md` — the render→score→iterate loop (caveat: see Rule 9).
 7. `render-inspect/SKILL.md` — interpret diagnostic hints from `kernelcad evaluate`.
 
@@ -193,6 +193,6 @@ NOT valid reasons to leave a gate failing:
 
 - `kernelcad` — base API surface and decision tree.
 - `kernelcad-authoring` — parametric authoring fundamentals.
-- `kernelcad-features` — feature catalog (fillet, chamfer, shell, holes). For engraved brand text or wrapped logos on curved surfaces (Ray-Ban temple, bottle logo): see `kernelcad-features` § Face authoring — emboss & project. Highest-impact 'real product' signal.
+- `kernelcad-features` — feature catalog (fillet, chamfer, shell, holes). For engraved brand text or wrapped logos on curved surfaces (bottle logo, product side panel): see `kernelcad-features` § Face authoring — emboss & project. Highest-impact 'real product' signal.
 - `kernelcad-mcp` — MCP tool reference.
 - `kernelcad-nurbs` — freeform NURBS surfaces for organic sections.

@@ -10,10 +10,6 @@ import type { KernelCadApi } from '../api';
 import type { Assembly } from '../capture/assembly';
 import { makeJointNamespace as makeClevisJointNamespace } from './clevis';
 import {
-  articulatedDigit,
-  type ArticulatedDigitOptions,
-  type ArticulatedDigitResult,
-} from './articulatedDigit';
 import type {
   ClevisJoint as ClevisJointResult,
   ClevisJointOptions as ClevisJointOpts,
@@ -21,13 +17,9 @@ import type {
 
 export function makeJointNamespace(kc: KernelCadApi): {
   clevis(opts: ClevisJointOpts): ClevisJointResult;
-  articulatedDigit(arm: Assembly, opts: ArticulatedDigitOptions): ArticulatedDigitResult;
 } {
   return {
     ...makeClevisJointNamespace(kc),
-    articulatedDigit(arm, opts): ArticulatedDigitResult {
-      return articulatedDigit(kc, arm, opts);
-    },
   };
 }
 
@@ -42,15 +34,3 @@ export type {
   ResolvedClevisStyle,
   StructuralMaterial,
 } from './types';
-export {
-  MIN_STRUCTURAL_WEB_MM,
-} from './articulatedDigit';
-export type {
-  ArticulatedDigitFitReport,
-  ArticulatedDigitFitSpec,
-  ArticulatedDigitFrame,
-  ArticulatedDigitJointSpec,
-  ArticulatedDigitOptions,
-  ArticulatedDigitResult,
-  ArticulatedDigitSegmentSpec,
-} from './articulatedDigit';

@@ -2,17 +2,10 @@
 
 `explode_view` computes per-part offsets, a reversible assembly timeline and a
 camera framing plan from
-part measurements. Pass `{ parts: [{ name, center, size }] }` in millimetres, or
-the `parts` array from a LabWired handoff with `ref`, `position_mm.value` and
-`physical.bbox_mm` (or the compact `bbox_mm.value` form). Parts without usable
-placement or bbox values are skipped and reported. Explicit `assembly_order` takes precedence over
-`handoff.assembly_order` / `handoff.assembly.order`; missing entries are appended
-in declaration order and reported. Without an order the input declaration order
-is used.
-
-For a handoff part with only an XY placement, the planner treats that point as
-the bbox footprint center on the board's top plane and sets the bbox center Z
-to half its height. An explicit third position coordinate is preserved.
+part measurements. Pass `{ parts: [{ name, center, size }] }` in millimetres.
+Explicit `assembly_order` sets the sequence; missing entries are appended in
+declaration order and reported. Without an order the input declaration order is
+used.
 
 Choose `mode: 'axis'` (default) to move parts along `axis` (default +Z), or
 `mode: 'radial'` to move each part away from the assembly centroid. The result
@@ -42,6 +35,3 @@ radial offsets use the same spacing progression away from the assembly centroid.
 Both use the requested positive spacing. This is a visual planning heuristic, not a
 collision or assembly-path check. Run the existing interference and assembly
 path checks separately when physical insertion feasibility matters.
-
-Demo source, the handoff-derived plan, the schematic MP4 and capture provenance
-are bundled in [the exploded-view demo](../../artifacts/argon-exploded-view/README.md).

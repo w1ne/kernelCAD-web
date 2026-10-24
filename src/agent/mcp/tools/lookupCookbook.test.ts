@@ -50,7 +50,7 @@ describe('lookupCookbookTool', () => {
   });
 
   it('routes organic car bodies to automotive-body-envelope', async () => {
-    for (const q of ['automotive body envelope', 'organic car body', 'berlinetta body']) {
+    for (const q of ['automotive body envelope', 'organic car body', 'sports car body shell']) {
       const r = await lookupCookbookTool({ query: q });
       expect(r.ok).toBe(true);
       expect(r.hits!.map(h => h.id)).toContain('automotive-body-envelope');

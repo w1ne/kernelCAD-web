@@ -296,8 +296,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       feature.direct-edit.delta-wrapper,
     //       feature.direct-edit.unresolved = 308.
     //  + 1 feature.direct-edit.shared-param-conflict (one param drives
-    //       multiple translated axes with different drag deltas) = 309 + 3 likeness = 318.
-    // + 3 body likeness: reference.likeness.auto-failed / stills-incomplete / still-failed = 318.
+    //       multiple translated axes with different drag deltas) = 309.
+    // (running totals from here on predate removal of 3 reference.likeness.* codes: -3.)
     // + 2 3MF bed fit: export.3mf.plate-overflow, export.3mf.exceeds-bed = 320.
     // + 1 feature.hole.cut-missing (fail-closed per-bore hole check) = 321.
     // + 3 dogfood friction round 3: feature.result.absurd-geometry (post-feature
@@ -324,7 +324,6 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // + 4 tube branch rules: tube.branch.not-on-straight, tube.branch.too-close,
     //   tube.branch.axis-not-square, tube.branch.od-too-large = 358.
     // + 1 drafting review: drawing.annotation.override-missing = 359.
-    expect(catalogue.has('tool.trace-from-image.part-detection-failed')).toBe(true);
     expect(catalogue.has('feature.boolean.recovered')).toBe(true);
     expect(catalogue.has('feature.shell.boolean-fallback')).toBe(true);
     expect(catalogue.has('feature.sheetMetal.crossing-bends')).toBe(true);

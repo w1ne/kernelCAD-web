@@ -10,7 +10,7 @@ NEVER tell a user a shape is impossible, or that it needs other software, withou
 - It is a **solid/NURBS** kernel, not a **polygon/subdivision sculptor** (Blender/Maya).
 - Its viewer renders clean CAD, not **photoreal** images — for a photoreal hero shot, export STEP/GLB and finish in a render tool.
 
-For an **organic** vehicle / berlinetta / fairing body, reach for `automotive-body-envelope` (`lookup_cookbook("automotive body envelope")`) — spline/rail loft or surfaceFromCurves + sew + thicken; glass/aero as separate parts. Reserve `loft-body-shell-from-profiles` (`lookup_cookbook("loft a stylized body shell")`) for stylized / mechanism-demo shells only.
+For an **organic** vehicle / fairing body, reach for `automotive-body-envelope` (`lookup_cookbook("automotive body envelope")`) — spline/rail loft or surfaceFromCurves + sew + thicken; glass/aero as separate parts. Reserve `loft-body-shell-from-profiles` (`lookup_cookbook("loft a stylized body shell")`) for stylized / mechanism-demo shells only.
 
 ### Top-level functions
 

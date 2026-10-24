@@ -11,6 +11,21 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'tests/fixtures/robot-hand/rejected-function-first-bar-grasp-skeleton.kcad.ts';
 const EXAMPLE_ABSOLUTE = resolvePath(__dirname, '../../..', EXAMPLE_PATH);
 
+/** Max-min distance between two tracked connectors across the sampled poses. */
+function trackedDistanceTravelMm(
+  poses: ReadonlyArray<{ sampleName: string; ref: string; world: readonly number[] }> | undefined,
+  refA: string,
+  refB: string,
+): number {
+  const a = new Map((poses ?? []).filter((p) => p.ref === refA).map((p) => [p.sampleName, p.world]));
+  const distances: number[] = [];
+  for (const p of poses ?? []) {
+    const w = p.ref === refB ? a.get(p.sampleName) : undefined;
+    if (w) distances.push(Math.hypot(w[0] - p.world[0], w[1] - p.world[1], w[2] - p.world[2]));
+  }
+  return distances.length === 0 ? 0 : Math.max(...distances) - Math.min(...distances);
+}
+
 describe('function-first bar grasp skeleton example', () => {
   it('evaluates as a minimal mechanism built from bar-contact requirements', async () => {
     const result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
@@ -56,7 +71,6 @@ describe('function-first bar grasp skeleton example', () => {
       physicalUseCaseLevel: 'statics',
       physicalUseCaseSamplesPerMate: 3,
       trackConnectors: ['thumb-finger.tip', 'index-finger.tip', 'middle-finger.tip'],
-      gripperAperture: { left: 'thumb-finger.tip', right: 'index-finger.tip' },
     });
 
     expect(result.ok).toBe(true);
@@ -64,8 +78,7 @@ describe('function-first bar grasp skeleton example', () => {
     expect(result.diagnostics.filter((diagnostic) =>
       diagnostic.severity === 'error'
     )).toEqual([]);
-    expect(result.gripperAperture?.travelMm).toBeGreaterThan(8);
-    expect(result.fitness?.passedChecks).toContain('gripper-aperture-moves');
+    expect(trackedDistanceTravelMm(result.poseEnvelope?.connectorPoses, 'thumb-finger.tip', 'index-finger.tip')).toBeGreaterThan(8);
     expect(result.physicalUseCaseStaticCertificates).toEqual([
       expect.objectContaining({
         useCaseName: 'bar-grasp',

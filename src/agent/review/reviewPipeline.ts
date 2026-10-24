@@ -10,7 +10,6 @@ import {
   summarizeMechanismFitness,
   type MechanismFitnessResult,
 } from '../../modeling/mates/mechanismFitness';
-import type { GripperApertureRequest } from '../../modeling/mates/gripperAperture';
 import type { PoseEnvelopeDiagnostic, PoseEnvelopeReviewResult } from '../../modeling/mates/poseEnvelope';
 import { reviewPoseEnvelope } from '../../modeling/mates/poseEnvelope';
 import { suggestLimitFix } from '../../modeling/mates/limitFixSuggest';
@@ -81,7 +80,6 @@ export interface ReviewCadInput {
   includePhysics?: boolean;
   epsilonMm3?: number;
   trackConnectors?: string[];
-  gripperAperture?: GripperApertureRequest;
   samplesPerMate?: number;
   combinatorial?: boolean;
   requirePhysicalUseCase?: boolean;
@@ -153,7 +151,6 @@ export type ReviewCadOutput = ReviewTimingReport & (
       };
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
-      gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       physicalUseCaseStaticCertificates?: readonly PhysicalUseCaseStaticCertificate[];
       physicalUseCaseJointReactionCertificates?: readonly PhysicalUseCaseJointReactionCertificate[];
       physicalUseCaseJointStructuralCertificates?: readonly PhysicalUseCaseJointStructuralCertificate[];
@@ -198,7 +195,6 @@ export type ReviewCadOutput = ReviewTimingReport & (
       };
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
-      gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       physicalUseCaseStaticCertificates?: readonly PhysicalUseCaseStaticCertificate[];
       physicalUseCaseJointReactionCertificates?: readonly PhysicalUseCaseJointReactionCertificate[];
       physicalUseCaseJointStructuralCertificates?: readonly PhysicalUseCaseJointStructuralCertificate[];
@@ -324,7 +320,6 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     },
     ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
     ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
-    ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
     physicalUseCaseStaticCertificates: physicalUseCases.staticCertificates,
     physicalUseCaseJointReactionCertificates: physicalUseCases.jointReactionCertificates,
     physicalUseCaseJointStructuralCertificates: physicalUseCases.jointStructuralCertificates,
@@ -520,7 +515,7 @@ async function runMechanicalReviewStage(
 async function runPoseEnvelopeStage(
   arm: Assembly,
   model: BuiltModel,
-  input: Pick<ReviewCadInput, 'includeInterference' | 'epsilonMm3' | 'trackConnectors' | 'gripperAperture' | 'samplesPerMate' | 'combinatorial'>,
+  input: Pick<ReviewCadInput, 'includeInterference' | 'epsilonMm3' | 'trackConnectors' | 'samplesPerMate' | 'combinatorial'>,
   includePoseEnvelope: boolean,
 ): Promise<PoseEnvelopeReviewResult | undefined> {
   const dfm = findDfmSpec(model.records);
@@ -535,7 +530,6 @@ async function runPoseEnvelopeStage(
         includeInterference: input.includeInterference ?? true,
         epsilonMm3: input.epsilonMm3,
         trackConnectors: mergeConnectorRefs(input.trackConnectors, physicalUseCaseConnectorRefs(arm)),
-        gripperAperture: input.gripperAperture,
         samplesPerMate: input.samplesPerMate,
         combinatorial: input.combinatorial,
         loweredScene,

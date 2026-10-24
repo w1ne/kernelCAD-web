@@ -37,6 +37,21 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'examples/robot-arm/desktop-3axis-mates.kcad.ts';
 const EXAMPLE_ABSOLUTE = resolvePath(__dirname, '../../..', EXAMPLE_PATH);
 
+/** Max-min distance between two tracked connectors across the sampled poses. */
+function trackedDistanceTravelMm(
+  poses: ReadonlyArray<{ sampleName: string; ref: string; world: readonly number[] }> | undefined,
+  refA: string,
+  refB: string,
+): number {
+  const a = new Map((poses ?? []).filter((p) => p.ref === refA).map((p) => [p.sampleName, p.world]));
+  const distances: number[] = [];
+  for (const p of poses ?? []) {
+    const w = p.ref === refB ? a.get(p.sampleName) : undefined;
+    if (w) distances.push(Math.hypot(w[0] - p.world[0], w[1] - p.world[1], w[2] - p.world[2]));
+  }
+  return distances.length === 0 ? 0 : Math.max(...distances) - Math.min(...distances);
+}
+
 describe.skipIf(!process.env.KCAD_SLOW)('desktop-3axis-mates hero (v0.6)', () => {
   it('evaluates end-to-end with zero error diagnostics', async () => {
     const result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
@@ -146,10 +161,6 @@ describe.skipIf(!process.env.KCAD_SLOW)('desktop-3axis-mates hero (v0.6)', () =>
         'right-finger.tip connector',
       ],
       trackConnectors: ['gripper-plate.tool-tip', 'left-finger.tip', 'right-finger.tip'],
-      gripperAperture: {
-        left: 'left-finger.tip',
-        right: 'right-finger.tip',
-      },
     });
 
     expect(result.ok).toBe(true);
@@ -170,9 +181,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('desktop-3axis-mates hero (v0.6)', () =>
       expect(result.connectorWorkspace).toHaveLength(3);
       expect(result.connectorWorkspace?.[0].ref).toBe('gripper-plate.tool-tip');
       expect(result.connectorWorkspace?.[0].travelMm).toBeGreaterThan(50);
-      expect(result.gripperAperture?.maxMm).toBeGreaterThan(result.gripperAperture?.minMm ?? 0);
-      expect(result.gripperAperture?.travelMm).toBeGreaterThan(15);
-      expect(result.fitness.passedChecks).toContain('gripper-aperture-moves');
+      expect(trackedDistanceTravelMm(result.poseEnvelope?.connectorPoses, 'left-finger.tip', 'right-finger.tip')).toBeGreaterThan(15);
       expect(result.fitness.functional).toBe(true);
       expect(result.fitness.blockingReasons).toEqual([]);
       expect(result.fitness.mechanismSummary.mechanicalIntentIssueCount).toBeUndefined();

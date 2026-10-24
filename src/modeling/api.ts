@@ -49,8 +49,6 @@ import { makeJointNamespace } from './joints';
 import type {
   ClevisJoint,
   ClevisJointOptions,
-  ArticulatedDigitOptions,
-  ArticulatedDigitResult,
 } from './joints';
 import {
   makePrimitiveMethods,
@@ -696,24 +694,9 @@ export interface KernelCadApi {
    * `box`/`cylinder`/`union` — hand-rolled clevises are the leading cause
    * of mechanism-delivery failures (see `kernelcad-kinematic` SKILL.md
    * "Mechanism delivery — non-bypassable").
-   *
-   * `joint.articulatedDigit(arm, { name, parentMount, frame, segments,
-   * joints, clearanceMm, ... })` builds a planar chain directly in the
-   * supplied assembly. Its full 3D base frame maps canonical +X forward,
-   * +Y lift, and +Z pin axes before registration; every generated revolute
-   * package is a physical `joint.clevis(...)` with a support intent and
-   * clearance-bounded structural link. Omitted clevis dimensions use
-   * `joint.clevis`'s standard `withDefaults()` resolution unchanged. Fit options are soft reference checks
-   * only and never reduce the physical package. The root mount is an exterior
-   * plane: the generated base extends along local +X to its distal root pivot,
-   * so callers place the frame on an exterior palm surface with palm material
-   * behind that plane. Arbitrary interior mount clearance remains a candidate
-   * assembly review responsibility. This helper does not certify payload
-   * capacity or actuation.
    */
   joint: {
     clevis(opts: ClevisJointOptions): ClevisJoint;
-    articulatedDigit(arm: Assembly, opts: ArticulatedDigitOptions): ArticulatedDigitResult;
   };
 }
 
