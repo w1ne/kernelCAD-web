@@ -26,6 +26,8 @@ export interface PlaceCtx {
 
 export interface PlacedStack {
   lengthMm: number;
+  /** Bolt mode: tip distance past the nut's outer face, mm. */
+  protrusionMm?: number;
   screw: Shape;
   headWasher?: Shape;
   tailWasher?: Shape;
@@ -67,6 +69,7 @@ export async function placeStackFor(
   const plan = planStackFor(family, request);
   const placed: PlacedStack = {
     lengthMm: plan.lengthMm,
+    ...(plan.protrusionMm !== undefined ? { protrusionMm: plan.protrusionMm } : {}),
     screw: undefined as unknown as Shape,
   };
   for (const member of plan.members) {

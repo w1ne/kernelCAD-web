@@ -11,13 +11,14 @@ Sources:
   ISO 7380, ISO 10642 screws; ISO 4032, DIN 985 nuts; ISO 7089, DIN 127B
   washers.
 - `examples/parts/bolt-stack.kcad.ts` — two 6 mm bars in a lap joint, one M5
-  bolt-mode stack; a 12 mm grip picks the M5 × 18 screw.
+  bolt-mode stack; a 12 mm grip picks the M5 × 25 screw (two pitches past
+  the nut).
 - `examples/parts/catalog-lineup.kcad.ts` — the current catalog on a display
   base: hex head bolt, socket head, countersunk, button head and set screw,
   hex and lock nuts, the two washers and an M8 × 250 threaded rod.
 - `examples/parts/bolted-flange.kcad.ts` — a flange ring, eight Ø6.6 bores on
   an 85 mm bolt circle. `lib.insert` sizes them to M6 normal (ISO 273), cuts
-  the 90° countersink each flat head needs and places eight M6 × 18 stacks
+  the 90° countersink each flat head needs and places eight M6 × 20 stacks
   (screw, tail washer, nut). The 23-second `flange-demo.mp4` is the annotated
   still sequence for this example.
 

@@ -37,11 +37,11 @@ Two 6 mm bars overlap by 24 mm. One M5 bolt holds them. `lib.stack` takes the gr
 const stack = await lib.stack({ thread: 'M5', gripMm: 12, mode: 'bolt' });
 ```
 
-The arithmetic is open. Grip 12 mm, a 1.0 mm washer and a 4.7 mm ISO 4032 hex nut under it: 17.7 mm. The shortest stocked M5 length is 18, so the screw is an M5 × 18. `mode: 'bolt'` adds the washer under the head plus the tail washer and the nut; `mode: 'screw'` places the screw alone.
+The arithmetic is open. The 1.0 mm washer under the head, the 12 mm grip, the 1.0 mm washer and the 4.7 mm ISO 4032 hex nut stack to 18.7 mm. A bolt should also show thread past the nut, two pitches by default: 1.6 mm on an M5, so the screw needs 20.3 mm. An M5 × 20 would leave 1.3 mm, so the table picks M5 × 25, with 6.3 mm out. `protrusionPitches` changes the margin, and the result reports it as `protrusionMm`. A grip no stocked length can reach is refused with the length it needed, not filled with a short bolt. `mode: 'bolt'` adds the washer under the head plus the tail washer and the nut; `mode: 'screw'` places the screw alone.
 
 ![The lap joint with the M5 bolt stack](standard-parts-library/stack.png "Two 6 mm bars, one bolt-mode stack. The seat is the upper bar's top face.")
 
-![Front elevation of the stack](standard-parts-library/stack-detail.png "Head washer on the seat, tail washer and hex nut under the lower bar; the screw ends 0.3 mm past the nut. Cropped from the front-elevation render of examples/parts/bolt-stack.kcad.ts.")
+![Front elevation of the stack](standard-parts-library/stack-detail.png "Head washer on the seat, tail washer and hex nut under the lower bar; the M5 × 25 ends 6.3 mm past the nut. Cropped from the front-elevation render of examples/parts/bolt-stack.kcad.ts.")
 
 ## The plate is already drilled
 
@@ -57,11 +57,11 @@ Two edges are reported instead of guessed. A bore that sits exactly on a larger 
 
 ## A flange ring, eight bolts
 
-The flange is a ring with eight Ø6.6 bores on an 85 mm bolt circle, 10 mm thick. Ø6.6 is the normal clearance for M6, and the same 10 mm grip gives an M6 × 18 stack per hole. One `lib.insert` call covers all eight.
+The flange is a ring with eight Ø6.6 bores on an 85 mm bolt circle, 10 mm thick. Ø6.6 is the normal clearance for M6, and the 10 mm grip plus a 1.6 mm washer, the 5.2 mm nut and two 1 mm pitches comes to 18.8 mm: an M6 × 20 stack per hole. One `lib.insert` call covers all eight.
 
 ![Bolted flange ring](standard-parts-library/flange.png "Eight M6 countersunk bolts on an 85 mm bolt circle. Render of examples/parts/bolted-flange.kcad.ts.")
 
-![Under the flange ring](standard-parts-library/flange-under.png "Under the ring: tail washer, ISO 4032 nut and 1.2 mm of chamfered screw tip on each of the eight stacks. The heads seat flush in the cut countersinks on the other side.")
+![Under the flange ring](standard-parts-library/flange-under.png "Under the ring: tail washer, ISO 4032 nut and 3.2 mm of chamfered screw tip on each of the eight stacks. The heads seat flush in the cut countersinks on the other side.")
 
 ## Threads you can see, envelopes the checks measure
 

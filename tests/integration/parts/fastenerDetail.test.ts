@@ -110,12 +110,53 @@ describe("'full' versus 'envelope' solids", () => {
   }, SLOW);
 });
 
-describe('stack length with ISO 4032 nut heights', () => {
-  it('needs an M8x35 for a 21.8 mm grip (the DIN 934 nut fitted an M8x30)', () => {
-    // 21.8 grip + 1.6 washer + 6.8 nut = 30.2 mm > 30.
+describe('bolt stack length: ISO 4032 nut and thread past the nut', () => {
+  // Length = head washer + grip + tail washer + nut + protrusionPitches × P,
+  // rounded up to a stocked length; the tip is measured from the nut's
+  // outer face.
+  function tipPastNut(plan: ReturnType<typeof planStack>): number {
+    const screw = plan.members.find((m) => m.role === 'screw')!;
+    const nut = plan.members.find((m) => m.role === 'nut')!;
+    return nut.offsetZ - (screw.offsetZ - screw.part.lengthMm);
+  }
+
+  it('leaves at least two pitches out of the M5 lap-joint nut', () => {
+    const plan = planStack({ thread: 'M5', gripMm: 12, mode: 'bolt' });
+    // 1 + 12 + 1 + 4.7 + 1.6 = 20.3: an M5 x 20 would leave 1.3 mm.
+    expect(plan.lengthMm).toBe(25);
+    expect(tipPastNut(plan)).toBeGreaterThanOrEqual(1.6);
+    expect(plan.protrusionMm).toBeCloseTo(tipPastNut(plan), 6);
+  });
+
+  it('needs an M8 x 35 for a 21.8 mm grip', () => {
+    // 1.6 + 21.8 + 1.6 + 6.8 + 2.5 = 34.3 mm.
     const plan = planStack({ thread: 'M8', gripMm: 21.8, mode: 'bolt' });
     expect(plan.lengthMm).toBe(35);
-    expect(planStack({ thread: 'M8', gripMm: 21.5, mode: 'bolt' }).lengthMm).toBe(30);
     expect(plan.members.find((m) => m.role === 'nut')!.part.headHeightMm).toBe(6.8);
+    expect(tipPastNut(plan)).toBeCloseTo(3.2, 6);
+  });
+
+  it('takes protrusionPitches as an option', () => {
+    // Zero pitches: 1.6 + 21.8 + 1.6 + 6.8 = 31.8, still past M8 x 30.
+    expect(planStack({ thread: 'M8', gripMm: 21.8, mode: 'bolt', protrusionPitches: 0 }).lengthMm).toBe(35);
+    expect(planStack({ thread: 'M8', gripMm: 19, mode: 'bolt', protrusionPitches: 0 }).lengthMm).toBe(30);
+    expect(planStack({ thread: 'M8', gripMm: 19, mode: 'bolt' }).lengthMm).toBe(35);
+    expect(() => planStack({ thread: 'M5', gripMm: 12, mode: 'bolt', protrusionPitches: -1 })).toThrow(/protrusionPitches/);
+  });
+
+  it('refuses a grip no stocked length can reach instead of picking a short bolt', () => {
+    // M2: 0.3 + 17.5 + 0.3 + 1.6 + 0.8 = 20.5 > 20 mm, the longest stocked.
+    expect(() => planStack({ thread: 'M2', gripMm: 17.5, mode: 'bolt' })).toThrow(
+      /needs a 20\.5 mm screw \(including 0\.8 mm of thread past the nut\), the longest stocked is 20 mm/,
+    );
+    const flush = planStack({ thread: 'M2', gripMm: 17.5, mode: 'bolt', protrusionPitches: 0 });
+    expect(flush.lengthMm).toBe(20);
+    expect(tipPastNut(flush)).toBeCloseTo(0.3, 6);
+  });
+
+  it('does not add protrusion to a screw-mode stack', () => {
+    const plan = planStack({ thread: 'M5', gripMm: 12, mode: 'screw' });
+    expect(plan.lengthMm).toBe(12);
+    expect(plan.protrusionMm).toBeUndefined();
   });
 });

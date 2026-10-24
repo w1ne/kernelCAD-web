@@ -137,14 +137,19 @@ and rotations; a boolean on the fastener drops it. Mass and BOM volume use the
 drawn solid (the envelope overestimates a threaded screw by ~20 %). The
 bundled catalog STEP files hold the envelope detail.
 
-`lib.stack({ thread, gripMm, mode })` returns `lengthMm` plus the members,
+`lib.stack({ thread, gripMm, mode, protrusionPitches? })` returns `lengthMm` plus the members,
 each positioned against a seat at z = 0 (the grip's top face).
 `mode: 'screw'` places the screw alone; `mode: 'bolt'` adds a washer under
 the head and a washer plus hex nut on the back. The screw length is the
-shortest stocked one at or above grip + washer + nut (for socket heads —
-the only family `lib.stack` plans). Nut heights are ISO 4032 m max (M5 4.7,
-M6 5.2, M8 6.8, M10 8.4 mm). The rule does not require thread protrusion past
-the nut; check the tip when the chosen length lands close.
+shortest stocked one at or above head washer + grip + tail washer + nut +
+`protrusionPitches` × pitch (default 2 pitches of thread past the nut's outer
+face; socket heads are the only family `lib.stack` plans, and `lib.insert`
+applies the same rule to its through-bolt stacks). Bolt-mode results carry
+`protrusionMm`, the tip's distance past the nut. A grip no stocked length can
+reach fails with `invalid-args` naming the length it needed; it never falls
+back to a short bolt. Nut heights are ISO 4032 m max (M5 4.7, M6 5.2, M8 6.8,
+M10 8.4 mm). Example: a 12 mm M5 grip needs 1 + 12 + 1 + 4.7 + 1.6 = 20.3 mm,
+so the stack takes an M5 × 25.
 
 ## Hole-driven insert — lib.insert
 

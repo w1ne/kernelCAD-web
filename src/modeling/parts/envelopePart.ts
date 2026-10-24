@@ -13,6 +13,7 @@ import type { CaptureSession } from '../capture/captureSession';
 import { snapshotCatalogPart, type PartRecord } from '../../shared/parts/types';
 import { isFixtureKind, type FastenerDetail, type ResolvedPart } from './familyTable';
 import { cachedFastenerSolid, threadFormFor } from './fastenerGeometry';
+import { attachPartConnectors } from './catalogConnectorAttach';
 
 export interface EnvelopeCtx {
   session: CaptureSession;
@@ -108,7 +109,7 @@ export async function synthesizeEnvelope(
     metadata: { sourcePath: `envelope:${part.id}${effective === 'full' ? ':full' : ''}` },
   });
   ctx.session.importedGeometry.set(shape.id, backend);
-  ctx.session.attachCatalogConnectors(shape.id, part.connectors);
+  attachPartConnectors(ctx.session, shape.id, part.connectors);
   const feature = ctx.session.getRecords().find((candidate) => candidate.id === shape.id);
   if (feature) {
     feature.metadata = {

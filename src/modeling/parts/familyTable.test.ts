@@ -24,8 +24,10 @@ describe('family table', () => {
   });
 
   it('picks the next stocked screw for a bolt stack', () => {
+    // washer 1 + grip 10 + washer 1 + nut 4.7 + 2 pitches 1.6 = 18.3
     const plan = planStack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
-    expect(plan.lengthMm).toBe(16);
+    expect(plan.lengthMm).toBe(20);
+    expect(plan.protrusionMm).toBeCloseTo(3.3, 6);
     expect(plan.members.map((member) => member.role)).toEqual([
       'head-washer',
       'screw',
@@ -33,7 +35,7 @@ describe('family table', () => {
       'nut',
     ]);
     const screw = plan.members.find((member) => member.role === 'screw')!;
-    expect(screw.part.id).toBe('iso-4762-m5x16');
+    expect(screw.part.id).toBe('iso-4762-m5x20');
     expect(screw.offsetZ).toBe(1);
   });
 

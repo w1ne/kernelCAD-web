@@ -243,6 +243,9 @@ export interface StackRequest {
   mode?: 'screw' | 'bolt';
   /** Geometric detail of every member; default `'full'`. */
   detail?: FastenerDetail;
+  /** Bolt mode: whole thread pitches the tip must reach past the nut's outer
+   *  face; default 2. */
+  protrusionPitches?: number;
 }
 
 export interface StackMemberPlan {
@@ -255,6 +258,8 @@ export interface StackMemberPlan {
 export interface StackPlan {
   lengthMm: number;
   members: StackMemberPlan[];
+  /** Bolt mode: tip distance past the nut's outer face, mm. */
+  protrusionMm?: number;
 }
 
 interface HeadDims { D: number; K: number; /** Across-flats width, hex heads only. */ S?: number }
@@ -737,17 +742,38 @@ export function resolvePart(request: PartRequest): ResolvedPart {
   return washerPart(request, spec, requireRow(spec.threads, thread, request.family), thread, nominalMm);
 }
 
-function shortestAtLeast(lengths: readonly number[], needed: number, label: string): number {
+function shortestAtLeast(
+  lengths: readonly number[],
+  needed: number,
+  why: { label: string; minOut: number; gripMm: number },
+): number {
   const hit = lengths.find((length) => length + 1e-9 >= needed);
   if (hit !== undefined) return hit;
   const longest = lengths[lengths.length - 1];
+  const out = why.minOut > 0 ? ` (including ${round3(why.minOut)} mm of thread past the nut)` : '';
   invalidArgs({
-    api: 'lib.stack({ thread, gripMm, mode })',
+    api: 'lib.stack({ thread, gripMm, mode, protrusionPitches })',
     path: 'gripMm',
-    got: needed,
-    requires: `a grip that an ${label} can reach; longest stocked length is ${longest}`,
+    got: why.gripMm,
+    requires: `a grip the ${why.label} can reach: the stack needs a ${round3(needed)} mm screw${out}, the longest stocked is ${longest} mm. Use a thinner grip, a larger thread, threaded rod, or a lower protrusionPitches`,
     unit: 'mm',
     example: STACK_EXAMPLE,
+  });
+}
+
+function round3(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
+function protrusionPitchesOf(value: number | undefined): number {
+  if (value === undefined) return 2;
+  if (Number.isFinite(value) && value >= 0) return value;
+  invalidArgs({
+    api: 'lib.stack({ thread, gripMm, mode, protrusionPitches })',
+    path: 'protrusionPitches',
+    got: value,
+    requires: 'a number of thread pitches ≥ 0 the bolt tip must reach past the nut (default 2)',
+    example: "lib.stack({ thread: 'M5', gripMm: 12, mode: 'bolt', protrusionPitches: 2 })",
   });
 }
 
@@ -837,10 +863,12 @@ export function planStackFor(family: string, request: StackRequest): StackPlan {
   const gripMm = positiveGrip(request.gripMm);
   const spec = requireScrewFamily(family);
   const wear = stackWear(family, mode, request.thread);
-  const tailT = wear.tailWasher?.headHeightMm ?? 0;
-  const nutT = wear.nut?.headHeightMm ?? 0;
-  const needed = gripMm + (wear.tailWasher ? tailT + nutT : 0);
-  const lengthMm = shortestAtLeast(lengthsFor(spec, request.thread), needed, `${family} ${request.thread}`);
+  // Head washer + grip + tail washer + nut, plus the protrusion the bolt
+  // needs past the nut's outer face.
+  const reach = (wear.headWasher?.headHeightMm ?? 0) + gripMm + (wear.nut ? (wear.tailWasher?.headHeightMm ?? 0) + wear.nut.headHeightMm : 0);
+  const minOut = wear.nut ? protrusionPitchesOf(request.protrusionPitches) * coarsePitchOf(request.thread) : 0;
+  const lengthMm = shortestAtLeast(lengthsFor(spec, request.thread), reach + minOut, { label: `${family} ${request.thread}`, minOut, gripMm });
   const screw = resolvePart({ family, thread: request.thread, lengthMm });
-  return { lengthMm, members: stackMembersFor(wear, screw, gripMm) };
+  const out = wear.nut ? { protrusionMm: Math.round((lengthMm - reach) * 1000) / 1000 } : {};
+  return { lengthMm, members: stackMembersFor(wear, screw, gripMm), ...out };
 }
