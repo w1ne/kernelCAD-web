@@ -29,9 +29,18 @@ const arm = assembly('cookbook-over-center-latch');
 const Y: [number, number, number] = [0, -1, 0]; // +angle turns +X toward +Z
 const pin = (x: number) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: [x, 0, 0] as [number, number, number] }, axis: Y });
 
-const housing = arm.part('housing', box(160, 20, 6, true).translate(70, 0, -30));
-const handleBar = arm.part('handle', box(r, 6, 6, true).translate(r / 2, 10, 0));
-const link = arm.part('link', box(l, 6, 6, true).translate(l / 2, 20, 0));
+// A pin along Y at (x, z), spanning y0..y1 in the gap between two layers.
+const pinY = (x: number, z: number, y0: number, y1: number) =>
+  cylinder(y1 - y0, 3).rotateX(-90).translate(x, y0, z);
+
+const housing = arm.part(
+  'housing',
+  box(160, 20, 6, true).translate(70, 0, -30)
+    .union(box(8, 6, 27, true).translate(0, 0, -13.5))
+    .union(pinY(0, 0, 3, 6.8)),
+);
+const handleBar = arm.part('handle', box(r, 6, 6, true).translate(r / 2, 10, 0).union(pinY(r, 0, 13, 16.8)));
+const link = arm.part('link', box(l, 6, 6, true).translate(l / 2, 20, 0).union(pinY(l, 0, 23, 26.8)));
 const keeper = arm.part('keeper', box(20, 6, 12, true).translate(0, 30, 0));
 
 housing.connector('pivot', pin(0));

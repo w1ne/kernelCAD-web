@@ -1,25 +1,32 @@
 # Closed-loop kinematics (four-bar contact, over-center latch flip)
 
-`demo.mp4` (23.6 s) is a captioned still sequence made from local
-`kernelcad render --preset publish --pose 0,0` captures of posed frames. It is
-**local capture evidence, not deployed behaviour**: no Studio, no hosted
-service and no hardware were involved. Each frame is the real kernel output:
-the script drives one joint through `solvedModel(...)`, and the OCCT lowerer's
-loop solver poses the other links before the scene is meshed and rendered.
+`demo.mp4` (16.8 s, 12 fps) is a pose-by-pose sweep built from local
+`kernelcad render --preset publish --pose 30,20` captures. It is **local
+capture evidence, not deployed behaviour**: no Studio, no hosted service and no
+hardware were involved. Each frame is the real kernel output. The script drives
+one joint through `solvedModel(...)`, the loop solver in the OCCT lowering step
+poses the other links, and the scene is then meshed and rendered.
 
-Sources:
+Sources (the geometry is committed, so the demo shows the scripts as they are):
 
 - `examples/kinematic/four-bar-swept.kcad.ts`: four-bar with crank 40,
-  coupler 120, rocker 80 and ground 100 mm. Only the crank is driven.
-  Frames are at crank 0, 30, 60, 90, 120, 150, 165 and 174°. The example's
-  `checkSweptCollision` (0–300°, 2° step) finds the first contact
-  (rocker vs stop) at 174°, the same angle the closed form gives.
+  coupler 120, rocker 80 and ground 100 mm, built on a base plate with posts and
+  pins at both ground pivots and pins at the two moving joints. Only the crank is
+  driven. A stop block stands in the rocker's layer beside the rocker pivot. The
+  example's `checkSweptCollision` (0–200°, 2° step) reports the first contact,
+  rocker vs stop, at crank = 164°. A separating-axis closed form on the rocker
+  angle gives the same 164°.
 - `src/agent/skills/kernelcad-kinematic/cookbook/06-over-center-latch-reachable.kcad.ts`:
-  slider-crank draw latch with handle 30, link 100 and keeper offset 10 mm.
-  The latched side is pinned with `loopMode('latch', { joint: 'link', sign })`.
-  Frames are at handle −20 (as modeled), −12, −6, 0 and 4°. The cookbook's
-  sweep stops at handle = 6° with `kinematic.loop.branch-flip`; the closed-form
-  over-center angle is asin(10/130) = 4.41°.
+  slider-crank draw latch with handle 30, link 100 and keeper offset 10 mm. A
+  post and pin on the housing carry the handle, and pins join handle–link and
+  link–keeper. The latched side is pinned with
+  `loopMode('latch', { joint: 'link', sign })`. The cookbook's sweep stops at
+  handle = 6° with `kinematic.loop.branch-flip`; the closed-form over-center
+  angle is asin(10/130) = 4.41°.
+
+Video timeline: title card (2 s); four-bar crank 0° → 160° in 4° steps, then
+164° (41 poses, two video frames each); a 2 s hold on the 164° contact; latch
+handle −20° → 4° in 1° steps (25 poses); a 2 s hold on 4°.
 
 ## Capture
 
@@ -28,55 +35,60 @@ From the repository root:
 ```sh
 npm run build:player   # dist/headless-player; playwright chromium-headless-shell 1208
 python3 docs/demos/closed-loop-kinematics/make-frames.py /tmp/s4-demo
-for f in /tmp/s4-demo/*.kcad.ts; do
-  npx tsx src/agent/cli/index.ts render "$f" --preset publish --pose 0,0 \
+for f in /tmp/s4-demo/*.kcad.ts; do   # re-run any frame that comes back empty
+  npx tsx src/agent/cli/index.ts render "$f" --preset publish --pose 30,20 \
     --width 960 --height 640 --no-watermark -o "${f%.kcad.ts}.png"
 done
 python3 docs/demos/closed-loop-kinematics/make-video.py /tmp/s4-demo
 ```
 
-`make-frames.py` copies the model section of the two sources, adds display
-colours (crank/handle orange, coupler/link blue, rocker/keeper green, stop red,
-ground grey) and a pale backboard behind the mechanism so every frame
-auto-frames the same, then returns `solvedModel({ crank | handle: X }, { validate: 'off' })`.
+`make-frames.py` copies the model section of the two sources and adds display
+colours: crank/handle orange, coupler/link blue, rocker/keeper green, stop dark
+slate, ground grey. On the contact frame the contacting pair (rocker and stop)
+is drawn red. A pale backboard behind the mechanism keeps the auto-framing the
+same in every frame. Each frame script returns
+`solvedModel({ crank | handle: X }, { validate: 'off' })`.
 
 ## Capture evidence
 
 - Date: 2026-10-24, local Linux machine with the bundled static player and
   chromium-headless-shell 1208.
-- Source commit: `4e0ab1a5` on `feat/verified-intent-s4-closed-loop-kinematics`.
-  The bundle is committed on top of it.
-- `demo.mp4`: H.264, 1280×720, 10 fps, 23.6 s, 101 234 bytes, sha256
-  `9033c839f2bb410b21f24f1998e3af83f291d84454e97a91b39a50dfc05228c5`.
-- Render rate: 6 of the 13 frame renders first came back fully black (mean
-  brightness 0). Re-running the same command (once, or twice for one frame) fixed each one, and all 13 frames
-  in the video were checked for non-black content before the video was built.
-  The intermittent black capture comes from the headless renderer, not from
-  the kinematics.
+- Source: branch `feat/verified-intent-s4-closed-loop-kinematics`. The example
+  and cookbook geometry in this commit are the ones rendered; both re-ran OK
+  (four-bar: sweep 164° = closed form 164°; latch: flip between 4° and 6°).
+- `demo.mp4`: H.264, 1280×720, 12 fps, 16.8 s (202 frames), 118 975 bytes,
+  sha256 `c57f15bc3a0ce740a112eea71e463ae0034ba07ac28d79a398db610e874774e2`.
+- Render rate: 67 pose renders. 3 came back empty on the first try (crank 0°,
+  88° and 164°) and rendered correctly on the second. Every frame used was
+  checked for content (minimum mean brightness 240 of 255) before the video was
+  built. The empty captures come from the headless renderer, not from the
+  kinematics.
 
-## What the frames show (inspected at 0.5 s, 3 s, 7 s, 12.5 s, 15 s and 22 s)
+## What the frames show (inspected at 4 s, 8.5 s, 10 s, 13.5 s and 16 s)
 
-- 0.5 s: title card, "Closed-loop kinematics", with the local-capture note.
-- 3 s, crank = 0°: the orange crank lies along +X from its ground pivot and the
-  blue coupler rises to the green rocker. The coupler and rocker tips meet at
-  one pin, so the loop is closed. The red stop is clear of every link.
-- 7 s, crank = 90°: the crank is vertical and the coupler runs from its tip to
-  the rocker tip, which has swung left. The loop is still closed.
-- 12.5 s, crank = 174°: the green rocker's tip reaches the red stop's right
-  face, at the first-contact angle that the sweep and the closed form both
-  report. The blue coupler also crosses the stop in this front view, but it
-  sits in a different depth layer (y = 24 mm vs 36 mm). It does not touch the
-  stop, and the sweep reports rocker ↔ stop only.
-- 15 s, handle = −20°: the orange handle tilts down to the right and the blue
-  link runs up to the green keeper. The elbow between handle and link is
-  clearly bent: this is the latched side.
-- 22 s, handle = 4°: handle and link are almost in line, just short of
-  straight. This is the last pose on the pinned side. The caption states that
-  the sweep stops at 6° with `kinematic.loop.branch-flip`, against the closed
-  form of 4.41°.
+- 4 s, crank = 48°: 3/4 view of the base plate with its two posts. The orange
+  crank turns on the front post's pin; the blue coupler joins it by a pin and
+  runs to the green rocker, which turns on the rear post. The dark stop stands
+  between the posts. The rocker is well clear of it, and the coupler passes high
+  above it in a nearer layer.
+- 8.5 s, crank = 156°: the rocker has leaned left toward the stop, a few
+  millimetres short of it. The coupler and crank are far from the stop.
+- 10 s, contact hold at crank = 164°: rocker and stop are both drawn red. The
+  rocker's lower body rests on the stop's top corner, and no other link is near
+  the stop. Caption: the swept-collision check and the closed form both give
+  164°.
+- 13.5 s, latch at handle = −4°: post and pin on the housing carry the orange
+  handle. Pins join handle–link and link–keeper. The elbow between handle and
+  link is bent slightly downward (the latched side).
+- 16 s, flip hold at handle = 4°: handle and link are almost in line, the last
+  pose on the pinned side. Caption: at 6° the sweep stops with
+  `kinematic.loop.branch-flip`, against a closed form of 4.41°.
 
 ## Scope
 
-Stills, not continuous motion. The positions match the solver output for the
-listed driven values. The video does not show the 6° flip pose itself, because
-the sweep stops there by design.
+- Discrete poses (4° steps for the four-bar, 1° for the latch), not an
+  interpolated animation. The positions are the solver output for those driven
+  values.
+- The 6° flip pose is not shown, because the sweep stops there by design.
+- The latch keeper's slide guide is not modeled: the keeper is drawn without a
+  rail. Its motion along the slide is still the solved prismatic mate.

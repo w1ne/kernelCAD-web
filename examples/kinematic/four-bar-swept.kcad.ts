@@ -8,7 +8,7 @@
 // the coupler and rocker at every sample, continuing from the previous pose
 // so the linkage stays in the open assembly mode it was modeled in.
 //
-// A stop block sits in the rocker's layer. `checkSweptCollision` walks the
+// A stop block stands in the rocker's layer beside the rocker pivot. `checkSweptCollision` walks the
 // crank and reports the FIRST crank angle at which the rocker touches the
 // stop. The script recomputes that angle from the closed-form rocker angle
 // (law of cosines on the four-bar, equivalent to Freudenstein's equation)
@@ -52,14 +52,34 @@ const arm = assembly('four-bar');
 const Y: [number, number, number] = [0, -1, 0];
 const pivot = (x: number) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: [x, 0, 0] as [number, number, number] }, axis: Y });
 
-const ground = arm.part('ground', box(d + 20, 6, 8, true).translate(d / 2, 0, -20));
-const crank = arm.part('crank', box(a, 6, 8, true).translate(a / 2, 12, 0));
-const coupler = arm.part('coupler', box(b, 6, 8, true).translate(b / 2, 24, 0));
+// A pin along Y at (x, z), spanning y0..y1 (drawn in the gap between two
+// link layers, 0.2 mm short of the next layer so it never touches it).
+const pinY = (x: number, z: number, y0: number, y1: number) =>
+  cylinder(y1 - y0, 3).rotateX(-90).translate(x, y0, z);
+
+// Ground: a base plate under the whole mechanism, a post under each ground
+// pivot (crank post in front, rocker post behind the rocker layer) and the
+// two ground pins the crank and rocker turn on.
+const ground = arm.part(
+  'ground',
+  box(d + 40, 51, 8, true).translate(d / 2, 22.5, -50)
+    .union(box(8, 6, 46, true).translate(0, 0, -23))
+    .union(box(8, 6, 46, true).translate(d, 45, -23))
+    .union(pinY(0, 0, 3, 8.8))
+    .union(pinY(d, 0, 39.2, 42)),
+);
+const crank = arm.part('crank', box(a, 6, 8, true).translate(a / 2, 12, 0).union(pinY(a, 0, 15, 20.8)));
+const coupler = arm.part('coupler', box(b, 6, 8, true).translate(b / 2, 24, 0).union(pinY(b, 0, 27, 32.8)));
 const rocker = arm.part('rocker', box(c, 6, 8, true).translate(c / 2, 36, 0));
-// Stop block in the rocker's layer, left of the rocker's swing.
-const stopFaceX = 58;
-const stopZ: [number, number] = [40, 90];
-const stop = arm.part('stop', box(28, 6, stopZ[1] - stopZ[0], true).translate(stopFaceX - 14, 36, (stopZ[0] + stopZ[1]) / 2));
+// Stop block in the rocker's layer, standing on the base plate just left of
+// the rocker pivot: the rocker leans onto it; crank and coupler pass well
+// clear of it (they also live in other layers).
+const stopX: [number, number] = [72, 88];
+const stopZ: [number, number] = [-45.8, 16];
+const stop = arm.part(
+  'stop',
+  box(stopX[1] - stopX[0], 6, stopZ[1] - stopZ[0], true).translate((stopX[0] + stopX[1]) / 2, 36, (stopZ[0] + stopZ[1]) / 2),
+);
 
 ground.connector('o2', pivot(0));
 ground.connector('o4', pivot(d));
@@ -79,7 +99,7 @@ arm.mate('pin', 'coupler.tip', 'rocker.tip', 'revolute', { limitsDeg: [-180, 180
 arm.mate('stopMount', 'ground.stopMount', 'stop.mount', 'fastened');
 
 // Sweep the crank alone; the loop solver poses coupler and rocker.
-const sweep = await kinematic.checkSweptCollision(arm, { joint: 'crank', range: [0, 300, STEP] });
+const sweep = await kinematic.checkSweptCollision(arm, { joint: 'crank', range: [0, 200, STEP] });
 const first = sweep.collidingPoses[0];
 if (first === undefined) throw new Error('expected the rocker to reach the stop');
 if (!first.contacts.some((x) => [x.partA, x.partB].includes('rocker') && [x.partA, x.partB].includes('stop'))) {
@@ -87,20 +107,24 @@ if (!first.contacts.some((x) => [x.partA, x.partB].includes('rocker') && [x.part
 }
 const sweepAngle = first.pose.crank as number;
 
-// Closed form: first crank sample where a rocker corner crosses the stop face.
+// Closed form: first crank sample where the rocker rectangle (length c,
+// width 8, on the closed-form rocker angle) overlaps the stop rectangle in
+// the mechanism plane — separating-axis test on the four edge normals.
 function rockerHitsStop(t2deg: number): boolean {
   const t4 = rockerAngle(rad(t2deg));
   const u = [Math.cos(t4), Math.sin(t4)];
   const v = [-Math.sin(t4), Math.cos(t4)];
-  for (const [s, w] of [[0, -4], [0, 4], [c, -4], [c, 4]]) {
-    const x = d + s * u[0] + w * v[0];
-    const z = s * u[1] + w * v[1];
-    if (x < stopFaceX && z > stopZ[0] && z < stopZ[1]) return true;
+  const rockerPts = [[0, -4], [0, 4], [c, -4], [c, 4]].map(([s, w]) => [d + s * u[0] + w * v[0], s * u[1] + w * v[1]]);
+  const stopPts = [[stopX[0], stopZ[0]], [stopX[1], stopZ[0]], [stopX[0], stopZ[1]], [stopX[1], stopZ[1]]];
+  for (const axis of [[1, 0], [0, 1], u, v]) {
+    const proj = (pts: number[][]) => pts.map((p) => p[0] * axis[0] + p[1] * axis[1]);
+    const [r, k] = [proj(rockerPts), proj(stopPts)];
+    if (Math.max(...r) <= Math.min(...k) || Math.max(...k) <= Math.min(...r)) return false;
   }
-  return false;
+  return true;
 }
 let closedForm = NaN;
-for (let t = 0; t <= 300; t += STEP) {
+for (let t = 0; t <= 200; t += STEP) {
   if (rockerHitsStop(t)) { closedForm = t; break; }
 }
 console.log(`[four-bar] first contact: sweep crank=${sweepAngle}°, closed form crank=${closedForm}° (rocker vs stop)`);
@@ -109,6 +133,6 @@ if (!(Math.abs(sweepAngle - closedForm) <= STEP)) {
 }
 const loopDiags = sweep.diagnostics.filter((x) => x.code.startsWith('kinematic.loop.'));
 console.log(`[four-bar] sampled ${sweep.posesSampled} poses; loop diagnostics: ${loopDiags.map((x) => x.code).join(', ') || 'none'}`);
-if (sweep.posesSampled !== 300 / STEP + 1) throw new Error('the crank-rocker should sweep its whole range without a loop stop');
+if (sweep.posesSampled !== 200 / STEP + 1) throw new Error('the crank-rocker should sweep its whole range without a loop stop');
 
 return arm.solvedModel({ crank: 60 });
