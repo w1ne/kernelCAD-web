@@ -363,6 +363,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
             to: 'lower-arm.anchor',
             restLengthMm: 50,
             stiffnessNmm: 0.5,
+            maxLengthMm: 50.5,
             dampingNsmm: 0.01,
         });
 
@@ -378,6 +379,9 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
         // stiffnessNmm 0.5 → 500 N/m; dampingNsmm 0.01 → 10 N·s/m.
         expect(mjcf).toMatch(/springlength="0 0\.050000"/);
         expect(mjcf).toMatch(/stiffness="500\.000000"/);
+        // maxLengthMm 50.5 → a one-sided limit at 0.0505 m: the cable can go
+        // slack but cannot stretch past the braided length.
+        expect(mjcf).toMatch(/limited="true" range="0 0\.050500"/);
         expect(mjcf).toMatch(/damping="10\.000000"/);
 
         // Round-trip through MuJoCo: at rest pose (qpos=0), the model
@@ -418,6 +422,9 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
             const spring = (model as { tendon_lengthspring: ArrayLike<number> }).tendon_lengthspring;
             expect(spring[0]).toBe(0);
             expect(spring[1]).toBeCloseTo(0.05, 9);
+            // The upper length bound is a compiled MuJoCo tendon limit; the
+            // XML assertion above proves the attrs, and this parse proves
+            // MuJoCo accepts them on a routed spatial tendon.
         } finally {
             (data as { delete: () => void }).delete();
             (model as { delete: () => void }).delete();

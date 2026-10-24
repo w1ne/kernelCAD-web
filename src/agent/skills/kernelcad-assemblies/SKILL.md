@@ -664,7 +664,8 @@ Behavior:
 
 A tendon is any cable, rope, belt or Bowden line between two connectors (`from`, `to`: `"part.connector"`, vec3 origins), optionally routed through pulley / via points and optionally driven by a motor.
 
-- **Passive spring** — `restLengthMm` and `stiffnessNmm` (both > 0), optional `dampingNsmm`; render `visualStyle: 'line'` (default) or `'coil'`.
+- **Passive spring** — `restLengthMm` and `stiffnessNmm` (both > 0), optional `dampingNsmm`; render `visualStyle: 'line'` (default) or `'coil'`. A cable is tension-only: it pulls above `restLengthMm` and goes slack below it.
+- **Length limit** — `maxLengthMm` (> 0) caps the routed cable length. MuJoCo gets `limited="true" range="0 L"`, so a braided strap can go slack but cannot stretch past L. Combine it with a spring for elastic-up-to-the-cap behaviour, or use it alone for an inextensible strap (`restLengthMm` / `stiffnessNmm` are then optional).
 - **Routed** — `via: ['a.pulley', { wrap: { partName, wrapName, sidesite? } }, 'b.eye']` is the ordered route between `from` and `to`. A string is a connector ref on ANY part (validated like `from` / `to`); a `{ wrap }` entry routes around a collision-off cylinder declared with `part.wrapGeom(name, { axis, radius })`. MuJoCo gets the sites and wrap geoms in that order and the rendered centerline follows each point's owning-part pose. `via` cannot be combined with `wrapGeoms`. A routed `'line'` sweeps a round tube through the route.
 - **Motor-driven** — `actuator: { kind: 'force', maxForceN }` adds a MuJoCo motor on the tendon: `ctrl` in `[0, maxForceN]` is cable TENSION (it pulls). With an actuator, `restLengthMm` / `stiffnessNmm` are optional; omit them for an inextensible cable.
 - **Profile** — `profile: { kind: 'round', diameterMm }` sweeps a tube along the route; `{ kind: 'flat', widthMm, thicknessMm, widthAxis? }` sweeps a ribbon whose width direction is `widthAxis` (default `[0, 1, 0]`, given in each route point's owning-part frame).

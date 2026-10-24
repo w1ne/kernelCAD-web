@@ -181,7 +181,7 @@ Build a mechanism from parts: connectors, mates, joints, posed Scenes.
 
 | Call | What it does |
 |---|---|
-| `assembly(name?) => Assembly` | `arm.tendon(name, { from, to, via?, actuator?: { kind: force, maxForceN }, profile?: { kind: round \| flat, ... |
+| `assembly(name?) => Assembly` | `arm.tendon(name, { from, to, via?, actuator?: { kind: force, maxForceN }, maxLengthMm?, profile?: { kind: round \| flat, ... |
 | `joint : { clevis(opts: ClevisJointOptions): ClevisJoint }` | Mechanism-delivery joint helpers. |
 | `Scene.part(name: string) => ScenePart` | Look up a part by its assembly-unique name. |
 | `Scene.parts : readonly ScenePart[]` | Frozen, ordered list of parts in the Scene; ordering matches the order parts were added to the Assembly. |

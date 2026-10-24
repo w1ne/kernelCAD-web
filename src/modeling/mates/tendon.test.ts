@@ -130,6 +130,40 @@ describe('arm.tendon(name, opts) — capture validation', () => {
     expect(t.visualDiameterMm).toBe(4);
   });
 
+  it('records a hard maximum cable length', () => {
+    const arm = makeArm();
+    arm.tendon('strap', {
+      from: 'a.topA',
+      to: 'b.topB',
+      restLengthMm: 30,
+      stiffnessNmm: 20,
+      maxLengthMm: 31,
+    });
+    expect(arm.__tendons()[0].maxLengthMm).toBe(31);
+  });
+
+  it('accepts a limit-only inextensible strap without spring fields', () => {
+    const arm = makeArm();
+    arm.tendon('strap', { from: 'a.topA', to: 'b.topB', maxLengthMm: 31 });
+    const t = arm.__tendons()[0];
+    expect(t.maxLengthMm).toBe(31);
+    expect(t.restLengthMm).toBeUndefined();
+    expect(t.stiffnessNmm).toBeUndefined();
+  });
+
+  it('rejects non-positive max length', () => {
+    const arm = makeArm();
+    expect(() =>
+      arm.tendon('s', { from: 'a.topA', to: 'b.topB', maxLengthMm: 0 }),
+    ).toThrow(/maxLengthMm.*positive finite/);
+    expect(() =>
+      arm.tendon('s2', { from: 'a.topA', to: 'b.topB', maxLengthMm: -1 }),
+    ).toThrow(/maxLengthMm.*positive finite/);
+    expect(() =>
+      arm.tendon('s3', { from: 'a.topA', to: 'b.topB', maxLengthMm: Number.NaN }),
+    ).toThrow(/maxLengthMm.*positive finite/);
+  });
+
   it('rejects duplicate tendon name', () => {
     const arm = makeArm();
     arm.tendon('s', { from: 'a.topA', to: 'b.topB', restLengthMm: 30, stiffnessNmm: 0.5 });
