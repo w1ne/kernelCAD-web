@@ -3,7 +3,6 @@
 // src/lib/mates/solver.ts
 //
 // v0.6 Task 6: tree-FK over the mate graph for all 7 mate types.
-// v0.6 Task 7: Newton-Raphson closed-loop solver for fastened-only loops.
 // v0.6 T-pose: pose-driven articulation. `solveMates(arm, poses?)` honors the
 // numeric `poses` override first, then the capture-time `mate.pose`
 // (resolved through the session's ParamTable), defaulting to 0 / [0,0,0].
@@ -14,36 +13,24 @@
 // the parent→child transform — mirroring the v0.5 body-tree FK math in
 // `../../capture/forwardKinematics.ts`.
 //
-// Tree topologies are solved exactly. Closed kinematic loops with fastened
-// mates are evaluated via tree-FK + loop-closure residual check:
+// Tree topologies are solved exactly by the walk. Mates the spanning tree
+// leaves out close loops:
 //
-//   - residual < RESIDUAL_TOL          → 'redundant-ok' (loop is consistent)
-//   - residual stalls above tol        → 'over-constrained' (geometry conflicts)
-//   - iter-cap hit with residual high  → 'did-not-converge'
+//   - a loop through an articulated mate is solved by the loop-closure
+//     solver (`./loopAdapter` → `shared/kinematics/loopClosure`): the
+//     caller's pose keys are driven, the other loop mates are solved from
+//     the as-built pose (continuation), and `result.loop` carries loop names,
+//     mobility and `kinematic.loop.*` findings;
+//   - a fastened-only loop has nothing to move: the closure residual
+//     classifies it as 'redundant-ok' or 'over-constrained'.
 //
-// For fastened-only loops the free-variable vector has length 0, so the
-// classification is decided in one shot (no Newton iteration needed).
-// Articulated closed loops (revolute / prismatic in a loop) will exercise
-// the full Newton-Raphson path in T7.x once T9 wires pose-driven
-// articulation. The N-R machinery (finite-diff Jacobian, least-squares
-// step) lives in `../numeric/jacobian.ts` and is unit-tested there.
-//
-// This file is intentionally kept separate from `forwardKinematics.ts`
-// (which walks the v0.5 AssemblyJointStored body-tree and ships in 0.5.0);
-// the two data models diverge enough that unifying upstream would touch
-// shipped code.
+// The pure `mateFk` (used by the OCCT lowerer) runs the same loop solve.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { FeatureId } from '../../shared/intent/types';
-// Newton-Raphson machinery for articulated closed loops (T7.x): the
-// finite-diff Jacobian + small-matrix linear solver from
-// `../numeric/jacobian.ts` (unit-tested there). For the v0.6.0 fastened-
-// only path we only need `norm2`; the rest get wired in here when T9
-// lands pose-driven articulation and free DOFs make Newton iteration
-// meaningful. Keeping these imports here makes the wiring point explicit
-// and stops future readers from rebuilding helpers that already exist.
 import { norm2 } from '../../shared/numeric/jacobian';
 import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
@@ -59,6 +46,15 @@ import type { MatePose, MateRecord } from './mate';
 import { parseConnectorRef } from './mate';
 import type { MateType } from './mateTypes';
 import { solverGroundedPart } from './solverRoot';
+import {
+  drivenMateNames,
+  hasArticulatedLoop,
+  solveMateLoops,
+  type ConnectorLookup,
+  type MateTreeStep,
+  type MateWalkRecord,
+} from './loopAdapter';
+import type { LoopBranchState, LoopPin, LoopSolveResult } from '../../shared/kinematics/loopClosure';
 
 export type SolveStatus =
   | 'solved'
@@ -85,6 +81,11 @@ export interface SolveResult {
    *  origins sit (mm) at the returned poses. Tree mates are satisfied by the
    *  FK walk itself, so they never appear here. */
   loopResiduals?: ReadonlyArray<{ readonly mate: string; readonly mm: number }>;
+  /** Articulated closed loops only: the loop solve — loop names, mobility
+   *  (Grübler vs rank, driven DOF), `kinematic.loop.*` diagnostics, every
+   *  solved mate coordinate and the branch state to seed the next pose of a
+   *  sweep with. */
+  loop?: LoopSolveResult;
 }
 
 /** Adjacency edge: which mate connects this node to a neighbor, and from
@@ -98,20 +99,11 @@ interface MateEdge {
   readonly partIsA: boolean;
 }
 
-/** Newton-Raphson knobs. Surfaced as module-level constants so future
- *  tweaks (T7.x articulated loops) stay in one place. */
+/** Fastened-only loop classification threshold. */
 const SOLVER = {
-  /** Hard cap on Newton iterations for articulated closed loops. */
-  ITER_CAP: 50,
   /** Convergence threshold on `||r||` (mm — connector world positions are
    *  in mm under the v0.6 unit convention). */
   RESIDUAL_TOL: 1e-6,
-  /** Articulated path only: residual `>= RESIDUAL_TOL · OVER_CONSTRAINED_FACTOR`
-   *  after Newton stalls flips status from 'did-not-converge' to
-   *  'over-constrained'. For fastened-only loops the moment `||r||` exceeds
-   *  `RESIDUAL_TOL` we already know mates are inconsistent — there's no DOF
-   *  to adjust — so the factor isn't applied. */
-  OVER_CONSTRAINED_FACTOR: 100,
 } as const;
 
 /**
@@ -197,20 +189,22 @@ function resolvePoseFromEditable(
 }
 
 export interface SolveMatesOptions {
-  /** Classify an ARTICULATED closed loop whose loop-closure residual is
-   *  already zero at the resolved poses as 'redundant-ok' (with the tree-FK
-   *  transforms as the solution) instead of the conservative
-   *  'did-not-converge'. A zero residual means the configuration is
-   *  consistent — there is nothing for a loop solver to adjust — but the
-   *  permissive classification also opts the assembly into every
-   *  solved-pose consumer (full verification sweeps, interference gates),
-   *  so it is opt-in per call site. Robot-description export uses it to
-   *  stamp real per-link poses on closed-loop mechanisms. */
+  /** No longer needed: articulated closed loops are always solved by the
+   *  loop-closure solver. Accepted (and ignored) for compatibility. */
   acceptConsistentArticulatedLoops?: boolean;
   /** Solve each disconnected mate component from its first declared part.
    *  The default preserves the historical behavior: only the component
    *  containing parts[0] is traversed and all other parts are identity-filled. */
   solveDisconnectedComponents?: boolean;
+  /** Continuation seed for articulated loops: the mate coordinates solved at
+   *  the previous pose of a sweep (`result.loop.coordinates`). Default: the
+   *  as-built (capture-time) poses. */
+  seed?: NumericPoses;
+  /** Branch state from the previous pose (`result.loop.state`); lets the
+   *  solve detect a branch flip between consecutive sweep poses. */
+  previous?: LoopBranchState;
+  /** Branch pins; default `arm.loopMode(...)` declarations. */
+  loopModes?: readonly LoopPin[];
 }
 
 export async function solveMates(
@@ -241,7 +235,7 @@ export async function solveMates(
   // 2. Build a spanning tree via BFS from the first declared part. Mates not
   //    in the tree become loop-closure constraints — passed to `loopSolve`.
   const partByName = new Map(parts.map((p) => [p.name, p]));
-  const { worldT, loopMates } = await walkSpanningTree(
+  const { worldT, loopMates, walk } = await walkSpanningTree(
     parts,
     adjacency,
     partByName,
@@ -255,11 +249,88 @@ export async function solveMates(
     return { status: 'solved', poses: worldT };
   }
 
-  // 3. Closed loops present — evaluate loop-closure residual. For v0.6.0 we
-  //    only support fastened-only loops (every mate is fastened); articulated-
-  //    loop Newton-Raphson lands in T7.x once T9 wires pose-driven articulation
-  //    through the solver.
-  return loopSolve(mates, partByName, loopMates, worldT, opts);
+  // 3. Closed loops present. A loop through an articulated mate is solved
+  //    by the loop-closure solver (driven poses from the caller, the other
+  //    loop mates solved); a fastened-only loop has nothing to move and
+  //    keeps the residual classification.
+  const connector = await resolvedConnectorLookup(mates, partByName);
+  if (hasArticulatedLoop(walk, connector)) {
+    return solveArticulatedLoops(arm, walk, connector, worldT, poses, expandedPoses, opts);
+  }
+  return loopSolve(partByName, loopMates, worldT);
+}
+
+/** Resolve every mate connector once (topology origins lower the part). */
+async function resolvedConnectorLookup(
+  mates: readonly MateRecord[],
+  partByName: ReadonlyMap<string, AssemblyPartStored>,
+): Promise<ConnectorLookup> {
+  const table = new Map<string, { origin: Se3Vec3; axis: Se3Vec3 }>();
+  for (const m of mates) {
+    for (const ref of [m.a, m.b]) {
+      if (table.has(ref)) continue;
+      const side = parseConnectorRef(ref);
+      const part = partByName.get(side.partName)!;
+      const c = findConnector(part, side.connectorName);
+      table.set(ref, { origin: await originVec3(part, c.origin), axis: connectorAxis(c) });
+    }
+  }
+  return (partName, connectorName) => table.get(`${partName}.${connectorName}`)!;
+}
+
+/** Distance between a mate's two connector origins at the given placements. */
+function connectorGapMm(m: MateRecord, connector: ConnectorLookup, poses: ReadonlyMap<string, Transform>): number {
+  const a = parseConnectorRef(m.a);
+  const b = parseConnectorRef(m.b);
+  const pa = poses.get(a.partName)!.point(connector(a.partName, a.connectorName).origin);
+  const pb = poses.get(b.partName)!.point(connector(b.partName, b.connectorName).origin);
+  return Math.hypot(pa[0] - pb[0], pa[1] - pb[1], pa[2] - pb[2]);
+}
+
+async function solveArticulatedLoops(
+  arm: Assembly,
+  walk: MateWalkRecord,
+  connector: ConnectorLookup,
+  treeWorldT: Map<string, Transform>,
+  callerPoses: NumericPoses | undefined,
+  expandedPoses: NumericPoses,
+  opts: SolveMatesOptions | undefined,
+): Promise<SolveResult> {
+  const mates = arm.__mates();
+  const driven = drivenMateNames(mates, arm.__mateCouplings(), callerPoses);
+  const asBuilt: NumericPoses = {};
+  for (const m of mates) {
+    const v = driven.has(m.name) ? resolveMatePose(m, arm, undefined) : (expandedPoses[m.name] ?? resolveMatePose(m, arm, undefined));
+    if (v !== undefined) asBuilt[m.name] = v;
+  }
+  let loop: LoopSolveResult;
+  try {
+    loop = solveMateLoops(walk, connector, {
+      driven, poses: expandedPoses, asBuilt, seed: opts?.seed, previous: opts?.previous,
+      pins: opts?.loopModes ?? arm.__loopModes(),
+    });
+  } catch (e) {
+    return invalidArgs({
+      api: 'assembly.loopMode(loopName, { joint, sign })',
+      path: 'loopName',
+      gotText: (e as Error).message,
+      requires: 'a loop name from solveMates(...).loop.loops and a revolute mate on that loop',
+      example: "arm.loopMode('coupler_rocker', { joint: 'crank_coupler', sign: '+' })",
+    });
+  }
+  // A loop that does not close at the requested pose keeps the tree-walk
+  // placements at that pose (best effort, as before), so the loop residuals
+  // show how far apart the cut mates are where the caller asked. The last
+  // closed pose is in `loop.transforms`.
+  const poses = new Map(treeWorldT);
+  if (loop.status === 'solved') for (const [name, t] of loop.transforms) poses.set(name, t);
+  return {
+    status: loop.status === 'solved' ? 'solved' : 'did-not-converge',
+    poses,
+    iterations: loop.iterations,
+    loopResiduals: walk.loopMates.map((m) => ({ mate: m.name, mm: connectorGapMm(m, connector, poses) })),
+    loop,
+  };
 }
 
 /**
@@ -313,8 +384,19 @@ export function mateFk(
   parts: readonly ResolvedMatePart[],
   mates: readonly MateRecord[],
   numericPoses: NumericPoses,
+  loopOpts?: MateFkLoopOptions,
 ): Map<FeatureId, Transform> {
-  return mateFkWithPlacedParts(parts, mates, numericPoses).transforms;
+  return mateFkWithPlacedParts(parts, mates, numericPoses, loopOpts).transforms;
+}
+
+/** Closed-loop inputs for the pure mate FK. Without them every mate pose is
+ *  an as-built value and nothing is driven. */
+export interface MateFkLoopOptions {
+  /** Mate names whose pose in `numericPoses` the caller drives. */
+  readonly driven?: ReadonlySet<string>;
+  /** As-built mate poses (seed). Default: `numericPoses` minus driven keys. */
+  readonly asBuilt?: NumericPoses;
+  readonly loopModes?: readonly LoopPin[];
 }
 
 /** `mateFk`'s transforms, plus the parts a mate edge placed. */
@@ -332,6 +414,7 @@ export function mateFkWithPlacedParts(
   parts: readonly ResolvedMatePart[],
   mates: readonly MateRecord[],
   numericPoses: NumericPoses,
+  loopOpts?: MateFkLoopOptions,
 ): MateFkResult {
   const transforms = new Map<FeatureId, Transform>();
   const placedByMate = new Set<FeatureId>();
@@ -339,7 +422,8 @@ export function mateFkWithPlacedParts(
 
   const adjacency = buildResolvedMateAdjacency(parts, mates);
   const partByName = new Map(parts.map((p) => [p.name, p]));
-  const { worldTByName, placedNames } = walkResolvedMateTree(parts, adjacency, partByName, numericPoses);
+  const { worldTByName, placedNames, walk } = walkResolvedMateTree(parts, adjacency, partByName, numericPoses);
+  closeResolvedLoops(walk, partByName, numericPoses, loopOpts, worldTByName);
 
   // 3. Re-key the result by FeatureId so callers (and the lowerer) can
   //    intersect it with v0.5 `forwardKinematics`'s map seamlessly.
@@ -382,14 +466,49 @@ function buildResolvedMateAdjacency(
 /** 2. BFS spanning tree from `parts[0]`. Compose child world transform from
  *  parent's via the mate's local SE(3) contribution. `placedNames` holds
  *  every part a mate edge reached (the root is not one of them). */
+/** Replace the tree placements of the parts on articulated loops with the
+ *  loop solve (as-built branch, continuation from the as-built pose). A
+ *  loop that cannot close keeps the tree placements; `solveMates` reports
+ *  why at capture time. */
+function closeResolvedLoops(
+  walk: MateWalkRecord,
+  partByName: ReadonlyMap<string, ResolvedMatePart>,
+  numericPoses: NumericPoses,
+  loopOpts: MateFkLoopOptions | undefined,
+  worldTByName: Map<string, Transform>,
+): void {
+  if (walk.loopMates.length === 0) return;
+  const connector: ConnectorLookup = (partName, connectorName) => {
+    const part = partByName.get(partName)!;
+    const c = findResolvedConnector(part, connectorName);
+    return { origin: numericOrigin(c, partName), axis: connectorAxis(c) };
+  };
+  if (!hasArticulatedLoop(walk, connector)) return;
+  const driven = loopOpts?.driven ?? new Set<string>();
+  const asBuilt: NumericPoses = loopOpts?.asBuilt ?? Object.fromEntries(
+    Object.entries(numericPoses).filter(([k]) => !driven.has(k)),
+  );
+  let loop: LoopSolveResult;
+  try {
+    loop = solveMateLoops(walk, connector, { driven, poses: numericPoses, asBuilt, pins: loopOpts?.loopModes });
+  } catch {
+    return;
+  }
+  for (const [name, t] of loop.transforms) worldTByName.set(name, t);
+}
+
 function walkResolvedMateTree(
   parts: readonly ResolvedMatePart[],
   adjacency: ReadonlyMap<string, MateEdge[]>,
   partByName: ReadonlyMap<string, ResolvedMatePart>,
   numericPoses: NumericPoses,
-): { worldTByName: Map<string, Transform>; placedNames: Set<string> } {
+): { worldTByName: Map<string, Transform>; placedNames: Set<string>; walk: MateWalkRecord } {
   const root = solverGroundedPart(parts);
-  if (root === undefined) return { worldTByName: new Map(), placedNames: new Set() };
+  if (root === undefined) {
+    return { worldTByName: new Map(), placedNames: new Set(), walk: { roots: [], tree: [], loopMates: [] } };
+  }
+  const tree: MateTreeStep[] = [];
+  const loopMates: MateRecord[] = [];
   const worldTByName = new Map<string, Transform>();
   worldTByName.set(root.name, Transform.identity());
   const queue: string[] = [root.name];
@@ -403,9 +522,13 @@ function walkResolvedMateTree(
     for (const edge of adjacency.get(parentName) ?? []) {
       if (seenMate.has(edge.mate.name)) continue;
       seenMate.add(edge.mate.name);
-      if (visited.has(edge.neighbor)) continue; // loop-closure mate — owned by solveMates
+      if (visited.has(edge.neighbor)) {
+        loopMates.push(edge.mate); // loop-closure mate — closed by closeResolvedLoops
+        continue;
+      }
       visited.add(edge.neighbor);
       placedNames.add(edge.neighbor);
+      tree.push({ mate: edge.mate, partIsA: edge.partIsA });
 
       worldTByName.set(
         edge.neighbor,
@@ -420,7 +543,11 @@ function walkResolvedMateTree(
   for (const p of parts) {
     if (!worldTByName.has(p.name)) worldTByName.set(p.name, Transform.identity());
   }
-  return { worldTByName, placedNames };
+  return {
+    worldTByName,
+    placedNames,
+    walk: { roots: [{ body: root.name, placement: Transform.identity() }], tree, loopMates },
+  };
 }
 
 /** Compose one child's world transform from the parent's through the parent
@@ -519,6 +646,8 @@ function validateNumericPoseShape(
 
 interface SpanningTreeResult {
   worldT: Map<string, Transform>;
+  /** The tree as walked, for the loop solver. */
+  walk: MateWalkRecord;
   /** Mates dropped from the spanning tree — these are the loop-closure
    *  constraints the loop solver must satisfy. */
   loopMates: MateRecord[];
@@ -555,12 +684,15 @@ async function walkSpanningTree(
   const worldT = new Map<string, Transform>();
   const loopMates: MateRecord[] = [];
   const seenMate = new Set<string>();
+  const roots: Array<{ body: string; placement: Transform }> = [];
+  const tree: MateTreeStep[] = [];
 
   const queue: string[] = [];
   const visited = new Set<string>();
   let nextRoot: AssemblyPartStored | undefined = solverGroundedPart(parts);
   while (nextRoot !== undefined) {
     worldT.set(nextRoot.name, rest(nextRoot));
+    roots.push({ body: nextRoot.name, placement: rest(nextRoot) });
     visited.add(nextRoot.name);
     queue.push(nextRoot.name);
 
@@ -576,6 +708,7 @@ async function walkSpanningTree(
           continue;
         }
         visited.add(edge.neighbor);
+        tree.push({ mate: edge.mate, partIsA: edge.partIsA });
         const childT = await composeChildTransform(parentT, edge, partByName, arm, poses);
         worldT.set(edge.neighbor, childT);
         queue.push(edge.neighbor);
@@ -593,113 +726,35 @@ async function walkSpanningTree(
     if (!worldT.has(p.name)) worldT.set(p.name, rest(p));
   }
 
-  return { worldT, loopMates };
+  return { worldT, loopMates, walk: { roots, tree, loopMates } };
 }
 
 /**
- * Loop solver — evaluates loop-closure residual and classifies the assembly.
- *
- * Residual definition (fastened-only loop):
- *   For each loop-closure mate `m`, compute world position of `m.a`'s
- *   connector origin via the tree-FK and the same for `m.b`'s connector.
- *   Concatenate `(A_world - B_world)` 3-vectors across all loop mates to
- *   form a single residual vector `r ∈ R^{3·K}` (K = # loop mates).
- *
- * Free variables (fastened-only): the spanning tree's fastened mates
- * remove all 6 DOFs per joint, so the per-mate pose vector is empty.
- * Classification is therefore immediate:
+ * Fastened-only loop classification. Every loop reaching here runs through
+ * fastened mates only (an articulated loop goes to the loop-closure solver),
+ * so there is no joint to move and the residual decides in one evaluation:
+ * for each loop-closure mate, the gap between its two connector origins at
+ * the tree-FK placements.
  *   - ||r|| < SOLVER.RESIDUAL_TOL → 'redundant-ok'  (loop is consistent)
  *   - otherwise                   → 'over-constrained'
- *
- * (`SOLVER.OVER_CONSTRAINED_FACTOR` is only meaningful on the articulated
- * path, where it distinguishes 'Newton-Raphson stalled with a small
- * residual' from 'stalled with a large residual'. For fastened-only loops
- * the moment `||r||` exceeds `RESIDUAL_TOL` we know mates conflict — no
- * DOF exists to adjust — so we err on the side of surfacing
- * over-constrained immediately.)
- *
- * Articulated loops (revolute / prismatic / etc.) introduce free DOFs into
- * `x` and exercise the Newton-Raphson loop below. That path lands in T7.x
- * once T9 wires pose-driven articulation; today it returns
- * 'did-not-converge' for any non-fastened mate appearing in a loop or its
- * spanning tree, with a clear `iterations` count.
+ * The residual is also reported per mate, so a caller can name the mate
+ * that does not close.
  */
 async function loopSolve(
-  allMates: readonly MateRecord[],
   partByName: ReadonlyMap<string, AssemblyPartStored>,
   loopMates: readonly MateRecord[],
   initialPoses: Map<string, Transform>,
-  opts?: SolveMatesOptions,
 ): Promise<SolveResult> {
-  // For v0.6.0 only fastened-only loops are solved unconditionally. If any
-  // mate (tree or loop) on a closed-loop assembly is non-fastened, that's
-  // the articulated path: by default return 'did-not-converge' with
-  // iterations=0 and let T7.x handle it once T9 wires pose-driven
-  // articulation. With `acceptConsistentArticulatedLoops` the residual is
-  // checked first — a loop that already closes at the resolved poses (e.g.
-  // a linkage authored so its default pose is the assembled configuration)
-  // is consistent regardless of articulation, and the tree-FK transforms
-  // ARE the solution. Robot-description export opts in so a closed 4-bar
-  // ships real per-link poses instead of a refusal; other consumers keep
-  // the conservative default.
-  // Fastened-only loop (or opted-in articulated loop): with zero free DOFs
-  // — or an articulated configuration we only accept when already closed —
-  // the residual decides in a single evaluation. The N-R helpers from
-  // `../numeric/jacobian.ts` are imported and unit-tested there; they get
-  // wired in here in T7.x for the articulated path. The residual is also
-  // reported per mate on every loop result, so a caller can name the mate
-  // that does not close.
-  const hasNonFastened = allMates.some((m) => m.type !== 'fastened');
-  const conservative = hasNonFastened && opts?.acceptConsistentArticulatedLoops !== true;
-  let residual: number[];
-  try {
-    residual = await computeLoopResidual(loopMates, partByName, initialPoses);
-  } catch (e) {
-    // The articulated default never needed the residual; keep its old answer.
-    if (conservative) return { status: 'did-not-converge', poses: initialPoses, iterations: 0 };
-    throw e;
-  }
+  const residual = await computeLoopResidual(loopMates, partByName, initialPoses);
   const loopResiduals = loopMates.map((m, i) => ({
     mate: m.name,
     mm: Math.hypot(residual[3 * i], residual[3 * i + 1], residual[3 * i + 2]),
   }));
   const base = { poses: initialPoses, iterations: 0, loopResiduals };
-
-  if (conservative) return { status: 'did-not-converge', ...base };
-
-  if (norm2(residual) < SOLVER.RESIDUAL_TOL) {
-    return { status: 'redundant-ok', ...base };
-  }
-
-  if (hasNonFastened) {
-    // Opted-in articulated loop that does NOT close at the resolved poses:
-    // free DOFs exist that a Newton-Raphson pass could adjust (T7.x), so
-    // report 'did-not-converge' rather than 'over-constrained'.
-    return { status: 'did-not-converge', ...base };
-  }
-
-  // Fastened-only loop with non-zero residual: there's no free DOF to
-  // adjust, so Newton can't reduce the residual — the mate geometry itself
-  // disagrees. (See `SOLVER.OVER_*` JSDoc above for why we don't apply the
-  // factor on the fastened-only path.)
-  return { status: 'over-constrained', ...base };
+  return norm2(residual) < SOLVER.RESIDUAL_TOL
+    ? { status: 'redundant-ok', ...base }
+    : { status: 'over-constrained', ...base };
 }
-
-// Newton-Raphson machinery (T7.x, articulated loops). For reference the
-// inner loop will look like:
-//
-//   for (let i = 0; i < SOLVER.ITER_CAP; i++) {
-//     const r = residualFn(x);
-//     if (norm2(r) < SOLVER.RESIDUAL_TOL) return { ...converged };
-//     const J = finiteDiffJacobian(residualFn, x);
-//     const dx = solveLeastSquares(J, r);
-//     x = sub(x, dx);
-//   }
-//   return { status: 'did-not-converge', iterations: SOLVER.ITER_CAP, ... };
-//
-// `finiteDiffJacobian`, `solveLeastSquares`, `sub` (from
-// `../numeric/jacobian.ts`) are imported in their unit-test file today and
-// re-imported here in T7.x when the free-DOF vector materializes.
 
 /** Walk all loop-closure mates and stack their (A_world - B_world)
  *  3-vectors into a flat residual. */

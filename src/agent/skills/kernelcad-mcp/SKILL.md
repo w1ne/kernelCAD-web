@@ -65,7 +65,7 @@ Use before freehand authoring on production / industry prompts. Prefer `design_l
 | NEMA motor mounting plate | `nema-motor-mounting-plate` | Prefer `lib.standard.nema17()`; snippet uses BREP stand-in for CI |
 | Hole-less development board cradle / rail with connector access | `holeless-board-cradle` | Parametric edge rails and snap catches; verify fit and flex against the actual PCB before printing |
 | Multi-body mechanism + joints + animation | `multi-body-mechanism-real-proportions` | Proven pin **MLl-f0Uq@1**; CDN mesh+anim |
-| Scissor-lift / scissor-jack table | `scissor-lift-closed-loop` | Closed-loop FK unsupported — open-chain prismatic + mid-pose X-links |
+| Scissor-lift / scissor-jack table | `scissor-lift-closed-loop` | Production table: prismatic platform DOF + mid-pose X-links. A solved closed-loop scissor (crossed links + sliders, lift angle driven) is kernelcad-kinematic cookbook 04 |
 | 4-DOF / multi-axis production robot arm | `multi-dof-robot-arm-4axis` | Bridged yokes, yaw clearance, mechanicalJoint chain, reach anim |
 | Articulated arm built from imported vendor meshes (STL links + STEP end-effector parts) | `so-arm100` | `execute_cookbook({ id: 'so-arm100' })` runs `examples/robot-arm/so100/so100-arm.kcad.ts` — shows mesh-link import with a STEP tool. Do not substitute a primitive-only arm when real meshes are supplied |
 | 4-DOF release/evidence pack (static hold, BOM, drawing, USD, FEA stop) | `4dof-release-evidence-pack` | Runnable arm + honest FEA-unavailable / USD-mate stops |

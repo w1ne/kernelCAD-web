@@ -5,13 +5,13 @@
 // Inverse-kinematics dispatcher. Routes between the closed-form analytical
 // solver (when the chain matches the spherical-wrist condition AND the
 // caller didn't force numeric) and the damped-least-squares numeric fallback.
-// Closed-loop chains emit K9 `kinematic.solver.unsupported-config` per D4 —
-// honest "v1 does not handle this" instead of a 50%-correct answer.
+// Closed loops (joint graph or mate graph) are posed by the loop-closure
+// solver; the IK drives only each loop's independent joints.
 //
 // Diagnostic emission:
 //   - K3 `kinematic.unreachable`                       — target outside reachable workspace or solver gave up
 //   - K4 `kinematic.reachability.iteration-cap-hit`    — numeric loop ran out of iterations before tolerance hit
-//   - K9 `kinematic.solver.unsupported-config`         — closed-loop / parallel chain or other unsupported topology
+//   - K9 `kinematic.solver.unsupported-config`         — analytical IK on a chain that is not closed-form solvable (incl. closed loops)
 
 import type { Assembly } from '../modeling/capture/assembly';
 import {
@@ -19,6 +19,8 @@ import {
   type DiagnosticCode,
 } from '../shared/diagnostics/registry';
 import { cycleDetector } from './cycleDetector';
+import { solveJointGraphLoops } from '../modeling/capture/forwardKinematics';
+import { solveNumericJointLoops } from './inverseKinematicsLoops';
 import { solveAnalytical } from './inverseKinematicsAnalytical';
 import { solveNumeric, type NumericIKResult } from './inverseKinematicsNumeric';
 import {
@@ -57,20 +59,11 @@ export async function checkReachable(
 ): Promise<ReachableResult> {
   const diagnostics: KinematicDiagnostic[] = [];
 
-  // 1. Closed-loop guard. K9 ships v1's honest "not yet" per D4.
+  // 1. Closed joint loops (a part with several parent joints): the loop
+  //    solver poses the dependent joints, so IK drives only the loops'
+  //    independent joints. The closed-form solver is serial-only.
   const cycle = cycleDetector(arm);
-  if (cycle.hasCycle) {
-    diagnostics.push(
-      buildDiag(
-        'kinematic.solver.unsupported-config',
-        'error',
-        `Inverse kinematics on closed-loop or parallel chains is not supported in v1 ` +
-          `(cycle detected in the mate graph; involved joints: ${cycle.cycleNodes.join(', ')}). ` +
-          `Cut the closed loop in the mate graph or restructure the mechanism into a serial tree.`,
-      ),
-    );
-    return { ok: false, diagnostics, source: 'local' };
-  }
+  if (cycle.hasCycle) return checkReachableOnJointLoops(arm, opts, diagnostics, cycle.cycleNodes);
 
   // 2. Mate-graph arms (`arm.mate(..., 'revolute' | 'prismatic')`) carry no
   //    joint-graph DOF, so the joint solvers below would see a zero-DOF chain
@@ -159,6 +152,40 @@ export async function checkReachable(
     source: 'local',
     closestApproach: num.poses,
   };
+}
+
+async function checkReachableOnJointLoops(
+  arm: Assembly,
+  opts: ReachableOpts,
+  diagnostics: KinematicDiagnostic[],
+  cycleNodes: ReadonlyArray<string>,
+): Promise<ReachableResult> {
+  const unsupported = (why: string): ReachableResult => {
+    diagnostics.push(buildDiag('kinematic.solver.unsupported-config', 'error', why));
+    return { ok: false, diagnostics, source: 'local' };
+  };
+  if (opts.preferSolver === 'analytical') {
+    return unsupported(
+      `Analytical IK was requested via preferSolver='analytical', but the joint graph has a closed loop ` +
+        `(joints: ${cycleNodes.join(', ')}); the closed-form solver handles serial chains only. ` +
+        `Set preferSolver='auto' or 'numeric' to drive the loop's independent joints numerically.`,
+    );
+  }
+  try {
+    solveJointGraphLoops(arm.__parts(), arm.__joints(), {});
+  } catch (e) {
+    return unsupported(`The joint graph cycles back on itself with no root part (${(e as Error).message}).`);
+  }
+  if (!arm.__parts().some((p) => p.name === opts.tipLink)) {
+    diagnostics.push(buildDiag('kinematic.unreachable', 'error', `Tip link '${opts.tipLink}' was not found among the assembly's parts.`));
+    return { ok: false, diagnostics, source: 'local' };
+  }
+  const maxIterations = opts.maxIterations ?? DEFAULT_MAX_ITERATIONS;
+  const num = solveNumericJointLoops(arm, opts.tipLink, opts.target, opts.seed ?? {}, maxIterations);
+  if (num.converged) return { ok: true, diagnostics, source: 'local', pose: num.poses };
+  diagnostics.push(buildUnreachableDiag(num.positionErrorMm, num.orientationErrorDeg, opts.target.positionToleranceMm ?? 0.5));
+  if (num.iterations >= maxIterations) diagnostics.push(buildIterationCapDiag(num.iterations, maxIterations));
+  return { ok: false, diagnostics, source: 'local', closestApproach: num.poses };
 }
 
 /** True when the tip is articulated through mates, not the joint graph: the

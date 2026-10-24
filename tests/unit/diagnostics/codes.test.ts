@@ -137,6 +137,9 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 drafting review: drawing.annotation.override-missing = 359.
     // + 1 kernel selection: recompute.kernel.unavailable = 363.
     // + 2 selector binding drift: selector.binding-moved, selector.binding-changed = 365.
+    // + 4 closed-loop kinematics: kinematic.loop.branch-flip,
+    //   kinematic.loop.lockup, kinematic.loop.mobility-mismatch,
+    //   kinematic.loop.branch-ambiguous = 376 (DIAGNOSTIC_CODES.length; the running total above lags codes added without a comment).
     expect(new Set(DIAGNOSTIC_CODES).size).toBe(DIAGNOSTIC_CODES.length);
     expect(DIAGNOSTIC_CODES).toContain('feature.boolean.recovered');
     expect(DIAGNOSTIC_CODES).toContain('feature.shell.boolean-fallback');

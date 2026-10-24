@@ -16,6 +16,8 @@ export interface SolvedAssemblyMateMetadata {
   readonly connectorsByPartId: Record<FeatureId, readonly EncodedConnectorRecord[]>;
   readonly mates: readonly EncodedMateRecord[];
   readonly couplings?: readonly MateCouplingRecord[];
+  /** `loopMode(...)` branch pins for closed loops. */
+  readonly loopModes?: readonly { readonly loop: string; readonly joint: string; readonly sign: '+' | '-' }[];
 }
 
 export interface EncodedConnectorRecord {
@@ -396,5 +398,6 @@ function mateMetadataPayload(mateMetadata?: SolvedAssemblyMateMetadata): Record<
     mates: mateMetadata.mates,
     couplings: mateMetadata.couplings ?? [],
     connectorsByPartId: mateMetadata.connectorsByPartId,
+    ...(mateMetadata.loopModes !== undefined && mateMetadata.loopModes.length > 0 ? { loopModes: mateMetadata.loopModes } : {}),
   };
 }

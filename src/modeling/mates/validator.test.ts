@@ -313,10 +313,9 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     expect(result.status).toBe('over-constrained');
   });
 
-  it('reports assembly.solver.did-not-converge on a non-fastened loop (T7 punt)', async () => {
-    // T7 punts articulated closed loops to T7.x: any non-fastened mate in a
-    // loop returns 'did-not-converge' with iterations=0. Build a triangle
-    // where m3 is revolute — exercises that branch.
+  it('reports assembly.solver.did-not-converge on a loop that cannot close', async () => {
+    // Triangle with a fastened tree path and a revolute cut whose pivots sit
+    // 2 mm apart: no joint on the tree can move, so the loop cannot close.
     const { arm, kcad } = makeArm();
     arm
       .part('a', kcad.box(1, 1, 1))
@@ -344,9 +343,9 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     const result = await validateAssemblyWithMates(arm);
     const didNot = result.diagnostics.find((d) => d.code === 'assembly.solver.did-not-converge');
     expect(didNot).toBeDefined();
-    expect(didNot?.message).toContain('UNSUPPORTED on v0.6.0');
-    expect(didNot?.message).toContain('Articulated mates');
-    expect(didNot?.hint).toContain('open kinematic chain');
+    expect(didNot?.message).toContain('does not close');
+    expect(didNot?.message).toContain('kinematic.loop.lockup');
+    expect(didNot?.hint).toContain('loop-closure solver');
     // Topology fold is gated on did-not-converge so open chains keep soft
     // grounding gates, but a refused articulated loop still surfaces
     // unsupported-axis / missing-limit style codes on evaluate_script.

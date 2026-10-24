@@ -15,7 +15,7 @@
 // for prismatic). The checkSweptCollision wrapper emits one
 // kinematic.collision.swept.sample-density-warning per entry.
 
-import type { Assembly, AssemblyJointStored } from '../modeling/capture/assembly';
+import type { Assembly } from '../modeling/capture/assembly';
 import type { NumericPoses, SweptCollisionOpts } from './types';
 
 /** D3: safe-floor sample counts per joint kind. Below this the swept loop
@@ -34,6 +34,33 @@ const DEFAULT_PRISMATIC_LIMITS: readonly [number, number] = [0, 100];
 export interface EnumeratedPoses {
   readonly poses: ReadonlyArray<NumericPoses>;
   readonly sparseJoints: ReadonlyArray<string>;
+  /** The same poses grouped by walk: one group per swept joint (each walk
+   *  starts again from the as-built pose), or a single group for explicit
+   *  samples. Closed-loop continuation runs within a group. */
+  readonly walks: ReadonlyArray<ReadonlyArray<NumericPoses>>;
+}
+
+/** A sweepable joint: a joint-graph revolute/prismatic, or an articulated
+ *  scalar mate (revolute / prismatic / cylindrical / pin_slot). */
+interface Sweepable {
+  readonly name: string;
+  readonly kind: 'revolute' | 'prismatic';
+  readonly limits?: readonly [number, number];
+}
+
+function sweepables(arm: Assembly): Sweepable[] {
+  const out: Sweepable[] = [];
+  for (const j of arm.__joints()) {
+    if (j.kind === 'revolute') out.push({ name: j.name, kind: 'revolute', limits: j.limitsDeg });
+    else if (j.kind === 'prismatic') out.push({ name: j.name, kind: 'prismatic', limits: j.limitsMm });
+  }
+  for (const m of arm.__mates?.() ?? []) {
+    if (m.type === 'prismatic') out.push({ name: m.name, kind: 'prismatic', limits: m.limitsMm });
+    else if (m.type === 'revolute' || m.type === 'cylindrical' || m.type === 'pin_slot') {
+      out.push({ name: m.name, kind: 'revolute', limits: m.limitsDeg });
+    }
+  }
+  return out;
 }
 
 /**
@@ -47,42 +74,35 @@ export function enumeratePoses(
 ): EnumeratedPoses {
   // Branch 1: explicit samples win.
   if (opts?.samples && opts.samples.length > 0) {
-    return { poses: opts.samples.map((p) => ({ ...p })), sparseJoints: [] };
+    const poses = opts.samples.map((p) => ({ ...p }));
+    return { poses, sparseJoints: [], walks: [poses] };
   }
 
-  const allJoints = arm.__joints();
-
-  // Branch 2/3: pick which joints we walk.
-  const targetJointNames: string[] = opts?.joint
+  const all = sweepables(arm);
+  const jointNames = new Set(arm.__joints().map((j) => j.name));
+  // Branch 2/3: pick which joints we walk. The default walk covers every
+  // joint-graph joint and every articulated mate that declares limits.
+  const targets: string[] = opts?.joint
     ? [opts.joint]
-    : allJoints.filter((j) => j.kind === 'revolute' || j.kind === 'prismatic').map((j) => j.name);
+    : all.filter((j) => jointNames.has(j.name) || j.limits !== undefined).map((j) => j.name);
 
-  const poses: NumericPoses[] = [];
+  const walks: NumericPoses[][] = [];
   const sparseJoints: string[] = [];
-
-  for (const jointName of targetJointNames) {
-    const joint = allJoints.find((j) => j.name === jointName);
+  for (const jointName of targets) {
+    const joint = all.find((j) => j.name === jointName);
     if (!joint) {
+      if (arm.__joints().some((j) => j.name === jointName)) continue; // fixed / ball: no scalar sweep
       throw new Error(
-        `enumeratePoses: unknown joint '${jointName}' — not declared on the supplied assembly.`,
+        `enumeratePoses: unknown joint '${jointName}' — not a revolute/prismatic joint or articulated mate on the supplied assembly.`,
       );
-    }
-    if (joint.kind === 'fixed' || joint.kind === 'ball') {
-      // Fixed has no DOF; ball is XYZ-euler and not v1-swept-supported.
-      // Skip silently — caller-supplied joint walks throw above (unknown),
-      // default walks should just not include these.
-      continue;
     }
     const [lo, hi, step] = opts?.range ?? defaultRange(joint);
     if (isSparse(joint.kind, [lo, hi, step])) sparseJoints.push(jointName);
-
     const count = Math.floor((hi - lo) / step) + 1;
-    for (let i = 0; i < count; i++) {
-      poses.push({ [jointName]: lo + i * step });
-    }
+    walks.push(Array.from({ length: count }, (_, i) => ({ [jointName]: lo + i * step })));
   }
 
-  return { poses, sparseJoints };
+  return { poses: walks.flat(), sparseJoints, walks };
 }
 
 /**
@@ -102,12 +122,11 @@ export function isSparse(
   return samples < floor;
 }
 
-function defaultRange(joint: AssemblyJointStored): [number, number, number] {
+function defaultRange(joint: Sweepable): [number, number, number] {
   if (joint.kind === 'revolute') {
-    const [lo, hi] = joint.limitsDeg ?? DEFAULT_REVOLUTE_LIMITS;
+    const [lo, hi] = joint.limits ?? DEFAULT_REVOLUTE_LIMITS;
     return [lo, hi, DEFAULT_REVOLUTE_STEP_DEG];
   }
-  // prismatic
-  const [lo, hi] = joint.limitsMm ?? DEFAULT_PRISMATIC_LIMITS;
+  const [lo, hi] = joint.limits ?? DEFAULT_PRISMATIC_LIMITS;
   return [lo, hi, DEFAULT_PRISMATIC_STEP_MM];
 }

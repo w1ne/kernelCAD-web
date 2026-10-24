@@ -51,6 +51,7 @@ import { recordModel } from './assemblyModel';
 import { SolvedKinematics } from './solvedKinematics';
 import { recordPart, recordSubAssembly } from './assemblyParts';
 import { createAssemblyState, type AssemblyState } from './assemblyState';
+import { recordLoopMode, type LoopModeOpts, type LoopPin } from './assemblyLoopModes';
 
 export * from './assemblyTypes';
 export { SolvedKinematics } from './solvedKinematics';
@@ -170,6 +171,13 @@ export class Assembly {
     return this;
   }
 
+  /** Pin the branch of a closed loop: hold the elbow at `opts.joint` on the
+   *  `opts.sign` side. See `recordLoopMode` in `assemblyLoopModes.ts`. */
+  loopMode(loopName: string, opts: LoopModeOpts): this {
+    recordLoopMode(this.state, loopName, opts);
+    return this;
+  }
+
   /** See `recordTendon` in `assemblyJoints.ts` for the full passive
    *  balance-spring contract. */
   tendon(name: string, opts: TendonOptions): this {
@@ -285,6 +293,11 @@ export class Assembly {
 
   __mateCouplings(): readonly MateCouplingRecord[] {
     return this.state.mateCouplings;
+  }
+
+  /** `loopMode(...)` pins. Not public. */
+  __loopModes(): readonly LoopPin[] {
+    return this.state.loopModes;
   }
 
   /**

@@ -351,6 +351,7 @@ export function buildMateMetadata(state: AssemblyState): import('./captureSessio
     connectorsByPartId,
     mates: encodedMates,
     couplings: [...state.mateCouplings],
+    ...(state.loopModes.length > 0 ? { loopModes: [...state.loopModes] } : {}),
   };
 }
 

@@ -288,7 +288,7 @@ const snapScene = solved.toScene();               // snapshot Scene; call .toUni
 **Limitations (v1):**
 - **Numeric joint origins.** Joint origins are plain `Vec3`, not `EditableVec3`. Editing geometry params (e.g. `baseX`) reshapes parts but not joint frames; future slice will lift joint origins to `EditableVec3` once `setParamValue` reactivity is wired through.
 - **One frame per part.** Joint origins are `Vec3` numeric, can't bind to faces/edges/vertices yet.
-- **Body-tree / open-chain FK only (v0.6.0).** Each part has at most one parent joint; articulated closed chains (4-bar linkages) return `assembly.solver.did-not-converge` — use an open chain or fastened-only loop until T7.x.
+- **Closed chains are solved.** A part may have a second parent joint (or a mate that closes a loop); the loop solver poses the unposed loop joints from the as-built pose. Author the links in the assembled configuration and pose only the input joint(s); a pose the loop cannot reach throws with `kinematic.loop.lockup` (see the kernelcad-kinematic skill, "Closed loops").
 - **Motion-limit review is validator/tooling-level.** `limitsDeg`/`limitsMm` are checked by pose-envelope review (`review_cad`, `validateMatePoseLimits`, or `solvedModel(poses, { posesGate: 'envelope' })`); raw `solve()` still computes the requested pose.
 - Calling `solve()` twice on the same Assembly compounds transforms; build a fresh `assembly()` per pose query.
 
@@ -414,7 +414,7 @@ The mate-aware validator walks the assembly's parts + joints + mate graph and re
 | `under-constrained`   | One or more parts have residual DOF — declare more mates. |
 | `over-constrained`    | Mates mutually contradict — remove or relax one. |
 | `redundant-ok`        | Mates over-determine the pose but agree — info-severity diagnostic, prune for hygiene. |
-| `did-not-converge`    | **UNSUPPORTED on v0.6.0** for articulated closed loops (4-bar etc.; often 0 iterations = refused up-front). Rewrite as an open chain or fastened-only loop — do not invent gear-contact types. |
+| `did-not-converge`    | A closed loop does not close at the requested poses: the loop-closure solver reports `kinematic.loop.lockup` (pose past a dead point / range limit) or `kinematic.loop.mobility-mismatch` (more joints driven than the loop's mobility). Articulated closed loops (4-bar, slider-crank, scissor) are solved — drive only the input joint. |
 
 Six diagnostic codes on `ValidatorDiagnostic`:
 
@@ -423,7 +423,7 @@ Six diagnostic codes on `ValidatorDiagnostic`:
 - `assembly.mate.type-mismatch` — connector-pair / mate-type mismatch at capture.
 - `assembly.mate.connector-not-found` — malformed ref / unknown part / unknown connector.
 - `assembly.loop.unclosed` — reserved (type-only today).
-- `assembly.solver.did-not-converge` — **v0.6.0 does not solve articulated closed loops** (4-bar / parallelogram / scissor + pin_slot). Message lists body + articulated-mate ids. Fix: open chain (drop one loop-closing mate; keep ground root) or fastened-only loop. Industrial scissor tables: `lookup_cookbook("scissor lift closed loop")` (open-chain prismatic platform + mid-pose X-links — do not invent `joint.scissorLift`). `limitsDeg` / `jointSupport` / `mechanicalJoint` still apply on open chains and are reported even when the loop cannot converge.
+- `assembly.solver.did-not-converge` — a closed loop cannot close at the rest pose. The message carries the loop solver's finding (`kinematic.loop.lockup` names the loop — the mate that closes it — the stuck joint and the pose; `kinematic.loop.mobility-mismatch` says how many joints to drive). Fix link lengths / connector origins so the loop assembles, author the as-built pose closed, and drive only the loop's input joints. Closed loops are solved: see the kernelcad-kinematic skill, section "Closed loops" (branch pins via `arm.loopMode(loop, { joint, sign })`). Do not invent `joint.scissorLift`.
 
 ### Validation gate on `solvedModel`
 
@@ -761,7 +761,7 @@ See `kernelcad-kinematic/SKILL.md` for the full pattern and the worked example (
 | `assembly.mate.type-mismatch` | capture-time — wrong mate type for connector pair |
 | `assembly.mate.connector-not-found` | capture-time — unknown part or connector ref |
 | `assembly.loop.unclosed` | mate validator — reserved |
-| `assembly.solver.did-not-converge` | mate validator — Newton-Raphson iter-cap |
+| `assembly.solver.did-not-converge` | mate validator — a closed loop does not close (loop solver lockup / over-driven) |
 | `assembly.connector.topology-not-resolvable` | connector declaration — unresolvable topology query |
 | `assembly.transmission.missing-for-coupled-mate` | review_cad — coupled mate without transmission |
 | `assembly.transmission.path-disconnected` | review_cad — transmission path has air gap |
