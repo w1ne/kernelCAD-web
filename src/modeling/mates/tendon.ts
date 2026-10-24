@@ -85,8 +85,8 @@ export interface TendonRecord {
     readonly from: string;
     /** "<partName>.<connectorName>" — second endpoint. */
     readonly to: string;
-    /** Resting length of the spring (mm). Spring force is zero when the
-     *  endpoint-to-endpoint distance equals this. >0. */
+    /** Resting length of the spring (mm). The tendon is a cable: it pulls
+     *  when longer than this and goes slack (zero force) when shorter. >0. */
     readonly restLengthMm?: number;
     /** Spring stiffness (N/mm). MJCF emits this as N/m (×1000). >0.
      *  Undefined only for an `actuator` tendon (inextensible driven cable:

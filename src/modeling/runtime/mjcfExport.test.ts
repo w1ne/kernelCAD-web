@@ -374,9 +374,9 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
         // Spatial tendon block emitted.
         expect(mjcf).toMatch(/<tendon>/);
         expect(mjcf).toMatch(/<spatial name="spring"/);
-        // Unit conversions: restLengthMm 50 → springlength 0.05;
+        // Unit conversions: restLengthMm 50 → springlength "0 0.05" (slack below rest);
         // stiffnessNmm 0.5 → 500 N/m; dampingNsmm 0.01 → 10 N·s/m.
-        expect(mjcf).toMatch(/springlength="0\.050000"/);
+        expect(mjcf).toMatch(/springlength="0 0\.050000"/);
         expect(mjcf).toMatch(/stiffness="500\.000000"/);
         expect(mjcf).toMatch(/damping="10\.000000"/);
 
@@ -414,6 +414,10 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
             const tenLen = (data as { ten_length: ArrayLike<number> }).ten_length;
             expect(tenLen.length).toBe(1);
             expect(Math.abs(tenLen[0] - expectedLen)).toBeLessThan(1e-6);
+            // MuJoCo reads the deadband: zero spring force anywhere below rest.
+            const spring = (model as { tendon_lengthspring: ArrayLike<number> }).tendon_lengthspring;
+            expect(spring[0]).toBe(0);
+            expect(spring[1]).toBeCloseTo(0.05, 9);
         } finally {
             (data as { delete: () => void }).delete();
             (model as { delete: () => void }).delete();
