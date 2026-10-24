@@ -66,6 +66,14 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
             "mechanism makes ok:false. Set true to skip the sweep entirely (no " +
             '`mechanism` field, no cost). Ignored for dryRun and non-assembly scripts.',
         },
+        baseline: {
+          type: 'array',
+          items: { type: 'object', additionalProperties: true },
+          description:
+            'The `selections` of an earlier evaluation of this model. A selector that now binds to a different ' +
+            'face or edge is reported as selector.binding-changed (warning), one whose entity only moved or ' +
+            'resized as selector.binding-moved (info). Defaults to the previous evaluation of the same `file`.',
+        },
       },
     },
   },

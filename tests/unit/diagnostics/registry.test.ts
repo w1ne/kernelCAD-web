@@ -24,6 +24,7 @@ const ALLOWED_GROUPS = new Set([
   'parts',
   'dfm',
   'query',
+  'selector',
   'kinematic',
   'mechanism',
   'animation',

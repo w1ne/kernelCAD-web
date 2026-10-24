@@ -1,6 +1,6 @@
 ---
 id: scissor-lift-closed-loop
-title: Scissor-lift table — open-chain lift DOF + mid-pose X-links (closed-loop FK unsupported)
+title: Scissor-lift table — open-chain lift DOF + mid-pose X-links (production pattern)
 tags: [assembly, connector, mate, prismatic, joint, kinematic, plate, parameter, scissor, lift]
 keywords:
   - scissor lift
@@ -15,11 +15,12 @@ keywords:
 when_to_use: >-
   Prompt asks for a scissor-lift / scissor-jack table with base, platform,
   X-pattern links, mechanism=real, and animationView raising the platform.
-  IMPORTANT: articulated closed-loop FK (true revolute + pin_slot scissor that
-  solves both slider ends from one lift-height DOF) is UNSUPPORTED — it emits
-  assembly.solver.did-not-converge / kinematic.solver.unsupported-config. Do
-  NOT invent joint.scissorLift(...) or close the loop with pin_slot. Use this
-  open-chain production pattern: one prismatic platform DOF (+ mechanicalJoint)
+  This is the production table pattern. A true closed-loop scissor (crossed
+  links + base/platform sliders, the lift angle driven, both sliders solved)
+  is supported by the loop-closure solver — see the kernelcad-kinematic
+  cookbook 04-scissor-jack-swept for that mechanism. Do NOT invent
+  joint.scissorLift(...). For the table, use this open-chain pattern: one
+  prismatic platform DOF (+ mechanicalJoint)
   driven by platformZ, industrial X-links fused into base-frame at a
   representative mid pose, animationView raising the platform. Keep the
   actuator-mount fastener on solid (center pad under the actuator) so
@@ -30,10 +31,11 @@ when_to_use: >-
 ---
 
 ```typescript
-// Open-chain industrial scissor table. Closed-loop revolute+pin_slot FK is
-// unsupported (assembly.solver.did-not-converge). One prismatic DOF raises the
-// platform; X-links are fused into base-frame at a mid working pose (ParamRef
-// cannot drive Math.sqrt link geometry). Do not invent joint.scissorLift.
+// Open-chain industrial scissor table. One prismatic DOF raises the platform;
+// X-links are fused into base-frame at a mid working pose (ParamRef cannot
+// drive Math.sqrt link geometry). A solved closed-loop scissor (crossed links
+// + sliders, lift angle driven) is the kernelcad-kinematic cookbook 04.
+// Do not invent joint.scissorLift.
 
 const platformZ = param('platformZ', 110, { min: 80, max: 150 });
 

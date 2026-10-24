@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CaptureSession } from '../../modeling/capture/captureSession';
+import type { SelectionRecord } from '../../shared/intent/selectionRecord';
 import { buildModel, buildModelFromFile } from '../../composition/buildModel';
 
 export interface ScriptSourceInput {
@@ -10,6 +11,12 @@ export interface ScriptSourceInput {
 }
 
 export interface ActiveMcpSession {
+  /** Script file this session was evaluated from, when it came from a file. */
+  file?: string;
+  /** Script text this session was evaluated from. */
+  code?: string;
+  /** What the model's selectors bound to; the baseline for re-evaluating the same file. */
+  selections?: SelectionRecord[];
   /** Array returns have no single root geometry for step evidence. */
   stepEvidenceSupported?: boolean;
   session: CaptureSession;

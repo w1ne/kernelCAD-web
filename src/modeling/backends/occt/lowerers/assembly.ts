@@ -10,13 +10,15 @@ import { KernelError } from '../../../../shared/intent/kernelError';
 import type { FeatureId, Param, Vec3, Vec3Param } from '../../../../shared/intent/types';
 import { Transform } from '../../../../shared/runtime/se3';
 import type { AssemblyJointStored, AssemblyPartStored } from '../../../capture/assembly';
-import { forwardKinematics, type NumericPoses } from '../../../capture/forwardKinematics';
+import { forwardKinematics, jointGraphHasLoops, type NumericPoses } from '../../../capture/forwardKinematics';
 import { expandCoupledPoses, type MateCouplingRecord } from '../../../mates/coupledPoses';
 import type { Connector } from '../../../mates/connector';
 import type { MateRecord } from '../../../mates/mate';
 import type { MateType } from '../../../mates/mateTypes';
 import { resolvedPartAt } from '../../../mates/partFrame';
 import { mateFk, mateFkWithPlacedParts, type ResolvedMatePart } from '../../../mates/solver';
+import { drivenMateNames } from '../../../mates/loopAdapter';
+import type { LoopPin } from '../../../../shared/kinematics/loopClosure';
 import { resolveTopologyOriginOnBackend } from '../connectorTopology';
 import { built, finished, noShape, type LowerContext, type LowerOutcome } from './context';
 import { normalizeAxis, readVec3Param } from './helpers';
@@ -445,11 +447,16 @@ function applyModelMateFk(
     type: m.type,
   }));
   const expandedMatePoses = expandCoupledPoses(mates, mateCouplings, matePoses);
-  const mateWorldT = mateFk(resolvedParts, mates, expandedMatePoses);
+  const mateWorldT = mateFk(resolvedParts, mates, expandedMatePoses, { loopModes: readLoopModes(r) });
   for (const [partId, mT] of mateWorldT) {
     if (partId in connectorsByPartId) worldT.set(partId, mT);
   }
   return true;
+}
+
+/** `loopMode(...)` pins carried on an assembly record's metadata. */
+function readLoopModes(r: FeatureRecord): readonly LoopPin[] {
+  return (r.metadata as { loopModes?: readonly LoopPin[] } | undefined)?.loopModes ?? [];
 }
 
 /** Defaulted view of a `solvedAssembly` record's metadata. */
@@ -693,8 +700,10 @@ function jointPosesValid(
   joints: AssemblyJointStored[],
   numericPoses: NumericPoses,
 ): boolean {
+  // On a closed joint loop the unposed loop joints are solved, not required.
+  const loops = jointGraphHasLoops(joints);
   for (const j of joints) {
-    if (j.kind !== 'fixed' && numericPoses[j.name] === undefined) {
+    if (!loops && j.kind !== 'fixed' && numericPoses[j.name] === undefined) {
       ctx.diagnostics.push({
         target: ctx.target,
         code: 'feature.invalid-args',
@@ -785,8 +794,16 @@ function applySolvedMateFk(
     type: m.type,
   }));
   const expandedMatePoses = expandCoupledPoses(mates, mateCouplings, matePoses);
+  // Closed loops: the solvedModel poses drive; capture-time poses are the
+  // as-built seed the loop solve continues from.
+  const capturePoses: NumericPoses = {};
+  for (const [name, v] of Object.entries(matePoses)) if (numericPoses[name] === undefined) capturePoses[name] = v;
   const { transforms: mateWorldT, placedByMate } =
-    mateFkWithPlacedParts(resolvedParts, mates, expandedMatePoses);
+    mateFkWithPlacedParts(resolvedParts, mates, expandedMatePoses, {
+      driven: drivenMateNames(mates, mateCouplings, numericPoses),
+      asBuilt: expandCoupledPoses(mates, mateCouplings, capturePoses),
+      loopModes: readLoopModes(r),
+    });
   // Merge: mate-derived transforms WIN over joint-derived transforms.
   // Disconnected-from-mates parts retain their joint-FK transform (or
   // identity if no joint either). This is the explicit precedence

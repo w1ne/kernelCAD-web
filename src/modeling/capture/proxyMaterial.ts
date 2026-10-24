@@ -241,3 +241,16 @@ export function assignMaterialMetadata(
     metadata.material = cleaned;
   }
 }
+
+/** Validate + clean a PBR material given outside `.material()` (e.g. a tendon's
+ *  render material): the same checks, clamps and texture-ref handling. `owner`
+ *  names the caller in errors; soft warnings go to `warnings`. */
+export function cleanPbrMaterial(opts: PBRMaterial, owner: string, warnings: SoftWarning[] = []): PBRMaterial {
+  validateMaterialBaseColor(opts, owner);
+  const state = cleanMaterialScalars(opts, owner);
+  cleanMaterialAttenuation(opts, owner, state);
+  cleanMaterialAnisotropyRotation(opts, owner, state, warnings);
+  const textures = cleanMaterialTextures(opts, owner);
+  if (textures !== undefined) state.cleaned.textures = textures;
+  return state.cleaned;
+}

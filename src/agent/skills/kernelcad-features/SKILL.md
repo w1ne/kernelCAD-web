@@ -417,6 +417,28 @@ const filletEdges = q.union(
 
 See `cookbook/snippets/Q-S3-lenient-composition.kcad.ts`.
 
+## Selectors that drift after an edit
+
+Every selector, whatever its syntax (a label such as `'mountFront.wall'`, an `@kc[...]` ref, a `q.*` query or a `{ byNormal, minArea, ... }` face query), records what it bound to: entity kind, surface type, the feature that produced it, direction, radius, area or length, and centroid. `evaluate_script` and `kernelcad evaluate <file> --json` return them as `selections`.
+
+A parameter edit can leave a selector valid but pointing at another face: the model still builds, the fillet or hole is just in the wrong place. Re-evaluating compares each selector with the previous evaluation:
+
+- `selector.binding-changed` (warning): a different producing feature, entity kind, surface or curve type, name, or a direction turned by more than 10 degrees. The message names the old and the new entity, the consuming feature and the selector. Tighten the selector (name the feature, or add a position or size filter) and re-evaluate.
+- `selector.binding-moved` (info): the same face, moved or resized (direction over 1 degree, radius, area or length over 1 %, centroid beyond the larger of 0.01 mm and 0.1 % of the part diagonal). Expected after a parameter edit.
+- Nothing is reported when the entity is within those tolerances. Zero or several matches still raise `query.empty` / `query.over-determined`.
+
+The previous evaluation is picked up automatically by `set_param` (after an `evaluate_script` of the same code), by `evaluate_script` on the same `file`, and by a model's `set_param`/code-edit rebuild. For anything else pass it explicitly: `kernelcad evaluate <file> --baseline <json>` takes the `--json` output of the earlier run; the `evaluate_script` tool takes `baseline` (the earlier `selections`).
+
+```typescript
+const w = param("w", 30, { min: 20, max: 60 });
+const plate = box(w, 40, 6);
+const boss = box(w.subtract(10), 20, 10).translate(5, 10, 6);
+// w = 30: the plate top (800 mm^2). w = 50: the boss top, same area, another face.
+return plate.union(boss).fillet(1, { face: { byNormal: 'Z', minArea: 700, maxArea: 900 } });
+```
+
+See `cookbook/snippets/selector-binding-drift.kcad.ts` and `examples/selector-binding-drift.kcad.ts`.
+
 ## Verification gates
 
 After applying edge/face features, run before reporting done:

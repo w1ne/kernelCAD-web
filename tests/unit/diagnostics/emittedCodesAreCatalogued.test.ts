@@ -58,6 +58,7 @@ const EMITTING_FILES = [
   'agent/mcp/tools/inspectCurvature.ts',
   'agent/script-runtime/export.ts',
   'kernel/naming/resolveFaceRef.ts',
+  'kernel/naming/selectionDrift.ts', // selector.binding-moved / selector.binding-changed
   'kernel/backends/occt/drawingAnnotations.ts',
   'agent/script-runtime/bom.ts',
   'agent/mcp/tools/renderPreview.ts',
@@ -68,6 +69,7 @@ const EMITTING_FILES = [
   'agent/reconstruct/reconstruct.ts', // mesh_to_features fidelity / mesh gates
   'modeling/directEdit/planDrag.ts', // direct-edit drag diagnostics
   'agent/cookbook/intentLint.ts', // authoring.prefer-api.* intent lint
+  'shared/kinematics/loopClosure/solveLoops.ts', // kinematic.loop.* closed-loop solver
 ];
 
 // Directories every non-test `.ts` file of which is an emit site, enumerated at

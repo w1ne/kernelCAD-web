@@ -60,9 +60,10 @@ describe('Assembly.solvedModel({validate})', () => {
   });
 
   it('prefers closed-loop did-not-converge over co-occurring interference under validate:error', async () => {
-    // Articulated closed loop (revolute edge) + overlapping boxes at origin.
-    // Historically interference was collected first and became the thrown
-    // KernelError, hiding the v0.6.0 unsupported-loop banner from ChatGPT.
+    // Closed loop that cannot close (fastened tree path, revolute cut 1 mm
+    // off) + overlapping boxes at origin. Historically interference was
+    // collected first and became the thrown KernelError, hiding the loop
+    // failure from the agent.
     const { arm, kcad } = makeArm();
     arm
       .part('ground', kcad.box(10, 10, 10))
@@ -88,7 +89,7 @@ describe('Assembly.solvedModel({validate})', () => {
     arm.mate('m2', 'crank.r', 'rocker.s', 'fastened');
     arm.mate('m3', 'rocker.axis', 'ground.axis', 'revolute');
     await expect(arm.solvedModel({}, { validate: 'error' })).rejects.toThrow(
-      /did not converge|UNSUPPORTED on v0\.6\.0|articulated closed/i,
+      /does not close|kinematic\.loop\.lockup/i,
     );
   }, 60_000);
 

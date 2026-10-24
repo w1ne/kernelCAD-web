@@ -66,6 +66,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('P11 Slice 1 — MuJoCo sees collision c
         const cubeB = kcad.box(10, 40, 40, true);
         const cubeC = kcad.box(40, 40, 40, true);
         const jAB = kcad.joint.clevis({
+            style: { knuckleR: 12 },
             parentBody: cubeA,
             childBody: cubeB,
             axis: 'Y',
@@ -74,6 +75,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('P11 Slice 1 — MuJoCo sees collision c
             limitsDeg: [-180, 180],
         });
         const jBC = kcad.joint.clevis({
+            style: { knuckleR: 12 },
             parentBody: jAB.childGeometry,
             childBody: cubeC,
             axis: 'Y',

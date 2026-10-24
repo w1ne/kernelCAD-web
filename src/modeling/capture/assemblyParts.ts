@@ -21,6 +21,7 @@ import type { Shape } from './proxy';
 import type { CaptureSession } from './captureSession';
 import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLibrary';
 import { validateMassKg, validateOverlayOption } from './assemblyPartOverlayValidation';
+import { createPartCollision } from './assemblyPartCollision';
 import { copyMateCapacity } from './assemblyMateCapacity';
 import type { Assembly } from './assembly';
 import type {
@@ -590,6 +591,7 @@ export function makePartRef(
     assemblyName, id, name, at, connectors, mateConnectors, () => ref,
   );
   const wrapGeom = createPartWrapGeom(id, name, wrapGeoms, () => ref);
+  const collisionPart = createPartCollision(id, () => ref);
   const ref: AssemblyPartRef = {
     id,
     name,
@@ -600,6 +602,7 @@ export function makePartRef(
     wrapGeoms,
     connector: connector as AssemblyPartRef['connector'],
     wrapGeom,
+    ...collisionPart,
     port: createPartPort(id, name, at, mateConnectors),
     part: addPart,
     model: () => owner.model(),
@@ -933,6 +936,12 @@ function importSubAssemblyMates(state: AssemblyState, prefix: string, other: Ass
       ...(om.pose !== undefined ? { pose: om.pose } : {}),
       ...(om.limitsDeg !== undefined ? { limitsDeg: om.limitsDeg } : {}),
       ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
+      ...(om.stiffnessNmmPerDeg !== undefined ? { stiffnessNmmPerDeg: om.stiffnessNmmPerDeg } : {}),
+      ...(om.springRefDeg !== undefined ? { springRefDeg: om.springRefDeg } : {}),
+      ...(om.dampingNmmsPerDeg !== undefined ? { dampingNmmsPerDeg: om.dampingNmmsPerDeg } : {}),
+      ...(om.stiffnessNPerMm !== undefined ? { stiffnessNPerMm: om.stiffnessNPerMm } : {}),
+      ...(om.springRefMm !== undefined ? { springRefMm: om.springRefMm } : {}),
+      ...(om.dampingNsPerMm !== undefined ? { dampingNsPerMm: om.dampingNsPerMm } : {}),
       ...(om.capacity !== undefined ? { capacity: copyMateCapacity(om.capacity) } : {}),
       ...(om.maxLoad !== undefined
         ? {

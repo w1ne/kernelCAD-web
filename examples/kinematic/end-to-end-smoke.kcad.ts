@@ -3,15 +3,10 @@
 // in sequence, asserting the expected diagnostics fire and source: 'local'
 // holds across every envelope.
 //
-// G0 NOTE (2026-05-31): joints declared via the v0.6 mate vocabulary
-// (`arm.connector(...)` + `arm.mate(..., 'revolute', ...)`) after the legacy
-// `arm.revolute(...)` was removed. The `kinematic.*` facade entries
-// (checkSweptCollision / checkReachable / etc.) still iterate `arm.__joints()`
-// internally and produce empty-success envelopes on mate-only assemblies —
-// migrating the facade to be mate-aware is a separate follow-up slice. Until
-// then this script exercises the rendering / scene-graph path only; the
-// kinematic.* assertions are demoted to console.log so the script renders
-// cleanly under `kernelcad render inspect`.
+// Joints are declared with the mate vocabulary (`arm.connector(...)` +
+// `arm.mate(..., 'revolute', ...)`); checkSweptCollision and checkReachable
+// take mate names. Results are logged rather than asserted so the script
+// renders cleanly under `kernelcad render inspect`.
 
 const baseH = 80;
 const L1 = 150;
@@ -95,8 +90,7 @@ console.log(
   `[smoke] swept: source=${swept.source} ok=${swept.ok} ` +
   `posesSampled=${swept.posesSampled} collidingPoses=${swept.collidingPoses.length}`,
 );
-// G0: facade is joint-blind on mate-only assemblies; source=='local' still
-// expected when facade has work to do. Soft-skip until facade is mate-aware.
+// The facade sweeps mate names directly.
 
 // 2. Reachable target.
 const reach = await kinematic.checkReachable(arm, {

@@ -99,7 +99,7 @@ describe('solve_mates — ok reflects convergence', () => {
     }
   });
 
-  it('returns ok:false with status "did-not-converge" for an unsupported articulated loop', async () => {
+  it('solves an articulated loop and reports ok:false with the loop finding when it is over-driven', async () => {
     const { session, kcad, arm } = makeArm();
     const ground = arm.part('ground', kcad.box(60, 10, 10));
     const crank = arm.part('crank', kcad.box(10, 10, 35));
@@ -119,11 +119,18 @@ describe('solve_mates — ok reflects convergence', () => {
     arm.mate('rocker_ground', 'rocker.groundPivot', 'ground.rockerPivot', 'revolute');
     activate(session);
 
-    const r = await solveMatesTool({});
+    const solved = await solveMatesTool({ poses: { crank_ground: 20 } });
+    expect(solved.ok).toBe(true);
+    expect(solved.loop?.loops[0].name).toBe('coupler_rocker');
+    expect(solved.loop?.mobility[0]).toMatchObject({ mobility: 1, drivenDof: 1 });
+
+    // Crank and rocker of a parallelogram must turn together; driving them
+    // to different angles over-drives the loop.
+    const r = await solveMatesTool({ poses: { crank_ground: 20, rocker_ground: -30 } });
     expect(r.ok).toBe(false);
     expect(r.status).toBe('did-not-converge');
     if (!r.ok) {
-      expect(r.errorCode).toBe('assembly.solver.did-not-converge');
+      expect(r.errorCode).toBe('kinematic.loop.mobility-mismatch');
       expect(r.errorHint).toBeTruthy();
     }
   });
