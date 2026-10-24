@@ -123,6 +123,37 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
         expect(mjcf).toMatch(/<joint name="knuckle" type="hinge" axis="[^"]*" pos="0\.005(0*) 0 0"/);
     });
 
+    it('excludes contact across a joint between the whole rigid groups on each side', async () => {
+        // A cover fastened to the finger is the same rigid body as the
+        // finger: across the knuckle it must not collide with the palm,
+        // and it must not collide with the finger it is fastened to. The
+        // forearm (fastened to the palm) is excluded from the finger side
+        // too; nothing else is excluded.
+        await initOcct();
+        const session = new CaptureSession();
+        const kcad = createModelingApi({ session });
+        const arm = kcad.assembly('rigid-groups');
+        const frame = (value: [number, number, number]) => ({ type: 'frame' as const, origin: { kind: 'vec3' as const, value } });
+        arm.part('forearm', kcad.box(60, 30, 30, true).translate(-70, 0, 0)).connector('wrist', frame([-40, 0, 0]));
+        arm.part('palm', kcad.box(80, 30, 20, true))
+            .connector('wrist', frame([-40, 0, 0]))
+            .connector('knuckle', { type: 'axis', origin: { kind: 'vec3', value: [45, 0, 0] }, axis: [0, 1, 0] });
+        arm.part('finger', kcad.box(30, 10, 10, true).translate(65, 0, 0))
+            .connector('knuckle', { type: 'axis', origin: { kind: 'vec3', value: [45, 0, 0] }, axis: [0, 1, 0] })
+            .connector('cover', frame([65, 0, 5]));
+        arm.part('cover', kcad.box(20, 12, 2, true).translate(65, 0, 6)).connector('finger', frame([65, 0, 5]));
+        arm.mate('wrist', 'forearm.wrist', 'palm.wrist', 'fastened');
+        arm.mate('knuckle', 'palm.knuckle', 'finger.knuckle', 'revolute', { limitsDeg: [0, 90] });
+        arm.mate('cover-fix', 'finger.cover', 'cover.finger', 'fastened');
+
+        const { mjcf } = await assemblyToMjcf(arm);
+        const excluded = new Set([...mjcf.matchAll(/<exclude body1="([^"]+)" body2="([^"]+)"\/>/g)].map((m) => [m[1], m[2]].sort().join('|')));
+        expect(excluded).toEqual(new Set([
+            'forearm|palm', 'cover|finger',
+            'finger|palm', 'cover|palm', 'finger|forearm', 'cover|forearm',
+        ]));
+    });
+
     it('round-trips a 1-revolute hinge into a parseable MJCF with 1 qpos slot', async () => {
         await initOcct();
         const session = new CaptureSession();

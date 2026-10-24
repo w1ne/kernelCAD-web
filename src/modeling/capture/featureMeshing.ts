@@ -18,7 +18,7 @@ import { RecomputeEngine, predecessorsByRecord, compiledEventForRecord, type Rec
 import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
-import { buildHelixTubeIndices, buildRibbonMesh, buildRoundSweep, flatWidthDirs, helixTubeTangents, writeHelixTubeRings } from './tendonSweepMesh';
+import { buildHelixTubeIndices, buildRibbonMesh, buildRoundSweep, flatWidthDirs, helixTubeTangents, wrapArcPoints, writeHelixTubeRings, type WrapCylinderWorld } from './tendonSweepMesh';
 import { attachMaterialUVs, generatePlanarUVs } from './planarUv';
 import { computeFeatureOwnership, hasFeatureOwnership } from './featureOwnership';
 import { helixPolylineRouted } from '../mates/helixPolyline';
@@ -224,9 +224,10 @@ interface AssemblyLikeForTendons {
     readonly wrapGeoms?: readonly {
       readonly partName: string;
       readonly wrapName: string;
+      readonly sidesite?: readonly [number, number, number];
     }[];
     /** Ordered route (connector refs / wrap refs); replaces `wrapGeoms`. */
-    readonly via?: readonly (string | { readonly wrap: { readonly partName: string; readonly wrapName: string } })[];
+    readonly via?: readonly (string | { readonly wrap: { readonly partName: string; readonly wrapName: string; readonly sidesite?: readonly [number, number, number] } })[];
     readonly profile?:
       | { readonly kind: 'round'; readonly diameterMm: number }
       | { readonly kind: 'flat'; readonly widthMm: number; readonly thicknessMm: number; readonly widthAxis?: Vec3 };
@@ -246,6 +247,8 @@ interface AssemblyLikeForTendons {
     readonly wrapGeoms?: readonly {
       readonly name: string;
       readonly origin: Vec3;
+      readonly axis: Vec3;
+      readonly radiusMm: number;
     }[];
   }[];
   /** Optional so structural fakes without mates keep working. */
@@ -444,6 +447,7 @@ type TendonLike = ReturnType<AssemblyLikeForTendons['__tendons']>[number];
 interface TendonLookups {
   originByRef: Map<string, Vec3>;
   wrapOriginByRef: Map<string, Vec3>;
+  wrapByRef: Map<string, { origin: Vec3; axis: Vec3; radiusMm: number }>;
   transformByPart: Map<string, readonly number[]>;
 }
 
@@ -455,6 +459,7 @@ function collectTendonLookups(
   const originByRef = new Map<string, Vec3>();
   // (partName, wrapName) → part-local wrap origin lookup (P11 Slice 3).
   const wrapOriginByRef = new Map<string, Vec3>();
+  const wrapByRef = new Map<string, { origin: Vec3; axis: Vec3; radiusMm: number }>();
   // The scene transforms below move shapes that already carry `at`; a mated
   // part's declared origins get its `at` so they land on its body.
   const atOf = partAtFor(arm.__mates?.() ?? [], arm.__parts(), arm.__session?.().paramTable);
@@ -468,6 +473,7 @@ function collectTendonLookups(
     }
     for (const wg of part.wrapGeoms ?? []) {
       wrapOriginByRef.set(`${part.name}.${wg.name}`, onPart(wg.origin));
+      wrapByRef.set(`${part.name}.${wg.name}`, { origin: onPart(wg.origin), axis: wg.axis, radiusMm: wg.radiusMm });
     }
   }
 
@@ -477,7 +483,7 @@ function collectTendonLookups(
   for (const part of scene.parts ?? []) {
     transformByPart.set(part.name, part.worldTransform.toMat4());
   }
-  return { originByRef, wrapOriginByRef, transformByPart };
+  return { originByRef, wrapOriginByRef, wrapByRef, transformByPart };
 }
 
 interface TendonPath {
@@ -492,7 +498,7 @@ function resolveTendonPath(
   t: TendonLike,
   lookups: TendonLookups,
 ): TendonPath | undefined {
-  const { originByRef, wrapOriginByRef, transformByPart } = lookups;
+  const { originByRef, wrapByRef, transformByPart } = lookups;
   const fromOrigin = originByRef.get(t.from);
   const toOrigin = originByRef.get(t.to);
   if (fromOrigin === undefined || toOrigin === undefined) {
@@ -520,22 +526,37 @@ function resolveTendonPath(
   const route = t.via !== undefined && t.via.length > 0
     ? t.via
     : (t.wrapGeoms ?? []).map((w) => ({ wrap: w }));
+  // Resolve every route entry in world space first; a wrap needs both of
+  // its neighbours to place its tangent points and arc on the cylinder.
+  type Resolved =
+    | { kind: 'point'; p: Vec3; frame: readonly number[] }
+    | { kind: 'wrap'; cyl: WrapCylinderWorld; frame: readonly number[] };
+  const resolved: Resolved[] = [];
   for (const entry of route) {
-    let local: Vec3 | undefined;
-    let partName: string | undefined;
     if (typeof entry === 'string') {
-      local = originByRef.get(entry);
-      partName = splitConnectorRef(entry)[0];
-    } else {
-      local = wrapOriginByRef.get(`${entry.wrap.partName}.${entry.wrap.wrapName}`);
-      partName = entry.wrap.partName;
+      const local = originByRef.get(entry);
+      const wT = transformByPart.get(splitConnectorRef(entry)[0] ?? '');
+      if (local !== undefined && wT !== undefined) resolved.push({ kind: 'point', p: applyMat4ToPoint(wT, local), frame: wT });
+      continue;
     }
-    const wT = partName === undefined ? undefined : transformByPart.get(partName);
-    if (local !== undefined && wT !== undefined) {
-      centerline.push(applyMat4ToPoint(wT, local));
-      frames.push(wT);
-    }
+    const wg = wrapByRef.get(`${entry.wrap.partName}.${entry.wrap.wrapName}`);
+    const wT = transformByPart.get(entry.wrap.partName);
+    if (wg === undefined || wT === undefined) continue;
+    const center = applyMat4ToPoint(wT, wg.origin);
+    const tip = applyMat4ToPoint(wT, [wg.origin[0] + wg.axis[0], wg.origin[1] + wg.axis[1], wg.origin[2] + wg.axis[2]]);
+    const side = entry.wrap.sidesite === undefined ? undefined
+      : applyMat4ToPoint(wT, [entry.wrap.sidesite[0], entry.wrap.sidesite[1], entry.wrap.sidesite[2]]);
+    resolved.push({ kind: 'wrap', frame: wT, cyl: {
+      center, axis: [tip[0] - center[0], tip[1] - center[1], tip[2] - center[2]], radiusMm: wg.radiusMm, ...(side ? { side } : {}),
+    } });
   }
+  const anchorOf = (r: Resolved | undefined, fallback: Vec3): Vec3 => r === undefined ? fallback : r.kind === 'point' ? r.p : r.cyl.center;
+  resolved.forEach((r, i) => {
+    if (r.kind === 'point') { centerline.push(r.p); frames.push(r.frame); return; }
+    const prev = centerline[centerline.length - 1];
+    const next = anchorOf(resolved[i + 1], toWorld);
+    for (const q of wrapArcPoints(prev, next, r.cyl)) { centerline.push(q); frames.push(r.frame); }
+  });
   centerline.push(toWorld);
   frames.push(toT);
   return { fromWorld, toWorld, centerline, frames };

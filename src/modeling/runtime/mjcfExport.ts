@@ -760,33 +760,61 @@ function emitAssetBlock(
     return assetBlockLines;
 }
 
-// P11 Slice 1: emit a `<contact><exclude>` block for every mate's
-// parent-child pair. A clevis fork-and-tongue pair (and every other
-// joint primitive that nests one body inside another) is
-// intentionally interpenetrating at the joint anchor — the
-// constraint comes from the joint, not from contact. Without the
-// exclude, MuJoCo treats the BREP overlap at every clevis as a deep
-// penetration and applies enormous repulsive forces that kick the
-// chain apart on the first integration step. The standard MJCF
-// robotics idiom (see mujoco_menagerie + every Anglepoise/cable
-// demo) is one `<exclude>` per kinematic-tree edge. Non-adjacent
-// body pairs keep their default contact, so the genuine "free
-// body falls onto another" failure modes Slice 1 was built to
-// catch are still detectable.
+// P11 Slice 1: emit a `<contact><exclude>` block across every mate edge.
+// A clevis fork-and-tongue pair (and every other joint primitive that nests
+// one body inside another) is intentionally interpenetrating at the joint
+// anchor — the constraint comes from the joint, not from contact. Without
+// the exclude, MuJoCo treats the BREP overlap as a deep penetration and
+// kicks the chain apart on the first step.
+//
+// Fastened parts are one rigid body split across several MJCF bodies (a
+// sleeve or cover fastened to a link). MuJoCo's own parent/child filter
+// only sees direct pairs, so a cover fastened to the child link would
+// still collide with the parent link's convex hull across the joint and
+// jam it. Each rigid group (parts joined by fastened mates) therefore
+// excludes contact with itself and, across every moving mate, with the
+// whole rigid group on the other side. Non-adjacent groups keep contact,
+// so genuine "free body falls onto another" failures stay detectable.
 function emitContactBlock(mates: readonly MateRecord[]): string[] {
-    const contactBlockLines: string[] = [];
-    if (mates.length > 0) {
-        contactBlockLines.push('  <contact>');
-        for (const m of mates) {
-            const aName = parseConnectorRef(m.a).partName;
-            const bName = parseConnectorRef(m.b).partName;
-            contactBlockLines.push(
-                `    <exclude body1="${escapeXml(aName)}" body2="${escapeXml(bName)}"/>`,
-            );
+    if (mates.length === 0) return [];
+    const parent = new Map<string, string>();
+    const find = (x: string): string => {
+        let r = x;
+        while (parent.has(r) && parent.get(r) !== r) r = parent.get(r)!;
+        parent.set(x, r);
+        return r;
+    };
+    const ends = (m: MateRecord) => [parseConnectorRef(m.a).partName, parseConnectorRef(m.b).partName] as const;
+    for (const m of mates) {
+        for (const n of ends(m)) if (!parent.has(n)) parent.set(n, n);
+        if (m.type === 'fastened') {
+            const [a, b] = ends(m);
+            parent.set(find(a), find(b));
         }
-        contactBlockLines.push('  </contact>');
     }
-    return contactBlockLines;
+    const groups = new Map<string, string[]>();
+    for (const n of parent.keys()) {
+        const r = find(n);
+        groups.set(r, [...(groups.get(r) ?? []), n]);
+    }
+    const pairs = new Set<string>();
+    const lines: string[] = [];
+    const addPair = (x: string, y: string) => {
+        if (x === y) return;
+        const key = x < y ? `${x}\u0000${y}` : `${y}\u0000${x}`;
+        if (pairs.has(key)) return;
+        pairs.add(key);
+        lines.push(`    <exclude body1="${escapeXml(x)}" body2="${escapeXml(y)}"/>`);
+    };
+    for (const members of groups.values()) {
+        for (let i = 0; i < members.length; i++) for (let j = i + 1; j < members.length; j++) addPair(members[i], members[j]);
+    }
+    for (const m of mates) {
+        if (m.type === 'fastened') continue;
+        const [a, b] = ends(m);
+        for (const x of groups.get(find(a)) ?? [a]) for (const y of groups.get(find(b)) ?? [b]) addPair(x, y);
+    }
+    return lines.length === 0 ? [] : ['  <contact>', ...lines, '  </contact>'];
 }
 
 interface InertiaSpec {

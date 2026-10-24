@@ -326,3 +326,72 @@ export function buildRoundSweep(centerline: readonly Vec3[], diameterMm: number,
   }
   return { vertices, indices: buildHelixTubeIndices(ringCount, radialSegments), normals, uv, faceId: 0 };
 }
+
+/** World-frame wrap cylinder for a routed cable (`{ wrap }` route entry). */
+export interface WrapCylinderWorld {
+  readonly center: Vec3;
+  readonly axis: Vec3;
+  readonly radiusMm: number;
+  /** World point on the side the cable passes (MJCF `sidesite`). */
+  readonly side?: Vec3;
+}
+
+const WRAP_ARC_SEGMENTS = 12;
+
+/**
+ * Points of a cable wrapping `cyl` between neighbouring route points `prev`
+ * and `next`: the two tangent points and the arc between them, so the
+ * rendered cable lies on the cylinder surface instead of crossing its axis.
+ * Mirrors MuJoCo cylinder wrapping: when the straight segment misses the
+ * cylinder (in the plane across its axis) the cable stays straight and no
+ * points are added; otherwise it wraps on the `side` given, or on the side
+ * the straight segment passes. Height along the axis is interpolated.
+ */
+export function wrapArcPoints(prev: Vec3, next: Vec3, cyl: WrapCylinderWorld): Vec3[] {
+  const a = unit(cyl.axis);
+  if (a === undefined) return [];
+  const r = cyl.radiusMm;
+  const rel = (p: Vec3): Vec3 => [p[0] - cyl.center[0], p[1] - cyl.center[1], p[2] - cyl.center[2]];
+  const dot = (u: Vec3, v: Vec3) => u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+  const flat = (v: Vec3): Vec3 => { const h = dot(v, a); return [v[0] - h * a[0], v[1] - h * a[1], v[2] - h * a[2]]; };
+  const P = rel(prev), N = rel(next);
+  const p = flat(P), n = flat(N);
+  const dp = Math.hypot(...p), dn = Math.hypot(...n);
+  if (dp <= r || dn <= r) return [];
+  // In-plane basis: e1 along p, e2 = a × e1.
+  const e1: Vec3 = [p[0] / dp, p[1] / dp, p[2] / dp];
+  const e2: Vec3 = [a[1] * e1[2] - a[2] * e1[1], a[2] * e1[0] - a[0] * e1[2], a[0] * e1[1] - a[1] * e1[0]];
+  const ang = (v: Vec3) => Math.atan2(dot(v, e2), dot(v, e1));
+  const angN = ang(n);
+  // Distance from the axis to the straight in-plane segment p→n.
+  const sx = Math.cos(angN) * dn - dp, sy = Math.sin(angN) * dn;
+  const t = Math.max(0, Math.min(1, (-dp * sx) / (sx * sx + sy * sy)));
+  const cx = dp + t * sx, cy = t * sy;
+  if (Math.hypot(cx, cy) >= r && cyl.side === undefined) return [];
+  // Side of the wrap: the sidesite's direction, else the side the segment passes.
+  const sideAng = cyl.side !== undefined ? ang(flat(rel(cyl.side))) : Math.atan2(cy, cx);
+  const s = Math.sign(Math.sin(sideAng)) || 1; // +: counter-clockwise from p
+  const tp = Math.acos(r / dp), tn = Math.acos(r / dn);
+  const start = s * tp;                                   // tangent point from prev
+  let end = angN - s * tn;                                // tangent point toward next
+  while (s > 0 && end < start) end += 2 * Math.PI;
+  while (s < 0 && end > start) end -= 2 * Math.PI;
+  if (Math.abs(end - start) > Math.PI * 1.5) return [];   // degenerate: no sensible wrap
+  // Height along the axis follows in-plane path length (straight run in,
+  // arc, straight run out), as a cable unrolled off the cylinder would.
+  const hP = dot(P, a), hN = dot(N, a);
+  const runIn = Math.sqrt(dp * dp - r * r), arc = r * Math.abs(end - start), runOut = Math.sqrt(dn * dn - r * r);
+  const total = runIn + arc + runOut;
+  const out: Vec3[] = [];
+  for (let i = 0; i <= WRAP_ARC_SEGMENTS; i++) {
+    const f = i / WRAP_ARC_SEGMENTS;
+    const th = start + f * (end - start);
+    const h = hP + (hN - hP) * ((runIn + f * arc) / total);
+    out.push([
+      cyl.center[0] + r * (Math.cos(th) * e1[0] + Math.sin(th) * e2[0]) + h * a[0],
+      cyl.center[1] + r * (Math.cos(th) * e1[1] + Math.sin(th) * e2[1]) + h * a[1],
+      cyl.center[2] + r * (Math.cos(th) * e1[2] + Math.sin(th) * e2[2]) + h * a[2],
+    ]);
+  }
+  return out;
+}

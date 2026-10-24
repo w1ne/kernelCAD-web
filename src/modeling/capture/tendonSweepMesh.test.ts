@@ -10,7 +10,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { runScript } from '../runtime/runScript';
 import { meshFeaturesPerFeature } from './featureMeshing';
-import { buildRibbonMesh, SWEEP_SUBDIVISIONS } from './tendonSweepMesh';
+import { buildRibbonMesh, SWEEP_SUBDIVISIONS, wrapArcPoints } from './tendonSweepMesh';
 import type { Vec3 } from '../../shared/intent/types';
 
 const straight = (): Vec3[] => [[0, 0, 0], [10, 0, 0], [20, 0, 0]];
@@ -150,5 +150,40 @@ describe('flat-profile tendon through meshFeaturesPerFeature', () => {
       expect(face.vertices.length / 3).toBe(8 * (2 * SWEEP_SUBDIVISIONS + 1));
       expect(face.uv!.length / 2).toBe(face.vertices.length / 3);
     }
+  });
+});
+
+describe('wrapArcPoints', () => {
+  const cyl = { center: [0, 0, 0] as [number, number, number], axis: [0, 1, 0] as [number, number, number], radiusMm: 5 };
+  const radial = (p: readonly number[]) => Math.hypot(p[0], p[2]);
+
+  it('keeps a cable straight when the segment misses the cylinder', () => {
+    expect(wrapArcPoints([-10, 0, 8], [10, 0, 8], cyl)).toEqual([]);
+  });
+
+  it('wraps over the side the straight segment passes, on the cylinder surface', () => {
+    const pts = wrapArcPoints([-10, 0, 2], [10, 0, 2], cyl);
+    expect(pts.length).toBeGreaterThan(2);
+    for (const p of pts) {
+      expect(radial(p)).toBeCloseTo(5, 6);
+      expect(p[2]).toBeGreaterThan(0);
+    }
+    // tangent from prev: (p - prev) is perpendicular to the radius at p
+    const [t0] = pts;
+    const d = [t0[0] + 10, t0[2] - 2];
+    expect(d[0] * t0[0] + d[1] * t0[2]).toBeCloseTo(0, 6);
+  });
+
+  it('wraps on the sidesite side even when the segment passes the other way', () => {
+    const pts = wrapArcPoints([-10, 0, 2], [10, 0, 2], { ...cyl, side: [0, 0, -10] });
+    expect(pts.length).toBeGreaterThan(2);
+    for (const p of pts) expect(p[2]).toBeLessThan(0.001);
+  });
+
+  it('interpolates the height along the axis between the neighbours', () => {
+    const pts = wrapArcPoints([-10, -4, 2], [10, 4, 2], cyl);
+    expect(pts[0][1]).toBeGreaterThan(-4);
+    expect(pts[pts.length - 1][1]).toBeLessThan(4);
+    expect(pts[pts.length - 1][1]).toBeGreaterThan(pts[0][1]);
   });
 });
