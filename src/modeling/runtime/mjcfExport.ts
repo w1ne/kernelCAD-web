@@ -51,7 +51,9 @@
 //     in the runtime check and return `mechanism: 'unverified'` upstream.
 //
 // Springs / actuators:
-//   - All actuators are absent (passive bodies). Single-body springs
+//   - Actuators exist only for `arm.tendon(..., { actuator })`: one
+//     `<motor tendon=... gear="-1">` per driven cable. Everything else is
+//     passive bodies. Single-body springs
 //     declared via the existing kit don't generate joint moment in MuJoCo
 //     either — that's the whole point of P6 surfacing the gap that #361
 //     fixes via closed-loop tendons.
@@ -61,7 +63,7 @@ import type { MateRecord } from '../mates/mate';
 import { parseConnectorRef } from '../mates/mate';
 import type { Connector } from '../mates/connector';
 import { resolveConnectorOrigin } from '../mates/connector';
-import type { TendonRecord } from '../mates/tendon';
+import type { TendonRecord, TendonViaRef } from '../mates/tendon';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { partAtFor } from '../mates/partFrame';
@@ -71,6 +73,7 @@ import { xmlAttributionComment } from '../../shared/links/attribution';
 
 const MM_TO_M = 1e-3;
 const DEG_TO_RAD = Math.PI / 180;
+const RAD_TO_DEG = 180 / Math.PI;
 
 /**
  * Default density (kg/m³) when a part doesn't declare one. Aluminum;
@@ -155,6 +158,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
     );
 
     const tendonBlockLines = emitTendonBlock(resolvedTendons, spatialChildrenByTendon);
+    const actuatorBlockLines = emitActuatorBlock(resolvedTendons);
     const assetBlockLines = emitAssetBlock(parts, collisionMeshes);
     const contactBlockLines = emitContactBlock(mates);
 
@@ -179,6 +183,7 @@ export async function assemblyToMjcf(arm: Assembly, opts: AssemblyToMjcfOptions 
         '  </worldbody>',
         ...tendonBlockLines,
         ...contactBlockLines,
+        ...actuatorBlockLines,
         '</mujoco>',
         '',
     ].join('\n');
@@ -388,6 +393,65 @@ async function resolveTendonEndpoint(
     };
 }
 
+// Route children of a routed `<spatial>`: from-site, then each `via` entry (a
+// site on its owning body, or a wrap geom with optional sidesite; consecutive
+// wrap geoms get a separator site; only the legacy `wrapGeoms` path can produce
+// those, `via` rejects them at capture), then the to-site.
+/** CAD joint limits are physical stops. MuJoCo's default limit solref (0.02 s) is
+ *  soft for light parts, letting a driven joint overshoot its range by tens of
+ *  degrees. Use a time constant of 2x the timestep (this exporter writes no
+ *  `timestep`, so MuJoCo's default 0.002 s -> 0.004) with damping ratio 1, and a
+ *  stiff impedance. */
+const MJCF_DEFAULT_TIMESTEP_S = 0.002;
+const JOINT_LIMIT_SOLVER_ATTRS =
+    ` solreflimit="${fmtNum(2 * MJCF_DEFAULT_TIMESTEP_S)} 1" solimplimit="0.95 0.99 0.001"`;
+
+async function routeChildren(
+    t: TendonRecord,
+    endpoints: ResolvedTendon['endpoints'],
+    route: readonly TendonViaRef[],
+    partByName: Map<string, AssemblyPartStored>,
+    addExtraSite: (partName: string, siteName: string, localPosMm: Vec3) => void,
+): Promise<string[]> {
+    const [fromE, toE] = endpoints;
+    const children: string[] = [`      <site site="${escapeXml(fromE.siteName)}"/>`];
+    let prevWasGeom = false;
+    for (const [i, entry] of route.entries()) {
+        if (typeof entry === 'string') {
+            const parsed = parseConnectorRef(entry);
+            const viaPart = partByName.get(parsed.partName);
+            const conn = viaPart?.mateConnectors.find((c) => c.name === parsed.connectorName);
+            if (viaPart === undefined || conn === undefined) continue; // capture-validated
+            const siteName = `${t.name}__via${i}`;
+            addExtraSite(viaPart.name, siteName, (await resolveConnectorOrigin(viaPart.originalShape, conn.origin)).value);
+            children.push(`      <site site="${escapeXml(siteName)}"/>`);
+            prevWasGeom = false;
+            continue;
+        }
+        const w = entry.wrap;
+        const ownerPart = partByName.get(w.partName);
+        const wg = ownerPart?.wrapGeoms.find((g) => g.name === w.wrapName);
+        if (ownerPart === undefined || wg === undefined) continue; // capture-validated
+        if (prevWasGeom) {
+            const sepName = `${t.name}__wrap${i}_sep`;
+            addExtraSite(w.partName, sepName, wg.origin);
+            children.push(`      <site site="${escapeXml(sepName)}"/>`);
+        }
+        let sidesiteAttr = '';
+        if (w.sidesite !== undefined) {
+            const sideName = `${t.name}__wrap${i}_side`;
+            addExtraSite(w.partName, sideName, [w.sidesite[0], w.sidesite[1], w.sidesite[2]]);
+            sidesiteAttr = ` sidesite="${escapeXml(sideName)}"`;
+        }
+        children.push(
+            `      <geom geom="${escapeXml(mjcfWrapGeomName(w.partName, w.wrapName))}"${sidesiteAttr}/>`,
+        );
+        prevWasGeom = true;
+    }
+    children.push(`      <site site="${escapeXml(toE.siteName)}"/>`);
+    return children;
+}
+
 // P7: pre-resolve every tendon endpoint to (partName, site name,
 // local-frame mm position). The site goes inside the owner body's
 // `<body>` element; the `<spatial>` tendon references the sites by
@@ -430,29 +494,10 @@ async function resolveTendonSites(
     const spatialChildrenByTendon = new Map<string, string[]>();
     for (const rt of resolvedTendons) {
         const t = rt.record;
-        if (t.wrapGeoms.length === 0) continue;
-        const [fromE, toE] = rt.endpoints;
-        const children: string[] = [`      <site site="${escapeXml(fromE.siteName)}"/>`];
-        t.wrapGeoms.forEach((w, i) => {
-            const ownerPart = partByName.get(w.partName);
-            const wg = ownerPart?.wrapGeoms.find((g) => g.name === w.wrapName);
-            if (ownerPart === undefined || wg === undefined) return; // capture-validated
-            if (i > 0) {
-                const sepName = `${t.name}__wrap${i}_sep`;
-                addExtraSite(w.partName, sepName, wg.origin);
-                children.push(`      <site site="${escapeXml(sepName)}"/>`);
-            }
-            let sidesiteAttr = '';
-            if (w.sidesite !== undefined) {
-                const sideName = `${t.name}__wrap${i}_side`;
-                addExtraSite(w.partName, sideName, [w.sidesite[0], w.sidesite[1], w.sidesite[2]]);
-                sidesiteAttr = ` sidesite="${escapeXml(sideName)}"`;
-            }
-            children.push(
-                `      <geom geom="${escapeXml(mjcfWrapGeomName(w.partName, w.wrapName))}"${sidesiteAttr}/>`,
-            );
-        });
-        children.push(`      <site site="${escapeXml(toE.siteName)}"/>`);
+        // `via` and the legacy `wrapGeoms` are mutually exclusive (capture-validated).
+        const route: readonly TendonViaRef[] = t.via.length > 0 ? t.via : t.wrapGeoms.map((w) => ({ wrap: w }));
+        if (route.length === 0) continue;
+        const children = await routeChildren(t, rt.endpoints, route, partByName, addExtraSite);
         spatialChildrenByTendon.set(t.name, children);
     }
     return { resolvedTendons, sitesByPart, spatialChildrenByTendon };
@@ -618,12 +663,11 @@ function emitTendonBlock(
         tendonBlockLines.push('  <tendon>');
         for (const rt of resolvedTendons) {
             const t = rt.record;
-            const springLenM = t.restLengthMm * MM_TO_M;
-            const stiffnessNm = t.stiffnessNmm * 1000;
+            const springAttrs = tendonSpringAttrs(t);
             const dampingNsm = t.dampingNsmm * 1000;
             const dampingAttr = dampingNsm > 0 ? ` damping="${fmtNum(dampingNsm)}"` : '';
             tendonBlockLines.push(
-                `    <spatial name="${escapeXml(t.name)}" springlength="${fmtNum(springLenM)}" stiffness="${fmtNum(stiffnessNm)}"${dampingAttr}>`,
+                `    <spatial name="${escapeXml(t.name)}"${springAttrs}${dampingAttr}${tendonLookAttrs(t)}>`,
             );
             // P11 Slice 2: emit the routed child sequence (sites + wrap
             // geoms) when this tendon declares wrapGeoms; otherwise the
@@ -641,6 +685,46 @@ function emitTendonBlock(
         tendonBlockLines.push('  </tendon>');
     }
     return tendonBlockLines;
+}
+
+// Spring attrs; an actuated cable without spring fields stays inextensible.
+function tendonSpringAttrs(t: TendonRecord): string {
+    const rest = t.restLengthMm !== undefined ? ` springlength="${fmtNum(t.restLengthMm * MM_TO_M)}"` : '';
+    const stiff = t.stiffnessNmm !== undefined ? ` stiffness="${fmtNum(t.stiffnessNmm * 1000)}"` : '';
+    return rest + stiff;
+}
+
+/** `#rgb` / `#rrggbb` → "r g b 1" in 0..1, or undefined for any other color syntax. */
+function cssHexToRgba(color: string): string | undefined {
+    const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color.trim());
+    if (m === null) return undefined;
+    const h = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1];
+    const ch = [0, 2, 4].map((i) => fmtNum(parseInt(h.slice(i, i + 2), 16) / 255));
+    return `${ch.join(' ')} 1`;
+}
+
+// A declared profile sets the tendon's drawn half-width; a material colors it
+// (MuJoCo's own viewer only).
+function tendonLookAttrs(t: TendonRecord): string {
+    const full = t.profile === undefined ? undefined : t.profile.kind === 'round' ? t.profile.diameterMm : t.profile.widthMm;
+    const width = full === undefined ? '' : ` width="${fmtNum((full / 2) * MM_TO_M)}"`;
+    const rgba = t.material !== undefined ? cssHexToRgba(t.material.baseColor) : undefined;
+    return width + (rgba !== undefined ? ` rgba="${rgba}"` : '');
+}
+
+// Motor per actuated tendon. gear=-1: a positive spatial-tendon force
+// lengthens it, so ctrl >= 0 is cable tension (pull).
+function emitActuatorBlock(resolvedTendons: readonly ResolvedTendon[]): string[] {
+    const driven = resolvedTendons.filter((rt) => rt.record.actuator !== undefined);
+    if (driven.length === 0) return [];
+    return [
+        '  <actuator>',
+        ...driven.map((rt) => {
+            const n = escapeXml(rt.record.name);
+            return `    <motor name="${n}" tendon="${n}" gear="-1" ctrllimited="true" ctrlrange="0 ${fmtNum(rt.record.actuator!.maxForceN)}"/>`;
+        }),
+        '  </actuator>',
+    ];
 }
 
 // P11 Slice 1: emit the `<asset>` block before `<worldbody>`. MJCF
@@ -676,39 +760,93 @@ function emitAssetBlock(
     return assetBlockLines;
 }
 
-// P11 Slice 1: emit a `<contact><exclude>` block for every mate's
-// parent-child pair. A clevis fork-and-tongue pair (and every other
-// joint primitive that nests one body inside another) is
-// intentionally interpenetrating at the joint anchor — the
-// constraint comes from the joint, not from contact. Without the
-// exclude, MuJoCo treats the BREP overlap at every clevis as a deep
-// penetration and applies enormous repulsive forces that kick the
-// chain apart on the first integration step. The standard MJCF
-// robotics idiom (see mujoco_menagerie + every Anglepoise/cable
-// demo) is one `<exclude>` per kinematic-tree edge. Non-adjacent
-// body pairs keep their default contact, so the genuine "free
-// body falls onto another" failure modes Slice 1 was built to
-// catch are still detectable.
-function emitContactBlock(mates: readonly MateRecord[]): string[] {
-    const contactBlockLines: string[] = [];
-    if (mates.length > 0) {
-        contactBlockLines.push('  <contact>');
-        for (const m of mates) {
-            const aName = parseConnectorRef(m.a).partName;
-            const bName = parseConnectorRef(m.b).partName;
-            contactBlockLines.push(
-                `    <exclude body1="${escapeXml(aName)}" body2="${escapeXml(bName)}"/>`,
-            );
-        }
-        contactBlockLines.push('  </contact>');
+// P11 Slice 1: emit a `<contact><exclude>` block across every mate edge.
+// A clevis fork-and-tongue pair (and every other joint primitive that nests
+// one body inside another) is intentionally interpenetrating at the joint
+// anchor — the constraint comes from the joint, not from contact. Without
+// the exclude, MuJoCo treats the BREP overlap as a deep penetration and
+// kicks the chain apart on the first step.
+//
+// Fastened parts are one rigid body split across several MJCF bodies (a
+// sleeve or cover fastened to a link). MuJoCo's own parent/child filter
+// only sees direct pairs, so a cover fastened to the child link would
+// still collide with the parent link's convex hull across the joint and
+// jam it. Each rigid group (parts joined by fastened mates) therefore
+// excludes contact with itself and, across every moving mate, with the
+// whole rigid group on the other side. Non-adjacent groups keep contact,
+// so genuine "free body falls onto another" failures stay detectable.
+const mateEnds = (m: MateRecord) => [parseConnectorRef(m.a).partName, parseConnectorRef(m.b).partName] as const;
+
+/** Union-find over fastened mates: part name → its rigid-group members. */
+function rigidGroups(mates: readonly MateRecord[]): Map<string, string[]> {
+    const parent = new Map<string, string>();
+    const find = (x: string): string => {
+        let r = x;
+        while (parent.get(r) !== r) r = parent.get(r)!;
+        return r;
+    };
+    for (const m of mates) for (const n of mateEnds(m)) if (!parent.has(n)) parent.set(n, n);
+    for (const m of mates) {
+        if (m.type !== 'fastened') continue;
+        const [a, b] = mateEnds(m);
+        parent.set(find(a), find(b));
     }
-    return contactBlockLines;
+    const members = new Map<string, string[]>();
+    for (const n of parent.keys()) members.set(find(n), [...(members.get(find(n)) ?? []), n]);
+    const groupOf = new Map<string, string[]>();
+    for (const g of members.values()) for (const n of g) groupOf.set(n, g);
+    return groupOf;
+}
+
+function emitContactBlock(mates: readonly MateRecord[]): string[] {
+    if (mates.length === 0) return [];
+    const groupOf = rigidGroups(mates);
+    const seen = new Set<string>();
+    const lines: string[] = [];
+    const exclude = (x: string, y: string) => {
+        const key = [x, y].sort().join('\u0000');
+        if (x === y || seen.has(key)) return;
+        seen.add(key);
+        lines.push(`    <exclude body1="${escapeXml(x)}" body2="${escapeXml(y)}"/>`);
+    };
+    for (const g of new Set(groupOf.values())) g.forEach((x, i) => g.slice(i + 1).forEach((y) => exclude(x, y)));
+    for (const m of mates) {
+        if (m.type === 'fastened') continue;
+        const [a, b] = mateEnds(m);
+        for (const x of groupOf.get(a) ?? [a]) for (const y of groupOf.get(b) ?? [b]) exclude(x, y);
+    }
+    return lines.length === 0 ? [] : ['  <contact>', ...lines, '  </contact>'];
 }
 
 interface InertiaSpec {
     readonly massKg: number;
     readonly comLocalMm: Vec3;
     readonly inertia6: readonly [number, number, number, number, number, number];
+}
+
+// Joint spring / damping → MJCF SI. The exported joint coordinate has the
+// same sign as the mate pose / limits (no axis flip), so the spring reference
+// maps straight to `springref`.
+//   revolute : N·mm/deg → N·m/rad (× (180/π) / 1000), deg → rad
+//   prismatic: N/mm → N/m (× 1000), N·s/mm → N·s/m (× 1000), mm → m
+function jointDynamicsAttrs(mate: MateRecord): string {
+    let k: number | undefined, ref: number, c: number | undefined;
+    if (mate.type === 'revolute') {
+        const toSi = RAD_TO_DEG / 1000;
+        k = mate.stiffnessNmmPerDeg === undefined ? undefined : mate.stiffnessNmmPerDeg * toSi;
+        c = mate.dampingNmmsPerDeg === undefined ? undefined : mate.dampingNmmsPerDeg * toSi;
+        ref = (mate.springRefDeg ?? 0) * DEG_TO_RAD;
+    } else if (mate.type === 'prismatic') {
+        k = mate.stiffnessNPerMm === undefined ? undefined : mate.stiffnessNPerMm * 1000;
+        c = mate.dampingNsPerMm === undefined ? undefined : mate.dampingNsPerMm * 1000;
+        ref = (mate.springRefMm ?? 0) * MM_TO_M;
+    } else {
+        return '';
+    }
+    let out = '';
+    if (k !== undefined && k > 0) out += ` stiffness="${fmtNum(k)}" springref="${fmtNum(ref)}"`;
+    if (c !== undefined && c > 0) out += ` damping="${fmtNum(c)}"`;
+    return out;
 }
 
 /**
@@ -745,20 +883,20 @@ function mateToMjcfJoint(
             jointOrder.push({ mjcfName: mjcfJointName, mateName: mate.name });
             const limits = mate.limitsDeg;
             const limitedAttrs = limits !== undefined
-                ? ` limited="true" range="${fmtNum(limits[0] * DEG_TO_RAD)} ${fmtNum(limits[1] * DEG_TO_RAD)}"`
+                ? ` limited="true" range="${fmtNum(limits[0] * DEG_TO_RAD)} ${fmtNum(limits[1] * DEG_TO_RAD)}"${JOINT_LIMIT_SOLVER_ATTRS}`
                 : '';
             return [
-                `<joint name="${escapeXml(mjcfJointName)}" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}/>`,
+                `<joint name="${escapeXml(mjcfJointName)}" type="hinge" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
             ];
         }
         case 'prismatic': {
             jointOrder.push({ mjcfName: mjcfJointName, mateName: mate.name });
             const limits = mate.limitsMm;
             const limitedAttrs = limits !== undefined
-                ? ` limited="true" range="${fmtNum(limits[0] * MM_TO_M)} ${fmtNum(limits[1] * MM_TO_M)}"`
+                ? ` limited="true" range="${fmtNum(limits[0] * MM_TO_M)} ${fmtNum(limits[1] * MM_TO_M)}"${JOINT_LIMIT_SOLVER_ATTRS}`
                 : '';
             return [
-                `<joint name="${escapeXml(mjcfJointName)}" type="slide" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}/>`,
+                `<joint name="${escapeXml(mjcfJointName)}" type="slide" axis="${axis.map(fmtNum).join(' ')}" pos="${anchor}"${limitedAttrs}${jointDynamicsAttrs(mate)}/>`,
             ];
         }
         case 'planar': {

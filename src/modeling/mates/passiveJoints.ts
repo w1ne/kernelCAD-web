@@ -25,6 +25,7 @@ const PASSIVE_TYPES = new Set(['revolute', 'prismatic']);
  */
 export function assemblyDeclaresHoldRequirement(arm: Assembly): boolean {
   return arm.__tendons().length > 0
+    || arm.__mates().some((m) => (m.stiffnessNmmPerDeg ?? 0) > 0)
     || arm.__physicalUseCases().some((useCase) => useCase.loads.length > 0);
 }
 

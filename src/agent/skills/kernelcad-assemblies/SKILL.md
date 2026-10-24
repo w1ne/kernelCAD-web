@@ -397,6 +397,8 @@ arm.coupleMates('follow-b', { source: 'drive', ratio: -1 });
 
 Use this for symmetric or mirrored output pairs and simple underactuated chains before hand-authoring duplicated pose params. Coupling supports scalar mates: `revolute`, `prismatic`, `cylindrical`, and `pin_slot`.
 
+**Joint compliance** (next to `limitsDeg` / `limitsMm`): a spring and viscous damping on a scalar joint. Revolute: `{ stiffnessNmmPerDeg, springRefDeg, dampingNmmsPerDeg }` (N·mm/deg, deg, N·mm·s/deg); prismatic: `{ stiffnessNPerMm, springRefMm, dampingNsPerMm }` (N/mm, mm, N·s/mm). Restoring load is `-stiffness * (q - springRef)`, zero at the reference (default 0). The reference uses the same sign as `pose` / the limits and may lie OUTSIDE them: `springRefDeg: -10` with `limitsDeg: [0, 90]` preloads the joint against its 0 degree stop. Negative stiffness or damping, a non-finite value, or a revolute option on a prismatic mate (and vice versa) throws an invalid-args error naming the option. The MuJoCo physics gate emits them on the `<joint>` in SI, and a stiffened joint counts as a declared hold requirement.
+
 Capture-time errors throw `KernelError('feature.invalid-args')` with structured hints:
 
 - `invalid-args.assembly.mate-type-mismatch` — the chosen mate type doesn't match the connector pair (e.g. `revolute` on `frame`-`frame`). Recovery: pick a compatible mate type or change the connector types.
@@ -658,6 +660,29 @@ Behavior:
 - AABB-only containment in this slice; a target inside the AABB but outside the true (convex) reachable hull is NOT flagged — convex-hull refinement is queued for the next slice.
 - The connector ref must name an existing connector with a numeric `vec3` origin. Topology-bound origins are skipped by the envelope sampler (which also raises `assembly.pose-envelope.connector-unresolved` for them); the workspace gate emits a distinct `assembly.workspace.unreachable` (error) on the targeted declaration so the recovery hint points at THIS declaration, not just the generic envelope warning.
 
+## Tendons — `arm.tendon(name, opts)`
+
+A tendon is any cable, rope, belt or Bowden line between two connectors (`from`, `to`: `"part.connector"`, vec3 origins), optionally routed through pulley / via points and optionally driven by a motor.
+
+- **Passive spring** — `restLengthMm` and `stiffnessNmm` (both > 0), optional `dampingNsmm`; render `visualStyle: 'line'` (default) or `'coil'`.
+- **Routed** — `via: ['a.pulley', { wrap: { partName, wrapName, sidesite? } }, 'b.eye']` is the ordered route between `from` and `to`. A string is a connector ref on ANY part (validated like `from` / `to`); a `{ wrap }` entry routes around a collision-off cylinder declared with `part.wrapGeom(name, { axis, radius })`. MuJoCo gets the sites and wrap geoms in that order and the rendered centerline follows each point's owning-part pose. `via` cannot be combined with `wrapGeoms`. A routed `'line'` sweeps a round tube through the route.
+- **Motor-driven** — `actuator: { kind: 'force', maxForceN }` adds a MuJoCo motor on the tendon: `ctrl` in `[0, maxForceN]` is cable TENSION (it pulls). With an actuator, `restLengthMm` / `stiffnessNmm` are optional; omit them for an inextensible cable.
+- **Profile** — `profile: { kind: 'round', diameterMm }` sweeps a tube along the route; `{ kind: 'flat', widthMm, thicknessMm, widthAxis? }` sweeps a ribbon whose width direction is `widthAxis` (default `[0, 1, 0]`, given in each route point's owning-part frame).
+- **Appearance** — `material` takes the same PBR object as `.material()`, textures included (`textures: { albedo: { path } }`; data:, https: or asset paths). UVs run along the swept length: `u` = arc length / profile width (round: circumference), `v` across the section; `repeat` scales the tiling.
+
+```typescript
+arm.tendon('winch-line', {
+  from: 'boom.anchor',
+  via: ['boom.pulley', 'jib.pulley'],
+  to: 'hook.eye',
+  actuator: { kind: 'force', maxForceN: 40 },
+  profile: { kind: 'flat', widthMm: 5, thicknessMm: 1.2 },
+  material: { baseColor: '#e8dfc8', roughness: 0.75, textures: { albedo: { path: 'data:image/png;base64,...' } } },
+});
+```
+
+Worked example: `examples/kinematic/tendon-finger.kcad.ts` (two driven cables over three joints with joint springs). Routing is reviewed by the tendon-body-intersect criterion; keep pulley points 1-2 mm off the body face.
+
 ## Drive transmissions
 
 Mate coupling is not physical transmission. If you use `arm.coupleMates(driven, { source, ratio })`, also declare how motion gets from the actuator/input mate to the driven output:
@@ -705,7 +730,7 @@ If any of these fail, iterate the design until they pass. Do not widen `ignore[]
 
 ### Use `joint.clevis(...)` for revolute joints — do not hand-roll forks
 
-The `kc.joint.clevis({...})` primitive builds the canonical revolute-joint hardware (two fork plates on the parent, one tongue on the child, a pin drilled through both knuckles) guaranteed correct by construction: bridge tabs outside the tongue's swing envelope, through-hole drilled in a single subtract after the fork and tongue are unioned in, and pin cap heads flush against the outer fork faces.
+The `kc.joint.clevis({...})` primitive (it requires `style.knuckleR`, the scale every other clevis dimension derives from) builds the canonical revolute-joint hardware (two fork plates on the parent, one tongue on the child, a pin drilled through both knuckles) guaranteed correct by construction: bridge tabs outside the tongue's swing envelope, through-hole drilled in a single subtract after the fork and tongue are unioned in, and pin cap heads flush against the outer fork faces.
 
 ```ts
 const shoulder = joint.clevis({
