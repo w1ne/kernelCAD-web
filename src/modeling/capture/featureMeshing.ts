@@ -494,11 +494,57 @@ interface TendonPath {
   frames: (readonly number[])[];
 }
 
+// A routed cable step in world space: a pulley point, or a wrap cylinder
+// whose tangent points and arc depend on both neighbours.
+type ResolvedRouteStep =
+  | { kind: 'point'; p: Vec3; frame: readonly number[] }
+  | { kind: 'wrap'; cyl: WrapCylinderWorld; frame: readonly number[] };
+type RouteEntry = string | { readonly wrap: { readonly partName: string; readonly wrapName: string; readonly sidesite?: readonly [number, number, number] } };
+
+function resolveWrapStep(
+  w: Exclude<RouteEntry, string>['wrap'],
+  lookups: TendonLookups,
+): ResolvedRouteStep | undefined {
+  const wg = lookups.wrapByRef.get(`${w.partName}.${w.wrapName}`);
+  const wT = lookups.transformByPart.get(w.partName);
+  if (wg === undefined || wT === undefined) return undefined;
+  const center = applyMat4ToPoint(wT, wg.origin);
+  const tip = applyMat4ToPoint(wT, [wg.origin[0] + wg.axis[0], wg.origin[1] + wg.axis[1], wg.origin[2] + wg.axis[2]]);
+  const side = w.sidesite === undefined ? undefined : applyMat4ToPoint(wT, [w.sidesite[0], w.sidesite[1], w.sidesite[2]]);
+  const axis: Vec3 = [tip[0] - center[0], tip[1] - center[1], tip[2] - center[2]];
+  return { kind: 'wrap', frame: wT, cyl: { center, axis, radiusMm: wg.radiusMm, ...(side ? { side } : {}) } };
+}
+
+function resolveRoute(route: readonly RouteEntry[], lookups: TendonLookups): ResolvedRouteStep[] {
+  const out: ResolvedRouteStep[] = [];
+  for (const entry of route) {
+    if (typeof entry !== 'string') {
+      const step = resolveWrapStep(entry.wrap, lookups);
+      if (step !== undefined) out.push(step);
+      continue;
+    }
+    const local = lookups.originByRef.get(entry);
+    const wT = lookups.transformByPart.get(splitConnectorRef(entry)[0] ?? '');
+    if (local !== undefined && wT !== undefined) out.push({ kind: 'point', p: applyMat4ToPoint(wT, local), frame: wT });
+  }
+  return out;
+}
+
+/** Append resolved steps to the centerline; a wrap adds its surface arc. */
+function appendRoute(steps: readonly ResolvedRouteStep[], centerline: Vec3[], frames: (readonly number[])[], toWorld: Vec3): void {
+  steps.forEach((step, i) => {
+    if (step.kind === 'point') { centerline.push(step.p); frames.push(step.frame); return; }
+    const after = steps[i + 1];
+    const next = after === undefined ? toWorld : after.kind === 'point' ? after.p : after.cyl.center;
+    for (const q of wrapArcPoints(centerline[centerline.length - 1], next, step.cyl)) { centerline.push(q); frames.push(step.frame); }
+  });
+}
+
 function resolveTendonPath(
   t: TendonLike,
   lookups: TendonLookups,
 ): TendonPath | undefined {
-  const { originByRef, wrapByRef, transformByPart } = lookups;
+  const { originByRef, transformByPart } = lookups;
   const fromOrigin = originByRef.get(t.from);
   const toOrigin = originByRef.get(t.to);
   if (fromOrigin === undefined || toOrigin === undefined) {
@@ -526,37 +572,7 @@ function resolveTendonPath(
   const route = t.via !== undefined && t.via.length > 0
     ? t.via
     : (t.wrapGeoms ?? []).map((w) => ({ wrap: w }));
-  // Resolve every route entry in world space first; a wrap needs both of
-  // its neighbours to place its tangent points and arc on the cylinder.
-  type Resolved =
-    | { kind: 'point'; p: Vec3; frame: readonly number[] }
-    | { kind: 'wrap'; cyl: WrapCylinderWorld; frame: readonly number[] };
-  const resolved: Resolved[] = [];
-  for (const entry of route) {
-    if (typeof entry === 'string') {
-      const local = originByRef.get(entry);
-      const wT = transformByPart.get(splitConnectorRef(entry)[0] ?? '');
-      if (local !== undefined && wT !== undefined) resolved.push({ kind: 'point', p: applyMat4ToPoint(wT, local), frame: wT });
-      continue;
-    }
-    const wg = wrapByRef.get(`${entry.wrap.partName}.${entry.wrap.wrapName}`);
-    const wT = transformByPart.get(entry.wrap.partName);
-    if (wg === undefined || wT === undefined) continue;
-    const center = applyMat4ToPoint(wT, wg.origin);
-    const tip = applyMat4ToPoint(wT, [wg.origin[0] + wg.axis[0], wg.origin[1] + wg.axis[1], wg.origin[2] + wg.axis[2]]);
-    const side = entry.wrap.sidesite === undefined ? undefined
-      : applyMat4ToPoint(wT, [entry.wrap.sidesite[0], entry.wrap.sidesite[1], entry.wrap.sidesite[2]]);
-    resolved.push({ kind: 'wrap', frame: wT, cyl: {
-      center, axis: [tip[0] - center[0], tip[1] - center[1], tip[2] - center[2]], radiusMm: wg.radiusMm, ...(side ? { side } : {}),
-    } });
-  }
-  const anchorOf = (r: Resolved | undefined, fallback: Vec3): Vec3 => r === undefined ? fallback : r.kind === 'point' ? r.p : r.cyl.center;
-  resolved.forEach((r, i) => {
-    if (r.kind === 'point') { centerline.push(r.p); frames.push(r.frame); return; }
-    const prev = centerline[centerline.length - 1];
-    const next = anchorOf(resolved[i + 1], toWorld);
-    for (const q of wrapArcPoints(prev, next, r.cyl)) { centerline.push(q); frames.push(r.frame); }
-  });
+  appendRoute(resolveRoute(route, lookups), centerline, frames, toWorld);
   centerline.push(toWorld);
   frames.push(toT);
   return { fromWorld, toWorld, centerline, frames };

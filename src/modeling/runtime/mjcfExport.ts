@@ -775,44 +775,45 @@ function emitAssetBlock(
 // excludes contact with itself and, across every moving mate, with the
 // whole rigid group on the other side. Non-adjacent groups keep contact,
 // so genuine "free body falls onto another" failures stay detectable.
-function emitContactBlock(mates: readonly MateRecord[]): string[] {
-    if (mates.length === 0) return [];
+const mateEnds = (m: MateRecord) => [parseConnectorRef(m.a).partName, parseConnectorRef(m.b).partName] as const;
+
+/** Union-find over fastened mates: part name → its rigid-group members. */
+function rigidGroups(mates: readonly MateRecord[]): Map<string, string[]> {
     const parent = new Map<string, string>();
     const find = (x: string): string => {
         let r = x;
-        while (parent.has(r) && parent.get(r) !== r) r = parent.get(r)!;
-        parent.set(x, r);
+        while (parent.get(r) !== r) r = parent.get(r)!;
         return r;
     };
-    const ends = (m: MateRecord) => [parseConnectorRef(m.a).partName, parseConnectorRef(m.b).partName] as const;
+    for (const m of mates) for (const n of mateEnds(m)) if (!parent.has(n)) parent.set(n, n);
     for (const m of mates) {
-        for (const n of ends(m)) if (!parent.has(n)) parent.set(n, n);
-        if (m.type === 'fastened') {
-            const [a, b] = ends(m);
-            parent.set(find(a), find(b));
-        }
+        if (m.type !== 'fastened') continue;
+        const [a, b] = mateEnds(m);
+        parent.set(find(a), find(b));
     }
-    const groups = new Map<string, string[]>();
-    for (const n of parent.keys()) {
-        const r = find(n);
-        groups.set(r, [...(groups.get(r) ?? []), n]);
-    }
-    const pairs = new Set<string>();
+    const members = new Map<string, string[]>();
+    for (const n of parent.keys()) members.set(find(n), [...(members.get(find(n)) ?? []), n]);
+    const groupOf = new Map<string, string[]>();
+    for (const g of members.values()) for (const n of g) groupOf.set(n, g);
+    return groupOf;
+}
+
+function emitContactBlock(mates: readonly MateRecord[]): string[] {
+    if (mates.length === 0) return [];
+    const groupOf = rigidGroups(mates);
+    const seen = new Set<string>();
     const lines: string[] = [];
-    const addPair = (x: string, y: string) => {
-        if (x === y) return;
-        const key = x < y ? `${x}\u0000${y}` : `${y}\u0000${x}`;
-        if (pairs.has(key)) return;
-        pairs.add(key);
+    const exclude = (x: string, y: string) => {
+        const key = [x, y].sort().join('\u0000');
+        if (x === y || seen.has(key)) return;
+        seen.add(key);
         lines.push(`    <exclude body1="${escapeXml(x)}" body2="${escapeXml(y)}"/>`);
     };
-    for (const members of groups.values()) {
-        for (let i = 0; i < members.length; i++) for (let j = i + 1; j < members.length; j++) addPair(members[i], members[j]);
-    }
+    for (const g of new Set(groupOf.values())) g.forEach((x, i) => g.slice(i + 1).forEach((y) => exclude(x, y)));
     for (const m of mates) {
         if (m.type === 'fastened') continue;
-        const [a, b] = ends(m);
-        for (const x of groups.get(find(a)) ?? [a]) for (const y of groups.get(find(b)) ?? [b]) addPair(x, y);
+        const [a, b] = mateEnds(m);
+        for (const x of groupOf.get(a) ?? [a]) for (const y of groupOf.get(b) ?? [b]) exclude(x, y);
     }
     return lines.length === 0 ? [] : ['  <contact>', ...lines, '  </contact>'];
 }
