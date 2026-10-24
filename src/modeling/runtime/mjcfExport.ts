@@ -255,13 +255,33 @@ function buildMateTree(parts: readonly AssemblyPartStored[], mates: readonly Mat
 // visual mesh stay byte-identical. Mesh-emission failures fall back
 // to "inertia only" with no geom — the part stays in the kinematic
 // tree but can't contact other bodies; criterion 6 will reflect that.
+interface CollisionMesh { vertex: string; assetName: string }
+
+// The collision meshes of one part: one hull per declared convex piece
+// (`part.collision([...])`), else a single hull of the whole part.
+async function partCollisionMeshes(p: AssemblyPartStored, lowered: OcctBackend): Promise<CollisionMesh[]> {
+    if (p.collisionShapes.length === 0) {
+        // A coarse vertex cloud: MuJoCo collides with the convex hull
+        // of a mesh geom, so an export-grade tessellation only costs
+        // memory (it stays on the BREP and in the MJCF string).
+        return [{ vertex: verticesToMjcfMesh(lowered.collisionVertices()).vertex, assetName: mjcfMeshAssetName(p.name) }];
+    }
+    const base = mjcfMeshAssetName(p.name);
+    const out: CollisionMesh[] = [];
+    for (const [i, piece] of p.collisionShapes.entries()) {
+        const backend = (await piece.lower()) as OcctBackend;
+        out.push({ vertex: verticesToMjcfMesh(backend.collisionVertices()).vertex, assetName: `${base}__c${i}` });
+    }
+    return out;
+}
+
 async function buildPartAssets(parts: readonly AssemblyPartStored[], sceneShapes: ReadonlyMap<string, OcctBackend> = new Map()): Promise<{
     inertials: Map<string, InertiaSpec>;
-    collisionMeshes: Map<string, { vertex: string; assetName: string }>;
+    collisionMeshes: Map<string, CollisionMesh[]>;
     inertiaNotes: string[];
 }> {
     const inertials = new Map<string, InertiaSpec>();
-    const collisionMeshes = new Map<string, { vertex: string; assetName: string }>();
+    const collisionMeshes = new Map<string, CollisionMesh[]>();
     const inertiaNotes: string[] = [];
     for (const p of parts) {
         let lowered: OcctBackend | undefined = sceneShapes.get(p.name);
@@ -305,14 +325,7 @@ async function buildPartAssets(parts: readonly AssemblyPartStored[], sceneShapes
         }
         if (lowered !== undefined) {
             try {
-                // A coarse vertex cloud: MuJoCo collides with the convex hull
-                // of a mesh geom, so an export-grade tessellation only costs
-                // memory (it stays on the BREP and in the MJCF string).
-                const mesh = verticesToMjcfMesh(lowered.collisionVertices());
-                collisionMeshes.set(p.name, {
-                    vertex: mesh.vertex,
-                    assetName: mjcfMeshAssetName(p.name),
-                });
+                collisionMeshes.set(p.name, await partCollisionMeshes(p, lowered));
             } catch {
                 // Meshing failed (degenerate shape, empty tessellation, etc.).
                 // Skip the `<asset><mesh>` for this part — the body still
@@ -517,7 +530,7 @@ function emitWorldbodyBlocks(
     partByName: Map<string, AssemblyPartStored>,
     childrenByParent: Map<string, { childName: string; mate: MateRecord }[]>,
     inertials: Map<string, InertiaSpec>,
-    collisionMeshes: Map<string, { vertex: string; assetName: string }>,
+    collisionMeshes: Map<string, CollisionMesh[]>,
     resolvedMateAxes: Map<string, ResolvedMateFrame>,
     sitesByPart: Map<string, ResolvedTendonEndpoint[]>,
     jointOrder: { mjcfName: string; mateName: string }[],
@@ -599,8 +612,7 @@ function emitWorldbodyBlocks(
         // Friction triple matches MuJoCo's default for general body
         // contacts (sliding, torsional, rolling) — sufficient for
         // static-equilibrium and drop-test scoring.
-        const collision = collisionMeshes.get(partName);
-        if (collision !== undefined) {
+        for (const collision of collisionMeshes.get(partName) ?? []) {
             lines.push(
                 `${indent}  <geom type="mesh" mesh="${escapeXml(collision.assetName)}" contype="1" conaffinity="1" group="1" friction="1.0 0.005 0.0001"/>`,
             );
@@ -735,25 +747,25 @@ function emitActuatorBlock(resolvedTendons: readonly ResolvedTendon[]): string[]
 // — the criterion 6 drop-test still observes their joint dynamics).
 function emitAssetBlock(
     parts: readonly AssemblyPartStored[],
-    collisionMeshes: Map<string, { vertex: string; assetName: string }>,
+    collisionMeshes: Map<string, CollisionMesh[]>,
 ): string[] {
     const assetBlockLines: string[] = [];
     if (collisionMeshes.size > 0) {
         assetBlockLines.push('  <asset>');
         // Preserve part-declaration order so the snapshot is deterministic.
         for (const p of parts) {
-            const m = collisionMeshes.get(p.name);
-            if (m === undefined) continue;
-            // `scale` converts the mm vertex stream to MuJoCo's metre
-            // world. The rest of the MJCF (body `pos`, `<inertial>`,
-            // gravity, the drop-test drift thresholds) is in metres via
-            // MM_TO_M; the inline mesh vertices are the one payload still
-            // in millimetres, so MuJoCo must rescale them at compile time.
-            // Without this the collision hull is 1000× oversized and every
-            // part interpenetrates the origin, exploding the drop-test.
-            assetBlockLines.push(
-                `    <mesh name="${escapeXml(m.assetName)}" scale="${MM_TO_M} ${MM_TO_M} ${MM_TO_M}" vertex="${m.vertex}"/>`,
-            );
+            for (const m of collisionMeshes.get(p.name) ?? []) {
+                // `scale` converts the mm vertex stream to MuJoCo's metre
+                // world. The rest of the MJCF (body `pos`, `<inertial>`,
+                // gravity, the drop-test drift thresholds) is in metres via
+                // MM_TO_M; the inline mesh vertices are the one payload still
+                // in millimetres, so MuJoCo must rescale them at compile time.
+                // Without this the collision hull is 1000× oversized and every
+                // part interpenetrates the origin, exploding the drop-test.
+                assetBlockLines.push(
+                    `    <mesh name="${escapeXml(m.assetName)}" scale="${MM_TO_M} ${MM_TO_M} ${MM_TO_M}" vertex="${m.vertex}"/>`,
+                );
+            }
         }
         assetBlockLines.push('  </asset>');
     }
