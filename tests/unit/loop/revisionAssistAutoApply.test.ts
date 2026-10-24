@@ -53,11 +53,11 @@ describe('buildRevisionAssist auto-apply path', () => {
   it('skips repair_script when autoRevise is false', async () => {
     const assist = await buildRevisionAssist({
       source: 'return box(1,1,1);',
-      goal: 'production housing',
+      goal: 'housing',
       reviewFacts: [{
-        code: 'assembly.quality.stacked-primitive-toy',
+        code: 'assembly.joint-topology.unsupported-axis',
         severity: 'warning',
-        message: 'toy',
+        message: 'revolute without support',
       }],
       diagnostics: [{ code: 'feature.subtractive-noop' }],
       autoRevise: false,

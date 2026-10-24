@@ -103,7 +103,6 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n" +
       "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n" +
       "- 'motion-load' — loads on each driven joint (mechanicalJoint on a revolute mate) while the model moves: gravity, inertia from the animationView tracks (finite differences), optional external forces. Mass and inertia come from the solids and density/material, or a part's massKg. Returns per joint peak torque vs the mechanicalJoint torqueNm (margin; < 1x error, < 2x warning), axial / radial force and bending moment on the actuator shaft (checked only against radialLimitN / axialLimitN; without them 'no rating, not checked'), the radial load on each of up to two coaxial supports (each at its station on the shaft: the actuator at the joint origin, else the support's connector on the axis, else the middle of its material nearest the shaft; an ambiguous station is a mechanism.load.not-resolved warning, not a number), the worst pose and a torque-vs-time series ({ file | code, motion_mode?: 'tracks'|'range', sample_ms?, range_samples?, quasi_static?, gravity?, motion_loads?: [{ part, point, force, fromMs?, toMs? }], supports?: { joint: [parts] }, series_points? }). Pass supports to compare with and without a bushing. Rigid bodies, tree mate graphs, no friction.\n" +
-      "- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n" +
       "- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\n" +
       'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
     inputSchema: {
@@ -111,7 +110,7 @@ const verifyToolEntry: ToolRegistryEntry = {
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'motion-load', 'body-likeness', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius'],
+          enum: ['assembly', 'urdf', 'dfm', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'motion-load', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius'],
           description: 'Which verification to run.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius).' },
@@ -191,21 +190,6 @@ const verifyToolEntry: ToolRegistryEntry = {
         },
         supports: { type: 'object', description: "check:'motion-load' — mechanicalJoint name -> support part names to use instead of the declared supports (compare with / without a bushing)." },
         series_points: { type: 'number', description: "check:'motion-load' — max torque-vs-time points per joint in the result (default 120; 0 omits the series)." },
-        body_bbox: { type: 'object', description: "check:'body-likeness' — body AABB { min:[x,y,z], max:[x,y,z] } in mm." },
-        body_feature_id: { type: 'string', description: "check:'body-likeness' — FeatureId to read body AABB from when body_bbox omitted." },
-        cabin_bbox: { type: 'object', description: "check:'body-likeness' — optional cabin/greenhouse AABB for automated cabin-aft." },
-        wheels: {
-          type: 'array',
-          description: "check:'body-likeness' — wheel centres + tire radii [{ center:[x,y,z], radius }].",
-          items: { type: 'object' },
-        },
-        length_axis: { type: 'string', enum: ['x', 'y'], description: "check:'body-likeness' — wheelbase axis (default 'x')." },
-        still_verdicts: {
-          type: 'array',
-          description: "check:'body-likeness' — agent ortho still checklist [{ code, passed, finding, view? }]. Required codes: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference.",
-          items: { type: 'object' },
-        },
-        require_stills: { type: 'boolean', description: "check:'body-likeness' — require still_verdicts (default true)." },
       },
       required: ['check'],
     },

@@ -14,8 +14,7 @@ when_to_use: >-
   You need a network-style organic body / multi-guide fairing and loft
   accepts at most 2 rails. Do NOT pass >2 rails to
   Sketch.loft — panel with surfaceFromCurves / surfaceFromBoundary, sew closed,
-  thicken, then G2 fillet. Pair with automotive-body-envelope for car proportions
-  and verify body-likeness before publish.
+  thicken, then G2 fillet. Pair with automotive-body-envelope for car proportions.
 ---
 
 A loft accepts **at most 2 rails** (spine + auxiliary). Raising
@@ -28,7 +27,6 @@ rails work.
 1. Author panel patches (`nurbsSurface` / `surfaceFromCurves` / `surfaceFromBoundary`).
 2. Prefer `.thicken(t)` on each `Surface`, then boolean the solids — **or** `sew([...surfaces], { requireClosed: true })` when the patches already close a shell (`sew` returns a Shape; it has no `.thicken`).
 3. G2 fillet long NURBS-adjacent seams on the resulting solid.
-4. Before `open_in_studio`: `verify({ check: 'body-likeness', ... })`.
 
 Minimal evaluable pattern (two NURBS patches sewn — scale up to body panels):
 

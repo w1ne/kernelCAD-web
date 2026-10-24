@@ -684,7 +684,7 @@ arm.mate('right-curl', 'gripper-plate.right-hinge', 'right-finger.hinge', 'revol
 arm.coupleMates('left-curl', { source: 'grip', ratio: -1 });
 arm.coupleMates('right-curl', { source: 'grip', ratio: 1 });
 arm.transmission('left-finger-drive-linkage', {
-  kind: 'direct-horn',
+  kind: 'direct',
   sourceMate: 'grip',
   drivenMates: ['left-curl'],
   actuator: 'grip-driver',
@@ -694,7 +694,7 @@ arm.transmission('left-finger-drive-linkage', {
   ratio: -1,
 });
 arm.transmission('right-finger-drive-linkage', {
-  kind: 'direct-horn',
+  kind: 'direct',
   sourceMate: 'grip',
   drivenMates: ['right-curl'],
   actuator: 'grip-driver',

@@ -272,13 +272,13 @@ export interface PhysicalUseCaseReviewResult {
   readonly jointStructuralCertificates: readonly PhysicalUseCaseJointStructuralCertificate[];
 }
 
+export type PhysicalUseCaseLevel = 'reachability' | 'statics' | 'reactions';
+
 export interface PhysicalUseCaseReviewOptions {
   readonly requirePhysicalUseCase?: boolean;
   readonly poseEnvelope?: PoseEnvelopeReviewResult;
-  readonly includeReachability?: boolean;
-  readonly includeStatics?: boolean;
-  readonly includeJointReactions?: boolean;
-  readonly includeJointStructure?: boolean;
+  /** Escalating review depth; each level includes the previous one. */
+  readonly level?: PhysicalUseCaseLevel;
   readonly reachabilitySamplesPerMate?: number;
 }
 
@@ -344,7 +344,7 @@ export async function reviewPhysicalUseCasesWithReachability(
   opts: PhysicalUseCaseReviewOptions = {},
 ): Promise<PhysicalUseCaseReviewResult> {
   const base = reviewPhysicalUseCases(arm, opts);
-  const { includeJointReactions, includeStatics, includeReachability, includeJointStructure } =
+  const { includeJointReactions, includeStatics, includeReachability } =
     resolvePhysicalUseCasePhases(opts);
   if (!includeReachability) return base;
 
@@ -374,7 +374,6 @@ export async function reviewPhysicalUseCasesWithReachability(
       arm,
       useCase,
       statics.certificates,
-      includeJointStructure,
       diagnostics,
       jointReactionCertificates,
       jointStructuralCertificates,
@@ -395,7 +394,6 @@ async function appendJointReactionCertificates(
   arm: Assembly,
   useCase: PhysicalUseCaseRecord,
   certificates: readonly PhysicalUseCaseStaticCertificate[],
-  includeStructure: boolean,
   diagnostics: PhysicalUseCaseDiagnostic[],
   jointReactionCertificates: PhysicalUseCaseJointReactionCertificate[],
   jointStructuralCertificates: PhysicalUseCaseJointStructuralCertificate[],
@@ -405,7 +403,6 @@ async function appendJointReactionCertificates(
       arm,
       useCase,
       certificate,
-      includeStructure,
     );
     diagnostics.push(...jointReview.diagnostics);
     jointReactionCertificates.push(...jointReview.reactionCertificates);
@@ -417,7 +414,6 @@ async function reviewCertifiedJointLoads(
   arm: Assembly,
   useCase: PhysicalUseCaseRecord,
   staticCertificate: PhysicalUseCaseStaticCertificate,
-  includeStructure: boolean,
 ): Promise<{
   diagnostics: PhysicalUseCaseDiagnostic[];
   reactionCertificates: PhysicalUseCaseJointReactionCertificate[];
@@ -446,7 +442,7 @@ async function reviewCertifiedJointLoads(
 
       const envelope = reviewJointReactionCapacity(mate, reaction);
       appendJointCapacityDiagnostics(useCase, mate.name, envelope, diagnostics);
-      const structure = resolveJointStructure(useCase, mate, reaction, includeStructure, diagnostics);
+      const structure = resolveJointStructure(useCase, mate, reaction, diagnostics);
 
       joints.push({
         mateName: mate.name,
@@ -454,13 +450,11 @@ async function reviewCertifiedJointLoads(
         ...(structure === undefined ? {} : { structure }),
       });
     }
-    if (includeStructure) {
-      structuralCertificates.push({
-        useCaseName: useCase.name,
-        poses: certificate.poses,
-        joints,
-      });
-    }
+    structuralCertificates.push({
+      useCaseName: useCase.name,
+      poses: certificate.poses,
+      joints,
+    });
   }
   return {
     diagnostics,
@@ -521,10 +515,8 @@ function resolveJointStructure(
   useCase: PhysicalUseCaseRecord,
   mate: ReturnType<Assembly['__mates']>[number],
   reaction: PhysicalUseCaseJointReactionEvidence,
-  includeStructure: boolean,
   diagnostics: PhysicalUseCaseDiagnostic[],
 ): ClevisJointStructureReview | undefined {
-  if (!includeStructure) return undefined;
   if (mate.capacity?.structure === undefined) {
     diagnostics.push({
       code: 'assembly.physical-use-case.joint-structure-input-incomplete',

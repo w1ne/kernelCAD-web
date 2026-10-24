@@ -1,6 +1,6 @@
 ---
 name: kernelcad-trace-from-image
-description: Convert pixel-space features from a reference photo into normalized [0,1] waypoints, then into mm coordinates feedable to path().spline / path().nurbsSegment. Uses the trace_from_image MCP tool. Load when your blockout is in place and the next step is an organic-curve outline (eyewear brow, ergonomic handle, sneaker midsole) that would take more than a minute to eyeball off the photo.
+description: Convert pixel-space features from a reference photo into normalized [0,1] waypoints, then into mm coordinates feedable to path().spline / path().nurbsSegment. Uses the trace_from_image MCP tool. Load when your blockout is in place and the next step is an organic-curve outline (upper contour, ergonomic handle, sneaker midsole) that would take more than a minute to eyeball off the photo.
 ---
 
 # kernelcad-trace-from-image
@@ -33,8 +33,8 @@ it does **not** replace the spec-writer.
 
 Load if **all three** are true:
 
-1. The reference image shows an **organic curve** — brow, knurl, ergonomic
-   contour, sneaker midsole, eyewear front silhouette.
+1. The reference image shows an **organic curve** — contour, knurl, ergonomic
+   contour, sneaker midsole, product front silhouette.
 2. The next authoring step is a `path().spline()`, `path().nurbsSegment()`,
    `path().hermiteG2()`, or a `nurbsCurve(...)` ref.
 3. Eyeballing the waypoints would take more than ~60 seconds **or** the
@@ -54,31 +54,31 @@ Do **not** load this skill for:
 
 Pick the smallest set of features that captures the outline you want.
 
-**Single silhouette.** For a one-piece organic outline (eyewear brow as a
+**Single silhouette.** For a one-piece organic outline (upper contour as a
 single curve, sneaker side profile), request one feature:
 
 ```json
-{ "features": [{ "label": "frame_brow", "kind": "silhouette" }] }
+{ "features": [{ "label": "outline_top", "kind": "silhouette" }] }
 ```
 
 **Silhouette + named points.** When you also need landmarks that a contour
-extractor cannot label (the bridge midpoint between two lenses, the lens
-center, the brow tip), add them with `kind: "point"`:
+extractor cannot label (the neck midpoint between two lobes, the lobe
+center, the contour peak), add them with `kind: "point"`:
 
 ```json
 {
   "features": [
-    { "label": "frame_brow",  "kind": "silhouette" },
-    { "label": "bridge_top",  "kind": "point",
-      "region": "between the lenses, top edge" },
-    { "label": "lens_left_center", "kind": "point",
-      "region": "center of the left lens" }
+    { "label": "outline_top",  "kind": "silhouette" },
+    { "label": "neck_top",  "kind": "point",
+      "region": "between the two lobes, top edge" },
+    { "label": "lobe_left_center", "kind": "point",
+      "region": "center of the left lobe" }
   ]
 }
 ```
 
 **Naming convention.** Use `snake_case` and the form `<part>_<role>` so that
-the same labels can flow into kernelCAD constant names (`const bridge_top
+the same labels can flow into kernelCAD constant names (`const neck_top
 = [...];`). The label is echoed verbatim in the response.
 
 **Backend hint.** Leave `backend` unset; let the router pick. The router
@@ -101,8 +101,8 @@ silhouette for every feature.
 trace_from_image({
   imageUrl: "file:///path/to/reference.jpg",
   features: [
-    { "label": "frame_brow", "kind": "silhouette" },
-    { "label": "bridge_top", "kind": "point" }
+    { "label": "outline_top", "kind": "silhouette" },
+    { "label": "neck_top", "kind": "point" }
   ],
   maxWaypointsPerFeature: 14
 })
@@ -113,7 +113,7 @@ trace_from_image({
 | Curve character                                | Suggested cap |
 |------------------------------------------------|---------------|
 | Shallow (one bow, e.g. handle back)            | 6–8           |
-| Medium (eyewear brow, sneaker top profile)     | 10–14         |
+| Medium (upper contour, sneaker top profile)     | 10–14         |
 | Highly inflected (S-curves, ergonomic grips)   | 16–20         |
 
 A cap that's too high wastes context; too low loses inflection points.
@@ -155,8 +155,8 @@ recorded as `assumed`. Do not skip straight to Step 4 while facts are open:
 ```json
 // ledger.facts (excerpt) — scale is missing because no scaleAnchor was passed:
 [
-  { "id": "frame_brow", "kind": "visible",  "confidence": 1,    "resolution": "confirmed" },
-  { "id": "bridge_top",  "kind": "inferred", "confidence": 0.74, "resolution": "open" },
+  { "id": "outline_top", "kind": "visible",  "confidence": 1,    "resolution": "confirmed" },
+  { "id": "neck_top",  "kind": "inferred", "confidence": 0.74, "resolution": "open" },
   { "id": "scale",       "kind": "missing",  "confidence": 0,    "resolution": "open" }
 ]
 ```
@@ -167,7 +167,7 @@ Resolve open facts with `resolve_assumptions` before committing geometry:
 resolve_assumptions({
   ledgerPath: "/path/to/build.ledger.json",
   resolutions: [
-    { id: "bridge_top", confirm: true },
+    { id: "neck_top", confirm: true },
     { id: "scale", value: 0.1548 }   // mm/px derived from the Real Object Brief's scale anchor
   ]
 })
@@ -182,13 +182,13 @@ call itself fails (`ok: false`) while `scale` is still `missing` and open.
 ### Step 4 — Convert normalized → model space
 
 Pick a scale anchor from the Real Object Brief — for example,
-`frameWidth = 130 mm` over `0.84` of the image width.
+`overallWidth = 130 mm` over `0.84` of the image width.
 
 ```ts
-// Scale anchor: frame outer width 130 mm spans 0.84 of the image width.
-const FRAME_WIDTH_MM   = 130;
-const FRAME_NORM_SPAN  = 0.84;
-const MM_PER_NORM_X    = FRAME_WIDTH_MM / FRAME_NORM_SPAN;
+// Scale anchor: overall outer width 130 mm spans 0.84 of the image width.
+const OVERALL_WIDTH_MM   = 130;
+const OVERALL_NORM_SPAN  = 0.84;
+const MM_PER_NORM_X    = OVERALL_WIDTH_MM / OVERALL_NORM_SPAN;
 const MM_PER_NORM_Y    = MM_PER_NORM_X; // assumes square pixels — confirm
 
 // Center the image's normalized origin (0.5, 0.5) at the model origin.
@@ -198,15 +198,15 @@ const toMm = ([nx, ny]: [number, number]): [number, number] => [
   -(ny - 0.5) * MM_PER_NORM_Y,
 ];
 
-const browWaypointsMm = traced.features[0].waypoints.map(toMm);
+const contourWaypointsMm = traced.features[0].waypoints.map(toMm);
 
-const brow = path()
-  .moveTo(...browWaypointsMm[0])
-  .spline(browWaypointsMm.slice(1));
+const contour = path()
+  .moveTo(...contourWaypointsMm[0])
+  .spline(contourWaypointsMm.slice(1));
 ```
 
 The Y flip is **load-bearing** — image-space `y` grows downward, the model's
-`z`/`y` grows upward. Without the flip the brow appears inverted.
+`z`/`y` grows upward. Without the flip the contour appears inverted.
 
 ## Sanity render
 
@@ -229,19 +229,19 @@ reference outline visually. Only after that is plausible, hand off to
 - **LLM returned waypoints in the wrong traversal order.** The prompt asks
   for counter-clockwise from the topmost-leftmost vertex; sometimes the
   model walks clockwise. **Fix:** re-call with an explicit
-  `hint: "traverse the brow left-to-right along its top edge"`.
+  `hint: "traverse the contour left-to-right along its top edge"`.
 - **First waypoint sits 5 mm off the prior `moveTo()`.** The path-builder
   emits `feature.path.spline.degenerate-points`. **Fix:** update the
   `moveTo()` to match `waypoints[0]` exactly.
 - **Asymmetric trace on a symmetric part.** Trace ONE half (use `region:
-  "left half of the brow only"`), then `.mirror('YZ')` in the model.
+  "left half of the contour only"`), then `.mirror('YZ')` in the model.
 
 ## Verification gates
 
 | Gate                       | Pass criterion                                             |
 |----------------------------|------------------------------------------------------------|
 | G-trace-confidence         | Every feature has `confidence >= 0.6`, OR the script carries a `// confidence N, hand-corrected` comment naming that feature. |
-| G-trace-scale-anchor       | The script contains a comment that names the scale anchor used (e.g. `// Scale anchor: frameWidth = 130 mm spans 0.84 of the image width`). |
+| G-trace-scale-anchor       | The script contains a comment that names the scale anchor used (e.g. `// Scale anchor: overallWidth = 130 mm spans 0.84 of the image width`). |
 | G-trace-first-waypoint     | The PathBuilder chain begins with `moveTo(<first traced waypoint>)` before any `.spline()` or `.nurbsSegment()` taking traced waypoints. |
 | G-assumption-ledger        | `ledger.unresolvedCount === 0`, OR every open fact was reviewed and either confirmed/overridden via `resolve_assumptions` or explicitly accepted with a `// assumption <id>: <reason>` comment naming it. Never silently ignore an open `missing` (scale) fact. |
 

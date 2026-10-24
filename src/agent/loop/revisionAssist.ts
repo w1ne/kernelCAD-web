@@ -6,19 +6,12 @@
 // Honest scope: we do NOT claim full autonomous CAD rewrite. When failure
 // diagnostics have a mechanical repair_script candidate (boolean miss, oversized
 // fillet, …), we surface concrete patches and optionally auto-apply the first
-// accepted candidate. For production/complex goals we fail closed on
-// stacked-primitive toys and point at Adam cookbooks.
+// accepted candidate.
 
 import type { DiagnosticCode } from '../../shared/diagnostics/diagnostic';
 import { formatPatchDiff } from '../repair/applyPatch';
 import { REPAIRABLE_CODES } from '../repair/candidates';
 import { repairScriptTool } from '../mcp/tools/repairScript';
-
-export const STACKED_PRIMITIVE_TOY_CODE = 'assembly.quality.stacked-primitive-toy';
-export const MISSING_FILLET_CODE = 'assembly.quality.missing-fillet';
-
-const PRODUCTION_GOAL_RE =
-  /\b(real|production|complex|enclosure|gearbox|bearing\s*hous|housings?|robot[\s-]?arm|machined|manufactur|cobot)\b/i;
 
 const REPAIRABLE_SET = new Set<string>(REPAIRABLE_CODES);
 
@@ -58,133 +51,17 @@ export interface RevisionAssist {
     diff: string;
   };
   nextTool?: {
-    name: 'repair_script' | 'lookup_cookbook' | 'why_did_this_fail';
+    name: 'repair_script' | 'why_did_this_fail';
     args: Record<string, unknown>;
   };
-}
-
-export function isProductionIntentGoal(goal: string): boolean {
-  return PRODUCTION_GOAL_RE.test(goal);
 }
 
 export function countPattern(source: string, pattern: RegExp): number {
   return source.match(pattern)?.length ?? 0;
 }
 
-/**
- * Fail-closed quality facts for prompts tagged complex/production: stacked
- * box unions without manufacturing-intent ops (fillet / shell / cavity subtract).
- * Mechanism scripts (assembly + mate) are excluded — use box-fragment-clutter.
- */
-export function stackedPrimitiveToyFacts(
-  source: string,
-  goal: string,
-  allowReviewWarnings: readonly string[],
-): DesignLoopReviewFact[] {
-  if (!isProductionIntentGoal(goal)) return [];
-  if (allowReviewWarnings.includes(STACKED_PRIMITIVE_TOY_CODE)) return [];
-
-  const hasMechanism = /\bassembly\s*\(/.test(source) && /\.mate\s*\(/.test(source);
-  if (hasMechanism) return [];
-
-  const boxCount = countPattern(source, /\bbox\s*\(/g);
-  const unionCount = countPattern(source, /\.union\s*\(/g);
-  const hasFillet = /\.fillet\s*\(/.test(source);
-  const hasShell = /\.shell\s*\(/.test(source);
-  const hasSubtract = /\.subtract\s*\(/.test(source) || /\.cutout\s*\(/.test(source);
-  const looksStacked = boxCount >= 3 && unionCount >= 2;
-  const manufacturingIntent = hasFillet || hasShell || hasSubtract;
-
-  if (!looksStacked || manufacturingIntent) return [];
-
-  return [{
-    code: STACKED_PRIMITIVE_TOY_CODE,
-    severity: 'warning',
-    message:
-      `Production/complex goal but script looks like a stacked-primitive toy ` +
-      `(${boxCount} box(), ${unionCount} .union()) with no fillet/shell/subtract cavity.`,
-    hint:
-      `${STACKED_PRIMITIVE_TOY_CODE} — lookup_cookbook("multi-feature machined housing") and ` +
-      `rewrite with param()s, wall cavity (subtract), bosses/holes, and fillet. ` +
-      `Do not ship union-of-stacked-primitives for real/production/enclosure/gearbox prompts.`,
-  }];
-}
-
-/**
- * Housing/enclosure production goals should carry edge blends. Missing fillet
- * with a cavity subtract is a common Adam-gap failure mode.
- */
-export function missingFilletFacts(
-  source: string,
-  goal: string,
-  allowReviewWarnings: readonly string[],
-): DesignLoopReviewFact[] {
-  if (!isProductionIntentGoal(goal)) return [];
-  if (allowReviewWarnings.includes(MISSING_FILLET_CODE)) return [];
-  if (/\bassembly\s*\(/.test(source)) return [];
-  if (/\.fillet\s*\(/.test(source) || /\.chamfer\s*\(/.test(source)) return [];
-  const hasSubtract = /\.subtract\s*\(/.test(source) || /\.cutout\s*\(/.test(source);
-  if (!hasSubtract) return [];
-  if (!/\b(hous|enclosure|gearbox|bearing|machined)\b/i.test(goal)) return [];
-
-  return [{
-    code: MISSING_FILLET_CODE,
-    severity: 'warning',
-    message:
-      'Production housing/enclosure script has a cavity subtract but no fillet/chamfer — manufacturing-intent edges are missing.',
-    hint:
-      `${MISSING_FILLET_CODE} — add return body.fillet(<r>, { parallel: [0,0,1] }) (or selective edge filters). ` +
-      `See cookbook multi-feature-machined-housing.`,
-  }];
-}
-
 function hasFactCode(facts: readonly DesignLoopReviewFact[], code: string): boolean {
   return facts.some((f) => f.code === code);
-}
-
-function isScissorOrClosedLoopGoal(goal: string, facts: readonly DesignLoopReviewFact[]): boolean {
-  return /\b(scissor|pin[_\s-]?slot|4-?bar|parallelogram|closed[_\s-]?loop)\b/i.test(goal)
-    || hasFactCode(facts, 'assembly.solver.did-not-converge')
-    || hasFactCode(facts, 'kinematic.solver.unsupported-config');
-}
-
-function isFourDofArmGoal(goal: string): boolean {
-  return /\b(4[-\s]?dof|four[-\s]?axis|multi[-\s]?dof)\b/i.test(goal)
-    || (/\b(yaw|shoulder|elbow|wrist)\b/i.test(goal) && /\b(robot\s*arm|cobot)\b/i.test(goal));
-}
-
-function isMechanismGoal(goal: string, facts: readonly DesignLoopReviewFact[]): boolean {
-  return hasFactCode(facts, 'assembly.joint-topology.unsupported-axis')
-    || hasFactCode(facts, 'assembly.connectivity.floating-moving-part')
-    || hasFactCode(facts, 'mechanism.drops-on-release')
-    || (/\b(robot|arm|mechanism|cobot|multi-?body)\b/i.test(goal) && isProductionIntentGoal(goal));
-}
-
-function industryCookbookHints(goal: string, facts: readonly DesignLoopReviewFact[]): RevisionHint[] {
-  const hints: RevisionHint[] = [];
-  if (isScissorOrClosedLoopGoal(goal, facts)) {
-    hints.push({
-      code: 'cookbook.scissor-lift',
-      summary:
-        'Articulated closed-loop FK (scissor / 4-bar / pin_slot loop) is unsupported — use open-chain prismatic platform + mid-pose X-links.',
-      suggestedChange: 'lookup_cookbook("scissor lift closed loop")',
-    });
-  }
-  if (isFourDofArmGoal(goal)) {
-    hints.push({
-      code: 'cookbook.multi-dof-arm',
-      summary:
-        'Production 4-DOF arm: fuse yokes/servo shelves into parent links, clear yaw disk above pedestal, mechanicalJoint chain + reach animationView.',
-      suggestedChange: 'lookup_cookbook("multi dof robot arm 4axis")',
-    });
-  } else if (isMechanismGoal(goal, facts)) {
-    hints.push({
-      code: 'cookbook.mechanism-proportions',
-      summary: 'Use real machine-element proportions with grounded root + jointSupport/mechanicalJoint (+ tendon or driven joint for gravity-hold).',
-      suggestedChange: 'lookup_cookbook("multi-body mechanism real proportions")',
-    });
-  }
-  return hints;
 }
 
 function mechanismRepairHints(facts: readonly DesignLoopReviewFact[]): RevisionHint[] {
@@ -202,7 +79,7 @@ function mechanismRepairHints(facts: readonly DesignLoopReviewFact[]): RevisionH
       code: 'repair.grounded-root',
       summary: 'Moving parts need a mate-graph path to a stable root.',
       suggestedChange:
-        "Name the ground part base-frame / base / ground / root, or declare physicalUseCase(...).stableParts: ['base-frame'].",
+        "Declare the fixed part explicitly with physicalUseCase(...).stableParts: ['<fixed part>'], or add it first in arm.add(...) order (the solver grounds the first part).",
     });
   }
   if (hasFactCode(facts, 'mechanism.drops-on-release')) {
@@ -213,28 +90,11 @@ function mechanismRepairHints(facts: readonly DesignLoopReviewFact[]): RevisionH
         'Add arm.tendon(...) across the joint, or declare arm.mechanicalJoint(...) so the hinge is actively driven.',
     });
   }
-  if (hasFactCode(facts, 'assembly.geometry.floating-body')) {
-    hints.push({
-      code: 'repair.bridge-yoke-load-path',
-      summary: 'Yoke / servo-shelf / cheek solids must be fused into the parent link — mate-graph alone is not geometric contact.',
-      suggestedChange:
-        'Bridge each yoke or servo shelf into its parent link with .union() (shared overlap so solidComponents()===1). Raise yaw disks above the pedestal for clearance. See lookup_cookbook("multi dof robot arm 4axis").',
-    });
-  }
   return hints;
 }
 
-function cookbookHintsForGoal(goal: string, facts: readonly DesignLoopReviewFact[]): RevisionHint[] {
-  const hints: RevisionHint[] = [];
-  if (facts.some((f) => f.code === STACKED_PRIMITIVE_TOY_CODE || f.code === MISSING_FILLET_CODE)) {
-    hints.push({
-      code: 'cookbook.machined-housing',
-      summary: 'Replace stacked primitives with manufacturing-intent BREP.',
-      suggestedChange: 'lookup_cookbook("multi-feature machined housing")',
-    });
-  }
-  hints.push(...industryCookbookHints(goal, facts));
-  hints.push(...mechanismRepairHints(facts));
+function cookbookHintsForGoal(facts: readonly DesignLoopReviewFact[]): RevisionHint[] {
+  const hints: RevisionHint[] = [...mechanismRepairHints(facts)];
   for (const fact of facts) {
     if (fact.code.startsWith('feature.') || fact.hint) {
       hints.push({
@@ -259,32 +119,12 @@ const HONESTY_BASE =
   'Revision assist returns actionable patches/hints for the agent to apply. ' +
   'It does not autonomously rewrite full CAD models; complex redesign stays agent-driven via nextActionPrompt + cookbooks.';
 
-function cookbookNextTool(
-  hints: readonly RevisionHint[],
-): RevisionAssist['nextTool'] | undefined {
-  if (hints.some((h) => h.code === 'cookbook.machined-housing')) {
-    return { name: 'lookup_cookbook', args: { query: 'multi-feature machined housing' } };
-  }
-  if (hints.some((h) => h.code === 'cookbook.scissor-lift')) {
-    return { name: 'lookup_cookbook', args: { query: 'scissor lift closed loop' } };
-  }
-  if (hints.some((h) => h.code === 'cookbook.multi-dof-arm')) {
-    return { name: 'lookup_cookbook', args: { query: 'multi dof robot arm 4axis' } };
-  }
-  if (hints.some((h) => h.code === 'cookbook.mechanism-proportions')) {
-    return { name: 'lookup_cookbook', args: { query: 'multi-body mechanism real proportions' } };
-  }
-  return undefined;
-}
-
 function hintsOnlyAssist(hints: RevisionHint[]): RevisionAssist | undefined {
   if (hints.length === 0) return undefined;
-  const nextTool = cookbookNextTool(hints);
   return {
     mode: 'hints-only',
     honesty: HONESTY_BASE,
     hints,
-    ...(nextTool !== undefined ? { nextTool } : {}),
   };
 }
 
@@ -400,7 +240,7 @@ function assistFromRepairResult(
 /**
  * Build structured revision assist for a failing design_loop attempt.
  *
- * - Always: cookbook / quality hints for production goals and review facts.
+ * - Always: diagnostic-keyed repair hints from review facts.
  * - When repairable feature diagnostics are present: call repair_script
  *   (try-all, max 2) and attach suggested patches; if a candidate clears the
  *   diagnostic, include autoApplied.suggestedCode for the next attempt.
@@ -413,7 +253,7 @@ export async function buildRevisionAssist(input: {
   /** When false, only emit hints (no repair_script). Default true. */
   autoRevise?: boolean;
 }): Promise<RevisionAssist | undefined> {
-  const hints = cookbookHintsForGoal(input.goal, input.reviewFacts);
+  const hints = cookbookHintsForGoal(input.reviewFacts);
   const repairable = hasRepairableDiagnostic(input.diagnostics);
   const autoRevise = input.autoRevise !== false;
 

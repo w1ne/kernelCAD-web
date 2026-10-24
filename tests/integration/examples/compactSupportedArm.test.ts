@@ -12,6 +12,21 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'examples/robot-arm/compact-supported-arm.kcad.ts';
 const EXAMPLE_ABSOLUTE = resolvePath(__dirname, '../../..', EXAMPLE_PATH);
 
+/** Max-min distance between two tracked connectors across the sampled poses. */
+function trackedDistanceTravelMm(
+  poses: ReadonlyArray<{ sampleName: string; ref: string; world: readonly number[] }> | undefined,
+  refA: string,
+  refB: string,
+): number {
+  const a = new Map((poses ?? []).filter((p) => p.ref === refA).map((p) => [p.sampleName, p.world]));
+  const distances: number[] = [];
+  for (const p of poses ?? []) {
+    const w = p.ref === refB ? a.get(p.sampleName) : undefined;
+    if (w) distances.push(Math.hypot(w[0] - p.world[0], w[1] - p.world[1], w[2] - p.world[2]));
+  }
+  return distances.length === 0 ? 0 : Math.max(...distances) - Math.min(...distances);
+}
+
 describe('compact supported robot arm example', () => {
   it('evaluates as a mate-driven assembly with supported joint intent', async () => {
     const result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
@@ -67,7 +82,7 @@ describe('compact supported robot arm example', () => {
     }
   }, 180_000);
 
-  it.skip('passes review_cad with workspace, gripper aperture, and mechanical fitness — see issues/346', async () => {
+  it.skip('passes review_cad with workspace, fingertip travel, and mechanical fitness — see issues/346', async () => {
     const result = await reviewCadTool({
       file: EXAMPLE_PATH,
       designGoal: 'Build a physically plausible small robot arm with supported joints, load-bearing links, and a functional gripper.',
@@ -81,10 +96,6 @@ describe('compact supported robot arm example', () => {
         'right-finger.tip connector',
       ],
       trackConnectors: ['tool-palm.tool-tip', 'left-finger.tip', 'right-finger.tip'],
-      gripperAperture: {
-        left: 'left-finger.tip',
-        right: 'right-finger.tip',
-      },
     });
 
     expect(result.ok).toBe(true);
@@ -93,7 +104,7 @@ describe('compact supported robot arm example', () => {
       expect(result.poseEnvelope?.diagnostics).toEqual([]);
       expect(result.poseEnvelope?.interferencePairs).toEqual([]);
       expect(result.connectorWorkspace?.find((entry) => entry.ref === 'tool-palm.tool-tip')?.travelMm).toBeGreaterThan(50);
-      expect(result.gripperAperture?.travelMm).toBeGreaterThan(10);
+      expect(trackedDistanceTravelMm(result.poseEnvelope?.connectorPoses, 'left-finger.tip', 'right-finger.tip')).toBeGreaterThan(10);
       expect(result.fitness.functional).toBe(true);
       expect(result.fitness.blockingReasons).toEqual([]);
       expect(result.fitness.mechanismSummary.mechanicalIntentIssueCount).toBeUndefined();

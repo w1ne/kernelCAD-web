@@ -53,13 +53,6 @@ export const TOOL_CODES = {
     group: 'tool',
     description: 'A trace_from_image backend exceeded the hard per-call timeout and was aborted.',
   },
-  'tool.trace-from-image.part-detection-failed': {
-    hintTemplate: 'Part detection is optional and requires the configured vision model. Retry with detectParts: true after checking vision configuration, or use the traced outline without the draft BOM.',
-    nextAction: { kind: 'inspect-message' },
-    defaultSeverity: 'warn',
-    group: 'tool',
-    description: 'Optional labeled-part detection failed while preserving the traced outline.',
-  },
   // send_to_printer (2) — Slice B
   'tool.send-to-printer.unreachable': {
     hintTemplate:

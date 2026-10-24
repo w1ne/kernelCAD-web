@@ -15,13 +15,12 @@ import type { FeatureId } from '../shared/intent/types';
 import type { CaptureSession } from './capture/captureSession';
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { runScript, type RunScriptFacadeOptions } from './runtime/runScript';
-import { Shape } from './capture/proxy';
-import { Scene } from './validation/scene';
 import { computePrefixReuse, type RecordHealth } from './compute/prefixReuse';
 import { populateCache } from './paramUpdate';
+import { assembleBuiltModel, builtModelFromRun, resolveRootId } from './builtModelFromRun';
 
 export { updateModelParams } from './paramUpdate';
-export { populateCache };
+export { populateCache, resolveRootId };
 export type { UpdateModelParamsOptions } from './paramUpdate';
 
 export interface BuildModelInput {
@@ -103,29 +102,7 @@ export async function buildModel(
   const kernel = resolveKernel(input.kernel);
   await initOcct();
   const run = await runScript(input, opts);
-  const session = run.session;
-  // Slice 2E: attach a per-session engine so `params.update` reuses it and
-  // `onRelower` subscriptions added after the initial build still fire.
-  const engine = new RecomputeEngine(createLowerer(kernel, session));
-  session.setEngine(engine);
-  const warningsBefore = session.warnings.length;
-  const pending = session.snapshotFullLower(new Map());
-  // Reuse the clean full lower the script already ran (the solvedModel gate),
-  // for the record prefix that is still valid. Dropped either way: it must not
-  // outlive this build.
-  const seedShapes = session.reusableLoweredPrefix(session.cleanScriptLower);
-  session.cleanScriptLower = undefined;
-  const result = await engine.run(run.records, {
-    ...(seedShapes.size > 0 ? { seedShapes } : {}),
-    paramTable: session.paramTable,
-    warningSink: warning => session.warnings.push(warning),
-    warningPhase: 'build',
-    gatedFeatureNames: session.gatedFeatureNames,
-  });
-  // Later `Shape.lower()` calls (review passes lower each part) reuse this.
-  session.lastFullLower = { ...pending, shapes: result.shapes };
-
-  return assembleBuiltModel(session, run, result, warningsBefore, input.code);
+  return builtModelFromRun(run, session => createLowerer(kernel, session), input.code);
 }
 
 /**
@@ -253,46 +230,6 @@ export function withSelectionDrift(baseline: readonly SelectionRecord[], next: B
   return next;
 }
 
-/** Shared post-`engine.run` assembly for `buildModel` /
- *  `rebuildModelIncremental`: populates the session cache and derives the
- *  tail/root shapes onto a `BuiltModel`. Keeping this in one place guarantees
- *  the incremental path produces a `BuiltModel` shaped exactly like the full
- *  build's. */
-function assembleBuiltModel(
-  session: CaptureSession,
-  run: { records: readonly FeatureRecord[]; returnValue: unknown },
-  result: {
-    shapes: Map<FeatureId, ShapeBackend>;
-    diagnostics: CompilerDiagnostic[];
-    health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
-    selections: SelectionRecord[];
-  },
-  warningsBefore: number,
-  code: string,
-): BuiltModel {
-  populateCache(session, result.shapes);
-  const tailId = run.records.length > 0 ? run.records[run.records.length - 1].id : undefined;
-  const tailShape = tailId ? result.shapes.get(tailId) : undefined;
-  const rootId = resolveRootId(run.returnValue, tailId);
-  const rootShape = rootId ? result.shapes.get(rootId) : undefined;
-
-  return {
-    session,
-    records: run.records,
-    shapes: result.shapes,
-    diagnostics: result.diagnostics,
-    health: result.health,
-    selections: result.selections,
-    warnings: session.warnings.slice(warningsBefore),
-    tailId,
-    tailShape,
-    rootId,
-    rootShape,
-    returnValue: run.returnValue,
-    code,
-  };
-}
-
 export async function buildModelFromFile(
   input: BuildModelFromFileInput,
   opts?: RunScriptFacadeOptions,
@@ -305,19 +242,4 @@ export async function buildModelFromFile(
     { code, fileName, scriptDir: dirname(fileName), ...(input.kernel !== undefined ? { kernel: input.kernel } : {}) },
     opts,
   );
-}
-
-/**
- * Resolve the FeatureId of the value the script `return`ed.
- * Shape → its feature id; Scene → the upstream solvedAssembly /
- * assemblyModel record id; anything else (Region, plain data, no
- * return) → fall back to the chain tail.
- */
-export function resolveRootId(
-  returnValue: unknown,
-  tailId: FeatureId | undefined,
-): FeatureId | undefined {
-  if (returnValue instanceof Shape) return returnValue.id;
-  if (returnValue instanceof Scene) return returnValue.__sourceFeatureId() ?? tailId;
-  return tailId;
 }

@@ -7,7 +7,7 @@ import { addTransmissionSourceTool } from './addTransmissionSource';
 /**
  * The mate-graph relationship being authored into source.
  * NB: the discriminator is `relation`, NOT `kind` — `transmission` already
- * owns a `kind` param (direct-horn | link-rod | …), so a `kind` discriminator
+ * owns a `kind` param (direct | link-rod | …), so a `kind` discriminator
  * would collide.
  */
 export type MateRelation = 'mate' | 'coupling' | 'transmission';

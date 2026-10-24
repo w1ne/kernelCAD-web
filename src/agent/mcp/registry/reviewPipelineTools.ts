@@ -3,7 +3,6 @@
 import { evaluateSdfTool } from '../tools/evaluateSdf';
 import { designLoopTool } from '../tools/designLoop';
 import { reviewCadTool } from '../tools/reviewCad';
-import { reviewPaintPeekLatestTool } from '../tools/reviewPaint';
 import { flattenPatternTool } from '../tools/flattenPattern';
 import { captureAnimationTool } from '../tools/captureAnimation';
 import { renderPreviewTool } from '../tools/renderPreview';
@@ -32,23 +31,12 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             type: 'boolean',
             description: 'When true, articulated assemblies must declare arm.physicalUseCase(...) evidence: loads, contacts, stable parts, and actuator limits.',
           },
-          includePhysicalUseCaseReachability: {
-            type: 'boolean',
-            description: 'Run targeted physical-use-case reachability sampling over scalar-limited mates named in actuatorLimits. Reject contacts that cannot get within criteria.maxSlipMm and multi-contact use cases that cannot satisfy every contact in the same sampled actuator pose. Samples revolute/cylindrical/pin-slot limitsDeg and prismatic limitsMm. Defaults to requirePhysicalUseCase.',
+          physicalUseCaseLevel: {
+            type: 'string',
+            enum: ['reachability', 'statics', 'reactions'],
+            description: "Escalating physical-use-case depth; each level includes the previous. 'reachability': targeted sampling over scalar-limited mates named in actuatorLimits, rejecting contacts that cannot get within criteria.maxSlipMm and multi-contact use cases that cannot satisfy every contact in the same sampled actuator pose (revolute/cylindrical/pin-slot limitsDeg, prismatic limitsMm). 'statics': adds pose-bound quasi-static certification at the exact common-contact samples (conservative friction/capacity, world force and moment balance, finite-difference revolute actuator torque); returns physicalUseCaseStaticCertificates on success. 'reactions': adds exact-pose reaction wrenches through uniquely rooted articulated trees, compared against each loaded mate's declared resultant force/moment envelope, and runs the clevis double-shear / pin-bending / bearing / tear-out / net-section check (minimum factor of safety 2) automatically for mates built with joint.clevis. Defaults to 'reachability' when requirePhysicalUseCase is true.",
           },
-          includePhysicalUseCaseStatics: {
-            type: 'boolean',
-            description: 'Run opt-in pose-bound quasi-static certification at the exact common-contact samples: conservative friction/capacity, world force and moment balance, and finite-difference revolute actuator torque. Returns physicalUseCaseStaticCertificates on success; sampled linearized failures remain blocking diagnostics.',
-          },
-          includePhysicalUseCaseJointReactions: {
-            type: 'boolean',
-            description: 'Derive exact-pose reaction wrenches through uniquely rooted articulated trees and compare every loaded mate against a complete declared resultant force/moment envelope. Implies physical-use-case reachability and statics.',
-          },
-          includePhysicalUseCaseJointStructure: {
-            type: 'boolean',
-            description: 'Run geometry/material clevis double-shear, pin-bending, bearing, tear-out, and net-section checks with minimum factor of safety 2. Unsupported axial or perpendicular-moment load cases remain blockers. Implies joint reactions, statics, and reachability.',
-          },
-          physicalUseCaseReachabilitySamplesPerMate: {
+          physicalUseCaseSamplesPerMate: {
             type: 'integer',
             minimum: 1,
             description: 'Samples per scalar-limited actuator mate for physical-use-case contact reachability. Samples revolute/cylindrical/pin-slot limitsDeg and prismatic limitsMm. Default 3; total targeted combinations are capped.',
@@ -72,14 +60,6 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             description: 'Optional connector refs such as ["gripper-plate.tool-tip"] to limit connector workspace reporting.',
             items: { type: 'string' },
           },
-          gripperAperture: {
-            type: 'object',
-            description: 'Optional fingertip connector refs for gripper aperture travel reporting.',
-            properties: {
-              left: { type: 'string', description: 'Left fingertip connector ref such as "left-finger.tip".' },
-              right: { type: 'string', description: 'Right fingertip connector ref such as "right-finger.tip".' },
-            },
-          },
         },
       },
     },
@@ -87,44 +67,8 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
   },
   {
     definition: {
-      name: 'review_paint_peek_latest',
-      description:
-        'Use this when you need to see the latest region the user painted in Studio. ' +
-        'Return the newest inpainting-style review packet the user painted in Studio. ' +
-        'Studio writes packets to <scriptPath>.review-paint/latest/ as the user marks regions ' +
-        'over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the ' +
-        'freshest one within a configurable freshness window (default 30 minutes). Returns base64 ' +
-        'PNGs of the screenshot + mask in-band so any MCP client can see the marked regions ' +
-        'without local-disk Read access. The packet also carries the user\'s intent — an optional ' +
-        'one-line note and preset tags (e.g. "too thick", "missing", "wrong angle") describing ' +
-        'WHAT is wrong, not just where. Call this whenever the user says "look at my mark", ' +
-        '"check what I painted", or any equivalent.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          freshness_sec: {
-            type: 'integer',
-            description: 'Maximum packet age in seconds. Default 1800 (30 min). Use a smaller value for "what did I just paint" or a larger one for "earlier today".',
-            minimum: 1,
-          },
-          extra_roots: {
-            type: 'array',
-            description: 'Optional extra checkout paths to scan (in addition to ~/projects/kernelCAD-web and ~/projects/kernelCAD-web-worktrees). Use when Studio is hosted from a non-standard location.',
-            items: { type: 'string' },
-          },
-          paths_only: {
-            type: 'boolean',
-            description: 'When true, omit base64 PNG fields and return only paths + metadata. Smaller response when the agent will Read the PNGs from disk anyway, or just wants to know "is there a packet".',
-          },
-        },
-      },
-    },
-    handler: input => reviewPaintPeekLatestTool(input as Parameters<typeof reviewPaintPeekLatestTool>[0]),
-  },
-  {
-    definition: {
       name: 'design_loop',
-      description: 'Use this when the goal is complex / production / enclosure / gearbox / robot-arm / multi-body, or when you need evaluate→review/verify→revise until green. PREFERRED over one-shot evaluate_script+open_in_studio for Adam-level parts. Runs a CAD design loop over attempt scripts: review_cad each attempt, continue past functional attempts with unresolved warnings, return repair prompts (nextActionPrompt) plus structured revisionAssist (suggestedPatches / autoApplied.suggestedCode for repairable feature failures; cookbook steers for stacked-primitive toys). Stop on ok or convergence.escalate. To pick among N alternative candidates for one goal without a judge, pass them all as attempts with consensus:true (geometric medoid selection). For organic/car bodies set likenessProfile:"automotive" and pass bodyLikeness (or automotive stills on visualReview.checks) — attempts fail closed until body-likeness is publishReady. Optionally write a Studio build record JSON.',
+      description: 'Use this when the goal is complex / production / enclosure / gearbox / robot-arm / multi-body, or when you need evaluate→review/verify→revise until green. PREFERRED over one-shot evaluate_script+open_in_studio for Adam-level parts. Runs a CAD design loop over attempt scripts: review_cad each attempt, continue past functional attempts with unresolved warnings, return repair prompts (nextActionPrompt) plus structured revisionAssist (suggestedPatches / autoApplied.suggestedCode for repairable feature failures; cookbook steers for stacked-primitive toys). Stop on ok or convergence.escalate. To pick among N alternative candidates for one goal without a judge, pass them all as attempts with consensus:true (geometric medoid selection). Optionally write a Studio build record JSON.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -151,7 +95,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
                     },
                     checks: {
                       type: 'array',
-                      description: 'Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, attachment-plausibility, semantic-orientation-alignment, device-depth-and-construction, canonical-views-physically-coherent. When likenessProfile=automotive also: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference.',
+                      description: 'Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, attachment-plausibility, semantic-orientation-alignment, canonical-views-physically-coherent.',
                       items: {
                         type: 'object',
                         properties: {
@@ -192,7 +136,6 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             items: { type: 'string' },
             description: 'Connector refs to track across sampled poses.',
           },
-          gripperAperture: { type: 'object', description: 'Optional gripper aperture request forwarded to review_cad.' },
           stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
           consensus: {
             type: 'boolean',
@@ -205,23 +148,6 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
               'When true (default), failing attempts with repairable feature diagnostics (boolean miss, oversized fillet, …) run bounded repair_script and attach revisionAssist.suggestedPatches / autoApplied.suggestedCode. Set false to skip the extra repair pass (hints-only). Does not autonomously rewrite full CAD models.',
           },
           requireVisualReview: { type: 'boolean', description: 'Require screenshot-backed visualReview with structured checks before accepting an attempt. Default true; set false only for explicit non-visual batch checks.' },
-          likenessProfile: {
-            type: 'string',
-            enum: ['automotive'],
-            description: 'When \'automotive\', require organic-body still checks on visualReview AND the body-likeness publish gate (pass bodyLikeness or stills on checks). Attempts stay non-ok until publishReady. Final open_in_studio must pass likeness_profile:\'automotive\' (server hard-gates success).',
-          },
-          bodyLikeness: {
-            type: 'object',
-            description: 'When likenessProfile=automotive: body_bbox (required for gate), wheels, cabin_bbox, still_verdicts. Missing body_bbox fails with reference.likeness.gate-required. Stills may also come from visualReview.checks.',
-            properties: {
-              body_bbox: { type: 'object' },
-              cabin_bbox: { type: 'object' },
-              wheels: { type: 'array', items: { type: 'object' } },
-              length_axis: { type: 'string', enum: ['x', 'y'] },
-              still_verdicts: { type: 'array', items: { type: 'object' } },
-              require_stills: { type: 'boolean' },
-            },
-          },
           requirePhysicalAcceptance: {
             type: 'boolean',
             description: 'Require declared physicalUseCase common-pose reachability and pose-bound quasi-static certification before accepting an attempt. Design-loop also enables this automatically when an attempt script calls physicalUseCase(...).',

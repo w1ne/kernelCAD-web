@@ -62,7 +62,6 @@ describe('rejected function-first three-finger robot hand fixture', () => {
       file: EXAMPLE_PATH,
       includeInterference: true,
       trackConnectors: ['thumb-finger.tip', 'index-finger.tip', 'middle-finger.tip'],
-      gripperAperture: { left: 'thumb-finger.tip', right: 'index-finger.tip' },
     });
 
     expect(result.ok).toBe(false);

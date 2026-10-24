@@ -55,15 +55,6 @@ interface JointSupportLikeIntent {
   readonly output: string;
 }
 
-const ROOT_FALLBACK_NAMES = [
-  'palm-root',
-  'palm',
-  'base-frame',
-  'base',
-  'ground-frame',
-  'ground',
-  'root',
-] as const;
 const AXIS_ALIGNMENT_TOLERANCE = 0.999;
 const AXIS_REQUIRED_MATES = new Set(['revolute', 'prismatic', 'cylindrical', 'pin_slot']);
 const ROTATIONAL_LIMIT_MATES = new Set(['revolute', 'cylindrical', 'pin_slot']);
@@ -461,9 +452,6 @@ function collectStableRoots(
       if (partsByName.has(stablePart)) roots.add(stablePart);
     }
   }
-  for (const fallback of ROOT_FALLBACK_NAMES) {
-    if (partsByName.has(fallback)) roots.add(fallback);
-  }
   return roots;
 }
 
@@ -474,9 +462,6 @@ function stableRootsForUseCase(
   const roots = new Set<string>();
   for (const stablePart of stableParts) {
     if (partsByName.has(stablePart)) roots.add(stablePart);
-  }
-  for (const fallback of ROOT_FALLBACK_NAMES) {
-    if (partsByName.has(fallback)) roots.add(fallback);
   }
   return roots;
 }

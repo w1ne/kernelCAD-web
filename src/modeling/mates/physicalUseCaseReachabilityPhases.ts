@@ -11,19 +11,19 @@ import type {
 import type { PhysicalUseCaseReachabilityFinding } from './physicalUseCaseReachability';
 import type { PhysicalUseCaseStaticIssue } from './physicalUseCaseStatics';
 
-/** Derive the optional review phases: statics imply reachability, joint
- *  reactions imply statics, and joint structure implies joint reactions. */
+/** Derive the review phases from the single escalating level: each level
+ *  includes the previous one (`statics` implies reachability, `reactions`
+ *  implies statics; joint reactions also run the clevis structural check for
+ *  mates built with joint.clevis). */
 export function resolvePhysicalUseCasePhases(opts: PhysicalUseCaseReviewOptions): {
   includeJointReactions: boolean;
   includeStatics: boolean;
   includeReachability: boolean;
-  includeJointStructure: boolean;
 } {
-  const includeJointReactions = opts.includeJointReactions === true || opts.includeJointStructure === true;
-  const includeStatics = opts.includeStatics === true || includeJointReactions;
-  const includeReachability = opts.includeReachability === true || includeStatics;
-  const includeJointStructure = opts.includeJointStructure === true;
-  return { includeJointReactions, includeStatics, includeReachability, includeJointStructure };
+  const includeJointReactions = opts.level === 'reactions';
+  const includeStatics = opts.level === 'statics' || includeJointReactions;
+  const includeReachability = opts.level === 'reachability' || includeStatics;
+  return { includeJointReactions, includeStatics, includeReachability };
 }
 
 /** Map reachability findings to diagnostics, skipping contact pairs already
