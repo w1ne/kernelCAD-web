@@ -663,7 +663,8 @@ function emitWorldbodyBlocks(
 // P7: emit the <tendon> block AFTER <worldbody>. Each spatial
 // tendon references two sites by name; the sites were emitted
 // inside their owner bodies above. Unit conversion:
-//   restLengthMm    → springlength (m)   = mm × 1e-3
+//   restLengthMm    → springlength (m)   = "0 L", L = mm × 1e-3: a
+//                     deadband below L, so the cable pulls but never pushes
 //   stiffnessNmm    → stiffness   (N/m)  = N/mm × 1e3
 //   dampingNsmm     → damping     (N·s/m) = N·s/mm × 1e3
 function emitTendonBlock(
@@ -700,8 +701,10 @@ function emitTendonBlock(
 }
 
 // Spring attrs; an actuated cable without spring fields stays inextensible.
+// A tendon is a cable: slack below its rest length, so the spring acts only
+// in tension (MuJoCo's two-value springlength is a zero-force deadband).
 function tendonSpringAttrs(t: TendonRecord): string {
-    const rest = t.restLengthMm !== undefined ? ` springlength="${fmtNum(t.restLengthMm * MM_TO_M)}"` : '';
+    const rest = t.restLengthMm !== undefined ? ` springlength="0 ${fmtNum(t.restLengthMm * MM_TO_M)}"` : '';
     const stiff = t.stiffnessNmm !== undefined ? ` stiffness="${fmtNum(t.stiffnessNmm * 1000)}"` : '';
     return rest + stiff;
 }
