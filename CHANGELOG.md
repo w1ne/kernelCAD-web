@@ -55,8 +55,28 @@ also has a browser MuJoCo WebAssembly demo.
 
 ## Install And Upgrade
 
+kernelCAD is distributed as a self-contained archive attached to this GitHub
+Release. There is no npm package.
+
 ```bash
-npm install -g kernelcad@0.17.1
+curl -fsSL https://kernelcad.com/install.sh | sh
+```
+
+Pin this release:
+
+```bash
+curl -fsSL https://kernelcad.com/install.sh | KERNELCAD_VERSION=v0.17.1 sh
+```
+
+Connect an agent:
+
+```bash
+# Claude Code, hosted MCP
+claude mcp add --transport http kernelcad https://mcp.kernelcad.com/mcp
+# Claude Code, local CLI
+claude mcp add kernelcad -- kernelcad mcp
+# Codex, local CLI
+codex mcp add kernelcad -- kernelcad mcp
 ```
 
 For repo development:

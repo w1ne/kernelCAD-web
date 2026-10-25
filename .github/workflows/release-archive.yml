@@ -1,0 +1,41 @@
+name: Release archive
+
+# Builds the self-contained CLI archive and attaches it to the GitHub Release.
+# Install: curl -fsSL https://kernelcad.com/install.sh | sh
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  archive:
+    name: build + attach archive
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.0'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build CLI and player
+        run: npm run build
+      - name: Keep production dependencies only
+        run: npm prune --omit=dev
+      - name: Build release archive
+        run: node scripts/build-release-archive.mjs
+      - name: Attach archive to the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --title "$TAG — kernelCAD release" \
+              --notes-file RELEASE_NOTES.md
+          fi
+          gh release upload "$TAG" release/*.tar.gz --clobber
