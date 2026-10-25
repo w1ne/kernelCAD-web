@@ -61,6 +61,11 @@ function nodeParamRefNames(node: FeatureNode | undefined, key: string): string[]
   return node?.paramRefs?.[key] ?? [];
 }
 
+function requirementSemantics(node: { inputs: FeatureId[]; predicate?: unknown } | undefined): unknown {
+  if (node === undefined) return undefined;
+  return { inputs: node.inputs, predicate: node.predicate };
+}
+
 function unownedChanged(
   base: readonly UnownedSpan[],
   edited: readonly UnownedSpan[],
@@ -171,13 +176,10 @@ export function liftChangeSet(
     ...Object.keys(edited.requirements),
   ]);
   for (const name of [...requirementNames].sort()) {
-    if (equal(base.requirements[name], edited.requirements[name])) continue;
-    ops.push({
-      op: 'editRequirement',
-      name,
-      from: base.requirements[name],
-      to: edited.requirements[name],
-    });
+    const before = base.requirements[name];
+    const after = edited.requirements[name];
+    if (equal(requirementSemantics(before), requirementSemantics(after))) continue;
+    ops.push({ op: 'editRequirement', name, from: before, to: after });
     writeSet.add(`requirement:${name}`);
   }
 
