@@ -81,6 +81,37 @@ export interface MeshTessellationStamp {
     source: string;
 }
 
+/** How the approximate P3 centre of mass is weighted. */
+export type StabilityMassBasis = 'uniform-density-mesh-volume';
+
+/** What the approximate stability pass assumed. Present only when P3 ran. */
+export interface StabilityStamp {
+    model: 'approximate-support-projection';
+    /** World-space gravity direction used for the support test. Magnitude is ignored. */
+    gravity: Vec3;
+    /** Surface distance at or below which two parts count as touching. */
+    contactToleranceMm: number;
+    /** Parts treated as the base/fixture and stable from step 1. */
+    seed: PartRef[];
+    seedSource: 'declared-fixtures' | 'inferred-lowest-parts';
+    massBasis: StabilityMassBasis;
+}
+
+export type StabilityState = 'stable' | 'needs-hold';
+
+/** A part the projection test could not prove stable at its build step. */
+export interface NeedsHoldFinding {
+    part: PartRef;
+    status: 'needs-hold';
+    reason: 'no-contact' | 'no-support-below-center-of-mass' | 'center-of-mass-outside-support-polygon';
+    /** Stable parts contacted at that step, deterministic order. */
+    supports: PartRef[];
+    /** World-space centre of mass used by the projection. */
+    centerOfMass: Vec3;
+    /** Convex hull of the support contacts, in world space, when one existed. */
+    supportPolygon?: Vec3[];
+}
+
 /** What the sequence is allowed to assume. Part of every answer. */
 export interface ModelStamp {
     rigidParts: true;
@@ -90,7 +121,10 @@ export interface ModelStamp {
      *  sweep; adds helical, requires-force and sampling-search when present. */
     motionModels: MotionModel[];
     testedDirections: Vec3[];
-    gravity: 'not-modelled';
+    /** `approximate-support-projection` when P3 ran; still never full physics. */
+    gravity: 'not-modelled' | 'approximate-support-projection';
+    /** Present only when P3 ran. */
+    stability?: StabilityStamp;
     basis: 'continuous-triangle-mesh';
     tessellation: MeshTessellationStamp;
     clearanceMm: number;
@@ -116,8 +150,11 @@ export interface Step {
     tool?: ToolBlockFinding;
     /** Name of the subassembly this step belongs to, or the unit it installs. */
     subassembly?: string;
-    /** Reserved for P3 stability/holding; stage B does not assign fixtures. */
+    /** Stable parts or declared fixtures supporting this step's added parts.
+     *  Absent when the step needs a hold or P3 did not run. */
     heldBy?: PartRef[];
+    /** P3 approximate result for this step. Absent when P3 did not run. */
+    stability?: StabilityState;
 }
 
 /** A caller-declared or mate-derived subassembly candidate. */
@@ -149,6 +186,8 @@ export interface AssemblySequence {
     requiresForce?: RequiresForceFinding[];
     /** Fasteners whose declared/default tool envelope is obstructed. */
     toolBlocked?: ToolBlockFinding[];
+    /** Parts that need an external hold under the approximate support test. */
+    needsHold?: NeedsHoldFinding[];
 }
 
 /** One directed edge of the directional blocking graph. */
