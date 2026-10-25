@@ -1,4 +1,4 @@
-# Assembly sequence planner (P1 stage B)
+# Fastener precedence and tool reach (P2)
 
 The `demo.mp4` is an annotated still sequence built from local
 `kernelcad render --preset publish` captures of
@@ -8,43 +8,49 @@ capture or hardware test.
 
 What it shows:
 
-- the twelve-part gearbox blockout, its internals and an exploded view;
-- two fastened-mate subassemblies (each shaft with its two gears), planned
-  recursively inside and installed as one unit at the top level;
-- the `sequence: true` result: fourteen 1-indexed steps (twelve part additions
-  plus two subassembly installs), each with its insertion direction;
-- the never-collapsed states (`removable`, `blocked`, `unknown`) and the
-  sampling labels (`found-by-search`, never proven; `unknown: budget`);
-- the model stamp (rigid parts, straight-line translation, six tested
-  directions, no gravity, mesh tessellation and zero-clearance policy).
+- the gearbox blockout with four bolts, a press-fit gear and a rib beside one
+  bolt head;
+- all four bolts planned as `motion: 'helical'` with a declared 0.7 mm pitch;
+- `bolt-a` retaining its helical removal while its modelled driver envelope is
+  `tool-blocked`, naming `tool-clearance-rib`;
+- the press-fit gear planned as a `requires-force` step, never simulated;
+- the two fastened-mate subassemblies, the model stamp
+  (`motionModels` includes `helical-screw` and `requires-force`,
+  `toolReach: swept-envelope`) and the S2 ledger entries (`assembly.toolReach.*`
+  pass/fail, `assembly.requiresForce.*` not-evaluated).
 
 Reproduce from the repository root:
 
 ```sh
+npm run build:player
 npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-sequence-gearbox.kcad.ts --preset publish -o docs/demos/assembly-sequence-planner/gearbox-assembled.png
 npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-sequence-gearbox.kcad.ts --preset publish --hide cover -o docs/demos/assembly-sequence-planner/gearbox-internals.png
 npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-sequence-gearbox.kcad.ts --preset publish --explode 0.6 -o docs/demos/assembly-sequence-planner/gearbox-exploded.png
 node docs/demos/assembly-sequence-planner/make-video.mjs
 ```
 
-`make-video.mjs` uses `FFMPEG` when set, otherwise `ffmpeg` from `PATH`. The
-host used for this bundle had no system ffmpeg, so the video was encoded with
-the static binary from the `ffmpeg-static` npm package; this is an environment
-detail, not part of the kernelCAD API.
+`make-video.mjs` uses `FFMPEG` when set, otherwise `ffmpeg` from `PATH`. This
+host has no system ffmpeg/ffprobe; the MP4 was encoded with the static binary
+from `/tmp/opencode/node_modules/ffmpeg-static/ffmpeg` and a frame was extracted
+and visually inspected. `npm run lint-demos` therefore cannot run here; report
+that as an environment failure, not a skipped verification.
 
 Evidence:
 
 - `sequence-evidence.json` — exact `verify({ check: 'assembly-path', sequence: true })`
   result for the example: source hash, model stamp, per-part state, all
-  fourteen steps, subassembly tags, `unknown`, `search` and `stuckParts`.
+  nineteen steps, fastener motion, tool findings, `requiresForce`,
+  `toolBlocked`, `unknown`, `search`, `stuckParts` and the S2 ledger.
 - `video-evidence.json` — input image hashes, delivered video hash, slide
   durations, exact render/plan invocations and provenance.
 - `frames/` — the exact slides the encoder consumed.
 
 The planner is local triangle-mesh evidence. It assumes rigid parts,
-straight-line translation along the tested directions, no gravity (P3 has not
-run), the export mesher's tessellation and zero clearance. Subassembly and
-multi-part moves are heuristics, not exhaustive; a sampling result is found
-inside a finite budget, not a proof. It proves neither hardware assembly nor
-strength. Catalog screw/bolt/nut families are `unknown: non-straight-path`
-until P2 models helical removal.
+straight-line translation plus declared helical fastener motion, no gravity
+(P3 has not run), the export mesher's tessellation and zero clearance.
+Helical motion records rotation but does not model thread engagement, torque or
+preload. Tool reach is a swept cylinder/cone envelope, not a driver drawing.
+Press and snap fits are declared `requires-force`, never simulated or proven;
+`ok` stays false for them. Subassembly and multi-part moves are heuristics, not
+exhaustive; a sampling result is found inside a finite budget, not a proof.
+The example proves neither hardware assembly nor strength.

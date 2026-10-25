@@ -11,6 +11,8 @@
 
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { ClevisStructuralModel } from '../joints/types';
+import type { FastenerHandedness, FitKind, ToolEnvelope } from '../runtime/assemblyFastener';
+import type { Vec3 } from '../../shared/intent/types';
 import type { MateType } from './mateTypes';
 
 /**
@@ -52,6 +54,32 @@ export interface MateLoadLimit {
   readonly torque?: number;
 }
 
+/** Fastened-mate metadata that lets the assembly planner test a helical
+ *  removal. `axis` is the removal/approach direction in the fastener part's
+ *  own frame; `pitchMm` may be omitted and derived from catalog attributes. */
+export interface FastenerMateMetadata {
+  /** The fastener part. Defaults to the one threaded endpoint, then side A. */
+  readonly part?: string;
+  /** Removal/approach axis in the fastener part's frame. When omitted, the
+   *  catalog `head-top`/`top-face` connector (else the mate connector) is used. */
+  readonly axis?: Vec3;
+  readonly pitchMm?: number;
+  readonly handedness?: FastenerHandedness;
+  readonly threadLengthMm?: number;
+  readonly standard?: string;
+  /** Explicit tool envelope, or null to declare that no tool is modelled. */
+  readonly tool?: ToolEnvelope | null;
+}
+
+/** Declared press/snap fit metadata on a fastened mate. */
+export interface FitMateMetadata {
+  readonly kind: FitKind;
+  /** The inserted part. Defaults to side B, then the fastener part. */
+  readonly part?: string;
+  /** Removal/approach axis in the inserted part's frame. */
+  readonly axis?: Vec3;
+}
+
 export interface MateRecord {
   readonly name: string;
   /** "<partName>.<connectorName>" */
@@ -91,6 +119,10 @@ export interface MateRecord {
    *  Declare `'exposed'` to require the revolute to read as a hinge (fork
    *  daylight + pin stickout). `'concealed'` is equivalent to undeclared. */
   readonly exposure?: 'exposed' | 'concealed';
+  /** Fastened-mate fastener motion metadata (P2). */
+  readonly fastener?: FastenerMateMetadata;
+  /** Declared press/snap fit (P2). */
+  readonly fit?: FitMateMetadata;
 }
 
 export function parseConnectorRef(ref: string): { partName: string; connectorName: string } {

@@ -14,7 +14,7 @@ export type RequirementStatus = 'pass' | 'fail' | 'not-evaluated';
 
 /** Where an entry came from. `external` requirements are supplied per call and
  *  are never persisted into the project. */
-export type RequirementSource = 'script' | 'external' | 'dfm' | 'fea' | 'mechanical';
+export type RequirementSource = 'script' | 'external' | 'dfm' | 'fea' | 'mechanical' | 'assembly';
 
 export type RequirementMetric =
   | 'clearance'

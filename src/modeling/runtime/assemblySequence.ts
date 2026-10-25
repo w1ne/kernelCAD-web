@@ -5,17 +5,72 @@
 // geometric peel lives in `assemblyPath.ts`; this module keeps the shape of
 // the answer stable.
 import type { Vec3 } from '../../shared/intent/types';
+import type { FastenerHandedness, FitKind, ToolEnvelope } from './assemblyFastener';
 
 /** A part reference in a sequence step. A subassembly install step uses its name. */
 export type PartRef = string;
 
 export type UnknownReason = 'budget' | 'needs-multi-part-move' | 'non-straight-path';
 
-/** Never collapse these three states: only `removable` is proven here. */
+/** How a part is ordered. `requires-force` and `helical` are never a
+ *  straight-line clearance proof; `straight` is the P1 proof. */
+export type PartMotion = 'straight' | 'helical' | 'requires-force';
+
+/** Never collapse these states. Only `removable` is proven by a straight
+ *  sweep; a helical path is a separate declared motion, and `requires-force`
+ *  is declared (press/snap) rather than simulated. */
 export type PartState =
-    | { kind: 'removable'; direction: Vec3; testedDirections: Vec3[] }
+    | { kind: 'removable'; direction: Vec3; testedDirections: Vec3[]; motion?: PartMotion }
+    | { kind: 'requires-force'; fit: FitKind; direction: Vec3; testedDirections: Vec3[] }
     | { kind: 'blocked'; blockersByDirection: { direction: Vec3; blockers: string[] }[] }
     | { kind: 'unknown'; reason: UnknownReason };
+
+/** Motion models the answer is allowed to use, in addition to the P1 straight
+ *  sweep. Listed on every stamp so a helical or forced step is never read as
+ *  a straight-line proof. */
+export type MotionModel =
+    | 'straight-line-translation'
+    | 'helical-screw'
+    | 'requires-force'
+    | 'sampling-search';
+
+/** What a fastener's helical removal did, recorded on its step. */
+export interface HelicalMotionSummary {
+    /** Removal/approach axis in world space. */
+    axis: Vec3;
+    pitchMm: number;
+    handedness: FastenerHandedness;
+    /** Axial distance unthreaded before the free translation. */
+    threadLengthMm: number;
+    /** Full turns of the modelled helical segment. */
+    turns: number;
+    standard?: string;
+}
+
+/** A tool envelope that could not reach a fastener at its step. */
+export interface ToolBlockFinding {
+    fastener: string;
+    status: 'tool-blocked';
+    blockers: string[];
+    tool: ToolEnvelope;
+    basis: 'assembled-parts';
+}
+
+export interface ToolClearFinding {
+    fastener: string;
+    status: 'clear';
+    blockers: [];
+    tool: ToolEnvelope;
+    basis: 'assembled-parts';
+}
+
+export type ToolReachFinding = ToolBlockFinding | ToolClearFinding;
+
+/** A press or snap fit ordered as a declared force step. */
+export interface RequiresForceFinding {
+    part: string;
+    kind: FitKind;
+}
 
 export interface MeshTessellationStamp {
     /** Linear deflection. Null when the caller supplied a mesh without stating it. */
@@ -29,20 +84,36 @@ export interface MeshTessellationStamp {
 /** What the sequence is allowed to assume. Part of every answer. */
 export interface ModelStamp {
     rigidParts: true;
+    /** P1's proven straight sweep. Kept literal for existing consumers. */
     motion: 'straight-line-translation';
+    /** Every motion model used by this answer. Always includes the straight
+     *  sweep; adds helical, requires-force and sampling-search when present. */
+    motionModels: MotionModel[];
     testedDirections: Vec3[];
     gravity: 'not-modelled';
     basis: 'continuous-triangle-mesh';
     tessellation: MeshTessellationStamp;
     clearanceMm: number;
     clearancePolicy: string;
+    /** `swept-envelope` when tool reach ran against declared/default envelopes. */
+    toolReach: 'not-modelled' | 'swept-envelope';
 }
 
 export interface Step {
     index: number;
     adds: PartRef[];
-    /** Insertion direction: the reverse of the proven removal direction. */
+    /** Insertion direction: the reverse of the proven/declared removal direction. */
     direction: Vec3;
+    /** How this step is justified. Absent on P1 steps for compatibility;
+     *  treat absent as `straight`. A `helical` step is proven along the
+     *  declared screw axis, not by the straight sweep. */
+    motion?: 'straight' | 'helical' | 'requires-force' | 'search';
+    /** Recorded for a helical fastener step. */
+    fastener?: HelicalMotionSummary;
+    /** Present when a press/snap fit is declared; never simulated. */
+    requiresForce?: { kind: FitKind };
+    /** Present when a declared/default tool envelope was swept and blocked. */
+    tool?: ToolBlockFinding;
     /** Name of the subassembly this step belongs to, or the unit it installs. */
     subassembly?: string;
     /** Reserved for P3 stability/holding; stage B does not assign fixtures. */
@@ -74,6 +145,10 @@ export interface AssemblySequence {
     unknown: string[];
     /** Non-straight paths found by search; these steps are not proven. */
     search?: SearchFinding[];
+    /** Press/snap fits ordered as declared force steps (never proven). */
+    requiresForce?: RequiresForceFinding[];
+    /** Fasteners whose declared/default tool envelope is obstructed. */
+    toolBlocked?: ToolBlockFinding[];
 }
 
 /** One directed edge of the directional blocking graph. */
@@ -169,13 +244,21 @@ export function makeModelStamp(
     return {
         rigidParts: true,
         motion: 'straight-line-translation',
+        motionModels: ['straight-line-translation'],
         testedDirections: directions.map(copyDirection),
         gravity: 'not-modelled',
         basis: 'continuous-triangle-mesh',
         tessellation: { ...tessellation },
         clearanceMm: 0,
         clearancePolicy: 'Zero clearance: any positive-travel triangle contact blocks; t=0 departure is free.',
+        toolReach: 'not-modelled',
     };
+}
+
+/** Add a motion model to a stamp exactly once, preserving deterministic order. */
+export function addMotionModel(model: ModelStamp, motion: MotionModel): void {
+    if (!model.motionModels.includes(motion))
+        model.motionModels.push(motion);
 }
 
 export function sequenceFromRemovalOrder(

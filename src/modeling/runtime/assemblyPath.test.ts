@@ -10,6 +10,9 @@ function box(name: string, min: number[], max: number[]): AssemblyPathPart {
     const triangles = [0, 2, 3, 0, 3, 1, 4, 5, 7, 4, 7, 6, 0, 1, 5, 0, 5, 4, 2, 6, 7, 2, 7, 3, 0, 4, 6, 0, 6, 2, 1, 3, 7, 1, 7, 5];
     return { name, mesh: { vertices, triangles } };
 }
+function stepOf(result: ReturnType<typeof checkAssemblyPathMeshes>, part: string) {
+    return result.sequence?.steps.find(step => step.adds.includes(part));
+}
 function combine(name: string, parts: AssemblyPathPart[]): AssemblyPathPart {
     const mesh: {
         vertices: number[];
@@ -119,7 +122,7 @@ describe('assembly path continuous mesh sweep', () => {
     it('charges containment work against the total budget on dense interleaved solids', () => {
         const a = Array.from({ length: 256 }, (_, i) => box(`a${i}`, [3 * i, 0, 0], [3 * i + 1, 1, 1]));
         const b = a.map((_, i) => box(`b${i}`, [3 * i + 1.5, .5, 0], [3 * i + 2.5, 1.5, 1]));
-        expect(() => checkAssemblyPathMeshes([combine('a', a), combine('b', b)], { disassemblyOrder: true })).toThrow(/total work budget/);
+        expect(() => checkAssemblyPathMeshes([combine('a', a), combine('b', b)], { disassemblyOrder: true, workBudget: 2_000_000 })).toThrow(/total work budget/);
     }, 15_000);
     it('interrupts BVH construction when its shared budget is exhausted', () => {
         const mesh = combine('dense', Array.from({ length: 64 }, (_, i) => box(String(i), [3 * i, 0, 0], [3 * i + 1, 1, 1]))).mesh;
@@ -310,5 +313,116 @@ describe('assembly sequence planner core', () => {
         const result = checkAssemblyPathMeshes(trappedPinAssembly(), { sequence: true, search: false, partitionBudget: 1 });
         expect(result.parts.find(part => part.part === 'pin')?.state).toEqual({ kind: 'unknown', reason: 'needs-multi-part-move' });
         expect(result.sequence?.unknown).toContain('pin');
+    });
+
+    it('plans a declared screw as a helical removal and stamps the motion model', () => {
+        const screw: AssemblyPathPart = { ...box('m3-screw', [0, 0, 0], [3, 3, 6]), threadedFastener: true };
+        const result = checkAssemblyPathMeshes([screw], {
+            sequence: true,
+            fasteners: { 'm3-screw': { axis: [0, 0, 1], pitchMm: 0.5, threadLengthMm: 6, standard: 'ISO 4762' } },
+        });
+        const part = result.parts[0];
+        expect(part.state).toMatchObject({ kind: 'removable', motion: 'helical' });
+        expect(part.fastener).toMatchObject({ pitchMm: 0.5, handedness: 'right', turns: 12, standard: 'ISO 4762' });
+        const step = result.sequence?.steps.find(entry => entry.adds[0] === 'm3-screw');
+        expect(step).toMatchObject({
+            motion: 'helical',
+            fastener: { axis: [0, 0, 1], pitchMm: 0.5, threadLengthMm: 6, turns: 12 },
+            direction: [0, 0, -1],
+        });
+        expect(result.model.motionModels).toContain('helical-screw');
+    });
+    it('reports a fastener blocked along its helical path with the blockers named', () => {
+        const parts = [
+            { ...box('screw', [0, 0, 0], [2, 2, 4]), threadedFastener: true },
+            box('cap', [0.1, 0.1, 4.1], [2.1, 2.1, 6]),
+        ];
+        const result = checkAssemblyPathMeshes(parts, {
+            sequence: true,
+            fasteners: { screw: { axis: [0, 0, 1], pitchMm: 1 } },
+        });
+        expect(result.parts.find(part => part.part === 'screw')?.state).toMatchObject({ kind: 'blocked' });
+        const state = result.parts.find(part => part.part === 'screw')?.state;
+        if (state?.kind === 'blocked')
+            expect(state.blockersByDirection[0].blockers).toEqual(['cap']);
+    });
+    it('passes tool reach when the approach envelope is clear', () => {
+        const parts = [
+            { ...box('bolt', [0, 0, 0], [2, 2, 3]), threadedFastener: true },
+            box('rib', [4, 0, 4], [6, 2, 10]),
+        ];
+        const result = checkAssemblyPathMeshes(parts, {
+            sequence: true,
+            fasteners: {
+                bolt: {
+                    axis: [0, 0, 1], pitchMm: 0.5,
+                    tool: { kind: 'cylinder', lengthMm: 20, diameterMm: 4, label: 'hex-key' },
+                },
+            },
+        });
+        expect(result.toolReach).toEqual([expect.objectContaining({ fastener: 'bolt', status: 'clear', blockers: [] })]);
+        expect(result.toolBlocked).toBeUndefined();
+        expect(result.sequence?.toolBlocked).toBeUndefined();
+        expect(result.model.toolReach).toBe('swept-envelope');
+        expect(stepOf(result, 'bolt')?.tool).toBeUndefined();
+    });
+    it('reports tool-blocked with the covering part and keeps the helical removal', () => {
+        const parts = [
+            { ...box('bolt', [0, 0, 0], [2, 2, 3]), threadedFastener: true },
+            box('rib', [2.8, 0, 4], [4, 2, 10]),
+        ];
+        const result = checkAssemblyPathMeshes(parts, {
+            sequence: true,
+            fasteners: {
+                bolt: {
+                    axis: [0, 0, 1], pitchMm: 0.5,
+                    tool: { kind: 'cylinder', lengthMm: 20, diameterMm: 4, label: 'hex-key' },
+                },
+            },
+        });
+        expect(result.parts.find(part => part.part === 'bolt')?.state).toMatchObject({ kind: 'removable', motion: 'helical' });
+        expect(result.sequence?.toolBlocked).toEqual([
+            expect.objectContaining({ fastener: 'bolt', status: 'tool-blocked', blockers: ['rib'] }),
+        ]);
+        expect(stepOf(result, 'bolt')).toMatchObject({
+            motion: 'helical',
+            tool: { fastener: 'bolt', status: 'tool-blocked', blockers: ['rib'] },
+        });
+        expect(result.ok).toBe(false);
+    });
+    it('orders a declared press fit as requires-force, never as a simulated proof', () => {
+        const result = checkAssemblyPathMeshes([
+            box('base', [0, 0, 0], [10, 10, 2]),
+            box('gear', [0, 0, 2], [4, 4, 6]),
+        ], {
+            sequence: true,
+            fits: { gear: { kind: 'press', axis: [0, 0, 1] } },
+        });
+        const gear = result.parts.find(part => part.part === 'gear');
+        expect(gear?.state).toEqual({
+            kind: 'requires-force', fit: 'press', direction: [0, 0, 1],
+            testedDirections: expect.any(Array),
+        });
+        expect(gear?.removable).toBe(false);
+        const step = stepOf(result, 'gear');
+        expect(step).toMatchObject({ motion: 'requires-force', requiresForce: { kind: 'press' } });
+        expect(result.sequence?.requiresForce).toEqual([{ part: 'gear', kind: 'press' }]);
+        expect(result.model.motionModels).toContain('requires-force');
+        expect(result.ok).toBe(false);
+    });
+    it('puts helical fasteners and requires-force fits into one sequence', () => {
+        const result = checkAssemblyPathMeshes([
+            box('base', [0, 0, 0], [10, 10, 2]),
+            { ...box('bolt', [2, 2, 2], [4, 4, 8]), threadedFastener: true },
+            box('gear', [6, 6, 2], [9, 9, 5]),
+        ], {
+            sequence: true,
+            fasteners: { bolt: { axis: [0, 0, 1], pitchMm: 0.5 } },
+            fits: { gear: { kind: 'snap', axis: [0, 0, 1] } },
+        });
+        expect(result.sequence?.steps.map(step => step.adds[0]).sort()).toEqual(['base', 'bolt', 'gear']);
+        expect(result.sequence?.steps.find(step => step.adds[0] === 'bolt')?.motion).toBe('helical');
+        expect(result.sequence?.steps.find(step => step.adds[0] === 'gear')?.requiresForce).toEqual({ kind: 'snap' });
+        expect(result.model.motionModels).toEqual(expect.arrayContaining(['helical-screw', 'requires-force']));
     });
 });

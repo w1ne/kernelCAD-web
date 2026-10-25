@@ -22,7 +22,13 @@ list from the server; tool availability depends on whether the user is signed in
    or `convergence.escalate` says to stop and ask the user.
 5. On failure, `why_did_this_fail({ code })` then `repair_script({ code })`.
    `lookup_diagnostics({})` explains any diagnostic code.
-6. Show the result once with `open_in_studio` (see `kernelcad-studio-paint`),
+6. For assemblies that must be built, run
+   `verify({ check: 'assembly-path', sequence: true })`. Declare helical
+   fastener motion and press/snap fits on the fastened mate
+   (`{ fastener: { part?, axis, pitchMm?, tool? }, fit?: { kind, part? } }`);
+   the planner reports `helical`, `requires-force` and `tool-blocked` steps
+   instead of guessing. Tool reach is a swept envelope, not a hardware check.
+7. Show the result once with `open_in_studio` (see `kernelcad-studio-paint`),
    then export (see `kernelcad-export`).
 
 ## Rules
