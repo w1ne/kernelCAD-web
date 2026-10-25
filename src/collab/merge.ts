@@ -477,7 +477,7 @@ export async function mergeChangeSet(input: MergeInput): Promise<MergeResult> {
           conflicts.push({ code: 'collab.conflict.same-feature', id: `requirement:${op.name}` });
           continue;
         }
-        merged.requirements[op.name] = structuredClone(op.to as RequirementNode);
+        merged.requirements[op.name] = structuredClone(op.to as RequirementNodeType);
         const to = op.to as RequirementNodeType | undefined;
         if (headReq?.sourceSpan !== undefined && to?.sourceSpan !== undefined) {
           edits.push({
