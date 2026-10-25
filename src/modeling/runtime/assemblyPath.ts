@@ -198,15 +198,25 @@ function validateStabilityOptions(options: AssemblyPathOptions): void {
         throw new Error('stability must be boolean.');
     if (options.stability === true && options.sequence !== true)
         throw new Error('stability requires sequence: true.');
-    if (options.gravity !== undefined && (!Array.isArray(options.gravity) || options.gravity.length !== 3
-        || !options.gravity.every(Number.isFinite) || !(Math.hypot(...options.gravity) > 0)))
-        throw new Error('gravity must be a finite nonzero [x, y, z] direction.');
+    validateGravity(options.gravity);
     if (options.contactToleranceMm !== undefined
         && (!Number.isFinite(options.contactToleranceMm) || options.contactToleranceMm < 0))
         throw new Error('contactToleranceMm must be a finite nonnegative number.');
-    if (options.fixtures !== undefined && (!Array.isArray(options.fixtures)
-        || options.fixtures.some(name => typeof name !== 'string' || !name)
-        || new Set(options.fixtures).size !== options.fixtures.length))
+    validateFixtures(options.fixtures);
+}
+function validateGravity(gravity: Vec3 | undefined): void {
+    if (gravity === undefined)
+        return;
+    if (!Array.isArray(gravity) || gravity.length !== 3 || !gravity.every(Number.isFinite) || !(Math.hypot(...gravity) > 0))
+        throw new Error('gravity must be a finite nonzero [x, y, z] direction.');
+}
+function validateFixtures(fixtures: readonly string[] | undefined): void {
+    if (fixtures === undefined)
+        return;
+    const invalid = !Array.isArray(fixtures)
+        || fixtures.some(name => typeof name !== 'string' || !name)
+        || new Set(fixtures).size !== fixtures.length;
+    if (invalid)
         throw new Error('fixtures must contain unique nonempty part names.');
 }
 function validateSubassemblies(groups: readonly SubassemblyInput[] | undefined): void {
