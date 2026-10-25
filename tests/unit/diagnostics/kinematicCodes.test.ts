@@ -28,6 +28,8 @@ const KINEMATIC_CODES = [
   'kinematic.static-hold.no-actuator-declared',
   // Tolerance sweep refused a cartesian product above its combo cap.
   'kinematic.sweep-tolerance.combo-cap-exceeded',
+  // Tolerance sweep found a boundary but exhausted its bisection budget.
+  'kinematic.sweep-tolerance.boundary-budget-exhausted',
   // Closed-loop kinematics: loop-closure solver findings.
   'kinematic.loop.branch-flip',
   'kinematic.loop.lockup',
@@ -53,7 +55,7 @@ const CANONICAL_NEXT_ACTION_KINDS = new Set([
 ]);
 
 describe('kinematic-grounding diagnostic codes', () => {
-  it('registers exactly 17 kinematic.* codes', () => {
+  it('registers exactly 18 kinematic.* codes', () => {
     const kinCodes = Object.keys(DIAGNOSTIC_REGISTRY).filter((c) =>
       c.startsWith('kinematic.'),
     );

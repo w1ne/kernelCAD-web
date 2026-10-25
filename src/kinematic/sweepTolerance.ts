@@ -45,7 +45,7 @@ import type { Assembly } from '../modeling/capture/assembly';
 import { validateAssemblyWithMates } from '../modeling/mates/validator';
 import { detectInterferencesForPoses } from '../modeling/mates/poseEnvelope';
 import { checkReachable } from './checkReachable';
-import { KernelError } from '../shared/intent/kernelError';
+import { invalidArgs, invalidArgsText } from '../shared/intent/invalidArgs';
 import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/registry';
 import type { RequirementLedgerEntry } from '../shared/intent/requirementRecord';
 import type {
@@ -236,29 +236,36 @@ async function assertParamsAreSweepable(
     const values = expandParamSpec(params[name]!);
     if (entry.type === 'number') {
       if (!values.every((v) => typeof v === 'number' && Number.isFinite(v))) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `sweep_tolerance: param '${name}' is numeric, so every swept value must be a finite number.`,
-          undefined,
-          `invalid-args.param.type-mismatch — sweep_tolerance: param '${name}' is numeric; use numeric values only.`,
-        );
+        invalidArgs({
+          api: 'sweep_tolerance({ params })',
+          path: `params.${name}.values`,
+          got: values,
+          requires: `finite numbers for the numeric param '${name}'`,
+          example: "kinematic.sweepTolerance({ params: { GapMm: { values: [10, 2, 0] } } })",
+          hintSlug: 'invalid-args.param.type-mismatch',
+        });
       }
     } else if (entry.type === 'choice' || entry.type === 'string') {
       if (!values.every((v) => typeof v === 'string')) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `sweep_tolerance: param '${name}' is '${entry.type}', so every swept value must be a string.`,
-          undefined,
-          `invalid-args.param.type-mismatch — sweep_tolerance: param '${name}' is '${entry.type}'; use string values only.`,
-        );
+        invalidArgs({
+          api: 'sweep_tolerance({ params })',
+          path: `params.${name}.values`,
+          got: values,
+          requires: `strings for the '${entry.type}' param '${name}'`,
+          example: "kinematic.sweepTolerance({ params: { Thread: { values: ['M3', 'M4'] } } })",
+          hintSlug: 'invalid-args.param.type-mismatch',
+        });
       }
     } else {
-      throw new KernelError(
-        'feature.invalid-args',
-        `sweep_tolerance: param '${name}' is '${entry.type}', not sweepable. Only number, choice and string params can be swept.`,
-        undefined,
-        `invalid-args.param.type-mismatch — sweep_tolerance: param '${name}' is '${entry.type}'; sweep only number/choice/string params.`,
-      );
+      invalidArgs({
+        api: 'sweep_tolerance({ params })',
+        path: `params.${name}`,
+        got: entry.type,
+        showType: true,
+        requires: `a number, choice or string param; '${entry.type}' params are not sweepable`,
+        example: "kinematic.sweepTolerance({ params: { GapMm: { values: [10, 2, 0] } } })",
+        hintSlug: 'invalid-args.param.type-mismatch',
+      });
     }
     types.set(name, entry.type);
   }
@@ -277,12 +284,15 @@ async function resolveBaseCode(input: SweepToleranceInput): Promise<string> {
 function validateBoundaryTolerance(value: number | undefined): number {
   if (value === undefined) return SWEEP_BOUNDARY_TOLERANCE;
   if (!Number.isFinite(value) || value <= 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `sweep_tolerance: boundaryTolerance must be a positive finite number; got ${String(value)}.`,
-      undefined,
-      'invalid-args.sweep.boundary-tolerance — pass a positive absolute parameter tolerance (default 0.001).',
-    );
+    invalidArgs({
+      api: 'sweep_tolerance({ boundaryTolerance })',
+      path: 'boundaryTolerance',
+      got: value,
+      showType: true,
+      requires: 'a positive finite number (absolute parameter tolerance)',
+      example: 'kinematic.sweepTolerance({ params: { GapMm: { values: [10, 0] } }, boundaryTolerance: 0.01 })',
+      hintSlug: 'invalid-args.sweep.boundary-tolerance',
+    });
   }
   return value;
 }
@@ -290,12 +300,15 @@ function validateBoundaryTolerance(value: number | undefined): number {
 function validateBoundaryBudget(value: number | undefined): number {
   if (value === undefined) return SWEEP_BOUNDARY_BUDGET;
   if (!Number.isInteger(value) || value < 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `sweep_tolerance: boundaryBudget must be a non-negative integer; got ${String(value)}.`,
-      undefined,
-      'invalid-args.sweep.boundary-budget — pass 0 to skip bisection or a positive evaluation budget.',
-    );
+    invalidArgs({
+      api: 'sweep_tolerance({ boundaryBudget })',
+      path: 'boundaryBudget',
+      got: value,
+      showType: true,
+      requires: 'a non-negative integer evaluation count (0 skips bisection)',
+      example: 'kinematic.sweepTolerance({ params: { GapMm: { values: [10, 0] } }, boundaryBudget: 16 })',
+      hintSlug: 'invalid-args.sweep.boundary-budget',
+    });
   }
   return value;
 }
@@ -346,6 +359,12 @@ async function evaluateComboAt(
 
   if (editFailed !== undefined) {
     const names = gateNames(gates);
+    const text = invalidArgsText({
+      api: 'sweep_tolerance({ params })',
+      gotText: editFailed,
+      requires: 'a param() declaration the source rewrite can set',
+      example: "kinematic.sweepTolerance({ params: { GapMm: { values: [10, 2, 0] } } })",
+    });
     return {
       combo,
       gates: Object.fromEntries(names.map((g) => [g, 'fail' as const])),
@@ -355,7 +374,7 @@ async function evaluateComboAt(
         gate: g,
         code: 'feature.invalid-args',
         severity: 'error',
-        message: editFailed!,
+        message: text.message,
       })),
     };
   }
@@ -505,6 +524,12 @@ function noAssemblyResult(
   gates: NormalizedGates,
 ): SweepComboResult {
   const names = gateNames(gates);
+  const text = invalidArgsText({
+    api: 'sweep_tolerance({ params, gates })',
+    gotText: 'no assembly captured for this combo',
+    requires: 'an assembly() in the swept script, or all mechanism gates disabled for a requirements-only sweep',
+    example: "kinematic.sweepTolerance({ code, params, gates: { interference: false, mountingHoles: false, jointAxis: false } })",
+  });
   return {
     combo,
     gates: Object.fromEntries(names.map((g) => [g, 'fail' as const])),
@@ -514,7 +539,7 @@ function noAssemblyResult(
       gate: g,
       code: 'feature.invalid-args',
       severity: 'error',
-      message: 'sweep_tolerance: no assembly captured for this combo.',
+      message: text.message,
     })),
   };
 }

@@ -18,7 +18,6 @@
   "src/kernel/backends/occt/flattenPattern.ts": 9,
   "src/kernel/backends/occt/holeLowerer.ts": 2,
   "src/kernel/backends/occt/occtBackend.ts": 1,
-  "src/kinematic/sweepTolerance.ts": 3,
   "src/modeling/apiCaptureMethods.ts": 1,
   "src/modeling/apiParamMethods.ts": 1,
   "src/modeling/apiShapeMethods.ts": 3,
