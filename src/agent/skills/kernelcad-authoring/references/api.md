@@ -277,30 +277,6 @@ Comparisons: `.gte`, `.lte`, `.eq`, `.between(lo, hi)`, `.in([lo, hi])`,
 Call-time external specs use `verify({ requirements: [...] })` and are tagged
 `source: 'external'`; they are never persisted.
 
-### Motion-derived FEA loads (S5)
-
-`feaStudy` normally takes a hand-typed `loads` array. When the part is already
-in a moving assembly, take the load from the motion study instead:
-
-```typescript
-const motion = await kinematic.motionLoad(arm, { mode: 'range', rangeSamples: 9 });
-bracket.feaStudy({
-  material: 'mild-steel',
-  fixed: { atX: 0 },
-  loadsFrom: { motion, part: 'bracket' },
-  minSafetyFactor: 1.5,
-});
-```
-
-`motionLoad` returns per-joint peaks plus `partLoads`: the worst sample per
-part and side, in that part's own frame, ranked by a named proxy (bending stress
-from the declared `crossSection`, else joint-moment magnitude). `feaStudy` turns
-the selected force + moment into a statically equivalent remote load over the
-joint face and records the pose in the summary and the S2 ledger
-(`fea.<study>.minSafetyFactor`, with the pose and margin). `loads` and
-`loadsFrom` are mutually exclusive; a motion result with no sample for the part
-throws at capture instead of analysing an unloaded part.
-
 ### Selector algebra (ShapeList)
 
 `EdgeQuery` / `FaceQuery` are flat predicate bags: they answer *"which entities
@@ -465,6 +441,8 @@ const plate = box(60, 40, 6)
   .threadedHole('top', { u: 0, v: 12, spec: 'M5', depth: 8 }) // ISO tapped hole by designation; modeled: true cuts the thread
   .dimension({ kind: 'linear', from: holeAt(15, 20), to: holeAt(45, 20), label: 'hole spacing' }); // "hole spacing 30"
 ```
+
+**Loads from motion.** `feaStudy({ loadsFrom: { motion, part } })` takes the worst sampled joint wrench from `kinematic.motionLoad` instead of a hand-typed load. `partLoads` ranks samples by a named proxy (section bending stress, else joint-moment magnitude); the study applies the selected force + moment as a statically equivalent remote load and records the pose in the summary and S2 ledger. `loads` and `loadsFrom` are mutually exclusive; a part with no sampled load throws at capture.
 
 ### Sketch methods
 
