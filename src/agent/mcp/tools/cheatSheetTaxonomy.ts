@@ -121,7 +121,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     blurb:
       'Pick the edges or faces a feature acts on. Query first, then sort or group what comes back.',
     names: [
-      'selectEdges', 'selectEdge', 'select', 'q',
+      'selectEdges', 'selectEdge', 'select', 'q', 'faces', 'edges',
       'sortBy', 'sortByDistance', 'groupBy', 'filterBy', 'filterByPosition',
       'take', 'first', 'last', 'at',
     ],
@@ -158,7 +158,9 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Measure & verify',
     blurb: 'Ask the kernel what you actually built, and check it before shipping.',
-    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy', 'tube', 'tubeSpec'],
+    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy', 'tube', 'tubeSpec',
+      'require', 'clearance', 'distance', 'mass', 'volume', 'centerOfMass', 'count', 'innerLoops',
+      'angle', 'concentric', 'coplanar'],
   },
   {
     task: 'Parametrize',

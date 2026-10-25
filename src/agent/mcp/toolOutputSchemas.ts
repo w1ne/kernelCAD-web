@@ -82,6 +82,11 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         items: { type: 'object', additionalProperties: true },
         description: 'What each feature\'s selectors bound to: { consumerFeatureId, selectorText, syntax: lineage | topoRef | query, fingerprints[] (entity kind, surface type, producing feature, direction, radius, size, centroid), partDiagonal }. Pass back as `baseline` to learn which selectors an edit re-bound. Omitted when no feature used a selector.',
       },
+      requirements: {
+        type: 'object',
+        additionalProperties: true,
+        description: 'One requirements ledger: { ok, summary: { pass, fail, notEvaluated }, entries: [{ name, source: script | external | dfm | fea | mechanical, status: pass | fail | not-evaluated, measured, limit, margin, selections[] with S1 fingerprints, message? }] }. The ledger is the repair signal: it names the requirement, the measured value, the limit and the exact selections. ok is true only when every entry passed; a not-evaluated entry is never green.',
+      },
       dimensions: {
         type: 'array',
         items: {

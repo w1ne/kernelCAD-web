@@ -111,10 +111,18 @@ const verifyToolEntry: ToolRegistryEntry = {
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'motion-load', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius', 'physics'],
-          description: 'Which verification to run.',
+          description: 'Which verification to run. Omit only when passing call-time `requirements`; then the requirements ledger is the verification.',
+          enum: ['assembly', 'urdf', 'dfm', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'motion-load', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius', 'physics', 'requirements'],
         },
-        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius).' },
+        requirements: {
+          type: 'array',
+          items: { type: 'object', additionalProperties: true },
+          description:
+            "Call-time external requirements ([{ name, predicate }]) measured in the same ledger as script require(), dfmSpec and feaStudy, tagged source: 'external' and never persisted. " +
+            'The predicate is the serializable form of require(): { metric: clearance | distance | mass | volume | bbox | centerOfMass | count | innerLoops | angle | concentric | coplanar, a?, b?, op: gte | lte | eq | between | within, limit, tolerance?, density? }. ' +
+            "Operands are { kind: body | faces | edges | part, ref: <feature id/name or part name>, query? }. With `check` omitted the ledger is the whole verification; check 'requirements' is the explicit form.",
+        },
+        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius/requirements).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
         feature_id: { type: 'string', description: "check:'geometry-quality' — body feature to measure; defaults to script return. check:'edge-radius' — lowered feature; default the returned model." },
         tiny_face_area_mm2: { type: 'number', minimum: 0, default: 0.01, description: "check:'geometry-quality' — flag faces strictly below this absolute area; zero disables." },

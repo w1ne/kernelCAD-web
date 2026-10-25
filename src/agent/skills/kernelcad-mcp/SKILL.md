@@ -227,6 +227,10 @@ interface RepairContext {
   - **Dfm-only failures keep the MCP session alive**: when the build succeeded and only gate diagnostics are fatal, the active session is retained/refreshed, so the session-dependent tools stay usable while iterating on a fix. Genuine build failures still clear it.
   - `'unknown'` clearance entries mean the measurement failed (kernel error) — warn-only, never flips `ok`. Locations embedded in diagnostics are world-frame; the raw `walls[]`/`voids[]` structs are part-local.
 
+### Requirements ledger
+
+- `verify({ check: 'requirements', file? | code?, requirements?: [{ name, predicate }] })` — build the script and return the one requirements ledger. Script declarations (`require()` in the `.kcad.ts`) and call-time external requirements are measured together; external entries are tagged `source: 'external'` and never persisted. With `check` omitted, passing `requirements` alone is the verification. Each entry is `{ name, source, status: pass | fail | not-evaluated, measured, limit, margin, selections[] (S1 fingerprints), message? }`; `ok` is true only when every entry passed (a `not-evaluated` entry is never green). Use it when an eval task or customer spec supplies the acceptance criteria separately from the design script. `dfmSpec`, gated `feaStudy.minSafetyFactor` and mechanical intent report into the same ledger on every `evaluate_script`, and `design_loop` grades attempts from it.
+
 ## Topology references — the `@kc[...]` grammar
 
 kernelCAD addresses faces, edges, vertices, and connectors as stable string references that survive most upstream edits. The grammar is kernelCAD's topology-reference language; it is emitted by introspection tools and accepted by every tool that consumes a face / edge / connector handle.

@@ -254,6 +254,29 @@ dfmSpec(spec: {
 }): DfmSpecHandle;
 ```
 
+`require(name, predicate)` declares a named, kernel-measured requirement. It
+reports into the `requirements` block every `evaluate` / `evaluate_script`
+returns, alongside `dfmSpec`, gated `feaStudy.minSafetyFactor` and mechanical
+intent. Entries carry `status` (`pass` / `fail` / `not-evaluated`), `measured`,
+`limit`, `margin` and the selections with S1 fingerprints.
+
+```typescript
+require('bolt-clearance', clearance(bracket, housing).gte(1.0));
+require('hole-count', count(faces(plate, { ofSurfaceType: 'CYLINDER' })).eq(4));
+require('envelope', bbox(body).within({ x: [39, 41], y: [29, 31], z: [9, 11] }));
+require('volume-band', volume(body).between(1200, 1800));
+require('mass-budget', mass(body).atDensity(2700).lte(0.25));
+require('top-level', angle(faces(body, { byNormal: 'Z' }), faces(body, { byNormal: 'Z' })).lte(1));
+```
+
+Predicates: `clearance`, `distance`, `mass`, `volume`, `bbox`,
+`centerOfMass`, `count`, `innerLoops`, `angle`, `concentric`, `coplanar`.
+Comparisons: `.gte`, `.lte`, `.eq`, `.between(lo, hi)`, `.in([lo, hi])`,
+`.within(bands | tolerance)`. A selection is a `Shape`, `faces(shape, query?)`,
+`edges(shape, query?)`, or a resolved entity list with `@kc[...]` refs.
+Call-time external specs use `verify({ requirements: [...] })` and are tagged
+`source: 'external'`; they are never persisted.
+
 ### Selector algebra (ShapeList)
 
 `EdgeQuery` / `FaceQuery` are flat predicate bags: they answer *"which entities

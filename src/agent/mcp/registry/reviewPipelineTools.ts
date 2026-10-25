@@ -157,6 +157,12 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             items: { type: 'string' },
             description: 'Warning diagnostic codes the original prompt explicitly allows. Other review warnings keep the loop iterating even if review_cad is functionally ok.',
           },
+          requirements: {
+            type: 'array',
+            items: { type: 'object', additionalProperties: true },
+            description:
+              "Call-time external requirements ([{ name, predicate }]) every attempt is graded against, in the same ledger as script require(). Predicate shape: { metric, a?, b?, op, limit, tolerance?, density? }; operands: { kind: body | faces | edges | part, ref, query? }. A failing or not-evaluated requirement blocks the attempt even with no expert geometry.",
+          },
           outputRecordPath: { type: 'string', description: 'Optional JSON path to write a Studio-compatible build record.' },
           recordTitle: { type: 'string', description: 'Optional title for the build record.' },
         },
