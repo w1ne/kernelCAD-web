@@ -206,7 +206,9 @@ export type FeatureKind =
   // Bent tube: corner points, one bend radius, round hollow section.
   | 'tube'
   // Capture-only bending and clearance rules for the tubes in the model.
-  | 'tubeSpec';
+  | 'tubeSpec'
+  // S2: capture-only named requirement declaration, measured by the ledger.
+  | 'require';
 
 /**
  * Runtime guard for PlaneSpec. Returns true for cardinal strings

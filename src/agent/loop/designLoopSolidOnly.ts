@@ -6,6 +6,7 @@
 // functional so quality / revision assist gates can still run.
 import { summarizeInterferencePairs } from '../../modeling/runtime/interferenceClassification';
 import type { ReviewCadOutput } from '../review/reviewPipeline';
+import { ledgerFromEntries } from '../../shared/intent/requirementRecord';
 
 export function isSolidOnlyReviewMiss(review: ReviewCadOutput): boolean {
   if (review.ok) return false;
@@ -16,6 +17,7 @@ export function isSolidOnlyReviewMiss(review: ReviewCadOutput): boolean {
 }
 
 export function solidOnlyFunctionalReview(review: ReviewCadOutput, goal: string): ReviewCadOutput {
+  if (review.requirements?.ok === false) return review;
   return {
     ok: true,
     featureCount: review.featureCount,
@@ -41,5 +43,6 @@ export function solidOnlyFunctionalReview(review: ReviewCadOutput, goal: string)
     interferenceSummary: summarizeInterferencePairs([]),
     mechanism: 'unverified',
     mechanismFailures: [],
+    requirements: review.requirements ?? ledgerFromEntries([]),
   };
 }

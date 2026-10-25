@@ -57,6 +57,9 @@ import type { BuiltModel } from '../../composition/buildModel';
 import { clearActiveMcpSession, setActiveMcpSession } from '../mcp/activeSession';
 import { partOnlyReview } from './partOnlyReview';
 import { buildSuggestedRepairPrompt } from './reviewRepairPrompt';
+import type { ExternalRequirement, RequirementsLedger } from '../../shared/intent/requirementRecord';
+import { ledgerFromEntries } from '../../shared/intent/requirementRecord';
+import { mechanicalRequirementEntries } from '../../modeling/requirements/mechanicalLedger';
 
 export interface ReviewCadInput {
   file?: string;
@@ -97,6 +100,9 @@ export interface ReviewCadInput {
    * Default {@link DEFAULT_REVIEW_TIME_BUDGET_MS}.
    */
   timeBudgetMs?: number;
+  /** Call-time requirements (an eval task, a customer spec). Reported in the
+   *  same ledger tagged `source: 'external'`; never persisted. */
+  requirements?: readonly ExternalRequirement[];
 }
 
 /** Default `timeBudgetMs`: well inside a 300 s MCP client timeout, since a
@@ -181,6 +187,8 @@ export type ReviewCadOutput = ReviewTimingReport & (
        *  the design-loop's floating-geometry gate. Undefined when the scene
        *  could not be analyzed. */
       geometry?: ContactGraphResult;
+      /** The one requirements ledger for this review. */
+      requirements: RequirementsLedger;
     }
   | {
       ok: false;
@@ -223,6 +231,8 @@ export type ReviewCadOutput = ReviewTimingReport & (
       /** Deterministic geometric contact graph (see the `ok: true` variant).
        *  Present whenever a scene was built, even when `ok: false`. */
       geometry?: ContactGraphResult;
+      /** The one requirements ledger for this review. */
+      requirements: RequirementsLedger;
     });
 
 export type ReviewDiagnostic =
@@ -272,6 +282,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
       diagnostics,
       repairContext: await buildRepairContext(undefined, diagnostics, undefined, input),
       suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, undefined, input),
+      requirements: evaluation.requirements ?? ledgerFromEntries([]),
     };
   }
 
@@ -295,6 +306,11 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
   const { poseEnvelope, physicalUseCases, mechanism, mechanismFailures, summary } =
     await runBudgetedStages(clock, arm, model, input, mechanicalReview.includePoseEnvelope);
   const diagnostics = collectReviewDiagnostics(evaluation, mechanicalReview, physicalUseCases, poseEnvelope);
+  const ledger = withMechanicalEntries(
+    evaluation.requirements,
+    mechanicalReview.mechanicalIntent.diagnostics,
+    arm.__mechanicalJointIntents().map(i => i.name),
+  );
 
   const { fitness, ok, repairContext } = await runFitnessAndRepairStage({
     arm,
@@ -305,6 +321,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     mechanicalReview,
     physicalUseCases,
     poseEnvelope,
+    ledger,
   });
 
   const common = {
@@ -331,6 +348,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     mechanismFailures,
     ...summary,
     ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
+    requirements: ledger,
   };
   return ok && !unionGuardOnly
     ? { ...common, ok: true }
@@ -406,7 +424,12 @@ class StageClock {
 }
 
 async function runEvaluateSourceStage(input: ReviewCadInput) {
-  return evaluateForReview(input as EvaluateInput);
+  return evaluateForReview({
+    ...(input.file !== undefined ? { file: input.file } : {}),
+    ...(input.code !== undefined ? { code: input.code } : {}),
+    ...(input.scriptDir !== undefined ? { scriptDir: input.scriptDir } : {}),
+    ...(input.requirements !== undefined ? { requirements: input.requirements } : {}),
+  });
 }
 
 function activateReviewSession(model: BuiltModel): void {
@@ -726,6 +749,7 @@ async function runFitnessAndRepairStage(input: {
   mechanicalReview: MechanicalReview;
   physicalUseCases: Awaited<ReturnType<typeof runPhysicalUseCaseStage>>;
   poseEnvelope: PoseEnvelopeReviewResult | undefined;
+  ledger: RequirementsLedger;
 }): Promise<{ fitness: MechanismFitnessResult; ok: boolean; repairContext: RepairContext }> {
   const fitness = summarizeMechanismFitness({
     ...staticFitnessInput(input.mechanicalReview),
@@ -748,7 +772,7 @@ async function runFitnessAndRepairStage(input: {
   // 'broken'` iff at least one failure has severity 'error', which is
   // exactly the set folded in — so this conjunction is now a redundant
   // backstop, deliberately kept.
-  const ok = fitness.functional && input.mechanism !== 'broken';
+  const ok = fitness.functional && input.mechanism !== 'broken' && input.ledger.ok;
   return {
     fitness,
     ok,
@@ -768,7 +792,7 @@ async function runFitnessAndRepairStage(input: {
  *  still review.no-assembly. */
 async function reviewWithoutAssembly(
   timing: ReviewTimingReport,
-  evaluation: { featureCount: number; diagnostics: CompilerDiagnostic[] },
+  evaluation: { featureCount: number; diagnostics: CompilerDiagnostic[]; requirements?: RequirementsLedger },
   model: BuiltModel,
   input: ReviewCadInput,
   missingAssemblyMessage: string,
@@ -781,6 +805,7 @@ async function reviewWithoutAssembly(
       diagnostics,
       repairContext: await buildRepairContext(undefined, diagnostics, undefined, input),
       geometry: safeAnalyzeContactGraph(model),
+      requirements: evaluation.requirements ?? ledgerFromEntries([]),
     });
   }
   // Defence in depth: evaluation errors (e.g. union.* on an assembly that
@@ -794,7 +819,19 @@ async function reviewWithoutAssembly(
     diagnostics: evaluationErrors,
     repairContext: await buildRepairContext(undefined, evaluationErrors, undefined, input),
     suggestedRepairPrompt: `${missingAssemblyMessage} Return arm.model() or arm.solvedModel(...) from a script that calls assembly(...).`,
+    requirements: evaluation.requirements ?? ledgerFromEntries([]),
   };
+}
+
+/** Add one entry per declared mechanical intent to the evaluation ledger. */
+function withMechanicalEntries(
+  ledger: RequirementsLedger | undefined,
+  diagnostics: readonly MechanicalIntentDiagnostic[],
+  intentNames: readonly string[],
+): RequirementsLedger {
+  const base = ledger ?? ledgerFromEntries([]);
+  const mechanical = mechanicalRequirementEntries(diagnostics, intentNames);
+  return ledgerFromEntries([...base.entries, ...mechanical]);
 }
 
 function safeAnalyzeContactGraph(model: BuiltModel): ContactGraphResult | undefined {

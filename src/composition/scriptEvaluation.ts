@@ -46,6 +46,11 @@ import { viewerDimensionsForModel } from './viewerDimensionsForModel';
 import type { ViewerDimension } from '../shared/intent/viewerDimension';
 import type { SelectionRecord } from '../shared/intent/selectionRecord';
 import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
+import type { ExternalRequirement, RequirementsLedger } from '../shared/intent/requirementRecord';
+import { evaluateRequirementsOnModel } from '../modeling/requirements/evaluate';
+import { dfmRequirementEntries } from '../modeling/requirements/dfmLedger';
+import { feaRequirementEntries } from '../modeling/requirements/feaLedger';
+import { findDfmSpec } from '../modeling/runtime/dfm/runDfmChecks';
 
 export interface EvaluateInput {
   file?: string;
@@ -61,6 +66,9 @@ export interface EvaluateInput {
    *  is reported as `selector.binding-changed`; one whose entity only moved or
    *  resized as `selector.binding-moved`. */
   baseline?: SelectionRecord[];
+  /** Call-time requirements (an eval task, a customer spec). Reported in the
+   *  same `requirements` ledger tagged `source: 'external'`, never persisted. */
+  requirements?: readonly ExternalRequirement[];
 }
 
 export interface EvaluateOptions {
@@ -110,6 +118,10 @@ export interface EvaluateResult {
    *  `baseline` after an edit to learn which selectors now point elsewhere.
    *  Absent when no feature used a selector. */
   selections?: SelectionRecord[];
+  /** One requirements ledger per evaluation: script `require()` declarations,
+   *  `dfmSpec` gates, gated `feaStudy.minSafetyFactor`, mechanical intent and
+   *  any call-time external requirements. */
+  requirements?: RequirementsLedger;
 }
 
 export interface DeclaredDimensionSummary {
@@ -329,6 +341,13 @@ export async function evaluateAndBuildScript(
 
   const fatalAfterGates = model.diagnostics.some(d => d.severity === 'error');
   const dimensions = fatalAfterGates ? [] : declaredDimensionSummaries(model);
+  const requirements = evaluateRequirementsOnModel(model, {
+    ...(input.requirements !== undefined ? { external: input.requirements } : {}),
+    extraEntries: [
+      ...dfmRequirementEntries(gates.dfmReport, findDfmSpec(model.records)),
+      ...feaRequirementEntries(gates.feaReport),
+    ],
+  });
   return {
     evaluation: {
       exitCode: fatalAfterGates ? 1 : 0,
@@ -337,6 +356,7 @@ export async function evaluateAndBuildScript(
       featureHealth: nonHealthyFeatures(model.health),
       ...(dimensions.length > 0 ? { dimensions } : {}),
       ...(model.selections.length > 0 ? { selections: model.selections } : {}),
+      requirements,
     },
     model,
     ...gates,
