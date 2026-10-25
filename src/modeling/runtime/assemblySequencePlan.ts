@@ -7,11 +7,16 @@
 import type { Vec3 } from '../../shared/intent/types';
 import type { Triangle } from './assemblyPathSweep';
 import {
+    type HelicalMotionSummary,
     type PartState,
+    type RequiresForceFinding,
     type SearchFinding,
     type Step,
     type SubassemblyInput,
+    type ToolBlockFinding,
+    type ToolReachFinding,
 } from './assemblySequence';
+import type { FitKind } from './assemblyFastener';
 import { negateDirection } from './assemblySequence';
 import { rrtNonStraightPath } from './assemblySequenceSearch';
 
@@ -36,6 +41,10 @@ export interface PlanDirection {
 export interface PlanClassification {
     state: PartState;
     directions: PlanDirection[];
+    /** Declared fastener metadata, when the entity is a helical fastener. */
+    fastener?: HelicalMotionSummary;
+    /** Tool reach result, when a tool envelope was modelled. */
+    toolReach?: ToolReachFinding;
 }
 export interface PlanGeometry {
     /** Validate and prepare an aggregate mesh (subassembly or multi-part move). */
@@ -53,11 +62,15 @@ export interface PlanOptions {
     searchBudget?: number;
     partitionBudget?: number;
     tools?: Readonly<Record<string, string>>;
+    /** Parts ordered as declared press/snap fits. Never grouped or searched. */
+    requiresForce?: ReadonlySet<string>;
 }
 export interface AssemblyPlan {
     steps: Step[];
     removalOrder: { part: string; direction: Vec3 }[];
     search: SearchFinding[];
+    requiresForce: RequiresForceFinding[];
+    toolBlocked: ToolBlockFinding[];
     unknownReasons: Map<string, 'budget' | 'needs-multi-part-move'>;
     ordered: Set<string>;
     remaining: string[];
@@ -76,7 +89,13 @@ interface SequenceEntity {
     buildable: boolean;
     internal?: LevelPlan;
 }
-interface RemovalEntry {
+interface StepMotion {
+    motion?: 'straight' | 'helical' | 'requires-force' | 'search';
+    fastener?: HelicalMotionSummary;
+    requiresForce?: { kind: FitKind };
+    tool?: ToolBlockFinding;
+}
+interface RemovalEntry extends StepMotion {
     entities: SequenceEntity[];
     direction: Vec3;
     search?: SearchFinding;
@@ -91,11 +110,12 @@ interface LevelPlan {
 interface PlanContext {
     geometry: PlanGeometry;
     threaded: ReadonlySet<string>;
+    requiresForce: ReadonlySet<string>;
     options: PlanOptions;
     searchBudgetLeft: number;
     partitionBudgetLeft: number;
 }
-interface EntityCandidate {
+interface EntityCandidate extends StepMotion {
     entity: SequenceEntity;
     direction: Vec3;
     travelMm: number;
@@ -179,17 +199,41 @@ function bestClearDirection(report: PlanClassification, previous: Vec3 | undefin
         })[0];
     return clear ? { direction: clear.entry.direction, travelMm: clear.entry.distanceMm } : undefined;
 }
+function toolBlockOf(report: PlanClassification): ToolBlockFinding | undefined {
+    return report.toolReach?.status === 'tool-blocked' ? report.toolReach : undefined;
+}
 function removableCandidates(remaining: SequenceEntity[], context: PlanContext, previous: Vec3 | undefined): EntityCandidate[] {
     const candidates: EntityCandidate[] = [];
     for (const entity of remaining) {
         if (!entity.buildable)
             continue;
         const report = classifyEntity(entity, remaining, context);
+        const tool = toolBlockOf(report);
+        if (report.state.kind === 'requires-force') {
+            candidates.push({
+                entity,
+                direction: report.state.direction,
+                travelMm: 0,
+                motion: 'requires-force',
+                requiresForce: { kind: report.state.fit },
+                ...(tool !== undefined ? { tool } : {}),
+            });
+            continue;
+        }
         if (report.state.kind !== 'removable')
             continue;
         const best = bestClearDirection(report, previous);
-        if (best)
-            candidates.push({ entity, direction: best.direction, travelMm: best.travelMm });
+        if (best) {
+            const helical = report.state.motion === 'helical';
+            candidates.push({
+                entity,
+                direction: best.direction,
+                travelMm: best.travelMm,
+                ...(helical ? { motion: 'helical' as const } : {}),
+                ...(report.fastener !== undefined ? { fastener: report.fastener } : {}),
+                ...(tool !== undefined ? { tool } : {}),
+            });
+        }
     }
     return candidates;
 }
@@ -240,7 +284,8 @@ function* combinations<T>(items: readonly T[], size: number, start = 0, prefix: 
         yield* combinations(items, size, i + 1, [...prefix, items[i]]);
 }
 function findMultiPartMove(remaining: SequenceEntity[], context: PlanContext): { group?: SequenceEntity[]; direction?: Vec3; budgetExceeded: boolean } {
-    const singles = remaining.filter(entity => !entity.subassembly && entity.buildable && !entity.leaves.some(leaf => context.threaded.has(leaf.name)));
+    const singles = remaining.filter(entity => !entity.subassembly && entity.buildable
+        && !entity.leaves.some(leaf => context.threaded.has(leaf.name) || context.requiresForce.has(leaf.name)));
     const maxSize = Math.min(6, singles.length - 1);
     for (let size = 2; size <= maxSize; size++) {
         for (const group of combinations(singles, size)) {
@@ -342,7 +387,8 @@ function searchEntityPath(
 }
 function searchStuckParts(remaining: SequenceEntity[], context: PlanContext): { entry?: RemovalEntry; search?: SearchFinding; budgetExceeded: boolean } {
     const candidates = remaining
-        .filter(entity => !entity.subassembly && entity.leaves.length === 1 && entity.buildable && !context.threaded.has(entity.name))
+        .filter(entity => !entity.subassembly && entity.leaves.length === 1 && entity.buildable
+            && !context.threaded.has(entity.name) && !context.requiresForce.has(entity.name))
         .map(entity => {
             const box = entity.prepared.bbox;
             return { entity, volume: (box.max[0] - box.min[0]) * (box.max[1] - box.min[1]) * (box.max[2] - box.min[2]) };
@@ -373,7 +419,14 @@ function planLevel(entities: SequenceEntity[], context: PlanContext): LevelPlan 
         const candidates = removableCandidates(remaining, context, previous);
         if (candidates.length > 0) {
             const chosen = chooseCandidate(candidates, previous, previousTool);
-            removal.push({ entities: [chosen.entity], direction: chosen.direction });
+            removal.push({
+                entities: [chosen.entity],
+                direction: chosen.direction,
+                ...(chosen.motion !== undefined ? { motion: chosen.motion } : {}),
+                ...(chosen.fastener !== undefined ? { fastener: chosen.fastener } : {}),
+                ...(chosen.requiresForce !== undefined ? { requiresForce: chosen.requiresForce } : {}),
+                ...(chosen.tool !== undefined ? { tool: chosen.tool } : {}),
+            });
             previous = chosen.direction;
             previousTool = chosen.entity.tool;
             remaining = withoutEntities(remaining, [chosen.entity]);
@@ -413,26 +466,35 @@ function collectSearchFindings(plan: LevelPlan, out: SearchFinding[] = []): Sear
     }
     return out;
 }
+function entryMotion(entry: RemovalEntry): StepMotion {
+    return {
+        ...(entry.motion !== undefined ? { motion: entry.motion } : {}),
+        ...(entry.fastener !== undefined ? { fastener: entry.fastener } : {}),
+        ...(entry.requiresForce !== undefined ? { requiresForce: entry.requiresForce } : {}),
+        ...(entry.tool !== undefined ? { tool: entry.tool } : {}),
+    };
+}
 function buildSequenceSteps(plan: LevelPlan, parent?: string): Step[] {
     const steps: Step[] = [];
     for (let index = plan.removal.length - 1; index >= 0; index--) {
         const entry = plan.removal[index];
         const direction = negateDirection(entry.direction);
+        const motion = entryMotion(entry);
         if (entry.search) {
-            steps.push({ index: 0, adds: [entry.search.part], direction, ...(parent ? { subassembly: parent } : {}) });
+            steps.push({ index: 0, adds: [entry.search.part], direction, motion: 'search', ...(parent ? { subassembly: parent } : {}) });
             continue;
         }
         if (entry.entities.length > 1) {
-            steps.push({ index: 0, adds: entry.entities.flatMap(entity => entity.leaves.map(leaf => leaf.name)), direction, ...(parent ? { subassembly: parent } : {}) });
+            steps.push({ index: 0, adds: entry.entities.flatMap(entity => entity.leaves.map(leaf => leaf.name)), direction, ...motion, ...(parent ? { subassembly: parent } : {}) });
             continue;
         }
         const entity = entry.entities[0];
         if (entity.subassembly && entity.internal) {
             steps.push(...buildSequenceSteps(entity.internal, entity.name));
-            steps.push({ index: 0, adds: [entity.name], direction, subassembly: entity.name });
+            steps.push({ index: 0, adds: [entity.name], direction, subassembly: entity.name, ...motion });
             continue;
         }
-        steps.push({ index: 0, adds: [entity.name], direction, ...(parent ? { subassembly: parent } : {}) });
+        steps.push({ index: 0, adds: [entity.name], direction, ...motion, ...(parent ? { subassembly: parent } : {}) });
     }
     return steps;
 }
@@ -476,6 +538,7 @@ export function planAssemblySequence(
     const context: PlanContext = {
         geometry,
         threaded,
+        requiresForce: options.requiresForce ?? new Set(),
         options,
         searchBudgetLeft: options.searchBudget ?? DEFAULT_SEARCH_BUDGET,
         partitionBudgetLeft: options.partitionBudget ?? DEFAULT_PARTITION_BUDGET,
@@ -495,13 +558,17 @@ export function planAssemblySequence(
         else if (flags.partition)
             unknownReasons.set(part.name, 'needs-multi-part-move');
     }
+    const requiresForce = steps.flatMap(step => step.requiresForce ? [{ part: step.adds[0], kind: step.requiresForce.kind }] : []);
+    const toolBlocked = steps.flatMap(step => step.tool ? [step.tool] : []);
     return {
         steps,
         removalOrder: disassemblyPartOrder(top),
         search: findings,
+        requiresForce,
+        toolBlocked,
         unknownReasons,
         ordered,
         remaining: top.remaining.flatMap(entity => entity.leaves.map(leaf => leaf.name)),
-        ok: top.remaining.length === 0 && findings.length === 0,
+        ok: top.remaining.length === 0 && findings.length === 0 && requiresForce.length === 0 && toolBlocked.length === 0,
     };
 }

@@ -3,7 +3,8 @@
 import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { formatScalarForError, isValidVec3 } from '../../shared/intent/types';
-import { parseConnectorRef, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
+import { parseConnectorRef, type FastenerMateMetadata, type FitMateMetadata, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
+import { fastenerRecordOf, fitRecordOf, validateFastenerMateMetadata, type FastenerMateOptionsFields } from './assemblyMateFastener';
 import type { Connector } from '../mates/connector';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
 import {
@@ -269,7 +270,7 @@ export function connectFixed(state: AssemblyState, name: string, a: AssemblyConn
  * is honored by the v0.6 Pattern A FK in `solveMates(arm, poses?)` and
  * piped into `Scene.parts[].worldTransform` by `Assembly.solvedModel`.
  */
-interface MateOptions {
+interface MateOptions extends FastenerMateOptionsFields {
   pose?: MatePose;
   limitsDeg?: MateLimitRange;
   limitsMm?: MateLimitRange;
@@ -283,6 +284,10 @@ interface MateOptions {
   stiffnessNPerMm?: number;
   springRefMm?: number;
   dampingNsPerMm?: number;
+  /** P2 helical fastener metadata. Only valid on a fastened mate. */
+  fastener?: FastenerMateMetadata;
+  /** P2 press/snap fit metadata. Only valid on a fastened mate. */
+  fit?: FitMateMetadata;
 }
 
 const JOINT_DYNAMICS_FIELDS = [
@@ -336,6 +341,7 @@ export function recordMate(
   validateMateLimits(name, type, opts);
   validateJointDynamics(name, type, opts);
   validateMateCapacityOptions(name, type, opts);
+  validateFastenerMateMetadata(name, type, aRef, bRef, opts);
   state.mates.push(buildMateRecord(name, aRef, bRef, type, opts));
 }
 
@@ -417,6 +423,8 @@ function buildMateRecord(
           },
         }
       : {}),
+    ...fastenerRecordOf(opts),
+    ...fitRecordOf(opts),
   };
 }
 

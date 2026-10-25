@@ -5,18 +5,39 @@ import { bboxGap } from './dfm/clearance';
 import { trianglesCollideAlong, type Triangle } from './assemblyPathSweep';
 import { classifySolidPoint } from './assemblyPathContainment';
 import type { Vec3 } from '../../shared/intent/types';
+import type { RequirementsLedger } from '../../shared/intent/requirementRecord';
 import {
+    addMotionModel,
     buildDirectionalBlockingGraph,
     makeModelStamp,
     partState,
     type AssemblySequence,
     type DirectionalBlockingGraph,
+    type HelicalMotionSummary,
     type MeshTessellationStamp,
     type ModelStamp,
     type PartState,
+    type RequiresForceFinding,
     type SearchFinding,
+    type Step,
     type SubassemblyInput,
+    type ToolBlockFinding,
+    type ToolReachFinding,
 } from './assemblySequence';
+import {
+    normalizeFastenerMotion,
+    normalizeFit,
+    type FastenerMotion,
+    type FastenerMotionInput,
+    type FitInput,
+    type FitKind,
+} from './assemblyFastener';
+import {
+    checkToolReach,
+    classifyFastenerHelix,
+    classifyFit,
+    type SweepBlocked,
+} from './assemblyFastenerMotion';
 import { planAssemblySequence } from './assemblySequencePlan';
 export interface AssemblyPathPart {
     name: string;
@@ -47,6 +68,10 @@ export interface AssemblyPathOptions {
     partitionBudget?: number;
     /** Optional tool identity per part; drives the fewest-tool-changes heuristic. */
     tools?: Readonly<Record<string, string>>;
+    /** Declared helical fastener motion, keyed by part name. */
+    fasteners?: Readonly<Record<string, FastenerMotionInput>>;
+    /** Declared press/snap fits, keyed by the inserted part name. */
+    fits?: Readonly<Record<string, FitInput | FitKind>>;
 }
 export interface AssemblyPathDirection {
     direction: Vec3;
@@ -59,8 +84,13 @@ export interface AssemblyPathPartReport {
     removable: boolean;
     validDirections: Vec3[];
     directions: AssemblyPathDirection[];
-    /** Three-way planner state. `blocked` and `unknown` are never "impossible". */
+    /** Planner state. `blocked` and `unknown` are never "impossible";
+     *  `requires-force` is a declared fit, not a geometric proof. */
     state: PartState;
+    /** Recorded when a helical fastener motion was declared. */
+    fastener?: HelicalMotionSummary;
+    /** Present when a declared/default tool envelope was swept. */
+    toolReach?: ToolReachFinding;
 }
 export interface AssemblyPathReport {
     ok: boolean;
@@ -80,6 +110,15 @@ export interface AssemblyPathReport {
     sequence?: AssemblySequence;
     /** Sampling fallback findings; each is labeled found-by-search, never proven. */
     search?: SearchFinding[];
+    /** Press/snap fits ordered as declared force steps (never proven). */
+    requiresForce?: RequiresForceFinding[];
+    /** Declared/default tool envelopes that cannot reach their fastener. */
+    toolBlocked?: ToolBlockFinding[];
+    /** Every tool reach result (clear or blocked), when a tool was modelled. */
+    toolReach?: ToolReachFinding[];
+    /** S2 adapter entries for modelled tool reach and declared force fits.
+     *  Attached by the MCP tool; absent from the pure mesh API. */
+    requirements?: RequirementsLedger;
 }
 type Bounds = {
     min: Vec3;
@@ -92,8 +131,8 @@ interface Prepared extends AssemblyPathPart {
     bvh: TriangleBvh;
 }
 const CARDINAL: Vec3[] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
-const DEFAULT_WORK_BUDGET = 2000000;
-const LIMITATIONS = 'Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation only; no mates, rotations, deformation or fastener unthreading. Subassembly and multi-part moves are heuristic, not exhaustive. Sampling paths are found-by-search, never proven. Blocked and unknown parts are not "impossible".';
+const DEFAULT_WORK_BUDGET = 8000000;
+const LIMITATIONS = 'Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation and declared helical fastener motion only; no mate solving, deformation, thread engagement or torque. Press/snap fits are declared, never simulated. Tool reach is a swept-envelope approximation, not a driver drawing. Subassembly and multi-part moves are heuristic, not exhaustive. Sampling paths are found-by-search, never proven. Blocked and unknown parts are not "impossible".';
 const DEFAULT_TESSELLATION: MeshTessellationStamp = {
     linearMm: null,
     relative: null,
@@ -138,6 +177,7 @@ function validateSequenceOptions(options: AssemblyPathOptions): void {
             throw new Error(`${key} must be a positive integer.`);
     validateSubassemblies(options.subassemblies);
     validateTools(options.tools);
+    validateFastenerOptionsMaps(options.fasteners, options.fits);
 }
 function validateSubassemblies(groups: readonly SubassemblyInput[] | undefined): void {
     if (groups === undefined)
@@ -167,6 +207,49 @@ function validateTools(tools: Readonly<Record<string, string>> | undefined): voi
     for (const [part, tool] of Object.entries(tools))
         if (!part || typeof tool !== 'string' || !tool)
             throw new Error('tools must map nonempty part names to nonempty tool names.');
+}
+function validateFastenerOptionsMaps(
+    fasteners: Readonly<Record<string, FastenerMotionInput>> | undefined,
+    fits: Readonly<Record<string, FitInput | FitKind>> | undefined,
+): void {
+    if (fasteners !== undefined) {
+        if (!fasteners || typeof fasteners !== 'object' || Array.isArray(fasteners))
+            throw new Error('fasteners must key part names to fastener motion records.');
+        for (const [name, spec] of Object.entries(fasteners)) {
+            if (!name)
+                throw new Error('fasteners must key nonempty part names.');
+            normalizeFastenerMotion(spec, `fasteners.${name}`);
+        }
+    }
+    if (fits !== undefined) {
+        if (!fits || typeof fits !== 'object' || Array.isArray(fits))
+            throw new Error('fits must key part names to fit records.');
+        for (const [name, fit] of Object.entries(fits)) {
+            if (!name)
+                throw new Error('fits must key nonempty part names.');
+            normalizeFit(fit, `fits.${name}`);
+        }
+    }
+}
+/** Validate names after the part list is known and normalize the maps. */
+function normalizeMetadata(
+    parts: readonly Prepared[],
+    options: AssemblyPathOptions,
+): { fasteners: Map<string, FastenerMotion>; fits: Map<string, FitInput> } {
+    const names = new Set(parts.map(part => part.name));
+    const fasteners = new Map<string, FastenerMotion>();
+    for (const [name, spec] of Object.entries(options.fasteners ?? {})) {
+        if (!names.has(name))
+            throw new Error(`fasteners names unknown part '${name}'.`);
+        fasteners.set(name, normalizeFastenerMotion(spec, `fasteners.${name}`));
+    }
+    const fits = new Map<string, FitInput>();
+    for (const [name, fit] of Object.entries(options.fits ?? {})) {
+        if (!names.has(name))
+            throw new Error(`fits names unknown part '${name}'.`);
+        fits.set(name, normalizeFit(fit, `fits.${name}`));
+    }
+    return { fasteners, fits };
 }
 function candidates(options: AssemblyPathOptions): Vec3[] {
     if (options.disassemblyOrder !== undefined && typeof options.disassemblyOrder !== 'boolean')
@@ -379,7 +462,25 @@ function classifyPart(
     dirs: Vec3[],
     blocked: BlockedCheck,
     threaded: ReadonlySet<string>,
+    fasteners: ReadonlyMap<string, FastenerMotion>,
+    fits: ReadonlyMap<string, FitInput>,
+    tools: ReadonlyMap<string, ToolReachFinding>,
+    sweepBlocked: SweepBlocked,
 ): AssemblyPathPartReport {
+    const spec = fasteners.get(part.name);
+    if (spec) {
+        const result = classifyFastenerHelix(part, remaining, spec, sweepBlocked);
+        const tool = tools.get(part.name);
+        return {
+            part: part.name,
+            removable: result.state.kind === 'removable',
+            validDirections: result.state.kind === 'removable' ? result.directions.filter(entry => entry.clear).map(entry => entry.direction) : [],
+            directions: result.directions,
+            state: result.state,
+            fastener: result.fastener,
+            ...(tool !== undefined ? { toolReach: tool } : {}),
+        };
+    }
     const bounds = union(remaining);
     const directions = dirs.map(direction => {
         const distanceMm = travel(part.bbox, bounds, direction);
@@ -387,7 +488,10 @@ function classifyPart(
         return { direction: [...direction] as Vec3, distanceMm, clear: !blockingParts.length, blockingParts };
     });
     const validDirections = directions.filter(d => d.clear).map(d => d.direction);
-    const state = partState(directions, threaded.has(part.name));
+    const fit = fits.get(part.name);
+    const state = fit !== undefined
+        ? classifyFit(directions, fit)
+        : partState(directions, threaded.has(part.name));
     return {
         part: part.name,
         removable: state.kind === 'removable',
@@ -404,7 +508,6 @@ interface PeelOutcome {
 function peelRemoval(
     prepared: Prepared[],
     report: (part: Prepared, remaining: Prepared[]) => AssemblyPathPartReport,
-    threaded: ReadonlySet<string>,
     recoverBudget: boolean,
 ): PeelOutcome {
     let remaining = [...prepared];
@@ -414,8 +517,6 @@ function peelRemoval(
         let free: AssemblyPathPartReport | undefined;
         try {
             for (const part of remaining) {
-                if (threaded.has(part.name))
-                    continue;
                 const candidate = report(part, remaining);
                 if (candidate.state.kind === 'removable') {
                     free = candidate;
@@ -440,9 +541,25 @@ function peelRemoval(
 interface SequencePlanInput {
     dirs: Vec3[];
     threaded: ReadonlySet<string>;
+    fasteners: ReadonlyMap<string, FastenerMotion>;
+    fits: ReadonlyMap<string, FitInput>;
+    tools: ReadonlyMap<string, ToolReachFinding>;
     blocked: BlockedCheck;
+    searchBlocked: BlockedCheck;
     consumeWork: (amount?: number) => void;
     options: AssemblyPathOptions;
+}
+function stampMotions(model: ModelStamp, steps: readonly Step[], tools: readonly ToolReachFinding[]): void {
+    for (const step of steps) {
+        if (step.motion === 'helical')
+            addMotionModel(model, 'helical-screw');
+        else if (step.motion === 'requires-force')
+            addMotionModel(model, 'requires-force');
+        else if (step.motion === 'search')
+            addMotionModel(model, 'sampling-search');
+    }
+    if (tools.length > 0)
+        model.toolReach = 'swept-envelope';
 }
 function applySequence(result: AssemblyPathReport, prepared: Prepared[], input: SequencePlanInput, model: ModelStamp): void {
     const plan = planAssemblySequence(prepared, {
@@ -453,24 +570,40 @@ function applySequence(result: AssemblyPathReport, prepared: Prepared[], input: 
             input.dirs,
             input.blocked,
             isThreaded ? new Set([part.name]) : new Set<string>(),
+            input.fasteners,
+            input.fits,
+            input.tools,
+            (a, b, direction, distance) => input.searchBlocked(a as Prepared, b as Prepared, direction, distance),
         ),
         blocked: input.blocked,
-        searchBlocked: createSearchBlockedCheck(input.consumeWork),
-    }, input.options, input.threaded);
+        searchBlocked: input.searchBlocked,
+    }, { ...input.options, requiresForce: new Set(input.fits.keys()) }, input.threaded);
     for (const part of result.parts) {
-        if (plan.ordered.has(part.part) || input.threaded.has(part.part))
+        if (plan.ordered.has(part.part))
             continue;
-        const reason = plan.unknownReasons.get(part.part);
+        const reason = plan.unknownReasons.get(part.part)
+            ?? (input.threaded.has(part.part) && !input.fasteners.has(part.part) ? 'non-straight-path' : undefined);
         if (reason)
             part.state = { kind: 'unknown', reason };
     }
+    const toolReach = [...input.tools.values()];
+    const toolBlocked = toolReach.filter((finding): finding is ToolBlockFinding => finding.status === 'tool-blocked');
+    stampMotions(model, plan.steps, toolReach);
     const unknown = result.parts.filter(part => part.state.kind === 'unknown').map(part => part.part);
-    const sequence: AssemblySequence = { steps: plan.steps, model, unknown };
-    if (plan.search.length > 0)
-        sequence.search = plan.search;
+    const sequence: AssemblySequence = {
+        steps: plan.steps,
+        model,
+        unknown,
+        ...(plan.search.length > 0 ? { search: plan.search } : {}),
+        ...(plan.requiresForce.length > 0 ? { requiresForce: plan.requiresForce } : {}),
+        ...(toolBlocked.length > 0 ? { toolBlocked } : {}),
+    };
     result.ok = plan.ok;
     result.sequence = sequence;
     result.search = plan.search.length > 0 ? plan.search : undefined;
+    result.requiresForce = plan.requiresForce.length > 0 ? plan.requiresForce : undefined;
+    result.toolReach = toolReach.length > 0 ? toolReach : undefined;
+    result.toolBlocked = toolBlocked.length > 0 ? toolBlocked : undefined;
     result.stuckParts = plan.remaining;
     result.removalOrder = plan.removalOrder;
 }
@@ -484,6 +617,104 @@ function threadedSet(parts: readonly AssemblyPathPart[], options: AssemblyPathOp
     if (unknown.length)
         throw new Error(`threadedFasteners names unknown part(s): ${unknown.join(', ')}.`);
     return threaded;
+}
+function buildToolFindings(
+    prepared: readonly Prepared[],
+    fasteners: ReadonlyMap<string, FastenerMotion>,
+    sweepBlocked: SweepBlocked,
+): Map<string, ToolReachFinding> {
+    const tools = new Map<string, ToolReachFinding>();
+    for (const part of prepared) {
+        const spec = fasteners.get(part.name);
+        if (!spec)
+            continue;
+        const finding = checkToolReach(part, prepared, spec, sweepBlocked);
+        if (finding)
+            tools.set(part.name, finding);
+    }
+    return tools;
+}
+interface MeshWorkspace {
+    prepared: Prepared[];
+    blocked: BlockedCheck;
+    searchBlocked: BlockedCheck;
+    sweepBlocked: SweepBlocked;
+    fasteners: Map<string, FastenerMotion>;
+    fits: Map<string, FitInput>;
+    tools: Map<string, ToolReachFinding>;
+    report: (part: Prepared, remaining: Prepared[]) => AssemblyPathPartReport;
+}
+function meshWorkspace(
+    parts: readonly AssemblyPathPart[],
+    options: AssemblyPathOptions,
+    dirs: Vec3[],
+    threaded: ReadonlySet<string>,
+    consumeWork: (amount?: number) => void,
+): MeshWorkspace {
+    const prepared = parts.map(part => prepare(part, consumeWork));
+    const blocked = createBlockedCheck(consumeWork);
+    const searchBlocked = createSearchBlockedCheck(consumeWork);
+    const sweepBlocked: SweepBlocked = (a, b, direction, distance) =>
+        searchBlocked(a as Prepared, b as Prepared, direction, distance);
+    const { fasteners, fits } = normalizeMetadata(prepared, options);
+    const tools = buildToolFindings(prepared, fasteners, sweepBlocked);
+    const report = (part: Prepared, remaining: Prepared[]): AssemblyPathPartReport => classifyPart(
+        part, remaining, dirs, blocked, threaded, fasteners, fits, tools, sweepBlocked,
+    );
+    return { prepared, blocked, searchBlocked, sweepBlocked, fasteners, fits, tools, report };
+}
+function initialResult(
+    workspace: MeshWorkspace,
+    model: ModelStamp,
+): { result: AssemblyPathReport; toolBlocked: ToolBlockFinding[] } {
+    const initial = workspace.prepared.map(part => workspace.report(part, workspace.prepared));
+    const toolReach = [...workspace.tools.values()];
+    const toolBlocked = toolReach.filter((finding): finding is ToolBlockFinding => finding.status === 'tool-blocked');
+    if (toolReach.length > 0)
+        model.toolReach = 'swept-envelope';
+    return {
+        result: {
+            ok: initial.every(part => part.removable) && toolBlocked.length === 0,
+            source: 'local',
+            basis: 'continuous-triangle-mesh',
+            limitations: [LIMITATIONS],
+            model,
+            parts: initial,
+            blockingGraph: buildDirectionalBlockingGraph(initial),
+            ...(toolReach.length > 0 ? { toolReach } : {}),
+            ...(toolBlocked.length > 0 ? { toolBlocked } : {}),
+        },
+        toolBlocked,
+    };
+}
+function applyOptionalPasses(
+    result: AssemblyPathReport,
+    workspace: MeshWorkspace,
+    dirs: Vec3[],
+    threaded: ReadonlySet<string>,
+    options: AssemblyPathOptions,
+    model: ModelStamp,
+    toolBlocked: readonly ToolBlockFinding[],
+    consumeWork: (amount?: number) => void,
+): void {
+    if (options.disassemblyOrder) {
+        const peel = peelRemoval(workspace.prepared, workspace.report, options.sequence === true);
+        result.removalOrder = peel.removal;
+        result.ok = !peel.remaining.length && toolBlocked.length === 0;
+        result.stuckParts = peel.remaining.map(part => part.name);
+    }
+    if (options.sequence) {
+        applySequence(result, workspace.prepared, {
+            dirs, threaded,
+            fasteners: workspace.fasteners,
+            fits: workspace.fits,
+            tools: workspace.tools,
+            blocked: workspace.blocked,
+            searchBlocked: workspace.searchBlocked,
+            consumeWork,
+            options,
+        }, model);
+    }
 }
 /** Pure checker for already world-space, closed meshes. No input mutation. */
 export function checkAssemblyPathMeshes(parts: AssemblyPathPart[], options: AssemblyPathOptions = {}): AssemblyPathReport {
@@ -499,27 +730,9 @@ export function checkAssemblyPathMeshes(parts: AssemblyPathPart[], options: Asse
             throw new AssemblyPathBudgetError();
     };
     try {
-        const prepared = parts.map(part => prepare(part, consumeWork));
-        const blocked = createBlockedCheck(consumeWork);
-        const report = (part: Prepared, remaining: Prepared[]): AssemblyPathPartReport => classifyPart(part, remaining, dirs, blocked, threaded);
-        const initial = prepared.map(p => report(p, prepared));
-        const result: AssemblyPathReport = {
-            ok: initial.every(p => p.removable),
-            source: 'local',
-            basis: 'continuous-triangle-mesh',
-            limitations: [LIMITATIONS],
-            model,
-            parts: initial,
-            blockingGraph: buildDirectionalBlockingGraph(initial),
-        };
-        if (options.disassemblyOrder) {
-            const peel = peelRemoval(prepared, report, threaded, options.sequence === true);
-            result.removalOrder = peel.removal;
-            result.ok = !peel.remaining.length;
-            result.stuckParts = peel.remaining.map(p => p.name);
-        }
-        if (options.sequence)
-            applySequence(result, prepared, { dirs, threaded, blocked, consumeWork, options }, model);
+        const workspace = meshWorkspace(parts, options, dirs, threaded, consumeWork);
+        const { result, toolBlocked } = initialResult(workspace, model);
+        applyOptionalPasses(result, workspace, dirs, threaded, options, model, toolBlocked, consumeWork);
         return result;
     }
     catch (error) {
