@@ -12,5 +12,13 @@ export function checkAssemblyPathScene(scene: SceneBackend, options: AssemblyPat
             throw new Error(`Cannot transform part '${part.name}'.`);
         return { name: part.name, mesh: meshShapeForExport(transformed.shape.getReplicadShape()) };
     });
-    return checkAssemblyPathMeshes(parts, options);
+    return checkAssemblyPathMeshes(parts, {
+        ...options,
+        tessellation: options.tessellation ?? {
+            linearMm: 0.01,
+            relative: true,
+            angularRad: 0.05,
+            source: 'meshShapeForExport default: relative linear 0.01, angular 0.05 rad; per-face fallback absolute 0.02 mm, 0.1 rad',
+        },
+    });
 }

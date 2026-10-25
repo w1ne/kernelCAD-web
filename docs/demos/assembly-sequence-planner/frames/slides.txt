@@ -1,0 +1,17 @@
+file '/home/andrii/projects/kernelCAD-web-wt-p1a/docs/demos/assembly-sequence-planner/frames/00-title.png'
+duration 3.5
+file '/home/andrii/projects/kernelCAD-web-wt-p1a/docs/demos/assembly-sequence-planner/frames/01-assembled.png'
+duration 4.5
+file '/home/andrii/projects/kernelCAD-web-wt-p1a/docs/demos/assembly-sequence-planner/frames/02-internals.png'
+duration 4.5
+file '/home/andrii/projects/kernelCAD-web-wt-p1a/docs/demos/assembly-sequence-planner/frames/03-exploded.png'
+duration 4.5
+file '/home/andrii/projects/kernelCAD-web-wt-p1a/docs/demos/assembly-sequence-planner/frames/04-steps-a.png'
+duration 5
+file '/home/andrii/projects/kernelCAD-web-wt-p1a/docs/demos/assembly-sequence-planner/frames/05-steps-b.png'
+duration 5
+file '/home/andrii/projects/kernelCAD-web-wt-p1a/docs/demos/assembly-sequence-planner/frames/06-states.png'
+duration 5
+file '/home/andrii/projects/kernelCAD-web-wt-p1a/docs/demos/assembly-sequence-planner/frames/07-end.png'
+duration 4
+file '/home/andrii/projects/kernelCAD-web-wt-p1a/docs/demos/assembly-sequence-planner/frames/07-end.png'
