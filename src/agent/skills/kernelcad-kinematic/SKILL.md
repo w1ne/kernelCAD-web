@@ -48,6 +48,7 @@ script. The same surface is reachable from host code via `import * as kinematic 
 | `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5, analytical IK on a chain that is not closed-form solvable) |
 | `kinematic.checkLoadCapacity(arm, loads, opts)` | Will any beam-shaped element exceed yield under these loads? | `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8) |
 | `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `kinematic.static-hold.no-actuator-declared` |
+| `kinematic.motionLoad(arm, opts)` | What wrench does each driven joint carry along the animation / joint range / named poses? | `mechanism.load.torque-exceeded`, `mechanism.load.torque-margin-low`, `mechanism.load.side-load-exceeded`, `mechanism.load.not-resolved` |
 | `kinematic.sweepTolerance({ code\|file, params, gates, boundaryTolerance?, boundaryBudget? })` | Where does the design fail across a parameter range, and which ledger requirement is binding there? | `kinematic.sweep-tolerance.combo-cap-exceeded`, `kinematic.sweep-tolerance.boundary-budget-exhausted` (plus whatever the swept gates/requirements emit per combo) |
 
 ### `checkStaticHold` — gravitational holding torque vs actuator capacity
@@ -111,7 +112,7 @@ named assembly off the script's session, and dispatch to the facade.
 - `verify({ check: 'load-capacity' })` — wraps the facade; accepts `file|code`, `loads`, `materials`, `mode`, `safety_factor_threshold`
 - `verify({ check: 'static-hold' })` — wraps the facade; accepts `file|code`, `joint`, `pose`, `gravity`, `min_torque_margin_pct`, `range_samples`
 - `verify({ check: 'physics' })` — full mechanism truth with physics engine: kinematic disconnect / interference / DOF checks plus static equilibrium and drop-on-release under gravity; accepts `file|code`, `assembly`, `physics: false` to skip physics engine. Returns `{ ok, mechanism, failures, coverage }`.
-- `verify({ check: 'motion-load' })` — mate assemblies: loads on every `mechanicalJoint` along the animationView tracks (gravity + inertia + external forces passed as motion_loads), or quasi-static over the joint limits (motion_mode: 'range'). Reports peak torque vs `torqueNm` (margin < 1x error, < 2x warning), actuator-shaft axial / radial / bending loads (checked only against `radialLimitN` / `axialLimitN`), the radial load per support (up to two coaxial supports, each at the station where it bears on the shaft: its connector on the joint axis, else the middle of its material nearest the shaft; an ambiguous station is a warning, not a number), the worst pose and a torque-vs-time series. Same calculator as static-hold. Use `supports: { '<joint>': ['servo'] }` to see the shaft side load without a bushing. Declare a purchased part's mass with `arm.part(name, shape, { massKg })`.
+- `verify({ check: 'motion-load' })` — mate assemblies: loads on every `mechanicalJoint` along the animationView tracks (gravity + inertia + external forces passed as motion_loads), or quasi-static over the joint limits (motion_mode: 'range'). Reports peak torque vs `torqueNm` (margin < 1x error, < 2x warning), actuator-shaft axial / radial / bending loads (checked only against `radialLimitN` / `axialLimitN`), the radial load per support (up to two coaxial supports, each at the station where it bears on the shaft: its connector on the joint axis, else the middle of its material nearest the shaft; an ambiguous station is a warning, not a number), the worst pose, a torque-vs-time series, and `partLoads` (the worst wrench per part and side in that part's frame). The script-level `kinematic.motionLoad` returns the same envelope; feed `partLoads` to `feaStudy({ loadsFrom: { motion, part } })` to solve a structural safety factor at that pose with no hand-typed load. Use `supports: { '<joint>': ['servo'] }` to see the shaft side load without a bushing. Declare a purchased part's mass with `arm.part(name, shape, { massKg })`.
 - `sweep_tolerance` — standalone tool (not a `verify` check — it surveys an envelope rather than gating one state); accepts `file|code`, `params`, `gates`, `boundaryTolerance`, `boundaryBudget`
 - `verify({ check: 'assembly' })` (extended) — composes the four `verify`-routed checks when called with `gates: ['kinematic']`
 
@@ -325,7 +326,9 @@ self-contained `.kcad.ts` files that build their own fixture, run one or two
    the over-center point (4.41°) a `kinematic.loop.branch-flip` finding
 7. `07-static-hold-servo-arm.kcad.ts` — servo-driven shoulder joint;
    generous actuator passes, undersized actuator fires
-   `assembly.joint.static-hold.exceeded`
+   `assembly.joint.static-hold.exceeded`; the same script feeds the worst
+   motion pose into `feaStudy({ loadsFrom })` and reports the bracket safety
+   factor with no hand-typed load
 8. `08-sweep-tolerance-clearance.kcad.ts` — swept clearance-gap param;
    the interference gate flips pass→fail past the closing threshold
 9. `09-four-bar-loop-swept.kcad.ts` — closed-loop four-bar driven by the
