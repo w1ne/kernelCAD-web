@@ -81,6 +81,129 @@ function unownedChanged(
   return indexes;
 }
 
+function projectParamOps(
+  base: FeatureGraph,
+  edited: FeatureGraph,
+  changed: ReadonlySet<string>,
+  writeSet: Set<FeatureId>,
+): ChangeOp[] {
+  const ops: ChangeOp[] = [];
+  for (const name of [...changed].sort()) {
+    ops.push({ op: 'setParam', target: '$project', name, from: base.params[name], to: edited.params[name] });
+    writeSet.add('$project');
+  }
+  return ops;
+}
+
+function deleteOps(base: FeatureGraph, edited: FeatureGraph, writeSet: Set<FeatureId>): ChangeOp[] {
+  const ops: ChangeOp[] = [];
+  for (const id of base.order) {
+    if (edited.features.has(id)) continue;
+    ops.push({ op: 'deleteFeature', id });
+    writeSet.add(id);
+  }
+  return ops;
+}
+
+function insertOps(base: FeatureGraph, edited: FeatureGraph, writeSet: Set<FeatureId>): ChangeOp[] {
+  const ops: ChangeOp[] = [];
+  for (const id of edited.order) {
+    if (base.features.has(id)) continue;
+    const index = edited.order.indexOf(id);
+    const after = index > 0 ? edited.order[index - 1]! : null;
+    ops.push({ op: 'insertFeature', id, after, node: edited.features.get(id)! });
+    writeSet.add(id);
+    if (after !== null) writeSet.add(after);
+  }
+  return ops;
+}
+
+function paramOpsForNode(
+  id: FeatureId,
+  before: FeatureNode,
+  after: FeatureNode,
+  changedProjectParams: ReadonlySet<string>,
+  writeSet: Set<FeatureId>,
+): ChangeOp[] {
+  const ops: ChangeOp[] = [];
+  const keys = new Set([...Object.keys(before.params), ...Object.keys(after.params)]);
+  for (const key of [...keys].sort()) {
+    if (equal(before.params[key], after.params[key])) continue;
+    const symbolic = [...nodeParamRefNames(before, key), ...nodeParamRefNames(after, key)];
+    if (symbolic.some((name) => changedProjectParams.has(name))) continue;
+    ops.push({ op: 'setParam', target: id, name: key, from: before.params[key], to: after.params[key] });
+    writeSet.add(id);
+  }
+  return ops;
+}
+
+function refOpsForNode(id: FeatureId, before: FeatureNode, after: FeatureNode, writeSet: Set<FeatureId>): ChangeOp[] {
+  const ops: ChangeOp[] = [];
+  const slots = new Set([...Object.keys(before.refs), ...Object.keys(after.refs)]);
+  for (const slot of [...slots].sort()) {
+    if (sameIds(before.refs[slot], after.refs[slot])) continue;
+    ops.push({ op: 'setRef', id, slot, from: before.refs[slot] ?? [], to: after.refs[slot] ?? [] });
+    writeSet.add(id);
+    for (const ref of [...(before.refs[slot] ?? []), ...(after.refs[slot] ?? [])]) writeSet.add(ref);
+  }
+  return ops;
+}
+
+function nodeOps(
+  base: FeatureGraph,
+  edited: FeatureGraph,
+  changedProjectParams: ReadonlySet<string>,
+  writeSet: Set<FeatureId>,
+): ChangeOp[] {
+  const ops: ChangeOp[] = [];
+  for (const id of edited.order) {
+    const before = base.features.get(id);
+    const after = edited.features.get(id);
+    if (before === undefined || after === undefined) continue;
+    ops.push(...paramOpsForNode(id, before, after, changedProjectParams, writeSet));
+    ops.push(...refOpsForNode(id, before, after, writeSet));
+  }
+  return ops;
+}
+
+function moveOps(base: FeatureGraph, edited: FeatureGraph, writeSet: Set<FeatureId>): ChangeOp[] {
+  const ops: ChangeOp[] = [];
+  const common = base.order.filter((id) => edited.features.has(id));
+  const kept = lcsIds(common, edited.order.filter((id) => base.features.has(id)));
+  for (const id of edited.order) {
+    if (!base.features.has(id) || kept.has(id)) continue;
+    const index = edited.order.indexOf(id);
+    const after = index > 0 ? edited.order[index - 1]! : null;
+    ops.push({ op: 'moveFeature', id, after });
+    writeSet.add(id);
+  }
+  return ops;
+}
+
+function requirementOps(base: FeatureGraph, edited: FeatureGraph, writeSet: Set<FeatureId>): ChangeOp[] {
+  const ops: ChangeOp[] = [];
+  const names = new Set([...Object.keys(base.requirements), ...Object.keys(edited.requirements)]);
+  for (const name of [...names].sort()) {
+    const before = base.requirements[name];
+    const after = edited.requirements[name];
+    if (equal(requirementSemantics(before), requirementSemantics(after))) continue;
+    ops.push({ op: 'editRequirement', name, from: before, to: after });
+    writeSet.add(`requirement:${name}`);
+  }
+  return ops;
+}
+
+function unownedOps(base: FeatureGraph, edited: FeatureGraph, writeSet: Set<FeatureId>): ChangeOp[] {
+  const ops: ChangeOp[] = [];
+  for (const index of unownedChanged(base.unowned, edited.unowned)) {
+    const span = edited.unowned[index] ?? base.unowned[index];
+    if (span === undefined) continue;
+    ops.push({ op: 'editUnowned', span: { start: span.start, end: span.end } });
+    writeSet.add('$unowned');
+  }
+  return ops;
+}
+
 /**
  * Diff two captures of the same model. `base` is the revision the agent read;
  * `edited` is the source the agent produced. The result is keyed by feature id;
@@ -91,105 +214,17 @@ export function liftChangeSet(
   edited: FeatureGraph,
   meta: ChangeSetMeta,
 ): ChangeSet {
-  const ops: ChangeOp[] = [];
   const writeSet = new Set<FeatureId>();
-
   const changedProjectParams = projectParamNamesChanged(base, edited);
-  for (const name of [...changedProjectParams].sort()) {
-    ops.push({
-      op: 'setParam',
-      target: '$project',
-      name,
-      from: base.params[name],
-      to: edited.params[name],
-    });
-    writeSet.add('$project');
-  }
-
-  for (const id of base.order) {
-    if (edited.features.has(id)) continue;
-    ops.push({ op: 'deleteFeature', id });
-    writeSet.add(id);
-  }
-
-  for (const id of edited.order) {
-    if (base.features.has(id)) continue;
-    const index = edited.order.indexOf(id);
-    const after = index > 0 ? edited.order[index - 1]! : null;
-    ops.push({ op: 'insertFeature', id, after, node: edited.features.get(id)! });
-    writeSet.add(id);
-    if (after !== null) writeSet.add(after);
-  }
-
-  for (const id of edited.order) {
-    const before = base.features.get(id);
-    const after = edited.features.get(id);
-    if (before === undefined || after === undefined) continue;
-
-    const paramKeys = new Set([...Object.keys(before.params), ...Object.keys(after.params)]);
-    for (const key of [...paramKeys].sort()) {
-      if (equal(before.params[key], after.params[key])) continue;
-      const symbolic = [
-        ...nodeParamRefNames(before, key),
-        ...nodeParamRefNames(after, key),
-      ];
-      // A changed project param is already one `$project` op. Do not also
-      // report the feature's symbolic cell as its own edit.
-      if (symbolic.some((name) => changedProjectParams.has(name))) continue;
-      ops.push({
-        op: 'setParam',
-        target: id,
-        name: key,
-        from: before.params[key],
-        to: after.params[key],
-      });
-      writeSet.add(id);
-    }
-
-    const refSlots = new Set([...Object.keys(before.refs), ...Object.keys(after.refs)]);
-    for (const slot of [...refSlots].sort()) {
-      if (sameIds(before.refs[slot], after.refs[slot])) continue;
-      ops.push({
-        op: 'setRef',
-        id,
-        slot,
-        from: before.refs[slot] ?? [],
-        to: after.refs[slot] ?? [],
-      });
-      writeSet.add(id);
-      for (const ref of [...(before.refs[slot] ?? []), ...(after.refs[slot] ?? [])]) writeSet.add(ref);
-    }
-  }
-
-  const common = base.order.filter((id) => edited.features.has(id));
-  const kept = lcsIds(common, edited.order.filter((id) => base.features.has(id)));
-  for (const id of edited.order) {
-    if (!base.features.has(id) || kept.has(id)) continue;
-    const index = edited.order.indexOf(id);
-    const after = index > 0 ? edited.order[index - 1]! : null;
-    ops.push({ op: 'moveFeature', id, after });
-    writeSet.add(id);
-  }
-
-  const requirementNames = new Set([
-    ...Object.keys(base.requirements),
-    ...Object.keys(edited.requirements),
-  ]);
-  for (const name of [...requirementNames].sort()) {
-    const before = base.requirements[name];
-    const after = edited.requirements[name];
-    if (equal(requirementSemantics(before), requirementSemantics(after))) continue;
-    ops.push({ op: 'editRequirement', name, from: before, to: after });
-    writeSet.add(`requirement:${name}`);
-  }
-
-  for (const index of unownedChanged(base.unowned, edited.unowned)) {
-    const span = edited.unowned[index] ?? base.unowned[index];
-    if (span === undefined) continue;
-    ops.push({ op: 'editUnowned', span: { start: span.start, end: span.end } });
-    writeSet.add('$unowned');
-  }
-
+  const ops: ChangeOp[] = [
+    ...projectParamOps(base, edited, changedProjectParams, writeSet),
+    ...deleteOps(base, edited, writeSet),
+    ...insertOps(base, edited, writeSet),
+    ...nodeOps(base, edited, changedProjectParams, writeSet),
+    ...moveOps(base, edited, writeSet),
+    ...requirementOps(base, edited, writeSet),
+    ...unownedOps(base, edited, writeSet),
+  ];
   return {
     baseRevision: meta.baseRevision,
     agentId: meta.agentId,

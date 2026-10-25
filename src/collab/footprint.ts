@@ -87,36 +87,30 @@ function projectParamConsumers(graph: FeatureGraph, names: ReadonlySet<string>):
   return out;
 }
 
-/**
- * Write set, static reads, downstream closure and the requirements whose inputs
- * fall in that closure.
- */
-export function footprint(changeSet: ChangeSet, head: FeatureGraph): Footprint {
-  const writes = new Set<FeatureId>(changeSet.writeSet);
-  const reads = new Set<FeatureId>();
-  const downstream = new Set<FeatureId>();
-  const reverse = reverseRefs(head);
-
-  const seedFeatures = new Set<FeatureId>();
+function seedFeaturesFor(writes: ReadonlySet<FeatureId>, head: FeatureGraph): Set<FeatureId> {
+  const seeds = new Set<FeatureId>();
   for (const id of writes) {
     if (id === '$project' || id === '$unowned' || id.startsWith('requirement:')) continue;
-    if (head.features.has(id)) seedFeatures.add(id);
+    if (head.features.has(id)) seeds.add(id);
   }
-  const projectConsumers = projectParamConsumers(head, projectParamNames(changeSet));
-  for (const id of projectConsumers) {
-    // A project param edit affects its consumer features (and everything later
-    // in that body); treat those as downstream work, not writes.
-    downstream.add(id);
-  }
+  return seeds;
+}
 
-  for (const id of seedFeatures) {
+function collectReads(seeds: ReadonlySet<FeatureId>, writes: ReadonlySet<FeatureId>, head: FeatureGraph): Set<FeatureId> {
+  const reads = new Set<FeatureId>();
+  for (const id of seeds) {
     const node = head.features.get(id);
     if (node === undefined) continue;
     for (const refs of Object.values(node.refs)) {
       for (const ref of refs) if (!writes.has(ref)) reads.add(ref);
     }
   }
+  return reads;
+}
 
+function bodyHelpers(head: FeatureGraph): {
+  sameBodyLater: (id: FeatureId) => FeatureId[];
+} {
   const roots = new Map<FeatureId, FeatureId>();
   const rootOf = (id: FeatureId): FeatureId => {
     let root = roots.get(id);
@@ -127,32 +121,39 @@ export function footprint(changeSet: ChangeSet, head: FeatureGraph): Footprint {
     return root;
   };
 
-  const sameBodyLater = (id: FeatureId): FeatureId[] => {
-    const node = head.features.get(id);
-    if (node === undefined || isAssembly(node.kind)) return [];
-    const root = rootOf(id);
-    return head.order.filter((candidate) => {
-      const candidateNode = head.features.get(candidate);
-      if (candidateNode === undefined || isAssembly(candidateNode.kind)) return false;
-      return candidateNode.orderKey > node.orderKey && rootOf(candidate) === root;
-    });
+  return {
+    sameBodyLater: (id) => {
+      const node = head.features.get(id);
+      if (node === undefined || isAssembly(node.kind)) return [];
+      const root = rootOf(id);
+      return head.order.filter((candidate) => {
+        const candidateNode = head.features.get(candidate);
+        if (candidateNode === undefined || isAssembly(candidateNode.kind)) return false;
+        return candidateNode.orderKey > node.orderKey && rootOf(candidate) === root;
+      });
+    },
   };
+}
 
-  for (const id of [...seedFeatures, ...projectConsumers]) {
+function expandDownstream(
+  head: FeatureGraph,
+  starts: readonly FeatureId[],
+  writes: ReadonlySet<FeatureId>,
+  reverse: ReadonlyMap<FeatureId, Set<FeatureId>>,
+): Set<FeatureId> {
+  const downstream = new Set<FeatureId>();
+  const { sameBodyLater } = bodyHelpers(head);
+
+  for (const id of starts) {
     const queue: FeatureId[] = [id];
     const visited = new Set<FeatureId>([id]);
     while (queue.length > 0) {
       const current = queue.shift()!;
       for (const child of reverse.get(current) ?? []) {
         if (writes.has(child) || downstream.has(child)) continue;
-        const childNode = head.features.get(child);
-        if (isAssembly(childNode?.kind)) {
-          downstream.add(child);
-          // Stop at the placement: the assembly model consumes the placement,
-          // not this part directly, so it is not downstream of this write.
-          continue;
-        }
         downstream.add(child);
+        const childNode = head.features.get(child);
+        if (isAssembly(childNode?.kind)) continue;
         if (!visited.has(child)) {
           visited.add(child);
           queue.push(child);
@@ -168,14 +169,34 @@ export function footprint(changeSet: ChangeSet, head: FeatureGraph): Footprint {
       }
     }
   }
+  return downstream;
+}
 
+function requirementsFor(
+  head: FeatureGraph,
+  writes: ReadonlySet<FeatureId>,
+  downstream: ReadonlySet<FeatureId>,
+): Set<string> {
   const closure = new Set<FeatureId>([...writes, ...downstream]);
   const requirements = new Set<string>();
   for (const [name, requirement] of Object.entries(head.requirements)) {
     if (requirement.inputs.some((id) => closure.has(id))) requirements.add(name);
   }
+  return requirements;
+}
 
-  return { writes, reads, downstream, requirements };
+/**
+ * Write set, static reads, downstream closure and the requirements whose inputs
+ * fall in that closure.
+ */
+export function footprint(changeSet: ChangeSet, head: FeatureGraph): Footprint {
+  const writes = new Set<FeatureId>(changeSet.writeSet);
+  const seeds = seedFeaturesFor(writes, head);
+  const projectConsumers = projectParamConsumers(head, projectParamNames(changeSet));
+  const reads = collectReads(seeds, writes, head);
+  const downstream = expandDownstream(head, [...seeds, ...projectConsumers], writes, reverseRefs(head));
+  for (const id of projectConsumers) if (!writes.has(id)) downstream.add(id);
+  return { writes, reads, downstream, requirements: requirementsFor(head, writes, downstream) };
 }
 
 /** Two change-sets may be evaluated in parallel when neither writes or reaches

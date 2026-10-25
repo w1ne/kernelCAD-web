@@ -11,6 +11,7 @@
 import type { FeatureRecord } from '../shared/intent/featureRecord';
 import type { FeatureId, Param } from '../shared/intent/types';
 import type { RequirementPredicateSpec } from '../shared/intent/requirementRecord';
+import type { ParamTable } from '../shared/runtime/paramTable';
 import { collectParamRefs, resolveParams } from '../shared/runtime/resolveParams';
 import { stableStringify } from '../modeling/compute/prefixReuse';
 import { runScript } from '../modeling/runtime/runScript';
@@ -34,6 +35,13 @@ interface NameIndex {
   byName: Map<string, FeatureId>;
 }
 
+interface CapturedGraphParts {
+  features: Map<FeatureId, FeatureNode>;
+  order: FeatureId[];
+  requirements: Record<string, RequirementNode>;
+  ownedSpans: SourceSpan[];
+}
+
 function recordNames(record: FeatureRecord): string[] {
   const meta = record.metadata as Record<string, unknown> | undefined;
   const names: string[] = [];
@@ -46,9 +54,49 @@ function recordNames(record: FeatureRecord): string[] {
   return names;
 }
 
+function nameIndex(records: readonly FeatureRecord[]): NameIndex {
+  const byName = new Map<string, FeatureId>();
+  for (const record of records) {
+    for (const name of recordNames(record)) {
+      if (!byName.has(name)) byName.set(name, record.id);
+    }
+  }
+  return { byName };
+}
+
 function resolveFeatureId(raw: string, records: readonly FeatureRecord[], names: NameIndex): FeatureId | undefined {
   if (records.some((r) => r.id === raw)) return raw;
   return names.byName.get(raw);
+}
+
+function addResolved(raw: unknown, records: readonly FeatureRecord[], names: NameIndex, out: Set<FeatureId>): void {
+  if (typeof raw !== 'string') return;
+  const id = resolveFeatureId(raw, records, names);
+  if (id !== undefined) out.add(id);
+}
+
+function collectTopoString(value: string, records: readonly FeatureRecord[], names: NameIndex, out: Set<FeatureId>): void {
+  if (!value.startsWith('@kc[')) return;
+  const parsed = parseTopoRef(value);
+  if ('error' in parsed) return;
+  addResolved(parsed.owner, records, names, out);
+}
+
+function collectObjectRefs(
+  obj: Record<string, unknown>,
+  records: readonly FeatureRecord[],
+  names: NameIndex,
+  out: Set<FeatureId>,
+  seen: WeakSet<object>,
+): void {
+  if (typeof obj.kind === 'string') {
+    addResolved(obj.id, records, names, out);
+    addResolved(obj.featureId, records, names, out);
+  }
+  for (const [key, child] of Object.entries(obj)) {
+    if (key === 'paramRef' || key === 'paramRefs') continue;
+    collectRefs(child, records, names, out, seen);
+  }
 }
 
 function collectRefs(
@@ -60,11 +108,7 @@ function collectRefs(
 ): void {
   if (value === null || value === undefined) return;
   if (typeof value === 'string') {
-    if (!value.startsWith('@kc[')) return;
-    const parsed = parseTopoRef(value);
-    if ('error' in parsed) return;
-    const id = resolveFeatureId(parsed.owner, records, names);
-    if (id !== undefined) out.add(id);
+    collectTopoString(value, records, names, out);
     return;
   }
   if (typeof value !== 'object') return;
@@ -75,22 +119,7 @@ function collectRefs(
     for (const item of value) collectRefs(item, records, names, out, seen);
     return;
   }
-
-  const obj = value as Record<string, unknown>;
-  if (typeof obj.kind === 'string') {
-    if (typeof obj.id === 'string') {
-      const id = resolveFeatureId(obj.id, records, names);
-      if (id !== undefined) out.add(id);
-    }
-    if (typeof obj.featureId === 'string') {
-      const id = resolveFeatureId(obj.featureId, records, names);
-      if (id !== undefined) out.add(id);
-    }
-  }
-  for (const [key, child] of Object.entries(obj)) {
-    if (key === 'paramRef' || key === 'paramRefs') continue;
-    collectRefs(child, records, names, out, seen);
-  }
+  collectObjectRefs(value as Record<string, unknown>, records, names, out, seen);
 }
 
 function refsFor(
@@ -115,18 +144,12 @@ function refsFor(
 function plainParamValue(value: unknown): unknown {
   if (typeof value !== 'object' || value === null) return value;
   const param = value as Param;
-  if (typeof param.evaluated === 'number' && Number.isFinite(param.evaluated)) {
-    if (param.unit === 'mm' || param.unit === 'deg' || param.unit === 'rad' || param.unit === 'in' || param.unit === 'm') {
-      return param.evaluated;
-    }
-    if (param.expression === 'true') return true;
-    if (param.expression === 'false') return false;
-    if (/^-?\d+(\.\d+)?$/.test(param.expression.trim())) return param.evaluated;
-    const quoted = /^(['"])(.*)\1$/s.exec(param.expression.trim());
-    if (quoted !== null) return quoted[2];
-    return param.evaluated;
-  }
-  return param.expression;
+  if (typeof param.evaluated !== 'number' || !Number.isFinite(param.evaluated)) return param.expression;
+  if (param.expression === 'true') return true;
+  if (param.expression === 'false') return false;
+  const quoted = /^(['"])(.*)\1$/s.exec(param.expression.trim());
+  if (quoted !== null) return quoted[2];
+  return param.evaluated;
 }
 
 function paramRefsFor(record: FeatureRecord): Record<string, string[]> | undefined {
@@ -147,16 +170,107 @@ function requirementInputs(
   const inputs = new Set<FeatureId>();
   for (const operand of [predicate.a, predicate.b]) {
     if (operand === undefined) continue;
-    const id = resolveFeatureId(operand.ref, records, names);
-    if (id !== undefined) inputs.add(id);
-    for (const entityRef of operand.entityRefs ?? []) {
-      const parsed = parseTopoRef(entityRef);
-      if ('error' in parsed) continue;
-      const owner = resolveFeatureId(parsed.owner, records, names);
-      if (owner !== undefined) inputs.add(owner);
-    }
+    addResolved(operand.ref, records, names, inputs);
+    for (const entityRef of operand.entityRefs ?? []) collectTopoString(entityRef, records, names, inputs);
   }
   return [...inputs];
+}
+
+function requirementNode(
+  record: FeatureRecord,
+  records: readonly FeatureRecord[],
+  names: NameIndex,
+  span: SourceSpan,
+): { name: string; node: RequirementNode } {
+  const meta = record.metadata as { name?: unknown; predicate?: unknown } | undefined;
+  const name = typeof meta?.name === 'string' ? meta.name : `requirement_${record.id}`;
+  const predicate = typeof meta?.predicate === 'object' && meta.predicate !== null
+    ? meta.predicate as RequirementPredicateSpec
+    : undefined;
+  return {
+    name,
+    node: {
+      inputs: requirementInputs(predicate, records, names),
+      ...(predicate !== undefined ? { predicate } : {}),
+      sourceSpan: span,
+    },
+  };
+}
+
+function featureNode(
+  record: FeatureRecord,
+  records: readonly FeatureRecord[],
+  names: NameIndex,
+  span: SourceSpan,
+  orderKey: number,
+  paramTable: ParamTable,
+  callSpan?: SourceSpan,
+): FeatureNode {
+  const resolved = resolveParams(record, paramTable) as FeatureRecord;
+  const params: Record<string, unknown> = {};
+  for (const [name, value] of Object.entries(resolved.params)) params[name] = plainParamValue(value);
+  const paramRefs = paramRefsFor(record);
+  return {
+    id: record.id,
+    kind: record.kind,
+    params,
+    refs: refsFor(record, records, names),
+    orderKey,
+    sourceSpan: span,
+    ...(callSpan !== undefined ? { callSpan } : {}),
+    ...(paramRefs !== undefined ? { paramRefs } : {}),
+  };
+}
+
+function capturedGraphParts(
+  records: readonly FeatureRecord[],
+  spans: CollabSpanIndex,
+  names: NameIndex,
+  paramTable: ParamTable,
+): CapturedGraphParts {
+  const features = new Map<FeatureId, FeatureNode>();
+  const order: FeatureId[] = [];
+  const requirements: Record<string, RequirementNode> = {};
+  const ownedSpans: SourceSpan[] = [];
+
+  for (const record of records) {
+    const location = record.scriptLocation;
+    const call = location !== undefined ? spans.callAt(location) : undefined;
+    const sourceSpan = call?.statement ?? { start: 0, end: 0 };
+    if (call !== undefined) ownedSpans.push(sourceSpan);
+
+    if (record.kind === 'require') {
+      const captured = requirementNode(record, records, names, sourceSpan);
+      requirements[captured.name] = captured.node;
+      continue;
+    }
+
+    features.set(
+      record.id,
+      featureNode(record, records, names, sourceSpan, order.length, paramTable, call?.call),
+    );
+    order.push(record.id);
+  }
+  return { features, order, requirements, ownedSpans };
+}
+
+function paramSnapshot(paramTable: ParamTable): {
+  params: Record<string, unknown>;
+  paramDeclarations?: Record<string, { type: string; meta?: Record<string, unknown> }>;
+} {
+  const params: Record<string, unknown> = {};
+  const paramDeclarations: Record<string, { type: string; meta?: Record<string, unknown> }> = {};
+  for (const entry of paramTable.list()) {
+    params[entry.name] = entry.value;
+    paramDeclarations[entry.name] = {
+      type: entry.type,
+      ...(entry.meta !== undefined ? { meta: entry.meta as Record<string, unknown> } : {}),
+    };
+  }
+  return {
+    params,
+    ...(Object.keys(paramDeclarations).length > 0 ? { paramDeclarations } : {}),
+  };
 }
 
 function canonicalGraph(graph: Omit<FeatureGraph, 'revisionHash' | 'unowned'>): string {
@@ -206,78 +320,18 @@ export async function captureFeatureGraph(
   });
   const records = run.records;
   const spans = CollabSpanIndex.parse(source, fileName);
-
-  const names: NameIndex = { byName: new Map() };
-  for (const record of records) {
-    for (const name of recordNames(record)) {
-      if (!names.byName.has(name)) names.byName.set(name, record.id);
-    }
-  }
-
-  const features = new Map<FeatureId, FeatureNode>();
-  const order: FeatureId[] = [];
-  const requirements: Record<string, RequirementNode> = {};
-  const ownedSpans: SourceSpan[] = [];
-
-  for (const record of records) {
-    const location = record.scriptLocation;
-    const call = location !== undefined ? spans.callAt(location) : undefined;
-    const sourceSpan = call?.statement ?? { start: 0, end: 0 };
-    if (call !== undefined) ownedSpans.push(sourceSpan);
-
-    if (record.kind === 'require') {
-      const meta = record.metadata as { name?: unknown; predicate?: unknown } | undefined;
-      const name = typeof meta?.name === 'string' ? meta.name : `requirement_${Object.keys(requirements).length + 1}`;
-      const predicate = typeof meta?.predicate === 'object' && meta.predicate !== null
-        ? meta.predicate as RequirementPredicateSpec
-        : undefined;
-      requirements[name] = {
-        inputs: requirementInputs(predicate, records, names),
-        ...(predicate !== undefined ? { predicate } : {}),
-        sourceSpan,
-      };
-      continue;
-    }
-
-    const resolved = resolveParams(record, run.paramTable) as FeatureRecord;
-    const params: Record<string, unknown> = {};
-    for (const [name, value] of Object.entries(resolved.params)) params[name] = plainParamValue(value);
-    const paramRefs = paramRefsFor(record);
-    const node: FeatureNode = {
-      id: record.id,
-      kind: record.kind,
-      params,
-      refs: refsFor(record, records, names),
-      orderKey: order.length,
-      sourceSpan,
-      ...(call !== undefined ? { callSpan: call.call } : {}),
-      ...(paramRefs !== undefined ? { paramRefs } : {}),
-    };
-    features.set(record.id, node);
-    order.push(record.id);
-  }
-
-  const params: Record<string, unknown> = {};
-  const paramDeclarations: Record<string, { type: string; meta?: Record<string, unknown> }> = {};
-  for (const entry of run.paramTable.list()) {
-    params[entry.name] = entry.value;
-    paramDeclarations[entry.name] = {
-      type: entry.type,
-      ...(entry.meta !== undefined ? { meta: entry.meta as Record<string, unknown> } : {}),
-    };
-  }
-
-  const unowned: UnownedSpan[] = spans.unownedStatements(ownedSpans);
+  const names = nameIndex(records);
+  const captured = capturedGraphParts(records, spans, names, run.paramTable);
+  const snapshot = paramSnapshot(run.paramTable);
+  const unowned: UnownedSpan[] = spans.unownedStatements(captured.ownedSpans);
   const graphWithoutHash = {
-    features,
-    order,
-    params,
-    ...(Object.keys(paramDeclarations).length > 0 ? { paramDeclarations } : {}),
-    requirements,
+    features: captured.features,
+    order: captured.order,
+    ...snapshot,
+    requirements: captured.requirements,
     unowned,
   };
-  const revisionHash = hashCanonical(canonicalGraph(graphWithoutHash));
-  return { revisionHash, ...graphWithoutHash };
+  return { revisionHash: hashCanonical(canonicalGraph(graphWithoutHash)), ...graphWithoutHash };
 }
 
 /** Canonical JSON of a graph, useful for diagnostics and equality checks. */

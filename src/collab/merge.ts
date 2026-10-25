@@ -7,29 +7,11 @@
 // silent merge.
 
 import { stableStringify } from '../modeling/compute/prefixReuse';
-import type {
-  ChangeOp,
-  ChangeSet,
-  CollabConflict,
-  FeatureGraph,
-  FeatureId,
-  FeatureNode,
-  MergeResult,
-  RequirementNode as RequirementNodeType,
-  SourceSpan,
-  UnownedSpan,
-} from './types';
+import type { RequirementNode as RequirementNodeType, ChangeOp, ChangeSet, CollabConflict, FeatureGraph, FeatureId, FeatureNode, MergeResult, SourceSpan, UnownedSpan } from './types';
 import { captureFeatureGraph } from './featureGraph';
 import { liftChangeSet } from './changeSet';
 import { CollabSpanIndex } from './sourceSpans';
-import {
-  applyTextEdits,
-  featureParamRewrite,
-  projectParamRewrite,
-  statementIsReturn,
-  statementText,
-  type TextEdit,
-} from './sourceMerge';
+import { applyTextEdits, featureParamRewrite, projectParamRewrite, statementIsReturn, statementText, type TextEdit } from './sourceMerge';
 
 export interface MergeInput {
   baseSource: string;
@@ -47,6 +29,21 @@ interface MutableGraph {
   paramDeclarations?: Record<string, { type: string; meta?: Record<string, unknown> }>;
   requirements: Record<string, RequirementNodeType>;
   unowned: UnownedSpan[];
+}
+
+interface MergeContext {
+  baseSource: string;
+  headSource: string;
+  yoursSource: string;
+  base: FeatureGraph;
+  head: FeatureGraph;
+  yours: ChangeSet;
+  merged: MutableGraph;
+  edits: TextEdit[];
+  conflicts: CollabConflict[];
+  headOnly: Set<FeatureId>;
+  yoursGraph?: FeatureGraph;
+  getYoursGraph: () => Promise<FeatureGraph>;
 }
 
 function equal(a: unknown, b: unknown): boolean {
@@ -69,9 +66,7 @@ function mutableFrom(graph: FeatureGraph): MutableGraph {
     features: new Map([...graph.features].map(([id, node]) => [id, cloneNode(node)])),
     order: [...graph.order],
     params: { ...graph.params },
-    ...(graph.paramDeclarations !== undefined
-      ? { paramDeclarations: structuredClone(graph.paramDeclarations) }
-      : {}),
+    ...(graph.paramDeclarations !== undefined ? { paramDeclarations: structuredClone(graph.paramDeclarations) } : {}),
     requirements: structuredClone(graph.requirements),
     unowned: graph.unowned.map((span) => ({ ...span })),
   };
@@ -92,32 +87,29 @@ function insertionIndex(order: readonly FeatureId[], after: FeatureId | null): n
   return index < 0 ? 0 : index + 1;
 }
 
-function validateParam(
-  name: string,
-  value: unknown,
-  declarations: MutableGraph['paramDeclarations'],
-): string | undefined {
+function validateNumber(value: unknown, declaration: { meta?: Record<string, unknown> }): string | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'expected a finite number';
+  const min = declaration.meta?.min;
+  const max = declaration.meta?.max;
+  if (typeof min === 'number' && value < min) return `value ${value} is below min ${min}`;
+  if (typeof max === 'number' && value > max) return `value ${value} is above max ${max}`;
+  return undefined;
+}
+
+function validateString(value: unknown, type: string, declaration: { meta?: Record<string, unknown> }): string | undefined {
+  if (typeof value !== 'string') return 'expected a string';
+  if (type !== 'choice') return undefined;
+  const choices = declaration.meta?.choices;
+  if (Array.isArray(choices) && !choices.includes(value)) return `'${value}' is not one of ${choices.join(', ')}`;
+  return undefined;
+}
+
+function validateParam(name: string, value: unknown, declarations: MutableGraph['paramDeclarations']): string | undefined {
   const declaration = declarations?.[name];
   if (declaration === undefined) return undefined;
-  if (declaration.type === 'number') {
-    if (typeof value !== 'number' || !Number.isFinite(value)) return `${name} must be a finite number`;
-    const min = declaration.meta?.min;
-    const max = declaration.meta?.max;
-    if (typeof min === 'number' && value < min) return `${name}=${value} is below min ${min}`;
-    if (typeof max === 'number' && value > max) return `${name}=${value} is above max ${max}`;
-    return undefined;
-  }
-  if (declaration.type === 'boolean') {
-    return typeof value === 'boolean' ? undefined : `${name} must be a boolean`;
-  }
-  if (typeof value !== 'string') return `${name} must be a string`;
-  if (declaration.type === 'choice') {
-    const choices = declaration.meta?.choices;
-    if (Array.isArray(choices) && !choices.includes(value)) {
-      return `${name}='${value}' is not one of ${choices.join(', ')}`;
-    }
-  }
-  return undefined;
+  if (declaration.type === 'number') return validateNumber(value, declaration);
+  if (declaration.type === 'boolean') return typeof value === 'boolean' ? undefined : 'expected a boolean';
+  return validateString(value, declaration.type, declaration);
 }
 
 function cycleIds(graph: MutableGraph): FeatureId[] {
@@ -153,38 +145,40 @@ function cycleIds(graph: MutableGraph): FeatureId[] {
   return found ?? [];
 }
 
-function checkStructural(graph: MutableGraph): CollabConflict[] {
+function deletedRefConflicts(graph: MutableGraph): CollabConflict[] {
   const conflicts: CollabConflict[] = [];
-
   for (const id of graph.order) {
     const node = graph.features.get(id);
     if (node === undefined) continue;
     for (const [slot, refs] of Object.entries(node.refs)) {
       for (const ref of refs) {
-        if (!graph.features.has(ref)) {
-          conflicts.push({ code: 'collab.conflict.deleted-ref', id, slot, deleted: ref });
-        }
+        if (!graph.features.has(ref)) conflicts.push({ code: 'collab.conflict.deleted-ref', id, slot, deleted: ref });
       }
     }
   }
-  if (conflicts.length > 0) return conflicts;
+  return conflicts;
+}
 
-  const cycle = cycleIds(graph);
-  if (cycle.length > 0) return [{ code: 'collab.conflict.cycle', ids: cycle }];
-
+function forwardRefConflicts(graph: MutableGraph): CollabConflict[] {
   const index = new Map(graph.order.map((id, i) => [id, i]));
   for (const id of graph.order) {
     const node = graph.features.get(id);
     if (node === undefined) continue;
     for (const refs of Object.values(node.refs)) {
       for (const ref of refs) {
-        if ((index.get(ref) ?? -1) >= (index.get(id) ?? -1)) {
-          return [{ code: 'collab.conflict.forward-ref', ids: [id, ref] }];
-        }
+        if ((index.get(ref) ?? -1) >= (index.get(id) ?? -1)) return [{ code: 'collab.conflict.forward-ref', ids: [id, ref] }];
       }
     }
   }
-  return conflicts;
+  return [];
+}
+
+function checkStructural(graph: MutableGraph): CollabConflict[] {
+  const deletedRefs = deletedRefConflicts(graph);
+  if (deletedRefs.length > 0) return deletedRefs;
+  const cycle = cycleIds(graph);
+  if (cycle.length > 0) return [{ code: 'collab.conflict.cycle', ids: cycle }];
+  return forwardRefConflicts(graph);
 }
 
 interface SemanticOp {
@@ -192,31 +186,24 @@ interface SemanticOp {
 }
 
 function semanticOp(op: ChangeOp): SemanticOp {
-  switch (op.op) {
-    case 'insertFeature': {
-      const node = { ...op.node } as Record<string, unknown>;
-      delete node.sourceSpan;
-      delete node.callSpan;
-      delete node.orderKey;
-      // Insert anchors are normalized through the merged order: head's own
-      // insertions after the same anchor stay first, so the raw `after` id can
-      // legitimately differ after re-lifting head→merged.
-      return { op: op.op, id: op.id, node };
-    }
-    case 'editRequirement': {
-      const strip = (value: unknown): unknown => {
-        if (typeof value !== 'object' || value === null) return value;
-        const rest = { ...(value as Record<string, unknown>) };
-        delete rest.sourceSpan;
-        return rest;
-      };
-      return { op: op.op, name: op.name, from: strip(op.from), to: strip(op.to) };
-    }
-    case 'editUnowned':
-      return { op: op.op };
-    default:
-      return { ...op } as SemanticOp;
+  if (op.op === 'insertFeature') {
+    const node = { ...op.node } as Record<string, unknown>;
+    delete node.sourceSpan;
+    delete node.callSpan;
+    delete node.orderKey;
+    return { op: op.op, id: op.id, node };
   }
+  if (op.op === 'editRequirement') {
+    const strip = (value: unknown): unknown => {
+      if (typeof value !== 'object' || value === null) return value;
+      const rest = { ...(value as Record<string, unknown>) };
+      delete rest.sourceSpan;
+      return rest;
+    };
+    return { op: op.op, name: op.name, from: strip(op.from), to: strip(op.to) };
+  }
+  if (op.op === 'editUnowned') return { op: op.op };
+  return { ...op } as SemanticOp;
 }
 
 function opsSignature(ops: readonly ChangeOp[]): string {
@@ -226,23 +213,10 @@ function opsSignature(ops: readonly ChangeOp[]): string {
 function idsOf(ops: readonly ChangeOp[]): FeatureId[] {
   const ids = new Set<FeatureId>();
   for (const op of ops) {
-    switch (op.op) {
-      case 'setParam':
-        ids.add(op.target);
-        break;
-      case 'insertFeature':
-      case 'deleteFeature':
-      case 'setRef':
-      case 'moveFeature':
-        ids.add(op.id);
-        break;
-      case 'editRequirement':
-        ids.add(`requirement:${op.name}`);
-        break;
-      case 'editUnowned':
-        ids.add('$unowned');
-        break;
-    }
+    if (op.op === 'setParam') ids.add(op.target);
+    else if (op.op === 'insertFeature' || op.op === 'deleteFeature' || op.op === 'setRef' || op.op === 'moveFeature') ids.add(op.id);
+    else if (op.op === 'editRequirement') ids.add(`requirement:${op.name}`);
+    else ids.add('$unowned');
   }
   return [...ids];
 }
@@ -254,6 +228,239 @@ function stripTrailingNewline(source: string, span: SourceSpan): SourceSpan {
   return { start: span.start, end };
 }
 
+function createContext(input: MergeInput): MergeContext {
+  const ctx: MergeContext = {
+    baseSource: input.baseSource,
+    headSource: input.headSource,
+    yoursSource: input.yoursSource,
+    base: input.base,
+    head: input.head,
+    yours: input.yours,
+    merged: mutableFrom(input.head),
+    edits: [],
+    conflicts: [],
+    headOnly: new Set(input.head.order.filter((id) => !input.base.features.has(id))),
+    getYoursGraph: async () => {
+      ctx.yoursGraph ??= await captureFeatureGraph(ctx.yoursSource, { fileName: 'yours.kcad.ts' });
+      return ctx.yoursGraph;
+    },
+  };
+  return ctx;
+}
+
+function applyProjectParam(ctx: MergeContext, op: Extract<ChangeOp, { op: 'setParam' }>): void {
+  const baseValue = ctx.base.params[op.name];
+  const headValue = ctx.head.params[op.name];
+  if (equal(headValue, op.to)) return;
+  if (!equal(headValue, baseValue)) {
+    ctx.conflicts.push({ code: 'collab.conflict.param', target: '$project', name: op.name, base: baseValue, head: headValue, yours: op.to });
+    return;
+  }
+  const invalid = validateParam(op.name, op.to, ctx.merged.paramDeclarations);
+  if (invalid !== undefined) {
+    ctx.conflicts.push({ code: 'collab.conflict.invalid-value', target: '$project', name: op.name, reason: invalid });
+    return;
+  }
+  const rewrite = projectParamRewrite(ctx.headSource, op.name, op.to);
+  if (rewrite === undefined) {
+    ctx.conflicts.push({ code: 'collab.conflict.invalid-value', target: '$project', name: op.name, reason: `could not rewrite param '${op.name}' in source` });
+    return;
+  }
+  ctx.merged.params[op.name] = op.to;
+  ctx.edits.push({ ...rewrite.span, text: rewrite.text });
+}
+
+function applyFeatureParam(ctx: MergeContext, op: Extract<ChangeOp, { op: 'setParam' }>): void {
+  const baseNode = ctx.base.features.get(op.target);
+  const headNode = ctx.head.features.get(op.target);
+  if (headNode === undefined) {
+    ctx.conflicts.push({ code: 'collab.conflict.same-feature', id: op.target });
+    return;
+  }
+  const headValue = headNode.params[op.name];
+  if (equal(headValue, op.to)) return;
+  if (!equal(headValue, baseNode?.params[op.name])) {
+    ctx.conflicts.push({ code: 'collab.conflict.param', target: op.target, name: op.name, base: baseNode?.params[op.name], head: headValue, yours: op.to });
+    return;
+  }
+  const rewrite = featureParamRewrite(ctx.headSource, headNode, op.name, op.to);
+  if (rewrite === undefined) {
+    ctx.conflicts.push({ code: 'collab.conflict.invalid-value', target: op.target, name: op.name, reason: `could not rewrite ${op.name} inside ${op.target}'s statement` });
+    return;
+  }
+  ctx.merged.features.get(op.target)!.params[op.name] = op.to;
+  ctx.edits.push({ ...rewrite.span, text: rewrite.text });
+}
+
+function applySetParam(ctx: MergeContext, op: Extract<ChangeOp, { op: 'setParam' }>): void {
+  if (op.target === '$project') applyProjectParam(ctx, op);
+  else applyFeatureParam(ctx, op);
+}
+
+function mergedInsertionIndex(ctx: MergeContext, after: FeatureId | null): number {
+  let index = insertionIndex(ctx.merged.order, after);
+  while (index < ctx.merged.order.length && ctx.headOnly.has(ctx.merged.order[index]!)) index += 1;
+  return index;
+}
+
+function returnInsertOffset(ctx: MergeContext, anchorSpan: SourceSpan | undefined): number {
+  const spans = CollabSpanIndex.parse(ctx.headSource);
+  return spans.returnStatementSpan()?.start ?? anchorSpan?.end ?? 0;
+}
+
+function afterHeadInsertsOffset(ctx: MergeContext, index: number, anchorSpan: SourceSpan | undefined): number {
+  let offset = anchorSpan?.end ?? 0;
+  for (let i = index - 1; i >= 0; i -= 1) {
+    const id = ctx.merged.order[i]!;
+    if (!ctx.headOnly.has(id)) continue;
+    const span = ctx.head.features.get(id)?.sourceSpan;
+    if (span !== undefined && span.start >= (anchorSpan?.start ?? 0)) offset = Math.max(offset, span.end);
+  }
+  return offset;
+}
+
+function insertOffset(
+  ctx: MergeContext,
+  op: Extract<ChangeOp, { op: 'insertFeature' }>,
+  index: number,
+  isReturn: boolean,
+): number {
+  const anchorSpan = op.after !== null ? ctx.head.features.get(op.after)?.sourceSpan : undefined;
+  return isReturn ? returnInsertOffset(ctx, anchorSpan) : afterHeadInsertsOffset(ctx, index, anchorSpan);
+}
+
+function applyInsert(ctx: MergeContext, op: Extract<ChangeOp, { op: 'insertFeature' }>): void {
+  if (ctx.head.features.has(op.id)) {
+    const node = ctx.head.features.get(op.id)!;
+    if (!equal({ params: node.params, refs: node.refs }, { params: op.node.params, refs: op.node.refs })) {
+      ctx.conflicts.push({ code: 'collab.conflict.duplicate-id', ids: [op.id] });
+    }
+    return;
+  }
+  ctx.merged.features.set(op.id, cloneNode(op.node));
+  const index = mergedInsertionIndex(ctx, op.after);
+  ctx.merged.order.splice(index, 0, op.id);
+
+  const statement = statementText(ctx.yoursSource, op.node.sourceSpan);
+  const callText = op.node.callSpan !== undefined ? statementText(ctx.yoursSource, op.node.callSpan) : statement;
+  const isReturn = statementIsReturn(ctx.yoursSource, op.node.sourceSpan);
+  const insertText = isReturn ? callText : statement;
+  const offset = insertOffset(ctx, op, index, isReturn);
+  const prefix = offset === 0 || ctx.headSource[offset - 1] === '\n' ? '' : '\n';
+  const suffix = isReturn ? ';\n' : '\n';
+  ctx.edits.push({ start: offset, end: offset, text: `${prefix}${insertText}${suffix}` });
+}
+
+function applyDelete(ctx: MergeContext, op: Extract<ChangeOp, { op: 'deleteFeature' }>): void {
+  const headNode = ctx.head.features.get(op.id);
+  if (headNode === undefined) return;
+  if (nodeChanged(ctx.base.features.get(op.id), headNode)) {
+    ctx.conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
+    return;
+  }
+  ctx.merged.features.delete(op.id);
+  ctx.merged.order = ctx.merged.order.filter((id) => id !== op.id);
+  ctx.edits.push({ ...stripTrailingNewline(ctx.headSource, headNode.sourceSpan), text: '' });
+}
+
+function applySetRef(ctx: MergeContext, op: Extract<ChangeOp, { op: 'setRef' }>): void {
+  const headNode = ctx.head.features.get(op.id);
+  if (headNode === undefined) {
+    ctx.conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
+    return;
+  }
+  const baseRefs = ctx.base.features.get(op.id)?.refs[op.slot] ?? [];
+  const headRefs = headNode.refs[op.slot] ?? [];
+  if (equal(headRefs, op.to)) return;
+  if (!equal(headRefs, baseRefs)) {
+    ctx.conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
+    return;
+  }
+  const target = ctx.merged.features.get(op.id);
+  if (target === undefined) {
+    ctx.conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
+    return;
+  }
+  target.refs[op.slot] = [...op.to];
+}
+
+function applyMove(ctx: MergeContext, op: Extract<ChangeOp, { op: 'moveFeature' }>): void {
+  const headNode = ctx.head.features.get(op.id);
+  if (headNode === undefined) {
+    ctx.conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
+    return;
+  }
+  const baseIndex = ctx.base.order.indexOf(op.id);
+  const headIndex = ctx.head.order.indexOf(op.id);
+  if (baseIndex >= 0 && headIndex >= 0 && baseIndex !== headIndex) {
+    const expected = insertionIndex(ctx.head.order.filter((id) => id !== op.id), op.after);
+    if (expected !== headIndex) {
+      ctx.conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
+      return;
+    }
+  }
+  ctx.merged.order = ctx.merged.order.filter((id) => id !== op.id);
+  ctx.merged.order.splice(insertionIndex(ctx.merged.order, op.after), 0, op.id);
+  if (statementIsReturn(ctx.headSource, headNode.sourceSpan)) return;
+  const text = statementText(ctx.headSource, headNode.sourceSpan);
+  ctx.edits.push({ ...stripTrailingNewline(ctx.headSource, headNode.sourceSpan), text: '' });
+  const anchorSpan = op.after !== null ? ctx.head.features.get(op.after)?.sourceSpan : undefined;
+  const offset = anchorSpan?.end ?? 0;
+  const prefix = offset === 0 || ctx.headSource[offset - 1] === '\n' ? '' : '\n';
+  ctx.edits.push({ start: offset, end: offset, text: `${prefix}${text}\n` });
+}
+
+function applyRequirement(ctx: MergeContext, op: Extract<ChangeOp, { op: 'editRequirement' }>): void {
+  const baseReq = ctx.base.requirements[op.name];
+  const headReq = ctx.head.requirements[op.name];
+  if (equal(headReq, op.to)) return;
+  if (!equal(headReq, baseReq)) {
+    ctx.conflicts.push({ code: 'collab.conflict.same-feature', id: `requirement:${op.name}` });
+    return;
+  }
+  ctx.merged.requirements[op.name] = structuredClone(op.to as RequirementNodeType);
+  const to = op.to as RequirementNodeType | undefined;
+  if (headReq?.sourceSpan !== undefined && to?.sourceSpan !== undefined) {
+    ctx.edits.push({ ...headReq.sourceSpan, text: ctx.yoursSource.slice(to.sourceSpan.start, to.sourceSpan.end) });
+  }
+}
+
+async function applyUnowned(ctx: MergeContext, op: Extract<ChangeOp, { op: 'editUnowned' }>): Promise<void> {
+  const graph = await ctx.getYoursGraph();
+  const index = graph.unowned.findIndex((span) => span.start === op.span.start && span.end === op.span.end);
+  const baseSpan = ctx.base.unowned[index];
+  const headSpan = ctx.head.unowned[index];
+  const yoursSpan = graph.unowned[index];
+  if (index < 0 || baseSpan === undefined || headSpan === undefined || yoursSpan === undefined) {
+    ctx.conflicts.push({ code: 'collab.conflict.unowned', span: op.span });
+    return;
+  }
+  if (headSpan.text === yoursSpan.text) return;
+  if (headSpan.text !== baseSpan.text) {
+    ctx.conflicts.push({ code: 'collab.conflict.unowned', span: { start: headSpan.start, end: headSpan.end } });
+    return;
+  }
+  ctx.edits.push({ ...headSpan, text: yoursSpan.text ?? '' });
+}
+
+async function applyOp(ctx: MergeContext, op: ChangeOp): Promise<void> {
+  switch (op.op) {
+    case 'setParam':
+      return applySetParam(ctx, op);
+    case 'deleteFeature':
+      return applyDelete(ctx, op);
+    case 'insertFeature':
+      return applyInsert(ctx, op);
+    case 'setRef':
+      return applySetRef(ctx, op);
+    case 'moveFeature':
+      return applyMove(ctx, op);
+    case 'editRequirement':
+      return applyRequirement(ctx, op);
+    case 'editUnowned':
+      return applyUnowned(ctx, op);
+  }
+}
 
 /** Ops whose effect head already has are not part of this merge's write. */
 function effectiveOps(ops: readonly ChangeOp[], head: FeatureGraph): ChangeOp[] {
@@ -281,239 +488,12 @@ function effectiveOps(ops: readonly ChangeOp[], head: FeatureGraph): ChangeOp[] 
   });
 }
 
-export async function mergeChangeSet(input: MergeInput): Promise<MergeResult> {
-  const { baseSource, headSource, yoursSource, base, head, yours } = input;
-  void baseSource;
-  const merged = mutableFrom(head);
-  const conflicts: CollabConflict[] = [];
-  const edits: TextEdit[] = [];
-  const headOnly = new Set(head.order.filter((id) => !base.features.has(id)));
-
-  let yoursGraph: FeatureGraph | undefined;
-  const getYoursGraph = async (): Promise<FeatureGraph> => {
-    yoursGraph ??= await captureFeatureGraph(yoursSource, { fileName: 'yours.kcad.ts' });
-    return yoursGraph;
-  };
-
-  for (const op of yours.ops) {
-    switch (op.op) {
-      case 'setParam': {
-        if (op.target === '$project') {
-          const baseValue = base.params[op.name];
-          const headValue = head.params[op.name];
-          if (equal(headValue, op.to)) continue;
-          if (!equal(headValue, baseValue)) {
-            conflicts.push({
-              code: 'collab.conflict.param',
-              target: '$project',
-              name: op.name,
-              base: baseValue,
-              head: headValue,
-              yours: op.to,
-            });
-            continue;
-          }
-          const invalid = validateParam(op.name, op.to, merged.paramDeclarations);
-          if (invalid !== undefined) {
-            conflicts.push({ code: 'collab.conflict.invalid-value', target: '$project', name: op.name, reason: invalid });
-            continue;
-          }
-          const rewrite = projectParamRewrite(headSource, op.name, op.to);
-          if (rewrite === undefined) {
-            conflicts.push({
-              code: 'collab.conflict.invalid-value',
-              target: '$project',
-              name: op.name,
-              reason: `could not rewrite param '${op.name}' in source`,
-            });
-            continue;
-          }
-          merged.params[op.name] = op.to;
-          edits.push({ ...rewrite.span, text: rewrite.text });
-          continue;
-        }
-
-        const baseNode = base.features.get(op.target);
-        const headNode = head.features.get(op.target);
-        if (headNode === undefined) {
-          conflicts.push({ code: 'collab.conflict.same-feature', id: op.target });
-          continue;
-        }
-        const headValue = headNode.params[op.name];
-        if (equal(headValue, op.to)) continue;
-        if (!equal(headValue, baseNode?.params[op.name])) {
-          conflicts.push({
-            code: 'collab.conflict.param',
-            target: op.target,
-            name: op.name,
-            base: baseNode?.params[op.name],
-            head: headValue,
-            yours: op.to,
-          });
-          continue;
-        }
-        const rewrite = featureParamRewrite(headSource, headNode, op.name, op.to);
-        if (rewrite === undefined) {
-          conflicts.push({
-            code: 'collab.conflict.invalid-value',
-            target: op.target,
-            name: op.name,
-            reason: `could not rewrite ${op.name} inside ${op.target}'s statement`,
-          });
-          continue;
-        }
-        const target = merged.features.get(op.target)!;
-        target.params[op.name] = op.to;
-        edits.push({ ...rewrite.span, text: rewrite.text });
-        continue;
-      }
-
-      case 'deleteFeature': {
-        const headNode = head.features.get(op.id);
-        if (headNode === undefined) continue;
-        if (nodeChanged(base.features.get(op.id), headNode)) {
-          conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
-          continue;
-        }
-        merged.features.delete(op.id);
-        merged.order = merged.order.filter((id) => id !== op.id);
-        edits.push({ ...stripTrailingNewline(headSource, headNode.sourceSpan), text: '' });
-        continue;
-      }
-
-      case 'insertFeature': {
-        if (head.features.has(op.id)) {
-          const same = equal(
-            { params: head.features.get(op.id)!.params, refs: head.features.get(op.id)!.refs },
-            { params: op.node.params, refs: op.node.refs },
-          );
-          if (!same) conflicts.push({ code: 'collab.conflict.duplicate-id', ids: [op.id] });
-          continue;
-        }
-        merged.features.set(op.id, cloneNode(op.node));
-        let index = insertionIndex(merged.order, op.after);
-        // Head's own insertions after the same anchor stay first.
-        while (index < merged.order.length && headOnly.has(merged.order[index]!)) index += 1;
-        merged.order.splice(index, 0, op.id);
-
-        const statement = statementText(yoursSource, op.node.sourceSpan);
-        const callText = op.node.callSpan !== undefined ? statementText(yoursSource, op.node.callSpan) : statement;
-        const insertText = statementIsReturn(yoursSource, op.node.sourceSpan) ? callText : statement;
-        const statementIsReturnNode = statementIsReturn(yoursSource, op.node.sourceSpan);
-        const anchorSpan = op.after !== null ? head.features.get(op.after)?.sourceSpan : undefined;
-        let offset = anchorSpan?.end ?? 0;
-        if (statementIsReturnNode) {
-          const spans = CollabSpanIndex.parse(headSource);
-          offset = spans.returnStatementSpan()?.start ?? offset;
-        } else {
-          for (let i = index - 1; i >= 0; i -= 1) {
-            const id = merged.order[i]!;
-            if (!headOnly.has(id)) continue;
-            const span = head.features.get(id)?.sourceSpan;
-            if (span !== undefined && span.start >= (anchorSpan?.start ?? 0)) offset = Math.max(offset, span.end);
-          }
-        }
-        const prefix = offset === 0 || headSource[offset - 1] === '\n' ? '' : '\n';
-        const suffix = statementIsReturnNode ? ';\n' : '\n';
-        edits.push({ start: offset, end: offset, text: `${prefix}${insertText}${suffix}` });
-        continue;
-      }
-
-      case 'setRef': {
-        const headNode = head.features.get(op.id);
-        if (headNode === undefined) {
-          conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
-          continue;
-        }
-        const baseRefs = base.features.get(op.id)?.refs[op.slot] ?? [];
-        const headRefs = headNode.refs[op.slot] ?? [];
-        if (equal(headRefs, op.to)) continue;
-        if (!equal(headRefs, baseRefs)) {
-          conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
-          continue;
-        }
-        const target = merged.features.get(op.id);
-        if (target === undefined) {
-          conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
-          continue;
-        }
-        target.refs[op.slot] = [...op.to];
-        continue;
-      }
-
-      case 'moveFeature': {
-        const headNode = head.features.get(op.id);
-        if (headNode === undefined) {
-          conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
-          continue;
-        }
-        const baseIndex = base.order.indexOf(op.id);
-        const headIndex = head.order.indexOf(op.id);
-        if (baseIndex >= 0 && headIndex >= 0 && baseIndex !== headIndex) {
-          const expected = insertionIndex(head.order.filter((id) => id !== op.id), op.after);
-          if (expected !== headIndex) {
-            conflicts.push({ code: 'collab.conflict.same-feature', id: op.id });
-            continue;
-          }
-        }
-        merged.order = merged.order.filter((id) => id !== op.id);
-        merged.order.splice(insertionIndex(merged.order, op.after), 0, op.id);
-        if (!statementIsReturn(headSource, headNode.sourceSpan)) {
-          const text = statementText(headSource, headNode.sourceSpan);
-          edits.push({ ...stripTrailingNewline(headSource, headNode.sourceSpan), text: '' });
-          const anchorSpan = op.after !== null ? head.features.get(op.after)?.sourceSpan : undefined;
-          const offset = anchorSpan?.end ?? 0;
-          const prefix = offset === 0 || headSource[offset - 1] === '\n' ? '' : '\n';
-          edits.push({ start: offset, end: offset, text: `${prefix}${text}\n` });
-        }
-        continue;
-      }
-
-      case 'editRequirement': {
-        const baseReq = base.requirements[op.name];
-        const headReq = head.requirements[op.name];
-        if (equal(headReq, op.to)) continue;
-        if (!equal(headReq, baseReq)) {
-          conflicts.push({ code: 'collab.conflict.same-feature', id: `requirement:${op.name}` });
-          continue;
-        }
-        merged.requirements[op.name] = structuredClone(op.to as RequirementNodeType);
-        const to = op.to as RequirementNodeType | undefined;
-        if (headReq?.sourceSpan !== undefined && to?.sourceSpan !== undefined) {
-          edits.push({
-            ...headReq.sourceSpan,
-            text: yoursSource.slice(to.sourceSpan.start, to.sourceSpan.end),
-          });
-        }
-        continue;
-      }
-
-      case 'editUnowned': {
-        const graph = await getYoursGraph();
-        const index = graph.unowned.findIndex((span) => span.start === op.span.start && span.end === op.span.end);
-        const baseSpan = base.unowned[index];
-        const headSpan = head.unowned[index];
-        const yoursSpan = graph.unowned[index];
-        if (index < 0 || baseSpan === undefined || headSpan === undefined || yoursSpan === undefined) {
-          conflicts.push({ code: 'collab.conflict.unowned', span: op.span });
-          continue;
-        }
-        if (headSpan.text === yoursSpan.text) continue;
-        if (headSpan.text !== baseSpan.text) {
-          conflicts.push({ code: 'collab.conflict.unowned', span: { start: headSpan.start, end: headSpan.end } });
-          continue;
-        }
-        edits.push({ ...headSpan, text: yoursSpan.text ?? '' });
-        continue;
-      }
-    }
-  }
-
-  if (conflicts.length > 0) return { status: 'conflict', conflicts };
-  const structural = checkStructural(merged);
+async function finalizeMerge(ctx: MergeContext): Promise<MergeResult> {
+  if (ctx.conflicts.length > 0) return { status: 'conflict', conflicts: ctx.conflicts };
+  const structural = checkStructural(ctx.merged);
   if (structural.length > 0) return { status: 'conflict', conflicts: structural };
 
-  const mergedSource = applyTextEdits(headSource, edits);
+  const mergedSource = applyTextEdits(ctx.headSource, ctx.edits);
   let mergedGraph: FeatureGraph;
   try {
     mergedGraph = await captureFeatureGraph(mergedSource, { fileName: 'merged.kcad.ts' });
@@ -524,12 +504,12 @@ export async function mergeChangeSet(input: MergeInput): Promise<MergeResult> {
     };
   }
 
-  const derived = liftChangeSet(head, mergedGraph, {
-    baseRevision: yours.baseRevision,
-    agentId: yours.agentId,
-    idempotencyKey: yours.idempotencyKey,
+  const derived = liftChangeSet(ctx.head, mergedGraph, {
+    baseRevision: ctx.yours.baseRevision,
+    agentId: ctx.yours.agentId,
+    idempotencyKey: ctx.yours.idempotencyKey,
   });
-  const expected = effectiveOps(yours.ops, head);
+  const expected = effectiveOps(ctx.yours.ops, ctx.head);
   if (opsSignature(derived.ops) !== opsSignature(expected)) {
     const ids = [...new Set([...idsOf(derived.ops), ...idsOf(expected)])];
     return {
@@ -538,10 +518,11 @@ export async function mergeChangeSet(input: MergeInput): Promise<MergeResult> {
     };
   }
 
-  return {
-    status: 'merged',
-    source: mergedSource,
-    graph: mergedGraph,
-    rebased: head.revisionHash !== base.revisionHash,
-  };
+  return { status: 'merged', source: mergedSource, graph: mergedGraph, rebased: ctx.head.revisionHash !== ctx.base.revisionHash };
+}
+
+export async function mergeChangeSet(input: MergeInput): Promise<MergeResult> {
+  const ctx = createContext(input);
+  for (const op of input.yours.ops) await applyOp(ctx, op);
+  return finalizeMerge(ctx);
 }

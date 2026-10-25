@@ -49,40 +49,47 @@ function failedAtHead(head: EvaluatedRevision, name: string): boolean {
   return head.requirements.some((entry) => entry.name === name && entry.status === 'fail');
 }
 
-export async function gateCandidate(input: GateInput, deps: GateDeps): Promise<GateVerdict> {
-  const { head, yoursParent, candidateSource, footprint } = input;
-
-  let candidate: EvaluatedRevision;
-  try {
-    candidate = await deps.evaluate(candidateSource, head);
-  } catch (err) {
-    return {
-      status: 'reject',
-      reasons: [{ code: 'collab.gate.evaluation-failed', diagnostics: [err instanceof Error ? err.message : err] }],
-    };
-  }
-
+function featureReasons(
+  candidate: EvaluatedRevision,
+  head: EvaluatedRevision,
+  yoursParent: EvaluatedRevision | undefined,
+): GateReason[] {
   const reasons: GateReason[] = [];
-
   for (const [id, status] of candidate.features) {
     if (status !== 'error') continue;
     if (head.features.get(id) !== 'ok') continue;
     if (yoursParent !== undefined && yoursParent.features.get(id) !== 'ok') continue;
     reasons.push({ code: 'collab.gate.feature-failed', id });
   }
+  return reasons;
+}
 
+function bindingReasons(
+  head: EvaluatedRevision,
+  candidate: EvaluatedRevision,
+  footprint: Footprint,
+): { reasons: GateReason[]; notes: string[] } {
+  const reasons: GateReason[] = [];
   const notes: string[] = [];
-  const bindingChanges = diffSelectionBindings(head.selections, candidate.selections).filter(
+  const changes = diffSelectionBindings(head.selections, candidate.selections).filter(
     (change) => change.verdict === 'changed',
   );
-  for (const change of bindingChanges) {
+  for (const change of changes) {
     if (footprint.writes.has(change.consumerFeatureId) || footprint.downstream.has(change.consumerFeatureId)) {
       notes.push(`binding changed inside the write footprint: ${change.consumerFeatureId} ${change.selectorText}`);
       continue;
     }
     reasons.push({ code: 'collab.gate.binding-changed', change });
   }
+  return { reasons, notes };
+}
 
+function requirementReasons(
+  head: EvaluatedRevision,
+  candidate: EvaluatedRevision,
+  footprint: Footprint,
+): { reasons: GateReason[]; preexisting: string[] } {
+  const reasons: GateReason[] = [];
   const preexisting: string[] = [];
   const closure = new Set<FeatureId>([...footprint.writes, ...footprint.downstream]);
   for (const entry of candidate.requirements) {
@@ -100,12 +107,32 @@ export async function gateCandidate(input: GateInput, deps: GateDeps): Promise<G
       closure: inputs.length > 0 ? inputs : [...footprint.writes],
     });
   }
+  return { reasons, preexisting };
+}
+
+export async function gateCandidate(input: GateInput, deps: GateDeps): Promise<GateVerdict> {
+  const { head, yoursParent, candidateSource, footprint } = input;
+
+  let candidate: EvaluatedRevision;
+  try {
+    candidate = await deps.evaluate(candidateSource, head);
+  } catch (err) {
+    return {
+      status: 'reject',
+      reasons: [{ code: 'collab.gate.evaluation-failed', diagnostics: [err instanceof Error ? err.message : err] }],
+    };
+  }
+
+  const features = featureReasons(candidate, head, yoursParent);
+  const bindings = bindingReasons(head, candidate, footprint);
+  const requirements = requirementReasons(head, candidate, footprint);
+  const reasons = [...features, ...bindings.reasons, ...requirements.reasons];
 
   if (reasons.length > 0) return { status: 'reject', reasons, evaluated: candidate };
   return {
     status: 'pass',
     evaluated: candidate,
-    preexisting,
-    ...(notes.length > 0 ? { notes } : {}),
+    preexisting: requirements.preexisting,
+    ...(bindings.notes.length > 0 ? { notes: bindings.notes } : {}),
   };
 }
