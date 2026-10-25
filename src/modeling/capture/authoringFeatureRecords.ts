@@ -11,10 +11,10 @@ import {
 } from '../../shared/intent/dfmSpecRecord';
 import { DEFAULT_PRINTER_PROFILE, PRINTER_PROFILES } from '../../kernel/export/gcode/printerProfiles';
 import type {
-  FeaLoadMetadata,
   FeaStudyMetadata,
   FeaStudySpec,
 } from '../../shared/intent/feaStudyRecord';
+import { resolveFeaLoadsFromMotion, validFeaSelector, validateFeaStudyLoads } from './feaStudyLoads';
 import { resolveFeaMaterial } from '../../kernel/fea/feaMaterials';
 import {
   DATUM_LABEL_RE,
@@ -532,7 +532,9 @@ export function buildFeaStudyFeatureSpec(args: FeaStudySpec, shapeRef: FeatureRe
   };
 
   validateFeaStudyHeader(args, bad);
-  const loads = validateFeaStudyLoads(args.loads, bad);
+  const loads = args.loadsFrom !== undefined
+    ? [resolveFeaLoadsFromMotion(args, bad)]
+    : validateFeaStudyLoads(args.loads, bad);
   validateFeaStudyOptions(args, bad);
 
   const metadata: FeaStudyMetadata = {
@@ -553,10 +555,6 @@ export function buildFeaStudyFeatureSpec(args: FeaStudySpec, shapeRef: FeatureRe
   };
 }
 
-function validFeaSelector(v: unknown): boolean {
-  return (typeof v === 'string' && v.length > 0) || (typeof v === 'object' && v !== null && !Array.isArray(v));
-}
-
 function validateFeaStudyHeader(args: FeaStudySpec, bad: BadFn): void {
   if (args === null || typeof args !== 'object') bad('spec', 'must be an object');
   if (args.material === undefined) {
@@ -569,35 +567,15 @@ function validateFeaStudyHeader(args: FeaStudySpec, bad: BadFn): void {
   if (!validFeaSelector(args.fixed)) {
     bad('fixed', `must be a FaceQuery object or a '@kc[...]' ref string; got ${JSON.stringify(args.fixed)}`);
   }
-  if (!Array.isArray(args.loads) || args.loads.length === 0) {
+  if (args.loads !== undefined && args.loadsFrom !== undefined) {
+    bad('loads', 'and loadsFrom are mutually exclusive; pass one load source');
+  }
+  if (args.loads === undefined && args.loadsFrom === undefined) {
+    bad('loads', 'or loadsFrom is required — a study with no load reports nothing');
+  }
+  if (args.loads !== undefined && (!Array.isArray(args.loads) || args.loads.length === 0)) {
     bad('loads', 'must be a non-empty array — a study with no load reports nothing');
   }
-}
-
-function validateFeaStudyLoads(loads: FeaStudySpec['loads'], bad: BadFn): FeaLoadMetadata[] {
-  const out: FeaLoadMetadata[] = [];
-  for (const [i, load] of loads.entries()) {
-    if (load === null || typeof load !== 'object') bad(`loads[${i}]`, 'must be an object');
-    if (!validFeaSelector(load.faces)) {
-      bad(`loads[${i}].faces`, `must be a FaceQuery object or a '@kc[...]' ref string; got ${JSON.stringify(load.faces)}`);
-    }
-    const f = load.force;
-    if (!Array.isArray(f) || f.length !== 3 || !f.every(v => typeof v === 'number' && Number.isFinite(v))) {
-      bad(`loads[${i}].force`, `must be three finite numbers [Fx, Fy, Fz] in newtons; got ${JSON.stringify(f)}`);
-    }
-    if (f[0] === 0 && f[1] === 0 && f[2] === 0) {
-      bad(`loads[${i}].force`, 'is the zero vector; a zero load would report an infinite safety factor');
-    }
-    if (load.name !== undefined && (typeof load.name !== 'string' || load.name.length === 0)) {
-      bad(`loads[${i}].name`, `must be a non-empty string; got ${JSON.stringify(load.name)}`);
-    }
-    out.push({
-      faces: load.faces,
-      force: [f[0], f[1], f[2]],
-      name: load.name ?? `load${i}`,
-    });
-  }
-  return out;
 }
 
 function validateFeaStudyOptions(args: FeaStudySpec, bad: BadFn): void {
