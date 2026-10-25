@@ -24,6 +24,8 @@ import type {
   AnimationViewSpec,
 } from '../shared/intent/animationViewRecord';
 import type { DfmSpec, DfmSpecHandle } from '../shared/intent/dfmSpecRecord';
+import type { RequirementPredicate } from './requirements/predicates';
+import type { RequirementSelectionHandle } from './requirements/predicates';
 import type { TubeSpecMetadata } from '../shared/intent/tubeRecord';
 import type { TubeOptions, TubeSpec } from './capture/tubeRecords';
 import type { RailPoint } from './helix';
@@ -65,6 +67,7 @@ import { makePartsLib } from './apiPartsLib';
 import { makeNurbsSurfaceMethods, makeCurveMethods, makeSweepMethods } from './apiSurfaceMethods';
 import { makeModuleNamespaces } from './apiModuleNamespaces';
 import { makeCaptureMethods } from './apiCaptureMethods';
+import { makeRequirementMethods } from './apiRequirementMethods';
 import { makePolygonMethods, type FilletPolygonOptions, type PolygonPoint } from './apiPolygonMethods';
 import { makeThreadMethods } from './apiThreadMethods';
 import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
@@ -657,6 +660,50 @@ export interface KernelCadApi {
   dfmSpec(spec: DfmSpec): DfmSpecHandle;
 
   /**
+   * Declare a named, kernel-measured requirement. The predicate is authored
+   * with the helper globals below and reports into the same `requirements`
+   * ledger as `dfmSpec`, `feaStudy.minSafetyFactor` and mechanical intent.
+   * Example:
+   *
+   *   require('bolt-clearance', clearance(faces(bracket, { ofSurfaceType: 'CYLINDER' }), housing).gte(1.0));
+   *   require('hole-count', count(faces(plate, { ... })).eq(4));
+   *   require('wall-band', volume(body).between(1200, 1800));
+   *
+   * A requirement without a comparison THROWS (an enforcement gate must not
+   * silently disable itself). Each evaluation returns a `requirements` block
+   * with status / measured / limit / margin and the S1 fingerprints of the
+   * selections involved.
+   */
+  require(name: string, predicate: RequirementPredicate): void;
+
+  /** Minimum surface-to-surface distance between two selections, mm. */
+  clearance(a: unknown, b: unknown): RequirementPredicate;
+  /** Distance between two selections, mm. */
+  distance(a: unknown, b: unknown): RequirementPredicate;
+  /** Mass of a selection in kg (default 1000 kg/m^3). */
+  mass(selection: unknown): RequirementPredicate;
+  /** Volume of a selection in mm^3. */
+  volume(selection: unknown): RequirementPredicate;
+  /** Bounding-box size of a selection in mm; chain `.within({ x, y, z })`. */
+  bbox(selection: unknown): RequirementPredicate;
+  /** Centre of mass in mm; chain `.within(bands)` or `.between(lo, hi)`. */
+  centerOfMass(selection: unknown): RequirementPredicate;
+  /** Number of resolved faces/edges in a selection. */
+  count(selection: unknown): RequirementPredicate;
+  /** Largest inner-loop (hole) count across the selected faces. */
+  innerLoops(selection: unknown): RequirementPredicate;
+  /** Angle between two selections' directions, degrees. */
+  angle(a: unknown, b: unknown): RequirementPredicate;
+  /** Two selections share an axis. */
+  concentric(a: unknown, b: unknown): RequirementPredicate;
+  /** Two selections are coplanar. */
+  coplanar(a: unknown, b: unknown): RequirementPredicate;
+  /** Select all faces of `shape` matching `query` (default: every face). */
+  faces(shape: Shape, query?: import('../shared/intent/queryTypes').FaceQuery): RequirementSelectionHandle;
+  /** Select all edges of `shape` matching `query` (default: every edge). */
+  edges(shape: Shape, query?: EdgeQuery): RequirementSelectionHandle;
+
+  /**
    * Bent tube between two ends: straight legs joined by constant-radius
    * bends, built as one hollow solid in assembly space. `from` / `to` are
    * `part.port(name)` or `{ point, axis? }`; `via` lists the corner points in
@@ -783,6 +830,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     ...makeSweepMethods(session),
     ...makeModuleNamespaces(session),
     ...makeCaptureMethods(session),
+    ...makeRequirementMethods(session),
 
     // joint.* is bound below after the api object is fully constructed, so
     // the namespace closes over the FINAL `api` (including box/cylinder/etc.).

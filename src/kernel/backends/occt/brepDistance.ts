@@ -31,6 +31,11 @@ export function brepExtremaDistance(oc: any, shapeA: any, shapeB: any): number |
   }
 }
 
+/** Convenience wrapper that resolves the installed OCCT module once. */
+export function brepExtremaDistanceBetween(shapeA: unknown, shapeB: unknown): number | undefined {
+  return brepExtremaDistance(getOC(), shapeA, shapeB);
+}
+
 export interface BrepClosest {
   distance: number;
   /** Closest point on `shapeA`, then on `shapeB`. */

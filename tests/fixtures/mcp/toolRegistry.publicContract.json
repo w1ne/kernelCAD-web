@@ -36,6 +36,14 @@
             "additionalProperties": true
           },
           "description": "The `selections` of an earlier evaluation of this model. A selector that now binds to a different face or edge is reported as selector.binding-changed (warning), one whose entity only moved or resized as selector.binding-moved (info). Defaults to the previous evaluation of the same `file`."
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Call-time external requirements ([{ name, predicate }]) measured in the same `requirements` ledger, tagged source: 'external' and never persisted. The predicate is the serializable form of require(): { metric: clearance | distance | mass | volume | bbox | centerOfMass | count | innerLoops | angle | concentric | coplanar, a?, b?, op: gte | lte | eq | between | within, limit, tolerance?, density? }. Operands are { kind: body | faces | edges | part, ref: <feature id/name or part name>, query? }."
         }
       }
     },
@@ -129,6 +137,11 @@
             "additionalProperties": true
           },
           "description": "What each feature's selectors bound to: { consumerFeatureId, selectorText, syntax: lineage | topoRef | query, fingerprints[] (entity kind, surface type, producing feature, direction, radius, size, centroid), partDiagonal }. Pass back as `baseline` to learn which selectors an edit re-bound. Omitted when no feature used a selector."
+        },
+        "requirements": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "One requirements ledger: { ok, summary: { pass, fail, notEvaluated }, entries: [{ name, source: script | external | dfm | fea | mechanical, status: pass | fail | not-evaluated, measured, limit, margin, selections[] with S1 fingerprints, message? }] }. The ledger is the repair signal: it names the requirement, the measured value, the limit and the exact selections. ok is true only when every entry passed; a not-evaluated entry is never green."
         },
         "dimensions": {
           "type": "array",
@@ -765,6 +778,7 @@
       "properties": {
         "check": {
           "type": "string",
+          "description": "Which verification to run. Omit only when passing call-time `requirements`; then the requirements ledger is the verification.",
           "enum": [
             "assembly",
             "urdf",
@@ -779,13 +793,21 @@
             "geometry-quality",
             "assembly-path",
             "edge-radius",
-            "physics"
-          ],
-          "description": "Which verification to run."
+            "physics",
+            "requirements"
+          ]
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Call-time external requirements ([{ name, predicate }]) measured in the same ledger as script require(), dfmSpec and feaStudy, tagged source: 'external' and never persisted. The predicate is the serializable form of require(): { metric: clearance | distance | mass | volume | bbox | centerOfMass | count | innerLoops | angle | concentric | coplanar, a?, b?, op: gte | lte | eq | between | within, limit, tolerance?, density? }. Operands are { kind: body | faces | edges | part, ref: <feature id/name or part name>, query? }. With `check` omitted the ledger is the whole verification; check 'requirements' is the explicit form."
         },
         "file": {
           "type": "string",
-          "description": "Path to a .kcad.ts script (assembly/dfm/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius)."
+          "description": "Path to a .kcad.ts script (assembly/dfm/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius/requirements)."
         },
         "code": {
           "type": "string",
@@ -6220,6 +6242,14 @@
             "type": "string"
           },
           "description": "Warning diagnostic codes the original prompt explicitly allows. Other review warnings keep the loop iterating even if review_cad is functionally ok."
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Call-time external requirements ([{ name, predicate }]) every attempt is graded against, in the same ledger as script require(). Predicate shape: { metric, a?, b?, op, limit, tolerance?, density? }; operands: { kind: body | faces | edges | part, ref, query? }. A failing or not-evaluated requirement blocks the attempt even with no expert geometry."
         },
         "outputRecordPath": {
           "type": "string",

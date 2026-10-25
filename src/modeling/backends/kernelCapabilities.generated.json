@@ -41,6 +41,7 @@
         "projectCurve",
         "referenceImage",
         "renderEnvironment",
+        "require",
         "revolve",
         "sdfMaterialize",
         "shapeThicken",

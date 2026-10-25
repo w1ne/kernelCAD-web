@@ -67,12 +67,16 @@ export function runInRealm(
     argValues.push(host[k]);
   }
 
-  // Injected API. Reserved names are refused exactly like the vm runner.
+  // Injected API. Reserved names are refused exactly like the vm runner,
+  // except `require`: that is the kernelCAD requirement API (S2), and the
+  // injection is what keeps the host module loader out of reach.
   const shadowed = new Set<string>(SHADOWED_GLOBALS);
+  const injectedKeys = new Set<string>();
   for (const [k, v] of Object.entries(injected)) {
-    if (shadowed.has(k)) {
+    if (shadowed.has(k) && k !== 'require') {
       throw new Error(`Cannot inject reserved global: ${k}`);
     }
+    injectedKeys.add(k);
     argNames.push(k);
     argValues.push(v);
   }
@@ -80,6 +84,7 @@ export function runInRealm(
   // Shadow dangerous host globals: declare them as params bound to undefined so
   // `process`, `require`, `fetch`, … resolve to undefined inside the script.
   for (const k of SHADOWED_GLOBALS) {
+    if (injectedKeys.has(k)) continue;
     argNames.push(k);
     argValues.push(undefined);
   }

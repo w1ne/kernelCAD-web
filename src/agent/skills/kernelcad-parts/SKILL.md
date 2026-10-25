@@ -461,6 +461,16 @@ return arm.model();
 | `parts.fetch.api-error`           | Remote returned non-2xx or network failed.                                    | Retry later, check `partsBaseUrl` reachability, or fall back to `source: 'local'`.    |
 | `parts.fetch.remote-disabled`     | A tool needed remote, but no `partsBaseUrl` (arg or env) was set.             | Pass `partsBaseUrl`, set `KERNELCAD_PARTS_BASE_URL`, or stick to bundled ids.         |
 
+### Verify catalog parts against declared intent
+
+After placing purchased components, declare the interface they must keep with
+`require()` (for example `require('servo-clearance', clearance(servo, bracket).gte(0.2))`
+or `require('boss-concentric', concentric(faces(boss), faces(bearing)).within(0.05))`).
+The evaluation result's `requirements` ledger reports measured / limit / margin
+for each entry and carries the S1 fingerprints of the selections, so a failing
+interface names the parts rather than only the model. Catalog geometry does not
+need to be re-measured by hand.
+
 ### Verify installed catalog screws
 
 For a placed catalog screw use `verify({ check: 'fastener-installation', file,

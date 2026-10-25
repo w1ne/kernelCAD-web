@@ -451,6 +451,42 @@ After applying edge/face features, run before reporting done:
 | G-shell-thickness-positive | Shell offset `t` is positive (outward) AND less than the smallest local feature radius — otherwise shells inverts or self-intersects |
 | G-no-overlap | `kernelcad interference` reports zero overlaps; subtractive features (`hole`, `cutout`) clear their target volume completely |
 
+## Requirements ledger — declare what the design must satisfy
+
+`require(name, predicate)` turns design intent into a kernel measurement. Every
+`evaluate_script` result carries one `requirements` block; each entry has
+`status` (`pass` / `fail` / `not-evaluated`), `measured`, `limit`, `margin`, and
+the selections involved with their S1 fingerprints (so a viewer can highlight
+the exact faces). `dfmSpec`, gated `feaStudy.minSafetyFactor`, mechanical intent
+and call-time external requirements report into the same ledger.
+
+```typescript
+const body = box(40, 30, 10);
+const boss = cylinder(16, 6).translate(30, 15, 10);
+const part = body.union(boss);
+
+require('body-volume', volume(body).between(10_000, 14_000));
+require('part-bbox', bbox(part).within({ x: [39, 41], y: [29, 31], z: [9, 27] }));
+require('bore-is-4', count(faces(boss, { ofSurfaceType: 'CYLINDER' })).eq(1));
+require('clearance-to-boss', clearance(body, boss).gte(0.5));
+require('boss-angle', angle(faces(body, { normal: 'Z' }), faces(boss, { normal: 'Z' })).lte(1));
+require('boss-concentric', concentric(faces(boss), faces(boss)).within(0.05));
+require('top-coplanar', coplanar(faces(body, { normal: 'Z' }), faces(body, { normal: 'Z' })).within(0.05));
+require('boss-mass', mass(boss).atDensity(2700).between(0.02, 0.1));
+require('inner-loops', innerLoops(faces(body, { normal: 'Z' })).gte(0));
+```
+
+Selections are a `Shape` (whole body), `faces(shape, query?)`, `edges(shape,
+query?)`, or an already-resolved entity list carrying `@kc[...]` refs. All
+predicates chain exactly one comparison: `.gte(n)`, `.lte(n)`, `.eq(n)`,
+`.between(lo, hi)`, `.in([lo, hi])`, or `.within(bands | tolerance)`; `mass()`
+also takes `.atDensity(kgPerM3)`. A declaration with no comparison throws
+(`feature.invalid-args`) instead of silently disabling the gate. `require()`
+lives in the script; an eval task or customer spec can pass external
+requirements per call (`verify({ requirements: [...] })`), tagged
+`source: 'external'` and never persisted. `verify({ check: 'requirements' })`
+and `design_loop` grade from the ledger alone, with or without expert geometry.
+
 ## Bent tubes
 
 `tube(name, opts)` and `tubeSpec({ ... })` route bent tubes between ports and check them against bending and clearance rules: load `kernelcad-tubes`.

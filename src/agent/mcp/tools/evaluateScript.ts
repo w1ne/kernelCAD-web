@@ -108,6 +108,11 @@ export interface EvaluateScriptOutput extends McpViewerResult {
    *  entity) or `selector.binding-moved` (same entity, moved or resized).
    *  Absent when no feature used a selector. */
   selections?: NonNullable<EvaluateResult['selections']>;
+  /** One requirements ledger for this evaluation: script `require()`
+   *  declarations, dfmSpec gates, gated feaStudy.minSafetyFactor and any
+   *  external requirements passed in this call. Each entry carries status,
+   *  measured, limit, margin and the S1 fingerprints of its selections. */
+  requirements?: NonNullable<EvaluateResult['requirements']>;
   /** Tube line report (`lines`: bend table, cut length, clearance, mass, flow;
    *  `systems`: per-system totals). Present only when the model has tubes.
    *  The gate's diagnostics are already in `diagnostics`. */
@@ -248,6 +253,7 @@ export async function evaluateScriptTool(
     featureHealth: r.featureHealth,
     ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
     ...(r.selections !== undefined ? { selections: r.selections } : {}),
+    ...(r.requirements !== undefined ? { requirements: r.requirements } : {}),
     ...(tubes !== undefined ? { tubes } : {}),
     ...(portReport !== undefined ? { ports: portReport } : {}),
     ...(parts !== undefined ? { parts } : {}),
