@@ -338,6 +338,7 @@ const LEGACY_CODE_ORDER = [
   'kinematic.no-material-declared',
   'kinematic.static-hold.no-actuator-declared',
   'kinematic.sweep-tolerance.combo-cap-exceeded',
+  'kinematic.sweep-tolerance.boundary-budget-exhausted',
   'kinematic.mounting-hole.diameter-mismatch',
   'kinematic.pose.out-of-limits',
   'kinematic.mounting-hole.no-coverage',

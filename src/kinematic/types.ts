@@ -15,6 +15,13 @@ import type { Vec3 } from '../shared/intent/types';
 import type { NextAction } from '../shared/diagnostics/nextAction';
 import type { DiagnosticCode } from '../shared/diagnostics/registry';
 import type { AnyMaterialName } from '../shared/materials/engineeringMaterials';
+import type {
+  RequirementLimit,
+  RequirementMeasured,
+  RequirementSource,
+  RequirementStatus,
+  RequirementsLedger,
+} from '../shared/intent/requirementRecord';
 
 /**
  * Pose record — numeric joint values keyed by joint name (deg for revolute,
@@ -302,15 +309,77 @@ export interface SweepGateSpec {
   };
 }
 
+/** Compact ledger entry copied off an evaluated requirement. Selections are
+ *  counted rather than repeated per combo so a 64-point sweep stays readable;
+ *  the full entries (with fingerprints) are still on each evaluation. */
+export interface SweepRequirementEntry {
+  readonly name: string;
+  readonly source: RequirementSource;
+  readonly status: RequirementStatus;
+  readonly measured: RequirementMeasured;
+  readonly limit: RequirementLimit;
+  readonly margin: number | null;
+  readonly message?: string;
+  readonly featureId?: string;
+  readonly selectionCount: number;
+}
+
 export interface SweepComboResult {
   readonly combo: Readonly<Record<string, number | string>>;
   readonly gates: Readonly<Record<string, 'pass' | 'fail'>>;
+  /** Every ledger requirement measured at this combo. Empty when the script
+   *  declares none (or the build failed before the ledger ran). */
+  readonly requirements: ReadonlyArray<SweepRequirementEntry>;
+  /** Overall verdict: every gate passed and every ledger entry passed. A
+   *  `not-evaluated` entry is never green, matching the S2 ledger contract. */
+  readonly verdict: 'pass' | 'fail';
   readonly diagnostics: ReadonlyArray<{
     readonly gate: string;
     readonly code: string;
     readonly severity: string;
     readonly message: string;
   }>;
+}
+
+/** One pass/fail transition found on the coarse grid and bisected down to the
+ *  requested parameter tolerance. */
+export interface SweepBoundary {
+  readonly parameter: string;
+  /** Direction of the transition as the parameter increases. */
+  readonly direction: 'pass-to-fail' | 'fail-to-pass';
+  /** Coarse-grid endpoints that bracketed the transition. */
+  readonly from: number;
+  readonly to: number;
+  /** Final bracket: the last known pass value and fail value. */
+  readonly passValue: number;
+  readonly failValue: number;
+  /** Reported boundary (midpoint of the final bracket), in the parameter. */
+  readonly value: number;
+  /** Which side of the reported boundary fails. */
+  readonly failureSide: 'below' | 'above';
+  /** Requirements / gates that were failing on the fail side and passing on
+   *  the pass side — the binding constraints at this boundary. */
+  readonly binding: ReadonlyArray<string>;
+  readonly bindingRequirements: ReadonlyArray<string>;
+  readonly bindingGates: ReadonlyArray<string>;
+  /** Other swept parameters held fixed for this slice. */
+  readonly at: Readonly<Record<string, number | string>>;
+  readonly evaluations: number;
+  readonly withinTolerance: boolean;
+  readonly exhausted: boolean;
+  readonly message: string;
+}
+
+export interface SweepCoverage {
+  /** Coarse-grid points actually evaluated (capped at 64). */
+  readonly points: number;
+  /** Boundaries found and bisected. */
+  readonly boundaries: number;
+  /** Extra evaluations spent on boundary bisection. */
+  readonly boundaryEvaluations: number;
+  /** Honest statement, never a proof claim. */
+  readonly statement: string;
+  readonly proven: false;
 }
 
 export interface SweepToleranceResult {
@@ -321,7 +390,15 @@ export interface SweepToleranceResult {
   /** First failing combo per gate name — the fast-scan payload an agent
    *  reads before the full envelope table. */
   readonly firstFailure: Readonly<Record<string, SweepComboResult | undefined>>;
-  /** Sweep-level diagnostics (currently just the combo-cap warning). */
+  /** First failing combo per ledger requirement name. */
+  readonly firstRequirementFailure: Readonly<Record<string, SweepComboResult | undefined>>;
+  /** Pass/fail transitions bisected down to `boundaryTolerance`. */
+  readonly boundaries: ReadonlyArray<SweepBoundary>;
+  readonly boundaryEvaluations: number;
+  readonly boundaryBudget: number;
+  readonly boundaryTolerance: number;
+  readonly coverage: SweepCoverage;
+  /** Sweep-level diagnostics (combo cap, boundary budget exhaustion). */
   readonly diagnostics: ReadonlyArray<{
     readonly code: DiagnosticCode;
     readonly severity: 'info' | 'warn' | 'error';
@@ -343,6 +420,9 @@ export interface SweepEvaluationDiagnostic {
 export interface SweepEvaluationResult {
   readonly exitCode: number;
   readonly diagnostics: ReadonlyArray<SweepEvaluationDiagnostic>;
+  /** The S2 requirements ledger for this build. Absent only when the
+   *  evaluator predates the ledger or the build failed before evaluating it. */
+  readonly requirements?: RequirementsLedger;
 }
 
 /** Minimal view of the live session a built script exposes — the numeric
