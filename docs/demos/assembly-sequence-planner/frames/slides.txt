@@ -10,6 +10,8 @@ file '04-steps-a.png'
 duration 5
 file '05-steps-b.png'
 duration 5
+file '05a-fasteners.png'
+duration 5
 file '05b-subassemblies.png'
 duration 5
 file '06-states.png'

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Compose the P1 stage B demo from local kernelcad renders and the planner
-// evidence. Not a screen recording. Run from the repository root:
+// Compose the P2 demo from local kernelcad renders and the planner evidence.
+// Not a screen recording. Run from the repository root:
 //   node docs/demos/assembly-sequence-planner/make-video.mjs
 // Set FFMPEG to an ffmpeg binary if it is not on PATH.
 import { execFileSync } from 'node:child_process';
@@ -58,23 +58,32 @@ async function slide(name, { title, lines = [], footer, image, imageBox = { left
   return path;
 }
 
+function motionLabel(step) {
+  if (step.motion === 'helical') return 'helical';
+  if (step.motion === 'requires-force') return 'requires-force';
+  if (step.motion === 'search') return 'found-by-search';
+  return 'straight';
+}
 function listLines(steps, from, to) {
-  return steps.slice(from, to).map(s => `${String(s.index).padStart(2, ' ')}  + ${s.adds.join(' + ').padEnd(13)} insert ${JSON.stringify(s.direction)}`);
+  return steps.slice(from, to).map(s => `${String(s.index).padStart(2, ' ')}  + ${s.adds.join(' + ').padEnd(16)} ${motionLabel(s).padEnd(14)} insert ${JSON.stringify(s.direction)}`);
 }
 
 const slides = [];
 slides.push([3.5, await slide('00-title', {
-  title: 'Assembly sequence planner (P1 stage B)',
+  title: 'Fastener precedence and tool reach (P2)',
   lines: [
     "verify({ check: 'assembly-path', sequence: true })",
-    'Fastened/fixed clusters → subassemblies; deterministic heuristics; sampling fallback.',
+    'Declared helical bolts, press fits and swept tool envelopes; no fake proof.',
     'Local triangle-mesh evidence. Not a deployed capture or hardware test.',
   ],
   footer: 'kernelCAD · examples/assemblies/assembly-sequence-gearbox.kcad.ts',
 })]);
 slides.push([4.5, await slide('01-assembled', {
-  title: 'Twelve-part gearbox with two subassemblies',
-  lines: ['Cover, four posts, two shafts, four gears, base.', 'Fastened mates: each shaft with its two gears.'],
+  title: 'Gearbox with four bolts, a press fit and a tool-clearance rib',
+  lines: [
+    'Cover, four posts, two shafts, four gears, base, four bolts, one rib.',
+    'Rib sits beside bolt A: the screw leaves, the driver envelope does not.',
+  ],
   footer: 'Assembled render · local kernelcad render --preset publish',
   image: join(HERE, 'gearbox-assembled.png'),
   imageBox: { left: 120, top: 280, width: 1680, height: 620 },
@@ -94,25 +103,43 @@ slides.push([4.5, await slide('03-exploded', {
   imageBox: { left: 120, top: 280, width: 1680, height: 620 },
 })]);
 slides.push([5.0, await slide('04-steps-a', {
-  title: 'Build sequence · steps 1–7',
+  title: 'Build sequence · steps 1–10',
   lines: [
     'Heuristic removal order is reversed; direction is the insertion direction.',
     '',
-    ...listLines(evidence.result.steps, 0, 7),
+    ...listLines(evidence.result.steps, 0, 10),
     '',
-    `model: rigid parts · straight translation · ${evidence.result.model.testedDirections.length} directions · no gravity`,
+    `model: ${evidence.result.model.motionModels.join(' · ')}`,
   ],
   footer: 'sequence-evidence.json · verify assembly-path sequence:true',
 })]);
 slides.push([5.0, await slide('05-steps-b', {
-  title: 'Build sequence · steps 8–14',
+  title: 'Build sequence · steps 11–19',
   lines: [
-    ...listLines(evidence.result.steps, 7, 14),
+    ...listLines(evidence.result.steps, 10, 19),
     '',
     `unknown: ${evidence.result.unknown.length === 0 ? '[]' : evidence.result.unknown.join(', ')}`,
-    `ok: ${evidence.result.ok} · search: ${(evidence.result.search ?? []).length}`,
+    `ok: ${evidence.result.ok} · toolBlocked: ${(evidence.result.toolBlocked ?? []).length} · requiresForce: ${(evidence.result.requiresForce ?? []).length}`,
   ],
-  footer: 'Fourteen steps: twelve part additions plus two subassembly installs.',
+  footer: 'Nineteen steps: seventeen part additions plus two subassembly installs.',
+})]);
+slides.push([5.0, await slide('05a-fasteners', {
+  title: 'P2 · helical motion, tool reach and declared force',
+  lines: [
+    ...evidence.result.steps
+      .filter(step => step.motion === 'helical' || step.requiresForce || step.tool)
+      .map(step => {
+        if (step.tool) return `${String(step.index).padStart(2, ' ')}  ${step.adds[0]}  helical · TOOL-BLOCKED by ${step.tool.blockers.join(', ')}`;
+        if (step.requiresForce) return `${String(step.index).padStart(2, ' ')}  ${step.adds[0]}  requires-force ${step.requiresForce.kind} (declared, not simulated)`;
+        return `${String(step.index).padStart(2, ' ')}  ${step.adds[0]}  helical · pitch ${step.fastener?.pitchMm} mm · ${step.fastener?.turns.toFixed(2)} turns`;
+      }),
+    '',
+    `model stamp: ${evidence.result.model.motionModels.join(' · ')}`,
+    `toolReach: ${evidence.result.model.toolReach}`,
+    'Helical = declared axis/pitch sweep, never thread engagement.',
+    'requires-force = declared, never proven; tool-blocked = swept envelope.',
+  ],
+  footer: 'sequence.toolBlocked names tool-clearance-rib; sequence.requiresForce names the press-fit gear.',
 })]);
 slides.push([5.0, await slide('05b-subassemblies', {
   title: 'Subassembly planned inside, installed as one unit',
@@ -131,26 +158,28 @@ slides.push([5.0, await slide('05b-subassemblies', {
 slides.push([5.0, await slide('06-states', {
   title: 'States and fallback labels are never collapsed',
   lines: [
-    'removable { direction, testedDirections }  — straight removal proven.',
-    'blocked { blockersByDirection }             — trapped pin in two interlocking halves.',
-    'unknown { reason }                         — budget, multi-part move, non-straight path.',
+    'removable { direction, testedDirections, motion? } — straight or declared helical.',
+    'requires-force { fit }                          — press/snap declared, never simulated.',
+    'blocked { blockersByDirection }                 — trapped pin in two interlocking halves.',
+    'unknown { reason }                              — budget, multi-part move, non-straight path.',
     '',
+    'Tool reach: clear or tool-blocked { fastener, blockers }; unmodelled tools add nothing.',
     'Sampling fallback: sequence.search[].status = found-by-search, never proven.',
-    'Budget exhaustion is unknown: budget; a threaded fastener stays unknown: non-straight-path.',
   ],
-  footer: 'Unit tests: trapped pin; partitioned pinned set; L-corridor sampling; catalog M3 screw.',
+  footer: 'Unit tests: helical path, tool pass/fail, requires-force step, sequence integration.',
 })]);
 slides.push([4.0, await slide('07-end', {
   title: 'Model stamp',
   lines: [
     `basis: ${evidence.result.model.basis}`,
-    `motion: ${evidence.result.model.motion} · gravity: ${evidence.result.model.gravity}`,
+    `motionModels: ${evidence.result.model.motionModels.join(', ')}`,
+    `toolReach: ${evidence.result.model.toolReach} · gravity: ${evidence.result.model.gravity}`,
     `tessellation: ${evidence.result.model.tessellation.source}`,
     `clearance: ${evidence.result.model.clearanceMm} mm — ${evidence.result.model.clearancePolicy}`,
     '',
     'Source and evidence: docs/demos/assembly-sequence-planner/',
   ],
-  footer: 'Subassemblies, heuristics and found-by-search paths; no hardware claim.',
+  footer: 'Declared fastener/fit metadata, sampled rotation and swept tool envelopes; no hardware claim.',
 })]);
 
 const list = [];

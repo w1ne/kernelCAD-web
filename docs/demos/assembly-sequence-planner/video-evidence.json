@@ -1,16 +1,16 @@
 {
-  "checkedAt": "2026-10-25T10:30:11.673Z",
+  "checkedAt": "2026-10-25T11:37:33.217Z",
   "video": "demo.mp4",
-  "videoSha256": "4e207c05a17315249a5049fe96b2fec9926ad1f7086b5d931139eb209e5c1bba",
+  "videoSha256": "6dcd8ed1ef8cabf8dd0d2386d2765b400f7855153873931793a4917f6a0bf3bb",
   "canvas": "1920x1080",
   "sourceModels": {
-    "assembly-sequence-gearbox.kcad.ts": "3fca5581de4d4f795d58be96e3798ff2a4b6b87eefb3896255f7cceb45e3cfda"
+    "assembly-sequence-gearbox.kcad.ts": "84ce4ff50f51e7807ae77e62863e837f63802984739ba7e179a6d7eebd79b439"
   },
   "sequenceEvidence": "sequence-evidence.json",
   "inputSha256": {
-    "gearbox-assembled.png": "616c568b2efdbf8248004f6e729d9fd1bf6d6f25a36bc24201086e95a4e9b853",
-    "gearbox-internals.png": "08090786c9c00513c1b26caffbdfe4722fbe29e39b54ede0f35c696f4e38d374",
-    "gearbox-exploded.png": "464e4eb4f9419d5fc7522ae7b82977eda1c8f8b42396f0f67f22a124358df94a"
+    "gearbox-assembled.png": "3bc3b3c5b2f3603e64b17cb19031ab3cee6257a7b27d3268155c67b568db7abc",
+    "gearbox-internals.png": "ecec8763004246838c103216bf4c4ba63f2bb6f9f1d7d6287d21c6b1732333be",
+    "gearbox-exploded.png": "4cb0627fcdd4fc9c1db2d6801d5aa1e04dbbe3912cd2034abfa447c716052e05"
   },
   "slides": [
     {
@@ -35,6 +35,10 @@
     },
     {
       "image": "05-steps-b.png",
+      "durationSec": 5
+    },
+    {
+      "image": "05a-fasteners.png",
       "durationSec": 5
     },
     {
