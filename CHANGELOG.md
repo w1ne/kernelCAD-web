@@ -1,5 +1,20 @@
 # Unreleased
 
+## S3 stage B — standard-part range proofs in the catalog
+
+- The fastener, nut and washer `lib.standard.*` shortcuts declare their
+  stocked thread / sampled length domains and two ledger requirements
+  (envelope bbox band, positive volume). The remaining standard parts are
+  listed in `STANDARD_PART_RANGE_REMAINING` rather than claimed.
+- The `qc:build` CI gate (run by the `build-and-checks` job) now runs
+  `npm run test:standard-part-ranges`, which sends all 94 sampled points
+  through the same `sweepTolerance` path an agent uses and prints the point
+  and boundary count for each family.
+- Generated catalog records and the committed seed now carry
+  `attributes.verified*` (thread range, sampled length range, requirements,
+  points, boundaries, "checked, not proven"), so `find_part` shows the range
+  the part was checked over instead of only its default build.
+
 ## S3 stage A — range proofs instead of grids
 
 - `kinematic.sweepTolerance` now measures every entry in the S2 requirements

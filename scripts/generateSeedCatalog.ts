@@ -42,6 +42,7 @@ import {
   type PartRequest,
 } from '../src/modeling/parts/familyTable';
 import { fixtureSolid } from '../src/modeling/parts/fixtureSolids';
+import { standardPartVerificationAttributes } from '../src/modeling/parts/standardPartRanges';
 
 // -----------------------------------------------------------------------------
 // Types
@@ -1075,8 +1076,12 @@ export async function generateSeedCatalog(
       const built = await family.generate(variant);
       const id = built.record.id;
       const sha256 = createHash('sha256').update(built.stepBytes).digest('hex');
+      const verification = standardPartVerificationAttributes(family.id);
       const record: PartRecord = {
         ...built.record,
+        ...(verification === undefined
+          ? {}
+          : { attributes: { ...built.record.attributes, ...verification } }),
         sha256,
         source: 'local-catalog',
       };
