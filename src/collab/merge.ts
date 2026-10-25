@@ -194,7 +194,10 @@ interface SemanticOp {
 function semanticOp(op: ChangeOp): SemanticOp {
   switch (op.op) {
     case 'insertFeature': {
-      const { sourceSpan: _sourceSpan, callSpan: _callSpan, orderKey: _orderKey, ...node } = op.node;
+      const node = { ...op.node } as Record<string, unknown>;
+      delete node.sourceSpan;
+      delete node.callSpan;
+      delete node.orderKey;
       // Insert anchors are normalized through the merged order: head's own
       // insertions after the same anchor stay first, so the raw `after` id can
       // legitimately differ after re-lifting head→merged.
@@ -203,7 +206,8 @@ function semanticOp(op: ChangeOp): SemanticOp {
     case 'editRequirement': {
       const strip = (value: unknown): unknown => {
         if (typeof value !== 'object' || value === null) return value;
-        const { sourceSpan: _span, ...rest } = value as Record<string, unknown>;
+        const rest = { ...(value as Record<string, unknown>) };
+        delete rest.sourceSpan;
         return rest;
       };
       return { op: op.op, name: op.name, from: strip(op.from), to: strip(op.to) };
