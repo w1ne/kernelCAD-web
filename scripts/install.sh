@@ -54,7 +54,7 @@ case "$VERSION" in
   *) die "KERNELCAD_VERSION must look like v0.17.1" ;;
 esac
 
-ARCHIVE="kernelcad-${VERSION}-${PLATFORM}.tar.gz"
+ARCHIVE="kernelcad-${VERSION#v}-${PLATFORM}.tar.gz"
 URL="https://github.com/${REPO}/releases/download/${VERSION}/${ARCHIVE}"
 DEST="${HOME_DIR}/versions/${VERSION}"
 TMP="$(mktemp -d)"
@@ -67,7 +67,12 @@ mkdir -p "$DEST"
 tar -xzf "$TMP/$ARCHIVE" -C "$DEST" --strip-components=1
 
 mkdir -p "$INSTALL_DIR"
-ln -sfn "$DEST/bin/kernelcad" "$INSTALL_DIR/kernelcad"
+rm -f "$INSTALL_DIR/kernelcad"
+cat > "$INSTALL_DIR/kernelcad" <<WRAPPER
+#!/usr/bin/env sh
+exec "$DEST/bin/kernelcad" "\$@"
+WRAPPER
+chmod +x "$INSTALL_DIR/kernelcad"
 ok "kernelcad -> $INSTALL_DIR/kernelcad"
 
 case ":$PATH:" in
