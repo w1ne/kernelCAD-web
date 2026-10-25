@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// P1 stage A — result types and pure helpers for the assembly sequence
-// planner. The geometric peel lives in `assemblyPath.ts`; this module keeps
-// the shape of the answer stable so stage B can add subassemblies and the
-// search fallback without changing the public contract.
+// P1 — result types and pure helpers for the assembly sequence planner. The
+// geometric peel lives in `assemblyPath.ts`; this module keeps the shape of
+// the answer stable.
 import type { Vec3 } from '../../shared/intent/types';
 
-/** A part reference in a sequence step. Stage A always uses the part name. */
+/** A part reference in a sequence step. A subassembly install step uses its name. */
 export type PartRef = string;
 
 export type UnknownReason = 'budget' | 'needs-multi-part-move' | 'non-straight-path';
@@ -44,10 +43,28 @@ export interface Step {
     adds: PartRef[];
     /** Insertion direction: the reverse of the proven removal direction. */
     direction: Vec3;
-    /** Reserved for stage B subassemblies. */
+    /** Name of the subassembly this step belongs to, or the unit it installs. */
     subassembly?: string;
-    /** Reserved for P3 / stage B holding. */
+    /** Reserved for P3 stability/holding; stage B does not assign fixtures. */
     heldBy?: PartRef[];
+}
+
+/** A caller-declared or mate-derived subassembly candidate. */
+export interface SubassemblyInput {
+    name: string;
+    /** Leaf part names. A part may belong to at most one non-nested candidate. */
+    parts: readonly string[];
+}
+
+/**
+ * A non-straight path found by the sampling fallback. This is evidence that a
+ * path was found inside a finite sampling budget, never a proof of clearance.
+ */
+export interface SearchFinding {
+    part: string;
+    status: 'found-by-search';
+    /** Sequenced translations from the part's start pose to outside the assembly. */
+    waypoints: Vec3[];
 }
 
 export interface AssemblySequence {
@@ -55,6 +72,8 @@ export interface AssemblySequence {
     model: ModelStamp;
     /** Parts not ordered because their state is unknown (never "impossible"). */
     unknown: string[];
+    /** Non-straight paths found by search; these steps are not proven. */
+    search?: SearchFinding[];
 }
 
 /** One directed edge of the directional blocking graph. */

@@ -1,10 +1,10 @@
 {
-  "checkedAt": "2026-10-25T09:46:58.771Z",
+  "checkedAt": "2026-10-25T10:30:11.673Z",
   "video": "demo.mp4",
-  "videoSha256": "b8839fae810d1874f2a14a439be2e7855fe19f96a391be6746b85f33c1d2a927",
+  "videoSha256": "4e207c05a17315249a5049fe96b2fec9926ad1f7086b5d931139eb209e5c1bba",
   "canvas": "1920x1080",
   "sourceModels": {
-    "assembly-sequence-gearbox.kcad.ts": "65f7e495e8d98b6e2976e09a2c18465114e6fa5590653dfdf274a635f06db4ab"
+    "assembly-sequence-gearbox.kcad.ts": "3fca5581de4d4f795d58be96e3798ff2a4b6b87eefb3896255f7cceb45e3cfda"
   },
   "sequenceEvidence": "sequence-evidence.json",
   "inputSha256": {
@@ -35,6 +35,10 @@
     },
     {
       "image": "05-steps-b.png",
+      "durationSec": 5
+    },
+    {
+      "image": "05b-subassemblies.png",
       "durationSec": 5
     },
     {

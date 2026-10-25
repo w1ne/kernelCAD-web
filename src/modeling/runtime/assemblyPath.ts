@@ -9,14 +9,15 @@ import {
     buildDirectionalBlockingGraph,
     makeModelStamp,
     partState,
-    sequenceFromRemovalOrder,
-    stuckUnknownNames,
     type AssemblySequence,
     type DirectionalBlockingGraph,
     type MeshTessellationStamp,
     type ModelStamp,
     type PartState,
+    type SearchFinding,
+    type SubassemblyInput,
 } from './assemblySequence';
+import { planAssemblySequence } from './assemblySequencePlan';
 export interface AssemblyPathPart {
     name: string;
     mesh: DfmMesh;
@@ -36,6 +37,16 @@ export interface AssemblyPathOptions {
     workBudget?: number;
     /** Describe the input mesh's tessellation on the model stamp. */
     tessellation?: Partial<MeshTessellationStamp>;
+    /** Subassembly candidates; mate-derived clusters are added by the MCP tool. */
+    subassemblies?: readonly SubassemblyInput[];
+    /** Run the sampling fallback for parts stuck in every tested direction. Default true. */
+    search?: boolean;
+    /** Strict node budget for the sampling fallback. */
+    searchBudget?: number;
+    /** Strict number of multi-part subsets examined by the blocking-reduction partition. */
+    partitionBudget?: number;
+    /** Optional tool identity per part; drives the fewest-tool-changes heuristic. */
+    tools?: Readonly<Record<string, string>>;
 }
 export interface AssemblyPathDirection {
     direction: Vec3;
@@ -67,6 +78,8 @@ export interface AssemblyPathReport {
     stuckParts?: string[];
     /** Present when `sequence: true`. */
     sequence?: AssemblySequence;
+    /** Sampling fallback findings; each is labeled found-by-search, never proven. */
+    search?: SearchFinding[];
 }
 type Bounds = {
     min: Vec3;
@@ -80,7 +93,7 @@ interface Prepared extends AssemblyPathPart {
 }
 const CARDINAL: Vec3[] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 const DEFAULT_WORK_BUDGET = 2000000;
-const LIMITATIONS = 'Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation only; no mates, rotations, deformation or fastener unthreading. Greedy order is not exhaustive. Blocked and unknown parts are not "impossible".';
+const LIMITATIONS = 'Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation only; no mates, rotations, deformation or fastener unthreading. Subassembly and multi-part moves are heuristic, not exhaustive. Sampling paths are found-by-search, never proven. Blocked and unknown parts are not "impossible".';
 const DEFAULT_TESSELLATION: MeshTessellationStamp = {
     linearMm: null,
     relative: null,
@@ -118,6 +131,42 @@ function validateSequenceOptions(options: AssemblyPathOptions): void {
     validateWorkBudget(options);
     if (options.tessellation !== undefined)
         validateTessellation(options.tessellation);
+    if (options.search !== undefined && typeof options.search !== 'boolean')
+        throw new Error('search must be boolean.');
+    for (const key of ['searchBudget', 'partitionBudget'] as const)
+        if (options[key] !== undefined && (!Number.isInteger(options[key]) || options[key]! <= 0))
+            throw new Error(`${key} must be a positive integer.`);
+    validateSubassemblies(options.subassemblies);
+    validateTools(options.tools);
+}
+function validateSubassemblies(groups: readonly SubassemblyInput[] | undefined): void {
+    if (groups === undefined)
+        return;
+    if (!Array.isArray(groups))
+        throw new Error('subassemblies must be an array.');
+    const names = new Set<string>();
+    const members = new Set<string>();
+    for (const group of groups) {
+        if (!group || typeof group.name !== 'string' || !group.name || names.has(group.name))
+            throw new Error('subassemblies must have unique nonempty names.');
+        if (!Array.isArray(group.parts) || group.parts.length < 2 || group.parts.some((part: unknown) => typeof part !== 'string' || !part))
+            throw new Error(`subassembly '${group.name}' must name at least two parts.`);
+        if (new Set(group.parts).size !== group.parts.length)
+            throw new Error(`subassembly '${group.name}' lists a part more than once.`);
+        for (const part of group.parts) {
+            if (members.has(part))
+                throw new Error(`part '${part}' belongs to more than one subassembly.`);
+            members.add(part);
+        }
+        names.add(group.name);
+    }
+}
+function validateTools(tools: Readonly<Record<string, string>> | undefined): void {
+    if (tools === undefined)
+        return;
+    for (const [part, tool] of Object.entries(tools))
+        if (!part || typeof tool !== 'string' || !tool)
+            throw new Error('tools must map nonempty part names to nonempty tool names.');
 }
 function candidates(options: AssemblyPathOptions): Vec3[] {
     if (options.disassemblyOrder !== undefined && typeof options.disassemblyOrder !== 'boolean')
@@ -303,6 +352,27 @@ function createBlockedCheck(consumeWork: (amount?: number) => void): BlockedChec
         return false;
     };
 }
+/** Sweep-only variant for the sampling fallback. A path that starts outside a
+ *  solid cannot become contained without crossing a boundary, and the swept
+ *  triangle test catches that crossing; skipping per-segment containment keeps
+ *  the strict sampling budget affordable. */
+function createSearchBlockedCheck(consumeWork: (amount?: number) => void): BlockedCheck {
+    return (a, b, dir, distance) => {
+        consumeWork();
+        if (bboxGap(swept(a.bbox, dir, distance), b.bbox) > 0)
+            return false;
+        for (let i = 0; i < a.triangles.length; i++) {
+            const sweptBounds = swept(a.triangleBounds[i], dir, distance);
+            consumeWork();
+            for (const j of b.bvh.overlappingTriangles(sweptBounds, consumeWork)) {
+                consumeWork();
+                if (trianglesCollideAlong(a.triangles[i], b.triangles[j], dir, distance))
+                    return true;
+            }
+        }
+        return false;
+    };
+}
 function classifyPart(
     part: Prepared,
     remaining: Prepared[],
@@ -367,21 +437,42 @@ function peelRemoval(
     }
     return { removal, remaining, budgetExceeded };
 }
-function applySequence(result: AssemblyPathReport, peel: PeelOutcome, prepared: Prepared[], threaded: ReadonlySet<string>, model: ModelStamp): void {
-    result.ok = peel.remaining.length === 0;
-    if (peel.budgetExceeded)
-        for (const part of peel.remaining) {
-            const entry = result.parts.find(p => p.part === part.name);
-            if (entry)
-                entry.state = { kind: 'unknown', reason: 'budget' };
-        }
-    const unknown = stuckUnknownNames(
-        prepared.map(p => p.name),
-        threaded,
-        peel.budgetExceeded,
-        new Set(peel.remaining.map(p => p.name)),
-    );
-    result.sequence = sequenceFromRemovalOrder(peel.removal, model, unknown);
+interface SequencePlanInput {
+    dirs: Vec3[];
+    threaded: ReadonlySet<string>;
+    blocked: BlockedCheck;
+    consumeWork: (amount?: number) => void;
+    options: AssemblyPathOptions;
+}
+function applySequence(result: AssemblyPathReport, prepared: Prepared[], input: SequencePlanInput, model: ModelStamp): void {
+    const plan = planAssemblySequence(prepared, {
+        prepare: (name, mesh) => prepare({ name, mesh }, input.consumeWork),
+        classify: (part, remaining, isThreaded) => classifyPart(
+            part as Prepared,
+            remaining as Prepared[],
+            input.dirs,
+            input.blocked,
+            isThreaded ? new Set([part.name]) : new Set<string>(),
+        ),
+        blocked: input.blocked,
+        searchBlocked: createSearchBlockedCheck(input.consumeWork),
+    }, input.options, input.threaded);
+    for (const part of result.parts) {
+        if (plan.ordered.has(part.part) || input.threaded.has(part.part))
+            continue;
+        const reason = plan.unknownReasons.get(part.part);
+        if (reason)
+            part.state = { kind: 'unknown', reason };
+    }
+    const unknown = result.parts.filter(part => part.state.kind === 'unknown').map(part => part.part);
+    const sequence: AssemblySequence = { steps: plan.steps, model, unknown };
+    if (plan.search.length > 0)
+        sequence.search = plan.search;
+    result.ok = plan.ok;
+    result.sequence = sequence;
+    result.search = plan.search.length > 0 ? plan.search : undefined;
+    result.stuckParts = plan.remaining;
+    result.removalOrder = plan.removalOrder;
 }
 function assertParts(parts: readonly AssemblyPathPart[]): void {
     if (!parts.length || parts.length > 128 || parts.some(p => !p.name) || new Set(parts.map(p => p.name)).size !== parts.length)
@@ -421,16 +512,14 @@ export function checkAssemblyPathMeshes(parts: AssemblyPathPart[], options: Asse
             parts: initial,
             blockingGraph: buildDirectionalBlockingGraph(initial),
         };
-        if (options.disassemblyOrder || options.sequence) {
+        if (options.disassemblyOrder) {
             const peel = peelRemoval(prepared, report, threaded, options.sequence === true);
-            if (options.disassemblyOrder) {
-                result.removalOrder = peel.removal;
-                result.ok = !peel.remaining.length;
-            }
+            result.removalOrder = peel.removal;
+            result.ok = !peel.remaining.length;
             result.stuckParts = peel.remaining.map(p => p.name);
-            if (options.sequence)
-                applySequence(result, peel, prepared, threaded, model);
         }
+        if (options.sequence)
+            applySequence(result, prepared, { dirs, threaded, blocked, consumeWork, options }, model);
         return result;
     }
     catch (error) {

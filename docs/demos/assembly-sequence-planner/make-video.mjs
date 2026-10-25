@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Compose the P1 stage A demo from local kernelcad renders and the planner
+// Compose the P1 stage B demo from local kernelcad renders and the planner
 // evidence. Not a screen recording. Run from the repository root:
 //   node docs/demos/assembly-sequence-planner/make-video.mjs
 // Set FFMPEG to an ffmpeg binary if it is not on PATH.
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import sharp from 'sharp';
 
 const HERE = dirname(new URL(import.meta.url).pathname);
@@ -64,17 +64,17 @@ function listLines(steps, from, to) {
 
 const slides = [];
 slides.push([3.5, await slide('00-title', {
-  title: 'Assembly sequence planner (P1 stage A)',
+  title: 'Assembly sequence planner (P1 stage B)',
   lines: [
     "verify({ check: 'assembly-path', sequence: true })",
-    'Directional blocking graph → deterministic removal peel → reversed build sequence.',
+    'Fastened/fixed clusters → subassemblies; deterministic heuristics; sampling fallback.',
     'Local triangle-mesh evidence. Not a deployed capture or hardware test.',
   ],
   footer: 'kernelCAD · examples/assemblies/assembly-sequence-gearbox.kcad.ts',
 })]);
 slides.push([4.5, await slide('01-assembled', {
-  title: 'Twelve-part gearbox blockout',
-  lines: ['Cover, four posts, two shafts, four gears, base.'],
+  title: 'Twelve-part gearbox with two subassemblies',
+  lines: ['Cover, four posts, two shafts, four gears, base.', 'Fastened mates: each shaft with its two gears.'],
   footer: 'Assembled render · local kernelcad render --preset publish',
   image: join(HERE, 'gearbox-assembled.png'),
   imageBox: { left: 120, top: 280, width: 1680, height: 620 },
@@ -96,7 +96,7 @@ slides.push([4.5, await slide('03-exploded', {
 slides.push([5.0, await slide('04-steps-a', {
   title: 'Build sequence · steps 1–7',
   lines: [
-    'The removal peel is reversed; direction is the insertion direction.',
+    'Heuristic removal order is reversed; direction is the insertion direction.',
     '',
     ...listLines(evidence.result.steps, 0, 7),
     '',
@@ -105,26 +105,40 @@ slides.push([5.0, await slide('04-steps-a', {
   footer: 'sequence-evidence.json · verify assembly-path sequence:true',
 })]);
 slides.push([5.0, await slide('05-steps-b', {
-  title: 'Build sequence · steps 8–12',
+  title: 'Build sequence · steps 8–14',
   lines: [
-    ...listLines(evidence.result.steps, 7, 12),
+    ...listLines(evidence.result.steps, 7, 14),
     '',
     `unknown: ${evidence.result.unknown.length === 0 ? '[]' : evidence.result.unknown.join(', ')}`,
-    `ok: ${evidence.result.ok} · stuckParts: ${evidence.result.stuckParts.length === 0 ? '[]' : evidence.result.stuckParts.join(', ')}`,
+    `ok: ${evidence.result.ok} · search: ${(evidence.result.search ?? []).length}`,
   ],
-  footer: 'Every part is removable straight-line along its tested direction.',
+  footer: 'Fourteen steps: twelve part additions plus two subassembly installs.',
+})]);
+slides.push([5.0, await slide('05b-subassemblies', {
+  title: 'Subassembly planned inside, installed as one unit',
+  lines: [
+    ...evidence.result.steps
+      .filter(step => step.subassembly)
+      .map(step => step.adds[0] === step.subassembly
+        ? `${String(step.index).padStart(2, ' ')}  install ${step.subassembly} as one unit`
+        : `${String(step.index).padStart(2, ' ')}  add ${step.adds.join(' + ').padEnd(20)} inside ${step.subassembly}`),
+    '',
+    'Internal steps are tagged; the unit install step adds the subassembly name.',
+    'Deterministic heuristics: subassemblies first, outside-in, fewest reorientations, fewest tool changes.',
+  ],
+  footer: 'Fastened mates define the clusters; no mate solve is claimed.',
 })]);
 slides.push([5.0, await slide('06-states', {
-  title: 'Three states are never collapsed',
+  title: 'States and fallback labels are never collapsed',
   lines: [
     'removable { direction, testedDirections }  — straight removal proven.',
     'blocked { blockersByDirection }             — trapped pin in two interlocking halves.',
     'unknown { reason }                         — budget, multi-part move, non-straight path.',
     '',
-    'A catalog threaded fastener is unknown: non-straight-path, never blocked.',
-    'Blocked and unknown are not "impossible".',
+    'Sampling fallback: sequence.search[].status = found-by-search, never proven.',
+    'Budget exhaustion is unknown: budget; a threaded fastener stays unknown: non-straight-path.',
   ],
-  footer: 'Unit tests: trapped pin with both blockers; catalog M3 screw detected automatically.',
+  footer: 'Unit tests: trapped pin; partitioned pinned set; L-corridor sampling; catalog M3 screw.',
 })]);
 slides.push([4.0, await slide('07-end', {
   title: 'Model stamp',
@@ -136,14 +150,14 @@ slides.push([4.0, await slide('07-end', {
     '',
     'Source and evidence: docs/demos/assembly-sequence-planner/',
   ],
-  footer: 'Stage B: subassemblies, ordering heuristics, non-straight-path search.',
+  footer: 'Subassemblies, heuristics and found-by-search paths; no hardware claim.',
 })]);
 
 const list = [];
 for (const [duration, path] of slides) {
-  list.push(`file '${path}'`, `duration ${duration}`);
+  list.push(`file '${basename(path)}'`, `duration ${duration}`);
 }
-list.push(`file '${slides[slides.length - 1][1]}'`);
+list.push(`file '${basename(slides[slides.length - 1][1])}'`);
 const listPath = join(FRAMES, 'slides.txt');
 writeFileSync(listPath, list.join('\n') + '\n');
 

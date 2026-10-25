@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-10-25T09:44:54.309Z",
+  "checkedAt": "2026-10-25T10:28:44.699Z",
   "command": "verify({ check: 'assembly-path', file: 'examples/assemblies/assembly-sequence-gearbox.kcad.ts', sequence: true })",
   "source": "examples/assemblies/assembly-sequence-gearbox.kcad.ts",
-  "sourceSha256": "65f7e495e8d98b6e2976e09a2c18465114e6fa5590653dfdf274a635f06db4ab",
+  "sourceSha256": "3fca5581de4d4f795d58be96e3798ff2a4b6b87eefb3896255f7cceb45e3cfda",
   "result": {
     "ok": true,
     "model": {
@@ -115,7 +115,7 @@
       {
         "index": 1,
         "adds": [
-          "base"
+          "post-d"
         ],
         "direction": [
           -1,
@@ -126,40 +126,40 @@
       {
         "index": 2,
         "adds": [
-          "post-a"
+          "post-b"
         ],
         "direction": [
           0,
-          0,
-          -1
+          1,
+          0
         ]
       },
       {
         "index": 3,
         "adds": [
-          "post-b"
+          "post-c"
         ],
         "direction": [
+          1,
           0,
-          0,
-          -1
+          0
         ]
       },
       {
         "index": 4,
         "adds": [
-          "post-c"
+          "post-a"
         ],
         "direction": [
+          1,
           0,
-          0,
-          -1
+          0
         ]
       },
       {
         "index": 5,
         "adds": [
-          "post-d"
+          "cover"
         ],
         "direction": [
           0,
@@ -170,13 +170,14 @@
       {
         "index": 6,
         "adds": [
-          "input-shaft"
+          "gear-d"
         ],
         "direction": [
+          -1,
           0,
-          0,
-          -1
-        ]
+          0
+        ],
+        "subassembly": "subassembly-2-gear-c"
       },
       {
         "index": 7,
@@ -186,62 +187,91 @@
         "direction": [
           0,
           0,
-          -1
-        ]
+          1
+        ],
+        "subassembly": "subassembly-2-gear-c"
       },
       {
         "index": 8,
-        "adds": [
-          "gear-a"
-        ],
-        "direction": [
-          0,
-          0,
-          -1
-        ]
-      },
-      {
-        "index": 9,
-        "adds": [
-          "gear-b"
-        ],
-        "direction": [
-          0,
-          0,
-          -1
-        ]
-      },
-      {
-        "index": 10,
         "adds": [
           "gear-c"
         ],
         "direction": [
           0,
           0,
-          -1
-        ]
+          1
+        ],
+        "subassembly": "subassembly-2-gear-c"
+      },
+      {
+        "index": 9,
+        "adds": [
+          "subassembly-2-gear-c"
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ],
+        "subassembly": "subassembly-2-gear-c"
+      },
+      {
+        "index": 10,
+        "adds": [
+          "gear-b"
+        ],
+        "direction": [
+          -1,
+          0,
+          0
+        ],
+        "subassembly": "subassembly-1-gear-a"
       },
       {
         "index": 11,
         "adds": [
-          "gear-d"
+          "input-shaft"
         ],
         "direction": [
           0,
           0,
-          -1
-        ]
+          1
+        ],
+        "subassembly": "subassembly-1-gear-a"
       },
       {
         "index": 12,
         "adds": [
-          "cover"
+          "gear-a"
         ],
         "direction": [
           0,
           0,
-          -1
+          1
+        ],
+        "subassembly": "subassembly-1-gear-a"
+      },
+      {
+        "index": 13,
+        "adds": [
+          "subassembly-1-gear-a"
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ],
+        "subassembly": "subassembly-1-gear-a"
+      },
+      {
+        "index": 14,
+        "adds": [
+          "base"
+        ],
+        "direction": [
+          0,
+          0,
+          1
         ]
       }
     ],
@@ -249,6 +279,6 @@
     "stuckParts": []
   },
   "limits": [
-    "Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation only; no mates, rotations, deformation or fastener unthreading. Greedy order is not exhaustive. Blocked and unknown parts are not \"impossible\"."
+    "Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation only; no mates, rotations, deformation or fastener unthreading. Subassembly and multi-part moves are heuristic, not exhaustive. Sampling paths are found-by-search, never proven. Blocked and unknown parts are not \"impossible\"."
   ]
 }
