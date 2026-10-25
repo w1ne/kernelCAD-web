@@ -260,7 +260,7 @@ Declare editable dimensions and do arithmetic on them (JS operators throw on a P
 
 | Call | What it does |
 |---|---|
-| `param(name, defaultValue, meta?) => ParamRef` | Declare a symbolic editable parameter. |
+| `param(name, defaultValue, meta?) => ParamRef` | Declare a symbolic editable parameter (a ParamRef the chain ops accept anywhere a number is expected); MCP `set_param({ ..., preview: true })` previews a change against declared intent by returning the diff_geometry summary plus the requirements-ledger and S1 binding diffs, without writing source, session or caches. |
 | `params(decl) => { [name]: ParamRef }` | Batched form of `param()` — declare many params at once. |
 | `ParamRef.add(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef plus `other`. |
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |

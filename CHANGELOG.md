@@ -1,5 +1,49 @@
 # Unreleased
 
+## S6 — edit preview against intent
+
+- `set_param({ ..., preview: true })` builds the current and revised source in
+  scratch sessions and returns the `diff_geometry` material summary, the S2
+  requirements-ledger diff (status flips, margin shrink/grow, added/removed)
+  and the S1 selectors that moved or re-bound.
+- Preview writes nothing: the source argument, active MCP session, revision and
+  per-session caches are untouched. A revised build that fails returns
+  `ok: false` with diagnostics and no diff.
+- `after.requirementsOk` is the revised ledger verdict; `preview.ok` only means
+  the preview was computed, so a correctly-previewed intent break is still a
+  successful preview.
+- Added the reusable pure helpers `diffRequirementLedgers` (S2) and
+  `diffSelectionBindings` (S1), plus `diffGeometrySides` / `sideFromBuiltModel`
+  so a caller can build each side once for both the ledger and the geometry
+  report.
+- Docs: `docs/guide/edit-preview.md`, the params/MCP/features skills and the
+  cheat sheet.
+
+## P3 — approximate static stability in the assembly sequence
+
+- `verify({ check: 'assembly-path', sequence: true, stability: true })` now
+  checks each build step with a centre-of-mass/support-polygon projection.
+  Each part's closed-mesh centre of mass must project inside the convex hull of
+  its contacts with already-stable parts. Unsupported parts become
+  `sequence.needsHold` (`{ part, status: 'needs-hold', reason, supports,
+  centerOfMass, supportPolygon? }`), their steps carry
+  `stability: 'needs-hold'`, and `ok` is false. Stable steps may carry
+  `heldBy` naming their supporters.
+- The check is labelled **approximate** in the model stamp
+  (`gravity: 'approximate-support-projection'` plus `model.stability`) and in
+  the docs. It is not gravity simulation, friction, tipping, compliance or a
+  fixture solve.
+- Build orientation is declared with `gravity` (world direction, default
+  `[0, 0, -1]`); `fixtures` declares base/jig parts stable from step 1, or the
+  lowest part(s) along gravity seed the model. `contactToleranceMm` defaults to
+  0.05. The centre of mass is the closed-mesh volume centroid under a uniform
+  density; a single part's centroid is unchanged by declared mass/density. The
+  stamp records `massBasis: 'uniform-density-mesh-volume'`.
+- Example `examples/assemblies/assembly-stability-bracket.kcad.ts` places a
+  cantilever before the support under its free end and reports it `needs-hold`;
+  guide `docs/guide/assembly-path.md`; cookbook
+  `assembly-stability-support-polygon`.
+
 ## S5 — FEA loads from motion at the worst pose
 
 - `kinematic.motionLoad(arm, opts)` is now a script-level API (the same study

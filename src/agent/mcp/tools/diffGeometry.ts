@@ -47,6 +47,7 @@ import { sceneToWorldFrameParts } from '../../../kernel/backends/occt/sceneToWor
 import { detectCylindricalHoles } from '../../../kernel/backends/occt/holeDetection';
 import { meshDeviation } from '../../../modeling/runtime/meshDeviation';
 import type { RunScriptResult } from '../../../composition/runScript';
+import type { BuiltModel } from '../../../modeling/buildModel';
 import { Scene } from '../../../modeling/validation/scene';
 import { ParamTable } from '../../../shared/runtime/paramTable';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -223,6 +224,22 @@ function validateDiffGeometrySides(
   return undefined;
 }
 
+/** Compare two already-evaluated sides. Used by `diff_geometry` and by the
+ *  edit preview, which builds both sides once for the ledger and the geometry
+ *  report instead of lowering each script a second time. */
+export async function diffGeometrySides(
+  base: SideSummary,
+  revised: SideSummary,
+  options?: { render?: boolean; outDir?: string },
+): Promise<DiffGeometryOutput> {
+  return assembleDiffGeometryResult(
+    { ok: true, side: base },
+    { ok: true, side: revised },
+    options?.render === true,
+    options?.outDir,
+  );
+}
+
 async function assembleDiffGeometryResult(
   base: Extract<SideResult, { ok: true }>,
   revised: Extract<SideResult, { ok: true }>,
@@ -350,6 +367,17 @@ export async function evaluateSide(
   return solidSideResult(run, result, ret);
 }
 
+/** Build a diff side from a model that was already built by
+ *  `evaluateAndBuildScript`. Read-only: it inspects the built shapes and
+ *  returns world-frame parts, exactly like `evaluateSide`. */
+export function sideFromBuiltModel(model: BuiltModel): SideResult {
+  const returnValue: unknown = model.returnValue;
+  if (returnValue instanceof Scene) {
+    return sceneSideFromShapes(model.records.length, model.shapes, returnValue, model.diagnostics);
+  }
+  return solidSideFromShapes(model.records, model.shapes, returnValue);
+}
+
 function applyParamOverrides(
   base: ParamTable,
   paramOverrides: Record<string, number | boolean> | undefined,
@@ -379,20 +407,29 @@ function applyParamOverrides(
 }
 
 function sceneSideResult(run: RunScriptResult, result: RecomputeResult, scene: Scene): SideResult {
+  return sceneSideFromShapes(run.records.length, result.shapes, scene, result.diagnostics);
+}
+
+function sceneSideFromShapes(
+  featureCount: number,
+  shapes: ReadonlyMap<string, unknown>,
+  scene: Scene,
+  diagnostics: readonly CompilerDiagnostic[],
+): SideResult {
   const sourceId = scene.__sourceFeatureId();
-  const lowered = sourceId !== undefined ? result.shapes.get(sourceId) : undefined;
+  const lowered = sourceId !== undefined ? shapes.get(sourceId) : undefined;
   if (!lowered || !isSceneBackend(lowered)) {
     return {
       ok: false,
       error: 'diff_geometry: the assembly scene did not lower successfully.',
       errorCode: 'recompute.input.missing',
-      diagnostics: withNextActions(result.diagnostics),
+      diagnostics: withNextActions([...diagnostics]),
     };
   }
   return {
     ok: true,
     side: {
-      featureCount: run.records.length,
+      featureCount,
       isAssembly: true,
       bodies: sceneToWorldFrameParts(lowered).map((p) => ({ name: p.name, shape: p.shape })),
     },
@@ -404,8 +441,16 @@ function solidSideResult(
   result: RecomputeResult,
   returnValue: RunScriptResult['returnValue'],
 ): SideResult {
-  const tailId = run.records.length > 0 ? run.records[run.records.length - 1].id : undefined;
-  const bodies = returnedBodies(returnValue, result.shapes, tailId);
+  return solidSideFromShapes(run.records, result.shapes, returnValue);
+}
+
+function solidSideFromShapes(
+  records: readonly { id: string }[],
+  shapes: ReadonlyMap<string, unknown>,
+  returnValue: unknown,
+): SideResult {
+  const tailId = records.length > 0 ? records[records.length - 1].id : undefined;
+  const bodies = returnedBodies(returnValue, shapes, tailId);
   if (bodies.length === 0) {
     return {
       ok: false,
@@ -416,7 +461,7 @@ function solidSideResult(
   return {
     ok: true,
     side: {
-      featureCount: run.records.length,
+      featureCount: records.length,
       isAssembly: false,
       bodies,
     },

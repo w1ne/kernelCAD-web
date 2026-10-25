@@ -18,6 +18,9 @@ For an **organic** vehicle / fairing body, reach for `automotive-body-envelope` 
 // Editable symbolic parameters. Returned value is a ParamRef accepted anywhere
 // the API expects an editable number or boolean. Edit the param() default
 // post-build with set_param via MCP / session.params.update in runtime code.
+// Preview a change without writing it: set_param({ code, param_name,
+// new_value, preview: true }) returns the diff_geometry summary plus the
+// requirements-ledger diff and S1 selector re-binds.
 param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
   min?: number;
   max?: number;
