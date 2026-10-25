@@ -128,7 +128,7 @@ questions). Pair it with one of the MCP lines below.
 
 Claude Desktop and claude.ai: Settings → Connectors → Add custom connector, URL
 `https://mcp.kernelcad.com/mcp`. Local stdio alternative:
-`npx -y kernelcad install --claude-desktop`.
+`kernelcad install --claude-desktop`.
 
 Windsurf (`~/.codeium/windsurf/mcp_config.json`):
 
@@ -161,7 +161,7 @@ mcpServers:
 ```
 
 Local stdio server for any client (bundled WASM kernel, no OCCT install):
-`npx -y kernelcad mcp`.
+`kernelcad mcp`.
 
 ### Registries
 
@@ -185,7 +185,7 @@ Local stdio server for any client (bundled WASM kernel, no OCCT install):
 | Grok Build | yes | yes |
 | Gemini CLI extension | yes | yes |
 | skills.sh (`npx skills add`) | yes | yes |
-| Claude Desktop | manual JSON (uvx) | custom connector URL, or `npx kernelcad install --claude-desktop` |
+| Claude Desktop | manual JSON (uvx) | custom connector URL, or `kernelcad install --claude-desktop` |
 | Package manager runtime | PyPI `cadgen` via uvx | npm `kernelcad` via npx |
 | Hosted remote MCP (no local install) | no | yes |
 | VS Code / Copilot one-click and `code --add-mcp` | no | yes |

@@ -143,7 +143,7 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 ## Installation
 
 ```bash
-npm install -g kernelcad
+curl -fsSL https://kernelcad.com/install.sh | sh
 kernelcad evaluate path/to/script.kcad.ts
 ```
 
