@@ -40,18 +40,17 @@
 ## Summary
 
 v0.17.1 makes cable-driven mechanisms physically honest and gives MCP agents a
-full physics check. Tendons can now have a hard length limit, fasteners use
-real ISO geometry, and `verify({ check: 'physics' })` runs MuJoCo static
-equilibrium and drop-on-release on a robotics assembly. The Allonic-style hand
-also has a browser MuJoCo WebAssembly demo.
+full physics check. Tendons can declare a hard length limit, fasteners use real
+ISO geometry, and `verify({ check: 'physics' })` runs the physics engine's
+static-equilibrium and drop-on-release checks on an assembly.
 
 ## Highlights
 
 ### Tendon length limits
 
-- `arm.tendon(...)` accepts `maxLengthMm`. The MJCF exporter writes it as a
-  MuJoCo `limited="true" range="0 L"` tendon limit, so a braided strap can go
-  slack but cannot stretch past its braided length.
+- `arm.tendon(...)` accepts `maxLengthMm`. The physics export writes it as a
+  hard `limited` range, so a braided strap can go slack but cannot stretch past
+  its braided length.
 - Spring fields are optional for a limit-only strap.
 - On the hand, capping each ligament at its undeformed length plus 0.5 mm cut
   the little-finger DIP axial slide from 5.40 mm to 0.25 mm at the same 0.2 ms
@@ -69,19 +68,18 @@ also has a browser MuJoCo WebAssembly demo.
 ### Physics in MCP
 
 - New `verify({ check: 'physics' })` runs the full mechanism-truth probe with
-  MuJoCo: disconnect, interference, DOF, orphan checks, static equilibrium at
-  sampled poses, and drop-on-release under gravity.
+  the physics engine: disconnect, interference, DOF, orphan checks, static
+  equilibrium at sampled poses, and drop-on-release under gravity.
 - Returns `{ ok, mechanism: 'real' | 'broken' | 'unverified', failures, coverage }`.
 - The hosted server generation gate runs the same physics check, so a generated
   mechanism cannot pass by looking correct while collapsing under gravity.
 
-### Browser hand demo
+### Install
 
-- A static MuJoCo WebAssembly viewer drives the Allonic-style hand with 20 N
-  flexors and 25 N thumb opposition at a 0.2 ms step.
-- Three.js draws the exported MJCF meshes and the 15 driven tendon paths.
-- The page simulates once, keeps the frames, and replays them locally. No
-  server job and no plug-in.
+- The CLI is a self-contained GitHub Release archive. There is no npm package.
+- One line: `curl -fsSL https://kernelcad.com/install.sh | sh`.
+- The same installer prints MCP setup for Claude Code, Codex, Gemini and the
+  hosted ChatGPT / Claude connector.
 
 ## Quality Gates
 
@@ -129,8 +127,6 @@ npm run dev
 ## Links
 
 - Web app: https://kernelcad.com
-- Hand demo: https://kernelcad.com/demos/hand-wasm/
-- Release post: https://kernelcad.com/blog/hand-physics-in-browser/
 - Issues: https://github.com/w1ne/kernelCAD-web/issues
 
 
@@ -2141,7 +2137,7 @@ v0.6.0 ships the assembly **structure validity** layer — the mate vocabulary, 
 - `arm.part(...).connector(name, opts)` chain method on parts. Connectors are named coordinate frames embedded in a part. Four types: `frame` (full 6-DOF), `axis` (line + point), `planar` (plane + origin), `ball` (point only). Origin can be a numeric `Vec3` or a topology-bound query.
 - `Connector` topology-bound origins: `face-center` / `face-normal` queries resolve user-declared face labels (declared via `box(..., { faceLabels: { lid: 'top' } })` and peers) in addition to the six canonical face names, by walking the capture session's upstream feature records — same machinery as fillet/chamfer/shell label resolution. `edge-axis` queries resolve canonical box edges by name (`edge-<face1>-<face2>`, e.g. `edge-top-front`; order insignificant) and canonical cylinder cap edges (`edge-top` / `edge-bottom`). Resolution survives `.translate` and `.rotate` because the bounding-box plane match tracks transforms. Post-boolean shapes where the canonical face/edge no longer exists surface `assembly.connector.topology-not-resolvable` cleanly. Vertex queries deferred to v0.7.
 - `arm.mate(name, aRef, bRef, type, opts?)` API. 7 mate types: `fastened`, `revolute`, `prismatic`, `cylindrical`, `planar`, `ball`, `pin_slot`. Capture-time pair-compatibility validation (build123d-style early error) throws `KernelError('feature.invalid-args')` with structured hints (`invalid-args.assembly.mate-type-mismatch`, `invalid-args.assembly.mate-connector-not-found`). `opts.pose` accepts a numeric or `ParamRef` pose for revolute / prismatic / cylindrical / ball / pin_slot mates; `fastened` / `planar` reject the pose arg.
-- Pattern-A forward-kinematics walk over the mate graph: parts authored in their own LOCAL FRAMES, `solveMates(arm, poses?)` composes per-part world transforms by walking the mate tree from root, applying each mate's joint-frame contribution (rotation around the connector axis for revolute, translation along axis for prismatic, etc.). Industry-standard data flow — same model used by Fusion 360, OnShape, build123d, URDF, MuJoCo, Drake, USD.
+- Pattern-A forward-kinematics walk over the mate graph: parts authored in their own LOCAL FRAMES, `solveMates(arm, poses?)` composes per-part world transforms by walking the mate tree from root, applying each mate's joint-frame contribution (rotation around the connector axis for revolute, translation along axis for prismatic, etc.). Industry-standard data flow — same model used by Fusion 360, OnShape, build123d, URDF, physics engine, Drake, USD.
 - Mate-FK transforms wired through `Assembly.solvedModel(poses, opts)` (capture-time Scene composition) AND the OCCT lowerer (recompute-time mesh placement), so rendered output reflects mate-driven placement end-to-end. Mate-transforms win over v0.5 joint-FK transforms for parts in the mate graph; v0.5 joint-only assemblies render unchanged.
 - Newton-Raphson closed-loop solver scaffold (iter-cap 50, finite-diff Jacobian). Fastened-only loops classified `redundant-ok` / `over-constrained`. Articulated closed loops (revolute / prismatic in a cycle) return `did-not-converge` — deferred to v0.6.x.
 
@@ -2182,7 +2178,7 @@ The biggest open thing v0.6 does NOT do: **prove that the mechanism would actual
 - Static load capacity — given declared servo torque + cumulative downstream mass + lever arm, each joint must support the load.
 - Mechanism intent contract — `assembly.intent({ type, reach })` annotations; the kernel proves the geometry realizes the declared intent.
 
-Nobody else has design-time mechanism-feasibility gates inside CAD authoring (Fusion / OnShape relegate it to separate sim modules; Drake / MuJoCo are post-design sim research). This is the agent-first kernel differentiator.
+Nobody else has design-time mechanism-feasibility gates inside CAD authoring (Fusion / OnShape relegate it to separate sim modules; Drake / physics engine are post-design sim research). This is the agent-first kernel differentiator.
 
 ### Deferred to v0.7 — smaller items
 
@@ -2412,7 +2408,7 @@ npm run dev
   non-uniform-scale lowerer).
 - Joint origin convention changed from `EditableVec3` (worldOrigin from
   `parent.connector('tip').worldOrigin`) to numeric `Vec3` in the
-  **parent part's local frame** (URDF/MuJoCo convention). This unblocks
+  **parent part's local frame** (URDF/physics convention). This unblocks
   multi-joint forward kinematics — the canonical bug case (yaw 90°Z +
   pitch 90°Y on vertical-shoulder + horizontal-elbow → previously gave
   wrong elbow position) now resolves correctly via SE(3) composition.

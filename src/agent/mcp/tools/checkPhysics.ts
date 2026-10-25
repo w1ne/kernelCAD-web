@@ -3,7 +3,7 @@
 // src/agent/mcp/tools/checkPhysics.ts
 //
 // MCP tool: verify({ check: 'physics' }). Runs the full mechanism-truth
-// probe with the MuJoCo physics criteria enabled: static equilibrium and
+// probe with the physics criteria enabled: static equilibrium and
 // drop-on-release, plus the kinematic disconnect / interference / DOF checks.
 // This is the agent-facing "is the assembly actually functional?" gate.
 
@@ -18,7 +18,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 export interface CheckPhysicsInput extends EvaluateInput {
   /** Assembly name when the script defines more than one. */
   assembly?: string;
-  /** Set false to run only the kinematic criteria (no MuJoCo). Default true. */
+  /** Set false to run only the kinematic criteria (no physics engine). Default true. */
   physics?: boolean;
 }
 
@@ -36,7 +36,7 @@ export type CheckPhysicsOutput =
  * `verify({ check: 'physics' })` — full mechanism truth with physics.
  *
  * `ok` is true only when every sampled pose passes the kinematic criteria
- * AND the MuJoCo static-equilibrium and drop-on-release criteria pass. A
+ * AND the physics static-equilibrium and drop-on-release criteria pass. A
  * budget-limited run returns `mechanism: 'unverified'` with `ok: false` so
  * an agent can retry with simpler geometry or a narrower pose scope.
  */
