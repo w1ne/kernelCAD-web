@@ -141,6 +141,8 @@ Pick the edges or faces a feature acts on. Query first, then sort or group what 
 | `selectEdge(shape, query) => Promise<EdgeSegment>` | Like selectEdges but throws if zero or multiple edges match. |
 | `select : <T>(items: Iterable<T>) => ShapeList<T>` | Wrap any array of topology query results in a `ShapeList` so the selector algebra applies — face summaries from `inspect({ of: 'faces' })`, `ResolvedEntity[]` from `q.face(...).evaluate(scene)`, or a hand-assembled list. |
 | `q : { face, edge, vertex, connector, part, solid, createdBy, ownedByPart, ownerPart, union, intersection, subtraction, containsPoint, closestTo, geometryType, withLabel, withFeatureName, nthElement, fromString, nothing, everything }` | Query DSL constructor namespace. |
+| `faces(shape, query?) => RequirementSelectionHandle` | Select all faces of `shape` matching a FaceQuery (default every face) for a requirement predicate. |
+| `edges(shape, query?) => RequirementSelectionHandle` | Select all edges of `shape` matching an EdgeQuery (default every edge) for a requirement predicate. |
 | `ShapeList.sortBy(criterion: 'X' \| 'Y' \| 'Z' \| Vec3 \| 'area' \| 'length' \| 'radius', opts?: { descending?: boolean; tolerance?: number }) => ShapeList<T>` | Order the list by a criterion, ascending by default. |
 | `ShapeList.sortByDistance(point: Vec3, opts?: { descending?: boolean; tolerance?: number }) => ShapeList<T>` | Order by straight-line distance from each entity position to `point`, nearest first. |
 | `ShapeList.groupBy(criterion: 'X' \| 'Y' \| 'Z' \| Vec3 \| 'area' \| 'length' \| 'radius', opts?: { tolerance?: number; descending?: boolean }) => ShapeGroups<T>` | Partition into groups sharing a quantized criterion value — one group per Z level, per hole diameter, per face area. |
@@ -231,6 +233,7 @@ Ask the kernel what you actually built, and check it before shipping.
 | Call | What it does |
 |---|---|
 | `Shape.boundingBox(opts?: { exact?: boolean }) => Promise<{ min: [number, number, number]; max: [number, number, number]; size: [number, number, number]; center: [number, number, number] }>` | Axis-aligned bounding box in the CURRENT world frame (after every transform appended so far), in mm. |
+| `bbox(selection) => RequirementPredicate` | Bounding-box size of a body selection in mm. |
 | `Scene.bbox : { min: [number, number, number]; max: [number, number, number] }` | Lazy axis-aligned bounding box over all transformed parts. |
 | `Curve3D.length() => number` | Total arc length in mm. |
 | `Shape.lower() => Promise<OcctBackend>` | Eagerly lower this Shape for inspection. |
@@ -239,6 +242,17 @@ Ask the kernel what you actually built, and check it before shipping.
 | `Shape.feaStudy(spec: { material: 'mild-steel' \| 'aluminum-6061' \| 'pla' \| 'petg' \| 'abs' \| 'nylon' \| { E: number; nu: number; yield: number }; fixed: FaceQuery \| string; loads: Array<{ faces: FaceQuery \| string; force: [number, number, number]; name?: string }>; meshSize?: number; minSafetyFactor?: number; name?: string }) => FeaStudyHandle` | Declare a linear-static structural study on this shape: where it is held (`fixed`), what pushes on it (`loads`, force in TOTAL newtons over the selected faces), and what it is made of. |
 | `tube(name, { from, to, via?, od?, wall, bendRadius, system?, material?, density?, flow? }) => Shape` | Bent tube between two ends: straight legs joined by constant-radius bends, built as one hollow solid in assembly space. |
 | `tubeSpec({ minBendRadiusFactor?, minStraightBetweenBends?, minStraightAtEnd?, maxBendAngle?, clearance?: { default?, pairs? }, systems?: { [system]: { minBendRadiusFactor?, minStraightBetweenBends?, minStraightAtEnd?, maxBendAngle? } } }) => { id, metadata }` | Declare the rules every tube() in the script must meet. |
+| `require(name: string, predicate: RequirementPredicate) => void` | Declare a named, kernel-measured requirement, reported in the `requirements` ledger every evaluation returns. |
+| `clearance(a, b) => RequirementPredicate` | Minimum surface-to-surface BREP distance between two selections, mm. |
+| `distance(a, b) => RequirementPredicate` | Distance between two selections, mm. |
+| `mass(selection) => RequirementPredicate` | Mass of a body selection in kg. |
+| `volume(selection) => RequirementPredicate` | Volume of a body selection in mm^3. |
+| `centerOfMass(selection) => RequirementPredicate` | Centre of mass in mm. |
+| `count(selection) => RequirementPredicate` | Number of resolved faces/edges in a selection. |
+| `innerLoops(selection) => RequirementPredicate` | Largest inner-boundary-loop (cutout) count across selected faces. |
+| `angle(a, b) => RequirementPredicate` | Angle between two selections' directions (face normal, edge tangent/axis or a body's principal axis), degrees. |
+| `concentric(a, b) => RequirementPredicate` | Two selections share an axis: parallel axes and coincident centres. |
+| `coplanar(a, b) => RequirementPredicate` | Two selections are coplanar: parallel normals and zero plane offset. |
 
 ## Parametrize
 

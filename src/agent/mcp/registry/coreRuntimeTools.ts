@@ -74,6 +74,16 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
             'face or edge is reported as selector.binding-changed (warning), one whose entity only moved or ' +
             'resized as selector.binding-moved (info). Defaults to the previous evaluation of the same `file`.',
         },
+        requirements: {
+          type: 'array',
+          items: { type: 'object', additionalProperties: true },
+          description:
+            'Call-time external requirements ([{ name, predicate }]) measured in the same `requirements` ledger, ' +
+            "tagged source: 'external' and never persisted. The predicate is the serializable form of require(): " +
+            "{ metric: clearance | distance | mass | volume | bbox | centerOfMass | count | innerLoops | angle | concentric | coplanar, " +
+            "a?, b?, op: gte | lte | eq | between | within, limit, tolerance?, density? }. Operands are " +
+            "{ kind: body | faces | edges | part, ref: <feature id/name or part name>, query? }.",
+        },
       },
     },
   },

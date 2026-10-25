@@ -12,6 +12,8 @@ describe('assembly path MCP check', () => {
         expect(p.check.enum).toContain('assembly-path');
         expect(p).toHaveProperty('directions');
         expect(p).toHaveProperty('disassemblyOrder');
+        expect(p).toHaveProperty('sequence');
+        expect(p).toHaveProperty('threadedFasteners');
     });
     it('evaluates real assembly code through verify', async () => {
         const result = await verifyTool({ check: 'assembly-path', code, assembly: 'path' }) as Awaited<ReturnType<typeof checkAssemblyPathTool>>;
@@ -31,6 +33,29 @@ describe('assembly path MCP check', () => {
             throw new Error(result.error);
         expect(result.parts[0].validDirections).toEqual([[0, 0, 1]]);
     });
+    it('produces a build sequence for the twelve-part gearbox example', async () => {
+        const result = await checkAssemblyPathTool({ file: 'examples/assemblies/assembly-sequence-gearbox.kcad.ts', sequence: true });
+        if ('error' in result)
+            throw new Error(result.error);
+        expect(result.sequence?.steps).toHaveLength(12);
+        expect(result.sequence?.steps.map(s => s.adds[0])).toEqual([
+            'base', 'post-a', 'post-b', 'post-c', 'post-d',
+            'input-shaft', 'output-shaft', 'gear-a', 'gear-b', 'gear-c', 'gear-d', 'cover',
+        ]);
+        expect(result.sequence?.unknown).toEqual([]);
+        expect(result.sequence?.steps.every(s => s.index === result.sequence!.steps.indexOf(s) + 1)).toBe(true);
+        expect(result.model).toMatchObject({ rigidParts: true, gravity: 'not-modelled' });
+    }, 60_000);
+    it('detects a catalog threaded fastener as unknown: non-straight-path', async () => {
+        const code = "const a=assembly('fastener-sequence');a.part('screw',await lib.part({family:'socket-head-cap-screw',thread:'M3',lengthMm:8,detail:'envelope'}));a.part('plate',box(20,20,2).translate(0,0,10));return a.model();";
+        const result = await checkAssemblyPathTool({ code, sequence: true });
+        if ('error' in result)
+            throw new Error(result.error);
+        const screw = result.parts.find(p => p.part === 'screw');
+        expect(screw?.state).toEqual({ kind: 'unknown', reason: 'non-straight-path' });
+        expect(result.sequence?.unknown).toContain('screw');
+        expect(result.sequence?.steps.map(s => s.adds[0])).not.toContain('screw');
+    }, 60_000);
     it('fails closed for missing and ambiguous assemblies and invalid scripts', async () => {
         expect(await checkAssemblyPathTool({ code, assembly: 'missing' })).toMatchObject({ ok: false, errorCode: 'feature.invalid-args' });
         expect(await checkAssemblyPathTool({ code: 'return box(1,1,1);' })).toMatchObject({ ok: false, errorCode: 'feature.invalid-args' });

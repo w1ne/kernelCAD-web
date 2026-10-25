@@ -20,6 +20,7 @@ export function wrappedShape(backend: OcctBackend): any {
 export {
   brepExtremaContact,
   brepExtremaDistance,
+  brepExtremaDistanceBetween,
   brepExtremaClosest,
   minDistanceBetweenShapes,
   type BrepClosest,

@@ -184,6 +184,9 @@ export interface EvaluateWithEnvelopeResult {
   /** What each feature's selectors bound to; feed it back as the baseline of
    *  the next evaluation. Absent when no feature used a selector. */
   selections?: EvaluateResult['selections'];
+  /** One requirements ledger: script `require()`, dfmSpec, gated FEA,
+   *  mechanical intent and external requirements passed in this call. */
+  requirements?: EvaluateResult['requirements'];
   /** Tube line report and system totals; absent when the model has no tubes. */
   tubes?: ReturnType<typeof tubesOutput>;
   /** Every fluid port of the script's assembly; absent when it declares none. */
@@ -304,6 +307,7 @@ function evaluationResult(
     diagnostics: evaluation.diagnostics,
     ...(evaluation.dimensions !== undefined ? { dimensions: evaluation.dimensions } : {}),
     ...(evaluation.selections !== undefined ? { selections: evaluation.selections } : {}),
+    ...(evaluation.requirements !== undefined ? { requirements: evaluation.requirements } : {}),
     ...tubeReportFields(reports),
     ...(trace !== undefined ? { trace } : {}),
   };
@@ -419,6 +423,7 @@ export function evaluateJsonOutput(r: EvaluateWithEnvelopeResult): Record<string
     diagnostics: r.diagnostics,
     ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
     ...(r.selections !== undefined ? { selections: r.selections } : {}),
+    ...(r.requirements !== undefined ? { requirements: r.requirements } : {}),
     ...tubeReportFields(r),
     ...(r.envelopeDiagnostics !== undefined ? {
       envelopeDiagnostics: r.envelopeDiagnostics,
@@ -444,6 +449,13 @@ function printEvaluateResult(r: EvaluateWithEnvelopeResult, opts: EvaluateCliOpt
       console.error(formatEnvelopeDiagnostics(envelopeErrors));
     } else if (r.envelopeDiagnostics !== undefined) {
       console.log(`Pose-envelope: ${r.envelopeSampleCount} sample${r.envelopeSampleCount === 1 ? '' : 's'} clean.`);
+    }
+    if (r.requirements !== undefined && r.requirements.entries.length > 0) {
+      const s = r.requirements.summary;
+      console.log(`Requirements: ${s.pass} pass, ${s.fail} fail, ${s.notEvaluated} not evaluated.`);
+      for (const e of r.requirements.entries.filter(x => x.status !== 'pass')) {
+        console.log(`  [${e.status}] ${e.message ?? e.name}`);
+      }
     }
     if (r.exitCode === 0) console.log('OK');
   }

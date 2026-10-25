@@ -94,7 +94,7 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'assembly' — static assembly review ({ file | code }, or the session evaluate_script left): mate validator, default-pose interference, joint topology, mechanical plausibility. ok:false with `blocking[]` exactly when review_cad's blocking rules fire on these findings; review_cad also sweeps joint ranges and runs physics.\n" +
       "- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n" +
       "- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n" +
-      "- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions and blocking parts; disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n" +
+      "- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions, blocking parts and one of three states (removable / blocked / unknown); sequence peels the directional blocking graph and reverses it into a build sequence with a model stamp. Threaded catalog fasteners are unknown: non-straight-path until P2. disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n" +
       "- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n" +
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
       "- 'geometry-quality' — one solid body's BREP tiny faces and short edges (ids, locations, mm²/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n" +
@@ -111,10 +111,18 @@ const verifyToolEntry: ToolRegistryEntry = {
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'motion-load', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius', 'physics'],
-          description: 'Which verification to run.',
+          description: 'Which verification to run. Omit only when passing call-time `requirements`; then the requirements ledger is the verification.',
+          enum: ['assembly', 'urdf', 'dfm', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'motion-load', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius', 'physics', 'requirements'],
         },
-        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius).' },
+        requirements: {
+          type: 'array',
+          items: { type: 'object', additionalProperties: true },
+          description:
+            "Call-time external requirements ([{ name, predicate }]) measured in the same ledger as script require(), dfmSpec and feaStudy, tagged source: 'external' and never persisted. " +
+            'The predicate is the serializable form of require(): { metric: clearance | distance | mass | volume | bbox | centerOfMass | count | innerLoops | angle | concentric | coplanar, a?, b?, op: gte | lte | eq | between | within, limit, tolerance?, density? }. ' +
+            "Operands are { kind: body | faces | edges | part, ref: <feature id/name or part name>, query? }. With `check` omitted the ledger is the whole verification; check 'requirements' is the explicit form.",
+        },
+        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius/requirements).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
         feature_id: { type: 'string', description: "check:'geometry-quality' — body feature to measure; defaults to script return. check:'edge-radius' — lowered feature; default the returned model." },
         tiny_face_area_mm2: { type: 'number', minimum: 0, default: 0.01, description: "check:'geometry-quality' — flag faces strictly below this absolute area; zero disables." },
@@ -152,6 +160,8 @@ const verifyToolEntry: ToolRegistryEntry = {
         urdf_path: { type: 'string', description: "check:'urdf' — path to the .urdf file." },
         directions: { type: 'array', maxItems: 64, items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 }, description: "check:'assembly-path' — additional nonzero world-space removal vectors; normalized and deduplicated." },
         disassemblyOrder: { type: 'boolean', description: "check:'assembly-path' — iteratively remove freed parts and return removalOrder or stuckParts." },
+        sequence: { type: 'boolean', description: "check:'assembly-path' — peel the directional blocking graph and return sequence { steps, model, unknown }. Steps carry the insertion direction (reverse removal); blocked and unknown parts are not reported as impossible." },
+        threadedFasteners: { type: 'array', items: { type: 'string' }, description: "check:'assembly-path' — part names that need a helical removal. Catalog screw/bolt/nut families are detected automatically; these are reported unknown: non-straight-path until P2." },
         joint: { type: 'string', description: "check:'swept-collision' — joint to sweep; omit to sweep every declared joint. check:'static-hold' — joint to evaluate; omit to evaluate every joint with a declared actuator." },
         range: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'swept-collision' — [lower, upper, step] in joint-native units." },
         collision_tolerance_mm3: { type: 'number', description: "check:'swept-collision' — BREP intersection volume tolerance (mm^3)." },

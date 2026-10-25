@@ -92,7 +92,10 @@ export function findTopLevelImport(code: string): string | undefined {
 const TOP_LEVEL_IMPORT_LINE_RES: readonly RegExp[] = [
   /^[ \t]*import\b/,
   /^[ \t]*(?:const|let|var)\s+[^\n]*\brequire\s*\(/,
-  /^[ \t]*require\s*\(/,
+  // A bare CommonJS `require('<specifier>')` — one string argument and
+  // nothing else. `require('name', predicate)` is the kernelCAD requirement
+  // API (S2), not a module import, so the two-argument form must not match.
+  /^[ \t]*require\s*\(\s*(['"`])[^'"`\n]*\1\s*\)\s*;?\s*$/,
 ];
 
 /**

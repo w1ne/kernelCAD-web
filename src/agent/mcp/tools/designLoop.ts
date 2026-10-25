@@ -24,6 +24,7 @@ import {
   scriptQualityFacts,
 } from '../../loop/designLoopQualityFacts';
 export { geometryReviewFacts } from '../../loop/designLoopQualityFacts';
+import type { ExternalRequirement, RequirementsLedger } from '../../../shared/intent/requirementRecord';
 import { consensusDecision, selectDesignLoopConsensus, type DesignLoopConsensus } from './designLoopConsensus';
 export type { DesignLoopConsensus } from './designLoopConsensus';
 
@@ -76,6 +77,9 @@ export interface DesignLoopInput {
   consensus?: boolean;
   outputRecordPath?: string;
   recordTitle?: string;
+  /** Call-time requirements to grade every attempt against. Reported in the
+   *  same ledger as script `require()` and never persisted. */
+  requirements?: readonly ExternalRequirement[];
 }
 
 export interface DesignLoopAttemptResult {
@@ -96,6 +100,8 @@ export interface DesignLoopAttemptResult {
   nextActionPrompt: string;
   /** Structured revision hints / patches for ChatGPT (agent still applies). */
   revisionAssist?: RevisionAssist;
+  /** One requirements ledger for this attempt. */
+  requirements?: RequirementsLedger;
 }
 
 export interface DesignLoopOutput {
@@ -293,6 +299,7 @@ function buildReviewInput(
           requirePhysicalUseCase: true,
         }
       : {}),
+    ...(input.requirements !== undefined ? { requirements: input.requirements } : {}),
   };
 }
 
@@ -377,6 +384,7 @@ function toAttemptResult(input: {
       input.visualReview,
       input.allowReviewWarnings,
     ),
+    ...requirementFacts(input.review.requirements, input.allowReviewWarnings),
   ];
   const functional = input.review.ok;
   const qualityOk = reviewFacts.length === 0;
@@ -396,12 +404,32 @@ function toAttemptResult(input: {
     passedChecks: fitness !== undefined ? [...fitness.passedChecks] : [],
     blockingReasons,
     mechanismSummary: fitness?.mechanismSummary,
+    ...(input.review.requirements !== undefined ? { requirements: input.review.requirements } : {}),
     nextActionPrompt: functional && !qualityOk
       ? buildQualityRepairPrompt(reviewFacts)
       : input.review.ok
       ? fitness?.repairDirective ?? 'No repair needed. Preserve the current design and rerun review_cad after changes.'
       : buildFailureRepairPrompt(input.review, reviewFacts),
   };
+}
+
+/** Turn every failing / unmeasured ledger entry into a concrete repair fact.
+ *  The message already names measured, limit and selections; do not reduce it
+ *  to a free-text critique. */
+function requirementFacts(
+  ledger: RequirementsLedger | undefined,
+  allowReviewWarnings: readonly string[],
+): Array<{ code: string; severity: string; message: string; hint?: string }> {
+  if (ledger === undefined) return [];
+  return ledger.entries
+    .filter(e => e.status !== 'pass')
+    .filter(e => !allowReviewWarnings.includes(`requirement.${e.status}`))
+    .map(e => ({
+      code: e.status === 'fail' ? 'requirement.failed' : 'requirement.not-evaluated',
+      severity: e.status === 'fail' ? 'error' : 'warning',
+      message: e.message ?? `${e.name}: ${e.status}.`,
+      hint: `requirement.${e.status} — repair the selection or geometry named in the message; measured value, limit and margin are in the requirements ledger (selections carry S1 fingerprints for highlighting).`,
+    }));
 }
 
 function containsPhysicalUseCaseDeclaration(source: string): boolean {
