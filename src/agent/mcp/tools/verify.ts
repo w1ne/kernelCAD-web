@@ -13,6 +13,7 @@ import { checkMotionLoadTool } from './checkMotionLoad';
 import { checkFastenerInstallationTool } from './checkFastenerInstallation';
 import { checkGeometryQualityTool } from './checkGeometryQuality';
 import { checkEdgeRadiusTool } from './checkEdgeRadius';
+import { checkPhysicsTool } from './checkPhysics';
 
 /** The verification kind. Each value maps 1:1 to a dedicated verifier. */
 export type VerifyCheck =
@@ -28,7 +29,8 @@ export type VerifyCheck =
   | 'motion-load'
   | 'fastener-installation'
   | 'geometry-quality'
-  | 'edge-radius';
+  | 'edge-radius'
+  | 'physics';
 
 export interface VerifyInput {
   check: VerifyCheck;
@@ -67,6 +69,7 @@ const HANDLERS: Record<VerifyCheck, Handler> = {
   'motion-load': call(checkMotionLoadTool),
   'fastener-installation': call(checkFastenerInstallationTool),
   'edge-radius': call(checkEdgeRadiusTool),
+  physics: call(checkPhysicsTool),
 };
 
 export function verifyTool(input: VerifyInput): Promise<unknown> {
@@ -78,7 +81,7 @@ export function verifyTool(input: VerifyInput): Promise<unknown> {
   return Promise.reject(
     new Error(
       `Unknown verify check: ${String(check)}. Valid: assembly, urdf, dfm, ` +
-        `swept-collision, reachable, mounting-holes, load-capacity, static-hold, motion-load, fastener-installation, geometry-quality, assembly-path, edge-radius.`,
+        `swept-collision, reachable, mounting-holes, load-capacity, static-hold, motion-load, fastener-installation, geometry-quality, assembly-path, edge-radius, physics.`,
     ),
   );
 }

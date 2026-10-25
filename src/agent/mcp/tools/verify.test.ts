@@ -17,6 +17,7 @@ vi.mock('./checkStaticHold', () => ({ checkStaticHoldTool: vi.fn(async () => 'st
 vi.mock('./checkFastenerInstallation', () => ({ checkFastenerInstallationTool: vi.fn(async () => 'fastener-installation') }));
 vi.mock('./checkEdgeRadius', () => ({ checkEdgeRadiusTool: vi.fn(async () => 'edge-radius') }));
 vi.mock('./checkGeometryQuality', () => ({ checkGeometryQualityTool: vi.fn(async () => 'geometry-quality') }));
+vi.mock('./checkPhysics', () => ({ checkPhysicsTool: vi.fn(async () => 'physics') }));
 
 import { checkAssemblyPathTool } from './checkAssemblyPath';
 import { verifyTool, type VerifyCheck } from './verify';
@@ -31,6 +32,7 @@ import { checkStaticHoldTool } from './checkStaticHold';
 import { checkEdgeRadiusTool } from './checkEdgeRadius';
 import { checkFastenerInstallationTool } from './checkFastenerInstallation';
 import { checkGeometryQualityTool } from './checkGeometryQuality';
+import { checkPhysicsTool } from './checkPhysics';
 
 const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['assembly-path', checkAssemblyPathTool as never, 'assembly-path'],
@@ -45,6 +47,7 @@ const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['fastener-installation', checkFastenerInstallationTool as never, 'fastener-installation'],
   ['edge-radius', checkEdgeRadiusTool as never, 'edge-radius'],
   ['geometry-quality', checkGeometryQualityTool as never, 'geometry-quality'],
+  ['physics', checkPhysicsTool as never, 'physics'],
 ];
 
 describe('verify dispatcher', () => {
