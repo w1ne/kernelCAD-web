@@ -1,30 +1,80 @@
-# RoboParty ROBOTO 01 (RP1) — 24-DoF kinematic assembly
+# RoboParty ROBOTO 01 (RP1) — parametric B-rep assembly
 
-This kernelCAD assembly follows RoboParty's `urdf/rp1_24dof.urdf`: 25 named
-links and 24 revolute joints across the biped legs, waist and two arms. The 25 URDF-referenced visual STLs are bundled in `meshes/` as byte-for-byte
-copies of the full-detail upstream files. Each of the 25 imported files is below the 50 MiB per-import limit
-(`IMPORT_MAX_BYTES`); they total 65,154,800 bytes (62.1 MiB). The upstream
-mesh directory has 31 files totaling 82,935,004 bytes (79.1 MiB). `MESH-SOURCES.txt` records source and bundled hashes. URDF visual
-origins are identity, and
-each link mesh is placed at its accumulated URDF link frame. The meshes are
-imported with `lib.meshFromSTL` as display-only bodies (indexed triangles, no BRep topology),
-so volume, booleans and mass properties are not available for them. Joint translations
-are converted from metres to millimetres, axes are preserved, and radians are
-converted to degrees. Joint pose parameters default to zero and remain editable
-within the published limits.
+This gallery entry is a fully parametric kernelCAD B-rep assembly built from the
+RoboParty `urdf/rp1_24dof.urdf` skeleton: 25 named links and 24 named revolute
+joints across the biped legs, waist and two arms. The URDF joint names,
+parent/child links, origins, axes and limits are preserved exactly. Translations
+are converted from metres to millimetres and limits from radians to degrees.
 
-Per Andrii's decision, the RoboParty hardware visuals are attributed to
-RoboParty and covered by CERN-OHL-W-2.0, following the `rp1_hardware` source.
-See [NOTICE](NOTICE) for the pinned description commit, source links, license
-text and scope. No Parasolid, SLDASM or STEP archives are included.
+All geometry is newly authored: primitive/extruded solids, booleans, fillets and
+the kernelCAD `joint.clevis(...)` revolute primitive. **No STL/STEP/mesh file is
+bundled or imported.** The 25 link bodies are real B-rep solids with volume and
+surface area.
 
-## Run
+## Joint construction
+
+- **15 fork joints** (hip pitch/roll, knee, ankle pitch, waist roll, shoulder
+  pitch/roll, elbow) use `joint.clevis(...)` with `liftPivot: false`, so the
+  URDF joint origins stay exact. Each parent carries a fork, each child a
+  tongue, and a pin is drilled through both. The parent-side support pod is
+  offset to the parent side of the fork so the child body swings freely through
+  the full URDF range. The mate carries `capacity: { structure }` from the
+  clevis so the physical realization is evaluated against the real pin/plate
+  dimensions.
+- **9 coaxial joints** (hip yaw, waist yaw, shoulder yaw, wrist, ankle roll) use
+  a bored collar boss on the parent and a shaft + flange on the child, with a
+  0.5 mm radial clearance and a 0.6 mm axial gap. The parent body is cut on the
+  child side of the gap plane and the child body on the parent side before the
+  collar/shaft is unioned, so the bearing faces cannot become glue surfaces.
+- Every moving interface has a visible bearing gap; the waist is a two-axis
+  stack (roll fork + yaw collar) with a visible gap between the pelvis and the
+  torso.
+
+## Parameters
+
+The 24 joint-angle params are the URDF poses. In addition, the model exposes
+editable body dimensions (pelvis/torso/head, hip pods, thigh/shin/arm/forearm
+envelopes, shoulder/waist pods, foot and hand sizes) and joint hardware radii
+(hip/knee/ankle/waist/shoulder/elbow/wrist). The joint table is the single
+source of truth, so left/right links are mirrored from the URDF data. The
+clevis/collar hardware uses the matching numeric defaults (the clevis primitive
+requires finite style dimensions); the 0.5 mm radial and 0.6 mm axial fits are
+fixed by the joint builders.
+
+The link envelopes are deliberately slim: the URDF hip-roll range reaches ±42°,
+which sweeps one leg across the other's knee hardware, and hip pitch reaches
+±163°. The slim shells plus the parent-side clevis pods keep all 73
+single-joint limit poses collision-free without narrowing the published limits.
+
+Colours follow the original four-colour language: shell white, graphite,
+anodized aluminium and rubber.
+
+## Validation
 
 ```bash
 npx tsx src/agent/cli/index.ts evaluate examples/gallery/roboto-01.kcad.ts
-npx tsx src/agent/cli/index.ts validate examples/gallery/roboto-01.kcad.ts --no-include-physics
-npx tsx src/agent/cli/index.ts render examples/gallery/roboto-01.kcad.ts --pose 30,18 -o examples/gallery/roboto-01/hero.png
+npx tsx src/agent/cli/index.ts validate examples/gallery/roboto-01.kcad.ts \
+  --include-interference --no-include-physics --physical
+npx tsx src/agent/cli/index.ts parts examples/gallery/roboto-01.kcad.ts
+npx tsx scripts/typecheckExamples.ts examples/gallery/roboto-01.kcad.ts
+npx tsx src/agent/cli/index.ts render examples/gallery/roboto-01.kcad.ts \
+  --preset publish --pose 35,10 -o examples/gallery/roboto-01/hero.png
 ```
 
-Evaluation and rendering establish local model behavior only. They are not a
-full robot simulation, deployed behavior, or hardware acceptance.
+The validate command checks 25 parts, 24 joints and the 73 motion poses (each
+joint at its limits) for BREP interference, disconnected solids and mechanical
+support. It is a local CAD check, not a full robot simulation, deployed
+behaviour or hardware acceptance.
+
+## Attribution
+
+RoboParty authored the RP1 kinematic description and hardware design. See
+[NOTICE](NOTICE) for the pinned upstream commits, license and scope. The
+geometry in this entry is new parametric CAD; no upstream mesh files are
+redistributed.
+
+## Demo video
+
+`docs/demos/gallery/roboto-01/demo.mp4` was removed from this change because
+the capture machine has no `ffmpeg`; it can be regenerated with
+`npx tsx src/agent/cli/index.ts animate ...` once `ffmpeg` is available.

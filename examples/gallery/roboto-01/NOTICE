@@ -1,22 +1,23 @@
-ROBOTO 01 (RP1) mesh attribution and license notice
+ROBOTO 01 (RP1) design attribution and license notice
 
-Copyright RoboParty. The 25 STL visual meshes in this directory are the original full-detail files from the RoboParty
-RP1_description repository, specifically urdf/rp1_24dof.urdf and its referenced
-meshes, pinned at commit
+Copyright RoboParty. The kinematic description, joint names, parent/child links,
+origins, axes, limits and design proportions used by this gallery entry are
+derived from the RoboParty RP1_description repository, specifically
+urdf/rp1_24dof.urdf, pinned at commit
 84529a55649b5c9796d49093c266208c879f9f29:
 https://github.com/Roboparty/RP1_description/tree/84529a55649b5c9796d49093c266208c879f9f29
 
-Per Andrii's decision for this bundle, these RoboParty hardware design files
-are attributed to RoboParty and distributed under CERN-OHL-W-2.0, following
-the license of the associated rp1_hardware source:
+Per Andrii's decision for this entry, the RoboParty hardware design is
+attributed to RoboParty and covered by CERN-OHL-W-2.0, following the license of
+the associated rp1_hardware source:
 https://github.com/Roboparty/rp1_hardware
 
 The ROBOTO 01 project hub is https://roboparty.com/documents/roboto-01.
 CERN-OHL-W-2.0 license text: https://ohwr.org/cern_ohl_w_v2.txt
 
-No Parasolid, SLDASM, or STEP archives are included. The meshes are imported with `lib.meshFromSTL` as display-only bodies, so
-volume and boolean behavior are not available for them. The kernelCAD model
-converts the URDF's metre translations to millimetres and imports these STL
-visuals with lib.meshFromSTL(...).scale(1000). The CAD rendering is an editable
-kinematic visualization; it does not establish simulation, deployed behavior,
-or hardware acceptance.
+No upstream mesh files are bundled or redistributed. The geometry in
+roboto-01.kcad.ts is newly authored parametric kernelCAD CAD: primitive and
+extruded B-rep solids, booleans, fillets and kernelCAD `joint.clevis(...)`
+hardware. No STL, STEP or mesh import is used. The CAD is an editable kinematic
+visualization; it does not establish simulation, deployed behaviour or hardware
+acceptance.
