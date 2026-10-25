@@ -1,0 +1,57 @@
+{
+  "checkedAt": "2026-10-25T09:46:58.771Z",
+  "video": "demo.mp4",
+  "videoSha256": "b8839fae810d1874f2a14a439be2e7855fe19f96a391be6746b85f33c1d2a927",
+  "canvas": "1920x1080",
+  "sourceModels": {
+    "assembly-sequence-gearbox.kcad.ts": "65f7e495e8d98b6e2976e09a2c18465114e6fa5590653dfdf274a635f06db4ab"
+  },
+  "sequenceEvidence": "sequence-evidence.json",
+  "inputSha256": {
+    "gearbox-assembled.png": "616c568b2efdbf8248004f6e729d9fd1bf6d6f25a36bc24201086e95a4e9b853",
+    "gearbox-internals.png": "08090786c9c00513c1b26caffbdfe4722fbe29e39b54ede0f35c696f4e38d374",
+    "gearbox-exploded.png": "464e4eb4f9419d5fc7522ae7b82977eda1c8f8b42396f0f67f22a124358df94a"
+  },
+  "slides": [
+    {
+      "image": "00-title.png",
+      "durationSec": 3.5
+    },
+    {
+      "image": "01-assembled.png",
+      "durationSec": 4.5
+    },
+    {
+      "image": "02-internals.png",
+      "durationSec": 4.5
+    },
+    {
+      "image": "03-exploded.png",
+      "durationSec": 4.5
+    },
+    {
+      "image": "04-steps-a.png",
+      "durationSec": 5
+    },
+    {
+      "image": "05-steps-b.png",
+      "durationSec": 5
+    },
+    {
+      "image": "06-states.png",
+      "durationSec": 5
+    },
+    {
+      "image": "07-end.png",
+      "durationSec": 4
+    }
+  ],
+  "invocations": [
+    "npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-sequence-gearbox.kcad.ts --preset publish -o docs/demos/assembly-sequence-planner/gearbox-assembled.png",
+    "npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-sequence-gearbox.kcad.ts --preset publish --hide cover -o docs/demos/assembly-sequence-planner/gearbox-internals.png",
+    "npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-sequence-gearbox.kcad.ts --preset publish --explode 0.6 -o docs/demos/assembly-sequence-planner/gearbox-exploded.png",
+    "verify({ check: 'assembly-path', file: 'examples/assemblies/assembly-sequence-gearbox.kcad.ts', sequence: true })",
+    "node docs/demos/assembly-sequence-planner/make-video.mjs"
+  ],
+  "provenance": "Annotated still sequence composed from local kernelcad renders and the planner evidence JSON. Not a screen recording, turntable, deployed-platform capture, physical hardware or strength test."
+}

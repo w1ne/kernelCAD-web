@@ -1,0 +1,254 @@
+{
+  "checkedAt": "2026-10-25T09:44:54.309Z",
+  "command": "verify({ check: 'assembly-path', file: 'examples/assemblies/assembly-sequence-gearbox.kcad.ts', sequence: true })",
+  "source": "examples/assemblies/assembly-sequence-gearbox.kcad.ts",
+  "sourceSha256": "65f7e495e8d98b6e2976e09a2c18465114e6fa5590653dfdf274a635f06db4ab",
+  "result": {
+    "ok": true,
+    "model": {
+      "rigidParts": true,
+      "motion": "straight-line-translation",
+      "testedDirections": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          -1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          -1
+        ]
+      ],
+      "gravity": "not-modelled",
+      "basis": "continuous-triangle-mesh",
+      "tessellation": {
+        "linearMm": 0.01,
+        "relative": true,
+        "angularRad": 0.05,
+        "source": "meshShapeForExport default: relative linear 0.01, angular 0.05 rad; per-face fallback absolute 0.02 mm, 0.1 rad"
+      },
+      "clearanceMm": 0,
+      "clearancePolicy": "Zero clearance: any positive-travel triangle contact blocks; t=0 departure is free."
+    },
+    "states": [
+      {
+        "part": "cover",
+        "kind": "removable",
+        "removalDirection": [
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "part": "gear-d",
+        "kind": "blocked"
+      },
+      {
+        "part": "gear-c",
+        "kind": "blocked"
+      },
+      {
+        "part": "gear-b",
+        "kind": "blocked"
+      },
+      {
+        "part": "gear-a",
+        "kind": "blocked"
+      },
+      {
+        "part": "output-shaft",
+        "kind": "blocked"
+      },
+      {
+        "part": "input-shaft",
+        "kind": "blocked"
+      },
+      {
+        "part": "post-d",
+        "kind": "blocked"
+      },
+      {
+        "part": "post-c",
+        "kind": "blocked"
+      },
+      {
+        "part": "post-b",
+        "kind": "blocked"
+      },
+      {
+        "part": "post-a",
+        "kind": "blocked"
+      },
+      {
+        "part": "base",
+        "kind": "removable",
+        "removalDirection": [
+          0,
+          0,
+          -1
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "index": 1,
+        "adds": [
+          "base"
+        ],
+        "direction": [
+          -1,
+          0,
+          0
+        ]
+      },
+      {
+        "index": 2,
+        "adds": [
+          "post-a"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      },
+      {
+        "index": 3,
+        "adds": [
+          "post-b"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      },
+      {
+        "index": 4,
+        "adds": [
+          "post-c"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      },
+      {
+        "index": 5,
+        "adds": [
+          "post-d"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      },
+      {
+        "index": 6,
+        "adds": [
+          "input-shaft"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      },
+      {
+        "index": 7,
+        "adds": [
+          "output-shaft"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      },
+      {
+        "index": 8,
+        "adds": [
+          "gear-a"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      },
+      {
+        "index": 9,
+        "adds": [
+          "gear-b"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      },
+      {
+        "index": 10,
+        "adds": [
+          "gear-c"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      },
+      {
+        "index": 11,
+        "adds": [
+          "gear-d"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      },
+      {
+        "index": 12,
+        "adds": [
+          "cover"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      }
+    ],
+    "unknown": [],
+    "stuckParts": []
+  },
+  "limits": [
+    "Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation only; no mates, rotations, deformation or fastener unthreading. Greedy order is not exhaustive. Blocked and unknown parts are not \"impossible\"."
+  ]
+}

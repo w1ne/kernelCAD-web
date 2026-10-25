@@ -88,7 +88,7 @@ agent context. The tools load the `.kcad.ts` source, run it, capture the
 named assembly off the script's session, and dispatch to the facade.
 
 - `verify({ check: 'mounting-holes' })` — wraps the facade; accepts `file` or `code`
-- `verify({ check: 'assembly-path', file|code, assembly?, directions?, disassemblyOrder? })` — continuous mesh straight-removal check along six world axes plus explicit vectors; per-part valid directions/blockers and optional greedy order/stuck set. Contact is conservative; no rotation, inferred axes or hardware certification.
+- `verify({ check: 'assembly-path', file|code, assembly?, directions?, disassemblyOrder?, sequence?, threadedFasteners? })` — continuous mesh straight-removal check along six world axes plus explicit vectors; per-part valid directions/blockers and three-way states (removable / blocked / unknown), optional greedy order/stuck set, and a `sequence: true` build plan (reverse blocking-graph peel) with a model stamp. Threaded fasteners are `unknown: non-straight-path` until P2. Contact is conservative; no rotation, inferred axes or hardware certification.
 - `verify({ check: 'swept-collision' })` — wraps the facade; accepts `file|code`, `joint`, `range`, `collision_tolerance_mm3`
 - `verify({ check: 'reachable' })` — wraps the facade; accepts `file|code`, `tip_link`, `target_position`, `target_orientation`, `prefer_solver`, `max_iterations`, `seed`
 - `verify({ check: 'load-capacity' })` — wraps the facade; accepts `file|code`, `loads`, `materials`, `mode`, `safety_factor_threshold`
