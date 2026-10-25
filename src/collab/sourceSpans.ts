@@ -84,6 +84,25 @@ export class CollabSpanIndex {
     return innermost === undefined ? undefined : this.spanOf(innermost);
   }
 
+
+  /** Call expression whose callee starts at `position` (spans are stable). */
+  callByStart(position: number): CallSpanInfo | undefined {
+    const call = this.calls.find((candidate) => candidate.getStart(this.sourceFile) === position);
+    return call === undefined ? undefined : this.spanOf(call);
+  }
+
+  /** Raw AST call whose callee starts at `position`. */
+  callNodeByStart(position: number): TS.CallExpression | undefined {
+    return this.calls.find((candidate) => candidate.getStart(this.sourceFile) === position);
+  }
+
+  /** Character span of positional argument `index` of `call`. */
+  argumentSpan(call: TS.CallExpression, index: number): SourceSpan | undefined {
+    const argument = call.arguments[index];
+    if (argument === undefined) return undefined;
+    return { start: argument.getStart(this.sourceFile), end: argument.getEnd() };
+  }
+
   /** Calls named `name`, in source order. */
   callsNamed(name: string): TS.CallExpression[] {
     return this.calls.filter((call) => calleeName(call) === name);
@@ -104,6 +123,17 @@ export class CollabSpanIndex {
     while (current !== undefined && !ts.isStatement(current)) current = current.parent;
     const statement = current ?? node;
     return { start: statement.getStart(this.sourceFile), end: statement.getEnd() };
+  }
+
+
+  /** First top-level `return …;` statement, when the script has one. */
+  returnStatementSpan(): SourceSpan | undefined {
+    for (const statement of this.sourceFile.statements) {
+      if (ts.isReturnStatement(statement)) {
+        return { start: statement.getStart(this.sourceFile), end: statement.getEnd() };
+      }
+    }
+    return undefined;
   }
 
   /**

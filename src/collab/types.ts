@@ -30,6 +30,8 @@ export interface FeatureNode {
   orderKey: number;
   /** Character range of the statement that authored the feature. */
   sourceSpan: SourceSpan;
+  /** Character range of the call expression itself (inside sourceSpan). */
+  callSpan?: SourceSpan;
   /** Project parameter names each named param depends on (empty for literals). */
   paramRefs?: Record<string, string[]>;
 }

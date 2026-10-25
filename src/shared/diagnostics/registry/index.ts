@@ -49,6 +49,7 @@ import { VIEWER_CODES } from './viewer';
 import { UNION_CODES } from './union';
 import { SCRIPT_CODES } from './script';
 import { TUBE_CODES } from './tube';
+import { COLLAB_CODES } from './collab';
 
 export type { DiagnosticGroup, DiagnosticSeverityLevel, DiagnosticCodeSpec } from './types';
 
@@ -82,6 +83,7 @@ export const DIAGNOSTIC_REGISTRY = {
   ...UNION_CODES,
   ...SCRIPT_CODES,
   ...TUBE_CODES,
+  ...COLLAB_CODES,
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;

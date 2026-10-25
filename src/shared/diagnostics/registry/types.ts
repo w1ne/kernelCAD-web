@@ -31,7 +31,9 @@ export type DiagnosticGroup =
   | 'union'
   | 'script'
 
-  | 'tube';
+  | 'tube'
+
+  | 'collab';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 

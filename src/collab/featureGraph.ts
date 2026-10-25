@@ -250,6 +250,7 @@ export async function captureFeatureGraph(
       refs: refsFor(record, records, names),
       orderKey: order.length,
       sourceSpan,
+      ...(call !== undefined ? { callSpan: call.call } : {}),
       ...(paramRefs !== undefined ? { paramRefs } : {}),
     };
     features.set(record.id, node);
