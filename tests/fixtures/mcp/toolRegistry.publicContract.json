@@ -1831,7 +1831,7 @@
   },
   {
     "name": "set_param",
-    "description": "Use this when you need to edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects).",
+    "description": "Use this when you need to edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects). With preview: true it builds the edit in a scratch session instead and returns the diff_geometry summary plus the requirements-ledger and S1 binding diffs (which requirements flip, which margins shrink, which selectors moved or re-bound), without touching the active session, source, revision or caches. A preview whose revised build fails returns ok:false and no diff. Inspect after.requirementsOk to see whether the edit preserves declared intent; preview.ok only says the preview could be computed.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1850,6 +1850,10 @@
             "string"
           ],
           "description": "The new default value: number for numeric params, boolean for boolean params, or string for choice/string/color params (must be one of the declared choices for a choice param; a color param — one whose default is a hex literal — takes '#rrggbb', '#rgb' or a basic CSS colour name and is written back as '#rrggbb')."
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "S6 edit preview: evaluate the edit in a scratch session and return geometry + requirements-ledger + S1 binding diffs. Writes nothing. Default false (the normal source-edit result)."
         }
       },
       "required": [
@@ -1916,6 +1920,38 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "True when the result came from preview: true (scratch build, nothing written)."
+        },
+        "geometry": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "The diff_geometry result for baseline -> revised: { base, revised, bodies, unmatched, summary, diagnostics }. summary carries identical / moved / resized / topologyChanged / unmatched / totalAddedMm3 / totalRemovedMm3 / maxDeviationMm. Absent on a failed preview."
+        },
+        "requirementsDiff": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "S2 ledger diff: { ok, changed, summary: { before, after, flipped, marginsShrunk, added, removed }, entries[], flipped[], marginsShrunk[], added[], removed[] }. Each entry has name/source/featureId, optional before/after snapshots (status, measured, limit, margin, message) and { flipped, changed, margin: { before, after, delta, direction: shrink | grow | same | unknown } }."
+        },
+        "bindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "S1 selectors whose bound entity moved or changed: { consumerFeatureId, selectorText, syntax, occurrence, verdict: moved | changed, pairs[{ verdict, reasons, deltas, before?, after? }] }."
+        },
+        "before": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Baseline evaluation summary: { buildOk, exitCode, featureCount, requirementsOk, requirements, diagnostics }."
+        },
+        "after": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Revised evaluation summary: { buildOk, exitCode, featureCount, requirementsOk, requirements, diagnostics }. Check requirementsOk to see whether the edit preserves declared intent."
         }
       },
       "required": [

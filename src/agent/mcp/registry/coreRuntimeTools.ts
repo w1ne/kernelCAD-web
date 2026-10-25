@@ -123,13 +123,17 @@ const diffScriptsToolEntry: ToolRegistryEntry = {
 const setParamToolEntry: ToolRegistryEntry = {
   definition: {
     name: 'set_param',
-    description: 'Use this when you need to edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects).',
+    description:
+      'Use this when you need to edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects). ' +
+      'With preview: true it builds the edit in a scratch session instead and returns the diff_geometry summary plus the requirements-ledger and S1 binding diffs (which requirements flip, which margins shrink, which selectors moved or re-bound), without touching the active session, source, revision or caches. ' +
+      'A preview whose revised build fails returns ok:false and no diff. Inspect after.requirementsOk to see whether the edit preserves declared intent; preview.ok only says the preview could be computed.',
     inputSchema: {
       type: 'object',
       properties: {
         code: { type: 'string', description: 'The .kcad.ts source code.' },
         param_name: { type: 'string', description: 'The string literal name of the param (first arg to param()).' },
         new_value: { type: ['number', 'boolean', 'string'], description: 'The new default value: number for numeric params, boolean for boolean params, or string for choice/string/color params (must be one of the declared choices for a choice param; a color param — one whose default is a hex literal — takes \'#rrggbb\', \'#rgb\' or a basic CSS colour name and is written back as \'#rrggbb\').' },
+        preview: { type: 'boolean', description: 'S6 edit preview: evaluate the edit in a scratch session and return geometry + requirements-ledger + S1 binding diffs. Writes nothing. Default false (the normal source-edit result).' },
       },
       required: ['code', 'param_name', 'new_value'],
     },

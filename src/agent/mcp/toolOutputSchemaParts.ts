@@ -31,6 +31,20 @@ export const SOURCE_EDIT: JSONSchemaObject = {
   additionalProperties: true,
 };
 
+/** `set_param` adds the S6 preview payload to the source-edit envelope. */
+export const SET_PARAM: JSONSchemaObject = {
+  ...SOURCE_EDIT,
+  properties: {
+    ...SOURCE_EDIT.properties,
+    preview: { type: 'boolean', description: 'True when the result came from preview: true (scratch build, nothing written).' },
+    geometry: { type: 'object', additionalProperties: true, description: 'The diff_geometry result for baseline -> revised: { base, revised, bodies, unmatched, summary, diagnostics }. summary carries identical / moved / resized / topologyChanged / unmatched / totalAddedMm3 / totalRemovedMm3 / maxDeviationMm. Absent on a failed preview.' },
+    requirementsDiff: { type: 'object', additionalProperties: true, description: 'S2 ledger diff: { ok, changed, summary: { before, after, flipped, marginsShrunk, added, removed }, entries[], flipped[], marginsShrunk[], added[], removed[] }. Each entry has name/source/featureId, optional before/after snapshots (status, measured, limit, margin, message) and { flipped, changed, margin: { before, after, delta, direction: shrink | grow | same | unknown } }.' },
+    bindings: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'S1 selectors whose bound entity moved or changed: { consumerFeatureId, selectorText, syntax, occurrence, verdict: moved | changed, pairs[{ verdict, reasons, deltas, before?, after? }] }.' },
+    before: { type: 'object', additionalProperties: true, description: 'Baseline evaluation summary: { buildOk, exitCode, featureCount, requirementsOk, requirements, diagnostics }.' },
+    after: { type: 'object', additionalProperties: true, description: 'Revised evaluation summary: { buildOk, exitCode, featureCount, requirementsOk, requirements, diagnostics }. Check requirementsOk to see whether the edit preserves declared intent.' },
+  },
+};
+
 /** One tube joint in the line report: the other tube and the station on the trunk. */
 export const TUBE_JOINT = (description: string): Record<string, unknown> => ({
   type: 'object',

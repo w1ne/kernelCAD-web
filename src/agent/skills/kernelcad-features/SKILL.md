@@ -429,6 +429,13 @@ A parameter edit can leave a selector valid but pointing at another face: the mo
 
 The previous evaluation is picked up automatically by `set_param` (after an `evaluate_script` of the same code), by `evaluate_script` on the same `file`, and by a model's `set_param`/code-edit rebuild. For anything else pass it explicitly: `kernelcad evaluate <file> --baseline <json>` takes the `--json` output of the earlier run; the `evaluate_script` tool takes `baseline` (the earlier `selections`).
 
+To see the re-bind *before* committing the edit, call
+`set_param({ code, param_name, new_value, preview: true })`. It builds the
+baseline and revised source in scratch sessions and returns `bindings` (each
+selector's `verdict: moved | changed`, reasons and deltas) alongside the
+`diff_geometry` summary and the S2 ledger diff. Nothing is written to the
+source, active session, revision or caches.
+
 ```typescript
 const w = param("w", 30, { min: 20, max: 60 });
 const plate = box(w, 40, 6);
@@ -486,6 +493,13 @@ lives in the script; an eval task or customer spec can pass external
 requirements per call (`verify({ requirements: [...] })`), tagged
 `source: 'external'` and never persisted. `verify({ check: 'requirements' })`
 and `design_loop` grade from the ledger alone, with or without expert geometry.
+
+Preview a parameter edit against the ledger before applying it:
+`set_param({ code, param_name, new_value, preview: true })` returns
+`requirementsDiff` — status flips (pass↔fail), margin shrink/grow with the
+before/after values, and added/removed requirements — plus the geometry diff
+and the S1 selectors that moved. `after.requirementsOk` is the revised ledger
+verdict; `preview.ok` only says the preview could be computed.
 
 ## Bent tubes
 

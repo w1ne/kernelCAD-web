@@ -141,6 +141,25 @@ declare the params a user is most likely to change first.
 
 Use MCP `inspect({ of: 'params' })` to list a model's params, then `set_param({ code, param_name: 'boltDia', new_value: 6 })` to rewrite the `param()` default in the source. The edit is source-only — it returns the modified code plus diagnostics from re-evaluating; the caller persists the returned code.
 
+Preview before you commit a value that declared intent cares about:
+
+```typescript
+set_param({ code, param_name: 'boltDia', new_value: 6, preview: true })
+// → { ok: true, preview: true, new_code, geometry, requirementsDiff, bindings, before, after }
+```
+
+`preview: true` builds both the current source and the rewritten source in
+scratch sessions. It returns the same `diff_geometry` summary as the dedicated
+tool (`geometry.summary`: identical / moved / resized / topologyChanged,
+added/removed volume, deviation), the S2 ledger diff (`requirementsDiff`: which
+requirements appeared, vanished, flipped pass↔fail, or shrank a margin), and the
+S1 selectors that moved or re-bound (`bindings`). `before`/`after` carry each
+side's ledger; read `after.requirementsOk` to decide whether the edit preserves
+intent. `preview.ok` only means the preview was computed — a preview that
+correctly shows a broken requirement still returns `ok: true`. Nothing is
+written: the active session, source, revision and caches stay untouched, and a
+preview whose revised build fails returns `ok: false` with no diff.
+
 `inspect({ of: 'params' })` accepts the same `{ file? }` / `{ code? }` input every other `inspect({ of: ... })` reader does — pass one to evaluate that file/code fresh. With neither, it falls back to reading whatever session `evaluate_script` last left active (so a bare `inspect({ of: 'params' })` right after `evaluate_script` still works with no arguments) — it does NOT search for or reuse an unrelated session.
 
 ```typescript

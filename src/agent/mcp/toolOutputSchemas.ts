@@ -34,7 +34,7 @@ import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputS
 import { SURFACE_BLEND_OUTPUT_SCHEMAS } from './registry/surfaceBlendTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
-import { MECHANISM_SUMMARY, SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
+import { MECHANISM_SUMMARY, SELECTION, SET_PARAM, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
 
 export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   get_selection: SELECTION,
@@ -286,7 +286,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
 
-  set_param: SOURCE_EDIT,
+  set_param: SET_PARAM,
   sweep_tolerance: {
     type: 'object',
     properties: {
