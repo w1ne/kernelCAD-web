@@ -345,12 +345,13 @@ async function evaluateComboAt(
   }
 
   if (editFailed !== undefined) {
+    const names = gateNames(gates);
     return {
       combo,
-      gates: Object.fromEntries(gateNames(gates).map((g) => [g, 'fail' as const])),
+      gates: Object.fromEntries(names.map((g) => [g, 'fail' as const])),
       requirements: [],
       verdict: 'fail',
-      diagnostics: gateNames(gates).map((g) => ({
+      diagnostics: (names.length > 0 ? names : ['evaluation']).map((g) => ({
         gate: g,
         code: 'feature.invalid-args',
         severity: 'error',
@@ -375,11 +376,14 @@ async function collectComboResult(
 
   const assemblies = model.session.assemblies as ReadonlyMap<string, Assembly>;
   const arm = assemblyName !== undefined ? assemblies.get(assemblyName) : assemblies.values().next().value;
-  if (!arm) {
+  const needsAssembly = gateNames(gates).length > 0;
+  if (needsAssembly && !arm) {
     return noAssemblyResult(combo, gates);
   }
 
-  const { rawDiagnostics, gateVerdicts } = await collectComboGateVerdicts(arm, gates);
+  const { rawDiagnostics, gateVerdicts } = arm !== undefined
+    ? await collectComboGateVerdicts(arm, gates)
+    : { rawDiagnostics: [], gateVerdicts: {} };
   const requirements = compactRequirements(evaluation.requirements?.entries ?? []);
   const verdict = verdictOf(gateVerdicts, requirements);
 
@@ -480,12 +484,13 @@ function failedEvaluationResult(
   gates: NormalizedGates,
 ): SweepComboResult {
   const message = evaluation.diagnostics[0]?.message ?? 'Script evaluation failed for this combo.';
+  const names = gateNames(gates);
   return {
     combo,
-    gates: Object.fromEntries(gateNames(gates).map((g) => [g, 'fail' as const])),
+    gates: Object.fromEntries(names.map((g) => [g, 'fail' as const])),
     requirements: [],
     verdict: 'fail',
-    diagnostics: gateNames(gates).map((g) => ({
+    diagnostics: (names.length > 0 ? names : ['evaluation']).map((g) => ({
       gate: g,
       code: evaluation.diagnostics[0]?.code ?? 'feature.invalid-args',
       severity: 'error',
@@ -499,12 +504,13 @@ function noAssemblyResult(
   combo: Readonly<Record<string, number | string>>,
   gates: NormalizedGates,
 ): SweepComboResult {
+  const names = gateNames(gates);
   return {
     combo,
-    gates: Object.fromEntries(gateNames(gates).map((g) => [g, 'fail' as const])),
+    gates: Object.fromEntries(names.map((g) => [g, 'fail' as const])),
     requirements: [],
     verdict: 'fail',
-    diagnostics: gateNames(gates).map((g) => ({
+    diagnostics: (names.length > 0 ? names : ['evaluation']).map((g) => ({
       gate: g,
       code: 'feature.invalid-args',
       severity: 'error',

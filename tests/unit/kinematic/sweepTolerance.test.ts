@@ -272,6 +272,23 @@ describe('sweepTolerance', () => {
     expect(boundary.message).toMatch(/bolt-clearance fails above 3\.00\d? Gap/);
   });
 
+  it('measures ledger requirements on a part-only script when gates are off', async () => {
+    const code = `
+      const width = param('Width', 20);
+      const part = box(width, 10, 5);
+      require('width-band', bbox(part).within({ x: [10, 30] }));
+      return part;
+    `;
+    const r = await sweepTolerance({
+      code,
+      params: { Width: { values: [15, 20] } },
+      gates: NO_GATES,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.results.map((row) => row.requirements[0]?.status)).toEqual(['pass', 'pass']);
+    expect(r.results[0]?.requirements[0]?.measured).toEqual([15, 10, 5]);
+  });
+
   it('reports no boundaries for a fully passing sweep', async () => {
     const r = await sweepTolerance({
       code: RANGE_REQUIREMENTS_CODE,
