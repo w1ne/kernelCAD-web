@@ -32,7 +32,18 @@ account in each client.
 
 Ask your agent: **“look at kernelcad.com and install the mcp”**.
 [Agent-readable installation instructions](https://kernelcad.com/llms.txt) cover
-hosted setup, local npm setup, and connection verification.
+hosted setup, local CLI setup, and connection verification.
+
+### Local CLI: one line
+
+```bash
+curl -fsSL https://kernelcad.com/install.sh | sh
+```
+
+This installs the self-contained CLI under `~/.kernelcad/versions/` and links
+`kernelcad` into `~/.local/bin`. Pin a version with
+`KERNELCAD_VERSION=v0.17.1`. Node.js 20 or newer is required. There is no npm
+package and no global npm install.
 
 ### Coding agents: one command
 
@@ -148,7 +159,7 @@ and mechanism checks tied to physical components.
 ## Get Started
 
 ```bash
-npm install -g kernelcad
+curl -fsSL https://kernelcad.com/install.sh | sh
 ```
 
 Drop this in `bracket.kcad.ts`:
@@ -179,7 +190,7 @@ surface and authoring guide.
 ## Use with Claude Desktop
 
 kernelCAD runs as an MCP server, so Claude Desktop can drive it locally. After
-`npm install -g kernelcad`, add an entry to your Claude Desktop config file:
+the one-line install, add an entry to your Claude Desktop config file:
 
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
@@ -189,8 +200,8 @@ kernelCAD runs as an MCP server, so Claude Desktop can drive it locally. After
 {
   "mcpServers": {
     "kernelcad": {
-      "command": "npx",
-      "args": ["-y", "kernelcad", "mcp"]
+      "command": "kernelcad",
+      "args": ["mcp"]
     }
   }
 }
@@ -223,8 +234,8 @@ use the connected server's discovery rather than assuming the local list.
 The local installer is available. Preview the config change before applying it:
 
 ```bash
-npx -y kernelcad install --claude-desktop --dry-run
-npx -y kernelcad install --claude-desktop
+kernelcad install --claude-desktop --dry-run
+kernelcad install --claude-desktop
 ```
 
 Other hosted setup guides: [ChatGPT](https://app.kernelcad.com/connect?client=chatgpt),
