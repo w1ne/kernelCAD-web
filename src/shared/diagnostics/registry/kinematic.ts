@@ -115,6 +115,14 @@ export const KINEMATIC_CODES = {
     group: 'kinematic',
     description: 'sweepTolerance declared params whose cartesian product exceeds the 64-combination cap; the sweep truncated to the first 64 combos in declaration order.',
   },
+  'kinematic.sweep-tolerance.boundary-budget-exhausted': {
+    hintTemplate:
+      "Boundary bisection reached the evaluation budget before the bracket closed to the requested tolerance. The reported boundary is the final bracket, labelled exhausted — not a proven edge. Raise boundaryBudget, loosen boundaryTolerance, or narrow the swept range.",
+    nextAction: { kind: 'fix-arg', field: 'boundaryBudget' },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description: 'sweepTolerance found a pass/fail transition but exhausted its bisection budget before the final bracket met the requested parameter tolerance; the boundary is reported as an exhausted interval.',
+  },
   'kinematic.mounting-hole.diameter-mismatch': {
     hintTemplate:
       'Fastener-side connectors on this mate have non-matching hole diameters (see error.message for the two values). Adjust the hole diameter on one side so both sides agree.',

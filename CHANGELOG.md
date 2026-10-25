@@ -1,3 +1,25 @@
+# Unreleased
+
+## S3 stage A — range proofs instead of grids
+
+- `kinematic.sweepTolerance` now measures every entry in the S2 requirements
+  ledger at each swept point (script `require()`, `dfmSpec`, gated FEA and
+  mechanical intent), not just the mechanism gates. A `not-evaluated` ledger
+  entry never counts as green.
+- After the coarse grid it bisects each numeric pass/fail transition down to
+  `boundaryTolerance` (default 0.001) and reports `boundaries[]` with the
+  boundary value, failing side, and the binding requirement/gate names.
+- `firstRequirementFailure` mirrors `firstFailure` for ledger entries.
+- `boundaryBudget` (default 64) bounds the extra evaluations; exhaustion is
+  reported as an interval plus `kinematic.sweep-tolerance.boundary-budget-exhausted`,
+  never as a proven edge.
+- Discrete `choice`/`string` params can be swept as points (not bisected).
+- Every result carries a `coverage` block: "checked at N points plus
+  boundaries; sampled, not a proof" (`proven: false`).
+- The MCP `sweep_tolerance` tool accepts `boundaryTolerance` / `boundaryBudget`
+  and returns the per-combo ledger, boundaries and coverage. Its `ok` now
+  reflects the sweep verdict rather than call success.
+
 # kernelCAD v0.17.1
 
 ## Summary

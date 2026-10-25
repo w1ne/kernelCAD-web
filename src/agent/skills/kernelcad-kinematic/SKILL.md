@@ -48,7 +48,7 @@ script. The same surface is reachable from host code via `import * as kinematic 
 | `kinematic.checkReachable(arm, opts)` | Can the end-effector reach this target? | `kinematic.unreachable` (K3, axis-discriminated), `kinematic.reachability.iteration-cap-hit` (K4), `kinematic.solver.unsupported-config` (K5, analytical IK on a chain that is not closed-form solvable) |
 | `kinematic.checkLoadCapacity(arm, loads, opts)` | Will any beam-shaped element exceed yield under these loads? | `kinematic.load-exceeds-yield` (K6), `kinematic.load.beam-not-applicable` (K7), `kinematic.no-material-declared` (K8) |
 | `kinematic.checkStaticHold(arm, opts)` | Can the declared actuator hold this joint against gravity? | `assembly.joint.static-hold.exceeded`, `assembly.joint.static-hold.margin-low`, `kinematic.static-hold.no-actuator-declared` |
-| `kinematic.sweepTolerance({ code\|file, params, gates })` | Does the mechanism still pass the standard gates across a param's tolerance range? | `kinematic.sweep-tolerance.combo-cap-exceeded` (plus whatever the swept gates emit per combo) |
+| `kinematic.sweepTolerance({ code\|file, params, gates, boundaryTolerance?, boundaryBudget? })` | Where does the design fail across a parameter range, and which ledger requirement is binding there? | `kinematic.sweep-tolerance.combo-cap-exceeded`, `kinematic.sweep-tolerance.boundary-budget-exhausted` (plus whatever the swept gates/requirements emit per combo) |
 
 ### `checkStaticHold` — gravitational holding torque vs actuator capacity
 
@@ -65,21 +65,38 @@ with a `margin-low` warn diagnostic; only an actually-exceeded joint flips
 `ok: false`. v1 assumes rigid links and a single uniform gravity vector; pair
 with `checkLoadCapacity` for applied external loads.
 
-### `sweepTolerance` — tolerance-stackup gate sweep
+### `sweepTolerance` — range proofs over the requirements ledger
 
 Declares one or more `param()` names as `{ values: [...] }` or `{ min, max,
 steps }`, expands the cartesian product (capped at 64 combos —
 `kinematic.sweep-tolerance.combo-cap-exceeded` fires and truncates past the
 cap), and re-evaluates the script per combo via the same `set_param` +
-`evaluate_script` path an agent would use manually. Per combo, runs
-`interference` + `mountingHoles` + `jointAxis` (all default on, fold out of
-one `validateAssemblyWithMates` call) and `reachable` when
+`evaluate_script` path an agent would use manually. Per combo it measures
+**every requirement in the S2 ledger** — script `require()` declarations,
+`dfmSpec` gates, gated `feaStudy.minSafetyFactor` and mechanical intent —
+plus `interference` + `mountingHoles` + `jointAxis` (all default on, fold out
+of one `validateAssemblyWithMates` call) and `reachable` when
 `gates.reachable: { tipLink, targetPosition, targetOrientation? }` is
-declared. Returns `results[]` (one row per combo: `{ combo, gates,
-diagnostics }`) and `firstFailure[gateName]` — the first combo, in
-declaration order, where that gate failed. Hole diameters bound through a
-ParamRef (`.hole({ diameter: someParam })`) resolve to the combo's evaluated
-value, so sweeping that diameter produces a real pass/fail envelope.
+declared. A `not-evaluated` ledger entry never counts as green.
+
+After the coarse grid, each numeric pass/fail transition is bisected down to
+`boundaryTolerance` (default 0.001, absolute parameter units) and reported in
+`boundaries[]`: the parameter, direction, pass/fail values, the failing side,
+and `bindingRequirements` / `bindingGates` naming what actually flips. The
+message reads like "`wall` fails below 1.840 Wall; binding: `wall`". Each
+boundary consumes `boundaryBudget` evaluations (default 64; 0 disables
+bisection); an exhausted budget emits
+`kinematic.sweep-tolerance.boundary-budget-exhausted` and reports the final
+bracket as an interval, never a proven edge. Choice/string params are swept as
+discrete points and are not bisected.
+
+Returns `results[]` (one row per combo: `{ combo, gates, requirements,
+verdict, diagnostics }`), `firstFailure[gateName]`,
+`firstRequirementFailure[requirementName]`, `boundaries[]`, and a
+`coverage` block whose statement is "checked at N points plus boundaries;
+sampled, not a proof". Hole diameters bound through a ParamRef
+(`.hole({ diameter: someParam })`) resolve to the combo's evaluated value, so
+sweeping that diameter produces a real pass/fail envelope.
 
 ## MCP tools (one per facade entry)
 
@@ -95,7 +112,7 @@ named assembly off the script's session, and dispatch to the facade.
 - `verify({ check: 'static-hold' })` — wraps the facade; accepts `file|code`, `joint`, `pose`, `gravity`, `min_torque_margin_pct`, `range_samples`
 - `verify({ check: 'physics' })` — full mechanism truth with physics engine: kinematic disconnect / interference / DOF checks plus static equilibrium and drop-on-release under gravity; accepts `file|code`, `assembly`, `physics: false` to skip physics engine. Returns `{ ok, mechanism, failures, coverage }`.
 - `verify({ check: 'motion-load' })` — mate assemblies: loads on every `mechanicalJoint` along the animationView tracks (gravity + inertia + external forces passed as motion_loads), or quasi-static over the joint limits (motion_mode: 'range'). Reports peak torque vs `torqueNm` (margin < 1x error, < 2x warning), actuator-shaft axial / radial / bending loads (checked only against `radialLimitN` / `axialLimitN`), the radial load per support (up to two coaxial supports, each at the station where it bears on the shaft: its connector on the joint axis, else the middle of its material nearest the shaft; an ambiguous station is a warning, not a number), the worst pose and a torque-vs-time series. Same calculator as static-hold. Use `supports: { '<joint>': ['servo'] }` to see the shaft side load without a bushing. Declare a purchased part's mass with `arm.part(name, shape, { massKg })`.
-- `sweep_tolerance` — standalone tool (not a `verify` check — it surveys an envelope rather than gating one state); accepts `file|code`, `params`, `gates`
+- `sweep_tolerance` — standalone tool (not a `verify` check — it surveys an envelope rather than gating one state); accepts `file|code`, `params`, `gates`, `boundaryTolerance`, `boundaryBudget`
 - `verify({ check: 'assembly' })` (extended) — composes the four `verify`-routed checks when called with `gates: ['kinematic']`
 
 ## Recovery loop — code → nextAction → repair

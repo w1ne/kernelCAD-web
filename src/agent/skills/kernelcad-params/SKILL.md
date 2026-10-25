@@ -174,13 +174,15 @@ set_param({ code, param_name: 'Screw', new_value: 'M9' })
 // → { ok: false, error: "param 'Screw' value 'M9' is not one of the declared choices: M3, M4, M5 (... invalid-args.param.choice-invalid ...)" }
 ```
 
-### `sweep_tolerance` is numeric-only
+### What `sweep_tolerance` can sweep
 
-`kinematic.sweepTolerance({ params: {...} })` only accepts `number` params
-(`{ values: [...] }` or `{ min, max, steps }`) — sweeping a boolean/choice/
-string param has no meaningful range and fails fast with
-`feature.invalid-args` (hint `invalid-args.param.type-mismatch`) before any
-combo is evaluated.
+`kinematic.sweepTolerance({ params: {...} })` accepts `number` params
+(`{ values: [...] }` or `{ min, max, steps }`) and discrete `choice`/`string`
+params (`{ values: ['M3', 'M4', ...] }`). Numeric transitions are bisected to
+`boundaryTolerance` and reported as boundaries; discrete params are evaluated
+as points and never bisected. A boolean or colour param has no meaningful
+range and fails fast with `feature.invalid-args` (hint
+`invalid-args.param.type-mismatch`) before any combo is evaluated.
 
 ## Parametric assembly frames
 

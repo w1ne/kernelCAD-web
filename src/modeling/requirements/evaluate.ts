@@ -662,7 +662,15 @@ export function evaluateRequirement(
   const unitsB = unitsOf(b);
   if (unitsA.length === 0) return notEvaluated('its selection matched nothing');
 
-  const measurement = measureScalarMetric(spec.metric, spec, unitsA, unitsB);
+  let measurement: MetricResult;
+  try {
+    measurement = measureScalarMetric(spec.metric, spec, unitsA, unitsB);
+  } catch (e) {
+    // A kernel measurement can fail on a stale/re-lowered shape (for example a
+    // solved assembly whose part handles no longer belong to the active OCCT
+    // instance). Report not-evaluated — never a crash, and never green.
+    return notEvaluated(`the kernel failed to measure it (${e instanceof Error ? e.message : String(e)})`);
+  }
   if ('reason' in measurement) return notEvaluated(measurement.reason);
   const comparison = comparisonFor(measurement, spec);
   const message = comparison.status === 'fail' ? failureMessage(name, measurement, spec, comparison.margin) : undefined;
