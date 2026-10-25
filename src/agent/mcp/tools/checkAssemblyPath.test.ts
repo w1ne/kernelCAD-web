@@ -33,19 +33,36 @@ describe('assembly path MCP check', () => {
             throw new Error(result.error);
         expect(result.parts[0].validDirections).toEqual([[0, 0, 1]]);
     });
-    it('produces a build sequence for the twelve-part gearbox example', async () => {
+    it('plans the twelve-part gearbox with two mate-derived subassemblies at top level and recursively inside', async () => {
         const result = await checkAssemblyPathTool({ file: 'examples/assemblies/assembly-sequence-gearbox.kcad.ts', sequence: true });
         if ('error' in result)
             throw new Error(result.error);
-        expect(result.sequence?.steps).toHaveLength(12);
-        expect(result.sequence?.steps.map(s => s.adds[0])).toEqual([
-            'base', 'post-a', 'post-b', 'post-c', 'post-d',
-            'input-shaft', 'output-shaft', 'gear-a', 'gear-b', 'gear-c', 'gear-d', 'cover',
+        const steps = result.sequence!.steps;
+        expect(steps).toHaveLength(14);
+        const unitSteps = steps.filter(step => step.adds[0].startsWith('subassembly-'));
+        expect(unitSteps.map(step => step.adds[0])).toEqual(['subassembly-2-gear-c', 'subassembly-1-gear-a']);
+        for (const unit of unitSteps) {
+            const inside = steps.filter(step => step.subassembly === unit.adds[0]);
+            expect(inside.length).toBeGreaterThan(1);
+            expect(inside[inside.length - 1]).toBe(unit);
+        }
+        const leaves = steps.flatMap(step => step.adds).filter(name => !name.startsWith('subassembly-'));
+        expect([...leaves].sort()).toEqual([
+            'base', 'cover', 'gear-a', 'gear-b', 'gear-c', 'gear-d',
+            'input-shaft', 'output-shaft', 'post-a', 'post-b', 'post-c', 'post-d',
         ]);
         expect(result.sequence?.unknown).toEqual([]);
-        expect(result.sequence?.steps.every(s => s.index === result.sequence!.steps.indexOf(s) + 1)).toBe(true);
+        expect(steps.every((step, index) => step.index === index + 1)).toBe(true);
         expect(result.model).toMatchObject({ rigidParts: true, gravity: 'not-modelled' });
     }, 60_000);
+    it('turns a fixed connect into a subassembly candidate', async () => {
+        const code = "const a=assembly('fixedcluster');const p=a.part('base',box(4,4,1),{connectors:{seat:{origin:[0,0,0]}}});const q=a.part('top',box(4,4,1).translate(0,0,1),{connectors:{mount:{origin:[0,0,0]}}});a.connect('bond',p.connector('seat'),q.connector('mount'));return a.model();";
+        const result = await checkAssemblyPathTool({ code, sequence: true });
+        if ('error' in result)
+            throw new Error(result.error);
+        expect(result.sequence?.steps.map(step => step.adds[0])).toEqual(['top', 'base', 'subassembly-1-base']);
+        expect(result.sequence?.steps.every(step => step.subassembly === 'subassembly-1-base')).toBe(true);
+    });
     it('detects a catalog threaded fastener as unknown: non-straight-path', async () => {
         const code = "const a=assembly('fastener-sequence');a.part('screw',await lib.part({family:'socket-head-cap-screw',thread:'M3',lengthMm:8,detail:'envelope'}));a.part('plate',box(20,20,2).translate(0,0,10));return a.model();";
         const result = await checkAssemblyPathTool({ code, sequence: true });

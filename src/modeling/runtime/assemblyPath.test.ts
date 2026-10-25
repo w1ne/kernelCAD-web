@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest';
 import { checkAssemblyPathMeshes, type AssemblyPathPart } from './assemblyPath';
+import { compareRemovalCandidates } from './assemblySequencePlan';
 import { trianglesCollideAlong, type Triangle } from './assemblyPathSweep';
 import { classifySolidPoint } from './assemblyPathContainment';
 import { TriangleBvh, type DfmMesh } from './dfm/meshBvh';
@@ -196,6 +197,17 @@ describe('assembly sequence planner core', () => {
         };
         return [pin, half('left-half', 1), half('right-half', -1)];
     }
+    function lCorridorAssembly(): AssemblyPathPart[] {
+        const housing = combine('housing', [
+            box('floor', [-1.2, -1.2, -1.2], [4.2, 4.6, -1]),
+            box('ceiling', [-1.2, -1.2, 2], [4.2, 4.6, 2.2]),
+            box('left', [-1.2, -1.2, -1], [-1, 4.6, 2]),
+            box('bottom', [-1.2, -1.2, -1], [4.2, -1, 2]),
+            box('right', [1, -1.2, -1], [1.2, 3, 2]),
+            box('top', [-1.2, 4.4, -1], [4.2, 4.6, 2]),
+        ]);
+        return [box('slider', [-.5, -.5, 0], [.5, .5, 1]), housing];
+    }
     it('builds the directional graph and reverses the peel into a build sequence', () => {
         const result = checkAssemblyPathMeshes(stack(3), { disassemblyOrder: true, sequence: true });
         expect(result.blockingGraph.edges).toContainEqual({ part: 'layer-1', blocker: 'layer-2', direction: [0, 0, 1] });
@@ -245,7 +257,7 @@ describe('assembly sequence planner core', () => {
         }
         expect(result.sequence?.steps).toEqual([]);
         expect(result.sequence?.unknown).toEqual([]);
-        expect(result.stuckParts).toEqual(['pin', 'left-half', 'right-half']);
+        expect(result.stuckParts).toEqual(['left-half', 'pin', 'right-half']);
     });
     it('keeps catalog-style threaded fasteners unknown, never blocked', () => {
         const result = checkAssemblyPathMeshes([
@@ -255,5 +267,48 @@ describe('assembly sequence planner core', () => {
         expect(result.parts.find(p => p.part === 'm3-screw')?.state).toEqual({ kind: 'unknown', reason: 'non-straight-path' });
         expect(result.sequence?.unknown).toContain('m3-screw');
         expect(result.sequence?.steps.map(s => s.adds[0])).not.toContain('m3-screw');
+    });
+    it('ranks subassemblies first, then outside-in, reorientation and tool changes', () => {
+        const base = { name: 'a', subassembly: false, travelMm: 5, direction: [0, 0, 1] as [number, number, number], tool: 'hand' };
+        expect(compareRemovalCandidates({ ...base, subassembly: true }, base)).toBeLessThan(0);
+        expect(compareRemovalCandidates({ ...base, travelMm: 1 }, base)).toBeLessThan(0);
+        expect(compareRemovalCandidates({ ...base, direction: [1, 0, 0] }, base, [0, 0, 1])).toBeGreaterThan(0);
+        expect(compareRemovalCandidates({ ...base, tool: 'fastener' }, base, [0, 0, 1], 'hand')).toBeGreaterThan(0);
+        expect(compareRemovalCandidates({ ...base, name: 'alpha' }, { ...base, name: 'beta' })).toBeLessThan(0);
+    });
+    it('plans an explicit subassembly at the top level and recursively inside, deterministically', () => {
+        const parts = [
+            box('alpha', [0, 0, 0], [1, 1, 1]),
+            box('beta', [0, 0, 1], [1, 1, 2]),
+            box('solo', [5, 0, 0], [6, 1, 1]),
+        ];
+        const options = { sequence: true as const, subassemblies: [{ name: 'stack', parts: ['alpha', 'beta'] }] };
+        const first = checkAssemblyPathMeshes(parts, options);
+        const second = checkAssemblyPathMeshes(parts, options);
+        expect(second.sequence).toEqual(first.sequence);
+        expect(first.sequence?.steps.map(step => step.adds[0])).toEqual(['solo', 'beta', 'alpha', 'stack']);
+        expect(first.sequence?.steps.filter(step => step.subassembly === 'stack')).toHaveLength(3);
+        expect(first.sequence?.steps.find(step => step.adds[0] === 'stack')?.subassembly).toBe('stack');
+        expect(first.sequence?.unknown).toEqual([]);
+        expect(first.ok).toBe(true);
+    });
+    it('finds a non-straight removal path by sampling and labels it found-by-search', () => {
+        const result = checkAssemblyPathMeshes(lCorridorAssembly(), { sequence: true });
+        expect(result.sequence?.search?.[0]).toMatchObject({ part: 'slider', status: 'found-by-search' });
+        expect(result.sequence?.steps.map(step => step.adds[0])).toContain('slider');
+        expect(result.sequence?.unknown).toEqual([]);
+        expect(result.ok).toBe(false);
+    });
+    it('reports sampling budget exhaustion as unknown budget, not blocked', () => {
+        const result = checkAssemblyPathMeshes(lCorridorAssembly(), { sequence: true, searchBudget: 1 });
+        const slider = result.parts.find(part => part.part === 'slider');
+        expect(slider?.state).toEqual({ kind: 'unknown', reason: 'budget' });
+        expect(result.sequence?.unknown).toContain('slider');
+        expect(result.sequence?.search).toBeUndefined();
+    });
+    it('uses needs-multi-part-move when the partition budget cannot prove a stuck set blocked', () => {
+        const result = checkAssemblyPathMeshes(trappedPinAssembly(), { sequence: true, search: false, partitionBudget: 1 });
+        expect(result.parts.find(part => part.part === 'pin')?.state).toEqual({ kind: 'unknown', reason: 'needs-multi-part-move' });
+        expect(result.sequence?.unknown).toContain('pin');
     });
 });
