@@ -194,6 +194,12 @@ function recordHaystack(r: PartRecord): string {
     r.family,
     r.standard ?? '',
     r.tags.join(' '),
-    ...Object.entries(r.attributes).map(([k, v]) => `${k}:${v}`),
+    // `verified*` is range-proof provenance, not part identity. Its value
+    // lists every thread/length the family was checked over, so including it
+    // would make an "M3 screw" query return M2/M4/etc. records whose own tags
+    // never mentioned M3. Discovery searches dimensions/tags only.
+    ...Object.entries(r.attributes)
+      .filter(([key]) => !key.startsWith('verified'))
+      .map(([k, v]) => `${k}:${v}`),
   ].join(' ');
 }

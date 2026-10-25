@@ -99,6 +99,13 @@ when ids are computed. `lib.part` resolves the same catalog ids from the
 family table; the `lib.standard` fastener shortcuts go through `lib.part`, so
 they take `detail` too.
 
+The catalog records for the fastener, nut and washer families now carry
+`attributes.verified*`: the stocked thread range, the sampled length range,
+the requirement names and the point/boundary count from the S3 range-proof CI
+job (`npm run test:standard-part-ranges`). Read those before quoting a
+range; they say "checked, not proven", and parts outside the first slice are
+listed in `STANDARD_PART_RANGE_REMAINING` instead of being claimed.
+
 ## Fastener table — lib.part and lib.stack
 
 `lib.part({ family, thread, lengthMm })` builds one stocked fastener:

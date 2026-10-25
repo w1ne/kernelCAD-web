@@ -12,6 +12,13 @@ import type { Shape } from '../capture/proxy';
 import type { FastenerDetail } from './familyTable';
 import { placePart } from './placePart';
 
+export {
+  STANDARD_PART_RANGES,
+  STANDARD_PART_RANGE_REMAINING,
+  standardPartVerificationAttributes,
+  type StandardPartRangeDeclaration,
+} from './standardPartRanges';
+
 export type MetricThread =
   | 'M2'
   | 'M2.5'

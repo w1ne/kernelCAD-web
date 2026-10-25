@@ -89,4 +89,37 @@ const fitted = await lib.insert(plate, { diameterMm: 7.0, family: 'socket-head-c
 // fitted.holes[0].thread === 'M6', fitted.holes[0].fit === 'loose'
 ```
 
+## Checked ranges, not built at the default
+
+The fastener, nut and washer shortcuts carry a declared parameter domain and
+requirements, and a CI job runs them through the same S3 `sweepTolerance`
+path an agent uses. The catalog record shows the checked range, not just the
+value the part happened to be built at:
+
+| Shortcut | Threads checked | Length checked (sampled) | Points |
+|---|---|---|---|
+| `boltSHCS` | M2–M12 (9) | M5, 5–50 mm (5, 18, 50) | 12 |
+| `boltBHCS` | M3–M10 (6) | M8, 8–50 mm (8, 20, 50) | 9 |
+| `boltFlatHead` | M3–M12 (7) | M6, 6–50 mm (6, 18, 50) | 10 |
+| `boltHex` | M3–M20 (9) | M10, 20–100 mm (20, 50, 100) | 12 |
+| `setScrew` | M3–M12 (7) | M6, 6–40 mm (6, 16, 40) | 10 |
+| `rodThreaded` | M3–M12 (7) | M8, 250 and 1000 mm | 9 |
+| `nutHex` | M2–M12 (9) | — | 9 |
+| `nutLock` | M3–M12 (7) | — | 7 |
+| `washerFlat` | M2–M12 (9) | — | 9 |
+| `washerLock` | M3–M12 (7) | — | 7 |
+
+Every point measures two ledger requirements: the part's bounding box stays
+inside its family envelope band, and its volume is at least 1 mm³. Thread and
+length domains are discrete, so the sweep reports its points and zero bisected
+boundaries; the coverage statement is "checked at N points plus boundaries;
+sampled, not proven". CI runs `npm run test:standard-part-ranges` in the
+`build-and-checks` gate; the runner prints the point and boundary count for
+every family and fails if any requirement does not pass.
+
+Still unverified in this first slice: heat-set inserts, the four bearings,
+the two SG90 parts, NEMA 17/23 motors, 2.54 mm and 1.27 mm pin headers, and
+JST-XH housings. Those need catalog geometry or non-threaded variant domains,
+and are listed in `STANDARD_PART_RANGE_REMAINING` rather than claimed.
+
 The model above is live: drag it to rotate, and the eight stacks are the parts the examples place. The same calls work in Studio, in the browser and through kernelCAD's MCP tools. See the [docs](/docs/) for the API.
