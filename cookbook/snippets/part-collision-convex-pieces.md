@@ -1,18 +1,18 @@
 ---
 id: part-collision-convex-pieces
-title: Collision geometry as convex pieces so a non-convex body has no phantom MuJoCo contact
+title: Collision geometry as convex pieces so a non-convex body has no phantom physics contact
 tags: [assembly, mate, revolute, joint, kinematic]
 keywords:
   - collision geometry convex pieces for a non-convex body
   - declare convex collision shapes on an assembly body
-  - MuJoCo contact false positive from convex hull of the whole body
+  - physics contact false positive from convex hull of the whole body
   - phantom collision volume between rods or lugs
   - physics gate reports contact where no material exists
 when_to_use: >-
   A body is not convex (a plate with rods, a shaft with side lugs, an L
-  bracket) and a physics or MuJoCo contact check reports collisions in the
+  bracket) and a physics check reports collisions in the
   empty space inside its convex hull. Declare its collision geometry as a
-  few convex shapes with .collision([...]); the MuJoCo export then emits one
+  few convex shapes with .collision([...]); the physics export then emits one
   mesh geom per piece instead of one hull of the whole body. Mass and
   inertia still come from the real shape.
 example: examples/kinematic/collision-shapes.kcad.ts
@@ -24,7 +24,7 @@ example: examples/kinematic/collision-shapes.kcad.ts
 // convex: the hull of the whole base fills the gap between the rods, so the
 // physics export would report the link touching the base where there is only
 // air. `part.collision([...])` declares the base as its three convex pieces
-// instead, and MuJoCo then collides with each piece's own hull. Mass and
+// instead, and the physics engine then collides with each piece's own hull. Mass and
 // inertia still come from the real base shape.
 //
 // Run with:
