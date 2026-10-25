@@ -112,5 +112,5 @@ export type GateReason =
   | { code: 'collab.gate.evaluation-failed'; diagnostics: unknown[] };
 
 export type GateVerdict =
-  | { status: 'pass'; evaluated: EvaluatedRevision; preexisting: string[] }
+  | { status: 'pass'; evaluated: EvaluatedRevision; preexisting: string[]; notes?: string[] }
   | { status: 'reject'; reasons: GateReason[]; evaluated?: EvaluatedRevision };
