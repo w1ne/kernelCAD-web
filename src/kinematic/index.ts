@@ -12,6 +12,15 @@ export { checkSweptCollision } from './checkSweptCollision';
 export { checkReachable } from './checkReachable';
 export { checkLoadCapacity } from './checkLoadCapacity';
 export { checkStaticHold } from './checkStaticHold';
+export { checkMotionLoad, checkMotionLoad as motionLoad } from './motionLoad';
+export type {
+  MotionLoadExternalLoad,
+  MotionLoadJointResult,
+  MotionLoadOpts,
+  MotionLoadResult,
+  MotionLoadSample,
+  MotionLoadSupportPeak,
+} from './motionLoad';
 export { sweepTolerance } from './sweepTolerance';
 
 export type {

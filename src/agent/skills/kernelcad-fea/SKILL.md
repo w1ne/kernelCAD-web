@@ -1,6 +1,6 @@
 ---
 name: kernelcad-fea
-description: Answer "will this part hold this load?" with solver evidence — declare a linear-static structural study with shape.feaStudy({ material, fixed, loads, minSafetyFactor? }), then run it with run_fea for peak von Mises stress, peak displacement, minimum safety factor against yield, named hot-spot regions, mesh-trust flags and stress-heatmap PNGs. A declared minSafetyFactor turns the study into a gate that fails evaluate_script. Use when sizing a bracket, mount, tab, clevis or any load-bearing part, when a load-capacity check reported beam-not-applicable, or before committing to a wall thickness or material grade.
+description: Answer "will this part hold this load?" with solver evidence — declare a linear-static structural study with shape.feaStudy({ material, fixed, loads | loadsFrom, minSafetyFactor? }), then run it with run_fea for peak von Mises stress, peak displacement, minimum safety factor against yield, named hot-spot regions, mesh-trust flags and stress-heatmap PNGs. A declared minSafetyFactor turns the study into a gate that fails evaluate_script. Use when sizing a bracket, mount, tab, clevis or any load-bearing part, when a load-capacity check reported beam-not-applicable, or before committing to a wall thickness or material grade.
 ---
 
 # kernelCAD — structural FEA
@@ -64,7 +64,8 @@ a handle, not a Shape — it is not part of the geometry chain.
 | --- | --- |
 | `material` | A grade name, or explicit `{ E, nu, yield }` in MPa / – / MPa. |
 | `fixed` | Faces held rigid (all 3 translations). A `FaceQuery` or a `@kc[...]` ref. |
-| `loads[]` | `{ faces, force: [Fx, Fy, Fz], name? }`. `force` is the TOTAL in newtons over those faces, applied as a uniform traction (area-weighted consistent nodal loads), not per node. |
+| `loads[]` | `{ faces, force: [Fx, Fy, Fz], name? }`. `force` is the TOTAL in newtons over those faces, applied as a uniform traction (area-weighted consistent nodal loads), not per node. A load may also carry a remote wrench (`pointMm` + `momentNmm`), distributed as a statically equivalent nodal load. |
+| `loadsFrom` | `{ motion, part, joint?, pose?, faces? }` — take the worst sampled wrench from `kinematic.motionLoad` instead of typing a load. See below. Mutually exclusive with `loads`. |
 | `meshSize` | Target element size, mm. Default: bounding-box diagonal / 20. |
 | `minSafetyFactor` | Declaring it turns the study into an enforcement gate. |
 | `name` | Study name; `run_fea({ study })` selects by it. Default `study`. |
@@ -73,6 +74,50 @@ Selectors are the same vocabulary as the rest of the API — `{ atX: 0 }`,
 `{ atZ: wall }` (params stay symbolic and resolve at run time), or a
 `@kc[...]` ref taken from `inspect({ of: 'faces' })`. Call that first when you
 are not sure which face you mean.
+
+### Loads from motion (S5)
+
+A moving assembly already knows its worst load. Instead of typing a force by
+hand, run the motion study and hand its result to the study:
+
+```typescript
+const motion = await kinematic.motionLoad(arm, { mode: 'range', rangeSamples: 9 });
+bracket.feaStudy({
+  name: 'bracket-at-worst-pose',
+  material: 'mild-steel',
+  fixed: { atX: 0 },
+  loadsFrom: { motion, part: 'bracket' },   // no force typed here
+  minSafetyFactor: 1.5,
+});
+```
+
+`motionLoad` returns the peak torque / axial / radial load per driven joint
+and `partLoads`, the worst sample per part and side in that part's own frame.
+For each part it ranks samples by a clearly named proxy: the bending stress
+implied by the joint moment and the part's declared `crossSection`
+(`von-mises-section`, MPa), or the joint-moment magnitude when no section is
+declared (`joint-moment`, N·mm). That proxy only chooses the pose; the FEA
+solve produces the safety factor.
+
+The selected sample's force and moment are applied as a remote wrench at the
+joint origin over the face containing that origin (or `loadsFrom.faces`). Both
+solvers distribute it as a statically equivalent nodal load, so the moment is
+carried as a force couple, not a rotational DOF. The summary and the S2 ledger
+entry carry the pose, e.g.
+`fea.bracket.minSafetyFactor passed: measured 3.10, need 1.5, margin 1.60 at
+shoulder=0° from motion joint 'shoulder-drive'`.
+
+Honesty limits:
+
+- A motion result with no sample for the named part **throws at capture**; it
+  never reports an unloaded study as a pass.
+- The proxy picks one pose, not an envelope. If two poses load different
+  features, run the study once per pose (`motionLoad({ poses: [{...}] })`) or
+  keep a larger margin.
+- The remote wrench is statically equivalent over the chosen joint face. It
+  does not model bolt preload, contact, or a flexible joint.
+- A study with `minSafetyFactor` still gates on every evaluate, so the same
+  toolchain limits and UNVERIFIED rules above apply.
 
 ### Materials
 

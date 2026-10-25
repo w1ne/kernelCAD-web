@@ -118,6 +118,17 @@ export function consistentLoadWeights(
  *  known, else the equal split over the node set. */
 function cloadLines(job: FeaJobSpec, load: FeaJobSpec['loads'][number]): string[] {
   const out: string[] = [];
+  if (load.nodalForces !== undefined) {
+    // A remote wrench is already a statically equivalent nodal load (see
+    // remoteLoad.ts); do not spread it a second time.
+    for (const { node, force } of load.nodalForces) {
+      for (let dof = 0; dof < 3; dof++) {
+        if (force[dof] === 0) continue;
+        out.push(`${node}, ${dof + 1}, ${num(force[dof]!)}`);
+      }
+    }
+    return out;
+  }
   const weights = load.tris !== undefined && load.tris.length > 0
     ? consistentLoadWeights(job, load.tris)
     : undefined;

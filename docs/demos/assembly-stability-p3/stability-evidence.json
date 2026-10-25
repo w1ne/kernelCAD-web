@@ -1,0 +1,153 @@
+{
+  "checkedAt": "2026-10-25T18:54:45.191Z",
+  "command": "verify({ check: 'assembly-path', file: 'examples/assemblies/assembly-stability-bracket.kcad.ts', sequence: true, stability: true })",
+  "source": "examples/assemblies/assembly-stability-bracket.kcad.ts",
+  "sourceSha256": "3d4a1d01054fedd69bffcc03dd6e586fd8c523d7bc8f7d850a90e1d83c1ab149",
+  "model": {
+    "rigidParts": true,
+    "motion": "straight-line-translation",
+    "motionModels": [
+      "straight-line-translation"
+    ],
+    "testedDirections": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        -1,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        -1,
+        0
+      ],
+      [
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        -1
+      ]
+    ],
+    "gravity": "approximate-support-projection",
+    "basis": "continuous-triangle-mesh",
+    "tessellation": {
+      "linearMm": 0.01,
+      "relative": true,
+      "angularRad": 0.05,
+      "source": "meshShapeForExport default: relative linear 0.01, angular 0.05 rad; per-face fallback absolute 0.02 mm, 0.1 rad"
+    },
+    "clearanceMm": 0,
+    "clearancePolicy": "Zero clearance: any positive-travel triangle contact blocks; t=0 departure is free.",
+    "toolReach": "not-modelled",
+    "stability": {
+      "model": "approximate-support-projection",
+      "gravity": [
+        0,
+        0,
+        -1
+      ],
+      "contactToleranceMm": 0.05,
+      "seed": [
+        "base"
+      ],
+      "seedSource": "inferred-lowest-parts",
+      "massBasis": "uniform-density-mesh-volume"
+    }
+  },
+  "steps": [
+    {
+      "index": 1,
+      "adds": [
+        "z-cantilever"
+      ],
+      "direction": [
+        -1,
+        0,
+        0
+      ],
+      "stability": "needs-hold"
+    },
+    {
+      "index": 2,
+      "adds": [
+        "base"
+      ],
+      "direction": [
+        0,
+        0,
+        1
+      ],
+      "stability": "stable"
+    },
+    {
+      "index": 3,
+      "adds": [
+        "a-support"
+      ],
+      "direction": [
+        -1,
+        0,
+        0
+      ],
+      "stability": "stable",
+      "heldBy": [
+        "base"
+      ]
+    }
+  ],
+  "needsHold": [
+    {
+      "part": "z-cantilever",
+      "status": "needs-hold",
+      "reason": "center-of-mass-outside-support-polygon",
+      "supports": [
+        "base"
+      ],
+      "centerOfMass": [
+        5.499999999999998,
+        0,
+        2.5049999999999994
+      ],
+      "supportPolygon": [
+        [
+          -1,
+          -1,
+          2
+        ],
+        [
+          0.8333333333333337,
+          -0.5,
+          2.01
+        ],
+        [
+          -0.5,
+          0.8333333333333335,
+          2.01
+        ],
+        [
+          -1,
+          1,
+          2
+        ]
+      ]
+    }
+  ],
+  "unknown": [],
+  "ok": false,
+  "limitations": [
+    "Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation and declared helical fastener motion only; no mate solving, deformation, thread engagement or torque. Press/snap fits are declared, never simulated. Tool reach is a swept-envelope approximation, not a driver drawing. Static stability is approximate: a centre-of-mass projection onto a support polygon of mesh contacts with already-stable parts, not gravity simulation, friction, tipping or fixture analysis. A needs-hold finding names an external hold the model cannot prove. Subassembly and multi-part moves are heuristic, not exhaustive. Sampling paths are found-by-search, never proven. Blocked and unknown parts are not \"impossible\"."
+  ]
+}

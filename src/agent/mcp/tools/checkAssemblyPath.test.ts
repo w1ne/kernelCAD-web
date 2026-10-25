@@ -14,6 +14,10 @@ describe('assembly path MCP check', () => {
         expect(p).toHaveProperty('disassemblyOrder');
         expect(p).toHaveProperty('sequence');
         expect(p).toHaveProperty('threadedFasteners');
+        expect(p).toHaveProperty('stability');
+        expect(p).toHaveProperty('fixtures');
+        expect(p).toHaveProperty('contactToleranceMm');
+        expect(p).toHaveProperty('gravity');
     });
     it('evaluates real assembly code through verify', async () => {
         const result = await verifyTool({ check: 'assembly-path', code, assembly: 'path' }) as Awaited<ReturnType<typeof checkAssemblyPathTool>>;
@@ -76,6 +80,34 @@ describe('assembly path MCP check', () => {
             expect.objectContaining({ name: 'assembly.requiresForce.gear-a', source: 'assembly', status: 'not-evaluated' }),
         ]));
         expect(result.requirements?.ok).toBe(false);
+        expect(result.ok).toBe(false);
+    }, 60_000);
+    it('flags a cantilever placed before its support with approximate stability', async () => {
+        const result = await checkAssemblyPathTool({
+            file: 'examples/assemblies/assembly-stability-bracket.kcad.ts',
+            sequence: true,
+            stability: true,
+        });
+        if ('error' in result)
+            throw new Error(result.error);
+        expect(result.sequence?.steps.map(step => step.adds[0])).toEqual(['z-cantilever', 'base', 'a-support']);
+        expect(result.sequence?.steps[0]).toMatchObject({ stability: 'needs-hold' });
+        expect(result.sequence?.steps[2]).toMatchObject({ stability: 'stable', heldBy: ['base'] });
+        expect(result.sequence?.needsHold).toEqual([
+            expect.objectContaining({
+                part: 'z-cantilever',
+                status: 'needs-hold',
+                reason: 'center-of-mass-outside-support-polygon',
+                supports: ['base'],
+            }),
+        ]);
+        expect(result.model.gravity).toBe('approximate-support-projection');
+        expect(result.model.stability).toMatchObject({
+            model: 'approximate-support-projection',
+            gravity: [0, 0, -1],
+            seed: ['base'],
+            seedSource: 'inferred-lowest-parts',
+        });
         expect(result.ok).toBe(false);
     }, 60_000);
     it('turns a fixed connect into a subassembly candidate', async () => {
