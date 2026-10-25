@@ -5,14 +5,37 @@ import { bboxGap } from './dfm/clearance';
 import { trianglesCollideAlong, type Triangle } from './assemblyPathSweep';
 import { classifySolidPoint } from './assemblyPathContainment';
 import type { Vec3 } from '../../shared/intent/types';
+import {
+    buildDirectionalBlockingGraph,
+    makeModelStamp,
+    partState,
+    sequenceFromRemovalOrder,
+    stuckUnknownNames,
+    type AssemblySequence,
+    type DirectionalBlockingGraph,
+    type MeshTessellationStamp,
+    type ModelStamp,
+    type PartState,
+} from './assemblySequence';
 export interface AssemblyPathPart {
     name: string;
     mesh: DfmMesh;
+    /** Declared physical behaviour the triangle mesh cannot express. A threaded
+     *  fastener needs a helical removal (P2); stage A reports it unknown. */
+    threadedFastener?: boolean;
 }
 export interface AssemblyPathOptions {
     /** Additional world-space removal vectors. Six cardinal directions always participate. */
     directions?: Vec3[];
     disassemblyOrder?: boolean;
+    /** Also return the removal peel and its reverse build sequence. */
+    sequence?: boolean;
+    /** Parts that need a non-straight (helical) removal. Names must exist. */
+    threadedFasteners?: string[];
+    /** Override the shared work budget (positive finite). */
+    workBudget?: number;
+    /** Describe the input mesh's tessellation on the model stamp. */
+    tessellation?: Partial<MeshTessellationStamp>;
 }
 export interface AssemblyPathDirection {
     direction: Vec3;
@@ -25,18 +48,25 @@ export interface AssemblyPathPartReport {
     removable: boolean;
     validDirections: Vec3[];
     directions: AssemblyPathDirection[];
+    /** Three-way planner state. `blocked` and `unknown` are never "impossible". */
+    state: PartState;
 }
 export interface AssemblyPathReport {
     ok: boolean;
     source: 'local';
     basis: 'continuous-triangle-mesh';
     limitations: string[];
+    model: ModelStamp;
     parts: AssemblyPathPartReport[];
+    /** Union of the initial per-direction blocker sets. */
+    blockingGraph: DirectionalBlockingGraph;
     removalOrder?: {
         part: string;
         direction: Vec3;
     }[];
     stuckParts?: string[];
+    /** Present when `sequence: true`. */
+    sequence?: AssemblySequence;
 }
 type Bounds = {
     min: Vec3;
@@ -49,10 +79,50 @@ interface Prepared extends AssemblyPathPart {
     bvh: TriangleBvh;
 }
 const CARDINAL: Vec3[] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
-const LIMITATIONS = 'Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation only; no mates, rotations, deformation or fastener unthreading. Greedy order is not exhaustive.';
+const DEFAULT_WORK_BUDGET = 2000000;
+const LIMITATIONS = 'Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation only; no mates, rotations, deformation or fastener unthreading. Greedy order is not exhaustive. Blocked and unknown parts are not "impossible".';
+const DEFAULT_TESSELLATION: MeshTessellationStamp = {
+    linearMm: null,
+    relative: null,
+    angularRad: null,
+    source: 'caller-supplied triangle mesh; tessellation not declared',
+};
+class AssemblyPathBudgetError extends Error {
+    constructor() {
+        super('Assembly path total work budget exceeded; simplify meshes or split the assembly.');
+        this.name = 'AssemblyPathBudgetError';
+    }
+}
+function validateFastenerOptions(options: AssemblyPathOptions): void {
+    if (options.sequence !== undefined && typeof options.sequence !== 'boolean')
+        throw new Error('sequence must be boolean.');
+    const names = options.threadedFasteners;
+    if (names !== undefined && (!Array.isArray(names) || names.some(name => typeof name !== 'string' || !name) || new Set(names).size !== names.length))
+        throw new Error('threadedFasteners must contain unique nonempty part names.');
+}
+function validateWorkBudget(options: AssemblyPathOptions): void {
+    if (options.workBudget !== undefined && (!Number.isFinite(options.workBudget) || options.workBudget <= 0))
+        throw new Error('workBudget must be a positive finite number.');
+}
+function validateTessellation(t: Partial<MeshTessellationStamp>): void {
+    for (const key of ['linearMm', 'angularRad'] as const)
+        if (t[key] !== undefined && t[key] !== null && (!Number.isFinite(t[key]) || t[key]! < 0))
+            throw new Error(`tessellation.${key} must be a finite nonnegative number or null.`);
+    if (t.relative !== undefined && t.relative !== null && typeof t.relative !== 'boolean')
+        throw new Error('tessellation.relative must be boolean or null.');
+    if (t.source !== undefined && (typeof t.source !== 'string' || !t.source))
+        throw new Error('tessellation.source must be a nonempty string.');
+}
+function validateSequenceOptions(options: AssemblyPathOptions): void {
+    validateFastenerOptions(options);
+    validateWorkBudget(options);
+    if (options.tessellation !== undefined)
+        validateTessellation(options.tessellation);
+}
 function candidates(options: AssemblyPathOptions): Vec3[] {
     if (options.disassemblyOrder !== undefined && typeof options.disassemblyOrder !== 'boolean')
         throw new Error('disassemblyOrder must be boolean.');
+    validateSequenceOptions(options);
     if (options.directions !== undefined && (!Array.isArray(options.directions) || options.directions.length > 64))
         throw new Error('directions must be an array of at most 64 vectors.');
     const out = CARDINAL.map(v => [...v] as Vec3);
@@ -180,20 +250,39 @@ function contained(a: Prepared, b: Prepared, consumeWork: () => void): boolean {
     };
     return inOther(a, b) || inOther(b, a);
 }
-/** Pure checker for already world-space, closed meshes. No input mutation. */
-export function checkAssemblyPathMeshes(parts: AssemblyPathPart[], options: AssemblyPathOptions = {}): AssemblyPathReport {
-    const dirs = candidates(options);
-    if (!parts.length || parts.length > 128 || parts.some(p => !p.name) || new Set(parts.map(p => p.name)).size !== parts.length)
-        throw new Error('Assembly requires 1–128 uniquely named parts.');
-    let work = 0;
-    const consumeWork = (amount = 1): void => {
-        work += amount;
-        if (work > 2000000)
-            throw new Error('Assembly path total work budget exceeded; simplify meshes or split the assembly.');
+function tessellationStamp(options: AssemblyPathOptions): MeshTessellationStamp {
+    const declared = options.tessellation;
+    return {
+        linearMm: declared?.linearMm ?? DEFAULT_TESSELLATION.linearMm,
+        relative: declared?.relative ?? DEFAULT_TESSELLATION.relative,
+        angularRad: declared?.angularRad ?? DEFAULT_TESSELLATION.angularRad,
+        source: declared?.source ?? DEFAULT_TESSELLATION.source,
     };
-    const prepared = parts.map(part => prepare(part, consumeWork));
+}
+function budgetReport(parts: AssemblyPathPart[], dirs: Vec3[], model: ModelStamp): AssemblyPathReport {
+    const reports: AssemblyPathPartReport[] = parts.map(part => ({
+        part: part.name,
+        removable: false,
+        validDirections: [],
+        directions: [],
+        state: { kind: 'unknown', reason: 'budget' },
+    }));
+    return {
+        ok: false,
+        source: 'local',
+        basis: 'continuous-triangle-mesh',
+        limitations: [LIMITATIONS],
+        model,
+        parts: reports,
+        blockingGraph: { parts: parts.map(p => p.name), directions: dirs.map(d => [...d] as Vec3), edges: [] },
+        stuckParts: parts.map(p => p.name),
+        sequence: { steps: [], model, unknown: parts.map(p => p.name) },
+    };
+}
+type BlockedCheck = (a: Prepared, b: Prepared, dir: Vec3, distance: number) => boolean;
+function createBlockedCheck(consumeWork: (amount?: number) => void): BlockedCheck {
     const overlaps = new Map<string, boolean>();
-    const blocked = (a: Prepared, b: Prepared, dir: Vec3, distance: number): boolean => {
+    return (a, b, dir, distance) => {
         consumeWork();
         if (bboxGap(swept(a.bbox, dir, distance), b.bbox) > 0)
             return false;
@@ -213,37 +302,140 @@ export function checkAssemblyPathMeshes(parts: AssemblyPathPart[], options: Asse
         }
         return false;
     };
-    const report = (part: Prepared, remaining: Prepared[]): AssemblyPathPartReport => {
-        const bounds = union(remaining);
-        const directions = dirs.map(direction => {
-            const distanceMm = travel(part.bbox, bounds, direction);
-            const blockingParts = remaining.filter(b => b !== part && blocked(part, b, direction, distanceMm)).map(b => b.name);
-            return { direction: [...direction] as Vec3, distanceMm, clear: !blockingParts.length, blockingParts };
-        });
-        const validDirections = directions.filter(d => d.clear).map(d => d.direction);
-        return { part: part.name, removable: !!validDirections.length, validDirections, directions };
+}
+function classifyPart(
+    part: Prepared,
+    remaining: Prepared[],
+    dirs: Vec3[],
+    blocked: BlockedCheck,
+    threaded: ReadonlySet<string>,
+): AssemblyPathPartReport {
+    const bounds = union(remaining);
+    const directions = dirs.map(direction => {
+        const distanceMm = travel(part.bbox, bounds, direction);
+        const blockingParts = remaining.filter(b => b !== part && blocked(part, b, direction, distanceMm)).map(b => b.name);
+        return { direction: [...direction] as Vec3, distanceMm, clear: !blockingParts.length, blockingParts };
+    });
+    const validDirections = directions.filter(d => d.clear).map(d => d.direction);
+    const state = partState(directions, threaded.has(part.name));
+    return {
+        part: part.name,
+        removable: state.kind === 'removable',
+        validDirections,
+        directions,
+        state,
     };
-    const initial = prepared.map(p => report(p, prepared));
-    const result: AssemblyPathReport = { ok: initial.every(p => p.removable), source: 'local', basis: 'continuous-triangle-mesh', limitations: [LIMITATIONS], parts: initial };
-    if (options.disassemblyOrder) {
-        let remaining = [...prepared];
-        result.removalOrder = [];
-        while (remaining.length) {
-            let free: AssemblyPathPartReport | undefined;
+}
+interface PeelOutcome {
+    removal: { part: string; direction: Vec3 }[];
+    remaining: Prepared[];
+    budgetExceeded: boolean;
+}
+function peelRemoval(
+    prepared: Prepared[],
+    report: (part: Prepared, remaining: Prepared[]) => AssemblyPathPartReport,
+    threaded: ReadonlySet<string>,
+    recoverBudget: boolean,
+): PeelOutcome {
+    let remaining = [...prepared];
+    const removal: { part: string; direction: Vec3 }[] = [];
+    let budgetExceeded = false;
+    while (remaining.length) {
+        let free: AssemblyPathPartReport | undefined;
+        try {
             for (const part of remaining) {
+                if (threaded.has(part.name))
+                    continue;
                 const candidate = report(part, remaining);
-                if (candidate.removable) {
+                if (candidate.state.kind === 'removable') {
                     free = candidate;
                     break;
                 }
             }
-            if (!free)
-                break;
-            result.removalOrder.push({ part: free.part, direction: free.validDirections[0] });
-            remaining = remaining.filter(p => p.name !== free.part);
         }
-        result.stuckParts = remaining.map(p => p.name);
-        result.ok = !remaining.length;
+        catch (error) {
+            if (recoverBudget && error instanceof AssemblyPathBudgetError) {
+                budgetExceeded = true;
+                break;
+            }
+            throw error;
+        }
+        if (!free)
+            break;
+        removal.push({ part: free.part, direction: free.validDirections[0] });
+        remaining = remaining.filter(p => p.name !== free.part);
     }
-    return result;
+    return { removal, remaining, budgetExceeded };
+}
+function applySequence(result: AssemblyPathReport, peel: PeelOutcome, prepared: Prepared[], threaded: ReadonlySet<string>, model: ModelStamp): void {
+    result.ok = peel.remaining.length === 0;
+    if (peel.budgetExceeded)
+        for (const part of peel.remaining) {
+            const entry = result.parts.find(p => p.part === part.name);
+            if (entry)
+                entry.state = { kind: 'unknown', reason: 'budget' };
+        }
+    const unknown = stuckUnknownNames(
+        prepared.map(p => p.name),
+        threaded,
+        peel.budgetExceeded,
+        new Set(peel.remaining.map(p => p.name)),
+    );
+    result.sequence = sequenceFromRemovalOrder(peel.removal, model, unknown);
+}
+function assertParts(parts: readonly AssemblyPathPart[]): void {
+    if (!parts.length || parts.length > 128 || parts.some(p => !p.name) || new Set(parts.map(p => p.name)).size !== parts.length)
+        throw new Error('Assembly requires 1–128 uniquely named parts.');
+}
+function threadedSet(parts: readonly AssemblyPathPart[], options: AssemblyPathOptions): Set<string> {
+    const threaded = new Set([...(options.threadedFasteners ?? []), ...parts.filter(p => p.threadedFastener === true).map(p => p.name)]);
+    const unknown = [...threaded].filter(name => !parts.some(p => p.name === name));
+    if (unknown.length)
+        throw new Error(`threadedFasteners names unknown part(s): ${unknown.join(', ')}.`);
+    return threaded;
+}
+/** Pure checker for already world-space, closed meshes. No input mutation. */
+export function checkAssemblyPathMeshes(parts: AssemblyPathPart[], options: AssemblyPathOptions = {}): AssemblyPathReport {
+    const dirs = candidates(options);
+    assertParts(parts);
+    const threaded = threadedSet(parts, options);
+    const model = makeModelStamp(dirs, tessellationStamp(options));
+    const maxWork = options.workBudget ?? DEFAULT_WORK_BUDGET;
+    let work = 0;
+    const consumeWork = (amount = 1): void => {
+        work += amount;
+        if (work > maxWork)
+            throw new AssemblyPathBudgetError();
+    };
+    try {
+        const prepared = parts.map(part => prepare(part, consumeWork));
+        const blocked = createBlockedCheck(consumeWork);
+        const report = (part: Prepared, remaining: Prepared[]): AssemblyPathPartReport => classifyPart(part, remaining, dirs, blocked, threaded);
+        const initial = prepared.map(p => report(p, prepared));
+        const result: AssemblyPathReport = {
+            ok: initial.every(p => p.removable),
+            source: 'local',
+            basis: 'continuous-triangle-mesh',
+            limitations: [LIMITATIONS],
+            model,
+            parts: initial,
+            blockingGraph: buildDirectionalBlockingGraph(initial),
+        };
+        if (options.disassemblyOrder || options.sequence) {
+            const peel = peelRemoval(prepared, report, threaded, options.sequence === true);
+            if (options.disassemblyOrder) {
+                result.removalOrder = peel.removal;
+                result.ok = !peel.remaining.length;
+            }
+            result.stuckParts = peel.remaining.map(p => p.name);
+            if (options.sequence)
+                applySequence(result, peel, prepared, threaded, model);
+        }
+        return result;
+    }
+    catch (error) {
+        if (options.sequence && error instanceof AssemblyPathBudgetError)
+            return budgetReport(parts, dirs, model);
+        throw error;
+    }
 }

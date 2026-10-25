@@ -169,3 +169,91 @@ describe('assembly path continuous mesh sweep', () => {
         expect(() => checkAssemblyPathMeshes([box('same', [0, 0, 0], [1, 1, 1]), box('same', [2, 2, 2], [3, 3, 3])])).toThrow();
     });
 });
+
+describe('assembly sequence planner core', () => {
+    function stack(n: number): AssemblyPathPart[] {
+        return Array.from({ length: n }, (_, i) => box(`layer-${i + 1}`, [-1, -1, i], [1, 1, i + 1]));
+    }
+    function trappedPinAssembly(): AssemblyPathPart[] {
+        const pin = combine('pin', [
+            box('shaft', [-1.5, -.5, -.5], [1.5, .5, .5]),
+            box('left-head', [-2.5, -1, -1], [-1.5, 1, 1]),
+            box('right-head', [1.5, -1, -1], [2.5, 1, 1]),
+        ]);
+        const half = (name: string, sign: 1 | -1): AssemblyPathPart => {
+            const x = (a: number, b: number): [number, number] => sign === 1 ? [a, b] : [-b, -a];
+            return combine(name, [
+                box('outer-wall', [x(-5, -4.8)[0], -3, -3], [x(-5, -4.8)[1], 3, 3]),
+                box('top-wall', [x(-5, -.5)[0], -3, 2], [x(-5, -.5)[1], 3, 3]),
+                box('bottom-wall', [x(-5, -.5)[0], -3, -3], [x(-5, -.5)[1], 3, -2]),
+                box('front-wall', [x(-5, -.5)[0], -3, -3], [x(-5, -.5)[1], -2, 3]),
+                box('back-wall', [x(-5, -.5)[0], 2, -3], [x(-5, -.5)[1], 3, 3]),
+                box('lip-top', [x(-1, -.5)[0], -3, .6], [x(-1, -.5)[1], 3, 2]),
+                box('lip-bottom', [x(-1, -.5)[0], -3, -2], [x(-1, -.5)[1], 3, -.6]),
+                box('lip-front', [x(-1, -.5)[0], -3, -.6], [x(-1, -.5)[1], -.6, .6]),
+                box('lip-back', [x(-1, -.5)[0], .6, -.6], [x(-1, -.5)[1], 3, .6]),
+            ]);
+        };
+        return [pin, half('left-half', 1), half('right-half', -1)];
+    }
+    it('builds the directional graph and reverses the peel into a build sequence', () => {
+        const result = checkAssemblyPathMeshes(stack(3), { disassemblyOrder: true, sequence: true });
+        expect(result.blockingGraph.edges).toContainEqual({ part: 'layer-1', blocker: 'layer-2', direction: [0, 0, 1] });
+        expect(result.removalOrder?.map(p => p.part)).toEqual(['layer-1', 'layer-2', 'layer-3']);
+        expect(result.sequence?.steps.map(s => s.adds[0])).toEqual(['layer-3', 'layer-2', 'layer-1']);
+        expect(result.sequence?.steps.map(s => s.direction)).toEqual([...result.removalOrder!].reverse().map(p => p.direction.map(v => v === 0 ? 0 : -v)));
+        expect(result.sequence?.steps.map(s => s.index)).toEqual([1, 2, 3]);
+    });
+    it('reports removable, blocked and unknown states without collapsing them', () => {
+        const stackResult = checkAssemblyPathMeshes(stack(2), { sequence: true });
+        expect(stackResult.parts.find(p => p.part === 'layer-2')?.state.kind).toBe('removable');
+        const blockedResult = checkAssemblyPathMeshes(pocket(true));
+        expect(blockedResult.parts.find(p => p.part === 'peg')?.state.kind).toBe('blocked');
+        const fastenerResult = checkAssemblyPathMeshes([{ ...box('screw', [0, 0, 0], [1, 1, 1]), threadedFastener: true }], { sequence: true });
+        expect(fastenerResult.parts[0].state).toEqual({ kind: 'unknown', reason: 'non-straight-path' });
+        expect(fastenerResult.sequence?.unknown).toEqual(['screw']);
+        expect(fastenerResult.sequence?.steps).toEqual([]);
+    });
+    it('reports budget exhaustion as unknown budget, not an error or blocked', () => {
+        const result = checkAssemblyPathMeshes([box('a', [0, 0, 0], [1, 1, 1]), box('b', [2, 0, 0], [3, 1, 1])], { sequence: true, workBudget: 10 });
+        expect(result.parts.every(p => p.state.kind === 'unknown' && p.state.reason === 'budget')).toBe(true);
+        expect(result.sequence?.unknown).toEqual(['a', 'b']);
+    });
+    it('stamps the model on both the report and the sequence', () => {
+        const result = checkAssemblyPathMeshes([box('one', [0, 0, 0], [1, 1, 1])], {
+            sequence: true,
+            tessellation: { linearMm: 0.02, relative: true, angularRad: 0.1, source: 'test mesh' },
+        });
+        expect(result.model).toMatchObject({
+            rigidParts: true,
+            motion: 'straight-line-translation',
+            gravity: 'not-modelled',
+            basis: 'continuous-triangle-mesh',
+            clearanceMm: 0,
+            tessellation: { linearMm: 0.02, relative: true, angularRad: 0.1, source: 'test mesh' },
+        });
+        expect(result.sequence?.model).toEqual(result.model);
+        expect(result.model.testedDirections).toHaveLength(6);
+    });
+    it('reports a pin trapped by two interlocking halves as blocked with both blockers', () => {
+        const result = checkAssemblyPathMeshes(trappedPinAssembly(), { sequence: true });
+        const pin = result.parts.find(p => p.part === 'pin');
+        expect(pin?.state.kind).toBe('blocked');
+        if (pin?.state.kind === 'blocked') {
+            const blockers = new Set(pin.state.blockersByDirection.flatMap(b => b.blockers));
+            expect(blockers).toEqual(new Set(['left-half', 'right-half']));
+        }
+        expect(result.sequence?.steps).toEqual([]);
+        expect(result.sequence?.unknown).toEqual([]);
+        expect(result.stuckParts).toEqual(['pin', 'left-half', 'right-half']);
+    });
+    it('keeps catalog-style threaded fasteners unknown, never blocked', () => {
+        const result = checkAssemblyPathMeshes([
+            { ...box('m3-screw', [0, 0, 0], [1, 1, 1]), threadedFastener: true },
+            box('plate', [2, 0, 0], [4, 1, 2]),
+        ], { sequence: true, threadedFasteners: ['m3-screw'] });
+        expect(result.parts.find(p => p.part === 'm3-screw')?.state).toEqual({ kind: 'unknown', reason: 'non-straight-path' });
+        expect(result.sequence?.unknown).toContain('m3-screw');
+        expect(result.sequence?.steps.map(s => s.adds[0])).not.toContain('m3-screw');
+    });
+});

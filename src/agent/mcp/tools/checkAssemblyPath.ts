@@ -4,6 +4,8 @@ import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/e
 import { isSceneBackend, type SceneBackend } from '../../../kernel/backends/sceneBackend';
 import { checkAssemblyPathScene } from '../../../modeling/runtime/assemblyPathScene';
 import type { AssemblyPathOptions, AssemblyPathReport } from '../../../modeling/runtime/assemblyPath';
+import type { BuiltModel } from '../../../modeling/buildModel';
+import type { Assembly } from '../../../modeling/capture/assembly';
 export interface CheckAssemblyPathInput extends EvaluateInput, AssemblyPathOptions {
     assembly?: string;
 }
@@ -27,6 +29,19 @@ function selectAssemblyScene(candidates: unknown[], assembly: string | undefined
         throw new Error(`Assembly '${assembly}' not found.`);
     return scene;
 }
+/** Catalog families whose removal needs the helical motion P2 adds. */
+const THREADED_FASTENER_FAMILY = /(screw|bolt|threaded|nut|stud)/i;
+/** Name every threaded catalog fastener in the selected assembly. */
+function threadedFastenerNames(model: BuiltModel, assemblyName: string): string[] {
+    const arm = model.session.assemblies.get(assemblyName) as Assembly | undefined;
+    if (!arm)
+        return [];
+    return arm.__parts().flatMap(part => {
+        const record = model.records.find(candidate => candidate.id === part.originalShape.id);
+        const family = record?.metadata?.catalogPart?.family;
+        return family !== undefined && THREADED_FASTENER_FAMILY.test(family) ? [part.name] : [];
+    });
+}
 /** Script-aware entrypoint for verify({ check: 'assembly-path' }). */
 export async function checkAssemblyPathTool(input: CheckAssemblyPathInput): Promise<CheckAssemblyPathOutput> {
     try {
@@ -36,7 +51,8 @@ export async function checkAssemblyPathTool(input: CheckAssemblyPathInput): Prom
         if (evaluation.exitCode !== 0 || !model)
             return { ok: false, source: 'local', error: evaluation.diagnostics[0]?.message ?? 'Script evaluation failed.', errorCode: evaluation.diagnostics[0]?.code };
         const scene = selectAssemblyScene([model.rootShape, ...[...model.shapes.values()].reverse()], input.assembly);
-        return checkAssemblyPathScene(scene, input);
+        const threadedFasteners = [...new Set([...(input.threadedFasteners ?? []), ...threadedFastenerNames(model, scene.assemblyName)])];
+        return checkAssemblyPathScene(scene, { ...input, threadedFasteners });
     }
     catch (error) {
         return { ok: false, source: 'local', error: error instanceof Error ? error.message : String(error), errorCode: 'feature.invalid-args' };
