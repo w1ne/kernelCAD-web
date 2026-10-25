@@ -1,5 +1,30 @@
 # Unreleased
 
+## P3 — approximate static stability in the assembly sequence
+
+- `verify({ check: 'assembly-path', sequence: true, stability: true })` now
+  checks each build step with a centre-of-mass/support-polygon projection.
+  Each part's closed-mesh centre of mass must project inside the convex hull of
+  its contacts with already-stable parts. Unsupported parts become
+  `sequence.needsHold` (`{ part, status: 'needs-hold', reason, supports,
+  centerOfMass, supportPolygon? }`), their steps carry
+  `stability: 'needs-hold'`, and `ok` is false. Stable steps may carry
+  `heldBy` naming their supporters.
+- The check is labelled **approximate** in the model stamp
+  (`gravity: 'approximate-support-projection'` plus `model.stability`) and in
+  the docs. It is not gravity simulation, friction, tipping, compliance or a
+  fixture solve.
+- Build orientation is declared with `gravity` (world direction, default
+  `[0, 0, -1]`); `fixtures` declares base/jig parts stable from step 1, or the
+  lowest part(s) along gravity seed the model. `contactToleranceMm` defaults to
+  0.05. The centre of mass is the closed-mesh volume centroid under a uniform
+  density; a single part's centroid is unchanged by declared mass/density. The
+  stamp records `massBasis: 'uniform-density-mesh-volume'`.
+- Example `examples/assemblies/assembly-stability-bracket.kcad.ts` places a
+  cantilever before the support under its free end and reports it `needs-hold`;
+  guide `docs/guide/assembly-path.md`; cookbook
+  `assembly-stability-support-polygon`.
+
 ## S3 stage B — standard-part range proofs in the catalog
 
 - The fastener, nut and washer `lib.standard.*` shortcuts declare their
