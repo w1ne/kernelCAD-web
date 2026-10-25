@@ -1,0 +1,23 @@
+{
+  "feature": "S7 + S8 Part A — local collaborative gate",
+  "demoKind": "local replay of local validation (not deployed, no hosted queue)",
+  "source": "examples/collab/bracket-and-motor-plate.kcad.ts",
+  "record": "./docs/demos/s7a-collab/record.sh",
+  "invocation": "npm run typecheck && ./docs/demos/s7a-collab/record.sh",
+  "settings": {
+    "node": "v22.23.4",
+    "render": "ImageMagick caption slides + ffmpeg libx264, 1328x768, 17.53 s",
+    "repo": "throwaway git repo created by record.sh"
+  },
+  "cases": {
+    "01-pass": "branch fillet: bracketFillet 1.0 -> 1.2; exit 0; merged source written with --out in the test",
+    "02-reject": "branch hole-move: bracketHoleX 12 -> 14; exit 1; collab.gate.requirement-failed hole-pattern measured 2 limit 0.5",
+    "03-conflict": "head bracketHoleX 15 vs yours 16; exit 1; collab.conflict.param base 12 head 15 yours 16"
+  },
+  "evidence": {
+    "ffprobe": "docs/demos/s7a-collab/ffprobe.txt",
+    "transcript": "docs/demos/s7a-collab/transcript.txt",
+    "framesInspected": "1 s / 5 s / 10 s / 15 s frames inspected visually after encoding"
+  },
+  "limits": "Replay of local CLI validation. It does not show a deployed server, Postgres queue, worker pool or real-time collaboration."
+}
