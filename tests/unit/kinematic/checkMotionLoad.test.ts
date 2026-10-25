@@ -120,6 +120,11 @@ describe('checkMotionLoad — hand-calculated pendulum', () => {
     expect(r.samples).toBe(5);
     expect(r.joints[0].series.map((s) => s.pose['hinge'])).toEqual([-90, -45, 0, 45, 90]);
     expect(r.joints[0].worst.pose['hinge']).toBe(0);
+    // S5: the same worst sample is exposed per part in that part's frame.
+    const wall = r.partLoads.find((p) => p.part === 'wall')!;
+    expect(wall.side).toBe('parent');
+    expect(wall.pose['hinge']).toBe(0);
+    expect(Math.abs(wall.momentNmm[1])).toBeCloseTo(M * G * (L / 2) * 1000, 3);
   }, 120_000);
 });
 

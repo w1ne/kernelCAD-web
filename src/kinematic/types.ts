@@ -456,6 +456,7 @@ export interface SweepEvaluator {
 // ===== facade type — the kc.kinematic object surface =====
 
 import type { Assembly } from '../modeling/capture/assembly';
+import type { MotionLoadOpts, MotionLoadResult } from './motionLoad';
 
 export interface KinematicFacade {
   checkMountingHoleConsistency(arm: Assembly): Promise<MountingHoleResult>;
@@ -470,4 +471,10 @@ export interface KinematicFacade {
     opts?: LoadCapacityOpts,
   ): Promise<LoadCapacityResult>;
   checkStaticHold(arm: Assembly, opts?: StaticHoldOpts): Promise<StaticHoldResult>;
+  /** Per-joint loads along the animation tracks, a joint-limit range, or
+   *  explicit named poses. Also returns the worst wrench per part so a
+   *  `feaStudy({ loadsFrom })` can use it. */
+  motionLoad(arm: Assembly, opts?: MotionLoadOpts): Promise<MotionLoadResult>;
+  /** Alias of `motionLoad`; the MCP tool is named motion-load. */
+  checkMotionLoad(arm: Assembly, opts?: MotionLoadOpts): Promise<MotionLoadResult>;
 }

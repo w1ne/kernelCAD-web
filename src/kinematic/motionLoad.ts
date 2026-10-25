@@ -29,6 +29,7 @@
 import type { Assembly, AssemblyPartStored, MechanicalJointIntentRecord } from '../modeling/capture/assembly';
 import type { NumericPoses } from '../modeling/capture/forwardKinematics';
 import type { FeatureId } from '../shared/intent/types';
+import type { MotionPartLoadSample, MotionLoadVector } from '../shared/intent/motionLoadRecord';
 import type { SceneBackend } from '../kernel/backends/sceneBackend';
 import { isSceneBackend } from '../kernel/backends/sceneBackend';
 import { initOcct, OcctBackend } from '../kernel/backends/occt/occtBackend';
@@ -47,6 +48,7 @@ import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/
 import { Transform } from '../shared/runtime/se3';
 import { localPartMass, type PartMassLocal } from './partMass';
 import { LoopContinuation } from './loopContinuation';
+import { sectionModulusMm3 } from './sectionProperties';
 import {
   add, dot, rotateInertia, scale, splitJointLoad, sub, subtreeJointWrench, unit,
   type BodyLoadState, type M3, type PointLoad, type SupportStation, type V3,
@@ -74,8 +76,12 @@ export interface MotionLoadExternalLoad {
 
 export interface MotionLoadOpts {
   /** 'tracks' (default) samples the animationView timeline with inertia;
-   *  'range' is a quasi-static grid over each driven joint's limits. */
-  readonly mode?: 'tracks' | 'range';
+   *  'range' is a quasi-static grid over each driven joint's limits;
+   *  'poses' samples exactly `poses`. */
+  readonly mode?: 'tracks' | 'range' | 'poses';
+  /** Explicit mate poses to sample (mode 'poses'). A user-named pose is one
+   *  entry here. */
+  readonly poses?: readonly Readonly<Record<string, number>>[];
   readonly sampleMs?: number;
   /** Grid points per joint in 'range' mode (default 5, capped so the grid
    *  stays under 2000 poses). */
@@ -141,11 +147,14 @@ export interface MotionLoadJointResult {
 export interface MotionLoadResult {
   readonly ok: boolean;
   readonly source: 'local';
-  readonly mode: 'tracks' | 'range';
+  readonly mode: 'tracks' | 'range' | 'poses';
   readonly quasiStatic: boolean;
   readonly samples: number;
   readonly totalMassKg: number;
   readonly joints: readonly MotionLoadJointResult[];
+  /** Worst sampled wrench per part and side, in the part's source-shape
+   *  frame. This is what `feaStudy({ loadsFrom })` consumes. */
+  readonly partLoads: readonly MotionPartLoadSample[];
   readonly maxLevel: 'ok' | 'warning' | 'error';
   /** One line, e.g. "Loads checked: min torque margin 2.7x (shoulder)". */
   readonly statement: string;
@@ -160,6 +169,7 @@ const LIMITATIONS = [
   'accelerations come from finite differences of the timeline; a keyframed track has velocity steps at its keys, so peaks depend on sampleMs',
   'two coaxial supports are simple supports; three or more are indeterminate and not split',
   'a support bears at its connector on the joint axis, else at the axial span of its material nearest the axis; an ambiguous station is not split',
+  'partLoads rank poses by a joint-moment or section-bending proxy; the proxy chooses the pose, an FEA solve (feaStudy loadsFrom) gives the safety factor',
 ] as const;
 
 export type SupportStationSource = 'actuator' | 'connector' | 'contact';
@@ -196,7 +206,7 @@ function rotAt(s: Sample, j: number): M3 {
 
 /** Run the motion-load study on one assembly. */
 export async function checkMotionLoad(arm: Assembly, opts: MotionLoadOpts = {}): Promise<MotionLoadResult> {
-  const mode = opts.mode ?? 'tracks';
+  const mode = opts.mode ?? (opts.poses !== undefined ? 'poses' : 'tracks');
   const quasiStatic = opts.quasiStatic === true || mode === 'range';
   const diagnostics: KinematicDiagnostic[] = [];
   const prepared = await prepareStudy(arm, opts, mode);
@@ -204,13 +214,13 @@ export async function checkMotionLoad(arm: Assembly, opts: MotionLoadOpts = {}):
   const { intents, masses, samples, scene, restPlacements, parts, loopFindings } = prepared;
   diagnostics.push(...loopFindings);
   const kin = quasiStatic ? undefined : finiteDifferences(samples, parts, stepSeconds(samples, opts.sampleMs));
-  const ctx: JointCtx = { arm, masses, samples, kin, parts, gravity: (opts.gravity ?? DEFAULT_GRAVITY) as V3, loads: opts.loads ?? [], mode, scene, restPlacements };
+  const ctx: JointCtx = { arm, masses, samples, kin, parts, gravity: (opts.gravity ?? DEFAULT_GRAVITY) as V3, loads: opts.loads ?? [], mode, scene, restPlacements, partLoads: new Map() };
   const joints: MotionLoadJointResult[] = [];
   for (const intent of intents) {
     const r = await studyJoint(ctx, intent, opts.supports?.[intent.name] ?? intent.supports, diagnostics);
     if (r !== undefined) joints.push(r);
   }
-  return summarize(mode, quasiStatic, samples.length, masses, joints, diagnostics);
+  return summarize(mode, quasiStatic, samples.length, masses, joints, [...ctx.partLoads.values()], diagnostics);
 }
 
 interface PreparedStudy {
@@ -227,13 +237,16 @@ interface PreparedStudy {
 }
 
 /** Lower, weigh and sample; a string is the reason the study cannot run. */
-async function prepareStudy(arm: Assembly, opts: MotionLoadOpts, mode: 'tracks' | 'range'): Promise<PreparedStudy | string> {
+async function prepareStudy(arm: Assembly, opts: MotionLoadOpts, mode: 'tracks' | 'range' | 'poses'): Promise<PreparedStudy | string> {
   const intents = drivenIntents(arm);
   if (intents.length === 0) return 'Loads not checked: no mechanicalJoint drives a revolute mate.';
   const scene = await lowerRestScene(arm);
   if (scene === undefined) return 'Loads not checked: the assembly did not lower to a scene.';
   const masses = partMasses(arm, scene);
-  const poses = mode === 'range' ? rangePoses(arm, intents, opts.rangeSamples) : trackPoses(arm, opts.sampleMs);
+  const poses = mode === 'poses'
+    ? (opts.poses ?? []).map((pose) => ({ pose: { ...pose } }))
+    : mode === 'range' ? rangePoses(arm, intents, opts.rangeSamples) : trackPoses(arm, opts.sampleMs);
+  if (poses.length === 0) return 'Loads not checked: no poses were supplied for the motion study.';
   const parts = partIndex(arm, masses);
   const loopFindings: KinematicDiagnostic[] = [];
   const samples = await solveSamples(arm, scene, masses, parts, poses, loopFindings);
@@ -453,13 +466,15 @@ function finiteDifferences(samples: readonly Sample[], parts: PartIndex, h: numb
 
 interface JointCtx {
   readonly arm: Assembly;
+  /** Worst part-load sample per joint/side/part, collected while sampling. */
+  readonly partLoads: Map<string, MotionPartLoadSample>;
   readonly masses: Map<string, PartMassLocal>;
   readonly samples: readonly Sample[];
   readonly kin: Float64Array[] | undefined;
   readonly parts: PartIndex;
   readonly gravity: V3;
   readonly loads: readonly MotionLoadExternalLoad[];
-  readonly mode: 'tracks' | 'range';
+  readonly mode: 'tracks' | 'range' | 'poses';
   readonly scene: SceneBackend;
   readonly restPlacements: ReadonlyMap<string, Transform>;
 }
@@ -546,6 +561,59 @@ function loadsAt(ctx: JointCtx, k: number, names: ReadonlySet<string>): PointLoa
   return out;
 }
 
+/** Record the joint wrench on the parent and every downstream part, in each
+ *  part's source-shape frame. Ranking uses the declared cross-section when
+ *  there is one; otherwise the joint-moment magnitude. The FEA solve, not
+ *  this proxy, produces the safety factor. */
+function recordPartLoads(
+  ctx: JointCtx,
+  k: number,
+  sampleIndex: number,
+  intent: MechanicalJointIntentRecord,
+  mate: MateRecord,
+  tree: { downstream: ReadonlySet<string>; parentPart: string },
+  w: { forceN: V3; momentNm: V3 },
+  originM: V3,
+): void {
+  const s = ctx.samples[k]!;
+  const originMm = scale(originM, 1 / MM);
+  const parts = ctx.arm.__parts();
+  const byName = new Map(parts.map((p) => [p.name, p]));
+  const record = (part: string, side: 'parent' | 'downstream'): void => {
+    const inv = placementOf(ctx, k, part).inverse();
+    const sign = side === 'parent' ? -1 : 1;
+    const pointMm = inv.point(originMm) as V3;
+    const forceN = inv.axisDir(scale(w.forceN, sign)) as V3;
+    const momentNmm = scale(inv.axisDir(scale(w.momentNm, sign)) as V3, 1000);
+    const section = byName.get(part)?.crossSection;
+    const momentMag = Math.hypot(momentNmm[0], momentNmm[1], momentNmm[2]);
+    const proxy = section !== undefined
+      ? { kind: 'von-mises-section' as const, value: momentMag / sectionModulusMm3(section), unit: 'MPa' as const }
+      : { kind: 'joint-moment' as const, value: momentMag, unit: 'N*mm' as const };
+    const forceMag = Math.hypot(forceN[0], forceN[1], forceN[2]);
+    if (!forceN.every(Number.isFinite) || !momentNmm.every(Number.isFinite) || !(proxy.value > 0 || forceMag > 0)) return;
+    const key = `${intent.name}:${side}:${part}`;
+    const prev = ctx.partLoads.get(key);
+    if (prev !== undefined && prev.proxy.value >= proxy.value) return;
+    ctx.partLoads.set(key, {
+      part,
+      joint: intent.name,
+      mate: mate.name,
+      actuator: intent.actuator,
+      side,
+      sampleIndex,
+      ...(s.tMs !== undefined ? { tMs: s.tMs } : {}),
+      pose: Object.fromEntries(Object.entries(s.pose).filter(([, v]) => typeof v === 'number')) as Record<string, number>,
+      pointMm: pointMm as unknown as MotionLoadVector,
+      forceN: forceN as unknown as MotionLoadVector,
+      momentNmm: momentNmm as unknown as MotionLoadVector,
+      proxy,
+    });
+  };
+  record(tree.parentPart, 'parent');
+  for (const name of tree.downstream) record(name, 'downstream');
+}
+
 async function studyJoint(ctx: JointCtx, intent: MechanicalJointIntentRecord, supports: readonly string[], diagnostics: KinematicDiagnostic[]): Promise<MotionLoadJointResult | undefined> {
   const mate = ctx.arm.__mates().find((m) => m.name === intent.mate)!;
   const tree = downstreamOfMate(ctx.arm.__parts(), ctx.arm.__mates(), mate.name, groundPart(ctx.arm));
@@ -569,6 +637,7 @@ async function studyJoint(ctx: JointCtx, intent: MechanicalJointIntentRecord, su
     const origin = scale(pT.point(frame.originLocal), MM);
     const axis = unit(pT.axisDir(frame.axisLocal));
     const w = subtreeJointWrench(bodiesAt(ctx, k, tree.downstream), origin, ctx.gravity, loadsAt(ctx, k, tree.downstream));
+    recordPartLoads(ctx, k, k, intent, mate, tree, w, origin);
     const stations = supportStations(ctx, k, resolved, origin, axis);
     const split = splitJointLoad(w, axis, stations);
     if (split.supports === undefined) indeterminate = true;
@@ -798,7 +867,7 @@ function jointVerdict(
 
 // ─── Summary ─────────────────────────────────────────────────────────────
 
-function summarize(mode: 'tracks' | 'range', quasiStatic: boolean, samples: number, masses: Map<string, PartMassLocal>, joints: MotionLoadJointResult[], diagnostics: KinematicDiagnostic[]): MotionLoadResult {
+function summarize(mode: 'tracks' | 'range' | 'poses', quasiStatic: boolean, samples: number, masses: Map<string, PartMassLocal>, joints: MotionLoadJointResult[], partLoads: readonly MotionPartLoadSample[], diagnostics: KinematicDiagnostic[]): MotionLoadResult {
   const order = { ok: 0, warning: 1, error: 2 } as const;
   const maxLevel = joints.reduce<'ok' | 'warning' | 'error'>((l, j) => (order[j.maxLevel] > order[l] ? j.maxLevel : l), 'ok');
   const rated = joints.filter((j) => j.torqueMargin !== undefined);
@@ -809,12 +878,12 @@ function summarize(mode: 'tracks' | 'range', quasiStatic: boolean, samples: numb
   return {
     ok: maxLevel !== 'error', source: 'local', mode, quasiStatic, samples,
     totalMassKg: [...masses.values()].reduce((m, p) => m + p.mass, 0),
-    joints, maxLevel, statement, messages: joints.flatMap((j) => j.messages), diagnostics, limitations: [...LIMITATIONS],
+    joints, partLoads, maxLevel, statement, messages: joints.flatMap((j) => j.messages), diagnostics, limitations: [...LIMITATIONS],
   };
 }
 
-function emptyResult(mode: 'tracks' | 'range', quasiStatic: boolean, statement: string, diagnostics: KinematicDiagnostic[]): MotionLoadResult {
-  return { ok: true, source: 'local', mode, quasiStatic, samples: 0, totalMassKg: 0, joints: [], maxLevel: 'warning', statement, messages: [statement], diagnostics, limitations: [...LIMITATIONS] };
+function emptyResult(mode: 'tracks' | 'range' | 'poses', quasiStatic: boolean, statement: string, diagnostics: KinematicDiagnostic[]): MotionLoadResult {
+  return { ok: true, source: 'local', mode, quasiStatic, samples: 0, totalMassKg: 0, joints: [], partLoads: [], maxLevel: 'warning', statement, messages: [statement], diagnostics, limitations: [...LIMITATIONS] };
 }
 
 function fmt(n: number): string {

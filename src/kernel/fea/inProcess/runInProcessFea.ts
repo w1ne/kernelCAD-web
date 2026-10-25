@@ -26,11 +26,13 @@ import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { FeaFaceSelector, FeaStudyMetadata } from '../../../shared/intent/feaStudyRecord';
+import type { MotionPartLoadSample } from '../../../shared/intent/motionLoadRecord';
 import type { ParamTable } from '../../../shared/runtime/paramTable';
 import type { OcctBackend } from '../../backends/occt/occtBackend';
 import { describeAllFaces, resolveSelector, type FaceDescriptor } from '../faceBinding';
 import { resolveFeaMaterial } from '../feaMaterials';
 import { LOW_QUALITY_SICN } from '../gmshDriver';
+import { equivalentRemoteLoad } from '../remoteLoad';
 import { resolveStudyParams } from '../studyParams';
 import type { FeaHotSpot, FeaSummary } from '../types';
 import { nearestFace, nodesNearFaces, triangulateFaces, type FaceTriangulation } from './faceNodes';
@@ -177,7 +179,14 @@ interface Prepared {
   model: VoxelModel;
   tri: FaceTriangulation;
   fixed: BoundSelector;
-  loads: Array<{ name: string; force: readonly [number, number, number]; nodes: number[] }>;
+  loads: Array<{
+    name: string;
+    force: readonly [number, number, number];
+    nodes: number[];
+    momentNmm?: readonly [number, number, number];
+    nodalForces?: readonly { node: number; force: readonly [number, number, number] }[];
+    fromMotion?: MotionPartLoadSample;
+  }>;
   meshMs: number;
   volumeRatio: number;
   clamped: boolean;
@@ -239,6 +248,7 @@ function prepare(
     diagnostics.push(diag('fea.study.fixed-unresolved', 'error', `feaStudy '${study.name}': ${fixed.error}`, owner));
     return undefined;
   }
+  const fixedNodes = new Set(fixed.nodes);
   const loads: Prepared['loads'] = [];
   for (const load of study.loads) {
     const b = bindSelector(ctx, base.model, base.tri, load.faces);
@@ -246,7 +256,41 @@ function prepare(
       diagnostics.push(diag('fea.study.load-unresolved', 'error', `feaStudy '${study.name}', load '${load.name}': ${b.error}`, owner));
       return undefined;
     }
-    loads.push({ name: load.name, force: load.force, nodes: b.nodes });
+    if (b.nodes.every((n) => fixedNodes.has(n))) {
+      diagnostics.push(diag(
+        'fea.study.load-unresolved',
+        'error',
+        `feaStudy '${study.name}', load '${load.name}': the loaded face(s) are all held by the fixed face(s), so the load would go straight into the support and nothing would be loaded. Select different load and fixed faces.`,
+        owner,
+      ));
+      return undefined;
+    }
+    let nodalForces: ReturnType<typeof equivalentRemoteLoad>;
+    if (load.pointMm !== undefined) {
+      nodalForces = equivalentRemoteLoad(
+        b.nodes.map((n) => ({ id: n, at: at(base.model, n) })),
+        load.pointMm,
+        load.force,
+        load.momentNmm ?? [0, 0, 0],
+      );
+      if (nodalForces === undefined) {
+        diagnostics.push(diag(
+          'fea.study.load-unresolved',
+          'error',
+          `feaStudy '${study.name}', load '${load.name}': the loaded face(s) are too degenerate to carry a remote wrench (their nodes are collinear or empty). Select a wider joint face.`,
+          owner,
+        ));
+        return undefined;
+      }
+    }
+    loads.push({
+      name: load.name,
+      force: load.force,
+      nodes: b.nodes,
+      ...(load.momentNmm !== undefined ? { momentNmm: load.momentNmm } : {}),
+      ...(nodalForces !== undefined ? { nodalForces } : {}),
+      ...(load.fromMotion !== undefined ? { fromMotion: load.fromMotion } : {}),
+    });
   }
   return { ...base, fixed, loads, faces: ctx.all };
 }
@@ -255,6 +299,12 @@ function prepare(
 function forceVector(model: VoxelModel, loads: Prepared['loads']): Float64Array {
   const f = new Float64Array(3 * model.nodeCount);
   for (const l of loads) {
+    if (l.nodalForces !== undefined) {
+      for (const { node, force } of l.nodalForces) {
+        for (let d = 0; d < 3; d++) f[3 * node + d] += force[d];
+      }
+      continue;
+    }
     for (const n of l.nodes) for (let d = 0; d < 3; d++) f[3 * n + d] += l.force[d] / l.nodes.length;
   }
   return f;
@@ -344,8 +394,13 @@ function summarize(
   const raw = peaks(model, solved, () => true);
   const yieldMPa = material.props.yield;
   const applied: [number, number, number] = [0, 0, 0];
-  for (const l of prep.loads) for (let d = 0; d < 3; d++) applied[d] += l.force[d];
+  const appliedMoment: [number, number, number] = [0, 0, 0];
+  for (const l of prep.loads) {
+    for (let d = 0; d < 3; d++) applied[d] += l.force[d];
+    if (l.momentNmm !== undefined) for (let d = 0; d < 3; d++) appliedMoment[d] += l.momentNmm[d];
+  }
   const appliedMag = Math.hypot(...applied);
+  const fromMotion = prep.loads.find((l) => l.fromMotion !== undefined)?.fromMotion;
   return {
     study: study.name,
     solver: 'in-process-voxel',
@@ -366,6 +421,8 @@ function summarize(
       ? { governingField: 'away-from-supports' as const, supportAdjacentNodeCount: zone.size, peakAtSupportMPa: raw.vmMax, peakAtSupportAt: at(model, raw.vmNode) }
       : {}),
     appliedForceN: applied,
+    ...(appliedMoment.some((v) => v !== 0) ? { appliedMomentNmm: appliedMoment } : {}),
+    ...(fromMotion !== undefined ? { loadsFrom: fromMotion } : {}),
     reactionForceN: solved.reaction,
     ...(appliedMag > 0
       ? { equilibriumResidual: Math.hypot(solved.reaction[0] + applied[0], solved.reaction[1] + applied[1], solved.reaction[2] + applied[2]) / appliedMag }

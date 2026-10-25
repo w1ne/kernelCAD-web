@@ -44,6 +44,24 @@
   guide `docs/guide/assembly-path.md`; cookbook
   `assembly-stability-support-polygon`.
 
+## S5 — FEA loads from motion at the worst pose
+
+- `kinematic.motionLoad(arm, opts)` is now a script-level API (the same study
+  as `verify({ check: 'motion-load' })`). It accepts `mode: 'tracks' | 'range' |
+  'poses'` and returns `partLoads`: the worst sampled joint wrench per part and
+  side, in that part's own frame, ranked by a named proxy (bending stress from
+  the part's declared `crossSection`, else joint-moment magnitude).
+- `shape.feaStudy({ loadsFrom: { motion, part } })` takes that wrench instead
+  of a hand-typed load. It applies the force and moment as a statically
+  equivalent remote load over the joint face, in both the CalculiX and
+  in-process voxel solvers, and records the pose in the summary.
+- The S2 ledger entry (`fea.<study>.minSafetyFactor`) now names the pose and
+  the margin for a motion-derived study. An empty motion result, a part with no
+  sampled load, or both `loads` and `loadsFrom` fails loudly at capture; it is
+  never reported as an unloaded pass.
+- The servo-arm cookbook (07) reports the bracket safety factor at the worst
+  shoulder pose without typing a force.
+
 ## S3 stage B — standard-part range proofs in the catalog
 
 - The fastener, nut and washer `lib.standard.*` shortcuts declare their

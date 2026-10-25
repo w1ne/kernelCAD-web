@@ -264,6 +264,14 @@ export class Shape {
    * API: a `FaceQuery` object, or a `@kc[...]` face ref from `list_faces`.
    * Forces are TOTALS in newtons over the selected faces, not per node.
    *
+   * For a load that comes from motion, pass
+   * `loadsFrom: { motion, part }` instead of `loads`. `motion` is the result
+   * of `kinematic.motionLoad(arm, opts)`; the study takes that part's worst
+   * sampled joint wrench (a joint-moment or section-bending proxy, named in
+   * the result), applies its force and moment as a remote load at the joint
+   * origin, and records the pose in the summary and the ledger. An empty
+   * motion result or an unloaded part throws rather than reporting a pass.
+   *
    * Malformed declarations throw `feature.invalid-args` at capture time; an
    * unknown material grade throws with the valid grades named. Selectors that
    * match no face surface as `fea.study.fixed-unresolved` /
