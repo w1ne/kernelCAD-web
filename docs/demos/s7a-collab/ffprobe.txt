@@ -1,0 +1,4 @@
+codec_name=h264
+width=1328
+height=768
+duration=17.533333

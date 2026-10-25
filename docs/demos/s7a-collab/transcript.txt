@@ -1,0 +1,18 @@
+S7 + S8 Part A — local collab check (replay of local validation)
+
+1) Disjoint bracket fillet edit: passes and would be written with --out.
+
+$ kernelcad collab check --file bracket.kcad.ts --base main --head main --yours fillet
+collab check: PASS (rebased: no)
+
+2) Bracket hole moved 2 mm: rejected by the shared hole-pattern requirement.
+
+$ kernelcad collab check --file bracket.kcad.ts --base main --head main --yours hole-move
+collab check: REJECT
+  collab.gate.requirement-failed: {"code":"collab.gate.requirement-failed","name":"hole-pattern","measured":2,"limit":0.5,"closure":["hole_1"]}
+
+3) Two branches set bracketHoleX differently: hard conflict with base/head/yours.
+
+$ kernelcad collab check --file bracket.kcad.ts --base main --head head-hole --yours other-hole
+collab check: CONFLICT
+  collab.conflict.param: {"code":"collab.conflict.param","target":"$project","name":"bracketHoleX","base":12,"head":15,"yours":16}

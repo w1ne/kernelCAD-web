@@ -1,0 +1,3 @@
+$ kernelcad collab check --file bracket.kcad.ts --base main --head head-hole --yours other-hole
+collab check: CONFLICT
+  collab.conflict.param: {"code":"collab.conflict.param","target":"$project","name":"bracketHoleX","base":12,"head":15,"yours":16}
