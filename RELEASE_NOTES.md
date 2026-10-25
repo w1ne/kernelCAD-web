@@ -3,18 +3,17 @@
 ## Summary
 
 v0.17.1 makes cable-driven mechanisms physically honest and gives MCP agents a
-full physics check. Tendons can now have a hard length limit, fasteners use
-real ISO geometry, and `verify({ check: 'physics' })` runs MuJoCo static
-equilibrium and drop-on-release on a robotics assembly. The Allonic-style hand
-also has a browser MuJoCo WebAssembly demo.
+full physics check. Tendons can declare a hard length limit, fasteners use real
+ISO geometry, and `verify({ check: 'physics' })` runs the physics engine's
+static-equilibrium and drop-on-release checks on an assembly.
 
 ## Highlights
 
 ### Tendon length limits
 
-- `arm.tendon(...)` accepts `maxLengthMm`. The MJCF exporter writes it as a
-  MuJoCo `limited="true" range="0 L"` tendon limit, so a braided strap can go
-  slack but cannot stretch past its braided length.
+- `arm.tendon(...)` accepts `maxLengthMm`. The physics export writes it as a
+  hard `limited` range, so a braided strap can go slack but cannot stretch past
+  its braided length.
 - Spring fields are optional for a limit-only strap.
 - On the hand, capping each ligament at its undeformed length plus 0.5 mm cut
   the little-finger DIP axial slide from 5.40 mm to 0.25 mm at the same 0.2 ms
@@ -32,19 +31,18 @@ also has a browser MuJoCo WebAssembly demo.
 ### Physics in MCP
 
 - New `verify({ check: 'physics' })` runs the full mechanism-truth probe with
-  MuJoCo: disconnect, interference, DOF, orphan checks, static equilibrium at
-  sampled poses, and drop-on-release under gravity.
+  the physics engine: disconnect, interference, DOF, orphan checks, static
+  equilibrium at sampled poses, and drop-on-release under gravity.
 - Returns `{ ok, mechanism: 'real' | 'broken' | 'unverified', failures, coverage }`.
 - The hosted server generation gate runs the same physics check, so a generated
   mechanism cannot pass by looking correct while collapsing under gravity.
 
-### Browser hand demo
+### Install
 
-- A static MuJoCo WebAssembly viewer drives the Allonic-style hand with 20 N
-  flexors and 25 N thumb opposition at a 0.2 ms step.
-- Three.js draws the exported MJCF meshes and the 15 driven tendon paths.
-- The page simulates once, keeps the frames, and replays them locally. No
-  server job and no plug-in.
+- The CLI is a self-contained GitHub Release archive. There is no npm package.
+- One line: `curl -fsSL https://kernelcad.com/install.sh | sh`.
+- The same installer prints MCP setup for Claude Code, Codex, Gemini and the
+  hosted ChatGPT / Claude connector.
 
 ## Quality Gates
 
@@ -92,6 +90,4 @@ npm run dev
 ## Links
 
 - Web app: https://kernelcad.com
-- Hand demo: https://kernelcad.com/demos/hand-wasm/
-- Release post: https://kernelcad.com/blog/hand-physics-in-browser/
 - Issues: https://github.com/w1ne/kernelCAD-web/issues
