@@ -1,5 +1,24 @@
 # Unreleased
 
+## S6 — edit preview against intent
+
+- `set_param({ ..., preview: true })` builds the current and revised source in
+  scratch sessions and returns the `diff_geometry` material summary, the S2
+  requirements-ledger diff (status flips, margin shrink/grow, added/removed)
+  and the S1 selectors that moved or re-bound.
+- Preview writes nothing: the source argument, active MCP session, revision and
+  per-session caches are untouched. A revised build that fails returns
+  `ok: false` with diagnostics and no diff.
+- `after.requirementsOk` is the revised ledger verdict; `preview.ok` only means
+  the preview was computed, so a correctly-previewed intent break is still a
+  successful preview.
+- Added the reusable pure helpers `diffRequirementLedgers` (S2) and
+  `diffSelectionBindings` (S1), plus `diffGeometrySides` / `sideFromBuiltModel`
+  so a caller can build each side once for both the ledger and the geometry
+  report.
+- Docs: `docs/guide/edit-preview.md`, the params/MCP/features skills and the
+  cheat sheet.
+
 ## P3 — approximate static stability in the assembly sequence
 
 - `verify({ check: 'assembly-path', sequence: true, stability: true })` now

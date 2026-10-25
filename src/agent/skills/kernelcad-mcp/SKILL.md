@@ -108,7 +108,7 @@ results retain the gateway's own URL behavior.
 
 All edit tools return the modified source plus diagnostics. Re-run `kernelcad evaluate` on the returned source before committing.
 
-- `set_param({ code, param_name, new_value })` — edit a `param()` default value and return modified code plus diagnostics
+- `set_param({ code, param_name, new_value })` — edit a `param()` default value and return modified code plus diagnostics. Add `preview: true` to build the edit in a scratch session and return the `diff_geometry` summary, the requirements-ledger diff (status flips, margin shrink/grow, added/removed) and the S1 bindings that moved or re-bound. Preview writes nothing; `after.requirementsOk` says whether the edit preserves declared intent.
 - `add_feature({ code, feature_code })` — insert one source line before the last top-level return and return modified code plus diagnostics
 - `add_part({ code, assembly_binding, part_name, shape_expression, binding_name?, at? })` — insert `const <binding> = <assembly>.part(...)` and return modified code plus diagnostics. Use the returned/bound part ref for connector edits.
 - `add_connector({ code, part_binding, name, type, origin, axis?, normal? })` — insert `<partBinding>.connector(...)` durably in source. Side-effect-free.
@@ -144,7 +144,7 @@ All edit tools return the modified source plus diagnostics. Re-run `kernelcad ev
 ### Params
 
 - `inspect({ of: 'params' })` — list symbolic parameters declared on the active evaluated session, including current value, default, type, and metadata.
-- `set_param({ code, param_name, new_value })` — edit a `param()` default in the source string (source-only; no active-session mutation) and return modified code plus diagnostics.
+- `set_param({ code, param_name, new_value, preview? })` — edit a `param()` default in the source string (source-only; no active-session mutation) and return modified code plus diagnostics. With `preview: true`, return the geometry diff, ledger diff and S1 binding diff from scratch builds instead, without touching the active session or caches.
 
 ### Constrained sketches
 
