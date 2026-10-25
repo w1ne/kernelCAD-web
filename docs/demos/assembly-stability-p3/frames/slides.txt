@@ -1,0 +1,15 @@
+file '00-title.png'
+duration 3.5
+file '01-assembled.png'
+duration 4.5
+file '02-exploded.png'
+duration 4.5
+file '03-steps.png'
+duration 5
+file '04-finding.png'
+duration 5
+file '05-stamp.png'
+duration 5
+file '06-end.png'
+duration 3.5
+file '06-end.png'

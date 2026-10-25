@@ -16,6 +16,7 @@ import {
     type HelicalMotionSummary,
     type MeshTessellationStamp,
     type ModelStamp,
+    type NeedsHoldFinding,
     type PartState,
     type RequiresForceFinding,
     type SearchFinding,
@@ -39,6 +40,10 @@ import {
     type SweepBlocked,
 } from './assemblyFastenerMotion';
 import { planAssemblySequence } from './assemblySequencePlan';
+import {
+    assessSequenceStability,
+    DEFAULT_STABILITY_CONTACT_TOLERANCE_MM,
+} from './assemblyStability';
 export interface AssemblyPathPart {
     name: string;
     mesh: DfmMesh;
@@ -72,6 +77,14 @@ export interface AssemblyPathOptions {
     fasteners?: Readonly<Record<string, FastenerMotionInput>>;
     /** Declared press/snap fits, keyed by the inserted part name. */
     fits?: Readonly<Record<string, FitInput | FitKind>>;
+    /** Run the approximate P3 support-polygon stability pass on the sequence. */
+    stability?: boolean;
+    /** World-space gravity direction for P3. Default [0, 0, -1]; magnitude is ignored. */
+    gravity?: Vec3;
+    /** Declared base/fixture part names for P3. Default: the lowest part(s). */
+    fixtures?: string[];
+    /** P3 contact distance in mm. Default 0.05. */
+    contactToleranceMm?: number;
 }
 export interface AssemblyPathDirection {
     direction: Vec3;
@@ -132,7 +145,7 @@ interface Prepared extends AssemblyPathPart {
 }
 const CARDINAL: Vec3[] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 const DEFAULT_WORK_BUDGET = 8000000;
-const LIMITATIONS = 'Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation and declared helical fastener motion only; no mate solving, deformation, thread engagement or torque. Press/snap fits are declared, never simulated. Tool reach is a swept-envelope approximation, not a driver drawing. Subassembly and multi-part moves are heuristic, not exhaustive. Sampling paths are found-by-search, never proven. Blocked and unknown parts are not "impossible".';
+const LIMITATIONS = 'Local watertight mesh validation, not BREP or hardware acceptance. Positive-travel contact is conservatively blocked; starting contact may also block sliding. Mesh tessellation approximates curves. Straight translation and declared helical fastener motion only; no mate solving, deformation, thread engagement or torque. Press/snap fits are declared, never simulated. Tool reach is a swept-envelope approximation, not a driver drawing. Static stability is approximate: a centre-of-mass projection onto a support polygon of mesh contacts with already-stable parts, not gravity simulation, friction, tipping or fixture analysis. A needs-hold finding names an external hold the model cannot prove. Subassembly and multi-part moves are heuristic, not exhaustive. Sampling paths are found-by-search, never proven. Blocked and unknown parts are not "impossible".';
 const DEFAULT_TESSELLATION: MeshTessellationStamp = {
     linearMm: null,
     relative: null,
@@ -178,6 +191,33 @@ function validateSequenceOptions(options: AssemblyPathOptions): void {
     validateSubassemblies(options.subassemblies);
     validateTools(options.tools);
     validateFastenerOptionsMaps(options.fasteners, options.fits);
+    validateStabilityOptions(options);
+}
+function validateStabilityOptions(options: AssemblyPathOptions): void {
+    if (options.stability !== undefined && typeof options.stability !== 'boolean')
+        throw new Error('stability must be boolean.');
+    if (options.stability === true && options.sequence !== true)
+        throw new Error('stability requires sequence: true.');
+    validateGravity(options.gravity);
+    if (options.contactToleranceMm !== undefined
+        && (!Number.isFinite(options.contactToleranceMm) || options.contactToleranceMm < 0))
+        throw new Error('contactToleranceMm must be a finite nonnegative number.');
+    validateFixtures(options.fixtures);
+}
+function validateGravity(gravity: Vec3 | undefined): void {
+    if (gravity === undefined)
+        return;
+    if (!Array.isArray(gravity) || gravity.length !== 3 || !gravity.every(Number.isFinite) || !(Math.hypot(...gravity) > 0))
+        throw new Error('gravity must be a finite nonzero [x, y, z] direction.');
+}
+function validateFixtures(fixtures: readonly string[] | undefined): void {
+    if (fixtures === undefined)
+        return;
+    const invalid = !Array.isArray(fixtures)
+        || fixtures.some(name => typeof name !== 'string' || !name)
+        || new Set(fixtures).size !== fixtures.length;
+    if (invalid)
+        throw new Error('fixtures must contain unique nonempty part names.');
 }
 function validateSubassemblies(groups: readonly SubassemblyInput[] | undefined): void {
     if (groups === undefined)
@@ -561,6 +601,48 @@ function stampMotions(model: ModelStamp, steps: readonly Step[], tools: readonly
     if (tools.length > 0)
         model.toolReach = 'swept-envelope';
 }
+function applyStabilityPass(
+    steps: Step[],
+    prepared: readonly Prepared[],
+    options: AssemblyPathOptions,
+    model: ModelStamp,
+): NeedsHoldFinding[] {
+    if (options.stability !== true)
+        return [];
+    const stability = assessSequenceStability(steps, prepared, {
+        gravity: options.gravity ?? [0, 0, -1],
+        ...(options.fixtures !== undefined ? { fixtures: options.fixtures } : {}),
+        contactToleranceMm: options.contactToleranceMm ?? DEFAULT_STABILITY_CONTACT_TOLERANCE_MM,
+    });
+    for (const step of steps) {
+        const state = stability.steps.get(step.index);
+        if (state === undefined)
+            continue;
+        step.stability = state.state;
+        if (state.state === 'stable' && state.supports.length > 0)
+            step.heldBy = state.supports;
+    }
+    model.gravity = 'approximate-support-projection';
+    model.stability = stability.stamp;
+    return stability.findings;
+}
+function buildAssemblySequence(
+    plan: ReturnType<typeof planAssemblySequence>,
+    model: ModelStamp,
+    unknown: string[],
+    toolBlocked: ToolBlockFinding[],
+    needsHold: NeedsHoldFinding[],
+): AssemblySequence {
+    return {
+        steps: plan.steps,
+        model,
+        unknown,
+        ...(plan.search.length > 0 ? { search: plan.search } : {}),
+        ...(plan.requiresForce.length > 0 ? { requiresForce: plan.requiresForce } : {}),
+        ...(toolBlocked.length > 0 ? { toolBlocked } : {}),
+        ...(needsHold.length > 0 ? { needsHold } : {}),
+    };
+}
 function applySequence(result: AssemblyPathReport, prepared: Prepared[], input: SequencePlanInput, model: ModelStamp): void {
     const plan = planAssemblySequence(prepared, {
         prepare: (name, mesh) => prepare({ name, mesh }, input.consumeWork),
@@ -589,17 +671,10 @@ function applySequence(result: AssemblyPathReport, prepared: Prepared[], input: 
     const toolReach = [...input.tools.values()];
     const toolBlocked = toolReach.filter((finding): finding is ToolBlockFinding => finding.status === 'tool-blocked');
     stampMotions(model, plan.steps, toolReach);
+    const needsHold = applyStabilityPass(plan.steps, prepared, input.options, model);
     const unknown = result.parts.filter(part => part.state.kind === 'unknown').map(part => part.part);
-    const sequence: AssemblySequence = {
-        steps: plan.steps,
-        model,
-        unknown,
-        ...(plan.search.length > 0 ? { search: plan.search } : {}),
-        ...(plan.requiresForce.length > 0 ? { requiresForce: plan.requiresForce } : {}),
-        ...(toolBlocked.length > 0 ? { toolBlocked } : {}),
-    };
-    result.ok = plan.ok;
-    result.sequence = sequence;
+    result.ok = plan.ok && needsHold.length === 0;
+    result.sequence = buildAssemblySequence(plan, model, unknown, toolBlocked, needsHold);
     result.search = plan.search.length > 0 ? plan.search : undefined;
     result.requiresForce = plan.requiresForce.length > 0 ? plan.requiresForce : undefined;
     result.toolReach = toolReach.length > 0 ? toolReach : undefined;

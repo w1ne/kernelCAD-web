@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-10-25T18:54:47.817Z",
+  "video": "demo.mp4",
+  "videoSha256": "466ea412cbf8b44bc0992a619f9e085e1d88e1bd7ddadb35a370a76d63c481f9",
+  "canvas": "1920x1080",
+  "sourceModels": {
+    "assembly-stability-bracket.kcad.ts": "3d4a1d01054fedd69bffcc03dd6e586fd8c523d7bc8f7d850a90e1d83c1ab149"
+  },
+  "stabilityEvidence": "stability-evidence.json",
+  "inputSha256": {
+    "bracket-assembled.png": "dc257fcda751bf2cd0e066b8e9929a010fcfd39d05e75cc0507610b384150bb3",
+    "bracket-exploded.png": "192d8c6aceeea49c331bcd327bf14ddb034610335daaea7df588a403ba476095"
+  },
+  "slides": [
+    {
+      "image": "00-title.png",
+      "durationSec": 3.5
+    },
+    {
+      "image": "01-assembled.png",
+      "durationSec": 4.5
+    },
+    {
+      "image": "02-exploded.png",
+      "durationSec": 4.5
+    },
+    {
+      "image": "03-steps.png",
+      "durationSec": 5
+    },
+    {
+      "image": "04-finding.png",
+      "durationSec": 5
+    },
+    {
+      "image": "05-stamp.png",
+      "durationSec": 5
+    },
+    {
+      "image": "06-end.png",
+      "durationSec": 3.5
+    }
+  ],
+  "invocations": [
+    "npm run build:player",
+    "npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-stability-bracket.kcad.ts --preset publish -o docs/demos/assembly-stability-p3/bracket-assembled.png",
+    "npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-stability-bracket.kcad.ts --preset publish --explode 0.8 -o docs/demos/assembly-stability-p3/bracket-exploded.png",
+    "npx tsx docs/demos/assembly-stability-p3/make-evidence.ts",
+    "node docs/demos/assembly-stability-p3/make-video.mjs"
+  ],
+  "provenance": "Annotated still sequence composed from local kernelcad renders and the real P3 verifier result. Not a screen recording, turntable, deployed-platform capture, physical hardware or strength test. Static stability is an approximate support projection, not a physics simulation."
+}
