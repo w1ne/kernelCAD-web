@@ -166,8 +166,22 @@ Release assets are attached separately when a version has a demo capture, static
 
 ## Install And Upgrade
 
+Install the npm package (requires Node.js 22.12 or newer):
+
+\`\`\`bash
+npm install --global kernelcad@${newVersion}
+\`\`\`
+
+Or use a self-contained installer that includes Node.js:
+
 \`\`\`bash
 curl -fsSL https://kernelcad.com/install.sh | KERNELCAD_VERSION=v${newVersion} sh
+\`\`\`
+
+On Windows PowerShell:
+
+\`\`\`powershell
+$env:KERNELCAD_VERSION='v${newVersion}'; irm https://kernelcad.com/install.ps1 | iex
 \`\`\`
 
 For repo development:

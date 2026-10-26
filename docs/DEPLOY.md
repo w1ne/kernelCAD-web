@@ -69,7 +69,8 @@ curl -s https://kernelcad.com/ | grep -o '<h1 class="headline">[^<]*'
 ## npm — a release tag
 
 A `v*` tag is a **full release**, not a single-surface deploy. Pushing it fires
-**all** of: `publish-npm.yml` (publishes packages to npm), `dist-skills.yml`,
+**all** of: `release-archive.yml` (builds and attaches platform archives,
+checksums, and provenance, then publishes the npm package), `dist-skills.yml`,
 `deploy.yml` (GitHub Pages), and `deploy-cloudflare.yml`. Per the **Demo
 discipline** rule in `CLAUDE.md`, a `v0.X.0` minor tag also requires
 `docs/demos/v0.X/<task>/whats-new.md` + `meta.json`.

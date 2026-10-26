@@ -36,14 +36,30 @@ hosted setup, local CLI setup, and connection verification.
 
 ### Local CLI: one line
 
+For Node.js users (Node.js 22.12 or newer):
+
+```bash
+npm install --global kernelcad
+```
+
+For a self-contained install that includes Node.js, Linux and macOS users can run:
+
 ```bash
 curl -fsSL https://kernelcad.com/install.sh | sh
 ```
 
-This installs the self-contained CLI under `~/.kernelcad/versions/` and links
-`kernelcad` into `~/.local/bin`. Pin a version with
-`KERNELCAD_VERSION=v0.17.2`. Node.js 20 or newer is required. There is no npm
-package and no global npm install.
+On Windows PowerShell, run:
+
+```powershell
+irm https://kernelcad.com/install.ps1 | iex
+```
+
+The direct installers download a platform archive, verify its SHA-256 checksum,
+and install it under the user's home directory. Pin a release with
+`KERNELCAD_VERSION=vX.Y.Z` on Linux/macOS or `$env:KERNELCAD_VERSION='vX.Y.Z'`
+in PowerShell. Builds are available for Linux x64/ARM64, macOS Intel/Apple
+Silicon, and Windows x64. Direct installs do not require a separately installed
+Node.js.
 
 ### Coding agents: one command
 
@@ -179,8 +195,11 @@ and mechanism checks tied to physical components.
 ## Get Started
 
 ```bash
-curl -fsSL https://kernelcad.com/install.sh | sh
+npm install --global kernelcad
 ```
+
+The npm package requires Node.js 22.12 or newer. For a self-contained install,
+use the platform installer above.
 
 Drop this in `bracket.kcad.ts`:
 

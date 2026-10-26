@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed implementation of the user-approved dual-channel direction: retain npm for Node and agent users, and offer downloads that run without a preinstalled Node.js runtime.
+Approved implementation of the dual-channel direction: retain npm for Node and agent users, and offer downloads that run without a preinstalled Node.js runtime.
 
 ## Current state
 
@@ -12,6 +12,7 @@ Proposed implementation of the user-approved dual-channel direction: retain npm 
 - The release flow creates GitHub Releases and builds a CLI archive, but the archive workflow currently emits only `linux-x86_64`.
 - `scripts/install.sh` advertises Linux x64/ARM64 and macOS Intel/ARM64, yet requires an installed Node.js runtime. The README says Node 20 is enough, while `package.json` requires Node 22.12 or newer.
 - The repository has no npm publishing workflow. The release script does not publish to npm.
+- The public installer URL is served by the private `w1ne/kernelCAD-server` product-web snapshot, which currently mirrors the POSIX installer twice and has no Windows installer entry point. Distribution work must update that deployed source and its snapshot manifest as well as this public repository.
 
 ## Goals
 
@@ -20,6 +21,7 @@ Proposed implementation of the user-approved dual-channel direction: retain npm 
 3. Offer archives that include a compatible Node runtime so direct-download users do not need to install Node separately.
 4. Publish package and archive artifacts from the same stable release tag, with checksums and verifiable build provenance.
 5. Keep the importer video and retained evidence as release/demo assets; do not create a marketing post or upload a duplicate video.
+6. Ensure the installers served from `kernelcad.com` are the same reviewed installers as the public repository.
 
 ## Distribution choices
 
@@ -27,7 +29,7 @@ Proposed implementation of the user-approved dual-channel direction: retain npm 
 
 Reuse the existing `kernelcad` package and its `bin` command instead of introducing a second CLI package. Publish only stable version tags, after the package build and release checks succeed. Configure npm Trusted Publishing from the public GitHub Actions workflow using OIDC; do not add a long-lived npm publish token. The package owner must configure the trusted publisher for the exact repository and workflow before the first publish.
 
-The next release containing the STEP importer is `0.18.0`: it adds a user-facing CLI capability after the already-tagged `0.17.2`. A minor release must satisfy the repository's versioned demo preflight. Reuse the retained importer evidence without publishing its video as marketing content.
+The next distribution release containing the STEP importer is `0.17.3`. A `0.18.0` release requires a proof-backed hero under the repository's memorable-builds policy; the retained STEP smoke demo is not evidence of a fabricated part. Reuse the existing v0.17 release hero for this additive patch release, and do not publish the importer video as marketing content.
 
 ### Direct-download bundles
 
@@ -65,6 +67,7 @@ One `vX.Y.Z` tag identifies the npm package and every platform archive. Release 
 - Each advertised direct-download platform has a matching archive that starts without a system Node.js installation.
 - Each archive has a checksum and GitHub provenance attestation; the installers verify downloaded archive integrity before installation.
 - `install.sh`, the Windows installer, README installation instructions, package engine requirements, and release metadata agree on supported versions and platforms.
+- The private product-web snapshot serves the POSIX and Windows installers from `kernelcad.com`, with its source manifest updated and snapshot CI passing.
 - A release cannot be reported complete if npm publication or any required platform artifact is missing.
 
 ## Operational prerequisites and risks
