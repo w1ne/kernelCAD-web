@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "kernelcad import-step",
+  "input": {
+    "fileName": "unicode-name.step",
+    "sha256": "144f12a953b679503b19cb84addcc67a51a326125aac7cc181c8fd254430a538",
+    "sizeBytes": 15842
+  },
+  "assemblyName": "unicode-name",
+  "sourceLengthUnits": [
+    "millimetre"
+  ],
+  "canonicalLengthUnit": "mm",
+  "definitions": [
+    {
+      "id": "def-6e76817a505a3c499b3e1cf81a629d0c7ce6bcac9a70bc39840e25eb90edbb9d",
+      "sourceLabel": "0:1:1:1",
+      "originalName": "Mötor",
+      "asset": "parts/31c8c1919d07234327ee22f9886848b286f284bbe89a99eed352d6e6010290b3.brep",
+      "sha256": "31c8c1919d07234327ee22f9886848b286f284bbe89a99eed352d6e6010290b3",
+      "serializationVersion": "CASCADE Topology V3, (c) Open Cascade",
+      "solidCount": 1,
+      "boundsMm": {
+        "min": [
+          -1e-7,
+          -1e-7,
+          -1e-7
+        ],
+        "max": [
+          10.0000001,
+          20.0000001,
+          30.0000001
+        ]
+      },
+      "volumeMm3": 6000,
+      "validation": {
+        "valid": true,
+        "closedSolids": 1
+      }
+    }
+  ],
+  "occurrences": [
+    {
+      "id": "occ-000001",
+      "originalName": "Mötor",
+      "sourcePath": [
+        "Mötor"
+      ],
+      "definitionId": "def-6e76817a505a3c499b3e1cf81a629d0c7ce6bcac9a70bc39840e25eb90edbb9d",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#2a6cbd",
+        "alpha": 1
+      }
+    }
+  ],
+  "warnings": []
+}

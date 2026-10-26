@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "bundle": {
+    "outDir": "/tmp/step-as1-kcad",
+    "script": "/tmp/step-as1-kcad/as1-oc-214.kcad.ts",
+    "manifest": "/tmp/step-as1-kcad/manifest.json",
+    "partAssets": 5,
+    "occurrenceCount": 18,
+    "definitionCount": 5
+  },
+  "warnings": []
+}

@@ -13,6 +13,7 @@ import type { StepAssemblySnapshot, StepImportOccurrence } from './stepAssemblyT
 export interface WriteStepBundleInput {
   inputName: string;
   inputBytes: Uint8Array;
+  externalDocuments?: ReadonlyMap<string, Uint8Array>;
   outDir: string;
   assemblyName: string;
   snapshot: StepAssemblySnapshot;
@@ -162,6 +163,9 @@ export async function writeStepBundle(input: WriteStepBundleInput): Promise<Writ
         fileName: basename(input.inputName),
         sha256: sha256(input.inputBytes),
         sizeBytes: input.inputBytes.byteLength,
+        dependencies: [...(input.externalDocuments ?? new Map()).entries()]
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([fileName, bytes]) => ({ fileName, sha256: sha256(bytes), sizeBytes: bytes.byteLength })),
       },
       assemblyName: input.assemblyName,
       sourceLengthUnits: input.snapshot.sourceLengthUnits,

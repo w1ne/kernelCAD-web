@@ -1,0 +1,12 @@
+{
+  "exitCode": 1,
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "step.external-reference",
+      "message": "Cannot resolve STEP external document 'TAIL.stp' referenced by 'input.step': ENOENT: no such file or directory, realpath '/tmp/kernelcad-step-missing-hbihtrsl/TAIL.stp'"
+    }
+  },
+  "stderr": "",
+  "bundleCreated": false
+}

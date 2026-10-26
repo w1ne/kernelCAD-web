@@ -8,6 +8,7 @@ import { basename, extname, resolve } from 'node:path';
 import { Command } from 'commander';
 import { importStepAssembly } from '../../../kernel/import/stepAssemblyImport';
 import { StepAssemblyImportError } from '../../../kernel/import/stepAssemblyTypes';
+import { readStepExternalDocuments } from '../../../kernel/import/stepExternalDocuments';
 import { validateStepBundleName, writeStepBundle, type WrittenStepBundle } from '../../../kernel/import/stepBundleWriter';
 
 export interface ImportStepCliInput {
@@ -53,10 +54,12 @@ export async function runImportStepCli(input: ImportStepCliInput): Promise<Impor
   }
 
   try {
-    const snapshot = await importStepAssembly(bytes, basename(inputPath));
+    const externalDocuments = await readStepExternalDocuments(inputPath, bytes);
+    const snapshot = await importStepAssembly(bytes, basename(inputPath), externalDocuments);
     const bundle = await writeStepBundle({
       inputName: inputPath,
       inputBytes: bytes,
+      externalDocuments,
       outDir: input.out,
       assemblyName,
       snapshot,
@@ -79,7 +82,7 @@ export function importStepCommand(): Command {
     .requiredOption('--out <directory>', 'new output bundle directory; an existing path is never overwritten')
     .option('--name <assembly-name>', 'root assembly and generated script name; defaults to the input filename')
     .option('--json', 'emit a machine-readable result')
-    .addHelpText('after', '\nBundle contents: <name>.kcad.ts, manifest.json, parts/*.brep\n')
+    .addHelpText('after', '\nBundle contents: <name>.kcad.ts, manifest.json, parts/*.brep\nLocal relative DOCUMENT_FILE dependencies are read recursively and hashed; references must stay within the input directory.\n')
     .action(async (file: string, opts: { out: string; name?: string; json?: boolean }) => {
       const result = await runImportStepCli({
         file,

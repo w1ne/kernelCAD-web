@@ -48,6 +48,7 @@ export type StepImportFailureReason =
   | 'empty'
   | 'invalid-solid'
   | 'unsupported-transform'
+  | 'external-reference'
   | 'metadata';
 
 export class StepAssemblyImportError extends Error {

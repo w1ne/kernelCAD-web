@@ -82,11 +82,8 @@ function labelKey(label: any): string {
 }
 
 function readLabelName(oc: any, label: any): string | undefined {
-  return withScope((track) => {
-    const extended = track(oc.KernelCAD_XCAF.GetName(label));
-    const value = extended.ToExtString();
-    return typeof value === 'string' && value.trim() !== '' ? value : undefined;
-  });
+  const value = oc.KernelCAD_XCAF.GetName(label);
+  return typeof value === 'string' && value.trim() !== '' ? value : undefined;
 }
 
 function readLabelColor(oc: any, colorTool: any, label: any): StepComponentColor | undefined {
@@ -111,9 +108,9 @@ function componentColor(rgba: any, track: Track): StepComponentColor {
   };
 }
 
-function readInstanceColor(oc: any, colorTool: any, shapeTool: any, label: any): StepComponentColor | undefined {
+function readInstanceColor(oc: any, colorTool: any, label: any): StepComponentColor | undefined {
   return withScope((track) => {
-    const shape = track(shapeTool.GetShape_2(label));
+    const shape = track(oc.XCAFDoc_ShapeTool.GetShape_2(label));
     if (shape.IsNull()) return undefined;
     const rgba = track(new oc.Quantity_ColorRGBA_1());
     const types = oc.XCAFDoc_ColorType;
@@ -291,10 +288,11 @@ function definitionStatistics(oc: any, shape: any, sourcePath: string[]): {
     }
 
     const brepText = oc.BRepToolsWrapper.Write(shape) as string;
-    if (!brepText.startsWith('CASCADE Topology V')) {
+    const header = brepText.slice(0, 200).match(/CASCADE Topology V[^\r\n]*/);
+    if (header === null) {
       throw new StepAssemblyImportError('invalid-solid', 'OCCT could not serialize the component as native BREP.', sourcePath);
     }
-    const version = brepText.slice(0, brepText.indexOf('\n')).trim();
+    const version = header[0].trim();
     return { solidCount, boundsMm, volumeMm3, brep: new TextEncoder().encode(brepText), brepVersion: version };
   } finally {
     box.delete();
@@ -303,29 +301,68 @@ function definitionStatistics(oc: any, shape: any, sourcePath: string[]): {
 
 /**
  * Read a STEP assembly with XCAF names, component colors, and placements.
- * OCCT's system length unit is set to one millimetre, matching the rest of the
- * KernelCAD modeling API; occurrence translations, BREP statistics, and
- * output placements therefore use mm exactly once.
+ * OCCT's default STEP transfer unit is one millimetre, matching the rest of
+ * the KernelCAD modeling API; source unit declarations are converted during
+ * transfer, so occurrence translations and BREP statistics use mm.
  */
-export async function importStepAssembly(bytes: Uint8Array, inputName: string): Promise<StepAssemblySnapshot> {
+export async function importStepAssembly(
+  bytes: Uint8Array,
+  inputName: string,
+  externalDocuments: ReadonlyMap<string, Uint8Array> = new Map(),
+): Promise<StepAssemblySnapshot> {
   if (bytes.length === 0) throw new StepAssemblyImportError('empty', 'STEP input is empty.');
+  if (inputName.includes('/') || inputName.includes('\\') || inputName === '' || inputName === '.' || inputName === '..') {
+    throw new StepAssemblyImportError('metadata', `Invalid STEP input filename '${inputName}'.`);
+  }
   await initOcct();
   const oc = getOcctRuntime() as any;
-  const sourceText = new TextDecoder().decode(bytes);
-  const sourceLengthUnits = parseSourceLengthUnits(sourceText);
+  const documents: Array<[string, Uint8Array]> = [[inputName, bytes]];
+  for (const [fileName, fileBytes] of externalDocuments) {
+    const normalized = fileName.replaceAll('\\', '/');
+    const segments = normalized.split('/');
+    if (
+      normalized !== fileName
+      || normalized === inputName
+      || segments.some((segment) => segment === '' || segment === '.' || segment === '..')
+      || !/\.step$|\.stp$/i.test(normalized)
+    ) {
+      throw new StepAssemblyImportError('external-reference', `Invalid staged STEP external document path '${fileName}'.`);
+    }
+    documents.push([normalized, fileBytes]);
+  }
+  const sourceLengthUnits = [...new Set(documents.flatMap(([, fileBytes]) =>
+    parseSourceLengthUnits(new TextDecoder().decode(fileBytes))))].sort();
   const warnings: string[] = [];
   if (sourceLengthUnits.length === 0) warnings.push('No STEP length unit declaration was recognized; OCCT transferred geometry into millimetres using its default STEP unit policy.');
 
-  const tempFile = `kernelcad-step-${process.pid}-${randomUUID()}.step`;
-  const tempPath = `/${tempFile}`;
-  oc.FS.writeFile(tempPath, bytes);
+  const tempDir = `/kernelcad-step-${process.pid}-${randomUUID()}`;
+  const tempPath = `${tempDir}/${inputName}`;
+  const stagedFiles: string[] = [];
+  const stagedDirectories: string[] = [tempDir];
   try {
+    oc.FS.mkdir(tempDir);
+    for (const [fileName, fileBytes] of documents) {
+      const segments = fileName.split('/');
+      let currentDirectory = tempDir;
+      for (const segment of segments.slice(0, -1)) {
+        currentDirectory += `/${segment}`;
+        try {
+          oc.FS.mkdir(currentDirectory);
+          stagedDirectories.push(currentDirectory);
+        } catch (error) {
+          const exists = oc.FS.analyzePath(currentDirectory).exists;
+          if (!exists) throw error;
+        }
+      }
+      const virtualPath = `${tempDir}/${fileName}`;
+      oc.FS.writeFile(virtualPath, fileBytes);
+      stagedFiles.push(virtualPath);
+    }
     return withScope((track) => {
       const reader = track(new oc.STEPCAFControl_Reader_1());
       reader.SetColorMode(true);
       reader.SetNameMode(true);
       reader.SetLayerMode(true);
-      reader.Reader().SetSystemLengthUnit(1.0);
 
       const status = reader.ReadFile(tempPath);
       if (status !== oc.IFSelect_ReturnStatus.IFSelect_RetDone) {
@@ -358,7 +395,7 @@ export async function importStepAssembly(bytes: Uint8Array, inputName: string): 
       ): void => {
         const occurrenceName = readLabelName(oc, label);
         const referred = track(new oc.TDF_Label());
-        const isComponent = shapeTool.IsComponent(label);
+        const isComponent = oc.XCAFDoc_ShapeTool.IsComponent(label);
         let definitionLabel = label;
         if (isComponent) {
           if (!oc.XCAFDoc_ShapeTool.GetReferredShape(label, referred)) {
@@ -373,7 +410,7 @@ export async function importStepAssembly(bytes: Uint8Array, inputName: string): 
           warnings.push(`Missing product name at ${sourcePathText([...parentPath, chosenName])}; used a deterministic generated name.`);
         }
         const path = [...parentPath, chosenName];
-        const occurrenceColor = (isComponent ? readInstanceColor(oc, colorTool, shapeTool, label) : undefined)
+        const occurrenceColor = (isComponent ? readInstanceColor(oc, colorTool, label) : undefined)
           ?? readLabelColor(oc, colorTool, label);
         const ownColor = occurrenceColor
           ?? (definitionLabel !== label ? readLabelColor(oc, colorTool, definitionLabel) : undefined)
@@ -386,10 +423,10 @@ export async function importStepAssembly(bytes: Uint8Array, inputName: string): 
           worldTransform = multiply(parentTransform, matrixFromTrsf(trsf, path));
         }
 
-        if (shapeTool.IsAssembly(definitionLabel)) {
+        if (oc.XCAFDoc_ShapeTool.IsAssembly(definitionLabel)) {
           let childCount = 0;
           children(oc, definitionLabel, (child, tag) => {
-            if (!shapeTool.IsComponent(child)) return;
+            if (!oc.XCAFDoc_ShapeTool.IsComponent(child)) return;
             childCount++;
             visit(child, worldTransform, path, ownColor, tag);
           });
@@ -446,7 +483,12 @@ export async function importStepAssembly(bytes: Uint8Array, inputName: string): 
       };
     });
   } finally {
-    try { oc.FS.unlink(tempPath); } catch { /* best-effort cleanup after OCCT failure */ }
+    for (const path of stagedFiles.reverse()) {
+      try { oc.FS.unlink(path); } catch { /* best-effort cleanup after OCCT failure */ }
+    }
+    for (const path of stagedDirectories.reverse()) {
+      try { oc.FS.rmdir(path); } catch { /* best-effort cleanup after OCCT failure */ }
+    }
   }
 }
 
