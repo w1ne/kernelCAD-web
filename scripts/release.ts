@@ -141,6 +141,17 @@ if (newVersion !== projectedVersion) {
     process.exit(1);
 }
 
+// Keep the installer's pinned-release examples and fallback guidance aligned
+// with the package version. The installer version sentinel runs on every PR.
+for (const installerPath of ['scripts/install.sh', 'scripts/install.ps1']) {
+    const installer = readFileSync(installerPath, 'utf-8');
+    const updatedInstaller = installer.replace(/v\d+\.\d+\.\d+/g, `v${newVersion}`);
+    if (updatedInstaller !== installer) {
+        writeFileSync(installerPath, updatedInstaller);
+        console.log(`✅ Updated ${installerPath} version hints`);
+    }
+}
+
 // 5. Create Release Notes File
 const date = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
 const releaseChanges = formatReleaseChanges(commitLog);

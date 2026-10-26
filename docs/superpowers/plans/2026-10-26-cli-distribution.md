@@ -78,6 +78,7 @@
 - Modify `README.md`
 
 - [x] Make generated release notes list both npm and direct-installer commands, pinned to the same version.
+- [x] Update the installer version hints automatically when `scripts/release.ts` bumps `package.json`, keeping the existing installer version sentinel valid.
 - [x] Keep the current v0.17 hero for the additive `v0.17.3` patch release; do not misclassify the importer smoke demo as fabrication proof.
 - [ ] After the distribution PR is merged and the npm Trusted Publisher is configured, create `v0.17.3` through the repository release process. Do not publish from this feature branch.
 
