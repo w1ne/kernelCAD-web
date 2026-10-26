@@ -19,7 +19,8 @@
 import { readFile } from 'node:fs/promises';
 import { resolveScriptRelativePath } from '../../shared/runtime/scriptRelativePath';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
-import { importBrepBytes, BrepParseError } from '../../kernel/backends/occt/importBrep';
+import { BrepParseError } from '../../kernel/backends/occt/importBrep';
+import { importBrepCached } from './brepParseCache';
 import { importStlBytes, StlParseError } from '../../kernel/backends/occt/importStl';
 import { Shape } from '../capture/proxy';
 import { MeshBackend, decodeStlMesh } from '../../kernel/backends/meshBackend';
@@ -77,7 +78,7 @@ export async function fromBREP(ctx: FromFileContext, path: string): Promise<Shap
   await initOcct();
   let backend: OcctBackend;
   try {
-    backend = importBrepBytes(buf);
+    backend = importBrepCached(buf);
   } catch (e) {
     if (e instanceof BrepParseError && e.reason === 'no-solid') {
       throw new KernelError(

@@ -38,6 +38,8 @@ import {
 export { initOcct, occtHeapBytes, type InitOcctOptions } from './backendInit';
 export { resetOcct, registerOcctResetHook, withOcctPoisonRecovery } from './backendInit';
 export { meshShapeForExport } from './backendMesh';
+// XCAF import/export paths need OCCT labels and tools that ShapeBackend hides.
+export { getOC as getOcctRuntime };
 import { assertCanonicalFaceSupported, resolveCanonicalFaceTarget, type CanonicalFaceName } from './canonicalFaceTarget';
 
 type ReplicadEdge = replicad.Edge;
