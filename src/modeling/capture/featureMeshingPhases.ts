@@ -15,19 +15,22 @@ import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageR
 import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecord';
 import type { ShapeBackend } from '../../kernel/backends/backend';
-import type { SceneBackend, SceneBackendPart } from '../../kernel/backends/sceneBackend';
+import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../../kernel/backends/sceneBackend';
 import { OcctBackend, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
+import { clearTriangulation } from '../../kernel/backends/occt/backendMesh';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
-import { meshShape } from '../../kernel/backends/occt/meshing';
+import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 import { transformFeatureMesh } from './transformMesh';
 import { computeFeatureOwnership, type FeatureOwnership } from './featureOwnership';
 import { Transform } from '../../shared/runtime/se3';
+import { attachMaterialUVs } from './planarUv';
 import type {
   AttributeShadowingWarning,
   Bounds,
   FeatureMesh,
+  MeshFeaturesResult,
   PerFaceMaterialWarning,
   ShadowedAttribute,
 } from './featureMeshing';
@@ -40,6 +43,17 @@ export interface MeshBoundsAccumulator {
   maxY: number;
   maxZ: number;
 }
+
+/** Marker for meshes produced by a PREVIEW pass (the coarse first paint of an
+ *  edit). Held on the cached `FeatureMesh` object (WeakSet), so it rides with
+ *  cache entries copied between sessions by `carryReusableMeshes`, never
+ *  reaches the wire (`serializeForBridge` is explicit), and needs no type
+ *  changes anywhere else. A normal display pass refines every marked entry by
+ *  re-meshing its already-lowered seeded shape — it never emits coarse
+ *  triangles as final and never re-lowers geometry. */
+const coarseMeshes = new WeakSet<object>();
+export function markCoarseMesh(mesh: FeatureMesh): void { coarseMeshes.add(mesh); }
+export function isCoarseMesh(mesh: FeatureMesh): boolean { return coarseMeshes.has(mesh); }
 
 /** Aggregate bounds from `faces`' vertices into `bounds` in-place. */
 export function accumulateMeshBounds(
@@ -175,6 +189,12 @@ export interface SceneFanoutCtx {
   ownerIdOfShape?: (shape: ShapeBackend) => FeatureId | undefined;
   recordOrder?: ReadonlyMap<FeatureId, number>;
   accumulateIndexedMeshBounds?: (bounds: MeshBoundsAccumulator, positions: Float32Array) => void;
+  /** A PREVIEW pass's looser tessellation options (the coarse first paint of
+   *  an edit). When set, freshly meshed parts use them and the per-part cache
+   *  is NOT written — a coarse part entry must never satisfy a later display
+   *  pass. Display-cached parts are still reused read-only, so a pose-only
+   *  re-lower paints from cache in either tier. */
+  previewMeshOptions?: MeshOptions;
 }
 
 // SceneBackend (assembly multi-body) → fan out one FeatureMesh per
@@ -325,7 +345,7 @@ function resolveScenePartMesh(
     return { faces: [], mesh, volume: undefined, edges: undefined, link: {}, fromCache: false, partCache };
   }
   const rawShape = ctx.extractRawShape(part.shape);
-  const meshed = meshShape(rawShape);
+  const meshed = meshShape(rawShape, ctx.previewMeshOptions);
   if (!meshed) {
     // Per-part shape failed to mesh. Skip THIS part — the lowerer
     // already populated the part shape, and a single bad part must
@@ -342,7 +362,9 @@ function resolveScenePartMesh(
   const edges = meshed.edges;
   const link = partLinkData(part, rawShape, meshed, ctx);
   let nextCache = partCache;
-  if (ctx.cachedAssemblyPartMeshes !== undefined) {
+  // Preview (coarse) meshes are never cached: the part cache is display-tier
+  // and a coarse entry would satisfy the next display pass as-is.
+  if (!ctx.previewMeshOptions && ctx.cachedAssemblyPartMeshes !== undefined) {
     if (!nextCache) {
       nextCache = new Map();
       ctx.cachedAssemblyPartMeshes.set(featureId, nextCache);
@@ -382,7 +404,10 @@ function emitScenePartMesh(
     ...(resolved.edges ? { edges: resolved.edges } : {}),
     ...resolved.link,
   };
-  if (!resolved.fromCache) ctx.attachPlanarUVs(local.faces);
+  if (!resolved.fromCache) {
+    attachMaterialUVs(local.faces, part.material);
+    ctx.attachPlanarUVs(local.faces);
+  }
   const extra = ctx.explodeOffsets?.get(part.name);
   const worldT = extra !== undefined
     ? Transform.translation(extra[0], extra[1], extra[2]).compose(part.worldTransform)
@@ -511,12 +536,106 @@ export function deriveSeedShapes(
     : undefined;
 }
 
+/**
+ * Shapes the session already lowered for exactly these inputs, for records
+ * that `deriveSeedShapes` did not seed (no cached mesh yet). The meshing pass
+ * meshes them instead of lowering them again — on a first mesh after
+ * `buildModel`, or after `params.update`, that second lower used to repeat
+ * every non-assembly record.
+ *
+ * Conservative by construction; any doubt seeds nothing (a full lower, the old
+ * behaviour):
+ *  - the shapes come from `reusableLoweredPrefix()`, which is empty unless the
+ *    session's last full lower was taken under the current param table, gates
+ *    and record ids / transform counts;
+ *  - the records passed in must be the session's own record objects, and the
+ *    param table (when given) the session's own table, so a caller meshing a
+ *    different record list or param table never sees these shapes;
+ *  - only B-rep, mesh and scene backends are reused (the kinds this pass
+ *    meshes from a lowered shape).
+ */
+export function deriveFreshLoweredSeeds(
+  records: readonly FeatureRecord[],
+  paramTable: unknown,
+  session: FreshLowerSession | undefined,
+  alreadySeeded: ReadonlyMap<FeatureId, ShapeBackend> | undefined,
+): Map<FeatureId, ShapeBackend> {
+  const out = new Map<FeatureId, ShapeBackend>();
+  if (!session?.reusableLoweredPrefix || !session.getRecords) return out;
+  if (paramTable !== undefined && paramTable !== session.paramTable) return out;
+  const own = new Set(session.getRecords());
+  const fresh = session.reusableLoweredPrefix();
+  if (fresh.size === 0) return out;
+  for (const r of records) {
+    if (alreadySeeded?.has(r.id)) continue;
+    if (!own.has(r)) continue;
+    const shape = fresh.get(r.id);
+    if (shape === undefined) continue;
+    if (!(shape instanceof OcctBackend) && !(shape instanceof MeshBackend) && !isSceneBackend(shape)) continue;
+    out.set(r.id, shape);
+  }
+  return out;
+}
+
+/** The session hooks {@link deriveFreshLoweredSeeds} reads (a CaptureSession
+ *  provides all three). */
+export interface FreshLowerSession {
+  /** Validated shapes of the last full lower (`CaptureSession.reusableLoweredPrefix`). */
+  reusableLoweredPrefix?: () => ReadonlyMap<FeatureId, ShapeBackend>;
+  getRecords?: () => readonly FeatureRecord[];
+  paramTable?: unknown;
+}
+
+/** {@link deriveFreshLoweredSeeds}, plus the full seed map for the engine run
+ *  (`seedShapes` and the fresh shapes together). */
+export function planFreshLoweredSeeds(
+  records: readonly FeatureRecord[],
+  paramTable: unknown,
+  session: FreshLowerSession | undefined,
+  seedShapes: ReadonlyMap<FeatureId, ShapeBackend> | undefined,
+): { meshFromSeed: Map<FeatureId, ShapeBackend>; engineSeeds: Map<FeatureId, ShapeBackend> | undefined } {
+  const meshFromSeed = deriveFreshLoweredSeeds(records, paramTable, session, seedShapes);
+  return { meshFromSeed, engineSeeds: mergeSeeds(seedShapes, meshFromSeed) };
+}
+
+/**
+ * Drop the triangulation that meshing a borrowed session shape left on it, so
+ * the session's shape is in the same state as before the pass (OCCT's
+ * `Bnd_Box` tightens to a cached triangulation, and the triangulation holds
+ * memory). Best effort; mesh backends carry none.
+ */
+export function releaseBorrowedTriangulation(shape: ShapeBackend): void {
+  if (isSceneBackend(shape)) {
+    for (const part of shape.parts) releaseBorrowedTriangulation(part.shape);
+    return;
+  }
+  if (!(shape instanceof OcctBackend)) return;
+  clearTriangulation(shape.getReplicadShape());
+}
+
+/** `seedShapes` plus `extra`, without mutating either. */
+export function mergeSeeds(
+  seedShapes: ReadonlyMap<FeatureId, ShapeBackend> | undefined,
+  extra: ReadonlyMap<FeatureId, ShapeBackend>,
+): Map<FeatureId, ShapeBackend> | undefined {
+  if (extra.size === 0) return seedShapes === undefined ? undefined : new Map(seedShapes);
+  const merged = new Map<FeatureId, ShapeBackend>(seedShapes ?? []);
+  for (const [id, shape] of extra) merged.set(id, shape);
+  return merged;
+}
+
 // Records whose lowered shape was passed in `seedShapes` are skipped by the
 // recompute engine — `feature.compiled` is NOT emitted for them, so the
 // onEvent path never runs. Re-emit cached `FeatureMesh` entries for
 // non-construction-closure records here so the response still carries
 // those records' meshes. Construction-closure records emit only via the
 // assembly fan-out, so they don't need a re-emit here.
+//
+// A cached entry marked `coarse` (a preview-pass first paint) is handed to
+// `refineSeeded` instead: the refiner re-meshes the record's already-lowered
+// seeded shape at the current pass's quality and emits + re-caches the result.
+// Without a refiner a coarse entry falls back to a plain re-emit, so a
+// feature is never missing from the payload.
 export function reEmitSeededFeatureMeshes(
   records: readonly FeatureRecord[],
   seedShapes: ReadonlyMap<FeatureId, ShapeBackend> | undefined,
@@ -525,6 +644,7 @@ export function reEmitSeededFeatureMeshes(
   features: readonly FeatureMesh[],
   emitFeature: (mesh: FeatureMesh) => void,
   meshBounds: MeshBoundsAccumulator,
+  refineSeeded?: (record: FeatureRecord, seededShape: ShapeBackend) => void,
 ): void {
   if (seedShapes === undefined || seedShapes.size === 0 || !cachedFeatureMeshes) return;
   const emittedIds = new Set(features.map((f) => f.featureId));
@@ -535,6 +655,10 @@ export function reEmitSeededFeatureMeshes(
     const cached = cachedFeatureMeshes.get(r.id);
     if (!cached) continue;
     const mesh = cached as FeatureMesh;
+    if (refineSeeded && isCoarseMesh(mesh)) {
+      refineSeeded(r, seedShapes.get(r.id)!);
+      continue;
+    }
     emitFeature(mesh);
     accumulateMeshBounds(meshBounds, mesh.faces);
   }
@@ -547,6 +671,40 @@ export function buildMeshBounds(
   return {
     min: features.length > 0 ? [meshBounds.minX, meshBounds.minY, meshBounds.minZ] : [0, 0, 0],
     max: features.length > 0 ? [meshBounds.maxX, meshBounds.maxY, meshBounds.maxZ] : [0, 0, 0],
+  };
+}
+
+/** Final phase of `meshFeaturesPerFeature`: bounds, shadowing diagnostics
+ *  (logged in order), result object. Kept beside the other phase helpers. */
+export function finishMeshFeatures(
+  features: FeatureMesh[],
+  meshBounds: MeshBoundsAccumulator,
+  failedFeatureIds: FeatureId[],
+  explicitMaterialByFeatureId: ReadonlyMap<FeatureId, PBRMaterial>,
+  colorByFeatureId: ReadonlyMap<FeatureId, string>,
+  warnings: PerFaceMaterialWarning[],
+  shapes: ReadonlyMap<FeatureId, ShapeBackend>,
+): MeshFeaturesResult {
+  const bounds = buildMeshBounds(features, meshBounds);
+  const { materialShadowingWarnings, colorShadowingWarnings } = collectShadowingWarnings(
+    features,
+    explicitMaterialByFeatureId,
+    colorByFeatureId,
+  );
+  for (const w of materialShadowingWarnings) {
+    console.warn(`meshFeaturesPerFeature: material shadowing — ${w.message}`);
+  }
+  for (const w of colorShadowingWarnings) {
+    console.warn(`meshFeaturesPerFeature: color shadowing — ${w.message}`);
+  }
+  return {
+    features,
+    bounds,
+    failedFeatureIds,
+    materialShadowingWarnings,
+    colorShadowingWarnings,
+    shapes,
+    ...(warnings.length > 0 ? { perFaceMaterialWarnings: warnings } : {}),
   };
 }
 

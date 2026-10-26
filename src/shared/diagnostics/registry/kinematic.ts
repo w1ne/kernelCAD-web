@@ -115,6 +115,14 @@ export const KINEMATIC_CODES = {
     group: 'kinematic',
     description: 'sweepTolerance declared params whose cartesian product exceeds the 64-combination cap; the sweep truncated to the first 64 combos in declaration order.',
   },
+  'kinematic.sweep-tolerance.boundary-budget-exhausted': {
+    hintTemplate:
+      "Boundary bisection reached the evaluation budget before the bracket closed to the requested tolerance. The reported boundary is the final bracket, labelled exhausted — not a proven edge. Raise boundaryBudget, loosen boundaryTolerance, or narrow the swept range.",
+    nextAction: { kind: 'fix-arg', field: 'boundaryBudget' },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description: 'sweepTolerance found a pass/fail transition but exhausted its bisection budget before the final bracket met the requested parameter tolerance; the boundary is reported as an exhausted interval.',
+  },
   'kinematic.mounting-hole.diameter-mismatch': {
     hintTemplate:
       'Fastener-side connectors on this mate have non-matching hole diameters (see error.message for the two values). Adjust the hole diameter on one side so both sides agree.',
@@ -149,5 +157,55 @@ export const KINEMATIC_CODES = {
     group: 'kinematic',
     description:
       'checkMountingHoleConsistency ran on an assembly with zero fastened mates; nothing was checked, so the otherwise-green result is vacuous (no coverage).',
+  },
+  // Closed-loop kinematics: loop-closure solver with continuation along
+  // sweeps (four-bars, slider-cranks, scissor lifts, toggle latches).
+  'kinematic.loop.branch-flip': {
+    hintTemplate:
+      'A closed loop could only continue by crossing onto its other assembly branch (or a loopMode pin could not be met), so the sweep stopped at the last pose on the original branch. If going over center is intended, this is the over-center point; otherwise narrow the driven range, or pin the branch with assembly.loopMode(loop, { joint, sign }).',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'narrow the driven range before the reported pose, or pin the intended branch with assembly.loopMode',
+    },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description:
+      'Continuation along a sweep reached a pose where the loop solution changes assembly mode (transported closure-Jacobian orientation flips, a dependent joint jumps, or a pinned elbow sign changes). The sweep never switches branch silently.',
+  },
+  'kinematic.loop.lockup': {
+    hintTemplate:
+      'A closed loop cannot close at the reported pose: the closure Jacobian loses rank at the named joint, so the driven joint cannot move further that way (a dead point or a range limit of a non-crank linkage). Limit the driven range to the last closed pose, or change link lengths so the mechanism can pass.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'limit the driven joint range to the last closed pose, or change link lengths so the loop can pass the pose',
+    },
+    defaultSeverity: 'error',
+    group: 'kinematic',
+    description:
+      'The damped least-squares loop-closure solve did not converge at the requested driven pose; the loop locks up at the named joint (singular closure Jacobian).',
+  },
+  'kinematic.loop.mobility-mismatch': {
+    hintTemplate:
+      'The driven poses do not match the loop mobility (rank of the closure Jacobian). Over-driven: more driven joints than degrees of freedom, and their values disagree. Under-driven: fewer, so the remaining free joints stay near the seed pose. Drive exactly as many joints of the loop as its mobility reports.',
+    nextAction: {
+      kind: 'fix-arg',
+      field: 'poses',
+    },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description:
+      'Driven DOF count on a closed loop differs from its mobility (coordinates minus closure-Jacobian rank); reported next to the spatial Grübler count.',
+  },
+  'kinematic.loop.branch-ambiguous': {
+    hintTemplate:
+      'The loop is modeled at a singular configuration (folded flat or straight), so continuation had no branch to follow and the solver picked one. Pin the intended branch with assembly.loopMode(loop, { joint, sign: \'+\' | \'-\' }) or model the mechanism away from the singular pose.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'pin the intended branch with assembly.loopMode, or model the loop away from its singular pose',
+    },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description:
+      'A driven closed loop started from a rank-deficient (singular) as-built pose with no loopMode pin, so the branch it follows is the solver\'s choice.',
   },
 } as const satisfies Record<`kinematic.${string}`, DiagnosticCodeSpec>;

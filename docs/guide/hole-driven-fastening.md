@@ -3,7 +3,7 @@ title: Fasten a part from its holes with lib.insert
 summary: Read the bores a part already has, size the thread from the hole, cover similar holes and patterns, and cut the seat the fastener family needs.
 date: 2026-10-18
 kind: guide
-status: published
+status: draft
 model: examples/parts/hole-driven-insert.kcad.ts
 video: docs/demos/hole-driven-insert/demo.mp4
 ---
@@ -16,9 +16,11 @@ from `hole()`, `holes()`, a pattern or an import.
 
 ## What the holes decide
 
-- **Size.** The bore diameter is matched against ISO 273 normal clearance:
-  Ø2.4 for M2, Ø2.9 for M2.5, Ø3.4 for M3, Ø4.5 for M4, Ø5.5 for M5, Ø6.6
-  for M6. A bore that matches none of them is refused with the diameters the
+- **Size.** The bore diameter is matched against ISO 273 clearance, all three
+  fit classes. Normal is Ø2.4 for M2, Ø2.9 for M2.5, Ø3.4 for M3, Ø4.5 for M4,
+  Ø5.5 for M5, Ø6.6 for M6, Ø9 for M8, Ø11 for M10 and Ø13.5 for M12; the
+  close and loose bores of each thread match too, and each hole reports the
+  class it matched as `fit` (`'close' | 'normal' | 'loose'`). A bore that matches none of them is refused with the diameters the
   shape actually has.
 - **Similar holes.** Every bore with the same diameter and a parallel axis
   is covered, so a patterned hole comes along without naming the pattern.
@@ -61,9 +63,9 @@ const fitted = await lib.insert(patterned, {
 return fitted.shape;
 ```
 
-![Four countersunk bolts and two socket-head screws placed from the holes](../../site/blog/hole-driven-fastening/insert.png "The example plate: Ø5.5 bores became M5 countersunk bolts, Ø3.4 bores became M3 socket-head screws.")
+![Four countersunk bolts and two socket-head screws placed from the holes](hole-driven-fastening/insert.png "The example plate: Ø5.5 bores became M5 countersunk bolts, Ø3.4 bores became M3 socket-head screws.")
 
-![Detail of the flush countersunk heads](../../site/blog/hole-driven-fastening/insert-detail.png "The seat follows the family: a 90° countersink to the head diameter, and the flat head's envelope frustum fills it flush.")
+![Detail of the flush countersunk heads](hole-driven-fastening/insert-detail.png "The seat follows the family: a 90° countersink to the head diameter, and the flat head's envelope frustum fills it flush.")
 
 The committed example's second call is the same shape of request:
 
@@ -87,7 +89,7 @@ thread and screw length, and the placed members: `screw`, plus `headWasher`,
 `tailWasher` and `nut` in bolt mode. The members are oriented along the
 detected axis, so they drop straight into an assembly.
 
-![Washers and hex nuts on the back of the plate](../../site/blog/hole-driven-fastening/insert-back.png "Bolt mode: washer under the head, washer and hex nut on the far side, all placed at the seat offsets.")
+![Washers and hex nuts on the back of the plate](hole-driven-fastening/insert-back.png "Bolt mode: washer under the head, washer and hex nut on the far side, all placed at the seat offsets.")
 
 Two bores get a second look. A bore that sits exactly on a larger thread's
 tap drill (ISO 2306: Ø2.5 for M3, Ø3.3 for M4, Ø4.2 for M5, Ø5.0 for M6,

@@ -58,6 +58,19 @@ export function meshShapeForExport(
   }
 }
 
+/**
+ * Remove every cached triangulation from `shape` (`BRepTools::Clean`, forced).
+ * Best effort: a shape OCCT cannot clean keeps its cache.
+ */
+export function clearTriangulation(shape: replicad.Shape3D): void {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (getOC() as any).BRepTools.Clean((shape as any).wrapped, true);
+  } catch {
+    // Cache stays; meshes already read from it are unaffected.
+  }
+}
+
 function meshWholeShapeIfSmall(
   oc: ReturnType<typeof getOC>,
   shape: replicad.Shape3D,

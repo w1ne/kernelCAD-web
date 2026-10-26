@@ -1,7 +1,7 @@
-name: Parts Catalog
+name: Parts Catalog validation
 
 # Builds a self-hosted, license-clean parts catalog from the CC-BY FreeCAD
-# parts_library and deploys it to Cloudflare Pages (project: kernelcad-parts).
+# parts_library. Hosting and supplier deployment configuration live privately.
 # Point KERNELCAD_PARTS_BASE_URL at https://kernelcad-parts.pages.dev to use it
 # as kernelCAD's remote source instead of a third-party API.
 
@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ingest-and-deploy:
+  ingest-and-verify:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -93,7 +93,7 @@ jobs:
       - name: Ingest electronics (chips, modules, IC packages)
         # Fetches the CC-licensed 3D models declared in scripts/electronics-parts.json
         # and MERGES them into the same catalog (never clobbers the mechanical parts).
-        # These are the parts LabWired supports, so a design can carry real geometry.
+        # These are common chips and peripherals, so a design can carry real geometry.
         run: >
           npx tsx scripts/ingestElectronics.ts catalog
           --manifest scripts/electronics-parts.json
@@ -128,16 +128,8 @@ jobs:
           GLBS=$(ls catalog/glb/*.glb 2>/dev/null | wc -l | tr -d ' ')
           echo "Built **$GLBS** web-ready board GLB(s)." >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Ensure Cloudflare Pages project exists
-        run: npx wrangler@4.94.0 pages project create kernelcad-parts --production-branch=main || true
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Deploy catalog to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+      - name: Retain verified catalog artifacts
+        uses: actions/upload-artifact@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4.94.0'
-          command: pages deploy catalog --project-name=kernelcad-parts --branch=main --commit-dirty=true --skip-caching
+          name: parts-catalog
+          path: catalog

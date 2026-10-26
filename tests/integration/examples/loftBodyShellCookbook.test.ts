@@ -40,7 +40,8 @@ describe('loft-body-shell-from-profiles cookbook', () => {
     expect(shelled).toBeLessThan(0.4 * solid);
     // The fillet changed the shelled body (outer edges rounded, inner corners filled).
     expect(Math.abs(shelled - shellOnly)).toBeGreaterThan(1);
-    // A cookbook snippet must stay interactive (was ~50 s with fillet-then-shell).
-    expect(ms).toBeLessThan(20_000);
+    // A cookbook snippet must stay interactive (was ~50 s with fillet-then-shell;
+    // 20 s flaked at ~24 s under full-suite load, 30 s still catches the regression).
+    expect(ms).toBeLessThan(30_000);
   }, 180_000);
 });

@@ -111,6 +111,17 @@ export async function runStdioServer(options: McpServerOptions = {}): Promise<vo
   maybeShowFirstRunNotice();
   const server = createMcpServer(options);
   const transport = new StdioServerTransport();
+  // A client that dies mid-session (agent killed, quota pause, transport
+  // proxy torn down) closes our stdio pipes. Without handlers, the next write
+  // raises an unhandled 'error' event (EPIPE) and the process dies with a
+  // stack trace — which surfaces to agents as "Transport closed". Exit
+  // quietly instead; the client is gone either way.
+  const onPipeClosed = (e: NodeJS.ErrnoException): void => {
+    if (e?.code === 'EPIPE' || e?.code === 'ERR_STREAM_DESTROYED' || e?.code === 'ECONNRESET') process.exit(0);
+  };
+  process.stdout.on('error', onPipeClosed);
+  process.stdin.on('error', () => process.exit(0));
+  process.stderr.on('error', () => undefined);
   process.once('beforeExit', () => { void flushTelemetry(); });
   process.once('SIGINT', () => { void flushTelemetry().finally(() => process.exit(0)); });
   process.once('SIGTERM', () => { void flushTelemetry().finally(() => process.exit(0)); });

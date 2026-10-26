@@ -46,7 +46,7 @@ export interface ExportInput {
   file: string;
   format: ExportFormat;
   out: string;
-  /** Watertight verify gate for STL; default-on (`--no-verify` to skip). */
+  /** Watertight verify gate for STL/STEP; default-on (`--no-verify` to skip). */
   verify?: boolean;
   /** Output path for a numeric authored connector sidecar. */
   connectorManifest?: string;
@@ -459,17 +459,17 @@ function exportOptionsFor(
     ? {
         options: {
           ...(input.options !== undefined
-            ? ((input.format === 'stl' && input.verify === false
+            ? (((input.format === 'stl' || input.format === 'step') && input.verify === false
                 ? { ...input.options, verify: false }
                 : input.options) as object)
-            : input.format === 'stl' && input.verify === false
-              ? { format: 'stl' as const, verify: false }
+            : (input.format === 'stl' || input.format === 'step') && input.verify === false
+              ? { format: input.format as 'stl' | 'step', verify: false }
               : {}),
           ...(drawingOptions ?? {}),
         } as unknown as ExportOptions,
       }
-    : input.format === 'stl' && input.verify === false
-      ? { options: { format: 'stl' as const, verify: false } }
+    : (input.format === 'stl' || input.format === 'step') && input.verify === false
+      ? { options: { format: input.format as 'stl' | 'step', verify: false } }
       : {};
 }
 
@@ -613,7 +613,7 @@ export interface ExportPartsCliInput {
   outDir?: string;
   /** Output file path for single `--part NAME` mode. */
   outFile?: string;
-  /** Watertight verify gate; default-on (`--no-verify` to skip). */
+  /** Watertight verify gate (STL/STEP); default-on (`--no-verify` to skip). */
   verify: boolean;
 }
 
@@ -729,7 +729,7 @@ function collectParts(value: string, prev: string[]): string[] {
 
 const SUPPORTED_FORMATS = new Set<ExportFormat>([
   'stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'usd', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac',
-  'bom-csv', 'bom-json', 'order-pack', 'bend-table',
+  'bom-csv', 'bom-json', 'bend-table',
 ]);
 
 interface ExportCommandOpts {
@@ -842,7 +842,7 @@ async function runExportMode(
 export function exportCommand(): Command {
   const cmd = new Command('export')
     .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, GLB, an SVG or PDF engineering-drawing sheet, a bill of materials, or tube bend tables')
-    .argument('<format>', 'stl | step | dxf | 3mf | glb | obj | usd | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | order-pack | bend-table')
+    .argument('<format>', 'stl | step | dxf | 3mf | glb | obj | usd | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | bend-table')
     .argument('<file>', 'path to .kcad.ts script')
     .requiredOption('-o, --out <path>', 'output file path (output directory for bend-table, --parts all and repeated --part)')
     .option('--part <name>', 'export a single named assembly part (STL only); repeat for a subset (-o is then a directory)', collectParts, [] as string[])
@@ -850,7 +850,7 @@ export function exportCommand(): Command {
     .option('--connector-manifest <path>', 'write numeric authored connector manifest beside a STEP export')
     .option('--manifest-part-id <id>', 'catalog part id for --connector-manifest')
     .option('--manifest-family <family>', 'catalog family for --connector-manifest')
-    .option('--no-verify', 'skip the watertight verify gate after STL export')
+    .option('--no-verify', 'skip the watertight verify gate after STL/STEP export')
     .option('--sheet <size>', 'pdf-drawing: a4 | a3 (default) | a2 | a1 | a0 | ansi-a … ansi-e | auto | auto-ansi')
     .option('--projection <angle>', "pdf-drawing: 'third' (default) or 'first' angle projection")
     .option('--title <text>', 'pdf-drawing: title-block title (default: the script name)')

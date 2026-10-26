@@ -3,6 +3,7 @@
 import type { CaptureSession } from './captureSession';
 import type { MateCouplingRecord } from '../mates/coupledPoses';
 import type { MateRecord } from '../mates/mate';
+import type { LoopPin } from '../../shared/kinematics/loopClosure';
 import type { TendonRecord } from '../mates/tendon';
 import type { WorkspaceTargetRecord } from '../mates/workspaceTarget';
 import type { PhysicalUseCaseRecord } from '../mates/physicalUseCase';
@@ -39,6 +40,8 @@ export interface AssemblyState {
   readonly joints: AssemblyJointStored[];
   readonly mates: MateRecord[];
   readonly mateCouplings: MateCouplingRecord[];
+  /** `loopMode(...)` branch pins, in declaration order. */
+  readonly loopModes: LoopPin[];
   readonly tendons: TendonRecord[];
   readonly mechanicalJointIntents: MechanicalJointIntentRecord[];
   readonly jointSupportIntents: JointSupportIntentRecord[];
@@ -51,6 +54,10 @@ export interface AssemblyState {
   readonly groupStates: GroupStateRecord[];
   readonly disabledCollisions: DisabledCollisionRecord[];
   ignoreInterferenceList: ReadonlyArray<readonly [string, string]>;
+  /** Per-pair intended-contact budgets declared on the last `solvedModel`. */
+  contactTolerances: ReadonlyArray<import('../runtime/pairTolerances').PairContactTolerance>;
+  /** Per-pair minimum clearances declared on the last `solvedModel`. */
+  clearanceTolerances: ReadonlyArray<import('../runtime/pairTolerances').PairClearanceTolerance>;
   /**
    * True once the SCRIPT called `solvedModel(...)` (a validating call). The
    * mechanism-truth gate reads it as "the author declared this a mechanism":
@@ -70,6 +77,7 @@ export function createAssemblyState(name: string, session: CaptureSession): Asse
     joints: [],
     mates: [],
     mateCouplings: [],
+    loopModes: [],
     tendons: [],
     mechanicalJointIntents: [],
     jointSupportIntents: [],
@@ -82,6 +90,8 @@ export function createAssemblyState(name: string, session: CaptureSession): Asse
     groupStates: [],
     disabledCollisions: [],
     ignoreInterferenceList: [],
+    contactTolerances: [],
+    clearanceTolerances: [],
     solvedModelRequested: false,
   };
 }

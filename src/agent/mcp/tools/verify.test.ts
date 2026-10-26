@@ -9,7 +9,6 @@ vi.mock('./checkAssemblyPath', () => ({ checkAssemblyPathTool: vi.fn(async () =>
 vi.mock('./validateAssembly', () => ({ validateAssemblyTool: vi.fn(async () => 'assembly') }));
 vi.mock('./validateUrdf', () => ({ validateUrdfTool: vi.fn(async () => 'urdf') }));
 vi.mock('./dfmCheck', () => ({ dfmCheckTool: vi.fn(async () => 'dfm') }));
-vi.mock('./dfmPreflight', () => ({ dfmPreflightTool: vi.fn(async () => 'dfm-preflight') }));
 vi.mock('./checkSweptCollision', () => ({ checkSweptCollisionTool: vi.fn(async () => 'swept') }));
 vi.mock('./checkReachable', () => ({ checkReachableTool: vi.fn(async () => 'reachable') }));
 vi.mock('./checkMountingHoleConsistency', () => ({ checkMountingHoleConsistencyTool: vi.fn(async () => 'mounting') }));
@@ -17,31 +16,29 @@ vi.mock('./checkLoadCapacity', () => ({ checkLoadCapacityTool: vi.fn(async () =>
 vi.mock('./checkStaticHold', () => ({ checkStaticHoldTool: vi.fn(async () => 'static-hold') }));
 vi.mock('./checkFastenerInstallation', () => ({ checkFastenerInstallationTool: vi.fn(async () => 'fastener-installation') }));
 vi.mock('./checkEdgeRadius', () => ({ checkEdgeRadiusTool: vi.fn(async () => 'edge-radius') }));
-vi.mock('./checkBodyLikeness', () => ({ checkBodyLikenessTool: vi.fn(async () => 'body-likeness') }));
 vi.mock('./checkGeometryQuality', () => ({ checkGeometryQualityTool: vi.fn(async () => 'geometry-quality') }));
+vi.mock('./checkPhysics', () => ({ checkPhysicsTool: vi.fn(async () => 'physics') }));
 
 import { checkAssemblyPathTool } from './checkAssemblyPath';
 import { verifyTool, type VerifyCheck } from './verify';
 import { validateAssemblyTool } from './validateAssembly';
 import { validateUrdfTool } from './validateUrdf';
 import { dfmCheckTool } from './dfmCheck';
-import { dfmPreflightTool } from './dfmPreflight';
 import { checkSweptCollisionTool } from './checkSweptCollision';
 import { checkReachableTool } from './checkReachable';
 import { checkMountingHoleConsistencyTool } from './checkMountingHoleConsistency';
 import { checkLoadCapacityTool } from './checkLoadCapacity';
 import { checkStaticHoldTool } from './checkStaticHold';
 import { checkEdgeRadiusTool } from './checkEdgeRadius';
-import { checkBodyLikenessTool } from './checkBodyLikeness';
 import { checkFastenerInstallationTool } from './checkFastenerInstallation';
 import { checkGeometryQualityTool } from './checkGeometryQuality';
+import { checkPhysicsTool } from './checkPhysics';
 
 const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['assembly-path', checkAssemblyPathTool as never, 'assembly-path'],
   ['assembly', validateAssemblyTool as never, 'assembly'],
   ['urdf', validateUrdfTool as never, 'urdf'],
   ['dfm', dfmCheckTool as never, 'dfm'],
-  ['dfm-preflight', dfmPreflightTool as never, 'dfm-preflight'],
   ['swept-collision', checkSweptCollisionTool as never, 'swept'],
   ['reachable', checkReachableTool as never, 'reachable'],
   ['mounting-holes', checkMountingHoleConsistencyTool as never, 'mounting'],
@@ -49,8 +46,8 @@ const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['static-hold', checkStaticHoldTool as never, 'static-hold'],
   ['fastener-installation', checkFastenerInstallationTool as never, 'fastener-installation'],
   ['edge-radius', checkEdgeRadiusTool as never, 'edge-radius'],
-  ['body-likeness', checkBodyLikenessTool as never, 'body-likeness'],
   ['geometry-quality', checkGeometryQualityTool as never, 'geometry-quality'],
+  ['physics', checkPhysicsTool as never, 'physics'],
 ];
 
 describe('verify dispatcher', () => {
@@ -80,6 +77,11 @@ describe('verify dispatcher', () => {
     await verifyTool({ check: 'geometry-quality', ...params });
     expect(checkGeometryQualityTool).toHaveBeenCalledWith(params);
     expect(checkFastenerInstallationTool).not.toHaveBeenCalled();
+  });
+
+  it('rejects supplier-specific checks while retaining generic DFM', async () => {
+    await expect(verifyTool({ check: 'dfm-preflight' as VerifyCheck })).rejects.toThrow(/Unknown verify check/);
+    await expect(verifyTool({ check: 'dfm', code: 'SRC' })).resolves.toBe('dfm');
   });
 
   it('throws an actionable error on an unknown check', async () => {

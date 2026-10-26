@@ -67,3 +67,21 @@ describe('bare label split across one plane', () => {
     expect(r.ambiguous).toBe(true);
   });
 });
+
+describe('a query with near names one face', () => {
+  it('binds only the face nearest the point, not every face the other keys match', async () => {
+    // Two through bores: `{ ofSurfaceType: 'CYLINDER' }` alone matches both.
+    const m = await buildModel({
+      fileName: 'bores.kcad.ts',
+      code: "return box(60, 20, 10).holes('top', { positions: [{ u: -15, v: 0 }, { u: 15, v: 0 }], diameter: 6, depth: 'through' });",
+    });
+    const shape = m.tailShape as OcctBackend;
+    const c = { owner: m.records[m.records.length - 1].id, records: m.records };
+    const both = resolveSelector(shape, { ofSurfaceType: 'CYLINDER' }, c);
+    expect(both.faces).toHaveLength(2);
+    const one = resolveSelector(shape, { ofSurfaceType: 'CYLINDER', near: [45, 10, 5] }, c);
+    expect(one.ok).toBe(true);
+    expect(one.faces).toHaveLength(1);
+    expect(one.faces[0].centroid[0]).toBeCloseTo(45, 0);
+  });
+});

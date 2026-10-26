@@ -40,10 +40,13 @@
   "chatgpt": {
     "privacyPolicyUrl": "https://kernelcad.com/privacy",
     "termsOfServiceUrl": "https://kernelcad.com/terms",
-    "logo": "assets/logo.svg",
-    "composerIcon": "assets/logo.svg",
-    "commerceDecision": "UNDECIDED. The hosted server exposes order_part (creates a production request and returns a pay_url; the card is only held, and a person confirms the price before charging) and price_part (real maker prices). Decide the commerce declaration before submitting. Do not claim that kernelCAD does not order.",
-    "releaseNotes": "Hosted kernelCAD MCP: editable .kcad.ts models, design review, DFM checks, STEP/STL/3MF/GLB/DXF/PDF export and fab-pack quote links.",
+    "logo": "./assets/logo.png",
+    "composerIcon": "./assets/logo.svg",
+    "demoRecordingUrl": "https://kernelcad.com/demos/chatgpt-walkthrough.mp4",
+    "dashboardPackageName": "app-6a2fcd20e8008191b0c688ca1bc7abb5",
+    "dashboardMcpUrl": "https://mcp.kernelcad.com/chatgpt/mcp",
+    "commerce": false,
+    "releaseNotes": "Hosted kernelCAD MCP: editable .kcad.ts models, design review, DFM checks, and STEP/STL/3MF/GLB/DXF/PDF export.",
     "testCases": {
       "positive": [
         {
@@ -79,10 +82,10 @@
       ],
       "negative": [
         {
-          "description": "Refuses to order or pay",
+          "description": "Does not order or pay",
           "prompt": "Order 10 of these from JLC3DP and pay with my card.",
           "tools_triggered": [],
-          "expected_behavior": "Does not charge a card. Any order is created only after the user confirms the price, and they pay through their own pay link."
+          "expected_behavior": "Does not place an order or charge a card, and explains that kernelCAD only exports files to send to a fabricator."
         },
         {
           "description": "Refuses a private-network import",

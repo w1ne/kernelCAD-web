@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { SurfaceId, SurfaceTrimData } from '../../shared/intent/surfaceRecord';
+import type { FeatureId } from '../../shared/intent/types';
 import type { SurfaceRecordCarrier } from '../../kernel/geometry/curveCarriers';
 import type { CaptureSession } from './captureSession';
 import type { Shape } from './proxy';
@@ -9,12 +10,13 @@ import { toParam } from '../../shared/runtime/editableHelpers';
 import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
 import { formatScalarForError } from '../../shared/intent/types';
 
-/** Map a Surface cutter to the `byRef` discriminant stored on `SurfaceTrimData`.
- *  Shape / Curve3D cutters are deferred; the public API accepts only
- *  `SurfaceProxy` here. The lowerer's featureRef path is left in place for
- *  future use but is unreachable from the public capture API. */
-function refOf(by: SurfaceProxy): SurfaceTrimData['byRef'] {
-  return { surfaceId: by.id };
+/** Map a cutter to the `byRef` discriminant stored on `SurfaceTrimData`.
+ *  A Surface is referenced by id; a BRep body (Shape) is referenced as a
+ *  feature so the dep graph lowers it before the trim resolves. */
+function refOf(by: SurfaceProxy | Shape): SurfaceTrimData['byRef'] {
+  return by instanceof SurfaceProxy
+    ? { surfaceId: by.id }
+    : { featureRef: { kind: 'feature', id: by.id } };
 }
 
 /**
@@ -108,7 +110,7 @@ export class SurfaceProxy implements SurfaceRecordCarrier {
    * @emits feature.kernel-failed when OCCT cannot imprint a clean section
    *  curve into a valid face piece.
    */
-  trimTo(by: SurfaceProxy): SurfaceProxy {
+  trimTo(by: SurfaceProxy | Shape): SurfaceProxy {
     return this.session.addSurfaceTrim(this.id, refOf(by), 'trim');
   }
 
@@ -121,11 +123,37 @@ export class SurfaceProxy implements SurfaceRecordCarrier {
    * @emits feature.kernel-failed when OCCT cannot imprint a clean section
    *  curve into two valid face pieces.
    */
-  split(by: SurfaceProxy): [SurfaceProxy, SurfaceProxy] {
+  split(by: SurfaceProxy | Shape): [SurfaceProxy, SurfaceProxy] {
     return [
       this.session.addSurfaceTrim(this.id, refOf(by), 'split', 0),
       this.session.addSurfaceTrim(this.id, refOf(by), 'split', 1),
     ];
+  }
+
+  /**
+   * Internal: feature ids this surface's trim chain reads from `byRef`.
+   * Consumers (thicken / toShape / sew) copy these into their own inputs so
+   * the recompute dep graph lowers a BRep body cutter before the trim resolves.
+   */
+  __trimDependencyIds(): FeatureId[] {
+    const out: FeatureId[] = [];
+    const seen = new Set<string>();
+    const visit = (sid: string): void => {
+      if (seen.has(sid)) return;
+      seen.add(sid);
+      const rec = this.session.getSurfaceRecord(sid);
+      if (!rec || rec.data.kind !== 'surfaceTrim') return;
+      visit(rec.data.surfaceId);
+      const byRef = rec.data.byRef;
+      if ('featureRef' in byRef) {
+        const ref = byRef.featureRef;
+        out.push(ref.kind === 'feature' ? ref.id : ref.kind === 'surface' ? ref.surfaceId : ref.featureId);
+      } else {
+        visit(byRef.surfaceId);
+      }
+    };
+    visit(this.id);
+    return out;
   }
 
   /**
@@ -141,6 +169,9 @@ export class SurfaceProxy implements SurfaceRecordCarrier {
     const inputs: Record<string, import('../../shared/intent/types').FeatureRef> = {
       surface: { kind: 'surface', surfaceId: this.id },
     };
+    for (const fid of this.__trimDependencyIds()) {
+      inputs[fid] = { kind: 'feature', id: fid };
+    }
     const surfRec = this.session.getSurfaceRecord(this.id);
     if (surfRec && surfRec.data.kind === 'surfaceFromCurves') {
       for (let i = 0; i < surfRec.data.sectionIds.length; i++) {

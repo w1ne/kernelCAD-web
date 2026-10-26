@@ -176,7 +176,7 @@ describe('ESP32 E-Reader reference assembly', () => {
       expect(source).toContain("lib.fetchPart('pushbutton-6mm')");
       expect(source).toContain('Known catalog / electrical boundary');
       expect(source).toContain('No durable e-paper display-paint receipt exists yet.');
-      expect(source).toContain('No firmware proof or LabWired run receipt binds this assembly yet.');
+      expect(source).toContain('No firmware proof or simulation run receipt binds this assembly yet.');
       expect(source).toContain('return reader.solvedModel({});');
       expect(source).not.toMatch(/part\(\s*null/);
       expect(source).not.toMatch(/fallback\s*(?:box|electronics|component)/i);

@@ -24,8 +24,10 @@ describe('family table', () => {
   });
 
   it('picks the next stocked screw for a bolt stack', () => {
+    // washer 1 + grip 10 + washer 1 + nut 4.7 + 2 pitches 1.6 = 18.3
     const plan = planStack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
-    expect(plan.lengthMm).toBe(16);
+    expect(plan.lengthMm).toBe(20);
+    expect(plan.protrusionMm).toBeCloseTo(3.3, 6);
     expect(plan.members.map((member) => member.role)).toEqual([
       'head-washer',
       'screw',
@@ -33,8 +35,43 @@ describe('family table', () => {
       'nut',
     ]);
     const screw = plan.members.find((member) => member.role === 'screw')!;
-    expect(screw.part.id).toBe('iso-4762-m5x16');
+    expect(screw.part.id).toBe('iso-4762-m5x20');
     expect(screw.offsetZ).toBe(1);
+  });
+
+  it('stocks lengths per thread, not one list for every size', () => {
+    expect(() => resolvePart({ family: 'socket-head-cap-screw', thread: 'M2', lengthMm: 50 }))
+      .toThrow(KernelError);
+    expect(resolvePart({ family: 'socket-head-cap-screw', thread: 'M12', lengthMm: 40 }).id)
+      .toBe('iso-4762-m12x40');
+    expect(resolvePart({ family: 'socket-head-cap-screw', thread: 'M20', lengthMm: 200 }).id)
+      .toBe('iso-4762-m20x200');
+  });
+
+  it('resolves the hex head bolt, set screw and threaded rod families', () => {
+    const hex = resolvePart({ family: 'hex-head-bolt', thread: 'M10', lengthMm: 40 });
+    expect(hex.id).toBe('iso-4017-m10x40');
+    expect(hex.acrossFlatsMm).toBe(16);
+    expect(hex.headDiameterMm).toBeCloseTo(18.475, 3);
+    const set = resolvePart({ family: 'set-screw', thread: 'M6', lengthMm: 20 });
+    expect(set.id).toBe('iso-4026-m6x20');
+    expect(set.headHeightMm).toBe(0);
+    expect(set.connectors.map((c) => c.name)).toEqual(['first-end', 'second-end', 'axis']);
+    const rod = resolvePart({ family: 'threaded-rod', thread: 'M8', lengthMm: 1000 });
+    expect(rod.id).toBe('din-975-m8x1000');
+  });
+
+  it('stocks M8 to M12 with the standard envelope dimensions', () => {
+    const cap = resolvePart({ family: 'socket-head-cap-screw', thread: 'M12', lengthMm: 40 });
+    expect(cap.id).toBe('iso-4762-m12x40');
+    expect(cap.headDiameterMm).toBe(18);
+    expect(cap.headHeightMm).toBe(12);
+    const flat = resolvePart({ family: 'flat-head-countersunk', thread: 'M8', lengthMm: 20 });
+    expect(flat.headDiameterMm).toBe(17.92);
+    const nut = resolvePart({ family: 'hex-nut', thread: 'M10' });
+    expect(nut.acrossFlatsMm).toBe(16);
+    const washer = resolvePart({ family: 'flat-washer', thread: 'M12' });
+    expect(washer.innerDiameterMm).toBe(13);
   });
 });
 

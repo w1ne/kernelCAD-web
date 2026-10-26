@@ -1,9 +1,8 @@
 name: dist-skills
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # Manual only. Release tags no longer publish skills to the separate repo;
+  # the release archive carries the skills and the hosted MCP serves them.
   workflow_dispatch: {}
 
 jobs:

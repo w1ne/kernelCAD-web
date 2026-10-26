@@ -173,6 +173,17 @@ describe('browser runtime — node-only features fail LOUDLY', () => {
     expect(result.returnValue).toBeDefined();
   });
 
+  it('lib.part builds hex-head and headless envelopes without a filesystem', async () => {
+    const hex = await runScriptInBrowser({
+      code: `return await lib.part({ family: 'hex-head-bolt', thread: 'M10', lengthMm: 40 });`,
+    });
+    expect(hex.returnValue).toBeDefined();
+    const rod = await runScriptInBrowser({
+      code: `return await lib.part({ family: 'threaded-rod', thread: 'M8', lengthMm: 1000 });`,
+    });
+    expect(rod.returnValue).toBeDefined();
+  });
+
   it('lib.stack plans a stack without a filesystem', async () => {
     const result = await runScriptInBrowser({
       code: `const s = await lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
@@ -181,9 +192,9 @@ describe('browser runtime — node-only features fail LOUDLY', () => {
     expect(result.returnValue).toBeDefined();
   });
 
-  it('lib.fixture builds a T-slot nut envelope without a filesystem', async () => {
+  it('lib.part builds a T-slot nut envelope without a filesystem', async () => {
     const result = await runScriptInBrowser({
-      code: `return await lib.fixture.tSlotNut({ thread: 'M10' });`,
+      code: `return await lib.part({ family: 't-slot-nut', thread: 'M10' });`,
     });
     expect(result.returnValue).toBeDefined();
   });
@@ -206,10 +217,10 @@ describe('browser runtime — node-only features fail LOUDLY', () => {
     expect(result.records.length).toBeGreaterThan(3);
   });
 
-  it('lib.fixture.clampStud rejects an unstocked length without a filesystem', async () => {
+  it('lib.part clamping-stud rejects an unstocked length without a filesystem', async () => {
     await expect(
       runScriptInBrowser({
-        code: `return await lib.fixture.clampStud({ thread: 'M10', lengthMm: 90 });`,
+        code: `return await lib.part({ family: 'clamping-stud', thread: 'M10', lengthMm: 90 });`,
       }),
     ).rejects.toThrow(/stocked length/);
   });

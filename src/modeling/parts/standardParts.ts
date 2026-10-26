@@ -2,34 +2,71 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/parts/standardParts.ts
 //
-// Typed, autocomplete-friendly shortcuts that map argument records onto
-// bundled catalog ids and delegate to fetchPart. These never require the
-// remote tier — every wrapper resolves to an id present in the seed
-// catalog.
+// Typed, autocomplete-friendly shortcuts. Fasteners go through lib.part
+// (placePart), so `detail` behaves the same everywhere; the other members map
+// onto bundled catalog ids and delegate to fetchPart. None of them needs the
+// remote tier.
 
 import { fetchPartHost, type FetchPartCtx } from './fetchPart';
 import type { Shape } from '../capture/proxy';
-import { resolvePart } from './familyTable';
+import type { FastenerDetail } from './familyTable';
+import { placePart } from './placePart';
 
-export type MetricThread = 'M2' | 'M2.5' | 'M3' | 'M4' | 'M5' | 'M6';
+export {
+  STANDARD_PART_RANGES,
+  STANDARD_PART_RANGE_REMAINING,
+  standardPartVerificationAttributes,
+  type StandardPartRangeDeclaration,
+} from './standardPartRanges';
+
+export type MetricThread =
+  | 'M2'
+  | 'M2.5'
+  | 'M3'
+  | 'M4'
+  | 'M5'
+  | 'M6'
+  | 'M8'
+  | 'M10'
+  | 'M12';
 
 function threadSlug(t: string): string {
   return t.toLowerCase().replace('.', '-');
 }
 
 export interface StandardParts {
-  boltSHCS(args: { thread: MetricThread; lengthMm: number }): Promise<Shape>;
-  boltBHCS(args: { thread: 'M3' | 'M4' | 'M5'; lengthMm: number }): Promise<Shape>;
+  boltSHCS(args: { thread: MetricThread; lengthMm: number; detail?: FastenerDetail }): Promise<Shape>;
+  boltBHCS(args: { thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10'; lengthMm: number; detail?: FastenerDetail }): Promise<Shape>;
   boltFlatHead(args: {
-    thread: 'M3' | 'M4' | 'M5';
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
     lengthMm: number;
+    detail?: FastenerDetail;
   }): Promise<Shape>;
-  nutHex(args: { thread: MetricThread }): Promise<Shape>;
-  nutLock(args: { thread: 'M3' | 'M4' | 'M5' }): Promise<Shape>;
-  washerFlat(args: {
-    thread: 'M2' | 'M3' | 'M4' | 'M5' | 'M6';
+  boltHex(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12' | 'M16' | 'M20';
+    lengthMm: number;
+    detail?: FastenerDetail;
   }): Promise<Shape>;
-  washerLock(args: { thread: 'M3' | 'M4' | 'M5' }): Promise<Shape>;
+  setScrew(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
+    lengthMm: number;
+    detail?: FastenerDetail;
+  }): Promise<Shape>;
+  rodThreaded(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
+    lengthMm: 250 | 1000;
+    detail?: FastenerDetail;
+  }): Promise<Shape>;
+  nutHex(args: { thread: MetricThread; detail?: FastenerDetail }): Promise<Shape>;
+  nutLock(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
+    detail?: FastenerDetail;
+  }): Promise<Shape>;
+  washerFlat(args: { thread: MetricThread; detail?: FastenerDetail }): Promise<Shape>;
+  washerLock(args: {
+    thread: 'M3' | 'M4' | 'M5' | 'M6' | 'M8' | 'M10' | 'M12';
+    detail?: FastenerDetail;
+  }): Promise<Shape>;
   heatSetInsert(args: {
     thread: 'M2.5' | 'M3' | 'M4';
     lengthMm: 3.8 | 5.7;
@@ -55,20 +92,26 @@ export function createStandardParts(ctx: FetchPartCtx): StandardParts {
   const fetch = (id: string): Promise<Shape> =>
     fetchPartHost(ctx, id, { strict: true }).then((r) => r.shape);
   return {
-    boltSHCS: ({ thread, lengthMm }) =>
-      fetch(resolvePart({ family: 'socket-head-cap-screw', thread, lengthMm }).id),
-    boltBHCS: ({ thread, lengthMm }) =>
-      fetch(resolvePart({ family: 'button-head-cap-screw', thread, lengthMm }).id),
-    boltFlatHead: ({ thread, lengthMm }) =>
-      fetch(resolvePart({ family: 'flat-head-countersunk', thread, lengthMm }).id),
-    nutHex: ({ thread }) =>
-      fetch(resolvePart({ family: 'hex-nut', thread }).id),
-    nutLock: ({ thread }) =>
-      fetch(resolvePart({ family: 'lock-nut', thread }).id),
-    washerFlat: ({ thread }) =>
-      fetch(resolvePart({ family: 'flat-washer', thread }).id),
-    washerLock: ({ thread }) =>
-      fetch(resolvePart({ family: 'lock-washer', thread }).id),
+    boltSHCS: ({ thread, lengthMm, detail }) =>
+      placePart(ctx, { family: 'socket-head-cap-screw', thread, lengthMm, detail }),
+    boltBHCS: ({ thread, lengthMm, detail }) =>
+      placePart(ctx, { family: 'button-head-cap-screw', thread, lengthMm, detail }),
+    boltFlatHead: ({ thread, lengthMm, detail }) =>
+      placePart(ctx, { family: 'flat-head-countersunk', thread, lengthMm, detail }),
+    boltHex: ({ thread, lengthMm, detail }) =>
+      placePart(ctx, { family: 'hex-head-bolt', thread, lengthMm, detail }),
+    setScrew: ({ thread, lengthMm, detail }) =>
+      placePart(ctx, { family: 'set-screw', thread, lengthMm, detail }),
+    rodThreaded: ({ thread, lengthMm, detail }) =>
+      placePart(ctx, { family: 'threaded-rod', thread, lengthMm, detail }),
+    nutHex: ({ thread, detail }) =>
+      placePart(ctx, { family: 'hex-nut', thread, detail }),
+    nutLock: ({ thread, detail }) =>
+      placePart(ctx, { family: 'lock-nut', thread, detail }),
+    washerFlat: ({ thread, detail }) =>
+      placePart(ctx, { family: 'flat-washer', thread, detail }),
+    washerLock: ({ thread, detail }) =>
+      placePart(ctx, { family: 'lock-washer', thread, detail }),
     heatSetInsert: ({ thread, lengthMm }) =>
       fetch(
         `heatset-${threadSlug(thread)}-l${String(lengthMm).replace('.', '-')}`,

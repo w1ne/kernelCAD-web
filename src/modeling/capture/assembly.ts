@@ -51,6 +51,7 @@ import { recordModel } from './assemblyModel';
 import { SolvedKinematics } from './solvedKinematics';
 import { recordPart, recordSubAssembly } from './assemblyParts';
 import { createAssemblyState, type AssemblyState } from './assemblyState';
+import { recordLoopMode, type LoopModeOpts, type LoopPin } from './assemblyLoopModes';
 
 export * from './assemblyTypes';
 export { SolvedKinematics } from './solvedKinematics';
@@ -144,6 +145,18 @@ export class Assembly {
       capacity?: MateCapacity;
       /** @deprecated legacy manual-load API */
       maxLoad?: MateLoadLimit;
+      /** Revolute only: torsional spring N·mm/deg (>= 0). */
+      stiffnessNmmPerDeg?: number;
+      /** Revolute only: spring zero-torque angle (deg); may lie outside limitsDeg. */
+      springRefDeg?: number;
+      /** Revolute only: viscous damping N·mm·s/deg (>= 0). */
+      dampingNmmsPerDeg?: number;
+      /** Prismatic only: linear spring N/mm (>= 0). */
+      stiffnessNPerMm?: number;
+      /** Prismatic only: zero-force position (mm); may lie outside limitsMm. */
+      springRefMm?: number;
+      /** Prismatic only: viscous damping N·s/mm (>= 0). */
+      dampingNsPerMm?: number;
     },
   ): this {
     recordMate(this.state, name, aRef, bRef, type, opts);
@@ -155,6 +168,13 @@ export class Assembly {
     opts: { source: string; ratio: number; offset?: number },
   ): this {
     coupleMateRecords(this.state, driven, opts);
+    return this;
+  }
+
+  /** Pin the branch of a closed loop: hold the elbow at `opts.joint` on the
+   *  `opts.sign` side. See `recordLoopMode` in `assemblyLoopModes.ts`. */
+  loopMode(loopName: string, opts: LoopModeOpts): this {
+    recordLoopMode(this.state, loopName, opts);
     return this;
   }
 
@@ -275,6 +295,11 @@ export class Assembly {
     return this.state.mateCouplings;
   }
 
+  /** `loopMode(...)` pins. Not public. */
+  __loopModes(): readonly LoopPin[] {
+    return this.state.loopModes;
+  }
+
   /**
    * P7: read-only view of declared tendon records. Consumed by
    * `assemblyToMjcf` (physics-gate export) and the Studio
@@ -329,12 +354,24 @@ export class Assembly {
    * Last `ignore` list passed to `solvedModel`. External review surfaces
    * (`reviewCadTool`) read this so the validator they re-run honors the same
    * known-acceptable contacts the script silenced. Empty when no
-   * `solvedModel({ ignore })` has been called yet. Mirrors the `__mates()` /
+   * `solvedModel({}, { ignore })` has been called yet. Mirrors the `__mates()` /
    * `__parts()` underscore-prefixed convention; not part of the agent-facing
    * surface.
    */
   __ignoreInterference(): ReadonlyArray<readonly [string, string]> {
     return this.state.ignoreInterferenceList;
+  }
+
+  /** Last per-pair contact / clearance declarations passed to `solvedModel`.
+   *  External review surfaces re-run the validator with the same budgets. */
+  __pairTolerances(): {
+    contacts: ReadonlyArray<import('../runtime/pairTolerances').PairContactTolerance>;
+    clearances: ReadonlyArray<import('../runtime/pairTolerances').PairClearanceTolerance>;
+  } {
+    return {
+      contacts: this.state.contactTolerances,
+      clearances: this.state.clearanceTolerances,
+    };
   }
 
   /** True once the script called a validating `solvedModel(...)`. */

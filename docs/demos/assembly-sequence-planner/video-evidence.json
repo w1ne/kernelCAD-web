@@ -1,0 +1,65 @@
+{
+  "checkedAt": "2026-10-25T11:37:33.217Z",
+  "video": "demo.mp4",
+  "videoSha256": "6dcd8ed1ef8cabf8dd0d2386d2765b400f7855153873931793a4917f6a0bf3bb",
+  "canvas": "1920x1080",
+  "sourceModels": {
+    "assembly-sequence-gearbox.kcad.ts": "84ce4ff50f51e7807ae77e62863e837f63802984739ba7e179a6d7eebd79b439"
+  },
+  "sequenceEvidence": "sequence-evidence.json",
+  "inputSha256": {
+    "gearbox-assembled.png": "3bc3b3c5b2f3603e64b17cb19031ab3cee6257a7b27d3268155c67b568db7abc",
+    "gearbox-internals.png": "ecec8763004246838c103216bf4c4ba63f2bb6f9f1d7d6287d21c6b1732333be",
+    "gearbox-exploded.png": "4cb0627fcdd4fc9c1db2d6801d5aa1e04dbbe3912cd2034abfa447c716052e05"
+  },
+  "slides": [
+    {
+      "image": "00-title.png",
+      "durationSec": 3.5
+    },
+    {
+      "image": "01-assembled.png",
+      "durationSec": 4.5
+    },
+    {
+      "image": "02-internals.png",
+      "durationSec": 4.5
+    },
+    {
+      "image": "03-exploded.png",
+      "durationSec": 4.5
+    },
+    {
+      "image": "04-steps-a.png",
+      "durationSec": 5
+    },
+    {
+      "image": "05-steps-b.png",
+      "durationSec": 5
+    },
+    {
+      "image": "05a-fasteners.png",
+      "durationSec": 5
+    },
+    {
+      "image": "05b-subassemblies.png",
+      "durationSec": 5
+    },
+    {
+      "image": "06-states.png",
+      "durationSec": 5
+    },
+    {
+      "image": "07-end.png",
+      "durationSec": 4
+    }
+  ],
+  "invocations": [
+    "npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-sequence-gearbox.kcad.ts --preset publish -o docs/demos/assembly-sequence-planner/gearbox-assembled.png",
+    "npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-sequence-gearbox.kcad.ts --preset publish --hide cover -o docs/demos/assembly-sequence-planner/gearbox-internals.png",
+    "npx tsx src/agent/cli/index.ts render examples/assemblies/assembly-sequence-gearbox.kcad.ts --preset publish --explode 0.6 -o docs/demos/assembly-sequence-planner/gearbox-exploded.png",
+    "verify({ check: 'assembly-path', file: 'examples/assemblies/assembly-sequence-gearbox.kcad.ts', sequence: true })",
+    "node docs/demos/assembly-sequence-planner/make-video.mjs"
+  ],
+  "provenance": "Annotated still sequence composed from local kernelcad renders and the planner evidence JSON. Not a screen recording, turntable, deployed-platform capture, physical hardware or strength test."
+}

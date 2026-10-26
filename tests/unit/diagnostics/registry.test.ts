@@ -24,6 +24,7 @@ const ALLOWED_GROUPS = new Set([
   'parts',
   'dfm',
   'query',
+  'selector',
   'kinematic',
   'mechanism',
   'animation',
@@ -39,6 +40,7 @@ const ALLOWED_GROUPS = new Set([
   'union',
   'script',
   'tube',
+  'collab',
 ]);
 
 // Mirror of the well-formed-shape predicate from nextAction.test.ts so the

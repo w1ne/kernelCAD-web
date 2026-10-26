@@ -10,8 +10,7 @@
 // stays in modeling/.
 
 import { runScript, type RunScriptResult } from '../../composition/runScript';
-import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
-import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
+import { lowerScriptRun } from './lowerScriptRun';
 import { isSceneBackend, type SceneBackend } from '../../kernel/backends/sceneBackend';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
@@ -65,8 +64,7 @@ export interface LoweredScriptScene {
  * lower ONCE instead of re-running script + engine per consumer.
  */
 export async function lowerScriptScene(run: RunScriptResult): Promise<LoweredScriptScene> {
-  const engine = new RecomputeEngine(createOcctLowerer(run.session));
-  const r = await engine.run(run.records, { paramTable: run.paramTable });
+  const r = await lowerScriptRun(run);
 
   const fatal = r.diagnostics.filter((d: CompilerDiagnostic) => d.severity === 'error');
   if (fatal.length > 0) {

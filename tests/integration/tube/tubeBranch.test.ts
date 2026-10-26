@@ -17,7 +17,6 @@ import { runTubeChecksOnModel, type TubeCheckReport } from '../../../src/modelin
 import { resolveTube, tubeSceneContext } from '../../../src/modeling/runtime/tube/tubeScene';
 import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 import { meshFeaturesPerFeature, selectTerminalFeatures } from '../../../src/modeling/capture/featureMeshing';
-import { selectTerminalSerializedFeatures } from '../../../src/funnel/meshArtifact';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
 import { exportModelTool } from '../../../src/agent/mcp/tools/exportModel';
@@ -284,19 +283,16 @@ const b = tube('b', { from: { tube: 'trunk', at: 100, axis: [0, 0, 1] }, to: { p
 return b;
 `;
 
-  it('a trunk with no assembly is still drawn: render, render_preview and the mesh artifact keep it', async () => {
+  it('a trunk with no assembly remains in the terminal feature meshes', async () => {
     const model = await build(BARE);
     expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
     const [trunk, branch] = model.records.filter((r) => r.kind === 'tube').map((r) => r.id);
     const meshed = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
     expect(meshed.features.map((f) => f.featureId)).toEqual(expect.arrayContaining([trunk, branch]));
-    // The viewer hides every mesh another mesh lists as a predecessor (showOnlyTailFeatures, called by
-    // `kernelcad render` and render_preview); the server and the mesh artifact draw the same terminal set.
+    // Rendering hides meshes consumed as predecessors while preserving the trunk.
     const hidden = new Set(meshed.features.flatMap((f) => f.predecessors));
     expect(hidden.has(trunk)).toBe(false);
     expect(selectTerminalFeatures(meshed.features).map((f) => f.featureId)).toEqual(expect.arrayContaining([trunk, branch]));
-    const serialized = meshed.features as unknown as Parameters<typeof selectTerminalSerializedFeatures>[0];
-    expect(selectTerminalSerializedFeatures(serialized).map((f) => f.featureId)).toEqual(expect.arrayContaining([trunk, branch]));
   }, 120_000);
 
   it('a coloured trunk under a coloured branch gives no colour-shadowing warning', async () => {

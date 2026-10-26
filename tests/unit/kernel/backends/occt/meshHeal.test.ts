@@ -12,7 +12,24 @@ describe('verifyWatertight', () => {
     const r = verifyWatertight(tetra());
     expect(r.ok).toBe(true);
     expect(r.openEdgeCount).toBe(0);
+    expect(r.nonManifoldEdgeCount).toBe(0);
     expect(r.clusters).toEqual([]);
+  });
+
+  it('separates non-manifold edges from open edges (two surfaces meeting on one edge)', () => {
+    // Edge (0,1) is used by FOUR triangles: two fans on each side of it.
+    const m = {
+      vertices: [
+        0, 0, 0,   1, 0, 0,   // 0,1 = the shared non-manifold edge
+        0.5, 1, 0,  0.5, -1, 0,   // 2,3 above/below
+        0.5, 0, 1,  0.5, 0, -1,   // 4,5 in front/behind
+      ],
+      triangles: [0, 1, 2, 0, 1, 3, 0, 1, 4, 0, 1, 5],
+    };
+    const r = verifyWatertight(m);
+    expect(r.ok).toBe(false);
+    expect(r.nonManifoldEdgeCount).toBe(1);
+    expect(r.openEdgeCount).toBe(8); // every other edge (8 of 12 slots) belongs to one triangle
   });
 
   it('reports open-edge count and one cluster for a tetra missing a face', () => {

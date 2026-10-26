@@ -80,7 +80,9 @@ export function applyTransforms(
         const newMap = propagateTransformHistory(inputMap, inputHashes, outputHashes);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const wrapped = (outputBackend.getReplicadShape() as any);
-        shape = new OcctBackend(wrapped, undefined, newMap);
+        const carried = new OcctBackend(wrapped, undefined, newMap);
+        if (outputBackend.analysisBody !== undefined) carried.analysisBody = outputBackend.analysisBody;
+        shape = carried;
       }
       // else: defensive path — face count mismatch (unexpected for these ops).
       // Leave shape without historyMap; resolver returns face-ref-not-resolvable.

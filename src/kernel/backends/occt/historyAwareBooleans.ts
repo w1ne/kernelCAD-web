@@ -192,7 +192,10 @@ const EXACT_PLAN: BooleanAttemptPlan = { strategy: 'exact', fuzzy: 0, glue: fals
 /**
  * Run ONE BRepAlgoAPI_* boolean of `body` against every shape in `tools` and
  * return the shape + the history of every input.
- * Core for cutWithHistory/fuseWithHistory/intersectWithHistory/fuseManyWithHistory.
+ * Core for cutWithHistory/fuseWithHistory/intersectWithHistory and the
+ * many-tool fuse/cut forms. NOTE: a many-tool Common computes `a ∩ (b ∪ c)`,
+ * not the sequential fold `a ∩ b ∩ c` — the boolean lowerer keeps the fold for
+ * intersection for that reason.
  *
  * Recovery ladder (FIX-10): the exact boolean runs first and is returned
  * as-is when it completes cleanly — no extra cost on the happy path. When it
@@ -449,6 +452,18 @@ function readBuilderHistory(
  */
 export function fuseManyWithHistory(body: OcctBackend, tools: readonly OcctBackend[]): BooleanHistoryResult {
   return runBooleanWithHistory(body, tools, 'fuse');
+}
+
+/**
+ * Cut `body` with every tool in ONE boolean build. Same N²-avoidance as
+ * {@link fuseManyWithHistory}: folding N cutters pairwise re-cuts the growing
+ * accumulator on every step (8 holes = 8 cuts of progressively larger solids)
+ * for what is one general boolean. History merge is the same
+ * earliest-input-wins fold the pairwise path produced
+ * ({@link mergeBooleanHistoryMany}).
+ */
+export function cutManyWithHistory(body: OcctBackend, tools: readonly OcctBackend[]): BooleanHistoryResult {
+  return runBooleanWithHistory(body, tools, 'cut');
 }
 
 export function cutWithHistory(body: OcctBackend, tool: OcctBackend): BooleanHistoryResult {

@@ -43,7 +43,12 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `extrudeRect(w, h, height, opts?) => Shape` | Extrude a w-by-h rectangle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
 | `extrudeCircle(r, height, opts?) => Shape` | Extrude a radius-r circle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
 | `extrudePolygon(points, depth, opts?) => Shape` | Extrude a 2D polygon (array of [x, y] points; coordinates and `depth` accept ParamRefs) by `depth` along Z. |
-| `extrudeRoundedRect(width, height, radius, depth, opts?) => Shape` | Extrude a rounded rectangle (corner radius) by `depth` along Z. |
+| `extrudeRoundedRect(width, height, radius, depth, opts?) => Shape` | Extrude a rounded rectangle (corner radius) by `depth`. |
+| `filletPolygon(points: [number, number][], radius, opts?: { segments?: number }) => [number, number][]` | Round every corner of a closed 2D polygon with tangent arcs and return points for extrudePolygon / the prism helpers. |
+| `prismSide(points: [number, number][], halfY?: number) => Shape` | Side-view mask prism: points are (station s, height z), extruded through Y from -halfY to +halfY (default 1200). |
+| `prismSideY(points: [number, number][], y0: number, y1: number) => Shape` | Side-view mask prism on one side only: points are (s, z), extruded through Y from y0 to y1 (y1 > y0). |
+| `prismFront(points: [number, number][], x0: number, x1: number) => Shape` | Front-view mask prism: points are (Y, Z), extruded along X from x0 to x1. |
+| `prismPlan(points: [number, number][], z0: number, z1: number) => Shape` | Plan-view mask prism: points are (X, Y), extruded along Z from z0 to z1. |
 | `sheetMetal(profile: Sketch, { thickness, kFactor, faceLabels? }) => Shape` | Build a sheet-metal body from a closed planar Sketch. |
 | `sdf : { sphere(r), box(size), cylinder(r, h), torus(R, r), smoothBlend(a, b, k), materialize(field, opts?), bind(name, field) }` | SDF authoring namespace (W2.3 slice-1). |
 | `path() => PathBuilder` | Start a 2D path: chain moveTo / lineTo / arcs / .close() to get a Sketch. |
@@ -81,8 +86,8 @@ Turn a profile into a solid, or grow one along a path.
 | `Sketch.revolve() => Shape` | Revolve 360 degrees around the Z axis. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine?, section?: 'axial' \| 'transverse' }) => Shape` | Sweep this profile along a 3D rail. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
-| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels? }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
-| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels?, rails?: Curve3D[] }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
+| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels?, continuity?: "G0" \| "G1" \| "G2", spanSize?: number, mode?: "single" \| "sewn" }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
+| `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels?, rails?: Curve3D[], continuity?: "G0" \| "G1" \| "G2", spanSize?: number, mode?: "single" \| "sewn" }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `variableSweep(spine: Curve3D \| Sketch \| Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" \| "C1" \| "C2" }) => Shape` | Multi-section sweep that blends `sections[i].profile` along the spine at the section's `t ∈ [0, 1]` spine parameter. |
 | `helix({ radius: Editable<number>, pitch: Editable<number>, turns: Editable<number>, axis?, pointsPerTurn?, startAngle?: Editable<number> }) => [number, number, number][]` | Helix rail for `Sketch.sweep`. |
 
@@ -119,6 +124,7 @@ Break edges, add draft, hollow out a wall, fold sheet metal.
 | Call | What it does |
 |---|---|
 | `Shape.fillet(radius, edges?: EdgeSelector, opts?: { continuity?: 'G1' \| 'G2' }) => Shape` | Round edges. |
+| `Shape.filletIntersection(cutter: Shape, radius: Editable<number>, opts?: { sides?: 'body' \| 'both'; toleranceMm?: Editable<number>; continuity?: 'G1' \| 'G2' }) => Shape` | Round the seam where `cutter` met this body. |
 | `Shape.chamfer(distance, edges?: EdgeSelector) => Shape` | Bevel edges. |
 | `Shape.draft(angleDeg: Editable<number>, opts: { face: FaceSelector \| string; neutralPlane?: string; pullDir?: [number, number, number] }) => Shape` | Taper the selected face(s) for moldability. |
 | `Shape.shell(thickness, { face: FaceSelector }) => Shape` | Hollow the solid removing the named face. |
@@ -135,6 +141,8 @@ Pick the edges or faces a feature acts on. Query first, then sort or group what 
 | `selectEdge(shape, query) => Promise<EdgeSegment>` | Like selectEdges but throws if zero or multiple edges match. |
 | `select : <T>(items: Iterable<T>) => ShapeList<T>` | Wrap any array of topology query results in a `ShapeList` so the selector algebra applies — face summaries from `inspect({ of: 'faces' })`, `ResolvedEntity[]` from `q.face(...).evaluate(scene)`, or a hand-assembled list. |
 | `q : { face, edge, vertex, connector, part, solid, createdBy, ownedByPart, ownerPart, union, intersection, subtraction, containsPoint, closestTo, geometryType, withLabel, withFeatureName, nthElement, fromString, nothing, everything }` | Query DSL constructor namespace. |
+| `faces(shape, query?) => RequirementSelectionHandle` | Select all faces of `shape` matching a FaceQuery (default every face) for a requirement predicate. |
+| `edges(shape, query?) => RequirementSelectionHandle` | Select all edges of `shape` matching an EdgeQuery (default every edge) for a requirement predicate. |
 | `ShapeList.sortBy(criterion: 'X' \| 'Y' \| 'Z' \| Vec3 \| 'area' \| 'length' \| 'radius', opts?: { descending?: boolean; tolerance?: number }) => ShapeList<T>` | Order the list by a criterion, ascending by default. |
 | `ShapeList.sortByDistance(point: Vec3, opts?: { descending?: boolean; tolerance?: number }) => ShapeList<T>` | Order by straight-line distance from each entity position to `point`, nearest first. |
 | `ShapeList.groupBy(criterion: 'X' \| 'Y' \| 'Z' \| Vec3 \| 'area' \| 'length' \| 'radius', opts?: { tolerance?: number; descending?: boolean }) => ShapeGroups<T>` | Partition into groups sharing a quantized criterion value — one group per Z level, per hole diameter, per face area. |
@@ -175,8 +183,8 @@ Build a mechanism from parts: connectors, mates, joints, posed Scenes.
 
 | Call | What it does |
 |---|---|
-| `assembly(name?) => Assembly` | Start an inspectable mechanical assembly. |
-| `joint : { clevis(opts: ClevisJointOptions): ClevisJoint; supportedServoRevolute(arm: Assembly, opts: SupportedServoRevoluteOptions): SupportedServoRevoluteResult; articulatedDigit(arm: Assembly, opts: ArticulatedDigitOptions): ArticulatedDigitResult }` | Mechanism-delivery joint helpers. |
+| `assembly(name?) => Assembly` | `arm.tendon(name, { from, to, via?, actuator?: { kind: force, maxForceN }, maxLengthMm?, profile?: { kind: round \| flat, ... |
+| `joint : { clevis(opts: ClevisJointOptions): ClevisJoint }` | Mechanism-delivery joint helpers. |
 | `Scene.part(name: string) => ScenePart` | Look up a part by its assembly-unique name. |
 | `Scene.parts : readonly ScenePart[]` | Frozen, ordered list of parts in the Scene; ordering matches the order parts were added to the Assembly. |
 | `Scene.assemblyName : string` | Name passed to `assembly(name?)` at capture time; "unnamed-assembly" if no name was provided. |
@@ -198,10 +206,11 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 | `surfaceFromCurves(sections: Sketch[]) => Surface` | Skin a NURBS surface through 2+ closed Sketch cross-sections in declaration order. |
 | `surfaceFromBoundary(curves: [Curve3D, Curve3D, Curve3D, Curve3D], opts?: { continuity?: "C0" \| "C1" \| "C2" \| ("C0" \| "C1" \| "C2")[]; sampling?: number }) => Surface` | Build the shipped filling surface: one NURBS face through 4 boundary curves. |
 | `sew(surfaces: Surface[], opts?: { tolerance?: number; requireClosed?: boolean }) => Shape` | Stitch N surfaces into a shell or closed solid. |
+| `Shape.thicken(t: Editable<number>) => Shape` | Solidify an open shell returned by `sew([...])` or `surface.toShape()`. |
 | `Surface.thicken(t: Editable<number>) => Shape` | Offset both sides of this surface by `t` mm and return the closed solid Shape. |
 | `Surface.toShape() => Shape` | Wrap this surface as a single-face zero-volume Shape. |
-| `Surface.trimTo(by: Surface) => Surface` | Trim this surface at its intersection with `by` (a Surface cutter) and return a new Surface representing the kept half. |
-| `Surface.split(by: Surface) => [Surface, Surface]` | Split this surface at its intersection with `by` (a Surface cutter) and return both resulting Surface halves as `[first, second]`, ordered by descending face area. |
+| `Surface.trimTo(by: Surface \| Shape) => Surface` | Trim this surface at its intersection with `by` and return a new Surface representing the kept half. |
+| `Surface.split(by: Surface \| Shape) => [Surface, Surface]` | Split this surface at its intersection with `by` and return both resulting Surface halves as `[first, second]`, ordered by descending face area. |
 | `Shape.projectCurve(opts: { source: ProjectCurveSource; face: FaceSelector \| string; scaleMode?: 'original' \| 'native' \| 'bounds'; asEdge?: boolean }) => Sketch` | Wrap a 2D closed curve onto a 3D face along the face normal. |
 | `Curve3D.sample(n: number) => [number, number, number][]` | Sample `n + 1` evenly-spaced points along the curve in the public `[0, 1]` parameter domain. |
 | `Curve3D.pointAt(t: number) => [number, number, number]` | World-space point on the curve at parameter `t ∈ [0, 1]` (clamped). |
@@ -224,14 +233,26 @@ Ask the kernel what you actually built, and check it before shipping.
 | Call | What it does |
 |---|---|
 | `Shape.boundingBox(opts?: { exact?: boolean }) => Promise<{ min: [number, number, number]; max: [number, number, number]; size: [number, number, number]; center: [number, number, number] }>` | Axis-aligned bounding box in the CURRENT world frame (after every transform appended so far), in mm. |
+| `bbox(selection) => RequirementPredicate` | Bounding-box size of a body selection in mm. |
 | `Scene.bbox : { min: [number, number, number]; max: [number, number, number] }` | Lazy axis-aligned bounding box over all transformed parts. |
 | `Curve3D.length() => number` | Total arc length in mm. |
 | `Shape.lower() => Promise<OcctBackend>` | Eagerly lower this Shape for inspection. |
-| `kinematic : KinematicFacade` | Namespace with in-process feasibility checks an agent can run before declaring a mechanism design done: `kinematic.checkMountingHoleConsistency(arm)` (fastener-side hole agreement; dispatches to the v0.7.4 substrate), `kinematic.checkSweptCollision(arm, opts?)` (sampled-pose collision sweep across declared joint ranges), `kinematic.checkReachable(arm, opts)` (IK reachability — analytical Pieper first, DLS numeric fallback), `kinematic.checkLoadCapacity(arm, opts?)` (closed-form Euler-Bernoulli beam load check), `kinematic.checkStaticHold(arm, opts?)` (gravitational holding torque/force at a sampled pose grid vs each joint's declared actuator capacity), `kinematic.sweepTolerance({ code\|file, params, gates? |
+| `kinematic : KinematicFacade` | Namespace with in-process feasibility checks an agent can run before declaring a mechanism design done: `kinematic.checkMountingHoleConsistency(arm)` (fastener-side hole agreement; dispatches to the v0.7.4 substrate), `kinematic.checkSweptCollision(arm, opts?)` (sampled-pose collision sweep across declared joint ranges), `kinematic.checkReachable(arm, opts)` (IK reachability — analytical Pieper first, DLS numeric fallback), `kinematic.checkLoadCapacity(arm, opts?)` (closed-form Euler-Bernoulli beam load check), `kinematic.checkStaticHold(arm, opts?)` (gravitational holding torque/force at a sampled pose grid vs each joint's declared actuator capacity), `kinematic.motionLoad(arm, opts?)` (per-joint wrench along the animation tracks, a joint-limit range, or explicit `poses`; also returns `partLoads`, the worst wrench per part in that part's frame, for `feaStudy({ loadsFrom })`), `kinematic.sweepTolerance({ code\|file, params, gates?, boundaryTolerance?, boundaryBudget? |
 | `dfmSpec(spec: { minWall?: number; minClearance?: number; includeArticulatedMates?: boolean; ignore?: [string, string][]; exclude?: string[]; channels?: Array<{ part: string; name: string; openings: number; sealed?: boolean }>; process?: 'fdm'; buildDirection?: '+x' \| '-x' \| '+y' \| '-y' \| '+z' \| '-z' \| [number, number, number]; nozzleMm?: number; maxOverhangDeg?: number; maxBridgeMm?: number; printer?: string }) => DfmSpecHandle` | Declare printability (design-for-manufacture) gates for the model. |
-| `Shape.feaStudy(spec: { material: 'mild-steel' \| 'aluminum-6061' \| 'pla' \| 'petg' \| 'abs' \| 'nylon' \| { E: number; nu: number; yield: number }; fixed: FaceQuery \| string; loads: Array<{ faces: FaceQuery \| string; force: [number, number, number]; name?: string }>; meshSize?: number; minSafetyFactor?: number; name?: string }) => FeaStudyHandle` | Declare a linear-static structural study on this shape: where it is held (`fixed`), what pushes on it (`loads`, force in TOTAL newtons over the selected faces), and what it is made of. |
+| `Shape.feaStudy(spec: { material: 'mild-steel' \| 'aluminum-6061' \| 'pla' \| 'petg' \| 'abs' \| 'nylon' \| { E: number; nu: number; yield: number }; fixed: FaceQuery \| string; loads?: Array<{ faces: FaceQuery \| string; force: [number, number, number]; pointMm?: [number, number, number]; momentNmm?: [number, number, number]; name?: string }>; loadsFrom?: { motion: { partLoads: MotionPartLoadSample[] }; part: string; joint?: string; pose?: Record<string, number>; faces?: FaceQuery \| string }; meshSize?: number; minSafetyFactor?: number; name?: string }) => FeaStudyHandle` | Declare a linear-static structural study on this shape: where it is held (`fixed`), what pushes on it (`loads`, force in TOTAL newtons over the selected faces, or `loadsFrom` to take the worst sampled wrench from `kinematic.motionLoad`), and what it is made of. |
 | `tube(name, { from, to, via?, od?, wall, bendRadius, system?, material?, density?, flow? }) => Shape` | Bent tube between two ends: straight legs joined by constant-radius bends, built as one hollow solid in assembly space. |
 | `tubeSpec({ minBendRadiusFactor?, minStraightBetweenBends?, minStraightAtEnd?, maxBendAngle?, clearance?: { default?, pairs? }, systems?: { [system]: { minBendRadiusFactor?, minStraightBetweenBends?, minStraightAtEnd?, maxBendAngle? } } }) => { id, metadata }` | Declare the rules every tube() in the script must meet. |
+| `require(name: string, predicate: RequirementPredicate) => void` | Declare a named, kernel-measured requirement, reported in the `requirements` ledger every evaluation returns. |
+| `clearance(a, b) => RequirementPredicate` | Minimum surface-to-surface BREP distance between two selections, mm. |
+| `distance(a, b) => RequirementPredicate` | Distance between two selections, mm. |
+| `mass(selection) => RequirementPredicate` | Mass of a body selection in kg. |
+| `volume(selection) => RequirementPredicate` | Volume of a body selection in mm^3. |
+| `centerOfMass(selection) => RequirementPredicate` | Centre of mass in mm. |
+| `count(selection) => RequirementPredicate` | Number of resolved faces/edges in a selection. |
+| `innerLoops(selection) => RequirementPredicate` | Largest inner-boundary-loop (cutout) count across selected faces. |
+| `angle(a, b) => RequirementPredicate` | Angle between two selections' directions (face normal, edge tangent/axis or a body's principal axis), degrees. |
+| `concentric(a, b) => RequirementPredicate` | Two selections share an axis: parallel axes and coincident centres. |
+| `coplanar(a, b) => RequirementPredicate` | Two selections are coplanar: parallel normals and zero plane offset. |
 
 ## Parametrize
 
@@ -239,7 +260,7 @@ Declare editable dimensions and do arithmetic on them (JS operators throw on a P
 
 | Call | What it does |
 |---|---|
-| `param(name, defaultValue, meta?) => ParamRef` | Declare a symbolic editable parameter. |
+| `param(name, defaultValue, meta?) => ParamRef` | Declare a symbolic editable parameter (a ParamRef the chain ops accept anywhere a number is expected); MCP `set_param({ ..., preview: true })` previews a change against declared intent by returning the diff_geometry summary plus the requirements-ledger and S1 binding diffs, without writing source, session or caches. |
 | `params(decl) => { [name]: ParamRef }` | Batched form of `param()` — declare many params at once. |
 | `ParamRef.add(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef plus `other`. |
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |
@@ -247,6 +268,10 @@ Declare editable dimensions and do arithmetic on them (JS operators throw on a P
 | `ParamRef.multiply(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef times `other`. |
 | `ParamRef.divide(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef divided by `other`. |
 | `ParamRef.negate() => ParamRef<number>` | Build a ParamRef whose value equals the unary negation of this ParamRef. |
+| `ParamRef.min(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value is the smaller of this ParamRef and `other`. |
+| `ParamRef.max(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value is the larger of this ParamRef and `other`. |
+| `ParamRef.abs() => ParamRef<number>` | Build a ParamRef whose value is the absolute value of this ParamRef. |
+| `ParamRef.clamp(min: number \| ParamRef<number>, max: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef clamped into `[min, max]`. |
 
 ## Import & export
 
@@ -254,7 +279,7 @@ Bring in vendor geometry, and write models back out.
 
 | Call | What it does |
 |---|---|
-| `lib : { fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; meshFromSTL(path: string): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; part(request: { family: string; thread?: string; lengthMm?: number }): Promise<Shape>; stack(request: { thread: string; gripMm: number; mode?: "screw" \| "bolt" }): Promise<{ lengthMm: number; screw: Shape }>; insert(shape: Shape, request: { diameterMm?: number; near?: Vec3; family: "socket-head-cap-screw" \| "button-head-cap-screw" \| "flat-head-countersunk"; mode?: "screw" \| "bolt"; gripMm?: number; seat?: "auto" \| "none" \| "counterbore"; headAt?: Vec3 }): Promise<{ shape: Shape; holes: Array<{ centerMm: Vec3; direction: Vec3; diameterMm: number; depthMm: number; thread: string; lengthMm: number; screw: Shape; headWasher?: Shape; tailWasher?: Shape; nut?: Shape }> }>; fixture: FixtureParts; standard: StandardParts }` | Parts library namespace. |
+| `lib : { fromSTEP(path: string, opts?: { solid?: number }): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; meshFromSTL(path: string): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; part(request: { family: string; thread?: string; lengthMm?: number; detail?: "full" \| "envelope" }): Promise<Shape>; stack(request: { thread: string; gripMm: number; mode?: "screw" \| "bolt"; detail?: "full" \| "envelope"; protrusionPitches?: number }): Promise<{ lengthMm: number; protrusionMm?: number; screw: Shape }>; insert(shape: Shape, request: { diameterMm?: number; near?: Vec3; family: "socket-head-cap-screw" \| "button-head-cap-screw" \| "flat-head-countersunk"; mode?: "screw" \| "bolt"; gripMm?: number; seat?: "auto" \| "none" \| "counterbore"; headAt?: Vec3; detail?: "full" \| "envelope"; protrusionPitches?: number }): Promise<{ shape: Shape; holes: Array<{ centerMm: Vec3; direction: Vec3; diameterMm: number; depthMm: number; thread: string; fit: "close" \| "normal" \| "loose"; lengthMm: number; protrusionMm?: number; screw: Shape; headWasher?: Shape; tailWasher?: Shape; nut?: Shape }> }>; fixture: FixtureParts; standard: StandardParts }` | Parts library namespace. |
 | `Scene.toCompound() => Shape` | Groups bodies without booleaning. |
 
 ## Annotate & present

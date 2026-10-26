@@ -10,6 +10,22 @@ describe('assembly examples', () => {
     expect(result.featureCount).toBeGreaterThanOrEqual(8);
   });
 
+  it('evaluates the twelve-part assembly sequence gearbox example', async () => {
+    const result = await evaluateScript({ file: 'examples/assemblies/assembly-sequence-gearbox.kcad.ts' });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.diagnostics).toEqual([]);
+    expect(result.featureCount).toBeGreaterThanOrEqual(12);
+  });
+
+  it('evaluates the static-stability bracket example', async () => {
+    const result = await evaluateScript({ file: 'examples/assemblies/assembly-stability-bracket.kcad.ts' });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.diagnostics).toEqual([]);
+    expect(result.featureCount).toBeGreaterThanOrEqual(3);
+  });
+
   // P3 physics-loop sweep (2026-06-01): the two-link connector arm uses
   // the v0.6 connect-shorthand on arm.part(...) rather than arm.mate(...).
   // The physics loop iterates arm.__mates() and treats the link and tool

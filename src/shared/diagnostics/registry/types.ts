@@ -15,6 +15,7 @@ export type DiagnosticGroup =
   | 'parts'
   | 'dfm'
   | 'query'
+  | 'selector'
   | 'kinematic'
   | 'mechanism'
   | 'animation'
@@ -30,7 +31,9 @@ export type DiagnosticGroup =
   | 'union'
   | 'script'
 
-  | 'tube';
+  | 'tube'
+
+  | 'collab';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 

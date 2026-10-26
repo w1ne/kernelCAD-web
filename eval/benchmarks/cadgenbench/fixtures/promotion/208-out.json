@@ -1,0 +1,432 @@
+{
+  "ok": true,
+  "report": {
+    "file": "/tmp/opencode/cadgenbench/kernelcad-harness/results/heal-final/208/output.step",
+    "solidCount": 1,
+    "solids": [
+      {
+        "index": 0,
+        "name": null,
+        "bboxExact": {
+          "min": [
+            -150,
+            -150,
+            -108.76808166503906
+          ],
+          "max": [
+            150,
+            149.99984741210938,
+            108.76808166503906
+          ]
+        },
+        "volumeMm3": 2106673.9574027257,
+        "faceCount": 586,
+        "holes": [
+          {
+            "axisOrigin": [
+              0,
+              0,
+              -62.626734415993
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 50,
+            "depthMm": 43.141344832791006,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              0,
+              0,
+              -61.62673441599
+            ],
+            "axisDirection": [
+              0,
+              0,
+              1
+            ],
+            "diameterMm": 90,
+            "depthMm": 54,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              0,
+              0,
+              105.76807924788
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 200,
+            "depthMm": 17,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              92,
+              0,
+              88.01807924788
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 8.5,
+            "depthMm": 26.034175705554,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              92,
+              0,
+              39.552254953433994
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 8.5,
+            "depthMm": 10.784175705553999,
+            "kind": "blind",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              0,
+              -92,
+              88.01807924788
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 8.5,
+            "depthMm": 26.034217061016,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              0,
+              -92,
+              39.552296308896
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 8.5,
+            "depthMm": 10.784217061016001,
+            "kind": "blind",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              0,
+              92,
+              88.01807924788
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 8.5,
+            "depthMm": 26.034217061016,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              0,
+              92,
+              39.552296308896
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 8.5,
+            "depthMm": 10.784217061016001,
+            "kind": "blind",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -98.63400921928732,
+              2.3109067846040277e-13,
+              50.76807924788
+            ],
+            "axisDirection": [
+              1,
+              -2.342910729165e-15,
+              0
+            ],
+            "diameterMm": 24,
+            "depthMm": 16.13400921928732,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              82.5,
+              -1.9329013515613754e-13,
+              50.76807924788
+            ],
+            "axisDirection": [
+              1,
+              -2.342910729165e-15,
+              0
+            ],
+            "diameterMm": 24,
+            "depthMm": 22.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              1.230028132812e-13,
+              105,
+              50.76807924788
+            ],
+            "axisDirection": [
+              -1.171455364583e-15,
+              -1,
+              0
+            ],
+            "diameterMm": 24,
+            "depthMm": 22.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -9.66450675781125e-14,
+              -82.5,
+              50.76807924788
+            ],
+            "axisDirection": [
+              -1.171455364583e-15,
+              -1,
+              0
+            ],
+            "diameterMm": 24,
+            "depthMm": 22.500000000000057,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -38.62712429686,
+              -118.8820645368,
+              107.51807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 15.5,
+            "depthMm": 32.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              38.627124296868,
+              -118.8820645368,
+              107.51807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 15.5,
+            "depthMm": 32.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -101.1271242968,
+              -73.47315653655,
+              107.51807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 15.5,
+            "depthMm": 32.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -125,
+              0,
+              107.51807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 15.5,
+            "depthMm": 32.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -38.62712429686,
+              118.88206453689,
+              107.51807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 15.5,
+            "depthMm": 32.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              38.627124296869,
+              118.88206453689,
+              107.51807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 15.5,
+            "depthMm": 32.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              101.12712429686,
+              73.473156536559,
+              107.51807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 15.5,
+            "depthMm": 32.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              125,
+              0,
+              107.51807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 15.5,
+            "depthMm": 32.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              101.12712429686,
+              -73.47315653656,
+              107.51807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 15.5,
+            "depthMm": 32.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -101.1271242968,
+              73.473156536559,
+              107.51807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 15.5,
+            "depthMm": 32.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              0,
+              135,
+              108.01807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 8.5,
+            "depthMm": 28.5,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              0,
+              -135,
+              108.01807924787
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 8.5,
+            "depthMm": 28.5,
+            "kind": "through",
+            "faceCount": 1
+          }
+        ],
+        "holeDetection": "exact"
+      }
+    ],
+    "holeDetection": "exact"
+  },
+  "diagnostics": []
+}

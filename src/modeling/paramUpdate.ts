@@ -17,6 +17,8 @@ import type { CaptureSession } from './capture/captureSession';
 import type { BuiltModel, BuiltModelParamUpdate, ParamUpdateEdit } from './buildModel';
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { KernelError } from '../shared/intent/kernelError';
+import { affectedFeatureIds } from './paramAffect';
+import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
 
 export function populateCache(session: CaptureSession, shapes: Map<FeatureId, ShapeBackend>): void {
   for (const [id, shape] of shapes) {
@@ -35,6 +37,26 @@ export interface UpdateModelParamsOptions {
    *  (and a client `/transforms` re-fetch + viewport twitch); the bake emits a
    *  single relower itself after restoring the pre-bake pose. */
   silent?: boolean;
+  /**
+   * Drag preview. Finish features that do not read the edited parameters
+   * pass their input solid through. The release update leaves this unset.
+   */
+  preview?: boolean;
+}
+
+/** Diagnostics and selections of a param update. A drag preview skips finish
+ *  features, so its selections are partial: keep the last full set as the
+ *  baseline and report nothing. */
+function selectionsAfterUpdate(
+  model: BuiltModel,
+  result: { diagnostics: BuiltModel['diagnostics']; selections: BuiltModel['selections'] },
+  preview: boolean,
+): Pick<BuiltModel, 'diagnostics' | 'selections'> {
+  if (preview) return { diagnostics: result.diagnostics, selections: model.selections };
+  return {
+    diagnostics: [...result.diagnostics, ...selectionDriftDiagnostics(model.selections, result.selections)],
+    selections: result.selections,
+  };
 }
 
 export async function updateModelParams(
@@ -76,12 +98,20 @@ export async function updateModelParams(
   const result = await engine.run(model.records, {
     paramTable: session.paramTable,
     seedShapes,
+    seedSelections: model.selections,
+    ...(options?.preview ? { previewFinish: true, previewEdited: editedNames } : {}),
     warningSink: (warning: SoftWarning) => session.warnings.push(warning),
     warningPhase: 'update',
     gatedFeatureNames: session.gatedFeatureNames,
   });
 
   populateCache(session, result.shapes);
+  // This run lowered (or reused) every record under the edited param table,
+  // so it is the session's full lower now. Recording it lets the next
+  // `meshFeaturesPerFeature` mesh the re-lowered shapes instead of lowering
+  // them a second time. `snapshotFullLower` stamps the current param table
+  // and gates, so a later edit invalidates it as before.
+  session.lastFullLower = { ...session.snapshotFullLower(new Map()), shapes: result.shapes };
   // Invalidate mesh caches for records that actually re-lowered. Records in
   // `skipped` reused their cached shape and so their cached triangle mesh is
   // still valid; records in `relowered` produced a fresh shape so their
@@ -112,7 +142,7 @@ export async function updateModelParams(
   const nextModel: BuiltModel = {
     ...model,
     shapes: result.shapes,
-    diagnostics: result.diagnostics,
+    ...selectionsAfterUpdate(model, result, options?.preview === true),
     health: result.health,
     warnings: session.warnings.slice(warningsBefore),
     tailId,
@@ -192,28 +222,19 @@ function buildSeedShapes(
   records: readonly FeatureRecord[],
   editedNames: Set<string>,
 ): { seedShapes: Map<FeatureId, ShapeBackend>; relowered: string[]; skipped: string[] } {
-  let firstAffected = -1;
-  for (let i = 0; i < records.length; i++) {
-    const refs = (records[i].metadata as { paramRefs?: string[] } | undefined)?.paramRefs ?? [];
-    if (refs.some(name => editedNames.has(name))) {
-      firstAffected = i;
-      break;
-    }
-  }
-
+  const affected = affectedFeatureIds(records, editedNames);
   const seedShapes = new Map<FeatureId, ShapeBackend>();
   const relowered: string[] = [];
   const skipped: string[] = [];
 
-  for (let i = 0; i < records.length; i++) {
-    const record = records[i];
-    if (firstAffected === -1 || i < firstAffected) {
-      skipped.push(record.id);
-      const cached = session.cachedShapes.get(record.id);
-      if (cached) seedShapes.set(record.id, cached);
-    } else {
+  for (const record of records) {
+    if (affected.has(record.id)) {
       relowered.push(record.id);
+      continue;
     }
+    skipped.push(record.id);
+    const cached = session.cachedShapes.get(record.id);
+    if (cached) seedShapes.set(record.id, cached);
   }
 
   return { seedShapes, relowered, skipped };

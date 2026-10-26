@@ -1,0 +1,178 @@
+{
+  "checkedAt": "2026-10-24T18:40:29.455Z",
+  "nativeKernel": "OCCT via evaluateAndBuildScript",
+  "source": "examples/parts/catalog-lineup.kcad.ts",
+  "sourceSha256": "6eee34e3aab11c7a5253f71ea5f22d2638b038791c6e1e9f2fb7128ee914cf44",
+  "featureCount": 23,
+  "pairsChecked": 55,
+  "positiveVolumeOverlaps": [],
+  "parts": [
+    {
+      "name": "display-base",
+      "min": [
+        -175,
+        -55,
+        -4
+      ],
+      "max": [
+        145,
+        55,
+        0
+      ],
+      "volumeMm3": 140799.99999999997
+    },
+    {
+      "name": "socket-head",
+      "min": [
+        -158,
+        22.022369384765625,
+        -3.552713678800501e-14
+      ],
+      "max": [
+        -142,
+        37.977630615234375,
+        50
+      ],
+      "volumeMm3": 4302.87100723041
+    },
+    {
+      "name": "hex-head-bolt",
+      "min": [
+        -113,
+        20.76239585876465,
+        -3.552713678800501e-14
+      ],
+      "max": [
+        -97,
+        39.237606048583984,
+        46.400001525878906
+      ],
+      "volumeMm3": 4013.174485967792
+    },
+    {
+      "name": "flat-head",
+      "min": [
+        -70.93609619140625,
+        21.045978546142578,
+        -1.0965514893399985e-15
+      ],
+      "max": [
+        -53.040000915527344,
+        38.95402145385742,
+        30
+      ],
+      "volumeMm3": 1661.9769598155622
+    },
+    {
+      "name": "button-head",
+      "min": [
+        -30.25,
+        24.764680862426758,
+        3.552713678800501e-15
+      ],
+      "max": [
+        -19.75,
+        35.235321044921875,
+        27.968425750732422
+      ],
+      "volumeMm3": 724.1154814491141
+    },
+    {
+      "name": "set-screw",
+      "min": [
+        6.000349044799805,
+        26.00002670288086,
+        -7.105427357601002e-15
+      ],
+      "max": [
+        13.999964714050293,
+        33.99997329711914,
+        30
+      ],
+      "volumeMm3": 1183.9858304414283
+    },
+    {
+      "name": "hex-nut",
+      "min": [
+        -158,
+        -9.237604141235352,
+        0
+      ],
+      "max": [
+        -142,
+        9.237604141235352,
+        8.399999618530273
+      ],
+      "volumeMm3": 1277.9982684508777
+    },
+    {
+      "name": "lock-nut",
+      "min": [
+        -121,
+        -9.237604141235352,
+        0
+      ],
+      "max": [
+        -105,
+        9.237604141235352,
+        10
+      ],
+      "volumeMm3": 1528.49587617317
+    },
+    {
+      "name": "flat-washer",
+      "min": [
+        -85.97563934326172,
+        -9.993907928466797,
+        0
+      ],
+      "max": [
+        -66,
+        9.993907928466797,
+        2
+      ],
+      "volumeMm3": 455.1382356888212
+    },
+    {
+      "name": "lock-washer",
+      "min": [
+        -48.04999923706055,
+        -9.043951034545898,
+        0
+      ],
+      "max": [
+        -29.974098205566406,
+        9.043951034545898,
+        2.200000047683716
+      ],
+      "volumeMm3": 374.8122992878012
+    },
+    {
+      "name": "threaded-rod",
+      "min": [
+        -130,
+        -35.98881530761719,
+        -2.7533531010703882e-14
+      ],
+      "max": [
+        120,
+        -28.011184692382812,
+        8
+      ],
+      "volumeMm3": 10331.640464197346
+    }
+  ],
+  "families": [
+    "socket-head-cap-screw (ISO 4762, M2–M20)",
+    "hex-head-bolt (ISO 4017, M3–M20)",
+    "flat-head-countersunk (ISO 10642, M3–M12)",
+    "button-head-cap-screw (ISO 7380, M3–M10)",
+    "set-screw (ISO 4026, M3–M12)",
+    "hex-nut (ISO 4032, M2–M20)",
+    "lock-nut (DIN 985, M3–M12)",
+    "flat-washer (ISO 7089, M2–M20)",
+    "lock-washer (DIN 127B, M3–M12)",
+    "threaded-rod (DIN 975, M3–M12 × 250/1000)"
+  ],
+  "scope": "Native static envelope geometry and placement: head + shank solids and table dims, no helical thread, no thread contact, strength, torque or preload."
+}

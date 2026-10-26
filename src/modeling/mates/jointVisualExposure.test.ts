@@ -23,8 +23,8 @@ import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 // TypeScript module resolution doesn't auto-append the full `.kcad.ts`
 // suffix the way it auto-appends bare `.ts`. Same convention the eval
 // runtime uses when loading user `.kcad.ts` scripts.
-import { buildPreFixLuxoShoulder } from './fixtures/jointVisualExposure-luxo-pre-8e2f0da7.kcad.ts';
-import { buildPostFixLuxoShoulder } from './fixtures/jointVisualExposure-luxo-post-8e2f0da7.kcad.ts';
+import { buildThinForkShoulder } from './fixtures/jointVisualExposure-thin-fork.kcad.ts';
+import { buildWideForkShoulder } from './fixtures/jointVisualExposure-wide-fork.kcad.ts';
 
 interface SyntheticHingeOpts {
   /** Fork plate Y-thickness. Default 3 mm (Luxo post-fix value). */
@@ -113,7 +113,7 @@ function buildSyntheticHinge(opts: SyntheticHingeOpts): { arm: Assembly; session
       origin: { kind: 'vec3', value: offset },
       axis: [0, 1, 0],
     });
-  arm.mate('hinge', `${parent.name}.hinge`, `${child.name}.hinge`, mateType);
+  arm.mate('hinge', `${parent.name}.hinge`, `${child.name}.hinge`, mateType, { exposure: 'exposed' });
 
   return { arm, session };
 }
@@ -261,25 +261,32 @@ describe('validateJointVisualExposure (Gate 4)', () => {
     expect(diags).toHaveLength(0);
   });
 
-  it('case 7 — regression pre-8e2f0da7 Luxo: emits JOINT_NOT_VISIBLE', async () => {
-    const { arm } = buildPreFixLuxoShoulder();
+  it('case 7 — regression thin-fork: emits JOINT_NOT_VISIBLE', async () => {
+    const { arm } = buildThinForkShoulder();
     const diags = await runGate4(arm);
     expect(diags).toHaveLength(1);
     expect(diags[0].code).toBe('assembly.joint.not-visible');
     expect(diags[0].severity).toBe('error');
     expect(diags[0].mateName).toBe('shoulder');
-    // Pre-fix Luxo: gapRatio = 1mm / 30mm = 0.033, well below 0.15.
+    // Thin fork: gapRatio = 1mm / 30mm = 0.033, well below 0.15.
     // The hint must carry actionable numbers an agent can read without
     // re-rendering.
-    expect(diags[0].hint).toMatch(/FORK_GAP_Y/);
-    expect(diags[0].hint).toMatch(/PIN_LEN/);
+    expect(diags[0].hint).toMatch(/gap between the fork plates/);
+    expect(diags[0].hint).toMatch(/extend the pin/);
   });
 
-  it('case 8 — regression post-8e2f0da7 Luxo: no JOINT_NOT_VISIBLE', async () => {
-    const { arm } = buildPostFixLuxoShoulder();
+  it('case 8 — regression wide-fork: no JOINT_NOT_VISIBLE', async () => {
+    const { arm } = buildWideForkShoulder();
     const diags = await runGate4(arm);
     // Post-fix passes both thresholds. No Gate 4 diagnostic for this
     // shoulder joint.
     expect(diags.filter((d) => d.code === 'assembly.joint.not-visible')).toHaveLength(0);
+  });
+
+  it('is opt-in: a thin-fork revolute without exposure: exposed is not evaluated', async () => {
+    const { arm } = buildThinForkShoulder();
+    const mate = arm.__mates().find((m) => m.name === 'shoulder')!;
+    (mate as { exposure?: string }).exposure = undefined;
+    expect(await runGate4(arm)).toHaveLength(0);
   });
 });

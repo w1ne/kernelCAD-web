@@ -1,3 +1,5 @@
+> Source scope: this repository contains the reusable CAD runtime, CLI, MCP tools and headless renderer. Hosted product UI and commercial manufacturing services are maintained separately. Build the reusable tools with `npm run build`; use `npm run dev` for the standalone renderer.
+
 # kernelCAD - CAD runtime for agents
 
 **kernelCAD** turns mechanical intent into editable `.kcad.ts` source,
@@ -30,7 +32,18 @@ account in each client.
 
 Ask your agent: **“look at kernelcad.com and install the mcp”**.
 [Agent-readable installation instructions](https://kernelcad.com/llms.txt) cover
-hosted setup, local npm setup, and connection verification.
+hosted setup, local CLI setup, and connection verification.
+
+### Local CLI: one line
+
+```bash
+curl -fsSL https://kernelcad.com/install.sh | sh
+```
+
+This installs the self-contained CLI under `~/.kernelcad/versions/` and links
+`kernelcad` into `~/.local/bin`. Pin a version with
+`KERNELCAD_VERSION=v0.17.2`. Node.js 20 or newer is required. There is no npm
+package and no global npm install.
 
 ### Coding agents: one command
 
@@ -80,6 +93,16 @@ Some checks go past the picture:
 2.  **Editable Source**: Geometry is deterministic source code with explicit feature history, params, assemblies, and diagnostics.
 3.  **Validation-Centered**: Useful CAD output needs deterministic review for constraints, hardware fit, clearances, and exportability.
 4.  **Workflow Over Primitives**: Product progress is measured by intent-level workflows, not by copying every traditional CAD button.
+
+## Reference-parts accuracy
+
+The headless OCCT gate checks 27 native `.kcad.ts` reference parts against
+analytic or recorded OCCT volume, surface-area, and bounding-box values. The
+current headline is 25/27 reference parts match; the expected-pass gate is
+25/25, with two documented known failures and their reasons listed in the
+scorecard. See the
+[reference-parts scorecard](docs/reference-parts-scorecard.md) and its
+[local validation demo](docs/demos/reference-parts-scorecard/README.md).
 
 ## Agent workflow
 
@@ -136,7 +159,7 @@ and mechanism checks tied to physical components.
 ## Get Started
 
 ```bash
-npm install -g kernelcad
+curl -fsSL https://kernelcad.com/install.sh | sh
 ```
 
 Drop this in `bracket.kcad.ts`:
@@ -167,7 +190,7 @@ surface and authoring guide.
 ## Use with Claude Desktop
 
 kernelCAD runs as an MCP server, so Claude Desktop can drive it locally. After
-`npm install -g kernelcad`, add an entry to your Claude Desktop config file:
+the one-line install, add an entry to your Claude Desktop config file:
 
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
@@ -177,8 +200,8 @@ kernelCAD runs as an MCP server, so Claude Desktop can drive it locally. After
 {
   "mcpServers": {
     "kernelcad": {
-      "command": "npx",
-      "args": ["-y", "kernelcad", "mcp"]
+      "command": "kernelcad",
+      "args": ["mcp"]
     }
   }
 }
@@ -211,13 +234,16 @@ use the connected server's discovery rather than assuming the local list.
 The local installer is available. Preview the config change before applying it:
 
 ```bash
-npx -y kernelcad install --claude-desktop --dry-run
-npx -y kernelcad install --claude-desktop
+kernelcad install --claude-desktop --dry-run
+kernelcad install --claude-desktop
 ```
 
 Other hosted setup guides: [ChatGPT](https://app.kernelcad.com/connect?client=chatgpt),
+[Claude](https://app.kernelcad.com/connect?client=claude),
 [Claude Code](https://app.kernelcad.com/connect?client=claude-code),
 [Codex](https://app.kernelcad.com/connect?client=codex),
+[Gemini CLI](https://app.kernelcad.com/connect?client=gemini),
+[Grok Build](https://app.kernelcad.com/connect?client=grok),
 [Cursor](https://app.kernelcad.com/connect?client=cursor), and
 [VS Code](https://app.kernelcad.com/connect?client=vscode).
 
@@ -248,16 +274,12 @@ npm run test         # full vitest suite
 npm run qc           # quick quality gate (lint + typecheck + tests)
 ```
 
-## Attribution and referral links
+## Attribution
 
 Exported files name kernelCAD in their metadata field (STEP `FILE_NAME`, GLB
 `asset.generator`, the STL header, a DXF or XML comment), and public viewer
-pages show a small "Made with kernelCAD" link. Some tools return vendor links
-that can carry a referral tag; results with a tagged link include the
-disclosure "Some links are referral links; kernelCAD may earn a commission."
-A vendor with no tag gets the clean URL. Self-hosters and forks change
-all of it in two files, or with `KERNELCAD_REFERRAL_<VENDOR>` and
-`KERNELCAD_REFERRALS=off`. See [ATTRIBUTION.md](ATTRIBUTION.md).
+pages show a small "Made with kernelCAD" link. Self-hosters and forks change
+this in `src/shared/links/attribution.ts`. See [ATTRIBUTION.md](ATTRIBUTION.md).
 
 ## License
 

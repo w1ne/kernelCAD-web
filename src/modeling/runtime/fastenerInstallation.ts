@@ -4,7 +4,7 @@ import { getOC, makeVertex, type Face } from 'replicad';
 import type { BuiltModel } from '../buildModel';
 import type { Assembly } from '../capture/assembly';
 import { isSceneBackend, type SceneBackend } from '../../kernel/backends/sceneBackend';
-import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend, analysisBodyOf } from '../../kernel/backends/occt/occtBackend';
 import { inspectCylindricalHoles, collectFullCylinders, type CylindricalHole } from '../../kernel/backends/occt/holeDetection';
 import { brepExtremaDistance } from '../../kernel/backends/occt/brepDistance';
 import { validateHashBoundConnectorManifest } from '../../shared/parts/connectorManifestSchema';
@@ -100,7 +100,9 @@ function screwOf(model: BuiltModel, scene: SceneBackend, name: string): ScrewFra
   const end = placement.point(interfaces.tipOrigin);
   if (Math.abs(norm(sub(end,origin))-length) > .01) return undefined;
   const axis = unit(sub(end,origin));
-  const world = (placed.shape as OcctBackend).clone().applyTransform(placed.worldTransform);
+  // The installation audit measures the nominal envelope (analysis body), not
+  // a modeled thread: the catalog shank interfaces are nominal-diameter.
+  const world = (analysisBodyOf(placed.shape) as OcctBackend).clone().applyTransform(placed.worldTransform);
   const shaft = collectFullCylinders(world,'pin').some(c => {
     const low = add(c.loc0,scale(c.dir0,c.tMin)), high = add(c.loc0,scale(c.dir0,c.tMax));
     const start = Math.min(dot(sub(low,origin),axis),dot(sub(high,origin),axis));
@@ -234,7 +236,7 @@ function stationReport(model: BuiltModel, scene: SceneBackend | undefined, stati
       for (const name of new Set([...station.against,...(station.engagementPart ? [station.engagementPart] : [])])) {
         const part = scene!.parts.find(p => p.name === name);
         if (!part || !(part.shape instanceof OcctBackend)) { metrics.push(unknown('target-geometry',name,'Target is missing from the lowered scene.')); continue; }
-        const shape = part.shape.clone().applyTransform(part.worldTransform);
+        const shape = (analysisBodyOf(part.shape) as OcctBackend).clone().applyTransform(part.worldTransform);
         if (station.against.includes(name)) targets.set(name,shape);
         const result = boreMetrics(name,shape,screw,tol,angleTol);
         metrics.push(...result.metrics);

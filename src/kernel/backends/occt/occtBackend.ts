@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
+import { optimalBoundsOf } from './backendBounds';
 import { getOC } from 'replicad';
 import type { ShapeBackend, BackendTarget } from '../backend';
 import type { SceneBackend } from '../sceneBackend';
@@ -34,48 +35,15 @@ import {
   extrudeRoundedRectShape,
 } from './backendExtrudeProfiles';
 
-export { initOcct, type InitOcctOptions } from './backendInit';
+export { initOcct, occtHeapBytes, type InitOcctOptions } from './backendInit';
 export { resetOcct, registerOcctResetHook, withOcctPoisonRecovery } from './backendInit';
 export { meshShapeForExport } from './backendMesh';
+import { assertCanonicalFaceSupported, resolveCanonicalFaceTarget, type CanonicalFaceName } from './canonicalFaceTarget';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
 
 type ReplicadShape3D = replicad.Shape3D;
-
-type CanonicalFaceName = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
-
-const CANONICAL_FACE_AXIS: Record<CanonicalFaceName, { axisIndex: 0 | 1 | 2; bound: 'min' | 'max' }> = {
-  top:    { axisIndex: 2, bound: 'max' },
-  bottom: { axisIndex: 2, bound: 'min' },
-  right:  { axisIndex: 0, bound: 'max' },
-  left:   { axisIndex: 0, bound: 'min' },
-  back:   { axisIndex: 1, bound: 'max' },
-  front:  { axisIndex: 1, bound: 'min' },
-};
-
-function assertCanonicalFaceSupported(
-  kind: 'box' | 'cylinder' | 'sphere' | 'sketch' | undefined,
-  face: CanonicalFaceName,
-): void {
-  if (!kind) {
-    throw new Error('findCanonicalFaceHash: only valid on primitives (box/cylinder/sphere); kind is unset');
-  }
-  if (kind === 'sphere') {
-    throw new Error('findCanonicalFaceHash: spheres have no canonical planar face names');
-  }
-  if (kind === 'cylinder' && face !== 'top' && face !== 'bottom') {
-    throw new Error(`findCanonicalFaceHash: '${face}' is not applicable to cylinder (only top/bottom)`);
-  }
-}
-
-function resolveCanonicalFaceTarget(
-  face: CanonicalFaceName,
-  bb: { min: Vec3; max: Vec3 },
-): { axisIndex: 0 | 1 | 2; value: number } {
-  const { axisIndex, bound } = CANONICAL_FACE_AXIS[face];
-  return { axisIndex, value: bound === 'max' ? bb.max[axisIndex] : bb.min[axisIndex] };
-}
 
 /**
  * `ShapeBackend` implementation backed by Replicad / OpenCascade.
@@ -117,6 +85,17 @@ export class OcctBackend implements ShapeBackend {
    *  branch — the sketch is already lifted into a 3D coordinate frame and
    *  cannot be reused on another plane. */
   private _faceBoundSketch: replicad.SketchInterface | null = null;
+  /**
+   * Nominal stand-in that fit, clash and installation checks measure in place
+   * of this display solid. Set on catalog fasteners built with modeled
+   * threads: the envelope (nominal head + shank, nut with a nominal bore) is
+   * what a clearance hole, a tapped hole or the mating nut is designed
+   * around, so a modeled thread inside one is not a clash. Rigid moves
+   * (clone, translate, rotate, located) carry it along; booleans, scaling
+   * and mirroring drop it, because the stand-in no longer describes the
+   * result. Read it through {@link analysisBodyOf}.
+   */
+  analysisBody?: OcctBackend;
 
   constructor(
     shape: ReplicadShape3D,
@@ -138,7 +117,15 @@ export class OcctBackend implements ShapeBackend {
   }
 
   clone(): OcctBackend {
-    return new OcctBackend(this.shape.clone() as ReplicadShape3D, this.kind, this.historyMap);
+    const out = new OcctBackend(this.shape.clone() as ReplicadShape3D, this.kind, this.historyMap);
+    if (this.analysisBody !== undefined) out.analysisBody = this.analysisBody.clone();
+    return out;
+  }
+
+  /** `out` with this shape's analysis body moved by `move` (rigid edits). */
+  private carryAnalysisBody(out: OcctBackend, move: (body: OcctBackend) => OcctBackend): OcctBackend {
+    if (this.analysisBody !== undefined) out.analysisBody = move(this.analysisBody);
+    return out;
   }
 
   /**
@@ -249,7 +236,7 @@ export class OcctBackend implements ShapeBackend {
     height: number,
     radius: number,
     depth: number,
-    opts: { twistAngle?: number } = {},
+    opts: { twistAngle?: number; axis?: 'x' | 'y' | 'z' } = {},
   ): OcctBackend {
     return new OcctBackend(extrudeRoundedRectShape(width, height, radius, depth, opts));
   }
@@ -770,11 +757,13 @@ export class OcctBackend implements ShapeBackend {
   }
 
   translate(x: number, y: number, z: number): OcctBackend {
-    return new OcctBackend(this.shape.translate(x, y, z) as ReplicadShape3D);
+    const out = new OcctBackend(this.shape.translate(x, y, z) as ReplicadShape3D);
+    return this.carryAnalysisBody(out, (body) => body.translate(x, y, z));
   }
 
   rotate(axis: Vec3, degrees: number, pivot: Vec3 = [0, 0, 0]): OcctBackend {
-    return new OcctBackend(this.shape.rotate(degrees, pivot, axis) as ReplicadShape3D);
+    const out = new OcctBackend(this.shape.rotate(degrees, pivot, axis) as ReplicadShape3D);
+    return this.carryAnalysisBody(out, (body) => body.rotate(axis, degrees, pivot));
   }
 
   /**
@@ -802,7 +791,8 @@ export class OcctBackend implements ShapeBackend {
    *  instead of copying it (occtPlacement.ts). Not consumed. */
   located(t: import('../../../shared/runtime/se3').Transform): OcctBackend {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new OcctBackend(replicad.cast(locateShape((this.shape as any).wrapped, t) as any) as ReplicadShape3D);
+    const out = new OcctBackend(replicad.cast(locateShape((this.shape as any).wrapped, t) as any) as ReplicadShape3D);
+    return this.carryAnalysisBody(out, (body) => body.located(t));
   }
 
   /** Same underlying shape (TopoDS `IsPartner`), e.g. pattern instances. */
@@ -1049,16 +1039,19 @@ export class OcctBackend implements ShapeBackend {
    * @throws {Error} when OCCT reports the boolean failed — a failed probe must
    *   not read as "no overlap".
    */
-  intersectionVolume(other: OcctBackend): number {
-    return this.intersectionMetrics(other).volumeMm3;
-  }
+  intersectionVolume(other: OcctBackend): number { return this.intersectionMetrics(other).volumeMm3; }
 
   /**
    * Volume (mm³) and boundary area (mm²) of the common solid of two shapes.
    * The area gives the shared region's mean thickness (2·V/A), which tells
    * coincident-face contact apart from a real overlap of any volume.
    */
-  intersectionMetrics(other: OcctBackend): { volumeMm3: number; areaMm2: number } {
+  intersectionMetrics(other: OcctBackend): {
+    volumeMm3: number;
+    areaMm2: number;
+    /** World-frame bounds of the common solid, when OCCT can compute them. */
+    bounds?: { min: Vec3; max: Vec3 };
+  } {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
     const progress = new oc.Message_ProgressRange_1();
@@ -1086,7 +1079,8 @@ export class OcctBackend implements ShapeBackend {
         oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
         const areaMm2 = Math.abs(surface.Mass());
         surface.delete();
-        return { volumeMm3, areaMm2 };
+        const bounds = optimalBoundsOf(shape);
+        return { volumeMm3, areaMm2, ...(bounds !== undefined ? { bounds } : {}) };
       } finally {
         // The handle holds a reference to the common solid; without this the
         // result of every probe stays in the WASM heap until GC.
@@ -1484,4 +1478,10 @@ export function pbrFromMetadata(metadata: Record<string, unknown> | undefined): 
     return { baseColor: metadata.color };
   }
   return undefined;
+}
+
+/** The body fit / clash / installation checks measure for `shape`: its
+ *  nominal analysis stand-in when it carries one, else the shape itself. */
+export function analysisBodyOf<T>(shape: T): T | OcctBackend {
+  return shape instanceof OcctBackend && shape.analysisBody !== undefined ? shape.analysisBody : shape;
 }

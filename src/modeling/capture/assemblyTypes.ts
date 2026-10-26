@@ -95,6 +95,10 @@ export interface AssemblyPartRef {
    *  stored record so the MJCF emitter and criterion 8 see additions made
    *  after `part(...)` returns. */
   wrapGeoms: WrapGeomRecord[];
+  /** Convex collision pieces declared via `collision(shapes)`, in the part's
+   *  own frame. Shared by reference with the stored record. Empty means the
+   *  exporter falls back to one hull of the whole part. */
+  collisionShapes: Shape[];
   /** Look up a v0.5 kinematic connector by name (declared via
    *  `assembly.part(..., { connectors })`) — returns an `AssemblyConnectorRef`
    *  for use in `opts.connect`. */
@@ -108,6 +112,14 @@ export interface AssemblyPartRef {
    *  `assembly.wrap-geom.duplicate-name` if the name is already used on
    *  this part, or `feature.invalid-args` on a bad axis / radius. */
   wrapGeom(name: string, opts: WrapGeomOptions): AssemblyPartRef;
+  /** Declare the part's collision geometry as convex pieces (part-local
+   *  frame, like the part shape and its connectors) and return the part-ref
+   *  for chaining. Each call appends. The physics export collides with the
+   *  convex hull of EACH piece instead of one hull of the whole part, so a
+   *  non-convex part has no phantom contact volume. Mass and inertia still
+   *  come from the part's real shape. Throws `feature.invalid-args` on an
+   *  empty array or a non-Shape entry. */
+  collision(shapes: Shape[]): AssemblyPartRef;
   /** Where the tube end declared by the `axis` connector `name` (registered
    *  with `port` data) attaches. Throws `tube.port.not-found`,
    *  `tube.port.not-a-port` or `tube.port.unresolved`. */
@@ -221,6 +233,12 @@ export interface AssemblyPartOpts {
    *  objects used for contact/load scenarios that are not structural members
    *  of the mechanism graph. */
   role?: AssemblyPartRole;
+  /** Display-clip / styling-study overlay. The part stays in the Scene,
+   *  export, BOM and render, but its overlaps with non-overlay parts are
+   *  excluded from validation as intentional display overlay. This is
+   *  narrower than `ignore`: the intent is recorded and reported, not just
+   *  silenced. */
+  overlay?: boolean;
 }
 
 export interface MechanicalJointIntentOpts {
@@ -258,7 +276,7 @@ export interface JointSupportIntentRecord extends JointSupportIntentOpts {
 }
 
 export type TransmissionKind =
-  | 'direct-horn'
+  | 'direct'
   | 'link-rod'
   | 'four-bar'
   | 'gear-pair'
@@ -412,6 +430,9 @@ export interface AssemblyPartStored extends AssemblyPartRef {
    *  by `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Undefined when
    *  the script did not declare a cross-section on `arm.part(...)`. */
   readonly crossSection?: AssemblyCrossSection;
+  /** Display-clip / intentional-overlay flag, copied from
+   *  `AssemblyPartOpts.overlay`. */
+  readonly overlay?: boolean;
 }
 
 /** SRDF planning group. Either chain-form (base/tip) or enumeration. */

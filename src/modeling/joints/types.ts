@@ -21,12 +21,13 @@ import type { Vec3 } from '../../shared/intent/types';
 export type AxisHint = Vec3 | 'X' | 'Y' | 'Z';
 
 /**
- * Style overrides — all fields optional. Unspecified fields fall back to
- * scale-derived defaults (see `withDefaults` in `clevis.ts`).
+ * Style overrides. `knuckleR` is required (it is the scale input); the other
+ * unspecified fields are derived proportionally from it (see `withDefaults`
+ * in `clevis.ts`).
  *
  * All dimensions are millimetres.
  *
- *  - `knuckleR`: radius of the knuckle (rounded plate corner) at the pivot
+ *  - `knuckleR`: REQUIRED. Radius of the knuckle (rounded plate corner) at the pivot
  *  - `forkGapY`: distance between inner faces of the two fork plates; when
  *      omitted, `tongueY + 0.65 * knuckleR` leaves visible running clearance
  *  - `tongueY`: tongue plate thickness (must be < forkGapY so it slips in)
@@ -39,7 +40,7 @@ export type AxisHint = Vec3 | 'X' | 'Y' | 'Z';
  *      pin shaft slips through without an interference fit (default 0.2 mm)
  */
 export interface ClevisStyle {
-  knuckleR?: number;
+  knuckleR: number;
   forkGapY?: number;
   tongueY?: number;
   plateT?: number;
@@ -139,7 +140,7 @@ export interface ClevisConnectorSpec {
  *  - `pivotChild`: pivot point in CHILD-local frame; defaults to the part-local origin
  *  - `limitsDeg`: revolute joint limits (degrees) used to compute the pivot
  *      lift — the tongue's swept arc must stay clear of the parent body
- *  - `style`: optional overrides for the scale-derived defaults
+ *  - `style`: REQUIRED; `style.knuckleR` is the scale input, other omitted dimensions derive from it
  *  - `liftPivot`: when true (default), lift the pivot ALONG `liftDir` so the
  *      tongue's swept arc cannot intrude into the parent body. When false the
  *      pivot stays at the supplied coordinates.
@@ -154,7 +155,7 @@ export interface ClevisJointOptions {
   pivotParent: Vec3;
   pivotChild?: Vec3;
   limitsDeg?: [number, number];
-  style?: ClevisStyle;
+  style: ClevisStyle;
   /** Optional engineering strength evidence copied into the returned
    * structural model. Visual style materials are never used as a fallback. */
   engineering?: ClevisEngineeringMaterials;

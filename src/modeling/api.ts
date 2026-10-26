@@ -24,6 +24,8 @@ import type {
   AnimationViewSpec,
 } from '../shared/intent/animationViewRecord';
 import type { DfmSpec, DfmSpecHandle } from '../shared/intent/dfmSpecRecord';
+import type { RequirementPredicate } from './requirements/predicates';
+import type { RequirementSelectionHandle } from './requirements/predicates';
 import type { TubeSpecMetadata } from '../shared/intent/tubeRecord';
 import type { TubeOptions, TubeSpec } from './capture/tubeRecords';
 import type { RailPoint } from './helix';
@@ -37,7 +39,6 @@ import type { FindPartOpts, FindPartResult } from './parts/findPart';
 import type { StandardParts } from './parts/standardParts';
 import type { PartRequest, StackRequest } from './parts/familyTable';
 import type { InsertRequest, InsertResult } from './parts/holeInsert';
-import type { FixtureParts } from './parts/fixtureParts';
 import type { PlacedStack } from './parts/placePart';
 import type { FromDXFOptions, FromSVGOptions } from './parts/fromVectorFormats';
 import type { ShapeList } from './selection/shapeList';
@@ -51,10 +52,6 @@ import { makeJointNamespace } from './joints';
 import type {
   ClevisJoint,
   ClevisJointOptions,
-  ArticulatedDigitOptions,
-  ArticulatedDigitResult,
-  SupportedServoRevoluteOptions,
-  SupportedServoRevoluteResult,
 } from './joints';
 import {
   makePrimitiveMethods,
@@ -71,6 +68,8 @@ import { makePartsLib } from './apiPartsLib';
 import { makeNurbsSurfaceMethods, makeCurveMethods, makeSweepMethods } from './apiSurfaceMethods';
 import { makeModuleNamespaces } from './apiModuleNamespaces';
 import { makeCaptureMethods } from './apiCaptureMethods';
+import { makeRequirementMethods } from './apiRequirementMethods';
+import { makePolygonMethods, type FilletPolygonOptions, type PolygonPoint } from './apiPolygonMethods';
 import { makeThreadMethods } from './apiThreadMethods';
 import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
 
@@ -145,9 +144,6 @@ export interface PartsLib {
    * Returns the shape with seats applied plus one placed stack per hole.
    */
   insert(shape: Shape, request: InsertRequest): Promise<InsertResult>;
-  /** Machining-fixture hardware: T-slot nuts, clamping studs, flange nuts, strap
-   *  clamps and step blocks, keyed by the thread their clamping parts use. */
-  fixture: FixtureParts;
   standard: StandardParts;
 }
 
@@ -163,6 +159,11 @@ export interface ExtrudeOpts extends FaceLabelOpts {
    *  that does not touch the origin changes its bounding box. Defaults to 0
    *  (straight extrude). Unknown option keys throw `feature.invalid-args`. */
   twistAngle?: Editable<number>;
+  /** Extrusion axis for `extrudeRoundedRect`: 'z' (default) keeps the
+   *  profile in XY and sweeps +Z; 'x' places width along Y / height along Z
+   *  and sweeps +X; 'y' places width along X / height along Z and sweeps +Y.
+   *  Saves a rotate() chain when building wings, cockpit plates, etc. */
+  axis?: 'x' | 'y' | 'z';
 }
 
 /** W2.2: opts for `sheetMetal(profile, opts)`. The kernel does not bake
@@ -291,6 +292,24 @@ export interface KernelCadApi {
   extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: ExtrudeOpts): Shape;
   extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: ExtrudeOpts): Shape;
   extrudeRoundedRect(width: Editable<number>, height: Editable<number>, radius: Editable<number>, depth: Editable<number>, opts?: ExtrudeOpts): Shape;
+  /**
+   * Round every corner of a closed 2D polygon with tangent arcs. Returns
+   * points for `extrudePolygon` / the prism helpers. Radius is clamped per
+   * corner to half the shorter adjacent edge; CW and CCW winding both work.
+   */
+  filletPolygon(points: readonly PolygonPoint[], radius: number, opts?: FilletPolygonOptions): [number, number][];
+  /**
+   * Side-view mask prism: polygon points are (station s, height z), extruded
+   * through Y from -halfY to +halfY (default 1200). The polygon lies on the
+   * XZ plane, so the shape reads like a side elevation.
+   */
+  prismSide(points: readonly PolygonPoint[], halfY?: number): Shape;
+  /** Side-view mask prism on one side only: Y spans y0..y1 (y1 > y0). */
+  prismSideY(points: readonly PolygonPoint[], y0: number, y1: number): Shape;
+  /** Front-view mask prism: points are (Y, Z), extruded along X from x0..x1. */
+  prismFront(points: readonly PolygonPoint[], x0: number, x1: number): Shape;
+  /** Plan-view mask prism: points are (X, Y), extruded along Z from z0..z1. */
+  prismPlan(points: readonly PolygonPoint[], z0: number, z1: number): Shape;
   union(...shapes: Shape[]): Shape;
   assembly(name?: string): Assembly;
 
@@ -648,6 +667,50 @@ export interface KernelCadApi {
   dfmSpec(spec: DfmSpec): DfmSpecHandle;
 
   /**
+   * Declare a named, kernel-measured requirement. The predicate is authored
+   * with the helper globals below and reports into the same `requirements`
+   * ledger as `dfmSpec`, `feaStudy.minSafetyFactor` and mechanical intent.
+   * Example:
+   *
+   *   require('bolt-clearance', clearance(faces(bracket, { ofSurfaceType: 'CYLINDER' }), housing).gte(1.0));
+   *   require('hole-count', count(faces(plate, { ... })).eq(4));
+   *   require('wall-band', volume(body).between(1200, 1800));
+   *
+   * A requirement without a comparison THROWS (an enforcement gate must not
+   * silently disable itself). Each evaluation returns a `requirements` block
+   * with status / measured / limit / margin and the S1 fingerprints of the
+   * selections involved.
+   */
+  require(name: string, predicate: RequirementPredicate): void;
+
+  /** Minimum surface-to-surface distance between two selections, mm. */
+  clearance(a: unknown, b: unknown): RequirementPredicate;
+  /** Distance between two selections, mm. */
+  distance(a: unknown, b: unknown): RequirementPredicate;
+  /** Mass of a selection in kg (default 1000 kg/m^3). */
+  mass(selection: unknown): RequirementPredicate;
+  /** Volume of a selection in mm^3. */
+  volume(selection: unknown): RequirementPredicate;
+  /** Bounding-box size of a selection in mm; chain `.within({ x, y, z })`. */
+  bbox(selection: unknown): RequirementPredicate;
+  /** Centre of mass in mm; chain `.within(bands)` or `.between(lo, hi)`. */
+  centerOfMass(selection: unknown): RequirementPredicate;
+  /** Number of resolved faces/edges in a selection. */
+  count(selection: unknown): RequirementPredicate;
+  /** Largest inner-loop (hole) count across the selected faces. */
+  innerLoops(selection: unknown): RequirementPredicate;
+  /** Angle between two selections' directions, degrees. */
+  angle(a: unknown, b: unknown): RequirementPredicate;
+  /** Two selections share an axis. */
+  concentric(a: unknown, b: unknown): RequirementPredicate;
+  /** Two selections are coplanar. */
+  coplanar(a: unknown, b: unknown): RequirementPredicate;
+  /** Select all faces of `shape` matching `query` (default: every face). */
+  faces(shape: Shape, query?: import('../shared/intent/queryTypes').FaceQuery): RequirementSelectionHandle;
+  /** Select all edges of `shape` matching `query` (default: every edge). */
+  edges(shape: Shape, query?: EdgeQuery): RequirementSelectionHandle;
+
+  /**
    * Bent tube between two ends: straight legs joined by constant-radius
    * bends, built as one hollow solid in assembly space. `from` / `to` are
    * `part.port(name)` or `{ point, axis? }`; `via` lists the corner points in
@@ -685,34 +748,9 @@ export interface KernelCadApi {
    * `box`/`cylinder`/`union` — hand-rolled clevises are the leading cause
    * of mechanism-delivery failures (see `kernelcad-kinematic` SKILL.md
    * "Mechanism delivery — non-bypassable").
-   *
-   * `joint.supportedServoRevolute(arm, { name, mate, support, supportMount,
-   * output, axis, ... })` adds a seated servo actuator part, fastens its
-   * mount to a frame connector on the support part, and declares the
-   * `mechanicalJoint(...)` support contract for the driven revolute mate.
-   * The helper preflights names, refs, mate type, support/output presence,
-   * supportMount frame type, `axis` as the support-side axis connector of
-   * the named revolute mate, and body dimensions before mutating the
-   * assembly.
-   *
-   * `joint.articulatedDigit(arm, { name, parentMount, frame, segments,
-   * joints, clearanceMm, ... })` builds a planar chain directly in the
-   * supplied assembly. Its full 3D base frame maps canonical +X forward,
-   * +Y lift, and +Z pin axes before registration; every generated revolute
-   * package is a physical `joint.clevis(...)` with a support intent and
-   * clearance-bounded structural link. Omitted clevis dimensions use
-   * `joint.clevis`'s standard `withDefaults()` resolution unchanged. Fit options are soft reference checks
-   * only and never reduce the physical package. The root mount is an exterior
-   * plane: the generated base extends along local +X to its distal root pivot,
-   * so callers place the frame on an exterior palm surface with palm material
-   * behind that plane. Arbitrary interior mount clearance remains a candidate
-   * assembly review responsibility. This helper does not certify payload
-   * capacity or actuation.
    */
   joint: {
     clevis(opts: ClevisJointOptions): ClevisJoint;
-    supportedServoRevolute(arm: Assembly, opts: SupportedServoRevoluteOptions): SupportedServoRevoluteResult;
-    articulatedDigit(arm: Assembly, opts: ArticulatedDigitOptions): ArticulatedDigitResult;
   };
 }
 
@@ -788,6 +826,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     planetaryToothCompatibility: makePlanetaryToothCompatibilityMethod(),
     ...makeThreadMethods(session, () => api),
     ...makeExtrudeMethods(session),
+    ...makePolygonMethods(() => api),
     assembly(name) {
       return makeAssembly(name, session);
     },
@@ -798,6 +837,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     ...makeSweepMethods(session),
     ...makeModuleNamespaces(session),
     ...makeCaptureMethods(session),
+    ...makeRequirementMethods(session),
 
     // joint.* is bound below after the api object is fully constructed, so
     // the namespace closes over the FINAL `api` (including box/cylinder/etc.).

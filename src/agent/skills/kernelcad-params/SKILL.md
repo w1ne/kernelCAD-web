@@ -5,7 +5,7 @@ description: Editable symbolic parameters — param(), params(), ParamRef arithm
 
 # kernelCAD — editable parameters
 
-Use `param()` for values the user may want to tweak after the first build; use literals for incidental dimensions. A param returns a symbolic `ParamRef`, not a number, so do not do JS arithmetic with it (`paramRef / 2` throws `feature.invalid-args` at the coercion site — the result would be a frozen number that stops re-evaluating on param updates). For derived dimensions, chain the arithmetic methods on the ParamRef itself: `.add`, `.subtract`, `.multiply`, `.divide`, `.negate` each return a new ParamRef built on a structured expression that re-evaluates whenever the underlying param changes — e.g. `param('r', 5).divide(2)` for a half-radius, or `param('w', 80).subtract(param('margin', 5).multiply(2))` for a derived inset width.
+Use `param()` for values the user may want to tweak after the first build; use literals for incidental dimensions. A param returns a symbolic `ParamRef`, not a number, so do not do JS arithmetic with it (`paramRef / 2` throws `feature.invalid-args` at the coercion site — the result would be a frozen number that stops re-evaluating on param updates). For derived dimensions, chain the arithmetic methods on the ParamRef itself: `.add`, `.subtract`, `.multiply`, `.divide`, `.negate`, `.min`, `.max`, `.abs`, `.clamp` each return a new ParamRef built on a structured expression that re-evaluates whenever the underlying param changes — e.g. `param('r', 5).divide(2)` for a half-radius, `param('w', 80).subtract(param('margin', 5).multiply(2))` for a derived inset width, or `param('wall', 2).max(1.2).clamp(1.2, 8)` for a printable wall bound.
 
 ## `param()` / `params()` API
 
@@ -36,6 +36,9 @@ params({ width: 60, addCablePort: true }): {
 | `.multiply(n)` | `ParamRef<number>` | `paramRef.multiply(2)` |
 | `.divide(n)` | `ParamRef<number>` | `paramRef.divide(2)` |
 | `.negate()` | `ParamRef<number>` | `-paramRef` symbolic |
+| `.min(n)` / `.max(n)` | `ParamRef<number>` | smaller / larger of the two |
+| `.abs()` | `ParamRef<number>` | absolute value |
+| `.clamp(lo, hi)` | `ParamRef<number>` | clamp into `[lo, hi]`; both bounds may be ParamRefs |
 
 Each method accepts either a plain number or another `ParamRef`. Chains stay fully symbolic: `radius.multiply(2).add(1)` is a `ParamRef`, not a number, and re-evaluates on each param change.
 
@@ -138,6 +141,25 @@ declare the params a user is most likely to change first.
 
 Use MCP `inspect({ of: 'params' })` to list a model's params, then `set_param({ code, param_name: 'boltDia', new_value: 6 })` to rewrite the `param()` default in the source. The edit is source-only — it returns the modified code plus diagnostics from re-evaluating; the caller persists the returned code.
 
+Preview before you commit a value that declared intent cares about:
+
+```typescript
+set_param({ code, param_name: 'boltDia', new_value: 6, preview: true })
+// → { ok: true, preview: true, new_code, geometry, requirementsDiff, bindings, before, after }
+```
+
+`preview: true` builds both the current source and the rewritten source in
+scratch sessions. It returns the same `diff_geometry` summary as the dedicated
+tool (`geometry.summary`: identical / moved / resized / topologyChanged,
+added/removed volume, deviation), the S2 ledger diff (`requirementsDiff`: which
+requirements appeared, vanished, flipped pass↔fail, or shrank a margin), and the
+S1 selectors that moved or re-bound (`bindings`). `before`/`after` carry each
+side's ledger; read `after.requirementsOk` to decide whether the edit preserves
+intent. `preview.ok` only means the preview was computed — a preview that
+correctly shows a broken requirement still returns `ok: true`. Nothing is
+written: the active session, source, revision and caches stay untouched, and a
+preview whose revised build fails returns `ok: false` with no diff.
+
 `inspect({ of: 'params' })` accepts the same `{ file? }` / `{ code? }` input every other `inspect({ of: ... })` reader does — pass one to evaluate that file/code fresh. With neither, it falls back to reading whatever session `evaluate_script` last left active (so a bare `inspect({ of: 'params' })` right after `evaluate_script` still works with no arguments) — it does NOT search for or reuse an unrelated session.
 
 ```typescript
@@ -171,13 +193,15 @@ set_param({ code, param_name: 'Screw', new_value: 'M9' })
 // → { ok: false, error: "param 'Screw' value 'M9' is not one of the declared choices: M3, M4, M5 (... invalid-args.param.choice-invalid ...)" }
 ```
 
-### `sweep_tolerance` is numeric-only
+### What `sweep_tolerance` can sweep
 
-`kinematic.sweepTolerance({ params: {...} })` only accepts `number` params
-(`{ values: [...] }` or `{ min, max, steps }`) — sweeping a boolean/choice/
-string param has no meaningful range and fails fast with
-`feature.invalid-args` (hint `invalid-args.param.type-mismatch`) before any
-combo is evaluated.
+`kinematic.sweepTolerance({ params: {...} })` accepts `number` params
+(`{ values: [...] }` or `{ min, max, steps }`) and discrete `choice`/`string`
+params (`{ values: ['M3', 'M4', ...] }`). Numeric transitions are bisected to
+`boundaryTolerance` and reported as boundaries; discrete params are evaluated
+as points and never bisected. A boolean or colour param has no meaningful
+range and fails fast with `feature.invalid-args` (hint
+`invalid-args.param.type-mismatch`) before any combo is evaluated.
 
 ## Parametric assembly frames
 
@@ -222,7 +246,7 @@ After authoring with editable parameters, run before reporting done:
 | G-eval | `kernelcad evaluate` exits 0 — no `param.*` diagnostics |
 | G-default-in-range | Every `param()` default value satisfies its declared `min` / `max` |
 | G-unique-names | No two `param()` calls share a `name` in the same script — duplicates fail at capture time |
-| G-paramref-survives-arithmetic | `ParamRef.add/.subtract/.multiply/.divide/.negate` return new ParamRefs, not numbers; chains like `radius.multiply(2).add(1)` stay symbolic |
+| G-paramref-survives-arithmetic | `ParamRef.add/.subtract/.multiply/.divide/.negate/.min/.max/.abs/.clamp` return new ParamRefs, not numbers; chains like `radius.multiply(2).add(1).clamp(0, 50)` stay symbolic |
 | G-params-update-keeps-bounds | When the studio or MCP `set_param` sets a new value, it must satisfy `min` / `max`; otherwise re-evaluating the rewritten source surfaces a diagnostic |
 
 ## Related skills

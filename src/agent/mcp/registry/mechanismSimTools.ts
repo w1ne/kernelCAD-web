@@ -12,7 +12,7 @@ const sweepToleranceToolEntry: ToolRegistryEntry = {
   definition: {
     name: 'sweep_tolerance',
     description:
-      "Use this when you need to check whether a mechanism stays buildable across a tolerance/dimension range, not just at one nominal value. Declares one or more param() names with a { values: [...] } list or a { min, max, steps } range, re-evaluates the script once per cartesian-product combination (capped at 64 combos — exceeding it truncates to the first 64 and emits kinematic.sweep-tolerance.combo-cap-exceeded), and runs the standard gates on each combo: interference, mounting-hole diameter agreement, and joint-axis binding (all three, default on); reachability only when gates.reachable names a tip_link + target. Returns the pass/fail envelope table (one row per combo) plus firstFailure per gate — the fastest way to find the first param value at which a design breaks.",
+      "Use this when you need to know where and why a design breaks across a tolerance/dimension range, not just whether it builds at one nominal value. Declares one or more param() names with a { values: [...] } list or a { min, max, steps } range (number params are bisected; choice/string params are evaluated as discrete points), re-evaluates the script once per cartesian-product combination (capped at 64 combos — exceeding it truncates to the first 64 and emits kinematic.sweep-tolerance.combo-cap-exceeded), and measures every requirement in the S2 ledger (script require(), dfmSpec, gated FEA, mechanical intent) plus the standard gates on each combo: interference, mounting-hole diameter agreement, and joint-axis binding (all three default on); reachability only when gates.reachable names a tip_link + target. After the coarse grid it bisects each numeric pass/fail transition down to boundaryTolerance and reports the boundary value, the failing side, and the binding requirement/gate names (e.g. \"wall fails below 1.840 mm; binding: wall\"). Returns per-combo verdicts, firstFailure per gate, firstRequirementFailure per requirement, boundaries[], and a coverage statement that says \"checked at N points plus boundaries\", never \"proven\".",
     inputSchema: {
       type: 'object',
       properties: {
@@ -41,6 +41,14 @@ const sweepToleranceToolEntry: ToolRegistryEntry = {
               required: ['tipLink', 'targetPosition'],
             },
           },
+        },
+        boundaryTolerance: {
+          type: 'number',
+          description: 'Absolute parameter tolerance for boundary bisection. Default 0.001.',
+        },
+        boundaryBudget: {
+          type: 'number',
+          description: 'Maximum extra evaluations spent bisecting boundaries. Default 64; 0 skips bisection.',
         },
       },
       required: ['params'],

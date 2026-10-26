@@ -10,8 +10,7 @@
 // hosts the gate hook — this tool surfaces the report struct the
 // evaluate_script envelope omits.
 //
-// Distinct from `dfm_preflight` (vendor job-shop ordering rules over sheet
-// metal): dfm_check enforces the SCRIPT-declared printability gates.
+// Enforces the script-declared printability gates.
 
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
 import { noDfmSpecDiagnostic } from '../../cli/commands/dfm';

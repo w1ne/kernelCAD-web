@@ -20,6 +20,8 @@ import type { PartLineage } from '../../kernel/naming/evolutionRecord';
 import type { Shape } from './proxy';
 import type { CaptureSession } from './captureSession';
 import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLibrary';
+import { validateMassKg, validateOverlayOption } from './assemblyPartOverlayValidation';
+import { createPartCollision } from './assemblyPartCollision';
 import { copyMateCapacity } from './assemblyMateCapacity';
 import type { Assembly } from './assembly';
 import type {
@@ -589,6 +591,7 @@ export function makePartRef(
     assemblyName, id, name, at, connectors, mateConnectors, () => ref,
   );
   const wrapGeom = createPartWrapGeom(id, name, wrapGeoms, () => ref);
+  const collisionPart = createPartCollision(id, () => ref);
   const ref: AssemblyPartRef = {
     id,
     name,
@@ -599,6 +602,7 @@ export function makePartRef(
     wrapGeoms,
     connector: connector as AssemblyPartRef['connector'],
     wrapGeom,
+    ...collisionPart,
     port: createPartPort(id, name, at, mateConnectors),
     part: addPart,
     model: () => owner.model(),
@@ -633,20 +637,6 @@ function applyMaterialFinishDefault(
     (md?.materialByLabel !== undefined && Object.keys(md.materialByLabel).length > 0);
   if (!hasExplicitAppearance) {
     shape.finish(resolvedMaterial.finish);
-  }
-}
-
-/** `massKg`, when given, must be a positive finite mass. */
-function validateMassKg(name: string, shape: Shape, massKg: number | undefined): void {
-  if (massKg !== undefined && (typeof massKg !== 'number' || !Number.isFinite(massKg) || massKg <= 0)) {
-    invalidArgs({
-      api: `assembly.part('${name}', shape, { massKg })`,
-      path: 'opts.massKg',
-      got: massKg,
-      requires: 'a positive finite mass in kg',
-      example: `arm.part('${name}', shape, { massKg: 0.009 })`,
-      featureId: shape.id,
-    });
   }
 }
 
@@ -710,6 +700,7 @@ function resolvePartMaterialAndValidateOpts(
       `invalid-args.assembly.part-invalid-role — pass role: 'contact-target' only for external contact/load targets, or omit role for structural parts.`,
     );
   }
+  validateOverlayOption(name, shape.id, opts.overlay);
   return { resolvedMaterial, effectiveDensity };
 }
 
@@ -807,6 +798,7 @@ export function recordPartInternal(
     ...(opts.massKg !== undefined ? { massKg: opts.massKg } : {}),
     ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     ...(opts.role !== undefined ? { role: opts.role } : {}),
+    ...(opts.overlay !== undefined ? { overlay: opts.overlay } : {}),
   };
   state.parts.push(stored);
   if (opts.connect) {
@@ -913,6 +905,7 @@ function importSubAssemblyParts(
     const newName = `${prefix}${op.name}`;
     const newRef = recordPartInternal(state, arm, newName, op.originalShape, {
       ...(op.connectors !== undefined ? { connectors: op.connectors } : {}),
+      ...(op.overlay !== undefined ? { overlay: op.overlay } : {}),
     }, false);
     // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)
     // by shallow-copying the array contents. The new part already owns an
@@ -943,6 +936,12 @@ function importSubAssemblyMates(state: AssemblyState, prefix: string, other: Ass
       ...(om.pose !== undefined ? { pose: om.pose } : {}),
       ...(om.limitsDeg !== undefined ? { limitsDeg: om.limitsDeg } : {}),
       ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
+      ...(om.stiffnessNmmPerDeg !== undefined ? { stiffnessNmmPerDeg: om.stiffnessNmmPerDeg } : {}),
+      ...(om.springRefDeg !== undefined ? { springRefDeg: om.springRefDeg } : {}),
+      ...(om.dampingNmmsPerDeg !== undefined ? { dampingNmmsPerDeg: om.dampingNmmsPerDeg } : {}),
+      ...(om.stiffnessNPerMm !== undefined ? { stiffnessNPerMm: om.stiffnessNPerMm } : {}),
+      ...(om.springRefMm !== undefined ? { springRefMm: om.springRefMm } : {}),
+      ...(om.dampingNsPerMm !== undefined ? { dampingNsPerMm: om.dampingNsPerMm } : {}),
       ...(om.capacity !== undefined ? { capacity: copyMateCapacity(om.capacity) } : {}),
       ...(om.maxLoad !== undefined
         ? {

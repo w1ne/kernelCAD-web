@@ -167,7 +167,7 @@ Release assets are attached separately when a version has a demo capture, static
 ## Install And Upgrade
 
 \`\`\`bash
-npm install -g kernelcad@${newVersion}
+curl -fsSL https://kernelcad.com/install.sh | KERNELCAD_VERSION=v${newVersion} sh
 \`\`\`
 
 For repo development:

@@ -12,10 +12,11 @@ import { readFile } from 'node:fs/promises';
 import { resolveScriptRelativePath } from '../../shared/runtime/scriptRelativePath';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { pickSolid } from '../../kernel/backends/occt/stepSolidPicker';
-import { importStepCached, StepParseError } from './stepParseCache';
+import { importStepCached, isStepBackendHealed, StepParseError } from './stepParseCache';
 import { Shape } from '../capture/proxy';
 import type { CaptureSession } from '../capture/captureSession';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import {
   isSolidworksNativePath,
   SOLIDWORKS_STEP_EXPORT,
@@ -49,12 +50,14 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string, opts?: FromSt
   // Native SolidWorks bytes are not STEP. Refuse before any read or parse
   // so a .sldprt/.sldasm path cannot reach the OCCT STEP reader.
   if (isSolidworksNativePath(path)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `lib.fromSTEP: ${path} is a SolidWorks file. ${SOLIDWORKS_STEP_EXPORT}`,
-      undefined,
-      `invalid-args.lib.fromSTEP.solidworks — ${SOLIDWORKS_STEP_EXPORT}`,
-    );
+    invalidArgs({
+      api: 'lib.fromSTEP(path)',
+      path: 'path',
+      got: path,
+      requires: 'a STEP file; export SolidWorks parts or assemblies as STEP AP214 or AP242 with solid bodies',
+      example: "await lib.fromSTEP('parts/servo.step')",
+      hintSlug: 'invalid-args.lib.fromSTEP.solidworks',
+    });
   }
 
   const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
@@ -72,48 +75,22 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string, opts?: FromSt
   }
 
   if (buf.length === 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `lib.fromSTEP: ${absPath} is empty. ${SOLIDWORKS_STEP_EXPORT}`,
-      undefined,
-      `invalid-args.lib.fromSTEP.empty — ${SOLIDWORKS_STEP_EXPORT}`,
-    );
+    invalidArgs({
+      api: 'lib.fromSTEP(path)',
+      path: 'path',
+      got: absPath,
+      requires: 'a non-empty STEP file; export SolidWorks parts or assemblies as STEP AP214 or AP242 with solid bodies',
+      example: "await lib.fromSTEP('parts/servo.step')",
+      hintSlug: 'invalid-args.lib.fromSTEP.empty',
+    });
   }
 
-  // Parse (or reuse a content-hash-cached parse of) the STEP bytes. The cache
-  // is what keeps a Studio rebuild from re-importing an unchanged part on
-  // every code edit. We re-raise its failures as this call's KernelErrors so
-  // the agent-facing diagnostics are unchanged.
-  let backend: OcctBackend;
-  try {
-    backend = await importStepCached(buf);
-  } catch (e) {
-    if (e instanceof StepParseError && e.reason === 'no-solid') {
-      // A Shape3D-class result is required (Solid / CompSolid / Compound);
-      // 2D drawings and empty imports are rejected before the lowerer.
-      throw new KernelError(
-        'feature.kernel-failed',
-        `lib.fromSTEP: ${absPath} did not contain a 3D solid. ${SOLIDWORKS_STEP_EXPORT}`,
-        undefined,
-        `kernel-failed.lib.fromSTEP.no-solid — ${SOLIDWORKS_STEP_EXPORT}`,
-      );
-    }
-    if (e instanceof StepParseError && e.reason === 'out-of-memory') {
-      throw new KernelError(
-        'feature.kernel-failed',
-        `lib.fromSTEP: ran out of OCCT wasm heap importing ${absPath}: ${e.message}`,
-        undefined,
-        'kernel-failed.lib.fromSTEP.out-of-memory — the file is NOT invalid; the geometry kernel exhausted its 2 GiB wasm heap. Import fewer/smaller parts in one session, or restart the host process.',
-      );
-    }
-    const msg = e instanceof Error ? e.message : String(e);
-    throw new KernelError(
-      'feature.kernel-failed',
-      `lib.fromSTEP: ${absPath} is not a STEP solid. ${SOLIDWORKS_STEP_EXPORT} (${msg})`,
-      undefined,
-      `kernel-failed.lib.fromSTEP.parse — ${SOLIDWORKS_STEP_EXPORT}`,
-    );
-  }
+  // Parse or reuse a content-hash-cached parse; the helper keeps diagnostics
+  // stable while leaving this API's validation and metadata path readable.
+  let backend = await importStepOrThrow(buf, absPath);
+  // Solid selection wraps the child body in a fresh backend. Preserve the
+  // import's repair status before that wrapper drops the parse-cache marker.
+  const healed = isStepBackendHealed(backend);
 
   if (opts?.solid !== undefined) {
     backend = solidAt(backend, opts.solid, absPath);
@@ -136,6 +113,7 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string, opts?: FromSt
       sourcePath: absPath,
       lengthToMm,
       ...(opts?.solid !== undefined ? { solidIndex: opts.solid } : {}),
+      healed,
     },
   });
   ctx.session.importedGeometry.set(shape.id, backend);
@@ -145,11 +123,45 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string, opts?: FromSt
 function assertSolidIndex(solid: number | undefined): void {
   if (solid === undefined) return;
   if (!Number.isInteger(solid) || solid < 0) {
+    invalidArgs({
+      api: 'lib.fromSTEP(path, opts)',
+      path: 'opts.solid',
+      got: solid,
+      showType: true,
+      requires: 'a non-negative integer zero-based solid index',
+      example: "await lib.fromSTEP('parts/servo.step', { solid: 0 })",
+      hintSlug: 'invalid-args.lib.fromSTEP.solid',
+    });
+  }
+}
+
+/** Import cached STEP bytes and preserve the API-facing failure messages. */
+async function importStepOrThrow(buf: Buffer, absPath: string): Promise<OcctBackend> {
+  try {
+    return await importStepCached(buf);
+  } catch (e) {
+    if (e instanceof StepParseError && e.reason === 'no-solid') {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `lib.fromSTEP: ${absPath} did not contain a 3D solid. ${SOLIDWORKS_STEP_EXPORT}`,
+        undefined,
+        `kernel-failed.lib.fromSTEP.no-solid — ${SOLIDWORKS_STEP_EXPORT}`,
+      );
+    }
+    if (e instanceof StepParseError && e.reason === 'out-of-memory') {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `lib.fromSTEP: ran out of OCCT wasm heap importing ${absPath}: ${e.message}`,
+        undefined,
+        'kernel-failed.lib.fromSTEP.out-of-memory — the file is NOT invalid; the geometry kernel exhausted its 2 GiB wasm heap. Import fewer/smaller parts in one session, or restart the host process.',
+      );
+    }
+    const msg = e instanceof Error ? e.message : String(e);
     throw new KernelError(
-      'feature.invalid-args',
-      `lib.fromSTEP: solid index must be a non-negative integer, got ${String(solid)}.`,
+      'feature.kernel-failed',
+      `lib.fromSTEP: ${absPath} is not a STEP solid. ${SOLIDWORKS_STEP_EXPORT} (${msg})`,
       undefined,
-      'invalid-args.lib.fromSTEP.solid — pass { solid: 0 } for the first body.',
+      `kernel-failed.lib.fromSTEP.parse — ${SOLIDWORKS_STEP_EXPORT}`,
     );
   }
 }
@@ -221,7 +233,7 @@ export async function fromStepBytes(
     kind: 'importedStep',
     params: {},
     inputs: {},
-    metadata: { sourcePath: sourceLabel },
+    metadata: { sourcePath: sourceLabel, healed: isStepBackendHealed(backend) },
   });
   ctx.session.importedGeometry.set(shape.id, backend);
   return shape;

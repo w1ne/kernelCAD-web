@@ -4,18 +4,24 @@ import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/mcp/tools/setParamValue.ts
 import { setParamValue, parseParamDeclaration, type ParamDeclaration } from '../../../modeling/edits/setParamValue';
 import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
+import { getActiveMcpSession } from '../activeSession';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
 import { isKernelError } from '../../../shared/intent/kernelError';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { normalizeColor } from '../../../shared/runtime/paramColor';
+import { previewCodeEdit, type EditPreviewResult } from './editPreview';
 
 export interface SetParamValueInput {
   code: string;
   param_name: string;
   new_value: number | string | boolean;
+  /** S6: build the edit in a scratch session and return the diff_geometry
+   *  summary plus the requirements-ledger and S1 binding diffs. Nothing is
+   *  written: the active session, source and caches are untouched. */
+  preview?: boolean;
 }
 
-export interface SetParamValueOutput {
+export interface SetParamValueOutput extends Partial<Omit<EditPreviewResult, 'ok'>> {
   ok: boolean;
   new_code?: string;
   step?: EvaluateScriptOutput['step'];
@@ -61,7 +67,19 @@ export async function setParamValueTool(
     return { ok: false, error: edit.error };
   }
 
-  const evalResult = await evaluateScriptTool({ code: edit.new_code });
+  if (input.preview === true) {
+    const preview = await previewCodeEdit({ baselineCode: input.code, revisedCode: edit.new_code });
+    return {
+      ...preview,
+      ...(preview.ok ? { new_code: edit.new_code } : {}),
+    };
+  }
+
+  // The model the agent last evaluated is the baseline: a parameter edit that
+  // re-binds a selector to another face is reported, not silently applied.
+  const previous = getActiveMcpSession();
+  const baseline = previous?.code === input.code ? previous.selections : undefined;
+  const evalResult = await evaluateScriptTool({ code: edit.new_code, ...(baseline !== undefined ? { baseline } : {}) });
 
   return {
     ok: evalResult.ok,

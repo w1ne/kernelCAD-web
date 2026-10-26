@@ -62,7 +62,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   lookup_diagnostics: READ,
   lookup_cookbook: READ,
   review_cad: READ,
-  review_paint_peek_latest: READ,
   solve_sketch: READ,
   solve_mates: READ,
   flatten_pattern: READ,
@@ -76,7 +75,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Read — but may fetch from a remote parts catalog (KERNELCAD_PARTS_BASE_URL).
   find_part: READ_REMOTE,
   fetch_part: READ_REMOTE,
-  fetch_part_model: READ_REMOTE,
 
   // Authoring — return modified source (side-effect-free, additive).
   set_param: AUTHOR,
@@ -123,8 +121,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   execute_cookbook: WRITES_FILE,
   // Downloads a user-supplied file (open world) and writes it plus a starter script.
   import_step: AUTHOR_REMOTE,
-  // Writes the pack files + zip locally; never contacts a vendor.
-  fab_pack: WRITES_FILE,
   explode_view: READ,
 
   // Renders the model to PNG views on the local filesystem — does not change the
@@ -139,10 +135,7 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   ray_pick: READ,
   inspect_nurbs: READ,
   fit_plane: READ,
-  route_wires: READ,
-  // Parses a provided handoff and returns a proposed authoring script.
-  import_handoff: AUTHOR,
   inspect_assembly: READ,
-  // Writes a BOM CSV locally and returns Sheets-ready rows; never contacts a spreadsheet.
-  write_bom: WRITES_FILE,
+  // Pure generator: turns a parts list into a placeholder assembly script; writes nothing.
+  blockout_assembly: AUTHOR,
 };

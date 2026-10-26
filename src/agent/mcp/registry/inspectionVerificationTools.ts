@@ -76,8 +76,8 @@ const inspectToolEntry: ToolRegistryEntry = {
           },
           required: ['from', 'to', 'count'],
         },
-        edges: { description: "of:'continuity' — optional EdgeQuery or @kc[...] ref(s) limiting which shared edges are sampled." },
-        faces: { description: "of:'curvature' — optional FaceQuery or @kc[...] ref(s) limiting which faces are sampled." },
+        edges: { type: ['object', 'array', 'string'], description: "of:'continuity' — optional EdgeQuery or @kc[...] ref(s) limiting which shared edges are sampled." },
+        faces: { type: ['object', 'array', 'string'], description: "of:'curvature' — optional FaceQuery or @kc[...] ref(s) limiting which faces are sampled." },
         spike_factor: { type: 'number', description: "of:'curvature' — spike sensitivity as a multiple of the face's Gaussian stddev (default 6)." },
       },
       required: ['of'],
@@ -94,8 +94,7 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'assembly' — static assembly review ({ file | code }, or the session evaluate_script left): mate validator, default-pose interference, joint topology, mechanical plausibility. ok:false with `blocking[]` exactly when review_cad's blocking rules fire on these findings; review_cad also sweeps joint ranges and runs physics.\n" +
       "- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n" +
       "- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n" +
-      "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n" +
-      "- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions and blocking parts; disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n" +
+      "- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions, blocking parts and one of three states (removable / blocked / unknown); sequence peels the directional blocking graph and reverses it into a build sequence with a model stamp. Fastened-mate and fixed-connect clusters become subassemblies: each is planned recursively inside and installed as one unit at the top level (`Step.subassembly`). Remaining valid orders use deterministic heuristics (subassemblies first, outside-in, fewest reorientations, fewest tool changes); stuck sets get a budgeted blocking-reduction partition and a sampling fallback whose paths are labelled found-by-search, never proven. A fastener with a fastened-mate `fastener` declaration (axis, pitch, optional tool envelope) is tested along its helical path and reported `motion: helical`; a press/snap `fit` declaration becomes a `requires-force` step, never simulated. A modelled driver/socket/hex-key envelope swept along the approach axis adds `toolBlocked` { fastener, blockers } and a failing S2 ledger entry; unmodelled tools add nothing. Threaded fasteners without metadata stay unknown: non-straight-path. `stability: true` adds an approximate P3 support check at each build step: each part's mesh centre of mass must project inside the support polygon of its contacts with already-stable parts (declared or inferred base/fixture under `gravity`, default [0,0,-1]); unsupported parts become `needsHold` { part, reason, supports } and their steps carry `stability: 'needs-hold'`, while stable steps may carry `heldBy`. This is a projection, not gravity simulation, friction, tipping or fixture analysis. disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n" +
       "- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n" +
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
       "- 'geometry-quality' — one solid body's BREP tiny faces and short edges (ids, locations, mm²/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n" +
@@ -103,8 +102,8 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'mounting-holes' — fastened mates: hole pairs one screw can use (equal, or clearance over a tap drill / hole({ thread }) of the same metric size; hole-free faces are a rigid bond) and fastener holes meeting at the contact face are coaxial. Sides it cannot resolve are info, never mismatches.\n" +
       "- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n" +
       "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n" +
-      "- 'motion-load' — loads on each driven joint (mechanicalJoint on a revolute mate) while the model moves: gravity, inertia from the animationView tracks (finite differences), optional external forces. Mass and inertia come from the solids and density/material, or a part's massKg. Returns per joint peak torque vs the mechanicalJoint torqueNm (margin; < 1x error, < 2x warning), axial / radial force and bending moment on the actuator shaft (checked only against radialLimitN / axialLimitN; without them 'no rating, not checked'), the radial load on each of up to two coaxial supports (each at its station on the shaft: the actuator at the joint origin, else the support's connector on the axis, else the middle of its material nearest the shaft; an ambiguous station is a mechanism.load.not-resolved warning, not a number), the worst pose and a torque-vs-time series ({ file | code, motion_mode?: 'tracks'|'range', sample_ms?, range_samples?, quasi_static?, gravity?, motion_loads?: [{ part, point, force, fromMs?, toMs? }], supports?: { joint: [parts] }, series_points? }). Pass supports to compare with and without a bushing. Rigid bodies, tree mate graphs, no friction.\n" +
-      "- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n" +
+      "- 'motion-load' — loads on each driven joint (mechanicalJoint on a revolute mate) while the model moves: gravity, inertia from the animationView tracks (finite differences), optional external forces. Mass and inertia come from the solids and density/material, or a part's massKg. Returns per joint peak torque vs the mechanicalJoint torqueNm (margin; < 1x error, < 2x warning), axial / radial force and bending moment on the actuator shaft (checked only against radialLimitN / axialLimitN; without them 'no rating, not checked'), the radial load on each of up to two coaxial supports (each at its station on the shaft: the actuator at the joint origin, else the support's connector on the axis, else the middle of its material nearest the shaft; an ambiguous station is a mechanism.load.not-resolved warning, not a number), the worst pose, a torque-vs-time series, and `partLoads` (the worst wrench per part and side in that part's own frame, which `feaStudy({ loadsFrom })` consumes) ({ file | code, motion_mode?: 'tracks'|'range'|'poses', motion_poses?: [{ joint: value }], sample_ms?, range_samples?, quasi_static?, gravity?, motion_loads?: [{ part, point, force, fromMs?, toMs? }], supports?: { joint: [parts] }, series_points? }). Pass supports to compare with and without a bushing. Rigid bodies, tree mate graphs, no friction.\n" +
+      "- 'physics' — full mechanism truth with physics engine: kinematic disconnect / interference / DOF checks plus static equilibrium and drop-on-release under gravity ({ file | code, assembly?, physics? }). Returns { ok, mechanism: 'real'|'broken'|'unverified', failures[], coverage }.\n" +
       "- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\n" +
       'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
     inputSchema: {
@@ -112,10 +111,18 @@ const verifyToolEntry: ToolRegistryEntry = {
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'motion-load', 'body-likeness', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius'],
-          description: 'Which verification to run.',
+          description: 'Which verification to run. Omit only when passing call-time `requirements`; then the requirements ledger is the verification.',
+          enum: ['assembly', 'urdf', 'dfm', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'motion-load', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius', 'physics', 'requirements'],
         },
-        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius).' },
+        requirements: {
+          type: 'array',
+          items: { type: 'object', additionalProperties: true },
+          description:
+            "Call-time external requirements ([{ name, predicate }]) measured in the same ledger as script require(), dfmSpec and feaStudy, tagged source: 'external' and never persisted. " +
+            'The predicate is the serializable form of require(): { metric: clearance | distance | mass | volume | bbox | centerOfMass | count | innerLoops | angle | concentric | coplanar, a?, b?, op: gte | lte | eq | between | within, limit, tolerance?, density? }. ' +
+            "Operands are { kind: body | faces | edges | part, ref: <feature id/name or part name>, query? }. With `check` omitted the ledger is the whole verification; check 'requirements' is the explicit form.",
+        },
+        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius/requirements).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
         feature_id: { type: 'string', description: "check:'geometry-quality' — body feature to measure; defaults to script return. check:'edge-radius' — lowered feature; default the returned model." },
         tiny_face_area_mm2: { type: 'number', minimum: 0, default: 0.01, description: "check:'geometry-quality' — flag faces strictly below this absolute area; zero disables." },
@@ -136,8 +143,8 @@ const verifyToolEntry: ToolRegistryEntry = {
         max_radius_mm: { type: 'number', minimum: 0, description: "check:'edge-radius' — maximum fillet radius in mm; must be >= min_radius_mm." },
         require_edge_break: { type: 'string', enum: ['external', 'internal', 'all'], description: "check:'edge-radius' — prohibit sharp convex/external, concave/internal, or all edges." },
         parts: { type: 'array', minItems: 1, uniqueItems: true, items: { type: 'string', minLength: 1 }, description: "check:'edge-radius' — explicit assembly part names (default all)." },
-        edges: { description: "check:'edge-radius' — EdgeQuery or @kc[...] edge ref(s); intersected with faces. Query near sorts, it does not filter." },
-        faces: { description: "check:'edge-radius' — FaceQuery or @kc[...] face ref(s); includes incident edges and fillets on selected faces." },
+        edges: { type: ['object', 'array', 'string'], description: "check:'edge-radius' — EdgeQuery or @kc[...] edge ref(s); intersected with faces. Query near sorts, it does not filter." },
+        faces: { type: ['object', 'array', 'string'], description: "check:'edge-radius' — FaceQuery or @kc[...] face ref(s); includes incident edges and fillets on selected faces." },
         fasteners: {
           type: 'array', description: "check:'fastener-installation' — explicit named stations; empty means no coverage.",
           items: { type: 'object', additionalProperties: false, properties: {
@@ -151,16 +158,13 @@ const verifyToolEntry: ToolRegistryEntry = {
         toleranceMm: { type: 'number', minimum: 0, description: "check:'fastener-installation' — linear tolerance, default .05 mm." },
         angleToleranceDeg: { type: 'number', minimum: 0, maximum: 90, description: "check:'fastener-installation' — axis tilt tolerance, default 1 degree." },
         urdf_path: { type: 'string', description: "check:'urdf' — path to the .urdf file." },
-        dxf: { type: 'string', description: "check:'dfm-preflight' — path to a DXF file." },
-        featureId: { type: 'string', description: "check:'dfm-preflight' — FeatureId to scope to." },
-        vendor: { type: 'string', description: "check:'dfm-preflight' — vendor SKU (required for that check)." },
-        material: { type: 'string', description: "check:'dfm-preflight' — material SKU (required for that check)." },
-        thicknessIn: { type: 'number', description: "check:'dfm-preflight' — material thickness in inches." },
-        thicknessMm: { type: 'number', description: "check:'dfm-preflight' — material thickness in millimeters." },
-        service: { type: 'string', enum: ['laser', 'cnc-router', 'waterjet', 'bending'], description: "check:'dfm-preflight' — service." },
-        refreshCatalog: { type: 'boolean', description: "check:'dfm-preflight' — force vendor catalog refresh." },
         directions: { type: 'array', maxItems: 64, items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 }, description: "check:'assembly-path' — additional nonzero world-space removal vectors; normalized and deduplicated." },
         disassemblyOrder: { type: 'boolean', description: "check:'assembly-path' — iteratively remove freed parts and return removalOrder or stuckParts." },
+        sequence: { type: 'boolean', description: "check:'assembly-path' — plan a build sequence { steps, model, unknown, search?, requiresForce?, toolBlocked?, needsHold? }. Fastened/fixed clusters become subassemblies planned inside and installed as one unit; steps carry the insertion direction (reverse removal), and may be motion: helical (declared fastener), requires-force (press/snap, not proven) or search. Stuck sets use a budgeted partition; non-straight paths found by sampling are labelled found-by-search and are not proven. Blocked and unknown parts are not reported as impossible." },
+        threadedFasteners: { type: 'array', items: { type: 'string' }, description: "check:'assembly-path' — part names that need a helical removal. Catalog screw/bolt/nut families are detected automatically; without a fastened-mate fastener declaration (axis/pitch) they remain unknown: non-straight-path. Declare the motion on arm.mate(..., 'fastened', { fastener: { part, axis, pitchMm, tool? }, fit?: { kind, part? } })." },
+        stability: { type: 'boolean', description: "check:'assembly-path' — run the approximate P3 static-stability pass on the sequence. Each part's closed-mesh volume centroid (uniform density) must project inside the convex hull of its contacts with already-stable parts. Unsupported parts become needsHold { part, reason, supports } and ok:false; a stable step may carry heldBy. Not a physics simulation." },
+        fixtures: { type: 'array', uniqueItems: true, items: { type: 'string', minLength: 1 }, description: "check:'assembly-path' with stability:true — declared base/fixture part names, stable from step 1. Default: the lowest part(s) along gravity." },
+        contactToleranceMm: { type: 'number', minimum: 0, description: "check:'assembly-path' with stability:true — surface distance at or below which parts count as touching (default 0.05 mm)." },
         joint: { type: 'string', description: "check:'swept-collision' — joint to sweep; omit to sweep every declared joint. check:'static-hold' — joint to evaluate; omit to evaluate every joint with a declared actuator." },
         range: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'swept-collision' — [lower, upper, step] in joint-native units." },
         collision_tolerance_mm3: { type: 'number', description: "check:'swept-collision' — BREP intersection volume tolerance (mm^3)." },
@@ -180,11 +184,12 @@ const verifyToolEntry: ToolRegistryEntry = {
         mesh_size: { type: 'number', description: "check:'load-capacity' mode:'fea' — element size override, mm." },
         heatmaps: { type: 'boolean', description: "check:'load-capacity' mode:'fea' — also render stress heatmap PNGs (default false)." },
         refine: { type: 'boolean', description: "check:'load-capacity' mode:'fea' — one automatic finer pass (0.75x element size) when the stress is untrusted, inside the element budget (default true); false solves once at the study's meshSize." },
-        pose: { description: "check:'static-hold' — explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range." },
-        gravity: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'static-hold' — gravity vector, m/s^2, world frame (default [0, 0, -9.81])." },
+        pose: { type: ['object', 'array'], description: "check:'static-hold' — explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range." },
+        gravity: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'static-hold' — gravity vector, m/s^2, world frame (default [0, 0, -9.81]). check:'assembly-path' with stability:true — gravity direction, world frame, magnitude ignored (default [0, 0, -1])." },
         min_torque_margin_pct: { type: 'number', description: "check:'static-hold' — safety-margin floor as a percent of actuator capacity (default 20)." },
         range_samples: { type: 'number', description: "check:'static-hold' — grid density per evaluated joint when `pose` is omitted (default 9). check:'motion-load' motion_mode:'range' — grid points per joint (default 5)." },
-        motion_mode: { type: 'string', enum: ['tracks', 'range'], description: "check:'motion-load' — 'tracks' (default): along the animationView timeline with inertia; 'range': quasi-static grid over each driven joint's limits." },
+        motion_mode: { type: 'string', enum: ['tracks', 'range', 'poses'], description: "check:'motion-load' — 'tracks' (default): along the animationView timeline with inertia; 'range': quasi-static grid over each driven joint's limits; 'poses': exactly motion_poses (a user-named pose is one entry)." },
+        motion_poses: { type: 'array', items: { type: 'object', additionalProperties: { type: 'number' } }, description: "check:'motion-load' motion_mode:'poses' — explicit mate poses, each an object of joint name -> value in degrees." },
         sample_ms: { type: 'number', description: "check:'motion-load' — timeline sample step, ms (default 20). Inertia peaks depend on it at keyframe velocity steps." },
         quasi_static: { type: 'boolean', description: "check:'motion-load' — drop velocity/acceleration terms (gravity and external loads only)." },
         motion_loads: {
@@ -200,21 +205,6 @@ const verifyToolEntry: ToolRegistryEntry = {
         },
         supports: { type: 'object', description: "check:'motion-load' — mechanicalJoint name -> support part names to use instead of the declared supports (compare with / without a bushing)." },
         series_points: { type: 'number', description: "check:'motion-load' — max torque-vs-time points per joint in the result (default 120; 0 omits the series)." },
-        body_bbox: { type: 'object', description: "check:'body-likeness' — body AABB { min:[x,y,z], max:[x,y,z] } in mm." },
-        body_feature_id: { type: 'string', description: "check:'body-likeness' — FeatureId to read body AABB from when body_bbox omitted." },
-        cabin_bbox: { type: 'object', description: "check:'body-likeness' — optional cabin/greenhouse AABB for automated cabin-aft." },
-        wheels: {
-          type: 'array',
-          description: "check:'body-likeness' — wheel centres + tire radii [{ center:[x,y,z], radius }].",
-          items: { type: 'object' },
-        },
-        length_axis: { type: 'string', enum: ['x', 'y'], description: "check:'body-likeness' — wheelbase axis (default 'x')." },
-        still_verdicts: {
-          type: 'array',
-          description: "check:'body-likeness' — agent ortho still checklist [{ code, passed, finding, view? }]. Required codes: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference.",
-          items: { type: 'object' },
-        },
-        require_stills: { type: 'boolean', description: "check:'body-likeness' — require still_verdicts (default true)." },
       },
       required: ['check'],
     },
@@ -296,7 +286,7 @@ const queryToolEntry: ToolRegistryEntry = {
         mode: { type: 'string', enum: ['evaluate', 'resolve', 'lineage'], description: "Resolution mode (default 'evaluate')." },
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
         code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        query: { description: "mode:'evaluate' — Query: a bare face label ('top'), an @kc[<feature-id>/face/<label>] ref, an @kcq[face(...)] expression, or { ast }." },
+        query: { type: ['string', 'object'], description: "mode:'evaluate' — Query: a bare face label ('top'), an @kc[<feature-id>/face/<label>] ref, an @kcq[face(...)] expression, or { ast }." },
         ref: { type: 'string', description: "mode:'resolve'|'lineage' — one face: '@kc[box_1/face/top]', '@kcq[...]', or '<feature-id>.<label>' (lineage)." },
         expect: { type: 'string', enum: ['any', 'unique'], description: "mode:'evaluate' — 'unique' asserts exactly-one." },
         feature_id: { type: 'string', description: 'Optional FeatureId; defaults to the last lowered shape (use "auto" for lineage).' },

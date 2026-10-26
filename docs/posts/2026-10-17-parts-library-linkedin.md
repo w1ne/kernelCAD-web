@@ -13,7 +13,7 @@ the same text works there. The repo link goes in the first comment either way.
 ```
 Two steel bars in a lap joint. One M5 bolt. The grip is 12 mm.
 
-kernelCAD now ships a fastener table. Socket head, button head and countersunk screws, hex and lock nuts, flat and lock washers, M2 through M6.
+kernelCAD now ships a fastener table: socket-head, button-head, countersunk and hex-head screws and bolts, set screws, threaded rod, hex and lock nuts, flat and lock washers. Sizes run M2 to M20 where the standard has them.
 
 lib.part builds one part by family, thread and length. lib.stack takes the grip and places a washer under the head plus a washer and hex nut on the back. The screw length comes from the stocked table: the shortest that fits is an M5 × 18.
 
@@ -25,4 +25,4 @@ Repo link in the first comment.
 #CAD #OpenSource #MechanicalEngineering #kernelCAD
 ```
 
-*(870 chars · first comment: `github.com/w1ne/kernelCAD-web`)*
+*(950 chars · first comment: `github.com/w1ne/kernelCAD-web`)*

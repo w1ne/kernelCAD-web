@@ -96,9 +96,20 @@ export function auditPackageReleaseState(input: PackageAuditInput): PackageAudit
   // The package ships the CLI bundle (dist/cli) AND the static headless
   // player (dist/headless-player, consumed by render_preview) — prepack must
   // build both before npm pack or publish.
-  const prepackSteps = (pkg.scripts?.prepack ?? '').split('&&').map(step => step.trim());
+  const prepackSteps = new Set<string>();
+  const visited = new Set<string>();
+  const collectSteps = (name: string) => {
+    if (visited.has(name)) return;
+    visited.add(name);
+    for (const step of (pkg.scripts?.[name] ?? '').split('&&').map(step => step.trim())) {
+      prepackSteps.add(step);
+      const nested = /^npm run ([\w:-]+)$/.exec(step);
+      if (nested) collectSteps(nested[1]);
+    }
+  };
+  collectSteps('prepack');
   for (const required of ['npm run build:cli', 'npm run build:player']) {
-    if (!prepackSteps.includes(required)) {
+    if (!prepackSteps.has(required)) {
       blockers.push({
         kind: 'missing-prepack-build',
         message: `package.json scripts.prepack must run ${required}`,

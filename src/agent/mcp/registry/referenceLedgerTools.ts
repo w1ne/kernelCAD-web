@@ -24,7 +24,7 @@ export const referenceLedgerToolEntries: ToolRegistryEntry[] = [
               type: 'object',
               properties: {
                 id: { type: 'string', description: 'Matches a `facts[].id` in the ledger.' },
-                value: { description: 'Overrides the fact\'s value; marks it `overridden`.' },
+                value: { type: ['string', 'number', 'boolean', 'array', 'object'], description: 'Overrides the fact\'s value; marks it `overridden`.' },
                 confirm: { type: 'boolean', description: 'Accepts the fact as-is; marks it `confirmed`.' },
               },
               required: ['id'],

@@ -43,7 +43,8 @@ describe('lib parts surface — script-runtime integration', () => {
     const screw = await api.lib.part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 });
     expect(screw).toBeDefined();
     const stack = await api.lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
-    expect(stack.lengthMm).toBe(16);
+    expect(stack.lengthMm).toBe(20);
+    expect(stack.protrusionMm).toBeCloseTo(3.3, 6);
     expect(stack.screw).toBeDefined();
     expect(stack.headWasher).toBeDefined();
     expect(stack.nut).toBeDefined();
@@ -60,12 +61,11 @@ describe('lib parts surface — script-runtime integration', () => {
     expect(sB).toBeDefined();
   });
 
-  it('lib.part and lib.fixture resolve the same fixture id', async () => {
+  it('lib.part resolves a fixture family to its catalog id', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session });
     const viaPart = await api.lib.part({ family: 't-slot-nut', thread: 'M10' });
-    const viaFixture = await api.lib.fixture.tSlotNut({ thread: 'M10' });
-    for (const shape of [viaPart, viaFixture]) {
+    for (const shape of [viaPart]) {
       const record = session.getRecords().find((candidate) => candidate.id === shape.id);
       expect(record?.metadata?.catalogPart).toMatchObject({
         id: 'tslot-nut-m10',
@@ -77,7 +77,7 @@ describe('lib parts surface — script-runtime integration', () => {
   it('builds a step block envelope with tread connectors without a STEP file', async () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session });
-    const block = await api.lib.fixture.stepBlock({ thread: 'M12' });
+    const block = await api.lib.part({ family: 'step-block', thread: 'M12' });
     const record = session.getRecords().find((candidate) => candidate.id === block.id);
     expect(record?.metadata?.catalogPart).toMatchObject({ id: 'step-block-m12' });
   });

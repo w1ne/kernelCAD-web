@@ -16,6 +16,7 @@
 // is needed.
 
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
+import { invalidArgs } from '../../../shared/intent/invalidArgs';
 import { KernelError } from '../../../shared/intent/kernelError';
 import { makeRegion, type Region, type BendLineRecord, type Vec2 } from '../../../shared/intent/region';
 
@@ -39,6 +40,7 @@ export function flattenPattern(
   const { recById, terminal } = resolveFlattenTerminal(records, terminalId);
   const { root, chain } = walkFlattenLineage(recById, terminal);
   const bendRecords = collectBendRecords(chain);
+  assertDevelopedAllowance(root, bendRecords);
   const outer = resolveSketchOutline(recById, root, terminal);
   // Holes / cutouts live only in the lowered blank solid; the caller reads
   // them back (flatBlankInnerLoops on the `flatBlankRecordId` shape).
@@ -169,6 +171,67 @@ function resolveSketchOutline(
     );
   }
   return extractPolylineFromSketch(sketchRec);
+}
+
+/** A non-positive developed length is not the blank the bend consumed. */
+function assertDevelopedAllowance(root: FeatureRecord, bends: FeatureRecord[]): void {
+  if (bends.length === 0) return;
+  const records = bends.map(bendRecordOf);
+  const kFactor = evaluatedNumber(root, 'kFactor');
+  const thickness = evaluatedNumber(root, 'thickness');
+  if (kFactor === undefined || !Number.isFinite(kFactor) || kFactor < 0 || kFactor > 1 || thickness === undefined || !(thickness > 0)) {
+    invalidArgs({
+      api: 'flattenPattern(shape)',
+      path: 'kFactor',
+      gotText: kFactor === undefined ? 'nothing' : String(kFactor),
+      requires: 'a K-factor in [0, 1] and a thickness > 0 on the sheetMetal(...) that owns this bend',
+      example: 'sheetMetal(profile, { thickness: 1.5, kFactor: 0.42 }).bend({ atX: 40 }, 90, 2)',
+      featureId: root.id,
+    });
+  }
+  for (let i = 0; i < bends.length; i++) {
+    const rec = records[i];
+    const allowance = Math.abs(rec.angleRad) * (kFactor * thickness + rec.radius);
+    if (!(allowance > 0) || !Number.isFinite(allowance)) {
+      throw new KernelError(
+        'feature.kernel-failed',
+        `flattenPattern: bend '${bends[i].id}' develops to ${allowance} mm, which is not a flat length.`,
+        bends[i].id,
+        'kernel-failed.flattenPattern.allowance — the bend angle and inner radius have to produce a positive developed length.',
+      );
+    }
+  }
+}
+
+function evaluatedNumber(rec: FeatureRecord, name: string): number | undefined {
+  const param = rec.params[name] as { evaluated?: unknown } | undefined;
+  return typeof param?.evaluated === 'number' ? param.evaluated : undefined;
+}
+
+function bendRecordOf(bend: FeatureRecord): { angleRad: number; radius: number } {
+  const rec = (bend.metadata as { bendRecord?: { angleRad?: unknown; radius?: unknown } } | undefined)?.bendRecord;
+  if (!rec) {
+    invalidArgs({
+      api: 'flattenPattern(shape)',
+      path: 'bendRecord',
+      gotText: 'no bendRecord metadata',
+      requires: 'a lowered bendRecord — lower the shape before flattenPattern',
+      example: 'sheetMetal(profile, { thickness: 1.5, kFactor: 0.4 }).bend({ atX: 40 }, 90, 2)',
+      featureId: bend.id,
+    });
+  }
+  const { angleRad, radius } = rec;
+  if (typeof angleRad !== 'number' || typeof radius !== 'number') {
+    invalidArgs({
+      api: 'flattenPattern(shape)',
+      path: 'bendRecord',
+      gotText: 'a bendRecord with no angle and radius',
+      requires: 'a lowered bendRecord with a numeric angle and inner radius',
+      example: 'sheetMetal(profile, { thickness: 1.5, kFactor: 0.4 }).bend({ atX: 40 }, 90, 2)',
+      featureId: bend.id,
+    });
+  }
+  return { angleRad, radius };
 }
 
 /** Compute bend-line endpoints from the persisted bendRecord metadata. */

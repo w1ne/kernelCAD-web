@@ -15,6 +15,7 @@ import { TOOL_REGISTRY } from '../../src/agent/mcp/toolRegistry';
 // CLI subcommands (kept in sync with src/agent/cli/index.ts).
 const CLI_SUBCOMMANDS = new Set<string>([
   'animate',
+  'collab',
   'dfm',
   'evaluate',
   'export',
@@ -55,6 +56,14 @@ const CLI_REF = /`kernelcad\s+([a-z][a-z0-9-]*)/g;
 const NON_TOOL_ALLOWLIST = new Set<string>([
   // Mate type values (assembly mate type enumeration).
   'pin_slot',
+  // Built-in connector names emitted by blockout_assembly.
+  'bbox_center',
+  'bbox_x_min',
+  'bbox_x_max',
+  'bbox_y_min',
+  'bbox_y_max',
+  'bbox_z_min',
+  'bbox_z_max',
   // Example-variable identifiers used in code prose.
   'new_code',
   'old_code',
@@ -64,13 +73,6 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // Common parameter names used in MCP tool signatures (documented
   // alongside tool names, not tool calls themselves).
   'feature_id',
-  // open_in_studio / body-likeness gate params (hosted server + verify check).
-  'likeness_profile',
-  'body_bbox',
-  'cabin_bbox',
-  'still_verdicts',
-  'require_stills',
-  'body_feature_id',
   'publish_ready',
   'feature_count',
   'output_path',
@@ -126,6 +128,7 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // render_preview tool name, which DOES resolve — params, not calls).
   'out_dir',
   'base_url',
+  'screenshot_timeout_ms',
   // Hosted-product tool that lives in kernelCAD-server's registry, not the
   // local TOOL_REGISTRY — referenced in prose to redirect hosted/remote
   // clients ("hosted clients should use `open_in_studio` instead") and in

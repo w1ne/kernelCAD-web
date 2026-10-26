@@ -32,6 +32,35 @@ type Draft = Omit<ViewerDimension, 'id' | 'source' | 'part'>;
 /** Called before and after each rule; throws when the budget is spent. */
 export type Checkpoint = () => void;
 
+/**
+ * Per-geometry memo of the expensive per-part results (exact box, feature
+ * recognition), keyed by the part's untransformed source shape object and
+ * its transform ({@link WorldFramePart.source}). A param tick that moves or
+ * leaves a part unchanged hands back the same source shape, so its results
+ * repeat bit for bit; a rebuilt shape is a new object and misses. Weakly
+ * keyed: entries go with the model.
+ */
+const partMemo = new WeakMap<object, Map<string, Map<string, unknown>>>();
+
+function memoised<T>(part: WorldFramePart, key: string, compute: () => T): T {
+  const src = part.source;
+  if (src === undefined) return compute();
+  let byTransform = partMemo.get(src.shape);
+  if (byTransform === undefined) {
+    byTransform = new Map();
+    partMemo.set(src.shape, byTransform);
+  }
+  let entries = byTransform.get(src.transformKey);
+  if (entries === undefined) {
+    entries = new Map();
+    byTransform.set(src.transformKey, entries);
+  }
+  if (entries.has(key)) return structuredClone(entries.get(key) as T);
+  const value = compute();
+  entries.set(key, structuredClone(value));
+  return value;
+}
+
 const PARALLEL = 0.999;
 const ALIGN_TOL = 0.01;
 
@@ -103,10 +132,10 @@ function faceCount(part: WorldFramePart): number {
  */
 function exactBox(part: WorldFramePart, opts: OverallOptions): Box3 {
   if (opts.deadline !== undefined && performance.now() > opts.deadline) return part.shape.boundingBox();
-  if (opts.exactAffordable === false || faceCount(part) > (opts.maxExactFaces ?? EXACT_BOX_MAX_FACES)) {
-    return scaledTessellatedBox(part);
-  }
-  return optimalBox(part);
+  if (opts.exactAffordable === false) return memoised(part, 'box:tess', () => scaledTessellatedBox(part));
+  const maxFaces = opts.maxExactFaces ?? EXACT_BOX_MAX_FACES;
+  return memoised(part, `box:exact:${maxFaces}`, () =>
+    faceCount(part) > maxFaces ? scaledTessellatedBox(part) : optimalBox(part));
 }
 
 /**
@@ -306,7 +335,14 @@ function partFeatureDims(
   cap: number,
 ): void {
   checkpoint();
-  const model = recogniseDrawingFeatures(part.shape, { checkpoint });
+  const cached = part.source === undefined ? undefined : peekFeatures(part, tag, cap);
+  if (cached !== undefined) {
+    out.push(...cached);
+    checkpoint();
+    return;
+  }
+  const start = out.length;
+  const model = recogniseDrawingFeatures(part.shape, { checkpoint, planar: false });
   checkpoint();
   const rules: Array<[string, () => Draft[]]> = [
     ['holes', () => holeDims(model)],
@@ -321,6 +357,24 @@ function partFeatureDims(
     left -= dims.length;
     checkpoint();
   }
+  // Only a part that ran to completion is remembered: a budget cut-off
+  // throws above, so a partial list never lands in the memo.
+  storeFeatures(part, tag, cap, out.slice(start));
+}
+
+function featuresKey(part: WorldFramePart, tag: string | undefined, cap: number): string {
+  return `features:${part.name}:${tag ?? ''}:${cap}`;
+}
+
+function peekFeatures(part: WorldFramePart, tag: string | undefined, cap: number): ViewerDimension[] | undefined {
+  const entries = part.source && partMemo.get(part.source.shape)?.get(part.source.transformKey);
+  const hit = entries?.get(featuresKey(part, tag, cap));
+  return hit === undefined ? undefined : structuredClone(hit as ViewerDimension[]);
+}
+
+function storeFeatures(part: WorldFramePart, tag: string | undefined, cap: number, dims: ViewerDimension[]): void {
+  if (part.source === undefined) return;
+  memoised(part, featuresKey(part, tag, cap), () => dims);
 }
 
 /** Overall extents of the whole model. Bounding boxes only, so it runs

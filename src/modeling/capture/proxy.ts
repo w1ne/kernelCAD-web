@@ -5,10 +5,12 @@ import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
+import { trackFullLower } from './fullLowerTracker';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
+import { captureFilletIntersection } from './filletIntersectionCapture';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import type { Query, FaceMarker, EdgeMarker } from '../../kernel/naming/query';
 import {
@@ -261,6 +263,14 @@ export class Shape {
    * `fixed` and `loads[].faces` take the same selectors as the rest of the
    * API: a `FaceQuery` object, or a `@kc[...]` face ref from `list_faces`.
    * Forces are TOTALS in newtons over the selected faces, not per node.
+   *
+   * For a load that comes from motion, pass
+   * `loadsFrom: { motion, part }` instead of `loads`. `motion` is the result
+   * of `kinematic.motionLoad(arm, opts)`; the study takes that part's worst
+   * sampled joint wrench (a joint-moment or section-bending proxy, named in
+   * the result), applies its force and moment as a remote load at the joint
+   * origin, and records the pose in the summary and the ledger. An empty
+   * motion result or an unloaded part throws rather than reporting a pass.
    *
    * Malformed declarations throw `feature.invalid-args` at capture time; an
    * unknown material grade throws with the valid grades named. Selectors that
@@ -811,6 +821,51 @@ export class Shape {
       return this.session.edgeFeature('chamfer', this, 'distance', distanceOrGroups, edges);
     }
     return this.session.variableEdgeFeature('chamfer', this, 'distance', distanceOrGroups);
+  }
+
+  /**
+   * Solidify an open shell returned by `sew([...])` (or `surface.toShape()`).
+   *
+   * The lowerer runs the same validated offset as `Surface.thicken`: BRepCheck,
+   * one-solid and plausible-volume gates, with a reversed-orientation retry.
+   * A closed solid input is rejected rather than hollowed.
+   */
+  thicken(t: Editable<number>): Shape {
+    if (!isParamRef(t) && !(typeof t === 'number' && t > 0 && Number.isFinite(t))) {
+      invalidArgs({
+        api: 'Shape.thicken(t)',
+        path: 't',
+        got: t,
+        showType: typeof t !== 'number',
+        requires: 'a positive finite wall thickness in mm, or a ParamRef<number>',
+        unit: 'mm',
+        example: 'sewn.thicken(3)',
+        featureId: this.id,
+      });
+    }
+    return this.session.createShape({
+      kind: 'shapeThicken',
+      inputs: { base: { kind: 'feature', id: this.id } },
+      params: { t: toParam(t, 'mm') },
+    });
+  }
+
+  /**
+   * Round the seam where `cutter` met this body. The seam is selected by
+   * proximity to the exact `body ∩ cutter` section, so it does not depend on
+   * face/edge labels that a boolean split can invalidate. First slice:
+   * constant radius, body-side only.
+   */
+  filletIntersection(
+    cutter: Shape,
+    radius: Editable<number>,
+    opts?: {
+      sides?: 'body' | 'both';
+      toleranceMm?: Editable<number>;
+      continuity?: FilletContinuity;
+    },
+  ): Shape {
+    return captureFilletIntersection(this.session, this, cutter, radius, opts);
   }
 
   shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
@@ -1384,12 +1439,12 @@ export class Shape {
     const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
     if (!this.session.importedGeometry.has(this.id)) await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));
-    const pending = this.session.snapshotFullLower(new Map());
+    const track = trackFullLower(this.session, (warning) => this.session.warnings.push(warning));
     const r = await engine.run(
       records as readonly import('../../shared/intent/featureRecord').FeatureRecord[],
       {
         paramTable: this.session.paramTable,
-        warningSink: (warning) => this.session.warnings.push(warning),
+        warningSink: track.warningSink,
         warningPhase: 'build',
         gatedFeatureNames: this.session.gatedFeatureNames,
       },
@@ -1400,7 +1455,7 @@ export class Shape {
     for (const [id, sh] of r.shapes) {
       this.session.cachedShapes.set(id, sh);
     }
-    this.session.lastFullLower = { ...pending, shapes: r.shapes };
+    track.publish(r);
     const shape = r.shapes.get(this.id);
     if (!shape) {
       throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);

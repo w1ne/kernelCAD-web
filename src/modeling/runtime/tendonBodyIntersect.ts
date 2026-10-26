@@ -3,27 +3,18 @@
 // src/modeling/runtime/tendonBodyIntersect.ts
 //
 // P11 Slice 2 — criterion 8 helper (`mechanism.tendon-body-intersect`).
-// A balance tendon's routed path must not pass through the solid interior
-// of any part that is not one of its two anchor parts (or a part it
-// explicitly routes around via a wrap geom). This is the static authoring
+// A balance tendon's routed path must stay clear of every part except near
+// its two endpoint attachments. This is the static authoring
 // backstop that runs in `kernelcad validate` BEFORE MuJoCo spins up — it
 // red-flags "the spring cuts through the arm" at author time.
 //
-// The cable polyline is approximated as straight segments through the
-// endpoint anchors and each wrap-geom origin (a conservative centerline
-// proxy; the tangent-accurate wrap path is a follow-up).
+// Straight route entries are connected by line segments. Wrap geoms expand
+// into tangent points and a sampled cylinder arc, matching the routed cable
+// mesh and avoiding false intersections through the pulley center.
 //
-// Exclusion model (DEVIATES from the spec's "non-anchor parts only", on
-// purpose — see plan note): the spec's literal rule would skip the two
-// anchor parts entirely, but on the Luxo lamp every balance spring spans
-// two ADJACENT arms, so the straight cable cuts through its OWN anchor
-// arm — exactly the reported "spring goes through the structure" bug, yet
-// invisible to a non-anchor-only check. So we instead exclude only the
-// parts the cable physically routes AROUND (the wrap-geom owners; the
-// centerline proxy runs through their interior by construction) and skip
-// samples within `ANCHOR_MARGIN_MM` of an anchor attachment point (the
-// cable legitimately touches the body surface there). Every other body —
-// anchor or not — must stay clear.
+// Exclude parts that own explicit via points or wrap geom guides: a cable is
+// expected to meet those components along its route. Other bodies, including
+// endpoints away from the attachment margin, stay in the clearance check.
 //
 // Spec:  docs/specs/2026-06-03-physics-loop-P11-collision-aware-mujoco.md
 // Plan:  docs/plans/2026-06-03-physics-loop-P11-slice-2-wrap-geom-routing.md
@@ -33,12 +24,13 @@ import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from '../mates/mate';
+import { wrapArcPoints, type WrapCylinderWorld } from '../capture/tendonSweepMesh';
 import { measureGapToBody } from './jointMeshContinuity';
 
 /** Polyline sampling pitch (mm) along each tendon segment. */
 export const TENDON_SAMPLE_MM = 5;
 /**
- * Clearance floor (mm). A sample point whose surface gap to a non-anchor
+ * Clearance floor (mm). A sample point whose surface gap to a body
  * body is below this — including 0, the "inside the solid" value
  * `measureGapToBody` returns — counts as a pierce. Tighter than criterion
  * 7's 1.0 mm because tendon clearance is a "must not touch" condition;
@@ -65,13 +57,48 @@ export interface TendonBodyIntersectResult {
   readonly gapMm: number;
 }
 
-type V3 = readonly [number, number, number];
+type V3 = [number, number, number];
+interface Aabb {
+  readonly min: V3;
+  readonly max: V3;
+}
 
 function dist(a: V3, b: V3): number {
   return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 }
 function lerp(a: V3, b: V3, u: number): V3 {
   return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u];
+}
+
+/** Conservative world-space bounds; failures deliberately fall back to exact probing. */
+function worldBounds(shape: OcctBackend, transform: Transform): Aabb | undefined {
+  try {
+    const local = shape.boundingBox();
+    const min: [number, number, number] = [Infinity, Infinity, Infinity];
+    const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+    for (const x of [local.min[0], local.max[0]]) {
+      for (const y of [local.min[1], local.max[1]]) {
+        for (const z of [local.min[2], local.max[2]]) {
+          const point = transform.point([x, y, z]) as V3;
+          for (let axis = 0; axis < 3; axis++) {
+            min[axis] = Math.min(min[axis], point[axis]);
+            max[axis] = Math.max(max[axis], point[axis]);
+          }
+        }
+      }
+    }
+    if (![...min, ...max].every(Number.isFinite)) return undefined;
+    return { min, max };
+  } catch {
+    return undefined;
+  }
+}
+
+/** A point outside this expanded AABB is provably farther than `marginMm`. */
+function withinExpandedBounds(point: V3, bounds: Aabb, marginMm: number): boolean {
+  return point.every((value, axis) =>
+    value >= bounds.min[axis] - marginMm && value <= bounds.max[axis] + marginMm,
+  );
 }
 
 function indexPartsByName(arm: Assembly): Map<string, ReturnType<Assembly['__parts']>[number]> {
@@ -102,11 +129,6 @@ function endpointWorld(
   return { partName: parsed.partName, world: T.point(conn.origin.value) as V3 };
 }
 
-// Only the parts the cable routes AROUND are excluded (the centerline
-// proxy runs through their interior by construction). Anchor parts are
-// checked — the anchor-point margin applied during scanning admits the
-// legitimate surface attachment without admitting a cable that dives
-// through the body.
 function collectTendonPath(
   t: ReturnType<Assembly['__tendons']>[number],
   partByName: ReadonlyMap<string, ReturnType<Assembly['__parts']>[number]>,
@@ -115,14 +137,50 @@ function collectTendonPath(
   bWorld: V3,
 ): { excluded: Set<string>; waypoints: V3[] } {
   const excluded = new Set<string>();
-  const waypoints: V3[] = [aWorld];
-  for (const w of t.wrapGeoms) {
+  const routeSteps: ({ kind: 'point'; world: V3 } | { kind: 'wrap'; cylinder: WrapCylinderWorld })[] = [];
+  // `via` replaces the legacy `wrapGeoms` (mutually exclusive): connector
+  // entries are waypoints on their owner part, wrap entries are tangent arcs.
+  const route = t.via.length > 0 ? t.via : t.wrapGeoms.map((w) => ({ wrap: w }));
+  for (const entry of route) {
+    if (typeof entry === 'string') {
+      const via = endpointWorld(entry, partByName, sample);
+      if (via !== undefined) {
+        excluded.add(via.partName);
+        routeSteps.push({ kind: 'point', world: via.world });
+      }
+      continue;
+    }
+    const w = entry.wrap;
     excluded.add(w.partName);
     const owner = partByName.get(w.partName);
     const wg = owner?.wrapGeoms.find((g) => g.name === w.wrapName);
     const T = sample.transforms.get(w.partName);
-    if (wg !== undefined && T !== undefined) waypoints.push(T.point(wg.origin) as V3);
+    if (wg !== undefined && T !== undefined) {
+      const side = w.sidesite === undefined ? undefined : T.point(w.sidesite) as V3;
+      routeSteps.push({
+        kind: 'wrap',
+        cylinder: {
+          center: T.point(wg.origin) as V3,
+          axis: T.axisDir(wg.axis) as V3,
+          radiusMm: wg.radiusMm,
+          ...(side === undefined ? {} : { side }),
+        },
+      });
+    }
   }
+
+  const waypoints: V3[] = [aWorld];
+  routeSteps.forEach((step, i) => {
+    if (step.kind === 'point') {
+      waypoints.push(step.world);
+      return;
+    }
+    const after = routeSteps[i + 1];
+    const next = after === undefined
+      ? bWorld
+      : after.kind === 'point' ? after.world : after.cylinder.center;
+    waypoints.push(...wrapArcPoints(waypoints[waypoints.length - 1], next, step.cylinder));
+  });
   waypoints.push(bWorld);
   return { excluded, waypoints };
 }
@@ -135,6 +193,7 @@ function piercesForTendon(
   sample: TendonBodyIntersectSample,
   a: { partName: string; world: V3 },
   b: { partName: string; world: V3 },
+  boundsByPart: ReadonlyMap<string, Aabb | undefined>,
 ): TendonBodyIntersectResult[] {
   const { excluded, waypoints } = collectTendonPath(t, partByName, sample, a.world, b.world);
   const fired = new Set<string>(); // one diagnostic per (tendon, part)
@@ -150,6 +209,8 @@ function piercesForTendon(
       for (const sp of sample.scene.parts) {
         if (excluded.has(sp.name) || fired.has(sp.name)) continue;
         if (!(sp.shape instanceof OcctBackend)) continue;
+        const bounds = boundsByPart.get(sp.name);
+        if (bounds !== undefined && !withinExpandedBounds(pt, bounds, TENDON_BODY_CLEARANCE_MM)) continue;
         const gap = measureGapToBody(sp.shape as OcctBackend, sp.worldTransform, pt);
         if (gap !== undefined && gap < TENDON_BODY_CLEARANCE_MM) {
           out.push({ tendonName: t.name, partName: sp.name, pointWorld: pt, gapMm: gap });
@@ -172,13 +233,19 @@ export function checkTendonBodyIntersectAtPose(
 ): TendonBodyIntersectResult[] {
   const out: TendonBodyIntersectResult[] = [];
   const partByName = indexPartsByName(arm);
+  const boundsByPart = new Map<string, Aabb | undefined>();
+  for (const part of sample.scene.parts) {
+    if (part.shape instanceof OcctBackend) {
+      boundsByPart.set(part.name, worldBounds(part.shape, part.worldTransform));
+    }
+  }
 
   for (const t of arm.__tendons()) {
     const a = endpointWorld(t.from, partByName, sample);
     const b = endpointWorld(t.to, partByName, sample);
     if (a === undefined || b === undefined) continue;
 
-    out.push(...piercesForTendon(t, partByName, sample, a, b));
+    out.push(...piercesForTendon(t, partByName, sample, a, b, boundsByPart));
   }
   return out;
 }

@@ -36,7 +36,6 @@ const HEAVY: ReadonlyMap<string, string> = new Map([
   ['examples/robot-arm/so100/so100-arm.kcad.ts', '13 imported STL solids'],
   ['examples/robot-arm/so100/so100.kcad.ts', '13 imported STL solids'],
   ['examples/robot-hand/functional-clevis-robot-hand.kcad.ts', 'detailed articulated hand geometry'],
-  ['examples/robot-hand/generic-articulated-digit.kcad.ts', 'detailed articulated digit geometry'],
   ['examples/robot-hand/workflow-candidates-comparison.kcad.ts', '0.8 s local multi-candidate comparison board'],
   ['examples/rocket-engine-lines/engine-bare.kcad.ts', 'full engine assembly and tube clearance'],
   ['examples/rocket-engine-lines/engine-routed-twin.kcad.ts', 'full engine assembly and tube clearance'],
@@ -135,14 +134,21 @@ describe('examples evaluate through the kernel', () => {
     });
   }
 
-  // The default budget is 4.5 s. Heavy examples get a longer one: roboto-01 loads about 40 MB of
-  // STL meshes (about 2 s alone) and kspray-facade-robot builds 342 features; both exceed the
-  // budget when the suite runs in parallel.
+  // The default budget is 15 s: these are correctness/environment gates, and a
+  // 4.5 s budget flaked under parallel full-suite load (single examples run in
+  // 0.3-4.8 s, some 10x slower when the machine is busy). Heavy examples get
+  // a longer one: roboto-01 loads about 40 MB of STL meshes and
+  // kspray-facade-robot builds 342 features; four-bar-swept checks collision
+  // at 51 crank poses of a closed loop.
   const SLOW_EXAMPLE_TIMEOUT_MS = new Map<string, number>([
     ['examples/gallery/roboto-01.kcad.ts', 30_000],
     ['examples/gallery/kspray-facade-robot.kcad.ts', 30_000],
     ['examples/gallery/kspray-klift.kcad.ts', 30_000],
     ['examples/roadster/roadster.kcad.ts', 30_000],
+    ['examples/kinematic/four-bar-swept.kcad.ts', 60_000],
+    // Eleven catalog fasteners at the default 'full' detail: 211 modelled
+    // thread solids, about 32 s locally and 37 s in CI.
+    ['examples/parts/catalog-lineup.kcad.ts', 90_000],
   ]);
   const evaluationExamples = examples.filter(file => !HEAVY.has(relativeExample(file)) && !EVALUATION_EXEMPT.has(relativeExample(file)));
   for (const file of evaluationExamples) {
@@ -158,6 +164,6 @@ describe('examples evaluate through the kernel', () => {
       } else {
         expect(result.exitCode, `${displayFile}: ${JSON.stringify(result.diagnostics)}`).toBe(0);
       }
-    }, SLOW_EXAMPLE_TIMEOUT_MS.get(displayFile) ?? 4_500);
+    }, SLOW_EXAMPLE_TIMEOUT_MS.get(displayFile) ?? 15_000);
   }
 });

@@ -60,9 +60,10 @@ describe('Assembly.solvedModel({validate})', () => {
   });
 
   it('prefers closed-loop did-not-converge over co-occurring interference under validate:error', async () => {
-    // Articulated closed loop (revolute edge) + overlapping boxes at origin.
-    // Historically interference was collected first and became the thrown
-    // KernelError, hiding the v0.6.0 unsupported-loop banner from ChatGPT.
+    // Closed loop that cannot close (fastened tree path, revolute cut 1 mm
+    // off) + overlapping boxes at origin. Historically interference was
+    // collected first and became the thrown KernelError, hiding the loop
+    // failure from the agent.
     const { arm, kcad } = makeArm();
     arm
       .part('ground', kcad.box(10, 10, 10))
@@ -88,7 +89,7 @@ describe('Assembly.solvedModel({validate})', () => {
     arm.mate('m2', 'crank.r', 'rocker.s', 'fastened');
     arm.mate('m3', 'rocker.axis', 'ground.axis', 'revolute');
     await expect(arm.solvedModel({}, { validate: 'error' })).rejects.toThrow(
-      /did not converge|UNSUPPORTED on v0\.6\.0|articulated closed/i,
+      /does not close|kinematic\.loop\.lockup/i,
     );
   }, 60_000);
 
@@ -139,6 +140,19 @@ describe('Assembly.solvedModel({validate:"error"}) — interference hard gate', 
     arm.mate('m', 'a.o', 'b.o', 'fastened');
     await expect(arm.solvedModel({}, { validate: 'error' }))
       .rejects.toThrow(/assembly\.interference\.overlap|overlap/i);
+  }, 60_000);
+
+  it('names the overlap location in the interference diagnostic', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(10, 10, 10), { at: [8, 0, 0] })
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    await expect(
+      arm.solvedModel({}, { validate: 'error' }),
+    ).rejects.toThrow(/near \(-?\d+\.\d, -?\d+\.\d, -?\d+\.\d\)/);
   }, 60_000);
 
   it('does NOT auto-run interference under validate:"warn"', async () => {
@@ -294,5 +308,101 @@ describe('Assembly.solvedModel — mate-driven placement (Pattern A)', () => {
     expect(translate[1]).toBeCloseTo(0);
     expect(translate[2]).toBeCloseTo(0);
     expect(Math.abs(rotateDeg)).toBeCloseTo(0);
+  });
+});
+
+describe('Assembly.solvedModel — per-pair contact / clearance tolerances', () => {
+  function overlappingPair(offsetX = 9) {
+    const { arm, kcad } = makeArm();
+    arm.part('a', kcad.box(10, 10, 10), { at: [0, 0, 0] });
+    arm.part('b', kcad.box(10, 10, 10), { at: [offsetX, 0, 0] });
+    return { arm, kcad };
+  }
+
+  it('accepts an overlap inside the declared contact budget', async () => {
+    const { arm } = overlappingPair(9);
+    await expect(
+      arm.solvedModel({}, {
+        validate: 'error',
+        contacts: [{ parts: ['a', 'b'], maxVolumeMm3: 500, maxThicknessMm: 5 }],
+      }),
+    ).resolves.toBeDefined();
+  }, 60_000);
+
+  it('still throws when the overlap exceeds the declared volume budget', async () => {
+    const { arm } = overlappingPair(9);
+    await expect(
+      arm.solvedModel({}, {
+        validate: 'error',
+        contacts: [{ parts: ['a', 'b'], maxVolumeMm3: 1 }],
+      }),
+    ).rejects.toThrow(/contact budget|tolerance|max 1 mm³/i);
+  }, 60_000);
+
+  it('still throws when the overlap exceeds the declared thickness budget', async () => {
+    const { arm } = overlappingPair(9);
+    await expect(
+      arm.solvedModel({}, {
+        validate: 'error',
+        contacts: [{ parts: ['a', 'b'], maxThicknessMm: 0.2 }],
+      }),
+    ).rejects.toThrow(/contact budget|thickness/i);
+  }, 60_000);
+
+  it('accepts a declared clearance that is satisfied', async () => {
+    const { arm, kcad } = makeArm();
+    arm.part('a', kcad.box(10, 10, 10), { at: [0, 0, 0] });
+    arm.part('b', kcad.box(10, 10, 10), { at: [12, 0, 0] });
+    await expect(
+      arm.solvedModel({}, {
+        validate: 'error',
+        clearances: [{ parts: ['a', 'b'], minMm: 1 }],
+      }),
+    ).resolves.toBeDefined();
+  }, 60_000);
+
+  it('throws when a declared clearance is violated', async () => {
+    const { arm, kcad } = makeArm();
+    arm.part('a', kcad.box(10, 10, 10), { at: [0, 0, 0] });
+    arm.part('b', kcad.box(10, 10, 10), { at: [12, 0, 0] });
+    await expect(
+      arm.solvedModel({}, {
+        validate: 'error',
+        clearances: [{ parts: ['a', 'b'], minMm: 5 }],
+      }),
+    ).rejects.toThrow(/minimum clearance/i);
+  }, 60_000);
+
+  it('throws when a declared clearance pair overlaps', async () => {
+    const { arm } = overlappingPair(9);
+    await expect(
+      arm.solvedModel({}, {
+        validate: 'error',
+        clearances: [{ parts: ['a', 'b'], minMm: 1 }],
+      }),
+    ).rejects.toThrow(/minimum clearance|clearance\.violated/i);
+  }, 60_000);
+
+  it('rejects unknown, self and duplicate pair declarations at capture entry', async () => {
+    const { arm, kcad } = makeArm();
+    arm.part('a', kcad.box(1, 1, 1));
+    arm.part('b', kcad.box(1, 1, 1));
+    expect(() => arm.solvedModel({}, { contacts: [{ parts: ['a', 'ghost'] }] }))
+      .toThrow(/requires a part on assembly/i);
+    expect(() => arm.solvedModel({}, { contacts: [{ parts: ['a', 'a'] }] }))
+      .toThrow(/paired with itself|two different part names/i);
+    expect(() => arm.solvedModel({}, {
+      contacts: [{ parts: ['a', 'b'] }, { parts: ['b', 'a'] }],
+    })).toThrow(/duplicate pair|each pair declared once/i);
+  });
+
+  it('rejects negative or non-finite budgets at capture entry', async () => {
+    const { arm, kcad } = makeArm();
+    arm.part('a', kcad.box(1, 1, 1));
+    arm.part('b', kcad.box(1, 1, 1));
+    expect(() => arm.solvedModel({}, { contacts: [{ parts: ['a', 'b'], maxVolumeMm3: -1 }] }))
+      .toThrow(/maxVolumeMm3/i);
+    expect(() => arm.solvedModel({}, { clearances: [{ parts: ['a', 'b'], minMm: Number.NaN }] }))
+      .toThrow(/minMm/i);
   });
 });

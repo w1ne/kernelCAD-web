@@ -37,16 +37,18 @@ use the typed `lib.standard.*` shortcuts.
 
 ### Fetch-by-URL (parts not in the catalog)
 
-For one handoff part, use
-`fetch_part_model({ url, expected_sha256, ref?, bbox_mm? })` for a direct asset,
-or `{ catalog_id }` / `{ mpn }` to resolve through `fetch_part` and `find_part`.
-Explicit URLs require a 64-character expected SHA-256 and source/license
-provenance. The tool caches URL-fetched assets by content digest and compares
-STEP bounds, or GLB POSITION accessor bounds when present, dimension-by-
-dimension with `bbox_mm` (default relative tolerance 25%). A GLB without usable
-accessor bounds reports `not_checked`; missing or ambiguous catalog results are
-returned with a specific `errorCode`. This resolves a model asset but does not
-place it or perform a fit check.
+For a hash-verified STEP or GLB model file, call `fetch_part` with
+`includeModel: true` or a `model` object:
+`fetch_part({ model: { url, sha256, source, license, expectedBboxMm? } })` for a
+direct asset, or `fetch_part({ id, includeModel: true })` / `{ query: <MPN>,
+includeModel: true }` to resolve through the catalog. Explicit URLs require a
+64-character `sha256` and `source`/`license` provenance. The tool caches
+URL-fetched assets by content digest and compares STEP bounds, or GLB POSITION
+accessor bounds when present, dimension-by-dimension with `expectedBboxMm`
+(default relative tolerance 25%, `toleranceRatio` to change it). A GLB without
+usable accessor bounds reports `not_checked`; missing or ambiguous catalog
+results are returned with a specific `errorCode`. This resolves a model asset
+but does not place it or perform a fit check.
 
 `fetch_part { url }` pulls geometry on demand from an **allowlisted** host
 (GitHub/GitLab raw + release-asset hosts and the kernelCAD parts host) — it is
@@ -83,36 +85,78 @@ const screw   = await lib.part({ family: 'socket-head-cap-screw', thread: 'M5', 
 const stack   = await lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' });
 const fitted  = await lib.insert(plate, { diameterMm: 5.5, family: 'socket-head-cap-screw', mode: 'bolt' });
 
-// 4. Machining-fixture hardware.
-const set     = await lib.fixture.clampSet({ thread: 'M10', workpieceHeightMm: 36 });
-const tNut    = await lib.fixture.tSlotNut({ thread: 'M10' });
-const stud    = await lib.fixture.clampStud({ thread: 'M10', lengthMm: 80 });
-const clamp   = await lib.fixture.strapClamp({ thread: 'M10' });
-const block   = await lib.fixture.stepBlock({ thread: 'M10' });
+// 4. Machining-fixture hardware (same lib.part path, fixture families).
+const tNut    = await lib.part({ family: 't-slot-nut', thread: 'M10' });
+const stud    = await lib.part({ family: 'clamping-stud', thread: 'M10', lengthMm: 80 });
+const clamp   = await lib.part({ family: 'strap-clamp', thread: 'M10' });
+const block   = await lib.part({ family: 'step-block', thread: 'M10' });
 ```
 
 `lib.fetchPart('iso-4762-m3x12')` and
 `lib.standard.boltSHCS({ thread: 'M3', lengthMm: 12 })` resolve to the same
 record; pick the typed call when arguments are static, the generic call
 when ids are computed. `lib.part` resolves the same catalog ids from the
-family table and builds the envelope in memory when no STEP is on disk.
+family table; the `lib.standard` fastener shortcuts go through `lib.part`, so
+they take `detail` too.
+
+The catalog records for the fastener, nut and washer families now carry
+`attributes.verified*`: the stocked thread range, the sampled length range,
+the requirement names and the point/boundary count from the S3 range-proof CI
+job (`npm run test:standard-part-ranges`). Read those before quoting a
+range; they say "checked, not proven", and parts outside the first slice are
+listed in `STANDARD_PART_RANGE_REMAINING` instead of being claimed.
 
 ## Fastener table — lib.part and lib.stack
 
 `lib.part({ family, thread, lengthMm })` builds one stocked fastener:
-socket-head (ISO 4762), button-head (ISO 7380) and countersunk (ISO 10642)
-screws, hex nuts (ISO 4032), lock nuts (DIN 985), flat washers (ISO 7089)
-and lock washers (DIN 127B), M2 through M6. Screws need a stocked length;
-an unknown family, thread or length fails with a diagnostic that names the
-stocked values. Every solid is an envelope (head plus shank), no helical
-thread.
+socket-head (ISO 4762, M2–M20), button-head (ISO 7380, M3–M10), countersunk
+(ISO 10642, M3–M12) and hex-head (ISO 4017, M3–M20) screws and bolts,
+headless set screws (ISO 4026, M3–M12) and threaded rod (DIN 975, M3–M12 ×
+250/1000), hex nuts (ISO 4032, M2–M20), lock nuts (DIN 985, M3–M12), flat
+washers (ISO 7089, M2–M20) and lock washers (DIN 127B, M3–M12). Screws need
+a stocked length, and the stocked lengths are per thread (the standard's
+preferred series), not one list for every size; an unknown family, thread or
+length fails with a diagnostic that names the stocked values.
 
-`lib.stack({ thread, gripMm, mode })` returns `lengthMm` plus the members,
+`detail` picks the solid, on `lib.part`, `lib.stack`, `lib.insert` and the
+`lib.standard` fasteners:
+
+- `'full'` (default): the hardware as its standard draws it. Hex socket with
+  a 118° drill point, ISO 4762 head chamfer and under-head fillet, ISO 7380
+  dome, ISO 10642 90° cone, ISO 4017 30° crown chamfer and washer face, ISO
+  4032 nut chamfered and countersunk on both faces with an internal thread,
+  ISO 4026 flat point, DIN 127B split. Threads are the ISO 68-1 profile at
+  the ISO 261 coarse pitch with a chamfered start; ISO 4762 / ISO 10642
+  screws carry the partial thread length b by a rule close to the standard's
+  table. Threads over 100 turns (all DIN 975 rod) are the profile revolved as
+  rings, flagged `threadForm: 'annular'` on the part record.
+- `'envelope'`: nominal head plus a nominal-Ø shank, a nut with a nominal
+  bore. Fast; use it for big assemblies.
+
+Cost of `'full'`: ~4–6 s for the first build of each distinct part (copies
+after that are cached, so 8 M6 bolts + nuts add ~12 s), and 3 s (M3 × 10) to
+27 s (M20 × 100) to mesh one threaded part for display or render.
+
+Interference, installation, pair-tolerance, DFM-clearance and rest-pose
+checks measure the nominal envelope at either detail: a modeled thread in its
+clearance hole, tapped hole or nut is not a clash. The envelope follows moves
+and rotations; a boolean on the fastener drops it. Mass and BOM volume use the
+drawn solid (the envelope overestimates a threaded screw by ~20 %). The
+bundled catalog STEP files hold the envelope detail.
+
+`lib.stack({ thread, gripMm, mode, protrusionPitches? })` returns `lengthMm` plus the members,
 each positioned against a seat at z = 0 (the grip's top face).
 `mode: 'screw'` places the screw alone; `mode: 'bolt'` adds a washer under
 the head and a washer plus hex nut on the back. The screw length is the
-shortest stocked one at or above grip + washer + nut (for socket heads —
-the only family `lib.stack` plans).
+shortest stocked one at or above head washer + grip + tail washer + nut +
+`protrusionPitches` × pitch (default 2 pitches of thread past the nut's outer
+face; socket heads are the only family `lib.stack` plans, and `lib.insert`
+applies the same rule to its through-bolt stacks). Bolt-mode results carry
+`protrusionMm`, the tip's distance past the nut. A grip no stocked length can
+reach fails with `invalid-args` naming the length it needed; it never falls
+back to a short bolt. Nut heights are ISO 4032 m max (M5 4.7, M6 5.2, M8 6.8,
+M10 8.4 mm). Example: a 12 mm M5 grip needs 1 + 12 + 1 + 4.7 + 1.6 = 20.3 mm,
+so the stack takes an M5 × 25.
 
 ## Hole-driven insert — lib.insert
 
@@ -129,8 +173,10 @@ const fitted = await lib.insert(plate, {
 ```
 
 The holes already on the shape drive everything. Sizing reads the bore
-diameter against ISO 273 normal clearance (Ø2.4 M2, Ø2.9 M2.5, Ø3.4 M3,
-Ø4.5 M4, Ø5.5 M5, Ø6.6 M6). Selection covers every similar hole (same
+diameter against ISO 273 clearance (Ø2.4 M2, Ø2.9 M2.5, Ø3.4 M3, Ø4.5 M4,
+Ø5.5 M5, Ø6.6 M6, Ø9 M8, Ø11 M10, Ø13.5 M12 normal; close and loose bores
+also size, and `holes[i].fit` reports `'close' | 'normal' | 'loose'`).
+Selection covers every similar hole (same
 diameter, parallel axis), so a patterned hole is covered without naming the
 pattern. The seat follows the family: flat-head cuts a 90° countersink to
 the head diameter, cap heads cut nothing unless `seat: 'counterbore'`.
@@ -147,37 +193,32 @@ Two bores need a second look:
   reported as `existingSeatMm`; `seat: 'auto'` then leaves the hole alone
   instead of cutting a second seat into it.
 
-## Machining-fixture hardware — lib.fixture
+## Machining-fixture hardware — lib.part
 
-`lib.fixture.*` is the clamping kit for a T-slot machine table, keyed by the
-thread the hardware uses (M8 / M10 / M12). T-slot nuts follow the DIN 508
-table and collar nuts DIN 6331; strap clamps and step blocks have no DIN table
-and stay nominal kit dimensions. Check the supplier drawing before ordering.
+The clamping kit for a T-slot machine table is reached through
+`lib.part({ family, thread, lengthMm? })`, keyed by the thread the hardware
+uses (M8 / M10 / M12). T-slot nuts follow the DIN 508 table and collar nuts
+DIN 6331; strap clamps and step blocks have no DIN table and stay nominal kit
+dimensions. Check the supplier drawing before ordering. Place the members
+yourself with `translate` and the connectors below.
 
-- `tSlotNut({ thread })` — T-slot nut (DIN 508): slot 10 / 12 / 14 mm for
+- `t-slot-nut` — T-slot nut (DIN 508): slot 10 / 12 / 14 mm for
   M8 / M10 / M12; heights 12 / 14 / 16 mm, head height 6 / 7 / 8 mm. Bore
   axis +Z, top face flush at z = 0, base below.
   Connectors: `mating-face` (wing tops), `top-face`, `thread-bore`.
-- `clampStud({ thread, lengthMm })` — clamping stud (DIN 6379 form); stocked
+- `clamping-stud` (needs `lengthMm`) — clamping stud (DIN 6379 form); stocked
   lengths 63 / 100 (M8), 80 / 125 (M10), 100 / 160 (M12). Connectors:
   `table-end`, `clamp-end`, `axis`.
-- `flangeNut({ thread })` — collar (flange) nut (DIN 6331 form) for the
-  clamp top: across flats 13 / 16 / 18 mm, height 12 / 15 / 18 mm, collar
+- `flange-nut` — collar (flange) nut (DIN 6331 form) for the clamp top:
+  across flats 13 / 16 / 18 mm, height 12 / 15 / 18 mm, collar
   18 / 22 / 25 mm.
   Connectors: `mating-face`, `top-face`, `inner-bore`.
-- `strapClamp({ thread })` — strap clamp; the slot center is the origin and
-  the nose points toward -X, so `slot-axis` is where the stud goes.
+- `strap-clamp` — strap clamp; the slot center is the origin and the nose
+  points toward -X, so `slot-axis` is where the stud goes.
   Connectors: `nose-bearing`, `tail-bearing`, `slot-axis`, `top-face`.
-- `stepBlock({ thread })` — step block; treads rise along +X at 10 / 20 / 30 /
-  40 (M8), 12 / 24 / 36 / 48 (M10), 15 / 30 / 45 / 60 (M12). Connectors:
+- `step-block` — step block; treads rise along +X at 10 / 20 / 30 / 40 (M8),
+  12 / 24 / 36 / 48 (M10), 15 / 30 / 45 / 60 (M12). Connectors:
   `base-face`, `step-1` … `step-4` on the treads.
-- `clampSet({ thread, workpieceHeightMm })` — one call for a complete set:
-  T-slot nut, clamping stud, strap clamp, step block and flange nut, placed in
-  one frame (stud axis at the origin, table surface at z = 0, workpiece toward
-  -X, block at +X, clamp level with the workpiece). The workpiece height must
-  equal a stocked tread of that thread's block; the stud is the shortest
-  stocked length that clears clamp + nut. Returns `{ studLengthMm, treadMm,
-  clampTopMm, members }`; mirror the set for the other side of the workpiece.
 
 ## Pre-shipped connector convention
 
@@ -268,12 +309,14 @@ See `kernelcad-mcp` for the full grammar.
 
 ## Bundled-only by default
 
-Bundled tier coverage (293 records on the seed catalog):
+Bundled tier coverage (671 records on the seed catalog):
 
-- M2 / M2.5 / M3 / M4 / M5 / M6 socket head, button head, flat head
-  countersunk screws (ISO 4762 / 7380 / 10642).
-- M2 / M2.5 / M3 / M4 / M5 / M6 hex nuts, lock nuts, flat / lock washers
-  (ISO 4032 / DIN 985 / ISO 7089 / DIN 127B).
+- M2–M20 socket head (ISO 4762) and M2–M20 hex head bolts (ISO 4017);
+  M3–M12 flat head countersunk (ISO 10642); button head M3–M10 (ISO 7380).
+- M3–M12 set screws (ISO 4026) and M3–M12 threaded rod (DIN 975, 250/1000 mm).
+- M2–M20 hex nuts and flat washers (ISO 4032 / ISO 7089); lock nuts and lock
+  washers M3–M12 (DIN 985 / DIN 127B).
+- Stocked lengths are per thread, the standard's preferred series subset.
 - M2.5 / M3 / M4 heat-set inserts (3.8 mm and 5.7 mm length).
 - Deep-groove ball bearings 608 / 623 / 624 / 625 / 626 / 6800 / 688 / 6900.
 - Linear shaft Ø3..Ø12 × 20..200 mm.
@@ -285,7 +328,7 @@ Bundled tier coverage (293 records on the seed catalog):
 - Machining-fixture hardware M8 / M10 / M12: T-slot nuts (slot 10 / 12 /
   14 mm), clamping studs (63–160 mm), flange nuts, strap clamps (100 / 125 /
   160 mm) and step blocks (40 / 48 / 60 mm of treads), envelope solids with
-  placement connectors (`lib.fixture.*`).
+  placement connectors (`lib.part` fixture families).
 
 Bundled parts ship under kernelCAD's MIT license — see `record.license`.
 
@@ -424,6 +467,16 @@ return arm.model();
 | `parts.fetch.checksum-drift`      | Cached bytes still match; remote now reports a different sha256.              | Re-fetch with `--refresh-parts-cache` to opt in to the new bytes.                     |
 | `parts.fetch.api-error`           | Remote returned non-2xx or network failed.                                    | Retry later, check `partsBaseUrl` reachability, or fall back to `source: 'local'`.    |
 | `parts.fetch.remote-disabled`     | A tool needed remote, but no `partsBaseUrl` (arg or env) was set.             | Pass `partsBaseUrl`, set `KERNELCAD_PARTS_BASE_URL`, or stick to bundled ids.         |
+
+### Verify catalog parts against declared intent
+
+After placing purchased components, declare the interface they must keep with
+`require()` (for example `require('servo-clearance', clearance(servo, bracket).gte(0.2))`
+or `require('boss-concentric', concentric(faces(boss), faces(bearing)).within(0.05))`).
+The evaluation result's `requirements` ledger reports measured / limit / margin
+for each entry and carries the S1 fingerprints of the selections, so a failing
+interface names the parts rather than only the model. Catalog geometry does not
+need to be re-measured by hand.
 
 ### Verify installed catalog screws
 

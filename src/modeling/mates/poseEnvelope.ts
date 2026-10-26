@@ -12,14 +12,10 @@ import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { detectInterferences, type InterferencePair, pairKey } from '../runtime/detectInterferences';
 import { checkClearance, type ClearancePairReport } from '../runtime/dfm/clearance';
-import { describeOverlap, isActionableOverlap } from '../runtime/jointContactCap';
+import { describeOverlap, describeOverlapLocation, isActionableOverlap } from '../runtime/jointContactCap';
+import { contactAccepts, contactMap, type PairContactTolerance } from '../runtime/pairTolerances';
 import { expandCoupledPoses } from './coupledPoses';
 import { reposedLoweredAssemblyScene } from './loweredAssemblyScene';
-import {
-  computeGripperAperture,
-  type GripperApertureRequest,
-  type GripperApertureSummary,
-} from './gripperAperture';
 import { parseConnectorRef, type MatePose, type MateRecord } from './mate';
 import { solveMates } from './solver';
 
@@ -28,7 +24,7 @@ import { solveMates } from './solver';
  * Derived from the central `DIAGNOSTIC_REGISTRY` so the envelope pipeline
  * shares a single source of truth with the rest of the assembly validators
  * — see `src/shared/diagnostics/registry/`. The four pose / envelope
- * codes plus the gripper-aperture warning live here because they are
+ * codes live here because they are
  * emitted only by this module's review pass; the validator folds them in
  * via `foldEnvelopeDiagnostics()`.
  */
@@ -40,7 +36,6 @@ export type PoseEnvelopeDiagnosticCode = Extract<
   | 'assembly.pose-envelope.clearance-violated'
   | 'assembly.pose-envelope.clearance-unresolved'
   | 'assembly.pose-envelope.connector-unresolved'
-  | 'assembly.gripper-aperture.connector-missing'
 >;
 
 export interface PoseEnvelopeDiagnostic {
@@ -93,13 +88,15 @@ export interface PoseEnvelopeReviewOptions extends PoseEnvelopeSamplingOptions {
   readonly includeInterference?: boolean;
   readonly epsilonMm3?: number;
   readonly trackConnectors?: readonly string[];
-  readonly gripperAperture?: GripperApertureRequest;
   /** Minimum BREP-to-BREP clearance required at every solved sample. */
   readonly minClearanceMm?: number;
   /** Measure articulated mate pairs too. Fastened mate pairs stay exempt. */
   readonly includeArticulatedMateClearance?: boolean;
   /** pairKey()-encoded part pairs exempt from the clearance check. */
   readonly ignoredPairs?: ReadonlySet<string>;
+  /** Per-pair intended-contact budgets. A sample's overlap is accepted only
+   *  while it stays inside the declared budget for that pair. */
+  readonly contactTolerances?: readonly PairContactTolerance[];
   /**
    * A fully lowered scene from the same evaluated assembly. When its part set
    * matches, pose review reuses each LOCAL-frame BREP and replaces only the
@@ -115,8 +112,6 @@ export interface PoseEnvelopeReviewResult {
   readonly clearancePairs: Array<ClearancePairReport & { sampleName: string }>;
   readonly connectorPoses: TrackedConnectorPose[];
   readonly connectorWorkspace: ConnectorWorkspace[];
-  readonly gripperApertureRequest?: GripperApertureRequest;
-  readonly gripperAperture?: GripperApertureSummary;
 }
 
 export interface TrackedConnectorPose {
@@ -268,7 +263,8 @@ export async function reviewPoseEnvelope(
   const interferencePairs: Array<InterferencePair & { sampleName: string }> = [];
   const clearancePairs: Array<ClearancePairReport & { sampleName: string }> = [];
   const ignoredPairs = opts.ignoredPairs ?? new Set<string>();
-  const reportInterference = createInterferenceReporter(interferencePairs, diagnostics, ignoredPairs);
+  const contactsByPair = contactMap(opts.contactTolerances);
+  const reportInterference = createInterferenceReporter(interferencePairs, diagnostics, ignoredPairs, contactsByPair);
   const connectorPoses: TrackedConnectorPose[] = [];
   const trackConnectors = resolveTrackedConnectors(opts);
   const unresolvedConnectorRefs = new Set<string>();
@@ -306,12 +302,6 @@ export async function reviewPoseEnvelope(
 
   pushUnresolvedConnectorDiagnostics(unresolvedConnectorRefs, diagnostics);
 
-  const apertureSummary = resolvePoseEnvelopeAperture(
-    opts.gripperAperture,
-    connectorPoses,
-    diagnostics,
-  );
-
   return {
     samples,
     diagnostics,
@@ -319,8 +309,6 @@ export async function reviewPoseEnvelope(
     clearancePairs,
     connectorPoses,
     connectorWorkspace: buildConnectorWorkspace(connectorPoses),
-    ...(opts.gripperAperture !== undefined ? { gripperApertureRequest: opts.gripperAperture } : {}),
-    ...(apertureSummary !== undefined ? { gripperAperture: apertureSummary } : {}),
   };
 }
 
@@ -330,12 +318,14 @@ function createInterferenceReporter(
   interferencePairs: Array<InterferencePair & { sampleName: string }>,
   diagnostics: PoseEnvelopeDiagnostic[],
   ignoredPairs: ReadonlySet<string> = new Set(),
+  contactsByPair: ReadonlyMap<string, PairContactTolerance> = new Map(),
 ): (sampleName: string, pair: InterferencePair) => void {
   const reportedInterferences = new Set<string>();
   return (sampleName: string, pair: InterferencePair): void => {
     if (!isActionableOverlap(pair)) return;
     const pairId = pairKey(pair.a, pair.b);
     if (ignoredPairs.has(pairId)) return;
+    if (contactAccepts(pair, contactsByPair.get(pairId))) return;
     const key = `${sampleName}\u0000${pairId}`;
     if (reportedInterferences.has(key)) return;
     reportedInterferences.add(key);
@@ -348,20 +338,16 @@ function createInterferenceReporter(
       partA: pair.a,
       partB: pair.b,
       volumeMm3: pair.volumeMm3,
-      message: `Pose-envelope sample '${sampleName}' makes parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}.`,
+      message: `Pose-envelope sample '${sampleName}' makes parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}${describeOverlapLocation(pair)}.`,
       hint: `invalid-args.assembly.pose-envelope-interference — add clearance, reduce mate travel, or move the connector/mount geometry so the swept pose stays collision-free.`,
     });
   };
 }
 
-/** Connector refs to track: the explicit list plus both gripper fingertips,
- *  or undefined when neither was requested. */
+/** Connector refs to track, or undefined when none were requested. */
 function resolveTrackedConnectors(opts: PoseEnvelopeReviewOptions): ReadonlySet<string> | undefined {
-  if (opts.trackConnectors === undefined && opts.gripperAperture === undefined) return undefined;
-  return new Set([
-    ...(opts.trackConnectors ?? []),
-    ...(opts.gripperAperture !== undefined ? [opts.gripperAperture.left, opts.gripperAperture.right] : []),
-  ]);
+  if (opts.trackConnectors === undefined) return undefined;
+  return new Set(opts.trackConnectors);
 }
 
 /** Mated pairs exempt from the clearance check, computed only when a minimum
@@ -502,26 +488,6 @@ function pushUnresolvedConnectorDiagnostics(
       hint: `invalid-args.assembly.pose-envelope-connector-unresolved — use a numeric vec3 connector origin for workspace review, or run a lowerer-backed topology resolver before requesting this connector.`,
     });
   }
-}
-
-function resolvePoseEnvelopeAperture(
-  request: GripperApertureRequest | undefined,
-  connectorPoses: readonly TrackedConnectorPose[],
-  diagnostics: PoseEnvelopeDiagnostic[],
-): GripperApertureSummary | undefined {
-  const aperture = request !== undefined
-    ? computeGripperAperture(connectorPoses, request)
-    : undefined;
-  if (request !== undefined && aperture?.summary === undefined) {
-    diagnostics.push({
-      code: 'assembly.gripper-aperture.connector-missing',
-      severity: 'warning',
-      connectorRef: aperture?.missingRefs.join(', ') ?? `${request.left}, ${request.right}`,
-      message: `Gripper aperture could not be computed because one or both fingertip connector refs were not observed.`,
-      hint: `invalid-args.assembly.gripper-aperture-connector-missing — pass gripperAperture refs that exist as numeric frame connectors and are included in pose-envelope samples.`,
-    });
-  }
-  return aperture?.summary;
 }
 
 function clearanceExemptMatedPairs(

@@ -1,11 +1,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import * as fs from 'node:fs';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { BuiltModel } from '../../composition/buildModel';
 import { createLiveViewer } from './liveViewer';
+
+vi.mock('node:fs', async importOriginal => {
+  const actual = await importOriginal<typeof import('node:fs')>();
+  return { ...actual, existsSync: vi.fn(actual.existsSync) };
+});
 
 const closers: Array<() => Promise<void>> = [];
 afterEach(async () => { await Promise.all(closers.splice(0).map(close => close())); });
@@ -82,9 +88,25 @@ describe('live MCP Studio viewer', () => {
     expect((await fetch(endpoint(link, 'source'), { headers: { Origin: 'https://evil.example' } })).status).toBe(403);
   });
 
+  it('does not auto-detect stale packaged or checkout viewer bundles', async () => {
+    vi.stubEnv('KERNELCAD_VIEWER_DIST', undefined);
+    // Simulate every legacy bundle path existing. No implicit path may be consulted.
+    const exists = vi.mocked(fs.existsSync).mockClear().mockReturnValue(true);
+    const viewer = createLiveViewer();
+    try {
+      await expect(viewer.update(model('geometry still built'))).rejects.toThrow('KERNELCAD_VIEWER_DIST');
+      expect(exists).not.toHaveBeenCalled();
+    } finally {
+      await viewer.close();
+      const actual = await vi.importActual<typeof import('node:fs')>('node:fs');
+      exists.mockImplementation(actual.existsSync);
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('fails clearly when the packaged Studio assets are absent', async () => {
     const viewer = createLiveViewer({ dist: '/does-not-exist' });
-    await expect(viewer.update(model('first'))).rejects.toThrow('build:mcp-viewer');
+    await expect(viewer.update(model('first'))).rejects.toThrow('KERNELCAD_VIEWER_DIST');
     await viewer.close();
   });
 });

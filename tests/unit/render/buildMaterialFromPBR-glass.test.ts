@@ -7,7 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as THREE from 'three';
-import { buildMaterialFromPBR } from '../../../src/studio/components/demoPlayer/buildMaterialFromPBR';
+import { buildMaterialFromPBR } from '../../../src/render-player/components/demoPlayer/buildMaterialFromPBR';
 
 describe('buildMaterialFromPBR — glass + anisotropy + textures', () => {
   beforeEach(() => {

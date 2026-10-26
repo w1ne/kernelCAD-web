@@ -28,10 +28,15 @@ export interface SweepToleranceInput {
    *  `jointAxis` default to true; `reachable` runs only when a target is
    *  declared. */
   gates?: SweepGateSpec;
+  /** Absolute parameter tolerance for boundary bisection (default 0.001). */
+  boundaryTolerance?: number;
+  /** Maximum extra evaluations spent bisecting boundaries (default 64; 0
+   *  skips bisection). */
+  boundaryBudget?: number;
 }
 
 export type SweepToleranceOutput =
-  | (SweepToleranceResult & { ok: true })
+  | SweepToleranceResult
   | { ok: false; source: 'local'; error: string; errorCode?: string };
 
 /**
@@ -68,8 +73,10 @@ export async function sweepToleranceTool(
       assembly: input.assembly,
       params: input.params,
       gates: input.gates,
+      ...(input.boundaryTolerance !== undefined ? { boundaryTolerance: input.boundaryTolerance } : {}),
+      ...(input.boundaryBudget !== undefined ? { boundaryBudget: input.boundaryBudget } : {}),
     }, defaultSweepEvaluator);
-    return { ...result, ok: true };
+    return result;
   } catch (e) {
     return {
       ok: false,

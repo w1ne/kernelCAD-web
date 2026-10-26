@@ -3,7 +3,8 @@
 import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { formatScalarForError, isValidVec3 } from '../../shared/intent/types';
-import { parseConnectorRef, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
+import { parseConnectorRef, type FastenerMateMetadata, type FitMateMetadata, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
+import { fastenerRecordOf, fitRecordOf, validateFastenerMateMetadata, type FastenerMateOptionsFields } from './assemblyMateFastener';
 import type { Connector } from '../mates/connector';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
 import {
@@ -14,6 +15,12 @@ import {
   type TendonOptions,
   type TendonWrapRef,
 } from '../mates/tendon';
+import {
+  normalizeTendonActuator,
+  normalizeTendonProfile,
+  resolveTendonVia,
+} from './assemblyTendonRoute';
+import { cleanPbrMaterial } from './proxyMaterial';
 import { validateWorkspaceTargetOpts, type WorkspaceTargetOpts } from '../mates/workspaceTarget';
 import type {
   AssemblyConnectorRef,
@@ -263,7 +270,7 @@ export function connectFixed(state: AssemblyState, name: string, a: AssemblyConn
  * is honored by the v0.6 Pattern A FK in `solveMates(arm, poses?)` and
  * piped into `Scene.parts[].worldTransform` by `Assembly.solvedModel`.
  */
-interface MateOptions {
+interface MateOptions extends FastenerMateOptionsFields {
   pose?: MatePose;
   limitsDeg?: MateLimitRange;
   limitsMm?: MateLimitRange;
@@ -271,6 +278,52 @@ interface MateOptions {
   capacity?: MateCapacity;
   /** @deprecated legacy manual-load API */
   maxLoad?: MateLoadLimit;
+  stiffnessNmmPerDeg?: number;
+  springRefDeg?: number;
+  dampingNmmsPerDeg?: number;
+  stiffnessNPerMm?: number;
+  springRefMm?: number;
+  dampingNsPerMm?: number;
+  /** P2 helical fastener metadata. Only valid on a fastened mate. */
+  fastener?: FastenerMateMetadata;
+  /** P2 press/snap fit metadata. Only valid on a fastened mate. */
+  fit?: FitMateMetadata;
+}
+
+const JOINT_DYNAMICS_FIELDS = [
+  'stiffnessNmmPerDeg', 'springRefDeg', 'dampingNmmsPerDeg',
+  'stiffnessNPerMm', 'springRefMm', 'dampingNsPerMm',
+] as const;
+const REVOLUTE_ONLY_FIELDS = new Set<string>(['stiffnessNmmPerDeg', 'springRefDeg', 'dampingNmmsPerDeg']);
+
+/** Joint spring / damping options: revolute takes the Deg trio, prismatic the
+ *  Mm trio; finite numbers, non-negative except the spring reference. */
+function validateJointDynamics(name: string, type: MateType, opts: MateOptions | undefined): void {
+  for (const field of JOINT_DYNAMICS_FIELDS) {
+    const v = opts?.[field];
+    if (v === undefined) continue;
+    const expected = REVOLUTE_ONLY_FIELDS.has(field) ? 'revolute' : 'prismatic';
+    if (type !== expected) {
+      invalidArgs({
+        api: `mate('${name}', aRef, bRef, '${type}', { ${field} })`,
+        path: `opts.${field}`,
+        gotText: `assembly.mate.joint-dynamics-type-mismatch: a ${expected}-only option on a '${type}' mate`,
+        requires: 'stiffnessNmmPerDeg / springRefDeg / dampingNmmsPerDeg on revolute mates, stiffnessNPerMm / springRefMm / dampingNsPerMm on prismatic mates',
+        hintSlug: 'invalid-args.assembly.mate-joint-dynamics-type-mismatch',
+        example: "arm.mate('hinge', 'a.axis', 'b.axis', 'revolute', { stiffnessNmmPerDeg: 3, springRefDeg: -10 })",
+      });
+    }
+    if (typeof v !== 'number' || !Number.isFinite(v) || (!field.startsWith('springRef') && v < 0)) {
+      invalidArgs({
+        api: `mate('${name}', aRef, bRef, '${type}', { ${field} })`,
+        path: `opts.${field}`,
+        gotText: `assembly.mate.invalid-joint-dynamics: ${formatScalarForError(v as number)}`,
+        requires: field.startsWith('springRef') ? 'a finite number' : 'a finite number >= 0',
+        hintSlug: 'invalid-args.assembly.mate-invalid-joint-dynamics',
+        example: "arm.mate('hinge', 'a.axis', 'b.axis', 'revolute', { stiffnessNmmPerDeg: 3, dampingNmmsPerDeg: 0.1 })",
+      });
+    }
+  }
 }
 
 export function recordMate(
@@ -286,7 +339,9 @@ export function recordMate(
   assertMateConnectorPair(name, type, aRef, bRef, a, b);
   validateMatePoseAllowed(name, type, opts);
   validateMateLimits(name, type, opts);
+  validateJointDynamics(name, type, opts);
   validateMateCapacityOptions(name, type, opts);
+  validateFastenerMateMetadata(name, type, aRef, bRef, opts);
   state.mates.push(buildMateRecord(name, aRef, bRef, type, opts));
 }
 
@@ -298,6 +353,17 @@ function assertMateConnectorPair(
   a: { connector: Connector },
   b: { connector: Connector },
 ): void {
+  if (aRef === bRef) {
+    invalidArgs({
+      api: `mate('${name}', aRef, bRef, type)`,
+      path: 'bRef',
+      gotText: `the same connector as aRef ('${aRef}')`,
+      requires:
+        'two different connectors — a joint proposal that names one connector for both sides does not mate anything, and the assembly does not keep it',
+      hintSlug: 'invalid-args.assembly.mate-same-connector',
+      example: "arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute')",
+    });
+  }
   if (!isCompatiblePair(type, a.connector.type, b.connector.type)) {
     invalidArgs({
       api: `mate('${name}', aRef, bRef, type)`,
@@ -325,6 +391,12 @@ function validateMatePoseAllowed(name: string, type: MateType, opts: MateOptions
   }
 }
 
+function jointDynamicsOf(opts: MateOptions | undefined): Partial<Record<typeof JOINT_DYNAMICS_FIELDS[number], number>> {
+  const out: Partial<Record<typeof JOINT_DYNAMICS_FIELDS[number], number>> = {};
+  for (const f of JOINT_DYNAMICS_FIELDS) if (opts?.[f] !== undefined) out[f] = opts[f];
+  return out;
+}
+
 function buildMateRecord(
   name: string,
   aRef: string,
@@ -341,6 +413,7 @@ function buildMateRecord(
     ...(opts?.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
     ...(opts?.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
     ...(opts?.exposure !== undefined ? { exposure: opts.exposure } : {}),
+    ...jointDynamicsOf(opts),
     ...(opts?.capacity !== undefined ? { capacity: copyMateCapacity(opts.capacity) } : {}),
     ...(opts?.maxLoad !== undefined
       ? {
@@ -350,6 +423,8 @@ function buildMateRecord(
           },
         }
       : {}),
+    ...fastenerRecordOf(opts),
+    ...fitRecordOf(opts),
   };
 }
 
@@ -420,7 +495,7 @@ function normalizeTendonCoilFields(
       'feature.invalid-args',
       `assembly.tendon.invalid-visual-style: tendon '${name}' visualStyle must be 'line' or 'coil'; got ${formatScalarForError(visualStyle as unknown as number)}.`,
       undefined,
-      `invalid-args.assembly.tendon-invalid-visual-style — pass visualStyle: 'line' for a straight cylinder (default) or 'coil' for an Anglepoise-style helical spring.`,
+      `invalid-args.assembly.tendon-invalid-visual-style — pass visualStyle: 'line' for a straight cylinder (default) or 'coil' for an Anglepoise-style helical spring; use profile for a swept tube or ribbon.`,
     );
   }
   const coilTurns = opts.coilTurns ?? TENDON_DEFAULT_COIL_TURNS;
@@ -452,6 +527,45 @@ function normalizeTendonCoilFields(
   return { visualStyle, coilTurns, coilDiameter };
 }
 
+/** Validate the optional hard length limit. Undefined = no limit. */
+function normalizeTendonMaxLength(_name: string, opts: TendonOptions): number | undefined {
+  if (opts.maxLengthMm === undefined) return undefined;
+  if (!Number.isFinite(opts.maxLengthMm) || opts.maxLengthMm <= 0) {
+    invalidArgs({
+      api: 'tendon(name, { maxLengthMm })',
+      path: 'opts.maxLengthMm',
+      got: opts.maxLengthMm,
+      requires: 'a positive finite cable length, or omit it for an unlimited cable',
+      example: "arm.tendon('strap', { from: 'a.topA', to: 'b.topB', maxLengthMm: 31 })",
+      unit: 'mm',
+      hintSlug: 'invalid-args.assembly.tendon-invalid-max-length',
+    });
+  }
+  return opts.maxLengthMm;
+}
+
+/** Spring fields are optional for an actuator tendon (inextensible driven
+ *  cable) and for a `maxLengthMm` strap, but validated when given. */
+function validateTendonSpringFields(name: string, opts: TendonOptions): void {
+  const springOptional = opts.actuator !== undefined || opts.maxLengthMm !== undefined;
+  if (!(springOptional && opts.restLengthMm === undefined) && (!Number.isFinite(opts.restLengthMm) || (opts.restLengthMm as number) <= 0)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.tendon.invalid-rest-length: tendon '${name}' restLengthMm must be a positive finite number; got ${formatScalarForError(opts.restLengthMm)}.`,
+      undefined,
+      `invalid-args.assembly.tendon-invalid-rest-length — pass restLengthMm: <positive mm>. Typical Anglepoise rest length is 25-50 mm depending on the joint.`,
+    );
+  }
+  if (!(springOptional && opts.stiffnessNmm === undefined) && (!Number.isFinite(opts.stiffnessNmm) || (opts.stiffnessNmm as number) <= 0)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.tendon.invalid-stiffness: tendon '${name}' stiffnessNmm must be a positive finite number; got ${formatScalarForError(opts.stiffnessNmm)}.`,
+      undefined,
+      `invalid-args.assembly.tendon-invalid-stiffness — pass stiffnessNmm: <positive N/mm>. Typical Anglepoise spring stiffness is 0.3-1.0 N/mm.`,
+    );
+  }
+}
+
 /** Validate + normalize a tendon's scalar/style fields (all of `opts` except
  *  the endpoint refs and wrap geoms). Split out of `recordTendon` to keep
  *  each function's branching complexity under the quality-ratchet budget;
@@ -463,22 +577,7 @@ function normalizeTendonFields(name: string, opts: TendonOptions): {
   coilTurns: number;
   coilDiameter: number;
 } {
-  if (!Number.isFinite(opts.restLengthMm) || opts.restLengthMm <= 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly.tendon.invalid-rest-length: tendon '${name}' restLengthMm must be a positive finite number; got ${formatScalarForError(opts.restLengthMm)}.`,
-      undefined,
-      `invalid-args.assembly.tendon-invalid-rest-length — pass restLengthMm: <positive mm>. Typical Anglepoise rest length is 25-50 mm depending on the joint.`,
-    );
-  }
-  if (!Number.isFinite(opts.stiffnessNmm) || opts.stiffnessNmm <= 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly.tendon.invalid-stiffness: tendon '${name}' stiffnessNmm must be a positive finite number; got ${formatScalarForError(opts.stiffnessNmm)}.`,
-      undefined,
-      `invalid-args.assembly.tendon-invalid-stiffness — pass stiffnessNmm: <positive N/mm>. Typical Anglepoise spring stiffness is 0.3-1.0 N/mm.`,
-    );
-  }
+  validateTendonSpringFields(name, opts);
   const damping = opts.dampingNsmm ?? 0;
   if (!Number.isFinite(damping) || damping < 0) {
     throw new KernelError(
@@ -568,6 +667,7 @@ function resolveTendonWrapGeoms(state: AssemblyState, name: string, opts: Tendon
  *   - both endpoints on same part          → assembly.tendon.same-body-endpoints
  *   - restLengthMm <= 0 or non-finite      → assembly.tendon.invalid-rest-length
  *   - stiffnessNmm <= 0 or non-finite      → assembly.tendon.invalid-stiffness
+ *   - maxLengthMm <= 0 or non-finite       → assembly.tendon.invalid-max-length
  *   - dampingNsmm < 0 or non-finite        → assembly.tendon.invalid-damping
  *   - visualDiameterMm <= 0 or non-finite  → assembly.tendon.invalid-visual-diameter
  *
@@ -595,19 +695,29 @@ export function recordTendon(state: AssemblyState, name: string, opts: TendonOpt
     );
   }
   const { damping, visualDiameter, visualStyle, coilTurns, coilDiameter } = normalizeTendonFields(name, opts);
+  const maxLength = normalizeTendonMaxLength(name, opts);
+  const via = resolveTendonVia(state, name, opts);
   const wrapGeoms = resolveTendonWrapGeoms(state, name, opts);
+  const actuator = normalizeTendonActuator(name, opts);
+  const profile = normalizeTendonProfile(name, opts);
+  const material = opts.material !== undefined ? cleanPbrMaterial(opts.material, `tendon '${name}'`, state.session.warnings) : undefined;
   state.tendons.push({
     name,
     from: opts.from,
     to: opts.to,
-    restLengthMm: opts.restLengthMm,
-    stiffnessNmm: opts.stiffnessNmm,
+    ...(opts.restLengthMm !== undefined ? { restLengthMm: opts.restLengthMm } : {}),
+    ...(opts.stiffnessNmm !== undefined ? { stiffnessNmm: opts.stiffnessNmm } : {}),
+    ...(maxLength !== undefined ? { maxLengthMm: maxLength } : {}),
     dampingNsmm: damping,
     visualDiameterMm: visualDiameter,
     visualStyle,
     coilTurns,
     coilDiameterMm: coilDiameter,
     wrapGeoms,
+    via,
+    ...(actuator !== undefined ? { actuator } : {}),
+    ...(profile !== undefined ? { profile } : {}),
+    ...(material !== undefined ? { material } : {}),
   });
 }
 

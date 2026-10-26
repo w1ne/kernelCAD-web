@@ -62,7 +62,10 @@ export function runIsolated(
     sandbox[k] = (globalThis as unknown as Record<string, unknown>)[k];
   }
   for (const [k, v] of Object.entries(injected)) {
-    if (STRIPPED_GLOBALS.has(k)) {
+    // `require` is the kernelCAD requirement API (S2), not Node's module
+    // loader: the sandbox starts empty, so the injected function is the only
+    // `require` in scope.
+    if (STRIPPED_GLOBALS.has(k) && k !== 'require') {
       throw new Error(`Cannot inject reserved global: ${k}`);
     }
     sandbox[k] = v;

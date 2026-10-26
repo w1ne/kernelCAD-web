@@ -16,6 +16,7 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
 import { evaluateScript } from '../../agent/cli/commands/evaluate';
 import { stepLengthToMillimetres } from './stepLengthUnit';
+import { KernelError } from '../../shared/intent/kernelError';
 
 const MM = 0.01;
 
@@ -207,5 +208,40 @@ describe('SolidWorks STEP import', () => {
         expect(message).not.toMatch(/replicad failed|Unresolved Reference|Failed to load STEP/);
       }
     }
+  });
+
+  it('formats invalid STEP arguments with the shared API, value, requirement, and example', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: dir });
+
+    const expectSharedInvalidArgs = async (call: Promise<unknown>, slug: string) => {
+      let caught: unknown;
+      try {
+        await call;
+      } catch (error) {
+        caught = error;
+      }
+      expect(caught).toBeInstanceOf(KernelError);
+      if (!(caught instanceof KernelError)) return;
+      expect(caught.code).toBe('feature.invalid-args');
+      expect(caught.hint).toContain(slug);
+      expect(caught.message).toContain('lib.fromSTEP');
+      expect(caught.message).toContain('got ');
+      expect(caught.message).toContain('requires ');
+      expect(caught.message).toContain('Example: ');
+    };
+
+    await expectSharedInvalidArgs(
+      api.lib.fromSTEP(join(dir, 'cube.sldprt')),
+      'invalid-args.lib.fromSTEP.solidworks',
+    );
+    await expectSharedInvalidArgs(
+      api.lib.fromSTEP(join(dir, 'empty.step')),
+      'invalid-args.lib.fromSTEP.empty',
+    );
+    await expectSharedInvalidArgs(
+      api.lib.fromSTEP(mmPath, { solid: -1 }),
+      'invalid-args.lib.fromSTEP.solid',
+    );
   });
 });

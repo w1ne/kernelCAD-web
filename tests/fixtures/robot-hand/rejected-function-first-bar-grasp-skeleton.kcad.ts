@@ -197,7 +197,7 @@ hand.mechanicalJoint('grip-drive-support', {
 });
 
 hand.transmission('thumb-drive-linkage', {
-  kind: 'direct-horn',
+  kind: 'direct',
   sourceMate: 'grip',
   drivenMates: ['thumb-curl'],
   actuator: 'grip-actuator',
@@ -207,7 +207,7 @@ hand.transmission('thumb-drive-linkage', {
   ratio: 1,
 });
 hand.transmission('index-drive-linkage', {
-  kind: 'direct-horn',
+  kind: 'direct',
   sourceMate: 'grip',
   drivenMates: ['index-curl'],
   actuator: 'grip-actuator',
@@ -217,7 +217,7 @@ hand.transmission('index-drive-linkage', {
   ratio: -1,
 });
 hand.transmission('middle-drive-linkage', {
-  kind: 'direct-horn',
+  kind: 'direct',
   sourceMate: 'grip',
   drivenMates: ['middle-curl'],
   actuator: 'grip-actuator',

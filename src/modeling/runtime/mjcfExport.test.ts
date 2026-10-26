@@ -99,6 +99,61 @@ describe('regularizeInertia6 / isInertia6PositiveDefinite', () => {
 });
 
 describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
+    it('places a child whose mate connector is off its origin where the connectors meet', async () => {
+        // The wrist connector sits 40 mm behind both parts' origins, so the
+        // palm body belongs at the forearm origin, and a hinge on a child
+        // connector off the child origin is anchored at that connector.
+        await initOcct();
+        const session = new CaptureSession();
+        const kcad = createModelingApi({ session });
+        const arm = kcad.assembly('offset-connectors');
+        arm.part('forearm', kcad.box(60, 30, 30, true).translate(-70, 0, 0))
+            .connector('wrist', { type: 'frame', origin: { kind: 'vec3', value: [-40, 0, 0] } });
+        arm.part('palm', kcad.box(80, 30, 20, true))
+            .connector('wrist', { type: 'frame', origin: { kind: 'vec3', value: [-40, 0, 0] } })
+            .connector('knuckle', { type: 'axis', origin: { kind: 'vec3', value: [45, 0, 0] }, axis: [0, 1, 0] });
+        arm.part('finger', kcad.box(30, 10, 10, true).translate(25, 0, 0))
+            .connector('knuckle', { type: 'axis', origin: { kind: 'vec3', value: [5, 0, 0] }, axis: [0, 1, 0] });
+        arm.mate('wrist', 'forearm.wrist', 'palm.wrist', 'fastened');
+        arm.mate('knuckle', 'palm.knuckle', 'finger.knuckle', 'revolute', { limitsDeg: [0, 90] });
+
+        const { mjcf } = await assemblyToMjcf(arm);
+        expect(mjcf).toMatch(/<body name="palm" pos="0 0 0"/);
+        expect(mjcf).toMatch(/<body name="finger" pos="0\.04(0*) 0 0"/);
+        expect(mjcf).toMatch(/<joint name="knuckle" type="hinge" axis="[^"]*" pos="0\.005(0*) 0 0"/);
+    });
+
+    it('excludes contact across a joint between the whole rigid groups on each side', async () => {
+        // A cover fastened to the finger is the same rigid body as the
+        // finger: across the knuckle it must not collide with the palm,
+        // and it must not collide with the finger it is fastened to. The
+        // forearm (fastened to the palm) is excluded from the finger side
+        // too; nothing else is excluded.
+        await initOcct();
+        const session = new CaptureSession();
+        const kcad = createModelingApi({ session });
+        const arm = kcad.assembly('rigid-groups');
+        const frame = (value: [number, number, number]) => ({ type: 'frame' as const, origin: { kind: 'vec3' as const, value } });
+        arm.part('forearm', kcad.box(60, 30, 30, true).translate(-70, 0, 0)).connector('wrist', frame([-40, 0, 0]));
+        arm.part('palm', kcad.box(80, 30, 20, true))
+            .connector('wrist', frame([-40, 0, 0]))
+            .connector('knuckle', { type: 'axis', origin: { kind: 'vec3', value: [45, 0, 0] }, axis: [0, 1, 0] });
+        arm.part('finger', kcad.box(30, 10, 10, true).translate(65, 0, 0))
+            .connector('knuckle', { type: 'axis', origin: { kind: 'vec3', value: [45, 0, 0] }, axis: [0, 1, 0] })
+            .connector('cover', frame([65, 0, 5]));
+        arm.part('cover', kcad.box(20, 12, 2, true).translate(65, 0, 6)).connector('finger', frame([65, 0, 5]));
+        arm.mate('wrist', 'forearm.wrist', 'palm.wrist', 'fastened');
+        arm.mate('knuckle', 'palm.knuckle', 'finger.knuckle', 'revolute', { limitsDeg: [0, 90] });
+        arm.mate('cover-fix', 'finger.cover', 'cover.finger', 'fastened');
+
+        const { mjcf } = await assemblyToMjcf(arm);
+        const excluded = new Set([...mjcf.matchAll(/<exclude body1="([^"]+)" body2="([^"]+)"\/>/g)].map((m) => [m[1], m[2]].sort().join('|')));
+        expect(excluded).toEqual(new Set([
+            'forearm|palm', 'cover|finger',
+            'finger|palm', 'cover|palm', 'finger|forearm', 'cover|forearm',
+        ]));
+    });
+
     it('round-trips a 1-revolute hinge into a parseable MJCF with 1 qpos slot', async () => {
         await initOcct();
         const session = new CaptureSession();
@@ -108,6 +163,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
         const baseBody = kcad.box(40, 40, 30, true).translate(0, 0, -15);
         const armBody = kcad.box(120, 20, 20, true).translate(70, 0, 0);
         const j = kcad.joint.clevis({
+            style: { knuckleR: 12 },
             parentBody: baseBody,
             childBody: armBody,
             axis: 'Y',
@@ -267,6 +323,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
         const baseBody = kcad.box(40, 40, 30, true).translate(0, 0, -15);
         const armBody = kcad.box(120, 20, 20, true).translate(70, 0, 0);
         const j = kcad.joint.clevis({
+            style: { knuckleR: 12 },
             parentBody: baseBody,
             childBody: armBody,
             axis: 'Y',
@@ -306,6 +363,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
             to: 'lower-arm.anchor',
             restLengthMm: 50,
             stiffnessNmm: 0.5,
+            maxLengthMm: 50.5,
             dampingNsmm: 0.01,
         });
 
@@ -317,10 +375,13 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
         // Spatial tendon block emitted.
         expect(mjcf).toMatch(/<tendon>/);
         expect(mjcf).toMatch(/<spatial name="spring"/);
-        // Unit conversions: restLengthMm 50 → springlength 0.05;
+        // Unit conversions: restLengthMm 50 → springlength "0 0.05" (slack below rest);
         // stiffnessNmm 0.5 → 500 N/m; dampingNsmm 0.01 → 10 N·s/m.
-        expect(mjcf).toMatch(/springlength="0\.050000"/);
+        expect(mjcf).toMatch(/springlength="0 0\.050000"/);
         expect(mjcf).toMatch(/stiffness="500\.000000"/);
+        // maxLengthMm 50.5 → a one-sided limit at 0.0505 m: the cable can go
+        // slack but cannot stretch past the braided length.
+        expect(mjcf).toMatch(/limited="true" range="0 0\.050500"/);
         expect(mjcf).toMatch(/damping="10\.000000"/);
 
         // Round-trip through MuJoCo: at rest pose (qpos=0), the model
@@ -357,6 +418,13 @@ describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
             const tenLen = (data as { ten_length: ArrayLike<number> }).ten_length;
             expect(tenLen.length).toBe(1);
             expect(Math.abs(tenLen[0] - expectedLen)).toBeLessThan(1e-6);
+            // MuJoCo reads the deadband: zero spring force anywhere below rest.
+            const spring = (model as { tendon_lengthspring: ArrayLike<number> }).tendon_lengthspring;
+            expect(spring[0]).toBe(0);
+            expect(spring[1]).toBeCloseTo(0.05, 9);
+            // The upper length bound is a compiled MuJoCo tendon limit; the
+            // XML assertion above proves the attrs, and this parse proves
+            // MuJoCo accepts them on a routed spatial tendon.
         } finally {
             (data as { delete: () => void }).delete();
             (model as { delete: () => void }).delete();

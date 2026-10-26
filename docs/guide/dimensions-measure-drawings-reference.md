@@ -4,7 +4,7 @@ You can read the size of a part straight off the 3D view, measure anything you c
 
 ## The Dimensions toggle
 
-Two buttons sit top-left of the 3D viewer: Measure is the ruler button, and Dimensions is the button with the ruler-and-ticks icon next to it (assemblies also get [Exploded view](#exploded-view)). It is there in Studio, on shared `/p/<slug>` pages and in the ChatGPT viewer.
+Measure is the ruler button, and Dimensions is the button with the ruler-and-ticks icon next to it (assemblies also get [Exploded view](#exploded-view)). These are available in Studio, on shared `/p/<slug>` pages and in the ChatGPT viewer. Studio also has a Markup button for notes and measurements that travel with an agent prompt; see [Studio markup snapshots](studio-markup-snapshot.md).
 
 ![Dimensions on, dark theme](../screenshots/dims-on-dark.png)
 
@@ -43,6 +43,8 @@ The tool snaps to corners, edges and faces. Click once on a round edge to read i
 ![Diameter of a hole](../screenshots/measure-3-hole-diameter.png)
 
 Press Esc to clear the measurement.
+
+In Studio, completed measurements are saved with the current markup until you remove them or clear all markup. The [Studio markup snapshot](studio-markup-snapshot.md) contains their endpoints and values so the agent can use the same points you measured.
 
 ## Declare your own dimensions
 

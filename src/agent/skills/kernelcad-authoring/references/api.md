@@ -10,7 +10,7 @@ NEVER tell a user a shape is impossible, or that it needs other software, withou
 - It is a **solid/NURBS** kernel, not a **polygon/subdivision sculptor** (Blender/Maya).
 - Its viewer renders clean CAD, not **photoreal** images — for a photoreal hero shot, export STEP/GLB and finish in a render tool.
 
-For an **organic** vehicle / berlinetta / fairing body, reach for `automotive-body-envelope` (`lookup_cookbook("automotive body envelope")`) — spline/rail loft or surfaceFromCurves + sew + thicken; glass/aero as separate parts. Reserve `loft-body-shell-from-profiles` (`lookup_cookbook("loft a stylized body shell")`) for stylized / mechanism-demo shells only.
+For an **organic** vehicle / fairing body, reach for `automotive-body-envelope` (`lookup_cookbook("automotive body envelope")`) — spline/rail loft or surfaceFromCurves + sew + thicken; glass/aero as separate parts. Reserve `loft-body-shell-from-profiles` (`lookup_cookbook("loft a stylized body shell")`) for stylized / mechanism-demo shells only.
 
 ### Top-level functions
 
@@ -18,6 +18,9 @@ For an **organic** vehicle / berlinetta / fairing body, reach for `automotive-bo
 // Editable symbolic parameters. Returned value is a ParamRef accepted anywhere
 // the API expects an editable number or boolean. Edit the param() default
 // post-build with set_param via MCP / session.params.update in runtime code.
+// Preview a change without writing it: set_param({ code, param_name,
+// new_value, preview: true }) returns the diff_geometry summary plus the
+// requirements-ledger diff and S1 selector re-binds.
 param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
   min?: number;
   max?: number;
@@ -25,7 +28,8 @@ param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
 }): ParamRef<T>;
 // ParamRef arithmetic uses methods, never JS operators (`+ - * /` throw):
 //   const w = param('w', 60), t = param('t', 2);
-//   box(w.add(5), w.subtract(t).multiply(2), w.divide(4)); // also .negate()
+//   box(w.add(5), w.subtract(t).multiply(2), w.divide(4));
+//   // also .negate(), .min(n), .max(n), .abs(), .clamp(lo, hi)
 // Hex default ('#rrggbb') = colour param with a picker; pass the ref to
 // .color(c) / .finish(t, { color: c }): param('BodyColor', '#3366cc')
 
@@ -51,7 +55,18 @@ sphere(r: number): Shape;  // centred on the origin; faceLabels NOT accepted —
 extrudeRect(w: number, h: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
 extrudeCircle(r: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
 extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
-extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
+extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number>; axis?: 'x' | 'y' | 'z' }): Shape;
+// axis defaults to 'z' (profile in XY, sweep +Z). 'x': width on Y / height on Z,
+// sweep +X. 'y': width on X / height on Z, sweep +Y.
+
+// 2D polygon + mask-prism helpers. Since the examples hand-roll these, use the
+// built-ins: filletPolygon rounds any closed polygon (CW/CCW, convex/reflex),
+// then feed the points to extrudePolygon or a prism helper.
+filletPolygon(points: [number, number][], radius: number, opts?: { segments?: number }): [number, number][];
+prismSide(points: [number, number][], halfY?: number): Shape;        // points (s, z), spans Y -halfY..+halfY (default 1200)
+prismSideY(points: [number, number][], y0: number, y1: number): Shape; // points (s, z), spans y0..y1
+prismFront(points: [number, number][], x0: number, x1: number): Shape; // points (Y, Z), spans x0..x1
+prismPlan(points: [number, number][], z0: number, z1: number): Shape;  // points (X, Y), spans z0..z1
 
 // Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch. For
 // revolved geometry (washers, donut bodies, mug profiles, etc.) build a profile
@@ -245,6 +260,29 @@ dfmSpec(spec: {
 }): DfmSpecHandle;
 ```
 
+`require(name, predicate)` declares a named, kernel-measured requirement. It
+reports into the `requirements` block every `evaluate` / `evaluate_script`
+returns, alongside `dfmSpec`, gated `feaStudy.minSafetyFactor` and mechanical
+intent. Entries carry `status` (`pass` / `fail` / `not-evaluated`), `measured`,
+`limit`, `margin` and the selections with S1 fingerprints.
+
+```typescript
+require('bolt-clearance', clearance(bracket, housing).gte(1.0));
+require('hole-count', count(faces(plate, { ofSurfaceType: 'CYLINDER' })).eq(4));
+require('envelope', bbox(body).within({ x: [39, 41], y: [29, 31], z: [9, 11] }));
+require('volume-band', volume(body).between(1200, 1800));
+require('mass-budget', mass(body).atDensity(2700).lte(0.25));
+require('top-level', angle(faces(body, { byNormal: 'Z' }), faces(body, { byNormal: 'Z' })).lte(1));
+```
+
+Predicates: `clearance`, `distance`, `mass`, `volume`, `bbox`,
+`centerOfMass`, `count`, `innerLoops`, `angle`, `concentric`, `coplanar`.
+Comparisons: `.gte`, `.lte`, `.eq`, `.between(lo, hi)`, `.in([lo, hi])`,
+`.within(bands | tolerance)`. A selection is a `Shape`, `faces(shape, query?)`,
+`edges(shape, query?)`, or a resolved entity list with `@kc[...]` refs.
+Call-time external specs use `verify({ requirements: [...] })` and are tagged
+`source: 'external'`; they are never persisted.
+
 ### Selector algebra (ShapeList)
 
 `EdgeQuery` / `FaceQuery` are flat predicate bags: they answer *"which entities
@@ -410,6 +448,8 @@ const plate = box(60, 40, 6)
   .dimension({ kind: 'linear', from: holeAt(15, 20), to: holeAt(45, 20), label: 'hole spacing' }); // "hole spacing 30"
 ```
 
+**Loads from motion.** `feaStudy({ loadsFrom: { motion, part } })` takes the worst sampled joint wrench from `kinematic.motionLoad` instead of a hand-typed load. `partLoads` ranks samples by a named proxy (section bending stress, else joint-moment magnitude); the study applies the selected force + moment as a statically equivalent remote load and records the pose in the summary and S2 ledger. `loads` and `loadsFrom` are mutually exclusive; a part with no sampled load throws at capture.
+
 ### Sketch methods
 
 A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape` (or another `Sketch` for `reflect`).
@@ -518,7 +558,7 @@ const blade = root.loft(tip, {
 
 `tangentCircle` / `tangentLine` take entities of the form `{ kind: 'line', from: [x,y], to: [x,y] }` (an INFINITE line; `from`->`to` sets direction) or `{ kind: 'circle', center: [x,y], radius }`, each with an optional `side: 'outside'` (default) `| 'enclosed' | 'enclosing' | 'unqualified'`. Points are not supported. These constructions have SEVERAL solutions (a radius-r circle tangent to two perpendicular lines has four, one per quadrant). `side` filters first, `opts.near: [x,y]` then picks the closest solution, and if more than one still survives the build FAILS with `sketch.tangency.ambiguous` listing every candidate rather than guessing. No such construction existing fails with `sketch.tangency.no-solution` naming the geometric reason.
 
-Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time. That includes `.circle(cx, cy, r, segments?)` (each vertex is captured as `cx + r·cos θ`; `segments` stays a plain integer), `tangentCircle` / `tangentLine` entity coordinates and radii, and the `extrude` / `revolve` / `loft` / `reflect` scalars above. Capture-time checks read the param's current value, not a placeholder. Raw `sweep` rail arrays stay numeric; a rail from `helix(...)` is the parametric one. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`).
+Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time. That includes `.circle(cx, cy, r, segments?)` (each vertex is captured as `cx + r·cos θ`; `segments` stays a plain integer), `tangentCircle` / `tangentLine` entity coordinates and radii, and the `extrude` / `revolve` / `loft` / `reflect` scalars above. Capture-time checks read the param's current value, not a placeholder. Raw `sweep` rail arrays stay numeric; a rail from `helix(...)` is the parametric one. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`, `.min`, `.max`, `.abs`, `.clamp`).
 
 ### 2D text (sketch.text)
 

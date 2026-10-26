@@ -2,7 +2,9 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
 import {
+    ExecuteRequestSchema,
     isExecuteRequest,
+    isExecutePreviewResponse,
     isExportRequest,
     isSuccessResponse,
     isErrorResponse,
@@ -61,6 +63,35 @@ describe('Worker Type Guards', () => {
         it('should return false for SUCCESS type', () => {
             const res: WorkerResponse = { type: 'SUCCESS', id: '1' };
             expect(isErrorResponse(res)).toBe(false);
+        });
+    });
+
+    describe('ExecuteRequest meshQuality', () => {
+        it('omits the tier for a display pass', () => {
+            const req = ExecuteRequestSchema.parse({ type: 'EXECUTE', id: '1', code: 'x' });
+            expect(req.meshQuality).toBeUndefined();
+        });
+
+        it('accepts the coarse preview tier', () => {
+            const req = ExecuteRequestSchema.parse({ type: 'EXECUTE', id: '1', code: 'x', meshQuality: 'coarse' });
+            expect(req.meshQuality).toBe('coarse');
+        });
+
+        it('rejects an unknown tier', () => {
+            expect(() => ExecuteRequestSchema.parse({ type: 'EXECUTE', id: '1', code: 'x', meshQuality: 'draft' })).toThrow();
+        });
+    });
+
+    describe('isExecutePreviewResponse', () => {
+        it('should return true only for EXECUTE_PREVIEW', () => {
+            const preview: WorkerResponse = {
+                type: 'EXECUTE_PREVIEW',
+                id: '1',
+                geometries: { geometries: [], sketches: [] },
+            };
+            expect(isExecutePreviewResponse(preview)).toBe(true);
+            expect(isExecutePreviewResponse({ type: 'SUCCESS', id: '1' })).toBe(false);
+            expect(isSuccessResponse(preview)).toBe(false);
         });
     });
 });

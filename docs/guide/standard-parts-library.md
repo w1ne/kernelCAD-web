@@ -1,124 +1,125 @@
 ---
-title: Standard fasteners from one table with lib.part and lib.stack
-summary: Script ISO metric screws, nuts and washers by family and size, and place a bolted stack that picks its own screw length.
-date: 2026-10-17
+title: Bolted joints from one fastener table
+summary: A 12 mm lap joint, a drilled plate and a flange ring. The table picks the screw length, cuts the seat each head needs and places the stack, with sockets, chamfers and modeled ISO threads.
+date: 2026-10-19
 kind: guide
 status: published
-model: examples/parts/bolt-stack.kcad.ts
-video: docs/demos/standard-parts/demo.mp4
+model: examples/parts/bolted-flange.kcad.ts
 ---
 
-kernelCAD ships a table of ISO metric fasteners. `lib.part` builds one part from
-it, and `lib.stack` builds a bolted joint around a grip thickness. Both return
-envelope solids, a head plus a shank, and the browser builds them in memory.
+kernelCAD ships one table of ISO metric fasteners. Socket head, button head, countersunk and hex head screws and bolts, set screws, threaded rod, hex nuts, lock nuts and washers. Sizes run M2 to M20 where the standard has them, and every stocked length is per thread.
+
+Each part is drawn the way its standard draws it: the hex socket with its drill-point bottom, the 30° chamfer on a hex head, the washer face, the button dome, the 90° countersunk cone, a nut chamfered and countersunk on both faces, and an ISO 68-1 thread at the coarse pitch with a chamfered start. The browser builds them in memory, without a filesystem.
+
+![The current catalog on a display base](standard-parts-library/catalog.png "Hex bolt, socket head, countersunk, button head and set screw standing; hex nut, lock nut and washers lying flat; an M8 × 250 rod in front. Local render of examples/parts/catalog-lineup.kcad.ts.")
+
+![Close-up, one part per family](standard-parts-library/closeup.png "M10 socket head (ISO 4762), hex head bolt (ISO 4017), countersunk (ISO 10642), button head (ISO 7380) and set screw (ISO 4026); ISO 4032 nut, DIN 127 B spring washer and ISO 7089 washer.")
 
 ## What the table stocks
 
-- `socket-head-cap-screw` (ISO 4762): M2, M2.5, M3, M4, M5, M6
-- `button-head-cap-screw` (ISO 7380): M3, M4, M5
-- `flat-head-countersunk` (ISO 10642): M3, M4, M5
-- `hex-nut` (ISO 4032): M2, M2.5, M3, M4, M5, M6
-- `lock-nut` (DIN 985): M3, M4, M5
-- `flat-washer` (ISO 7089): M2, M3, M4, M5, M6
-- `lock-washer` (DIN 127B): M3, M4, M5
-
-Screws also take a stocked length: socket head 4 to 50 mm, button head 5 to
-25 mm, countersunk 6 to 25 mm. An unknown family, thread or length fails with a
-diagnostic that names the stocked values.
-
-![One envelope per family on a display base](../../site/blog/standard-parts-library/lineup.png "The lineup example: socket, button and countersunk heads, two nut styles and two washer styles.")
-
-The geometry is an envelope. A socket head is its cylinder, a countersunk head
-is the seated ISO 10642 frustum that fills its countersink, and the lock washer
-is a plain annulus without the split. That covers fit checks and assembly layout. It is not a threaded part,
-and it makes no claim about thread contact.
-
-## Place one part
-
-`lib.part({ family, thread, lengthMm })` resolves the row and returns the solid.
-Screws need a stocked length; nuts and washers take only a thread.
-
-```kcad
-const nut = await lib.part({ family: 'hex-nut', thread: 'M5' });
-const screw = await lib.part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 });
-const pair = assembly('pair');
-pair.part('screw', screw);
-pair.part('nut', nut.translate(0, 0, -20));
-return pair.model();
-```
-
-The resolved ids are the catalog ids (`iso-4762-m5x16` and `iso-4032-m5`
-above), so `lib.part` resolves the same record as `lib.standard.boltSHCS`.
-`lib.fetchPart`, `lib.findPart` and `lib.standard.*` keep their behavior.
-
-On a host with the catalog on disk, the STEP for that id is loaded instead of
-the in-memory envelope. The committed STEPs are exported from this same table,
-so both doors lead to the same geometry. To override records, point
-`KERNELCAD_PARTS_DIR` at a directory with an `index.json`, or place one in
-`~/.kernelcad/parts`. Those records win over the generated catalog.
-
-## The stack, in one call
-
-`lib.stack({ thread, gripMm, mode })` returns the chosen `lengthMm` and the
-members. Each member is positioned against a seat at z = 0, the grip's top
-face.
-
-- `mode: 'screw'` places the screw alone. The length is the shortest stocked
-  one at or above the grip.
-- `mode: 'bolt'` adds a flat washer under the head, and a flat washer plus a
-  hex nut on the back. The length is the shortest stocked one at or above
-  grip + washer + nut.
-
-```kcad
-const stack = await lib.stack({ thread: 'M5', gripMm: 12, mode: 'bolt' });
-const placed = assembly('stack');
-placed.part('screw', stack.screw);
-placed.part('head-washer', stack.headWasher!);
-placed.part('tail-washer', stack.tailWasher!);
-placed.part('nut', stack.nut!);
-return placed.model();
-```
-
-For the 12 mm grip in the example the sum is 17 mm and the shortest stocked
-socket-head length at or above it is 18 mm. The members come back placed:
-washer on the seat, screw head above it, tail washer and nut below the grip.
-
-![The lap joint with the M5 bolt stack](../../site/blog/standard-parts-library/stack.png "Two 6 mm bars, one bolt-mode stack. The seat is the upper bar's top face.")
-
-![Front elevation of the stack](../../site/blog/standard-parts-library/stack-detail.png "Head washer on the seat, tail washer and hex nut under the lower bar. Cropped from the front-elevation render of examples/parts/bolt-stack.kcad.ts.")
-
-The `examples/parts/bolt-stack.kcad.ts` source places the stack like this:
+One row is a family, a thread and a length. Adding a size is a row, not a new function. The in-memory solid and the generated STEP come from that row through one builder.
 
 ```ts
-const seat = lift + gripMm;
-const stack = await lib.stack({ thread: 'M5', gripMm, mode: 'bolt' });
+const screw = await lib.part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 });
+const bolt  = await lib.part({ family: 'hex-head-bolt', thread: 'M10', lengthMm: 40 });
+const rod   = await lib.part({ family: 'threaded-rod', thread: 'M8', lengthMm: 250 });
 ```
 
-<!-- check examples/parts/bolt-stack.kcad.ts: source contains block -->
+Socket head runs M2 to M20 (ISO 4762), hex head bolts M3 to M20 (ISO 4017), countersunk M3 to M12 (ISO 10642), button head M3 to M10 (ISO 7380). Set screws are M3 to M12 (ISO 4026), threaded rod M3 to M12 in 250 and 1000 mm lengths (DIN 975). Hex nuts and flat washers go to M20, lock nuts and lock washers to M12.
 
-## Limits and checks
+An unknown family, thread or length fails with a message that names the stocked values, which keeps an agent from inventing an M2 × 50 that no supplier sells.
 
-Envelopes carry no thread, so nothing here proves thread contact, engagement,
-strength, torque or preload. The committed STEP files and the in-memory
-envelope come from the same table and agree; neither is a strength model.
+## A 12 mm lap joint
 
-`examples/parts/verify.mts` re-evaluates both examples and writes
-`docs/demos/standard-parts/geometry-evidence.json`: per-part bounds and
-volumes, pairwise interference (zero positive-volume overlaps), and the source
-hashes. The two examples evaluate with 0 diagnostics: `fastener-lineup.kcad.ts`
-reports 17 features and `bolt-stack.kcad.ts` reports 15.
+Two 6 mm bars overlap by 24 mm. One M5 bolt holds them. `lib.stack` takes the grip and returns the chosen length plus the members, each positioned against the seat:
 
-<!-- check examples/parts/fastener-lineup.kcad.ts: featureCount = 17 -->
-<!-- check examples/parts/bolt-stack.kcad.ts: featureCount = 15 -->
-<!-- check examples/parts/bolt-stack.kcad.ts: diagnostics.length = 0 -->
-
-## Reproduce
-
-From a repository checkout:
-
-```sh
-npx tsx examples/parts/verify.mts
+```ts
+const stack = await lib.stack({ thread: 'M5', gripMm: 12, mode: 'bolt' });
 ```
 
-The script prints a JSON summary and rewrites the evidence file. The demo
-bundle, its renders and the review video are in `docs/demos/standard-parts/`.
+The arithmetic is open. The 1.0 mm washer under the head, the 12 mm grip, the 1.0 mm washer and the 4.7 mm ISO 4032 hex nut stack to 18.7 mm. A bolt should also show thread past the nut, two pitches by default: 1.6 mm on an M5, so the screw needs 20.3 mm. An M5 × 20 would leave 1.3 mm, so the table picks M5 × 25, with 6.3 mm out. `protrusionPitches` changes the margin, and the result reports it as `protrusionMm`. A grip no stocked length can reach is refused with the length it needed, not filled with a short bolt. `mode: 'bolt'` adds the washer under the head plus the tail washer and the nut; `mode: 'screw'` places the screw alone.
+
+![The lap joint with the M5 bolt stack](standard-parts-library/stack.png "Two 6 mm bars, one bolt-mode stack. The seat is the upper bar's top face.")
+
+![Front elevation of the stack](standard-parts-library/stack-detail.png "Head washer on the seat, tail washer and hex nut under the lower bar; the M5 × 25 ends 6.3 mm past the nut. Cropped from the front-elevation render of examples/parts/bolt-stack.kcad.ts.")
+
+## The plate is already drilled
+
+The other direction is to start from the part. `lib.insert` reads the bores on a lowered shape, sizes the thread from the diameter, covers every similar hole and cuts the seat the family needs.
+
+The example plate has four Ø5.5 bores and two Ø3.4 bores. Ø5.5 is the ISO 273 normal clearance for M5, so the four become countersunk M5 bolts; the two Ø3.4 bores take socket head M3 screws with no seat. A 90° countersink to the Ø11.2 ISO 10642 head is cut for each flat head, and the washers and nuts land on the back.
+
+![Four countersunk bolts and two socket-head screws placed from the holes](standard-parts-library/insert.png "The plate after lib.insert: seats cut, six stacks placed. Render of examples/parts/hole-driven-insert.kcad.ts.")
+
+Selection is by geometry, not by feature id: every bore with the same diameter and a parallel axis comes along. A patterned hole is covered without naming the pattern, which is why eight bolts on a bolt circle cost no more code than one.
+
+Two edges are reported instead of guessed. A bore that sits exactly on a larger thread's tap drill comes back as `pilotFor`, so you can tell a tapped pilot from a clearance hole. A coaxial larger bore already at the mouth, a counterbore someone modelled, is reported as `existingSeatMm` and the automatic seat is left alone.
+
+## A flange ring, eight bolts
+
+The flange is a ring with eight Ø6.6 bores on an 85 mm bolt circle, 10 mm thick. Ø6.6 is the normal clearance for M6, and the 10 mm grip plus a 1.6 mm washer, the 5.2 mm nut and two 1 mm pitches comes to 18.8 mm: an M6 × 20 stack per hole. One `lib.insert` call covers all eight.
+
+![Bolted flange ring](standard-parts-library/flange.png "Eight M6 countersunk bolts on an 85 mm bolt circle. Render of examples/parts/bolted-flange.kcad.ts.")
+
+![Under the flange ring](standard-parts-library/flange-under.png "Under the ring: tail washer, ISO 4032 nut and 3.2 mm of chamfered screw tip on each of the eight stacks. The heads seat flush in the cut countersinks on the other side.")
+
+## Threads you can see, envelopes the checks measure
+
+`detail` picks the solid. The default `'full'` is the hardware above. `'envelope'` is the nominal head plus a nominal-diameter shank, and a nut with a nominal bore:
+
+```ts
+const quick = await lib.part({ family: 'socket-head-cap-screw', thread: 'M6', lengthMm: 20, detail: 'envelope' });
+const stack = await lib.stack({ thread: 'M8', gripMm: 20, mode: 'bolt', detail: 'envelope' });
+```
+
+Fit, clash and installation checks always measure the envelope, whatever detail is drawn. A clearance hole, a tapped hole and the mating nut are designed around the nominal diameter, so a modeled thread inside them is not a clash: an M5 bolt through two bars into its nut reports zero interferences. The envelope travels with the part through moves and rotations. A boolean on the part drops it, because it no longer describes the result.
+
+Mass and BOM volume come from the drawn solid. At `'full'` that is the threaded part; the envelope overestimates by about 20 % on a socket head screw, because a thread holds less material than a plain rod of the nominal diameter.
+
+A threaded part costs time. A socket head screw builds in about 4 to 6 s the first time and is copied after that, so eight M6 bolts with their nuts add about 12 s to a script. Meshing it for display takes about 3 s for an M3 × 10 and up to 27 s for an M20 × 100. Use `'envelope'` for large assemblies.
+
+Two limits are stated on the part record rather than hidden. Threads longer than 100 turns, which covers all DIN 975 rod, are the ISO profile revolved as rings instead of a helix, and the record says `threadForm: 'annular'`. Partial thread length on ISO 4762 and ISO 10642 screws follows a rule close to the standards' tables: a screw keeps the reference length b only when the plain shank left would be at least half the diameter. The DIN 127 B spring washer is drawn flat with its split, without the twist. The bundled catalog STEP files stay at envelope detail, so a threaded STEP is built in memory. All dimensions are nominal table values, not certified geometry.
+
+## Close, normal or loose
+
+ISO 273 gives three clearance classes per thread. For M6 the bores are 6.4 mm close, 6.6 mm normal and 7.0 mm loose. All three find the thread and each hole reports the class it matched, so a plate drilled for a loose fit still sizes correctly. The match tolerance is 0.1 mm, which keeps a 5.0 mm tap drill from reading as an oversized M4 hole.
+
+```ts
+const fitted = await lib.insert(plate, { diameterMm: 7.0, family: 'socket-head-cap-screw', mode: 'bolt' });
+// fitted.holes[0].thread === 'M6', fitted.holes[0].fit === 'loose'
+```
+
+## Checked ranges, not built at the default
+
+The fastener, nut and washer shortcuts carry a declared parameter domain and
+requirements, and a CI job runs them through the same S3 `sweepTolerance`
+path an agent uses. The catalog record shows the checked range, not just the
+value the part happened to be built at:
+
+| Shortcut | Threads checked | Length checked (sampled) | Points |
+|---|---|---|---|
+| `boltSHCS` | M2–M12 (9) | M5, 5–50 mm (5, 18, 50) | 12 |
+| `boltBHCS` | M3–M10 (6) | M8, 8–50 mm (8, 20, 50) | 9 |
+| `boltFlatHead` | M3–M12 (7) | M6, 6–50 mm (6, 18, 50) | 10 |
+| `boltHex` | M3–M20 (9) | M10, 20–100 mm (20, 50, 100) | 12 |
+| `setScrew` | M3–M12 (7) | M6, 6–40 mm (6, 16, 40) | 10 |
+| `rodThreaded` | M3–M12 (7) | M8, 250 and 1000 mm | 9 |
+| `nutHex` | M2–M12 (9) | — | 9 |
+| `nutLock` | M3–M12 (7) | — | 7 |
+| `washerFlat` | M2–M12 (9) | — | 9 |
+| `washerLock` | M3–M12 (7) | — | 7 |
+
+Every point measures two ledger requirements: the part's bounding box stays
+inside its family envelope band, and its volume is at least 1 mm³. Thread and
+length domains are discrete, so the sweep reports its points and zero bisected
+boundaries; the coverage statement is "checked at N points plus boundaries;
+sampled, not proven". CI runs `npm run test:standard-part-ranges` in the
+`build-and-checks` gate; the runner prints the point and boundary count for
+every family and fails if any requirement does not pass.
+
+Still unverified in this first slice: heat-set inserts, the four bearings,
+the two SG90 parts, NEMA 17/23 motors, 2.54 mm and 1.27 mm pin headers, and
+JST-XH housings. Those need catalog geometry or non-threaded variant domains,
+and are listed in `STANDARD_PART_RANGE_REMAINING` rather than claimed.
+
+The model above is live: drag it to rotate, and the eight stacks are the parts the examples place. The same calls work in Studio, in the browser and through kernelCAD's MCP tools. See the [docs](/docs/) for the API.

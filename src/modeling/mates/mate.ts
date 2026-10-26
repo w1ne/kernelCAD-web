@@ -11,6 +11,8 @@
 
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { ClevisStructuralModel } from '../joints/types';
+import type { FastenerHandedness, FitKind, ToolEnvelope } from '../runtime/assemblyFastener';
+import type { Vec3 } from '../../shared/intent/types';
 import type { MateType } from './mateTypes';
 
 /**
@@ -52,6 +54,32 @@ export interface MateLoadLimit {
   readonly torque?: number;
 }
 
+/** Fastened-mate metadata that lets the assembly planner test a helical
+ *  removal. `axis` is the removal/approach direction in the fastener part's
+ *  own frame; `pitchMm` may be omitted and derived from catalog attributes. */
+export interface FastenerMateMetadata {
+  /** The fastener part. Defaults to the one threaded endpoint, then side A. */
+  readonly part?: string;
+  /** Removal/approach axis in the fastener part's frame. When omitted, the
+   *  catalog `head-top`/`top-face` connector (else the mate connector) is used. */
+  readonly axis?: Vec3;
+  readonly pitchMm?: number;
+  readonly handedness?: FastenerHandedness;
+  readonly threadLengthMm?: number;
+  readonly standard?: string;
+  /** Explicit tool envelope, or null to declare that no tool is modelled. */
+  readonly tool?: ToolEnvelope | null;
+}
+
+/** Declared press/snap fit metadata on a fastened mate. */
+export interface FitMateMetadata {
+  readonly kind: FitKind;
+  /** The inserted part. Defaults to side B, then the fastener part. */
+  readonly part?: string;
+  /** Removal/approach axis in the inserted part's frame. */
+  readonly axis?: Vec3;
+}
+
 export interface MateRecord {
   readonly name: string;
   /** "<partName>.<connectorName>" */
@@ -71,15 +99,30 @@ export interface MateRecord {
   readonly capacity?: MateCapacity;
   /** @deprecated legacy manual-load API */
   readonly maxLoad?: MateLoadLimit;
-  /** Visual-exposure declaration read by Gate 4 (`jointVisualExposure`).
-   *  Default `'exposed'`: the joint must read as a hinge (fork daylight +
-   *  pin stickout thresholds). Declare `'concealed'` for mechanisms that
-   *  are enclosed BY DESIGN — valve rotors in bores, internal spindles,
-   *  worm shafts — where fork daylight is structurally impossible and the
-   *  hinge-visibility heuristic only emits false positives. An explicit
-   *  per-mate declaration, not a threshold change: exposed hinges keep
-   *  the full Gate 4 guard. */
+  /** Revolute torsional spring (N·mm per degree), >= 0. Torque is
+   *  `-k·(θ - springRefDeg)`; exported to MJCF `<joint stiffness springref>`. */
+  readonly stiffnessNmmPerDeg?: number;
+  /** Angle (deg, same sign as `pose` / `limitsDeg`) where the spring torque
+   *  is zero; may lie outside `limitsDeg` (preloads against an end stop).
+   *  Default 0. */
+  readonly springRefDeg?: number;
+  /** Revolute viscous damping (N·mm·s per degree), >= 0. */
+  readonly dampingNmmsPerDeg?: number;
+  /** Prismatic linear spring (N per mm), >= 0; force is `-k·(x - springRefMm)`. */
+  readonly stiffnessNPerMm?: number;
+  /** Position (mm, same sign as `pose` / `limitsMm`) of zero spring force. Default 0. */
+  readonly springRefMm?: number;
+  /** Prismatic viscous damping (N·s per mm), >= 0. */
+  readonly dampingNsPerMm?: number;
+  /** Opt-in switch for the Gate 4 hinge-visibility check
+   *  (`jointVisualExposure`). Default (undeclared): the check does not run.
+   *  Declare `'exposed'` to require the revolute to read as a hinge (fork
+   *  daylight + pin stickout). `'concealed'` is equivalent to undeclared. */
   readonly exposure?: 'exposed' | 'concealed';
+  /** Fastened-mate fastener motion metadata (P2). */
+  readonly fastener?: FastenerMateMetadata;
+  /** Declared press/snap fit (P2). */
+  readonly fit?: FitMateMetadata;
 }
 
 export function parseConnectorRef(ref: string): { partName: string; connectorName: string } {

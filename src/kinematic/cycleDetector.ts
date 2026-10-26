@@ -2,13 +2,12 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/kinematic/cycleDetector.ts
 //
-// Closed-loop classifier for the kinematic dispatcher. The forward-kinematics
-// substrate (modeling/capture/forwardKinematics) accepts a strict body tree:
-// at most one parent joint per part, no cycles. Anything that violates either
-// invariant is a closed-loop / parallel-kinematics chain — out of scope for
-// v1 IK per D4. This detector spots both shapes pre-FK so the dispatcher can
-// emit `kinematic.solver.unsupported-config` cleanly without raising a
-// substrate exception.
+// Closed-loop classifier for the kinematic dispatcher. A joint graph with a
+// part that has several parent joints (or a cycle through parent links) is a
+// closed loop: `checkReachable` routes it to the loop-aware numeric IK
+// (`inverseKinematicsLoops`), which drives only the loop's independent
+// joints while forward kinematics closes the loop. Pure classification —
+// no solving here.
 
 import type { Assembly } from '../modeling/capture/assembly';
 

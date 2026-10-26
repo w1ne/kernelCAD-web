@@ -147,6 +147,10 @@ const branded = bottle.union(raised);
 
 ## Hole and cutout vocabulary
 
+### Boolean-seam fillets: `filletIntersection(cutter, r, opts?)`
+
+After `body.subtract(cutter)` the seam has no durable edge name. `body.filletIntersection(cutter, r)` builds the exact `body ∩ cutter` section and rounds the body edges that lie on it (constant radius, G1 by default). Use it for wheel-arch/cockpit/door seams instead of a broad `.fillet(r)`; short segments are reported with `feature.fillet-intersection.short-edge`, and a failed blend never returns a partial solid.
+
 Three subtractive features ship with hard-coded **created face refs** so chained `.fillet()` / `.shell()` / further `.hole()` / `.cutout()` calls can address the new geometry by name without queries.
 
 ```typescript
@@ -413,6 +417,35 @@ const filletEdges = q.union(
 
 See `cookbook/snippets/Q-S3-lenient-composition.kcad.ts`.
 
+## Selectors that drift after an edit
+
+Every selector, whatever its syntax (a label such as `'mountFront.wall'`, an `@kc[...]` ref, a `q.*` query or a `{ byNormal, minArea, ... }` face query), records what it bound to: entity kind, surface type, the feature that produced it, direction, radius, area or length, and centroid. `evaluate_script` and `kernelcad evaluate <file> --json` return them as `selections`.
+
+A parameter edit can leave a selector valid but pointing at another face: the model still builds, the fillet or hole is just in the wrong place. Re-evaluating compares each selector with the previous evaluation:
+
+- `selector.binding-changed` (warning): a different producing feature, entity kind, surface or curve type, name, or a direction turned by more than 10 degrees. The message names the old and the new entity, the consuming feature and the selector. Tighten the selector (name the feature, or add a position or size filter) and re-evaluate.
+- `selector.binding-moved` (info): the same face, moved or resized (direction over 1 degree, radius, area or length over 1 %, centroid beyond the larger of 0.01 mm and 0.1 % of the part diagonal). Expected after a parameter edit.
+- Nothing is reported when the entity is within those tolerances. Zero or several matches still raise `query.empty` / `query.over-determined`.
+
+The previous evaluation is picked up automatically by `set_param` (after an `evaluate_script` of the same code), by `evaluate_script` on the same `file`, and by a model's `set_param`/code-edit rebuild. For anything else pass it explicitly: `kernelcad evaluate <file> --baseline <json>` takes the `--json` output of the earlier run; the `evaluate_script` tool takes `baseline` (the earlier `selections`).
+
+To see the re-bind *before* committing the edit, call
+`set_param({ code, param_name, new_value, preview: true })`. It builds the
+baseline and revised source in scratch sessions and returns `bindings` (each
+selector's `verdict: moved | changed`, reasons and deltas) alongside the
+`diff_geometry` summary and the S2 ledger diff. Nothing is written to the
+source, active session, revision or caches.
+
+```typescript
+const w = param("w", 30, { min: 20, max: 60 });
+const plate = box(w, 40, 6);
+const boss = box(w.subtract(10), 20, 10).translate(5, 10, 6);
+// w = 30: the plate top (800 mm^2). w = 50: the boss top, same area, another face.
+return plate.union(boss).fillet(1, { face: { byNormal: 'Z', minArea: 700, maxArea: 900 } });
+```
+
+See `cookbook/snippets/selector-binding-drift.kcad.ts` and `examples/selector-binding-drift.kcad.ts`.
+
 ## Verification gates
 
 After applying edge/face features, run before reporting done:
@@ -424,6 +457,49 @@ After applying edge/face features, run before reporting done:
 | G-no-rim-island | Fillets / chamfers on subtractive boundaries (hole rims, pocket edges) reach a CONTINUOUS edge loop — no broken arcs or unfilleted segments in renders |
 | G-shell-thickness-positive | Shell offset `t` is positive (outward) AND less than the smallest local feature radius — otherwise shells inverts or self-intersects |
 | G-no-overlap | `kernelcad interference` reports zero overlaps; subtractive features (`hole`, `cutout`) clear their target volume completely |
+
+## Requirements ledger — declare what the design must satisfy
+
+`require(name, predicate)` turns design intent into a kernel measurement. Every
+`evaluate_script` result carries one `requirements` block; each entry has
+`status` (`pass` / `fail` / `not-evaluated`), `measured`, `limit`, `margin`, and
+the selections involved with their S1 fingerprints (so a viewer can highlight
+the exact faces). `dfmSpec`, gated `feaStudy.minSafetyFactor`, mechanical intent
+and call-time external requirements report into the same ledger.
+
+```typescript
+const body = box(40, 30, 10);
+const boss = cylinder(16, 6).translate(30, 15, 10);
+const part = body.union(boss);
+
+require('body-volume', volume(body).between(10_000, 14_000));
+require('part-bbox', bbox(part).within({ x: [39, 41], y: [29, 31], z: [9, 27] }));
+require('bore-is-4', count(faces(boss, { ofSurfaceType: 'CYLINDER' })).eq(1));
+require('clearance-to-boss', clearance(body, boss).gte(0.5));
+require('boss-angle', angle(faces(body, { normal: 'Z' }), faces(boss, { normal: 'Z' })).lte(1));
+require('boss-concentric', concentric(faces(boss), faces(boss)).within(0.05));
+require('top-coplanar', coplanar(faces(body, { normal: 'Z' }), faces(body, { normal: 'Z' })).within(0.05));
+require('boss-mass', mass(boss).atDensity(2700).between(0.02, 0.1));
+require('inner-loops', innerLoops(faces(body, { normal: 'Z' })).gte(0));
+```
+
+Selections are a `Shape` (whole body), `faces(shape, query?)`, `edges(shape,
+query?)`, or an already-resolved entity list carrying `@kc[...]` refs. All
+predicates chain exactly one comparison: `.gte(n)`, `.lte(n)`, `.eq(n)`,
+`.between(lo, hi)`, `.in([lo, hi])`, or `.within(bands | tolerance)`; `mass()`
+also takes `.atDensity(kgPerM3)`. A declaration with no comparison throws
+(`feature.invalid-args`) instead of silently disabling the gate. `require()`
+lives in the script; an eval task or customer spec can pass external
+requirements per call (`verify({ requirements: [...] })`), tagged
+`source: 'external'` and never persisted. `verify({ check: 'requirements' })`
+and `design_loop` grade from the ledger alone, with or without expert geometry.
+
+Preview a parameter edit against the ledger before applying it:
+`set_param({ code, param_name, new_value, preview: true })` returns
+`requirementsDiff` — status flips (pass↔fail), margin shrink/grow with the
+before/after values, and added/removed requirements — plus the geometry diff
+and the S1 selectors that moved. `after.requirementsOk` is the revised ledger
+verdict; `preview.ok` only says the preview could be computed.
 
 ## Bent tubes
 

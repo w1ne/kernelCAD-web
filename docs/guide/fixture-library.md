@@ -1,14 +1,14 @@
 ---
-title: A T-slot clamp set from lib.fixture
+title: A T-slot clamp set from lib.part
 summary: Five machining-fixture families with stock dimensions and placement connectors, worked into a clamp set on a T-slot table.
 date: 2026-10-18
 kind: guide
-status: published
+status: draft
 model: examples/fixture/table-clamp-set.kcad.ts
 video: docs/demos/fixture-library/demo.mp4
 ---
 
-`lib.fixture.*` is the clamping kit for a T-slot machine table. Five
+The fixture families of `lib.part` are the clamping kit for a T-slot machine table. Five
 families, keyed by the thread the hardware uses (M8, M10, M12), each with
 its stock dimensions and placement connectors. The solids are nominal
 envelope values from the stock table, so a setup can be laid out and
@@ -34,11 +34,11 @@ checked before anything is bolted down.
   `base-face` sits on the table and `step-1` … `step-4` name the treads.
 
 ```kcad
-const tNut = await lib.fixture.tSlotNut({ thread: 'M10' });
-const stud = await lib.fixture.clampStud({ thread: 'M10', lengthMm: 80 });
-const clamp = await lib.fixture.strapClamp({ thread: 'M10' });
-const block = await lib.fixture.stepBlock({ thread: 'M10' });
-const nut = await lib.fixture.flangeNut({ thread: 'M10' });
+const tNut = await lib.part({ family: 't-slot-nut', thread: 'M10' });
+const stud = await lib.part({ family: 'clamping-stud', thread: 'M10', lengthMm: 80 });
+const clamp = await lib.part({ family: 'strap-clamp', thread: 'M10' });
+const block = await lib.part({ family: 'step-block', thread: 'M10' });
+const nut = await lib.part({ family: 'flange-nut', thread: 'M10' });
 const set = assembly('clamp-set');
 set.part('t-nut', tNut);
 set.part('stud', stud.translate(0, 0, -9));
@@ -48,7 +48,7 @@ set.part('flange-nut', nut.translate(0, 0, 48));
 return set.model();
 ```
 
-![The clamp set on a T-slot table section](../../site/blog/fixture-library/fixture.png "Two M10 clamp sets hold a 36 mm workpiece on a 400 mm table section; every hardware part comes from lib.fixture.")
+![The clamp set on a T-slot table section](fixture-library/fixture.png "Two M10 clamp sets hold a 36 mm workpiece on a 400 mm table section; every hardware part comes from lib.part.")
 
 ## Planning a real setup
 
@@ -69,27 +69,16 @@ is a named stock value rather than a guess:
 - An 80 mm stud is the shortest stocked M10 length that clears the clamp
   and nut.
 
-![The tail of a clamp resting on the step block's tread](../../site/blog/fixture-library/fixture-detail.png "The tail bearing lands on step-3; the higher tread stands clear so the clamp cannot climb it.")
-
-The same chain is one call when the workpiece height is known. It must equal
-a stocked tread of the thread's step block (10/20/30/40 for M8, 12/24/36/48
-for M10, 15/30/45/60 for M12):
-
-```kcad
-const set = await lib.fixture.clampSet({ thread: 'M10', workpieceHeightMm: 36 });
-const fixture = assembly('clamp-set');
-for (const member of set.members) fixture.part(member.role, member.shape);
-return fixture.model();
-```
+![The tail of a clamp resting on the step block's tread](fixture-library/fixture-detail.png "The tail bearing lands on step-3; the higher tread stands clear so the clamp cannot climb it.")
 
 The example's own five lines are the whole API surface for the hardware:
 
 ```ts
-  const tNut = await lib.fixture.tSlotNut({ thread: 'M10' });
-  const stud = await lib.fixture.clampStud({ thread: 'M10', lengthMm: 80 });
-  const clamp = await lib.fixture.strapClamp({ thread: 'M10' });
-  const block = await lib.fixture.stepBlock({ thread: 'M10' });
-  const nut = await lib.fixture.flangeNut({ thread: 'M10' });
+  const tNut = await lib.part({ family: 't-slot-nut', thread: 'M10' });
+  const stud = await lib.part({ family: 'clamping-stud', thread: 'M10', lengthMm: 80 });
+  const clamp = await lib.part({ family: 'strap-clamp', thread: 'M10' });
+  const block = await lib.part({ family: 'step-block', thread: 'M10' });
+  const nut = await lib.part({ family: 'flange-nut', thread: 'M10' });
 ```
 
 <!-- check examples/fixture/table-clamp-set.kcad.ts: source contains block -->

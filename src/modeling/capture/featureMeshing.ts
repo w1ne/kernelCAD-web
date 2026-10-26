@@ -14,26 +14,29 @@ import type { ParamTable } from '../../shared/runtime/paramTable';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
 import type { FeatureEvent } from '../compute/featureEvents';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
-import { RecomputeEngine } from '../compute/recomputeEngine';
-import { meshShape } from '../../kernel/backends/occt/meshing';
+import { RecomputeEngine, predecessorsByRecord, compiledEventForRecord, type RecomputeOptions } from '../compute/recomputeEngine';
+import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
-import { generatePlanarUVs } from './planarUv';
-import { computeFeatureOwnership } from './featureOwnership';
+import { buildHelixTubeIndices, buildRibbonMesh, buildRoundSweep, flatWidthDirs, helixTubeTangents, wrapArcPoints, writeHelixTubeRings, type WrapCylinderWorld } from './tendonSweepMesh';
+import { attachMaterialUVs, generatePlanarUVs } from './planarUv';
+import { computeFeatureOwnership, hasFeatureOwnership } from './featureOwnership';
 import { helixPolylineRouted } from '../mates/helixPolyline';
 import { partAtFor } from '../mates/partFrame';
 import {
   accumulateMeshBounds,
   accumulateIndexedMeshBounds,
-  buildMeshBounds,
   collectFeatureStyling,
-  collectShadowingWarnings,
   computeConstructionClosure,
   deriveSeedShapes,
   emitSceneBackendFanout,
   emitVirtualFeatureRecords,
+  finishMeshFeatures,
+  markCoarseMesh,
   meshIdentityFields,
   metadataNameOf,
+  planFreshLoweredSeeds, releaseBorrowedTriangulation,
+  type FreshLowerSession,
   reEmitSeededFeatureMeshes,
   resolvePerFaceMaterialOverrides,
   splitConnectorRef,
@@ -221,7 +224,14 @@ interface AssemblyLikeForTendons {
     readonly wrapGeoms?: readonly {
       readonly partName: string;
       readonly wrapName: string;
+      readonly sidesite?: readonly [number, number, number];
     }[];
+    /** Ordered route (connector refs / wrap refs); replaces `wrapGeoms`. */
+    readonly via?: readonly (string | { readonly wrap: { readonly partName: string; readonly wrapName: string; readonly sidesite?: readonly [number, number, number] } })[];
+    readonly profile?:
+      | { readonly kind: 'round'; readonly diameterMm: number }
+      | { readonly kind: 'flat'; readonly widthMm: number; readonly thicknessMm: number; readonly widthAxis?: Vec3 };
+    readonly material?: PBRMaterial;
   }[];
   __parts(): readonly {
     readonly name: string;
@@ -237,6 +247,8 @@ interface AssemblyLikeForTendons {
     readonly wrapGeoms?: readonly {
       readonly name: string;
       readonly origin: Vec3;
+      readonly axis: Vec3;
+      readonly radiusMm: number;
     }[];
   }[];
   /** Optional so structural fakes without mates keep working. */
@@ -399,103 +411,6 @@ function buildHelixTubeMesh(
   };
 }
 
-/** Per-ring tangents (central differences interior; one-sided at ends). */
-function helixTubeTangents(polyline: readonly Vec3[]): Vec3[] {
-  const ringCount = polyline.length;
-  const tangents: Vec3[] = new Array(ringCount);
-  for (let i = 0; i < ringCount; i++) {
-    const prev = polyline[Math.max(0, i - 1)];
-    const next = polyline[Math.min(ringCount - 1, i + 1)];
-    let tx = next[0] - prev[0];
-    let ty = next[1] - prev[1];
-    let tz = next[2] - prev[2];
-    const len = Math.sqrt(tx * tx + ty * ty + tz * tz) || 1;
-    tx /= len; ty /= len; tz /= len;
-    tangents[i] = [tx, ty, tz];
-  }
-  return tangents;
-}
-
-/** Write ring vertices/normals for a tube swept along `polyline` using a
- *  parallel-transport frame. */
-function writeHelixTubeRings(
-  polyline: readonly Vec3[],
-  tangents: readonly Vec3[],
-  radialSegments: number,
-  tubeR: number,
-  vertices: Float32Array,
-  normals: Float32Array,
-): void {
-  const ringCount = polyline.length;
-  // Parallel-transport frame: pick an initial up vector ⊥ tangents[0],
-  // then rotate it forward at each step to stay perpendicular.
-  const seed: Vec3 = Math.abs(tangents[0][2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
-  // initial u = normalize(seed × tangent[0])
-  let ux = seed[1] * tangents[0][2] - seed[2] * tangents[0][1];
-  let uy = seed[2] * tangents[0][0] - seed[0] * tangents[0][2];
-  let uz = seed[0] * tangents[0][1] - seed[1] * tangents[0][0];
-  const uLen0 = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
-  ux /= uLen0; uy /= uLen0; uz /= uLen0;
-  // v = tangent × u
-  let vx = tangents[0][1] * uz - tangents[0][2] * uy;
-  let vy = tangents[0][2] * ux - tangents[0][0] * uz;
-  let vz = tangents[0][0] * uy - tangents[0][1] * ux;
-
-  for (let i = 0; i < ringCount; i++) {
-    const center = polyline[i];
-    if (i > 0) {
-      // Parallel-transport u, v to stay ⊥ tangent[i]: subtract the
-      // component along the new tangent, renormalize, then rebuild v.
-      const tDot = ux * tangents[i][0] + uy * tangents[i][1] + uz * tangents[i][2];
-      ux -= tangents[i][0] * tDot;
-      uy -= tangents[i][1] * tDot;
-      uz -= tangents[i][2] * tDot;
-      const l = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
-      ux /= l; uy /= l; uz /= l;
-      vx = tangents[i][1] * uz - tangents[i][2] * uy;
-      vy = tangents[i][2] * ux - tangents[i][0] * uz;
-      vz = tangents[i][0] * uy - tangents[i][1] * ux;
-    }
-    for (let s = 0; s < radialSegments; s++) {
-      const theta = (s / radialSegments) * 2 * Math.PI;
-      const cosT = Math.cos(theta);
-      const sinT = Math.sin(theta);
-      const nx = ux * cosT + vx * sinT;
-      const ny = uy * cosT + vy * sinT;
-      const nz = uz * cosT + vz * sinT;
-      const vi = (i * radialSegments + s) * 3;
-      vertices[vi + 0] = center[0] + nx * tubeR;
-      vertices[vi + 1] = center[1] + ny * tubeR;
-      vertices[vi + 2] = center[2] + nz * tubeR;
-      normals[vi + 0] = nx;
-      normals[vi + 1] = ny;
-      normals[vi + 2] = nz;
-    }
-  }
-}
-
-/** Two triangles per (ring i → ring i+1, radial s → s+1) quad. */
-function buildHelixTubeIndices(ringCount: number, radialSegments: number): Uint32Array {
-  const quadCount = (ringCount - 1) * radialSegments;
-  const indices = new Uint32Array(quadCount * 6);
-  let idx = 0;
-  for (let i = 0; i < ringCount - 1; i++) {
-    for (let s = 0; s < radialSegments; s++) {
-      const sNext = (s + 1) % radialSegments;
-      const a = i * radialSegments + s;
-      const b = i * radialSegments + sNext;
-      const c = (i + 1) * radialSegments + s;
-      const d = (i + 1) * radialSegments + sNext;
-      indices[idx++] = a;
-      indices[idx++] = c;
-      indices[idx++] = b;
-      indices[idx++] = b;
-      indices[idx++] = c;
-      indices[idx++] = d;
-    }
-  }
-  return indices;
-}
 
 /**
  * P7 — read the Assembly's declared tendons (if any) and pack them into
@@ -532,6 +447,7 @@ type TendonLike = ReturnType<AssemblyLikeForTendons['__tendons']>[number];
 interface TendonLookups {
   originByRef: Map<string, Vec3>;
   wrapOriginByRef: Map<string, Vec3>;
+  wrapByRef: Map<string, { origin: Vec3; axis: Vec3; radiusMm: number }>;
   transformByPart: Map<string, readonly number[]>;
 }
 
@@ -543,6 +459,7 @@ function collectTendonLookups(
   const originByRef = new Map<string, Vec3>();
   // (partName, wrapName) → part-local wrap origin lookup (P11 Slice 3).
   const wrapOriginByRef = new Map<string, Vec3>();
+  const wrapByRef = new Map<string, { origin: Vec3; axis: Vec3; radiusMm: number }>();
   // The scene transforms below move shapes that already carry `at`; a mated
   // part's declared origins get its `at` so they land on its body.
   const atOf = partAtFor(arm.__mates?.() ?? [], arm.__parts(), arm.__session?.().paramTable);
@@ -556,6 +473,7 @@ function collectTendonLookups(
     }
     for (const wg of part.wrapGeoms ?? []) {
       wrapOriginByRef.set(`${part.name}.${wg.name}`, onPart(wg.origin));
+      wrapByRef.set(`${part.name}.${wg.name}`, { origin: onPart(wg.origin), axis: wg.axis, radiusMm: wg.radiusMm });
     }
   }
 
@@ -565,20 +483,68 @@ function collectTendonLookups(
   for (const part of scene.parts ?? []) {
     transformByPart.set(part.name, part.worldTransform.toMat4());
   }
-  return { originByRef, wrapOriginByRef, transformByPart };
+  return { originByRef, wrapOriginByRef, wrapByRef, transformByPart };
 }
 
 interface TendonPath {
   fromWorld: Vec3;
   toWorld: Vec3;
   centerline: Vec3[];
+  /** Owning-part world transform of each centerline point (strap width axis). */
+  frames: (readonly number[])[];
+}
+
+// A routed cable step in world space: a pulley point, or a wrap cylinder
+// whose tangent points and arc depend on both neighbours.
+type ResolvedRouteStep =
+  | { kind: 'point'; p: Vec3; frame: readonly number[] }
+  | { kind: 'wrap'; cyl: WrapCylinderWorld; frame: readonly number[] };
+type RouteEntry = string | { readonly wrap: { readonly partName: string; readonly wrapName: string; readonly sidesite?: readonly [number, number, number] } };
+
+function resolveWrapStep(
+  w: Exclude<RouteEntry, string>['wrap'],
+  lookups: TendonLookups,
+): ResolvedRouteStep | undefined {
+  const wg = lookups.wrapByRef.get(`${w.partName}.${w.wrapName}`);
+  const wT = lookups.transformByPart.get(w.partName);
+  if (wg === undefined || wT === undefined) return undefined;
+  const center = applyMat4ToPoint(wT, wg.origin);
+  const tip = applyMat4ToPoint(wT, [wg.origin[0] + wg.axis[0], wg.origin[1] + wg.axis[1], wg.origin[2] + wg.axis[2]]);
+  const side = w.sidesite === undefined ? undefined : applyMat4ToPoint(wT, [w.sidesite[0], w.sidesite[1], w.sidesite[2]]);
+  const axis: Vec3 = [tip[0] - center[0], tip[1] - center[1], tip[2] - center[2]];
+  return { kind: 'wrap', frame: wT, cyl: { center, axis, radiusMm: wg.radiusMm, ...(side ? { side } : {}) } };
+}
+
+function resolveRoute(route: readonly RouteEntry[], lookups: TendonLookups): ResolvedRouteStep[] {
+  const out: ResolvedRouteStep[] = [];
+  for (const entry of route) {
+    if (typeof entry !== 'string') {
+      const step = resolveWrapStep(entry.wrap, lookups);
+      if (step !== undefined) out.push(step);
+      continue;
+    }
+    const local = lookups.originByRef.get(entry);
+    const wT = lookups.transformByPart.get(splitConnectorRef(entry)[0] ?? '');
+    if (local !== undefined && wT !== undefined) out.push({ kind: 'point', p: applyMat4ToPoint(wT, local), frame: wT });
+  }
+  return out;
+}
+
+/** Append resolved steps to the centerline; a wrap adds its surface arc. */
+function appendRoute(steps: readonly ResolvedRouteStep[], centerline: Vec3[], frames: (readonly number[])[], toWorld: Vec3): void {
+  steps.forEach((step, i) => {
+    if (step.kind === 'point') { centerline.push(step.p); frames.push(step.frame); return; }
+    const after = steps[i + 1];
+    const next = after === undefined ? toWorld : after.kind === 'point' ? after.p : after.cyl.center;
+    for (const q of wrapArcPoints(centerline[centerline.length - 1], next, step.cyl)) { centerline.push(q); frames.push(step.frame); }
+  });
 }
 
 function resolveTendonPath(
   t: TendonLike,
   lookups: TendonLookups,
 ): TendonPath | undefined {
-  const { originByRef, wrapOriginByRef, transformByPart } = lookups;
+  const { originByRef, transformByPart } = lookups;
   const fromOrigin = originByRef.get(t.from);
   const toOrigin = originByRef.get(t.to);
   if (fromOrigin === undefined || toOrigin === undefined) {
@@ -600,21 +566,39 @@ function resolveTendonPath(
   // the to-anchor. With no wrapGeoms this is just [from, to], so straight
   // tendons render identically to the pre-Slice-3 path.
   const centerline: Vec3[] = [fromWorld];
-  for (const w of t.wrapGeoms ?? []) {
-    const wLocal = wrapOriginByRef.get(`${w.partName}.${w.wrapName}`);
-    const wT = transformByPart.get(w.partName);
-    if (wLocal !== undefined && wT !== undefined) {
-      centerline.push(applyMat4ToPoint(wT, wLocal));
-    }
-  }
+  const frames: (readonly number[])[] = [fromT];
+  // `via` replaces `wrapGeoms` (mutually exclusive); a connector entry is
+  // posed with its owning part's transform exactly like from/to.
+  const route = t.via !== undefined && t.via.length > 0
+    ? t.via
+    : (t.wrapGeoms ?? []).map((w) => ({ wrap: w }));
+  appendRoute(resolveRoute(route, lookups), centerline, frames, toWorld);
   centerline.push(toWorld);
-  return { fromWorld, toWorld, centerline };
+  frames.push(toT);
+  return { fromWorld, toWorld, centerline, frames };
+}
+
+/** Tendon PBR: the declared material (textures included) or the dark metallic default. */
+function tendonPbr(t: TendonLike): PBRMaterial {
+  return t.material ?? { baseColor: '#2a2e36', metalness: 0.85, roughness: 0.4 };
 }
 
 function buildTendonFace(t: TendonLike, path: TendonPath): FaceGeometry | null {
   // P10: coil tendons sweep an 8-facet tube along the helix polyline;
   // line tendons fall through to the existing PR #368 cylinder path.
   const style = t.visualStyle ?? 'line';
+  const p = t.profile;
+  if (p?.kind === 'flat') {
+    return buildRibbonMesh({
+      points: path.centerline,
+      widthDirs: flatWidthDirs(p.widthAxis ?? [0, 1, 0], path.frames),
+      widthMm: p.widthMm,
+      thicknessMm: p.thicknessMm,
+    });
+  }
+  if (p?.kind === 'round') return buildRoundSweep(path.centerline, p.diameterMm);
+  // A routed 'line' follows its route as a tube; a direct one stays a cylinder.
+  if (style === 'line' && path.centerline.length > 2) return buildRoundSweep(path.centerline, t.visualDiameterMm);
   if (style === 'coil') {
     const turns = t.coilTurns ?? 10;
     const coilDiameter = t.coilDiameterMm ?? 7;
@@ -646,12 +630,7 @@ function collectTendonMeshes(
     const face = buildTendonFace(t, path);
     if (face === null) continue;
     const tendonId = `${sceneFeatureId}__tendon__${t.name}`;
-    // Dark metallic PBR — matches Studio's `TendonRenderer.tsx`.
-    const tendonMaterial: PBRMaterial = {
-      baseColor: '#2a2e36',
-      metalness: 0.85,
-      roughness: 0.4,
-    };
+    const tendonMaterial = tendonPbr(t);
     meshes.push({
       featureId: tendonId,
       // Reuse the SceneBackend's feature-kind so the renderer's existing
@@ -696,6 +675,21 @@ export function selectTerminalFeatures(
     for (const predecessor of feature.predecessors) consumed.add(predecessor);
   }
   return features.filter((feature) => !consumed.has(feature.featureId));
+}
+
+/**
+ * Per-pass mesh-quality options for {@link meshFeaturesPerFeature}.
+ *
+ * `previewMeshOptions` set = a PREVIEW pass: the fast first paint while an
+ * edit is settled. Every freshly meshed feature (and assembly part) uses these
+ * looser options and its cached entry is marked coarse, so the follow-up
+ * display pass re-meshes the already-lowered shape at display quality — it
+ * never re-lowers geometry and never emits coarse triangles as final.
+ *
+ * Absent = the normal display pass, byte-identical to before.
+ */
+export interface MeshFeatureOptions {
+  previewMeshOptions?: MeshOptions;
 }
 
 export async function meshFeaturesPerFeature(
@@ -748,7 +742,8 @@ export async function meshFeaturesPerFeature(
     /** Extra world-space translations keyed by assembly part name, composed
      *  onto each part's solved worldTransform (exploded views). */
     explodeOffsets?: ReadonlyMap<string, readonly [number, number, number]>;
-  },
+  } & FreshLowerSession,
+  opts?: MeshFeatureOptions,
 ): Promise<MeshFeaturesResult> {
   await initOcct();
   const lowerer = new OcctLowerer();
@@ -786,12 +781,7 @@ export async function meshFeaturesPerFeature(
     materialByLabelByFeatureId,
   } = collectFeatureStyling(records);
   // Recordbook for diagnostics — surface unresolved labels as warnings.
-  const warnings: Array<{
-    code: 'feature.material.face-label-no-match';
-    featureId: FeatureId;
-    label: string;
-    detail: string;
-  }> = [];
+  const warnings: PerFaceMaterialWarning[] = [];
 
   // Emit virtual records (referenceImage, renderEnvironment, etc.) directly —
   // they produce no OCCT geometry, but the renderer needs their payload to
@@ -821,28 +811,31 @@ export async function meshFeaturesPerFeature(
     cachedShapesIn,
     cachedFeatureMeshes,
   );
+  const { meshFromSeed, engineSeeds } = planFreshLoweredSeeds(records, paramTable, session, seedShapes);
 
-  const linkState = newLinkState(records, seedShapes);
+  const linkState = newLinkState(records, engineSeeds);
+  const eventCtx: MeshFeatureEventContext = {
+    emitFeature,
+    meshBounds,
+    failedFeatureIds,
+    constructionClosure,
+    cachedAssemblyPartMeshes,
+    explodeOffsets: session?.explodeOffsets,
+    assembliesIn,
+    recordById,
+    colorByFeatureId,
+    materialByFeatureId,
+    materialByLabelByFeatureId,
+    warnings,
+    records,
+    cachedFeatureMeshes,
+    previewMeshOptions: opts?.previewMeshOptions,
+    ...linkState,
+  };
   await engine.run(records, {
     paramTable,
-    ...(seedShapes !== undefined && seedShapes.size > 0 ? { seedShapes } : {}),
-    onEvent: (event) => handleMeshFeatureEvent(event, {
-      emitFeature,
-      meshBounds,
-      failedFeatureIds,
-      constructionClosure,
-      cachedAssemblyPartMeshes,
-      explodeOffsets: session?.explodeOffsets,
-      assembliesIn,
-      recordById,
-      colorByFeatureId,
-      materialByFeatureId,
-      materialByLabelByFeatureId,
-      warnings,
-      records,
-      cachedFeatureMeshes,
-      ...linkState,
-    }),
+    onEvent: (event) => handleMeshFeatureEvent(event, eventCtx),
+    ...engineSeedOptions(engineSeeds, meshFromSeed, refineSeededMesh(eventCtx), constructionClosure),
   });
 
   reEmitSeededFeatureMeshes(
@@ -853,6 +846,7 @@ export async function meshFeaturesPerFeature(
     features,
     emitFeature,
     meshBounds,
+    refineSeededMesh(eventCtx),
   );
 
   return finishMeshFeatures(
@@ -864,6 +858,35 @@ export async function meshFeaturesPerFeature(
     warnings,
     linkState.shapeById,
   );
+}
+
+/**
+ * Seed options for the meshing pass's engine run. `meshFromSeed` holds records
+ * the session already lowered for these exact inputs (the build or
+ * params.update before this call) that have no cached mesh yet: they are
+ * seeded, and `onSeedHit` meshes each one at the point in engine order where
+ * it would have been lowered, so the output order is unchanged and no record
+ * is lowered twice.
+ */
+function engineSeedOptions(
+  engineSeeds: Map<FeatureId, ShapeBackend> | undefined,
+  meshFromSeed: ReadonlyMap<FeatureId, ShapeBackend>,
+  meshSeeded: (record: FeatureRecord, shape: ShapeBackend) => void,
+  constructionClosure: ReadonlySet<FeatureId>,
+): Pick<RecomputeOptions, 'seedShapes' | 'onSeedHit'> {
+  if (engineSeeds === undefined || engineSeeds.size === 0) return {};
+  const onSeedHit = (record: FeatureRecord, shape: ShapeBackend): void => {
+    if (meshFromSeed.has(record.id)) {
+      meshSeeded(record, shape);
+      releaseBorrowedTriangulation(shape);
+    } else if (constructionClosure.has(record.id) && !hasFeatureOwnership(shape)) {
+      // A construction record lowered by the build or params.update (not by
+      // a mesh pass) has no face owners yet; the assembly part meshes built
+      // from it need them (selection ↔ code link).
+      meshSeeded(record, shape);
+    }
+  };
+  return { seedShapes: engineSeeds, onSeedHit };
 }
 
 /** Attach the optional session hooks (imported geometry, NURBS surface
@@ -878,41 +901,6 @@ function applySessionToLowerer(
       lowerer.getSurfaceRecord = session.getSurfaceRecord.bind(session);
     }
   }
-}
-
-/** Final phase: bounds, shadowing diagnostics (logged in order), result object. */
-function finishMeshFeatures(
-  features: FeatureMesh[],
-  meshBounds: MeshBoundsAccumulator,
-  failedFeatureIds: FeatureId[],
-  explicitMaterialByFeatureId: ReadonlyMap<FeatureId, PBRMaterial>,
-  colorByFeatureId: ReadonlyMap<FeatureId, string>,
-  warnings: PerFaceMaterialWarning[],
-  shapes: ReadonlyMap<FeatureId, ShapeBackend>,
-): MeshFeaturesResult {
-  const bounds = buildMeshBounds(features, meshBounds);
-
-  const { materialShadowingWarnings, colorShadowingWarnings } = collectShadowingWarnings(
-    features,
-    explicitMaterialByFeatureId,
-    colorByFeatureId,
-  );
-  for (const w of materialShadowingWarnings) {
-    console.warn(`meshFeaturesPerFeature: material shadowing — ${w.message}`);
-  }
-  for (const w of colorShadowingWarnings) {
-    console.warn(`meshFeaturesPerFeature: color shadowing — ${w.message}`);
-  }
-
-  return {
-    features,
-    bounds,
-    failedFeatureIds,
-    materialShadowingWarnings,
-    colorShadowingWarnings,
-    shapes,
-    ...(warnings.length > 0 ? { perFaceMaterialWarnings: warnings } : {}),
-  };
 }
 
 /**
@@ -935,6 +923,8 @@ interface MeshFeatureEventContext {
   readonly warnings: PerFaceMaterialWarning[];
   readonly records: readonly FeatureRecord[];
   readonly cachedFeatureMeshes?: Map<FeatureId, FeatureMesh>;
+  /** Preview tier of this pass; see {@link MeshFeatureOptions}. */
+  readonly previewMeshOptions?: MeshOptions;
   /** Lowered shape per feature, so ownership can inherit from predecessors. */
   readonly shapeById: Map<FeatureId, ShapeBackend>;
   readonly recordOrder: ReadonlyMap<FeatureId, number>;
@@ -1037,6 +1027,22 @@ function emitDisplayMeshFeature(event: CompiledEvent, shape: MeshBackend, ctx: M
   accumulateIndexedMeshBounds(ctx.meshBounds, positions);
 }
 
+/** Build the `reEmitSeededFeatureMeshes` refiner for one pass: re-meshes a
+ *  preview-marked seeded record from its already-lowered shape (tessellation
+ *  only — no re-lowering) and emits + re-caches the result at the pass's
+ *  quality. The synthesized event mirrors the engine's `feature.compiled`
+ *  (shared graph + event helpers), so ownership links, op labels and per-face
+ *  materials match a fresh lower exactly. */
+function refineSeededMesh(
+  ctx: MeshFeatureEventContext,
+): (record: FeatureRecord, seededShape: ShapeBackend) => void {
+  let predecessors: Map<FeatureId, FeatureId[]> | undefined;
+  return (record, seededShape) => {
+    predecessors ??= predecessorsByRecord(ctx.records);
+    handleMeshFeatureEvent(compiledEventForRecord(record, seededShape, predecessors), ctx);
+  };
+}
+
 function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContext): void {
   if (event.kind === 'feature.failed') {
     ctx.failedFeatureIds.push(event.featureId);
@@ -1082,6 +1088,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
       },
       recordOrder: ctx.recordOrder,
       accumulateIndexedMeshBounds,
+      previewMeshOptions: ctx.previewMeshOptions,
     });
     return;
   }
@@ -1090,7 +1097,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     return;
   }
   const rawShape = extractRawShape(event.shape);
-  const meshed = meshShape(rawShape);
+  const meshed = meshShape(rawShape, ctx.previewMeshOptions);
   if (!meshed) {
     if (event.featureKind === 'sketch') {
       return;
@@ -1125,6 +1132,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     );
   }
 
+  attachMaterialUVs(meshed.faces, material);
   attachPlanarUVs(meshed.faces);
   const emitted: FeatureMesh = {
     featureId: event.featureId,
@@ -1149,6 +1157,10 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   // first-affected scan keeps this record's lowered shape can re-emit the
   // cached mesh directly instead of calling `meshShape` again.
   ctx.cachedFeatureMeshes?.set(event.featureId, emitted);
+  // A preview-pass mesh is a first paint only: mark it so the next display
+  // pass refines it (re-meshing the same lowered shape) instead of emitting
+  // these coarse triangles as final.
+  if (ctx.previewMeshOptions) markCoarseMesh(emitted);
 
   // Aggregate bounds from this feature's vertices
   accumulateMeshBounds(ctx.meshBounds, meshed.faces);

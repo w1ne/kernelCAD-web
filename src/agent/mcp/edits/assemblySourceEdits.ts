@@ -46,6 +46,12 @@ export interface AddMateSourceInput {
   pose?: MatePose;
   limitsDeg?: MateLimitRange;
   limitsMm?: MateLimitRange;
+  stiffnessNmmPerDeg?: number;
+  springRefDeg?: number;
+  dampingNmmsPerDeg?: number;
+  stiffnessNPerMm?: number;
+  springRefMm?: number;
+  dampingNsPerMm?: number;
 }
 
 export interface AddMateCouplingSourceInput {
@@ -148,6 +154,12 @@ export function addMateSource(input: AddMateSourceInput): SourceEditResult {
     ...(input.pose !== undefined ? { pose: input.pose } : {}),
     ...(input.limitsDeg !== undefined ? { limitsDeg: input.limitsDeg } : {}),
     ...(input.limitsMm !== undefined ? { limitsMm: input.limitsMm } : {}),
+    ...(input.stiffnessNmmPerDeg !== undefined ? { stiffnessNmmPerDeg: input.stiffnessNmmPerDeg } : {}),
+    ...(input.springRefDeg !== undefined ? { springRefDeg: input.springRefDeg } : {}),
+    ...(input.dampingNmmsPerDeg !== undefined ? { dampingNmmsPerDeg: input.dampingNmmsPerDeg } : {}),
+    ...(input.stiffnessNPerMm !== undefined ? { stiffnessNPerMm: input.stiffnessNPerMm } : {}),
+    ...(input.springRefMm !== undefined ? { springRefMm: input.springRefMm } : {}),
+    ...(input.dampingNsPerMm !== undefined ? { dampingNsPerMm: input.dampingNsPerMm } : {}),
   };
   const hasOpts = Object.keys(opts).length > 0;
   const args = [
@@ -303,7 +315,7 @@ function isMateType(value: unknown): value is MateType {
 }
 
 function isTransmissionKind(value: unknown): value is TransmissionKind {
-  return value === 'direct-horn' ||
+  return value === 'direct' ||
     value === 'link-rod' ||
     value === 'four-bar' ||
     value === 'gear-pair' ||

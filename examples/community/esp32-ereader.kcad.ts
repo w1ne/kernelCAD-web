@@ -12,11 +12,11 @@
 // charger/protection circuit, or 3.3 V regulator carrier for this portable
 // build. This assembly intentionally does not emulate those electrical parts.
 // Select and model the real power/programming path before treating it as a
-// release BOM or a LabWired-verified device.
+// release BOM or a simulation-verified device.
 //
 // Public-proof status:
 // No durable e-paper display-paint receipt exists yet.
-// No firmware proof or LabWired run receipt binds this assembly yet.
+// No firmware proof or simulation run receipt binds this assembly yet.
 // This CAD fit check is therefore not public-device proof; keep the release
 // unverified until a retained firmware artifact and matching display-paint
 // receipt are recorded for the same published revision.

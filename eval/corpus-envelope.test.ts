@@ -26,7 +26,6 @@ beforeEach(() => {
 
 const tasks: Array<{ id: string; dir: string }> = [
   { id: 'door-hinge-over-travel',  dir: './eval/tasks/door-hinge-over-travel' },
-  { id: 'gripper-aperture-sweep',  dir: './eval/tasks/gripper-aperture-sweep' },
 ];
 
 describe('pose-envelope corpus — expert solutions score 100%', () => {

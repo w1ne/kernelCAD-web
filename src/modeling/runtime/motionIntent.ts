@@ -45,8 +45,16 @@ function expressionNames(expr: ParamRefExpr, out: Set<string>): void {
   switch (expr.kind) {
     case 'param': out.add(expr.name); return;
     case 'lit': return;
-    case 'binop': expressionNames(expr.left, out); expressionNames(expr.right, out); return;
-    case 'neg': expressionNames(expr.expr, out); return;
+    case 'binop':
+    case 'min':
+    case 'max': expressionNames(expr.left, out); expressionNames(expr.right, out); return;
+    case 'neg':
+    case 'abs': expressionNames(expr.expr, out); return;
+    case 'clamp':
+      expressionNames(expr.value, out);
+      expressionNames(expr.min, out);
+      expressionNames(expr.max, out);
+      return;
   }
 }
 

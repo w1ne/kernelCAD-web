@@ -135,6 +135,11 @@ function edgeOwnersOf(
   return edgeHashes.map((h) => ownerByEdge.get(h) ?? featureId);
 }
 
+/** True once `computeFeatureOwnership` has attributed this shape's faces. */
+export function hasFeatureOwnership(shape: object): boolean {
+  return ownersByShape.has(shape);
+}
+
 /**
  * Attribute every face and edge of one meshed feature to the feature that
  * created it. Also records the face owner map on the shape so features built

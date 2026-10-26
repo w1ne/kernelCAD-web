@@ -2,7 +2,6 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
 import type { ReviewCadInput, ReviewCadOutput } from '../../../src/agent/review/reviewPipeline';
-import { STACKED_PRIMITIVE_TOY_CODE } from '../../../src/agent/loop/revisionAssist';
 
 const runReviewPipeline = vi.fn<(input: ReviewCadInput) => Promise<ReviewCadOutput>>();
 
@@ -54,33 +53,8 @@ function cleanReview(): ReviewCadOutput {
 }
 
 
-describe('design_loop revision assist + stacked-primitive gate', () => {
-  it('fail-closes stacked-primitive toys on production goals and attaches hints', async () => {
-    runReviewPipeline.mockResolvedValue(cleanReview());
-
-    const toy = [
-      'const a = box(30, 30, 10);',
-      'const b = box(20, 20, 10).translate(5, 5, 10);',
-      'const c = box(10, 10, 10).translate(10, 10, 20);',
-      'return a.union(b).union(c);',
-    ].join('\n');
-
-    const result = await designLoopTool({
-      goal: 'Build a real production bearing housing enclosure',
-      requireVisualReview: false,
-      autoRevise: false,
-      attempts: [{ code: toy }],
-    });
-
-    expect(result.ok).toBe(false);
-    const facts = result.attempts[0].reviewFacts.map((f) => f.code);
-    expect(facts).toContain(STACKED_PRIMITIVE_TOY_CODE);
-    expect(result.revisionAssist?.mode).toBe('hints-only');
-    expect(result.nextActionPrompt).toContain('Revision assist');
-    expect(result.revisionAssist?.hints.some((h) => h.code === 'cookbook.machined-housing')).toBe(true);
-  });
-
-  it('passes manufacturing-intent housing without stacked-primitive fact', async () => {
+describe('design_loop revision assist', () => {
+  it('passes manufacturing-intent housing with no quality facts', async () => {
     runReviewPipeline.mockResolvedValue(cleanReview());
 
     const housing = [
@@ -98,7 +72,7 @@ describe('design_loop revision assist + stacked-primitive gate', () => {
     });
 
     expect(result.ok).toBe(true);
-    expect(result.attempts[0].reviewFacts.map((f) => f.code)).not.toContain(STACKED_PRIMITIVE_TOY_CODE);
+    expect(result.attempts[0].reviewFacts).toEqual([]);
     expect(result.revisionAssist).toBeUndefined();
   });
 

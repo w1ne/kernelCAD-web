@@ -1,0 +1,160 @@
+{
+  "ok": true,
+  "report": {
+    "file": "/tmp/opencode/cadgenbench/kernelcad-harness/results/heal-final/229/output.step",
+    "solidCount": 1,
+    "solids": [
+      {
+        "index": 0,
+        "name": null,
+        "bboxExact": {
+          "min": [
+            -70.58171081542969,
+            -50.697139739990234,
+            -33
+          ],
+          "max": [
+            77.15824890136719,
+            58.924625396728516,
+            32.478397369384766
+          ]
+        },
+        "volumeMm3": 391372.1235440019,
+        "faceCount": 106,
+        "holes": [
+          {
+            "axisOrigin": [
+              28.549449049207,
+              12.106172816834,
+              10
+            ],
+            "axisDirection": [
+              0,
+              0,
+              1
+            ],
+            "diameterMm": 6,
+            "depthMm": 15,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              37.194953461849,
+              -35.35408472838,
+              10
+            ],
+            "axisDirection": [
+              0,
+              0,
+              1
+            ],
+            "diameterMm": 6,
+            "depthMm": 15,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              57.161351756419,
+              11.202940141131,
+              13
+            ],
+            "axisDirection": [
+              0,
+              0,
+              1
+            ],
+            "diameterMm": 25,
+            "depthMm": 12,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -25.78987182229,
+              -4.075374537163,
+              -31
+            ],
+            "axisDirection": [
+              0,
+              0,
+              1
+            ],
+            "diameterMm": 46,
+            "depthMm": 56,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              15.001967464754,
+              -40.69714080991,
+              25
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 10,
+            "depthMm": 52,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -60.58171110934,
+              -40.69714080991,
+              25
+            ],
+            "axisDirection": [
+              0,
+              0,
+              -1
+            ],
+            "diameterMm": 10,
+            "depthMm": 52,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -25.79,
+              15.231360039145,
+              0
+            ],
+            "axisDirection": [
+              0,
+              1,
+              0
+            ],
+            "diameterMm": 20,
+            "depthMm": 43.693265423692,
+            "kind": "through",
+            "faceCount": 1
+          },
+          {
+            "axisOrigin": [
+              -56.33314741608,
+              30.92787057778,
+              -23
+            ],
+            "axisDirection": [
+              0,
+              0,
+              1
+            ],
+            "diameterMm": 6,
+            "depthMm": 22,
+            "kind": "blind",
+            "faceCount": 1
+          }
+        ],
+        "holeDetection": "exact"
+      }
+    ],
+    "holeDetection": "exact"
+  },
+  "diagnostics": []
+}

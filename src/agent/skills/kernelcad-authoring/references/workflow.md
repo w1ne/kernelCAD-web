@@ -7,14 +7,14 @@ The full authoring, inner render and assembly/mechanism loops, the source/artifa
 Use this loop for every non-trivial model edit:
 
 1. **Classify the job**: blockout, production-ish part, reference replication, assembly/mechanism, sheet metal, or standard-part integration. Load the matching specialty skill before editing. Words like *real*, *production*, *complex*, *enclosure*, *gearbox*, *bearing housing*, *robot arm* → production-ish / mechanism — `lookup_cookbook("multi-feature machined housing")` or `lookup_cookbook("multi-body mechanism real proportions")`, and prefer MCP `design_loop` until green (see `docs/agent/adam-quality-bar.md`). Do not ship stacked-primitive toys for those prompts.
-2. **Write the design brief in plain engineering terms**: purpose, external dimensions, interfaces, materials/finish if relevant, moving parts, manufacturability assumptions, and what must be proven. If the request is ambiguous on load-bearing parameters — overall dimensions, units, symmetry, part count, fit/clearance targets — ask 1–3 targeted clarifying questions BEFORE generating geometry; if you proceed anyway, list each assumption in the brief and encode it as a named `param()` so the user can correct it without a rewrite. Do ParamRef arithmetic with methods, not operators: `w.add(5)`, `w.subtract(t)`, `w.multiply(2)`, `w.divide(4)`, `w.negate()`.
+2. **Write the design brief in plain engineering terms**: purpose, external dimensions, interfaces, materials/finish if relevant, moving parts, manufacturability assumptions, and what must be proven. If the request is ambiguous on load-bearing parameters — overall dimensions, units, symmetry, part count, fit/clearance targets — ask 1–3 targeted clarifying questions BEFORE generating geometry; if you proceed anyway, list each assumption in the brief and encode it as a named `param()` so the user can correct it without a rewrite. Do ParamRef arithmetic with methods, not operators: `w.add(5)`, `w.subtract(t)`, `w.multiply(2)`, `w.divide(4)`, `w.negate()`, `w.min(n)`, `w.max(n)`, `w.abs()`, `w.clamp(lo, hi)`.
 3. **Map words to geometry**: turn important prompt phrases into named source sections, parameters, parts, connectors, materials, or tests so the generated model stays traceable to the user's words.
 4. **Plan parameters and artifacts**: identify the `.kcad.ts` source file, named parameters, imported STEP files, expected exports, and the smallest verification command set before writing geometry.
 5. **Edit source only**: treat `.kcad.ts`, prompt/brief markdown, and provenance metadata as source. Do not hand-edit generated PNG, MP4, STEP, STL, score JSON, or capture metadata.
 6. **Generate explicit targets**: run the exact render/export/capture command for the requested artifact. Avoid broad directory refreshes unless the task is a release/demo rebuild.
 7. **Validate deterministically**: run `kernelcad evaluate`, relevant exports, assembly/review tools, interference checks, and scorer gates before accepting visual evidence.
 8. **Inspect visual artifacts honestly**: when a PNG/MP4/render is produced, open/read it and report what is visible. If the image shows wrong proportions, floating parts, occlusion, unreadable details, or a bad camera crop, repair source and regenerate.
-9. **Packetize visual evidence**: when visual evidence matters, run `kernelcad render inspect <file> <outDir>` to produce a deterministic inspection bundle: a manifest naming the source file, command, generated artifacts, and caveats, plus canonical RGB views. Add `--channels rgb,mask,depth,normals` when machine-readable object masks, depth, or view-space normals are needed. Use `--focus <names>` or `--hide <names>` to isolate feature ids or assembly part names when clutter would obscure the check. Keep richer channels in the same manifest packet; do not replace the canonical RGB views.
+9. **Packetize visual evidence**: when visual evidence matters, run `kernelcad render inspect <file> <outDir>` to produce a deterministic inspection bundle: a manifest naming the source file, command, generated artifacts, and caveats, plus canonical RGB views. Add `--channels rgb,mask,depth,normals` when machine-readable object masks, depth, or view-space normals are needed. Use `--focus <names>` or `--hide <names>` to isolate feature ids or assembly part names when clutter would obscure the check. Keep richer channels in the same manifest packet; do not replace the canonical RGB views. Use `--shading flat` to expose tessellation / surface wobble (smooth vertex normals are the default), and `--screenshot-timeout <ms>` when a heavy single-span loft exceeds Playwright's 30 s default.
 10. **Repair one cause at a time**: target the smallest source change that addresses the failing check, then rerun the same check. Do not loosen gates or silently skip failing evidence.
 11. **Never present an unverified model**: if the latest `evaluate` failed, fix it or report the blocker — do not export, render, or hand over a script whose last check failed.
 
@@ -84,49 +84,6 @@ so `ok: true` from it is not a mechanism verdict. When the result carries
 `reviewHint`, run `review_cad` for the pose-envelope + gravity checks before you
 call the mechanism done.
 
-### Articulated-digit workflow (non-bypassable)
-
-For an articulated digit, use the structural joint helper and complete every gate below:
-
-<!-- ARTICULATED_DIGIT_EXAMPLE:START -->
-```typescript
-const arm = assembly('index-digit');
-const minClearance = 0.1;
-const parentMount = 'palm.index-mount';
-const frame = { origin: [0, 0, 10], pinAxis: [0, 0, 1], forward: [1, 0, 0] };
-const segments = [
-  { name: 'proximal', lengthMm: 54, widthMm: 14, depthMm: 14, terminal: true },
-];
-const joints = [
-  { name: 'mcp', limitsDeg: [0, 27], style: { knuckleR: 5.4, forkGapY: 10, pinCapThickness: 3 } },
-];
-
-arm.part('palm', box(20, 50, 20, true).translate(-10, 0, 0))
-  .connector('index-mount', {
-    type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 10] },
-  });
-
-joint.articulatedDigit(arm, {
-  name: 'index',
-  parentMount,
-  frame,
-  clearanceMm: minClearance + 0.1,
-  segments,
-  joints,
-});
-
-dfmSpec({ minClearance, includeArticulatedMates: true });
-
-return arm.solvedModel({}, { validate: 'error' });
-```
-<!-- ARTICULATED_DIGIT_EXAMPLE:END -->
-
-- Run the full `review_cad` review, including pose-envelope clearance and interference checks.
-- Confirm visual fit separately: every digit link and moving mate must remain outside package keepouts across the reviewed pose envelope.
-- Dynamics, load, and actuation claims are unverified without explicit evidence; articulated-digit geometry and clearance review do not certify payloads or actuation.
-- These steps are mandatory. Do not bypass the helper, DFM declaration, pose-envelope review, keepout fit check, or evidence requirement by substituting raw offsets or a visual-only pass.
-
 ### Think in parts
 
 - Every physically distinct component is a named `assembly().part(name, shape)` — one body per part unless the component is genuinely monolithic.
@@ -167,7 +124,7 @@ Finish once, after the booleans: a boss or rib merged into a body BEFORE `.finis
 - Commit derived artifacts only when the repository already treats that directory as an artifact bundle (`docs/demos/**`, `examples/portfolio/**`) or the user explicitly requested a deliverable bundle.
 - When committing derived artifacts, keep the source file and provenance beside them and prefer existing capture scripts so hashes/metadata stay reproducible.
 - If an artifact changes but source/provenance did not, stop and explain why. Hidden artifact churn is not a valid CAD change.
-- Required visual packet: for review-worthy visual work, keep an inspection bundle beside the generated artifact by running `kernelcad render inspect <file> <outDir>`. The v1 bundle writes `manifest.json` and canonical RGB views, with optional `--channels rgb,mask,depth,normals` and `--focus <names>` / `--hide <names>` object filters recorded in the manifest. Depth, normals, and mask channels extend the same packet as richer evidence; they do not replace the canonical RGB views.
+- Required visual packet: for review-worthy visual work, keep an inspection bundle beside the generated artifact by running `kernelcad render inspect <file> <outDir>`. The v1 bundle writes `manifest.json` and canonical RGB views, with optional `--channels rgb,mask,depth,normals`, `--focus <names>` / `--hide <names>` object filters, `--shading flat`, and `--screenshot-timeout <ms>` recorded in the command/manifest. Depth, normals, and mask channels extend the same packet as richer evidence; they do not replace the canonical RGB views.
 
 ## Standard parts and vendor geometry
 
@@ -186,7 +143,7 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 ## Installation
 
 ```bash
-npm install -g kernelcad
+curl -fsSL https://kernelcad.com/install.sh | sh
 kernelcad evaluate path/to/script.kcad.ts
 ```
 

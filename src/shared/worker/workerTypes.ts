@@ -22,6 +22,11 @@ export const ExecuteRequestSchema = z.object({
     type: z.literal('EXECUTE'),
     id: z.string(),
     code: z.string(),
+    /** Mesh-quality tier for this pass. `'coarse'` is the fast first-paint
+     *  preview of an edit (`COARSE_MESH_OPTIONS`); omitted = display quality.
+     *  The Studio edit loop sends a coarse pass, then a display pass that
+     *  replaces it. */
+    meshQuality: z.enum(['coarse']).optional(),
 });
 
 export const InitRequestSchema = z.object({
@@ -108,6 +113,16 @@ export const SuccessResponseSchema = z.object({
     blob: z.instanceof(Blob).optional(),
 });
 
+/** Fast first-paint frame of an EXECUTE that asked for the coarse tier. Sent
+ *  BEFORE the final SUCCESS on the same request id: the script ran once, the
+ *  worker is just tessellating twice. Carries geometries only (the final frame
+ *  owns the sketches) so no typed-array buffer is transferred twice. */
+export const ExecutePreviewResponseSchema = z.object({
+    type: z.literal('EXECUTE_PREVIEW'),
+    id: z.string(),
+    geometries: ExecutionResultSchema,
+});
+
 export const ErrorResponseSchema = z.object({
     type: z.literal('ERROR'),
     id: z.string(),
@@ -116,6 +131,7 @@ export const ErrorResponseSchema = z.object({
 
 export const WorkerResponseSchema = z.discriminatedUnion('type', [
     SuccessResponseSchema,
+    ExecutePreviewResponseSchema,
     ErrorResponseSchema
 ]);
 
@@ -183,13 +199,19 @@ export interface SuccessResponse {
     blob?: Blob;
 }
 
+export interface ExecutePreviewResponse {
+    type: 'EXECUTE_PREVIEW';
+    id: string;
+    geometries: ExecutionResult;
+}
+
 export interface ErrorResponse {
     type: 'ERROR';
     id: string;
     error: string;
 }
 
-export type WorkerResponse = SuccessResponse | ErrorResponse;
+export type WorkerResponse = SuccessResponse | ExecutePreviewResponse | ErrorResponse;
 
 // ============================================================================
 // Type Guards
@@ -205,6 +227,10 @@ export function isExportRequest(msg: WorkerRequest): msg is ExportSTEPRequest | 
 
 export function isSuccessResponse(msg: WorkerResponse): msg is SuccessResponse {
     return msg.type === 'SUCCESS';
+}
+
+export function isExecutePreviewResponse(msg: WorkerResponse): msg is ExecutePreviewResponse {
+    return msg.type === 'EXECUTE_PREVIEW';
 }
 
 export function isErrorResponse(msg: WorkerResponse): msg is ErrorResponse {

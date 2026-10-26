@@ -62,33 +62,8 @@ describe('distGrepGate', () => {
     }
   });
 
-  it('allows legitimate sendcutsend vendor-integration references (quoted token / .com domain)', () => {
-    // SendCutSend is a manufacturing/laser-cut vendor the DFM/shopcheck skill
-    // integrates with, not a rival CAD tool. Quoted identifiers and the vendor
-    // domain must pass; only bare comparator-prose stays blocked.
-    const root = mkdtempSync(join(tmpdir(), 'kc-grep-vendor-'));
-    try {
-      mkdirSync(join(root, 'skills/kernelcad-shopcheck'), { recursive: true });
-      writeFileSync(
-        join(root, 'skills/kernelcad-shopcheck/SKILL.md'),
-        "---\nname: kernelcad-shopcheck\ndescription: dfm\n---\n" +
-          "await mcp.dfm_preflight({ vendor: 'sendcutsend' });\n",
-      );
-      writeFileSync(
-        join(root, 'skills/kernelcad-shopcheck/rules.json'),
-        '{\n  "sendcutsend": {\n    "vendor": "sendcutsend",\n' +
-          '    "url": "https://sendcutsend.com/materials/"\n  }\n}\n',
-      );
-      const r = runGrepGate(root);
-      expect(r.ok).toBe(true);
-      expect(r.hits).toEqual([]);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-
-  it('still flags bare comparator-prose use of sendcutsend (not the vendor token)', () => {
-    for (const prose of ['Like SendCutSend.', 'Inspired by sendcutsend', 'use sendcutsend instead']) {
+  it('flags every use of sendcutsend, including quoted tokens and the domain', () => {
+    for (const prose of ['Like SendCutSend.', 'Inspired by sendcutsend', "vendor: 'sendcutsend'", 'https://sendcutsend.com/materials/']) {
       const root = mkdtempSync(join(tmpdir(), 'kc-grep-vendor-bad-'));
       try {
         writeFileSync(join(root, 'README.md'), `# kernelCAD\n\n${prose}\n`);

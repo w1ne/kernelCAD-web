@@ -31,7 +31,6 @@ const acceptedVisualReview = {
     { code: 'no-stray-or-floating-geometry', passed: true, finding: 'No stray, floating, or unexplained extra geometry is visible; each secondary component is supported by contact or near-contact into the parent body, with no visible air gap.' },
     { code: 'attachment-plausibility', passed: true, finding: 'Visible brackets and case-band interfaces connect through a load-bearing geometry anchored into the parent case body, seated and exposed with no buried half-inserted hardware.' },
     { code: 'semantic-orientation-alignment', passed: true, finding: 'Labels and indicators point in deliberate, reference-consistent directions.' },
-    { code: 'device-depth-and-construction', passed: true, finding: 'Side and canonical views show real wall thickness, housing, body layers, and non-facade construction.' },
     { code: 'canonical-views-physically-coherent', passed: true, finding: 'Canonical views read as one physically coherent object.' },
   ],
 };

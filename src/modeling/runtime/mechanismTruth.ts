@@ -46,6 +46,7 @@
 //   - Mate graph: `arm.__mates()` is the edge list, `arm.__parts()` is the
 //     node list.
 
+import { jointGraphHasLoops } from '../capture/forwardKinematics';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import type { FeatureId } from '../../shared/intent/types';
@@ -58,7 +59,7 @@ import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
 import { detectInterferences, pairKey } from './detectInterferences';
-import { describeOverlap, formatOverlapMm3, isActionableOverlap, overlapRuleText, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
+import { describeOverlap, describeOverlapLocation, formatOverlapMm3, isActionableOverlap, overlapRuleText, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { rememberRestScene, reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
 import { resolvedPartAt } from '../mates/partFrame';
 import { expandCoupledPoses } from '../mates/coupledPoses';
@@ -85,6 +86,7 @@ import {
 } from './tendonBodyIntersect';
 import { makeFailure, type PoseSample, type SolvedSample } from './mechanismTruthShared';
 import { runPhysicsCriteria } from './mechanismTruthPhysics';
+import type { MujocoSessionFactory } from './mujocoSessionCore';
 
 /**
  * Number of pose samples per articulated mate. Currently 3 (min, mid, max
@@ -214,9 +216,7 @@ export interface MechanismCoverage {
  *     keystroke in Studio; the physics layer belongs on the
  *     `validate` path, not the live recompute.
  */
-export interface MechanismTruthOptions {
-  /** Run criteria 5 (static equilibrium) + 6 (drop-on-release). Default false. */
-  readonly physicsCheck?: boolean;
+interface MechanismTruthCommonOptions {
   /**
    * Override for the deterministic BREP-sweep work budget (see
    * {@link BREP_SWEEP_BUDGET}). When the estimated sweep work exceeds
@@ -229,6 +229,12 @@ export interface MechanismTruthOptions {
    */
   readonly sweepBudget?: number;
 }
+
+/** Physics is host-injected so this module stays usable in browser workers. */
+export type MechanismTruthOptions = MechanismTruthCommonOptions & (
+  | { readonly physicsCheck?: false; readonly physicsSessionFactory?: never }
+  | { readonly physicsCheck: true; readonly physicsSessionFactory: MujocoSessionFactory }
+);
 
 
 
@@ -393,7 +399,7 @@ export async function checkMechanismTruth(
   // session is shared between the two passes so the ~9 MB WASM module
   // and the MJCF compile only happen once per call.
   if (opts.physicsCheck === true) {
-    const physicsFailures = await runPhysicsCriteria(arm, solved, loweredBase.scene);
+    const physicsFailures = await runPhysicsCriteria(arm, solved, loweredBase.scene, opts.physicsSessionFactory);
     failures.push(...physicsFailures);
   }
 
@@ -829,10 +835,10 @@ async function checkInterpenetration(
           `(rule: ${overlapRuleText()} — a drilled clearance bore has ~0 overlap)`;
       out.push(makeFailure(
         'mechanism.interpenetration',
-        `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${describeOverlap(pair)} at pose sample '${s.sample.name}' — ` +
+        `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${describeOverlap(pair)}${describeOverlapLocation(pair)} at pose sample '${s.sample.name}' — ` +
         `they ${relation}. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. ` +
         `Add clearance, reduce mate travel, move the geometry so the swept pose stays collision-free, ` +
-        `or pass { ignore: [['${pair.a}', '${pair.b}']] } to solvedModel(...) if this overlap is genuinely intended.`,
+        `or pass { ignore: [['${pair.a}', '${pair.b}']] } as the SECOND argument to solvedModel({}, { ignore: ... }) if this overlap is genuinely intended.`,
       ));
     }
   }
@@ -1176,7 +1182,8 @@ async function lowerAssemblySceneForPose(
   // joint (`arm.revolute(...)`); samples only name the mates they move, so
   // stamp the rest at zero, as checkSweptCollision does.
   const jointDefaults: Record<string, number | [number, number, number]> = {};
-  for (const j of arm.__joints()) {
+  // On a closed joint loop the unposed joints are solved, not zero.
+  for (const j of jointGraphHasLoops(arm.__joints()) ? [] : arm.__joints()) {
     if (j.kind === 'fixed') continue;
     jointDefaults[j.name] = j.kind === 'ball' ? [0, 0, 0] : 0;
   }

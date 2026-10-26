@@ -24,7 +24,7 @@ This file is the core: units, the rules that prevent most failures, which API se
 
 The rules that prevent most failed evaluations (from the diagnostics catalogue and repair telemetry). Fix the cause, not the symptom.
 
-1. **ParamRef arithmetic uses methods.** `param('w', 60) + 4` throws `feature.invalid-args`; write `w.add(4)`, `w.subtract(t)`, `w.multiply(2)`, `w.divide(4)`, `w.negate()`. Declare params at the top with units; every numeric argument must be finite (`NaN`/`undefined` fails capture).
+1. **ParamRef arithmetic uses methods.** `param('w', 60) + 4` throws `feature.invalid-args`; write `w.add(4)`, `w.subtract(t)`, `w.multiply(2)`, `w.divide(4)`, `w.negate()`; also `.min/.max/.abs/.clamp`. Declare params at the top with units; every numeric argument must be finite (`NaN`/`undefined` fails capture).
 2. **Holes are features, not cylinders.** Use `hole` / `holes` / `cutout` instead of `subtract(cylinder(...))`: they drill the right size (threads, counterbores, countersinks), name their faces (`'wall'`, `'floor'`, `'counterbore-*'`, `'countersink-cone'`) and reach drawings, BOM and DFM. Hole `u`/`v` are mm offsets from the CENTRE of the entry face (`top`/`bottom`: u=+X, v=+Y; `front`/`back`: u=+X, v=+Z; `left`/`right`: u=+Y, v=+Z), not world coordinates.
 3. **Booleans need real overlap.** Give unions ≥ 0.1 mm of overlap and cut tools ≥ 0.1 mm of run-out past the faces; never rely on coincident or tangent faces. A cut that misses the body is `feature.subtractive-noop` — check the tool's position and axis.
 4. **One union, one connected body.** `union.disconnected` = an operand floats; move it until it touches. `union.member-overlap` = two separately finished pieces of the same stock overlap; fuse first and `.finish()` once, or butt the members (`span - 2 * railWidth`).
@@ -75,7 +75,7 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 A clean evaluate proves the script ran, not that it is the part the user asked for. A solid block is valid geometry and still fails the design. Before you report done:
 
 1. **Re-read the request and list every must-have** — each hole, opening, cavity, wall, rib, part, clearance and joint — and point to the source line that builds it. Anything without a line is missing.
-2. **Measure, do not trust your summary.** `inspect({ of: 'shape' })` (bbox, volume) must match the stated outer dimensions; volume far below the bbox volume for hollow parts, near it only for genuinely solid ones.
+2. **Measure, do not trust your summary.** `inspect({ of: 'shape' })` (bbox, volume) must match the stated outer dimensions; hollow volume is far below bbox volume.
 3. **Holes**: count, diameter, position, through vs blind as asked; threads made with `thread`, counterbores and countersinks with their options.
 4. **Walls**: hollow parts are hollow with the stated wall (`inspect({ of: 'section' })` or a section render); printed parts declare `dfmSpec({ minWall })`.
 5. **Parts and motion**: separate components are separate named parts; joints carry mates with limits; `kernelcad interference` is clean and nothing floats.
@@ -86,12 +86,12 @@ A clean evaluate proves the script ran, not that it is the part the user asked f
 ## Workflow
 
 1. **Classify** the job (blockout, production part, reference replication, assembly/mechanism, sheet metal, standard-part integration) and load the matching skill.
-2. **Brief**: purpose, outer dimensions, interfaces, moving parts, manufacturing method. If load-bearing dimensions are missing, ask 1–3 questions or encode each assumption as a named `param()`.
+2. **Brief**: purpose, outer dimensions, interfaces, moving parts, manufacturing method. If load-bearing dimensions are missing, ask 1–3 questions or encode each as a named `param()`.
 3. **Route** each feature through the table above; `lookup_cookbook` the recipe.
 4. **Write** the `.kcad.ts`, evaluate, repair one diagnostic at a time.
 5. **Verify** with measurements and renders, then run **Before you finish**.
 
-Full loop, inner render loop, mechanism loop and artifact policy: section `agent-authoring-loop` (`references/workflow.md`).
+Full loop and artifact policy: `agent-authoring-loop` (`references/workflow.md`).
 
 <!-- OUT-OF-SCOPE:START -->
 ## Out of Scope

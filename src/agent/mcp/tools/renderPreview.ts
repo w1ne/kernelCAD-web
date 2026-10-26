@@ -103,6 +103,12 @@ export interface RenderPreviewInput {
   /** HDRI environment override: preset key (studio/softbox/neutral/outdoor/
    *  warehouse), URL, or 'none' for the default three-light rig. */
   environment?: string;
+  /** Mesh shading: 'smooth' (kernel vertex normals, default) or 'flat'
+   *  (face normals) to inspect tessellation / surface wobble. */
+  shading?: 'smooth' | 'flat';
+  /** Playwright screenshot deadline in ms. Default leaves Playwright's 30 s
+   *  in place; raise it for heavy lofts on slow machines. */
+  screenshot_timeout_ms?: number;
   /** Suppress the kernelCAD version watermark. */
   no_watermark?: boolean;
   /** Skip the mechanism-truth probe (it can dominate latency on large
@@ -685,6 +691,8 @@ async function runHeadlessRenderPhase(
       baseUrl: base.baseUrl,
       hideReferenceImages: false,
       ...(input.environment !== undefined ? { environment: input.environment } : {}),
+      ...(input.shading !== undefined ? { shading: input.shading } : {}),
+      ...(input.screenshot_timeout_ms !== undefined ? { screenshotTimeoutMs: input.screenshot_timeout_ms } : {}),
       ...(input.no_watermark === true ? { noWatermark: true } : {}),
       ...(opts.objectFilter !== undefined ? { objectFilter: opts.objectFilter } : {}),
       ...(opts.section !== undefined ? { section: opts.section } : {}),

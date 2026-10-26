@@ -14,7 +14,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct } from '../src/kernel/backends/occt/occtBackend';
-import { countersunkScrewSolid } from '../src/modeling/parts/headSolids';
+import { fastenerSolid } from '../src/modeling/parts/fastenerGeometry';
 import type { PartRecord } from '../src/shared/parts/types';
 import type {
   ConnectorEntry,
@@ -26,17 +26,23 @@ import {
   FLATHEAD_HEAD,
   FLATHEAD_LENGTHS,
   FLAT_WASHER,
+  HEX_BOLT_HEAD,
+  HEX_BOLT_LENGTHS,
   HEX_NUT,
   LOCK_NUT,
   LOCK_WASHER,
+  ROD_LENGTHS,
+  SET_SCREW_LENGTHS,
   SHCS_HEAD,
   SHCS_LENGTHS,
   FIXTURE_FAMILY_NAMES,
   fixtureVariants,
   isFixtureKind,
   resolvePart,
+  type PartRequest,
 } from '../src/modeling/parts/familyTable';
 import { fixtureSolid } from '../src/modeling/parts/fixtureSolids';
+import { standardPartVerificationAttributes } from '../src/modeling/parts/standardPartRanges';
 
 // -----------------------------------------------------------------------------
 // Types
@@ -114,32 +120,24 @@ const HEADER_127 = { pitch: 1.27, postHeight: 6.0, postWidth: 0.4, baseHeight: 1
 // JST-XH housing dims (1 row, 2.5 mm pitch).
 const JST_XH = { pitch: 2.5, depth: 6.0, height: 8.6, baseHeight: 1.5 };
 
+/** STEP of a catalog fastener from the shared builder (fastenerGeometry.ts).
+ *  The bundled catalog carries the ENVELOPE detail: it is the analysis body
+ *  every fit check measures, and a modeled thread on each of the ~500
+ *  stocked screws would cost ~1 GB of STEP and tens of minutes per build.
+ *  lib.part's default 'full' detail builds the threaded solid from the same
+ *  builder in memory. */
+function catalogFastenerStep(request: PartRequest): Promise<Uint8Array> {
+  return fastenerSolid(resolvePart(request), 'envelope').exportSTEPAsync();
+}
+
 function fastenerStep(
+  family: string,
   thread: string,
   lengthMm: number,
   head: { D: number; K: number },
-  countersunk = false,
 ): Promise<{ bytes: Uint8Array; tNum: number; headD: number; headK: number }> {
   const tNum = parseFloat(thread.slice(1));
-  const headD = head.D;
-  const headK = head.K;
-  // Cylindrical heads sit on the seat plane (Z=0..K). A countersunk head seats
-  // in its cone: rim on Z=0, cone down to the nominal Ø at Z=-K.
-  const fused = countersunk
-    ? countersunkScrewSolid(tNum, headD, headK, lengthMm)
-    : OcctBackend.cylinder(headK, headD / 2).union(
-        OcctBackend.cylinder(lengthMm, tNum / 2).translate(0, 0, -lengthMm),
-      );
-  return fused.exportSTEPAsync().then((bytes) => ({ bytes, tNum, headD, headK }));
-}
-
-function washerStep(
-  thread: string,
-  dims: { Dout: number; Din: number; t: number },
-): Promise<Uint8Array> {
-  const outer = OcctBackend.cylinder(dims.t, dims.Dout / 2);
-  const inner = OcctBackend.cylinder(dims.t, dims.Din / 2);
-  return outer.subtract(inner).exportSTEPAsync();
+  return catalogFastenerStep({ family, thread, lengthMm }).then((bytes) => ({ bytes, tNum, headD: head.D, headK: head.K }));
 }
 
 function bearingStep(dims: {
@@ -150,32 +148,6 @@ function bearingStep(dims: {
   const outer = OcctBackend.cylinder(dims.B, dims.D / 2);
   const inner = OcctBackend.cylinder(dims.B, dims.d / 2);
   return outer.subtract(inner).exportSTEPAsync();
-}
-
-async function hexNutStep(
-  thread: string,
-  dims: { S: number; m: number },
-): Promise<Uint8Array> {
-  const tNum = parseFloat(thread.slice(1));
-  // Hex prism via extrudePolygon. The vertices start at 30 degrees so a FLAT
-  // faces +X, the same orientation the in-memory envelope builds (nutSolid);
-  // both doors must produce the same solid.
-  const r = dims.S / Math.sqrt(3);
-  const pts: [number, number][] = [];
-  for (let i = 0; i < 6; i++) {
-    const a = (Math.PI / 3) * i + Math.PI / 6;
-    pts.push([r * Math.cos(a), r * Math.sin(a)]);
-  }
-  const prism = OcctBackend.extrudePolygon(pts, dims.m);
-  const bore = OcctBackend.cylinder(dims.m, tNum / 2);
-  return prism.subtract(bore).exportSTEPAsync();
-}
-
-async function lockNutStep(
-  thread: string,
-  dims: { S: number; m: number },
-): Promise<Uint8Array> {
-  return hexNutStep(thread, dims);
 }
 
 async function heatsetInsertStep(args: {
@@ -331,12 +303,29 @@ function fixtureSeedFamily(family: string): SeedFamily {
   };
 }
 
-function socketHeadCapScrew(): SeedFamily {
-  const threads: Array<keyof typeof SHCS_HEAD> = ['M2', 'M2_5', 'M3', 'M4', 'M5', 'M6'];
-  const lengths = SHCS_LENGTHS;
-  const variants = threads.flatMap((t) =>
-    lengths.map((l) => ({ thread: t.replace('_', '.'), lengthMm: l })),
+/** Stocked threads of one table, with '_' decimal keys turned back into '.'. */
+function threadsOf(table: Record<string, unknown>): string[] {
+  return Object.keys(table).map((key) => key.replace('_', '.'));
+}
+
+/** Stocked lengths of one thread, or none. */
+function lengthsOf(table: Record<string, readonly number[]>, thread: string): readonly number[] {
+  return table[thread.replace('.', '_')] ?? [];
+}
+
+/** One variant per (thread, stocked length). */
+function threadLengthVariants(
+  threads: string[],
+  lengths: Record<string, readonly number[]>,
+): Array<{ thread: string; lengthMm: number }> {
+  return threads.flatMap((thread) =>
+    lengthsOf(lengths, thread).map((lengthMm) => ({ thread, lengthMm })),
   );
+}
+
+function socketHeadCapScrew(): SeedFamily {
+  const threads = threadsOf(SHCS_HEAD);
+  const variants = threadLengthVariants(threads, SHCS_LENGTHS);
   return {
     id: 'socket-head-cap-screw',
     category: 'fastener',
@@ -345,6 +334,7 @@ function socketHeadCapScrew(): SeedFamily {
     async generate({ thread, lengthMm }) {
       const head = SHCS_HEAD[(thread as string).replace('.', '_')];
       const { bytes, tNum, headD, headK } = await fastenerStep(
+        'socket-head-cap-screw',
         thread as string,
         lengthMm as number,
         head,
@@ -380,11 +370,8 @@ function socketHeadCapScrew(): SeedFamily {
 }
 
 function buttonHeadCapScrew(): SeedFamily {
-  const threads: Array<keyof typeof BHCS_HEAD> = ['M3', 'M4', 'M5'];
-  const lengths = BHCS_LENGTHS;
-  const variants = threads.flatMap((t) =>
-    lengths.map((l) => ({ thread: t, lengthMm: l })),
-  );
+  const threads = threadsOf(BHCS_HEAD);
+  const variants = threadLengthVariants(threads, BHCS_LENGTHS);
   return {
     id: 'button-head-cap-screw',
     category: 'fastener',
@@ -393,6 +380,7 @@ function buttonHeadCapScrew(): SeedFamily {
     async generate({ thread, lengthMm }) {
       const head = BHCS_HEAD[thread as string];
       const { bytes, headD, headK } = await fastenerStep(
+        'button-head-cap-screw',
         thread as string,
         lengthMm as number,
         head,
@@ -427,11 +415,8 @@ function buttonHeadCapScrew(): SeedFamily {
 }
 
 function flatHeadCountersunk(): SeedFamily {
-  const threads: Array<keyof typeof FLATHEAD_HEAD> = ['M3', 'M4', 'M5'];
-  const lengths = FLATHEAD_LENGTHS;
-  const variants = threads.flatMap((t) =>
-    lengths.map((l) => ({ thread: t, lengthMm: l })),
-  );
+  const threads = threadsOf(FLATHEAD_HEAD);
+  const variants = threadLengthVariants(threads, FLATHEAD_LENGTHS);
   return {
     id: 'flat-head-countersunk',
     category: 'fastener',
@@ -440,10 +425,10 @@ function flatHeadCountersunk(): SeedFamily {
     async generate({ thread, lengthMm }) {
       const head = FLATHEAD_HEAD[thread as string];
       const { bytes, headD, headK } = await fastenerStep(
+        'flat-head-countersunk',
         thread as string,
         lengthMm as number,
         head,
-        true,
       );
       const id = `iso-10642-${threadSlug(thread as string)}x${lengthMm}`;
       return {
@@ -474,7 +459,7 @@ function flatHeadCountersunk(): SeedFamily {
 }
 
 function hexNut(): SeedFamily {
-  const threads = ['M2', 'M2.5', 'M3', 'M4', 'M5', 'M6'];
+  const threads = threadsOf(HEX_NUT);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'hex-nut',
@@ -483,7 +468,7 @@ function hexNut(): SeedFamily {
     variants,
     async generate({ thread }) {
       const dims = HEX_NUT[(thread as string).replace('.', '_')];
-      const bytes = await hexNutStep(thread as string, dims);
+      const bytes = await catalogFastenerStep({ family: 'hex-nut', thread: thread as string });
       const id = `iso-4032-${threadSlug(thread as string)}`;
       return {
         stepBytes: bytes,
@@ -513,7 +498,7 @@ function hexNut(): SeedFamily {
 }
 
 function lockNut(): SeedFamily {
-  const threads = ['M3', 'M4', 'M5'];
+  const threads = threadsOf(LOCK_NUT);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'lock-nut',
@@ -521,8 +506,8 @@ function lockNut(): SeedFamily {
     standard: 'DIN 985',
     variants,
     async generate({ thread }) {
-      const dims = LOCK_NUT[thread as string];
-      const bytes = await lockNutStep(thread as string, dims);
+      const dims = LOCK_NUT[(thread as string).replace('.', '_')];
+      const bytes = await catalogFastenerStep({ family: 'lock-nut', thread: thread as string });
       const id = `din-985-${threadSlug(thread as string)}`;
       return {
         stepBytes: bytes,
@@ -552,7 +537,7 @@ function lockNut(): SeedFamily {
 }
 
 function flatWasher(): SeedFamily {
-  const threads = ['M2', 'M3', 'M4', 'M5', 'M6'];
+  const threads = threadsOf(FLAT_WASHER);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'flat-washer',
@@ -560,8 +545,8 @@ function flatWasher(): SeedFamily {
     standard: 'ISO 7089',
     variants,
     async generate({ thread }) {
-      const dims = FLAT_WASHER[thread as string];
-      const bytes = await washerStep(thread as string, dims);
+      const dims = FLAT_WASHER[(thread as string).replace('.', '_')];
+      const bytes = await catalogFastenerStep({ family: 'flat-washer', thread: thread as string });
       const id = `iso-7089-${threadSlug(thread as string)}`;
       return {
         stepBytes: bytes,
@@ -592,7 +577,7 @@ function flatWasher(): SeedFamily {
 }
 
 function lockWasher(): SeedFamily {
-  const threads = ['M3', 'M4', 'M5'];
+  const threads = threadsOf(LOCK_WASHER);
   const variants = threads.map((t) => ({ thread: t }));
   return {
     id: 'lock-washer',
@@ -600,8 +585,8 @@ function lockWasher(): SeedFamily {
     standard: 'DIN 127B',
     variants,
     async generate({ thread }) {
-      const dims = LOCK_WASHER[thread as string];
-      const bytes = await washerStep(thread as string, dims);
+      const dims = LOCK_WASHER[(thread as string).replace('.', '_')];
+      const bytes = await catalogFastenerStep({ family: 'lock-washer', thread: thread as string });
       const id = `din-127b-${threadSlug(thread as string)}`;
       return {
         stepBytes: bytes,
@@ -945,6 +930,98 @@ function jstXh(): SeedFamily {
   };
 }
 
+
+function hexHeadBolt(): SeedFamily {
+  const threads = threadsOf(HEX_BOLT_HEAD);
+  const variants = threadLengthVariants(threads, HEX_BOLT_LENGTHS);
+  return {
+    id: 'hex-head-bolt',
+    category: 'fastener',
+    standard: 'ISO 4017',
+    variants,
+    async generate({ thread, lengthMm }) {
+      const head = HEX_BOLT_HEAD[(thread as string).replace('.', '_')];
+      const tNum = parseFloat(String(thread).slice(1));
+      const bytes = await catalogFastenerStep({ family: 'hex-head-bolt', thread: String(thread), lengthMm: Number(lengthMm) });
+      const id = `iso-4017-${threadSlug(String(thread))}x${lengthMm}`;
+      return {
+        stepBytes: bytes,
+        record: {
+          id,
+          name: `${thread} × ${lengthMm} hex head bolt (ISO 4017)`,
+          category: 'fastener',
+          family: 'hex-head-bolt',
+          standard: 'ISO 4017',
+          tags: ['bolt', 'hex', 'metric', 'DIN 933', String(thread)],
+          attributes: {
+            thread: String(thread),
+            lengthMm: Number(lengthMm),
+            headDiameterMm: head.D,
+            acrossFlatsMm: head.S,
+            headHeightMm: head.K,
+            shankDiameterMm: tNum,
+          },
+          license: 'MIT',
+          connectors: ['head-bearing', 'thread-tip', 'head-top'],
+        },
+        connectors: [
+          { name: 'head-bearing', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+          { name: 'thread-tip', type: 'axis', origin: [0, 0, -Number(lengthMm)], axis: [0, 0, 1] },
+          { name: 'head-top', type: 'frame', origin: [0, 0, head.K], normal: [0, 0, 1] },
+        ],
+      };
+    },
+  };
+}
+
+/** Headless families: set screws (ISO 4026) and threaded rod (DIN 975) share
+ *  the same cylinder envelope and their two ends as connectors. */
+function headlessFamily(args: {
+  family: 'set-screw' | 'threaded-rod';
+  standard: string;
+  idPrefix: string;
+  label: string;
+  lengths: Record<string, readonly number[]>;
+  tags: string[];
+}): SeedFamily {
+  const threads = threadsOf(args.lengths);
+  const variants = threadLengthVariants(threads, args.lengths);
+  return {
+    id: args.family,
+    category: 'fastener',
+    standard: args.standard,
+    variants,
+    async generate({ thread, lengthMm }) {
+      const tNum = parseFloat(String(thread).slice(1));
+      const bytes = await catalogFastenerStep({ family: args.family, thread: String(thread), lengthMm: Number(lengthMm) });
+      const id = `${args.idPrefix}-${threadSlug(String(thread))}x${lengthMm}`;
+      return {
+        stepBytes: bytes,
+        record: {
+          id,
+          name: `${thread} × ${lengthMm} ${args.label} (${args.standard})`,
+          category: 'fastener',
+          family: args.family,
+          standard: args.standard,
+          tags: [...args.tags, 'metric', String(thread)],
+          attributes: {
+            thread: String(thread),
+            lengthMm: Number(lengthMm),
+            shankDiameterMm: tNum,
+          },
+          license: 'MIT',
+          connectors: ['first-end', 'second-end', 'axis'],
+        },
+        connectors: [
+          { name: 'first-end', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+          { name: 'second-end', type: 'frame', origin: [0, 0, -Number(lengthMm)], normal: [0, 0, -1] },
+          { name: 'axis', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
+        ],
+      };
+    },
+  };
+}
+
 // -----------------------------------------------------------------------------
 // Top-level driver
 // -----------------------------------------------------------------------------
@@ -953,6 +1030,23 @@ export const SEED_FAMILIES: SeedFamily[] = [
   socketHeadCapScrew(),
   buttonHeadCapScrew(),
   flatHeadCountersunk(),
+  hexHeadBolt(),
+  headlessFamily({
+    family: 'set-screw',
+    standard: 'ISO 4026',
+    idPrefix: 'iso-4026',
+    label: 'set screw',
+    lengths: SET_SCREW_LENGTHS,
+    tags: ['set-screw', 'headless'],
+  }),
+  headlessFamily({
+    family: 'threaded-rod',
+    standard: 'DIN 975',
+    idPrefix: 'din-975',
+    label: 'threaded rod',
+    lengths: ROD_LENGTHS,
+    tags: ['rod', 'headless'],
+  }),
   hexNut(),
   lockNut(),
   flatWasher(),
@@ -982,8 +1076,12 @@ export async function generateSeedCatalog(
       const built = await family.generate(variant);
       const id = built.record.id;
       const sha256 = createHash('sha256').update(built.stepBytes).digest('hex');
+      const verification = standardPartVerificationAttributes(family.id);
       const record: PartRecord = {
         ...built.record,
+        ...(verification === undefined
+          ? {}
+          : { attributes: { ...built.record.attributes, ...verification } }),
         sha256,
         source: 'local-catalog',
       };

@@ -30,14 +30,22 @@ import type { Assembly } from '../capture/assembly';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
-import type { InterferencePair } from '../runtime/detectInterferences';
+import { pairKey, type InterferencePair } from '../runtime/detectInterferences';
+import {
+  contactAccepts,
+  contactMap,
+  describeContactBudget,
+  describeContactExcess,
+  type PairClearanceResult,
+  type PairContactTolerance,
+} from '../runtime/pairTolerances';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 import { validateJointConventionMix } from './jointConventionMix';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { validateJointVisualExposure } from './jointVisualExposure';
 import { parseConnectorRef } from './mate';
-import { describeOverlap, isActionableOverlap } from '../runtime/jointContactCap';
+import { describeOverlap, describeOverlapLocation, isActionableOverlap } from '../runtime/jointContactCap';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import { validateMountingHoleAlignment } from './mountingHoleAlignment';
@@ -78,6 +86,10 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.part.floating'
   | 'assembly.part.orphan'
   | 'assembly.interference.overlap'
+  | 'assembly.overlay.intentional'
+  | 'assembly.contact.tolerance-exceeded'
+  | 'assembly.clearance.violated'
+  | 'assembly.clearance.unresolved'
   | 'assembly.part.under-constrained'
   | 'assembly.mate.over-constrained'
   | 'assembly.mate.type-mismatch'
@@ -177,6 +189,20 @@ export interface ValidateAssemblyInput {
    * directly, not the validator's diagnostics.
    */
   readonly ignore?: ReadonlyArray<readonly [string, string]>;
+  /**
+   * Per-pair intended-contact budgets. Unlike `ignore`, a contact pair is
+   * still measured: the overlap is accepted only while it stays inside the
+   * declared `maxVolumeMm3` / `maxThicknessMm` budget. A bigger overlap
+   * emits `assembly.contact.tolerance-exceeded`.
+   */
+  readonly contacts?: readonly PairContactTolerance[];
+  /**
+   * Per-pair minimum-clearance results (measured by
+   * `measureDeclaredClearances`). Each violation emits
+   * `assembly.clearance.violated`; unmeasurable pairs emit
+   * `assembly.clearance.unresolved`.
+   */
+  readonly clearances?: readonly PairClearanceResult[];
 }
 
 /**
@@ -227,7 +253,8 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   // Check 3 — interference (promoted from checkInterference). Errors,
   // not warnings, because solid bodies sharing volume is mechanically
   // invalid (vs floating, which is a missing-information warning).
-  diagnostics.push(...collectInterferenceDiagnostics(input.interferencePairs, input.ignore));
+  diagnostics.push(...collectInterferenceDiagnostics(input.interferencePairs, input.ignore, input.contacts));
+  diagnostics.push(...collectClearanceDiagnostics(input.clearances));
 
   const status = resolveValidatorStatus(diagnostics);
 
@@ -320,8 +347,10 @@ function collectOrphanDiagnostics(
 function collectInterferenceDiagnostics(
   interferencePairs: readonly InterferencePair[] | undefined,
   ignore: ReadonlyArray<readonly [string, string]> | undefined,
+  contacts: readonly PairContactTolerance[] | undefined,
 ): ValidatorDiagnostic[] {
   const diagnostics: ValidatorDiagnostic[] = [];
+  const contactsByPair = contactMap(contacts);
   // The optional `ignore` list silences known-acceptable contacts (e.g. a
   // knuckle joint where two arm parts touch by design). Matching is
   // SYMMETRIC — `[a, b]` filters both `(a, b)` and `(b, a)` — and applies
@@ -337,15 +366,65 @@ function collectInterferenceDiagnostics(
   for (const pair of interferencePairs ?? []) {
     if (isPairIgnored(pair.a, pair.b, ignore)) continue;
     if (!isActionableOverlap(pair)) continue;
+    const contact = contactsByPair.get(pairKey(pair.a, pair.b));
+    if (contact !== undefined) {
+      if (contactAccepts(pair, contact)) continue;
+      diagnostics.push({
+        code: 'assembly.contact.tolerance-exceeded',
+        severity: 'error',
+        message:
+          `Parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}, over the declared contact budget `
+          + `(${describeContactBudget(contact)}); exceeded ${describeContactExcess(pair, contact)}.`
+          + (contact.reason !== undefined ? ` Reason: ${contact.reason}.` : ''),
+        hint: `invalid-args.assembly.contact-tolerance — widen the contact budget for ('${pair.a}', '${pair.b}') or move the parts apart.`,
+        partA: pair.a,
+        partB: pair.b,
+        volumeMm3: pair.volumeMm3,
+      });
+      continue;
+    }
     diagnostics.push({
       code: 'assembly.interference.overlap',
       severity: 'error',
-      message: `Parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}.`,
-      hint: `invalid-args.assembly.interference — translate one part along its mating direction, or add a coupling part (washer / spacer / bracket) to clear the overlap. Pass { ignore: [['${pair.a}', '${pair.b}']] } to assembly.solvedModel(...) if the contact is intentional.`,
+      message: `Parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}${describeOverlapLocation(pair)}.`,
+      hint: `invalid-args.assembly.interference — translate one part along its mating direction, or add a coupling part (washer / spacer / bracket) to clear the overlap. If the contact is intentional, pass the ignore list as the SECOND argument: assembly.solvedModel({}, { ignore: [['${pair.a}', '${pair.b}']] }). The first argument is the pose map, so solvedModel({ ignore: ... }) is read as a pose and fails with unknown-joint.`,
       partA: pair.a,
       partB: pair.b,
       volumeMm3: pair.volumeMm3,
     });
+  }
+  return diagnostics;
+}
+
+/** Check 3b — declared minimum-clearance pairs. */
+function collectClearanceDiagnostics(
+  clearances: readonly PairClearanceResult[] | undefined,
+): ValidatorDiagnostic[] {
+  const diagnostics: ValidatorDiagnostic[] = [];
+  for (const pair of clearances ?? []) {
+    if (pair.status === 'violated') {
+      diagnostics.push({
+        code: 'assembly.clearance.violated',
+        severity: 'error',
+        message:
+          `Parts '${pair.a}' and '${pair.b}' are ${pair.distanceMm.toPrecision(3)} mm apart, `
+          + `below the declared ${pair.minMm} mm minimum clearance.`,
+        hint: `invalid-args.assembly.clearance — move the parts at least ${pair.minMm} mm apart, or lower the declared minimum if the smaller gap is intended.`,
+        partA: pair.a,
+        partB: pair.b,
+      });
+    } else if (pair.status === 'unknown') {
+      diagnostics.push({
+        code: 'assembly.clearance.unresolved',
+        severity: 'warning',
+        message:
+          `Clearance between '${pair.a}' and '${pair.b}' could not be measured; `
+          + `the declared ${pair.minMm} mm minimum is UNVERIFIED.`,
+        hint: 'invalid-args.assembly.clearance — use BRep parts and repair degenerate geometry; do not treat an unresolved pair as passing.',
+        partA: pair.a,
+        partB: pair.b,
+      });
+    }
   }
   return diagnostics;
 }
@@ -559,6 +638,10 @@ export async function validateAssemblyWithMates(
   // the unfiltered detection output. See `Assembly.solvedModel`'s `ignore`
   // option for the user-facing entry point.
   ignoreInterference?: ReadonlyArray<readonly [string, string]>,
+  // Per-pair intended-contact budgets and measured clearance results from
+  // `Assembly.solvedModel({ contacts, clearances })`.
+  contacts?: readonly PairContactTolerance[],
+  clearances?: readonly PairClearanceResult[],
 ): Promise<ValidatorResult> {
   // 1. Run the v0.5 base checks (floating / orphan / interference). Reuse
   //    the same code path — do not duplicate. Filter the session's records
@@ -573,6 +656,8 @@ export async function validateAssemblyWithMates(
     ...(arm.__mates().length > 0 || arm.__joints().length > 0 ? { connectivityDeclared: true } : {}),
     ...(interferencePairs !== undefined ? { interferencePairs } : {}),
     ...(ignoreInterference !== undefined ? { ignore: ignoreInterference } : {}),
+    ...(contacts !== undefined ? { contacts } : {}),
+    ...(clearances !== undefined ? { clearances } : {}),
   });
 
   // 2. Build the diagnostics chain starting from v0.5 results. We may
@@ -796,35 +881,25 @@ function pushSolveStatusDiagnostics(
       });
       break;
     case 'did-not-converge': {
-      // v0.6.0 articulated closed-loop FK is intentionally unsupported
-      // (Newton free-DOF path is T7.x). Surface body + articulated-mate
-      // rosters so agents stop inventing gear-contact / loop-constraint
-      // types and instead pick an open-chain or fastened-only rewrite.
-      const partNames = arm.__parts().map((part) => part.name);
-      const articulatedMates = arm.__mates().filter((mate) => mate.type !== 'fastened');
-      const mateRoster = articulatedMates.map((mate) => `${mate.name}:${mate.type}`);
-      const partList = partNames.map((name) => `'${name}'`).join(', ');
-      const mateList = mateRoster.length > 0
-        ? mateRoster.map((name) => `'${name}'`).join(', ')
-        : '(none)';
-      const iterations = solveResult?.iterations ?? 0;
+      // The loop-closure solver could not close a loop through articulated
+      // mates (or a fastened tree path left it no joint to move). Its own
+      // `kinematic.loop.*` findings name the loop, the joint and the pose.
+      const partList = arm.__parts().map((part) => `'${part.name}'`).join(', ');
+      const loopFindings = (solveResult?.loop?.diagnostics ?? [])
+        .filter((d) => d.severity === 'error')
+        .map((d) => `${d.code}: ${d.message}`);
       diagnostics.push({
         code: 'assembly.solver.did-not-converge',
         severity: 'error',
         message:
-          `Assembly '${arm.name}' did not converge within the solver iteration cap (${iterations} iterations). ` +
-          `UNSUPPORTED on v0.6.0: articulated closed-loop FK (4-bar / parallelogram / any loop containing revolute|prismatic|cylindrical|pin_slot). ` +
-          `Bodies: [${partList}]. Articulated mates: [${mateList}]. ` +
-          (iterations === 0
-            ? 'Zero iterations means the solver refused the articulated loop up-front (no Newton attempt). '
-            : '') +
-          `Rewrite as an open chain (drop one loop-closing mate; keep a stable ground/base root) or a fastened-only loop. ` +
-          `Do not invent gear-contact / loop-constraint connector types.`,
+          `Assembly '${arm.name}': a closed kinematic loop does not close at the rest pose (bodies: [${partList}]). ` +
+          (loopFindings.length > 0
+            ? loopFindings.join(' ')
+            : `The loop has no articulated joint on its tree path that could move to close it.`),
         hint:
-          `invalid-args.assembly.did-not-converge — articulated closed loops are not supported by the v0.6.0 solver (T7.x epic). ` +
-          `Use an open kinematic chain or fastened-only closed loop. ` +
-          `For industrial scissor tables: lookup_cookbook('scissor lift closed loop') — do not invent joint.scissorLift. ` +
-          `limitsDeg/jointSupport/mechanicalJoint still matter for open chains but will not make a 4-bar converge here.`,
+          `invalid-args.assembly.did-not-converge — the loop-closure solver could not assemble a closed loop. ` +
+          `Check link lengths and connector origins so the loop can close, give the loop an articulated joint, ` +
+          `or drive only as many joints as the loop has degrees of freedom (see result.loop.mobility).`,
       });
       break;
     }
@@ -910,11 +985,6 @@ function foldEnvelopeDiagnostics(
 ): void {
   if (!envelope) return;
   for (const ed of envelope.diagnostics) {
-    // Skip codes that don't belong in the validator union (defensive: the
-    // `gripper-aperture.connector-missing` envelope code is not folded —
-    // it's a UX-layer aperture-tracking diagnostic, not a structural
-    // validity concern).
-    if (ed.code === 'assembly.gripper-aperture.connector-missing') continue;
     out.push({
       code: ed.code,
       severity: ed.severity,

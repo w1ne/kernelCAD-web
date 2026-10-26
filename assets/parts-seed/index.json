@@ -19,7 +19,15 @@
         "lengthMm": 4,
         "headDiameterMm": 3.8,
         "headHeightMm": 2,
-        "shankDiameterMm": 2
+        "shankDiameterMm": 2,
+        "verifiedMethod": "S3 sweep; checked, not proven",
+        "verifiedThreads": "M2, M2.5, M3, M4, M5, M6, M8, M10, M12",
+        "verifiedThreadPoints": "9",
+        "verifiedLengths": "M5 5–50 mm; sampled 5, 18, 50 of 15",
+        "verifiedLengthPoints": "3",
+        "verifiedRequirements": "envelope bbox band, volume >= 1 mm^3",
+        "verifiedBoundaries": "0 (discrete domain)",
+        "verifiedPoints": "12"
       },
       "license": "MIT",
       "connectors": [
