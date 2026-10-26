@@ -12,7 +12,7 @@ import { collectFreePassiveMates } from '../mates/passiveJoints';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { assemblyToMjcf } from './mjcfExport';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import { loadMujocoSession } from './mujocoSession';
+import type { MujocoSession, MujocoSessionFactory } from './mujocoSessionCore';
 import { makeFailure, type SolvedSample } from './mechanismTruthShared';
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -65,7 +65,8 @@ const DROP_TEST_DT_S = 0.001;
 export async function runPhysicsCriteria(
   arm: Assembly,
   solved: readonly SolvedSample[],
-  restScene?: SceneBackend,
+  restScene: SceneBackend | undefined,
+  loadSession: MujocoSessionFactory,
 ): Promise<CompilerDiagnostic[]> {
   const out: CompilerDiagnostic[] = [];
 
@@ -84,9 +85,9 @@ export async function runPhysicsCriteria(
     return out;
   }
 
-let session: Awaited<ReturnType<typeof loadMujocoSession>>;
+  let session: MujocoSession;
   try {
-    session = await loadMujocoSession(
+    session = await loadSession(
       mjcfResult.mjcf,
       mjcfResult.bodyOrder,
       mjcfResult.jointOrder,
@@ -130,7 +131,7 @@ let session: Awaited<ReturnType<typeof loadMujocoSession>>;
  * mate-by-mate and look up each mate's pose value.
  */
 async function runStaticEquilibrium(
-  session: Awaited<ReturnType<typeof loadMujocoSession>>,
+  session: MujocoSession,
   solved: readonly SolvedSample[],
   jointOrder: readonly { mjcfName: string; mateName: string }[],
 ): Promise<CompilerDiagnostic[]> {
@@ -297,7 +298,7 @@ function dropTestBodyDriftFailure(
 }
 
 async function runDropOnRelease(
-  session: Awaited<ReturnType<typeof loadMujocoSession>>,
+  session: MujocoSession,
   jointOrder: readonly { mjcfName: string; mateName: string }[],
   arm: Assembly,
 ): Promise<CompilerDiagnostic[]> {

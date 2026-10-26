@@ -86,6 +86,7 @@ import {
 } from './tendonBodyIntersect';
 import { makeFailure, type PoseSample, type SolvedSample } from './mechanismTruthShared';
 import { runPhysicsCriteria } from './mechanismTruthPhysics';
+import type { MujocoSessionFactory } from './mujocoSessionCore';
 
 /**
  * Number of pose samples per articulated mate. Currently 3 (min, mid, max
@@ -215,9 +216,7 @@ export interface MechanismCoverage {
  *     keystroke in Studio; the physics layer belongs on the
  *     `validate` path, not the live recompute.
  */
-export interface MechanismTruthOptions {
-  /** Run criteria 5 (static equilibrium) + 6 (drop-on-release). Default false. */
-  readonly physicsCheck?: boolean;
+interface MechanismTruthCommonOptions {
   /**
    * Override for the deterministic BREP-sweep work budget (see
    * {@link BREP_SWEEP_BUDGET}). When the estimated sweep work exceeds
@@ -230,6 +229,12 @@ export interface MechanismTruthOptions {
    */
   readonly sweepBudget?: number;
 }
+
+/** Physics is host-injected so this module stays usable in browser workers. */
+export type MechanismTruthOptions = MechanismTruthCommonOptions & (
+  | { readonly physicsCheck?: false; readonly physicsSessionFactory?: never }
+  | { readonly physicsCheck: true; readonly physicsSessionFactory: MujocoSessionFactory }
+);
 
 
 
@@ -394,7 +399,7 @@ export async function checkMechanismTruth(
   // session is shared between the two passes so the ~9 MB WASM module
   // and the MJCF compile only happen once per call.
   if (opts.physicsCheck === true) {
-    const physicsFailures = await runPhysicsCriteria(arm, solved, loweredBase.scene);
+    const physicsFailures = await runPhysicsCriteria(arm, solved, loweredBase.scene, opts.physicsSessionFactory);
     failures.push(...physicsFailures);
   }
 

@@ -11,6 +11,8 @@ import { CaptureSession } from '../capture/captureSession';
 import { createModelingApi } from '../api';
 import type { Assembly } from '../capture/assembly';
 import { checkMechanismTruth } from './mechanismTruth';
+import { loadMujocoSession } from './mujocoSession';
+import type { MujocoSessionFactory } from './mujocoSessionCore';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 
 function makeArm(name = 'rig'): { arm: Assembly; kcad: ReturnType<typeof createModelingApi> } {
@@ -33,7 +35,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('mechanism truth — physics gate (P6, c
         topPart.connector('bottom', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
         arm.mate('weld', 'base.top', 'top.bottom', 'fastened');
 
-        const result = await checkMechanismTruth(arm, { physicsCheck: true });
+        const result = await checkMechanismTruth(arm, { physicsCheck: true, physicsSessionFactory: loadMujocoSession });
         const physicsFailures = result.failures.filter((f) =>
             f.code === 'mechanism.unstable-under-gravity' || f.code === 'mechanism.drops-on-release',
         );
@@ -73,8 +75,14 @@ describe.skipIf(!process.env.KCAD_SLOW)('mechanism truth — physics gate (P6, c
             limitsDeg: [-90, 90],
         });
 
-        const result = await checkMechanismTruth(arm, { physicsCheck: true });
+        let loadCount = 0;
+        const sessionFactory: MujocoSessionFactory = async (xml, bodies, joints) => {
+            loadCount += 1;
+            return loadMujocoSession(xml, bodies, joints);
+        };
+        const result = await checkMechanismTruth(arm, { physicsCheck: true, physicsSessionFactory: sessionFactory });
         const dropFailures = result.failures.filter((f) => f.code === 'mechanism.drops-on-release');
+        expect(loadCount).toBe(1);
         expect(dropFailures.length).toBeGreaterThan(0);
         // Failure must name the elbow joint (the only joint in the model).
         expect(dropFailures[0].message).toContain('elbow');
@@ -159,7 +167,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('mechanism truth — physics gate (P6, c
             output: 'arm',
         });
 
-        const result = await checkMechanismTruth(arm, { physicsCheck: true });
+        const result = await checkMechanismTruth(arm, { physicsCheck: true, physicsSessionFactory: loadMujocoSession });
         const dropFailures = result.failures.filter((f) => f.code === 'mechanism.drops-on-release');
         expect(dropFailures).toEqual([]);
     }, 60000);
