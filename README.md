@@ -122,6 +122,26 @@ kernelcad export step model.kcad.ts -o model.step
 kernelcad export stl model.kcad.ts -o model.stl
 ```
 
+Translate an assembly exported from SolidWorks or another CAD application as
+STEP into a KernelCAD project:
+
+```bash
+kernelcad import-step robot.step --out robot-kcad
+kernelcad evaluate robot-kcad/robot.kcad.ts
+```
+
+The bundle contains a `.kcad.ts` root assembly, `manifest.json` with the source
+product paths, units, placements, colors, and geometry measurements, and exact
+native OCCT BREP assets content-addressed by geometry. Byte-identical product
+definitions share an asset. The original STEP assembly hierarchy is recorded
+in the manifest; the current KernelCAD scene is flattened into independently
+placeable occurrences. Local STEP `DOCUMENT_FILE` dependencies are read
+recursively, included in the import provenance hashes, and must stay inside the
+input directory. Component colors are preserved; per-face color mapping is not
+part of this import. It does not infer mates, joints, motion, feature history,
+or read native SolidWorks/Parasolid data.
+See the [retained import demo, bundle, and verification evidence](docs/demos/step-to-kernelcad/README.md).
+
 When a rendered artifact is produced, inspect the image/video itself and report
 what is visible: proportions, interfaces, floating geometry, occlusion, camera
 framing, and whether required features are legible. Passing tests are not a

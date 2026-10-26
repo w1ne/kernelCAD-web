@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "bundle": {
+    "outDir": "/tmp/kernelcad-step-to-kernelcad.b5Qb4s/bundle",
+    "script": "/tmp/kernelcad-step-to-kernelcad.b5Qb4s/bundle/s1-c5-214.kcad.ts",
+    "manifest": "/tmp/kernelcad-step-to-kernelcad.b5Qb4s/bundle/manifest.json",
+    "partAssets": 8,
+    "occurrenceCount": 11,
+    "definitionCount": 8
+  },
+  "warnings": []
+}

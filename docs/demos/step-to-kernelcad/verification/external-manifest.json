@@ -1,0 +1,785 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "kernelcad import-step",
+  "input": {
+    "fileName": "s1-c5-214.stp",
+    "sha256": "558f74b85cc8b9c9c881335ac24abda58ef706fc3c378ba6a01c23f8f8770259",
+    "sizeBytes": 12400,
+    "dependencies": [
+      {
+        "fileName": "FOOT_BACK_000.stp",
+        "sha256": "06c85ba9f9082005c9ec86f04e3e615814a24d4ba839977194c3961d004f0591",
+        "sizeBytes": 26698
+      },
+      {
+        "fileName": "FOOT_FRONT_000.stp",
+        "sha256": "99c3f61af3e1c2fc22bdb4cb2389423feed30bedf4b219c04b3b64378591a133",
+        "sizeBytes": 26630
+      },
+      {
+        "fileName": "FOOT.stp",
+        "sha256": "dafc8511c60c8f678a1ae9ce47391a90623d9ace5cba23e875a2e8b9e510de32",
+        "sizeBytes": 6751
+      },
+      {
+        "fileName": "HEAD_BACK.stp",
+        "sha256": "eee2bed5280f3d1dd4cc1e324383267367f61f1a070640d1399f2f6561195ded",
+        "sizeBytes": 46859
+      },
+      {
+        "fileName": "HEAD_FRONT.stp",
+        "sha256": "b56a39bc77bbca33b39114bd40bf300a7ed02559bf8e967ae742296d44d4b5bd",
+        "sizeBytes": 15935
+      },
+      {
+        "fileName": "HEAD.stp",
+        "sha256": "3bcad26173e3f903c9073bf94a69a87d9d955bd14ba32aec9455ce1a3f8e1b50",
+        "sizeBytes": 6743
+      },
+      {
+        "fileName": "MAINBODY_BACK.stp",
+        "sha256": "793567a2d1df1426a1f312edf4e14985f7910855395c964266217f89e99451c4",
+        "sizeBytes": 115322
+      },
+      {
+        "fileName": "MAINBODY_FRONT.stp",
+        "sha256": "b28769a8ff8e10f71dd8c27bff702ac7497f59cdc1b68ccbbb0d619057a55449",
+        "sizeBytes": 87512
+      },
+      {
+        "fileName": "MAINBODY.stp",
+        "sha256": "4ab9f82b56000bb73b43817eaa7d6e90a559e25dec48200451a4693ea84f90dd",
+        "sizeBytes": 6785
+      },
+      {
+        "fileName": "TAIL_MIDDLE_PART.stp",
+        "sha256": "f47c3046be3b9fd9260aad7855da8a98fe497631543270457c0f6e404018a4dd",
+        "sizeBytes": 38757
+      },
+      {
+        "fileName": "TAIL_TURBINE.stp",
+        "sha256": "19f11d26b86381b5a6ea18f6c4d78173d99d6398546a81b304d1a789380639a5",
+        "sizeBytes": 40447
+      },
+      {
+        "fileName": "TAIL.stp",
+        "sha256": "963a00db7d809bcae7812e7e5472c8143dd5a3ef6d01a995c44c818db0d16ed8",
+        "sizeBytes": 7586
+      }
+    ]
+  },
+  "assemblyName": "s1-c5-214",
+  "sourceLengthUnits": [
+    "conversion-based:INCH",
+    "millimetre"
+  ],
+  "canonicalLengthUnit": "mm",
+  "definitions": [
+    {
+      "id": "def-6e76817a505a3c499b3e1cf81a629d0c7ce6bcac9a70bc39840e25eb90edbb9d",
+      "sourceLabel": "0:1:1:1",
+      "originalName": "TAIL_TURBINE",
+      "asset": "parts/00576c80721f025d007a18231499775db1aa2bb968a3a01fe91798582b472fe5.brep",
+      "sha256": "00576c80721f025d007a18231499775db1aa2bb968a3a01fe91798582b472fe5",
+      "serializationVersion": "CASCADE Topology V3, (c) Open Cascade",
+      "solidCount": 1,
+      "boundsMm": {
+        "min": [
+          -240.00000010005598,
+          61.999287956992085,
+          -50.00000010010453
+        ],
+        "max": [
+          -119.21114652547084,
+          98.00078887029531,
+          50.00000010030799
+        ]
+      },
+      "volumeMm3": 82452.38166871322,
+      "validation": {
+        "valid": true,
+        "closedSolids": 1
+      }
+    },
+    {
+      "id": "def-84f195e1ecc2fc48711a08fbd32b81eaf038b572b000e817d8e3404cce4d1a15",
+      "sourceLabel": "0:1:1:2",
+      "originalName": "TAIL_MIDDLE_PART",
+      "asset": "parts/b6758e5b32cfba2ea1712dad130b6082e2cccbac559e5ed5b29b5a24f739b0fa.brep",
+      "sha256": "b6758e5b32cfba2ea1712dad130b6082e2cccbac559e5ed5b29b5a24f739b0fa",
+      "serializationVersion": "CASCADE Topology V3, (c) Open Cascade",
+      "solidCount": 1,
+      "boundsMm": {
+        "min": [
+          -45.0000041883549,
+          -45.0000041883549,
+          -18.00001395448591
+        ],
+        "max": [
+          0.000013954481713095552,
+          45.0000041883549,
+          18.00001395448591
+        ]
+      },
+      "volumeMm3": 17671.570791318216,
+      "validation": {
+        "valid": true,
+        "closedSolids": 1
+      }
+    },
+    {
+      "id": "def-1f2a591ccb70f042ceed7b54daa1253d5ff0d0435982e70de37b17d3b6b2c4cb",
+      "sourceLabel": "0:1:1:4",
+      "originalName": "HEAD_FRONT",
+      "asset": "parts/a1e8d85307575cb94f82b41816ffbf4b1c7e06ab1190054e10259b309f8795ef.brep",
+      "sha256": "a1e8d85307575cb94f82b41816ffbf4b1c7e06ab1190054e10259b309f8795ef",
+      "serializationVersion": "CASCADE Topology V3, (c) Open Cascade",
+      "solidCount": 1,
+      "boundsMm": {
+        "min": [
+          249.9998961641879,
+          -60.000089700301345,
+          -60.000103835842076
+        ],
+        "max": [
+          310.00000010003,
+          60.000089700297174,
+          60.000103835842076
+        ]
+      },
+      "volumeMm3": 22244.569868794497,
+      "validation": {
+        "valid": true,
+        "closedSolids": 1
+      }
+    },
+    {
+      "id": "def-64821b4966451889e6eba4eb40bd2f63a6abe82bf7e0d3e13e6ad4a211bc8ed9",
+      "sourceLabel": "0:1:1:5",
+      "originalName": "HEAD_BACK",
+      "asset": "parts/1e853be6dd6dbda21bdc6f3df8cd0bcf0aee9a90dfb97a29fc9cef82eae7b488.brep",
+      "sha256": "1e853be6dd6dbda21bdc6f3df8cd0bcf0aee9a90dfb97a29fc9cef82eae7b488",
+      "serializationVersion": "CASCADE Topology V3, (c) Open Cascade",
+      "solidCount": 1,
+      "boundsMm": {
+        "min": [
+          179.93068937890442,
+          -60.000089700301345,
+          -60.000103835842076
+        ],
+        "max": [
+          310.00000010003,
+          60.000089700297174,
+          60.000103835842076
+        ]
+      },
+      "volumeMm3": 880933.1661026791,
+      "validation": {
+        "valid": true,
+        "closedSolids": 1
+      }
+    },
+    {
+      "id": "def-6366da27003fb73f507a73a44d05cc09848815d542a418a1e576281bd8051c08",
+      "sourceLabel": "0:1:1:7",
+      "originalName": "MAINBODY_FRONT",
+      "asset": "parts/14b3c03c427bafd442cb5d6fc488e39749fb433464dd70d4c8dbd389fb50f5d8.brep",
+      "sha256": "14b3c03c427bafd442cb5d6fc488e39749fb433464dd70d4c8dbd389fb50f5d8",
+      "serializationVersion": "CASCADE Topology V3, (c) Open Cascade",
+      "solidCount": 1,
+      "boundsMm": {
+        "min": [
+          29.99360044919242,
+          -73.00616885417604,
+          -73.0061688544649
+        ],
+        "max": [
+          175.00040503557034,
+          73.0061688544649,
+          73.0061688544649
+        ]
+      },
+      "volumeMm3": 69500.95029967971,
+      "validation": {
+        "valid": true,
+        "closedSolids": 1
+      }
+    },
+    {
+      "id": "def-11071a67e90ed29906e65bd4c75189e1561ef9c27cf1d94178bfaac582f2a2f9",
+      "sourceLabel": "0:1:1:8",
+      "originalName": "MAINBODY_BACK",
+      "asset": "parts/7c52ba134a61df27e907d935877dc57d266a459e6c2ef990873934f1b177ae85.brep",
+      "sha256": "7c52ba134a61df27e907d935877dc57d266a459e6c2ef990873934f1b177ae85",
+      "serializationVersion": "CASCADE Topology V3, (c) Open Cascade",
+      "solidCount": 1,
+      "boundsMm": {
+        "min": [
+          -160.00040503563034,
+          -73.00616885433226,
+          -73.00616885433226
+        ],
+        "max": [
+          -19.99966985932945,
+          73.00616885400805,
+          73.00616885433226
+        ]
+      },
+      "volumeMm3": 72810.8069865705,
+      "validation": {
+        "valid": true,
+        "closedSolids": 1
+      }
+    },
+    {
+      "id": "def-1e114f60da552e43ee0440cfc9020eca2be04b5a2a198dc965ac57c2f490067b",
+      "sourceLabel": "0:1:1:10",
+      "originalName": "FOOT_FRONT_000",
+      "asset": "parts/7a5b5c2345c1ab2ad5853a0e77abdc74fc348263c3b0eedbb77aa7814fb5376c.brep",
+      "sha256": "7a5b5c2345c1ab2ad5853a0e77abdc74fc348263c3b0eedbb77aa7814fb5376c",
+      "serializationVersion": "CASCADE Topology V3, (c) Open Cascade",
+      "solidCount": 1,
+      "boundsMm": {
+        "min": [
+          -0.0012755395930490645,
+          -10.001267540727108,
+          -83.50127553951305
+        ],
+        "max": [
+          40.0000000998908,
+          10.001275118018413,
+          -62.998724460408944
+        ]
+      },
+      "volumeMm3": 2403.6758613327,
+      "validation": {
+        "valid": true,
+        "closedSolids": 1
+      }
+    },
+    {
+      "id": "def-33b678a5a6f5a101b8ad1d46c19b322b991dce04c8fb4fc646bffd08286e74bc",
+      "sourceLabel": "0:1:1:11",
+      "originalName": "FOOT_BACK_000",
+      "asset": "parts/3c0cca2994cfecb16055e675d8e15d86bf21c45b5bfcfa1acbbc0889b530216e.brep",
+      "sha256": "3c0cca2994cfecb16055e675d8e15d86bf21c45b5bfcfa1acbbc0889b530216e",
+      "serializationVersion": "CASCADE Topology V3, (c) Open Cascade",
+      "solidCount": 1,
+      "boundsMm": {
+        "min": [
+          -40.0000000998908,
+          -10.001267540727106,
+          -83.50127553951305
+        ],
+        "max": [
+          0.0012755395930473606,
+          10.00127511801841,
+          -62.99872446040895
+        ]
+      },
+      "volumeMm3": 2403.675771838439,
+      "validation": {
+        "valid": true,
+        "closedSolids": 1
+      }
+    }
+  ],
+  "occurrences": [
+    {
+      "id": "occ-000001",
+      "originalName": "*DIT33",
+      "sourcePath": [
+        "*MASTER",
+        "*DIT36",
+        "*DIT33"
+      ],
+      "definitionId": "def-6e76817a505a3c499b3e1cf81a629d0c7ce6bcac9a70bc39840e25eb90edbb9d",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          41.00000000009,
+          -24.0000000000056,
+          0,
+          1
+        ],
+        "translation": [
+          41.00000000009,
+          -24.0000000000056,
+          0
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#ffff00",
+        "alpha": 1
+      }
+    },
+    {
+      "id": "occ-000002",
+      "originalName": "*DIT34",
+      "sourcePath": [
+        "*MASTER",
+        "*DIT36",
+        "*DIT34"
+      ],
+      "definitionId": "def-84f195e1ecc2fc48711a08fbd32b81eaf038b572b000e817d8e3404cce4d1a15",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -102.0000000001,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          -102.0000000001,
+          0,
+          0
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#ffff00",
+        "alpha": 1
+      }
+    },
+    {
+      "id": "occ-000003",
+      "originalName": "*DIT35",
+      "sourcePath": [
+        "*MASTER",
+        "*DIT36",
+        "*DIT35"
+      ],
+      "definitionId": "def-6e76817a505a3c499b3e1cf81a629d0c7ce6bcac9a70bc39840e25eb90edbb9d",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          -1,
+          0,
+          41.00000000009,
+          24.0000000000056,
+          0,
+          1
+        ],
+        "translation": [
+          41.00000000009,
+          24.0000000000056,
+          0
+        ],
+        "rotationAxis": [
+          1,
+          0,
+          0
+        ],
+        "rotationDegrees": 180
+      },
+      "color": {
+        "hex": "#ffff00",
+        "alpha": 1
+      }
+    },
+    {
+      "id": "occ-000004",
+      "originalName": "*DIT37",
+      "sourcePath": [
+        "*MASTER",
+        "*DIT39",
+        "*DIT37"
+      ],
+      "definitionId": "def-1f2a591ccb70f042ceed7b54daa1253d5ff0d0435982e70de37b17d3b6b2c4cb",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -48.000000000061995,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          -48.000000000061995,
+          0,
+          0
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#ff0000",
+        "alpha": 1
+      }
+    },
+    {
+      "id": "occ-000005",
+      "originalName": "*DIT38",
+      "sourcePath": [
+        "*MASTER",
+        "*DIT39",
+        "*DIT38"
+      ],
+      "definitionId": "def-64821b4966451889e6eba4eb40bd2f63a6abe82bf7e0d3e13e6ad4a211bc8ed9",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -48.000000000061995,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          -48.000000000061995,
+          0,
+          0
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#ffff00",
+        "alpha": 1
+      }
+    },
+    {
+      "id": "occ-000006",
+      "originalName": "*DIT40",
+      "sourcePath": [
+        "*MASTER",
+        "*DIT42",
+        "*DIT40"
+      ],
+      "definitionId": "def-6366da27003fb73f507a73a44d05cc09848815d542a418a1e576281bd8051c08",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -29.99999999988,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          -29.99999999988,
+          0,
+          0
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#ffff00",
+        "alpha": 1
+      }
+    },
+    {
+      "id": "occ-000007",
+      "originalName": "*DIT41",
+      "sourcePath": [
+        "*MASTER",
+        "*DIT42",
+        "*DIT41"
+      ],
+      "definitionId": "def-11071a67e90ed29906e65bd4c75189e1561ef9c27cf1d94178bfaac582f2a2f9",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          50.000000000053994,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          50.000000000053994,
+          0,
+          0
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#ffff00",
+        "alpha": 1
+      }
+    },
+    {
+      "id": "occ-000008",
+      "originalName": "*DIT29",
+      "sourcePath": [
+        "*MASTER",
+        "*DIT57",
+        "*DIT29"
+      ],
+      "definitionId": "def-1e114f60da552e43ee0440cfc9020eca2be04b5a2a198dc965ac57c2f490067b",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          36.479999999976,
+          -0.230000000000096,
+          1
+        ],
+        "translation": [
+          0,
+          36.479999999976,
+          -0.230000000000096
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#ffff00",
+        "alpha": 1
+      }
+    },
+    {
+      "id": "occ-000009",
+      "originalName": "*DIT32",
+      "sourcePath": [
+        "*MASTER",
+        "*DIT57",
+        "*DIT32"
+      ],
+      "definitionId": "def-33b678a5a6f5a101b8ad1d46c19b322b991dce04c8fb4fc646bffd08286e74bc",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          36.479999999976,
+          -0.230000000000096,
+          1
+        ],
+        "translation": [
+          0,
+          36.479999999976,
+          -0.230000000000096
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#ffff00",
+        "alpha": 1
+      }
+    },
+    {
+      "id": "occ-000010",
+      "originalName": "*DIT29",
+      "sourcePath": [
+        "*MASTER",
+        "*DIT58",
+        "*DIT29"
+      ],
+      "definitionId": "def-1e114f60da552e43ee0440cfc9020eca2be04b5a2a198dc965ac57c2f490067b",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          -36.479999999976,
+          -0.230000000000096,
+          1
+        ],
+        "translation": [
+          0,
+          -36.479999999976,
+          -0.230000000000096
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#ffff00",
+        "alpha": 1
+      }
+    },
+    {
+      "id": "occ-000011",
+      "originalName": "*DIT32",
+      "sourcePath": [
+        "*MASTER",
+        "*DIT58",
+        "*DIT32"
+      ],
+      "definitionId": "def-33b678a5a6f5a101b8ad1d46c19b322b991dce04c8fb4fc646bffd08286e74bc",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          -36.479999999976,
+          -0.230000000000096,
+          1
+        ],
+        "translation": [
+          0,
+          -36.479999999976,
+          -0.230000000000096
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#ffff00",
+        "alpha": 1
+      }
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,330 @@
+{
+  "ok": true,
+  "parts": [
+    {
+      "name": "as1__rod-assembly_1__nut_1",
+      "bbox": {
+        "min": [
+          175,
+          67.5,
+          50
+        ],
+        "max": [
+          178,
+          82.5,
+          70
+        ]
+      },
+      "volumeMm3": 664.374129724518,
+      "surfaceAreaMm2": 747.1548067092061,
+      "triangleCount": 1220
+    },
+    {
+      "name": "as1__rod-assembly_1__nut_2",
+      "bbox": {
+        "min": [
+          2,
+          67.5,
+          50
+        ],
+        "max": [
+          5,
+          82.5,
+          70
+        ]
+      },
+      "volumeMm3": 664.3741297245182,
+      "surfaceAreaMm2": 747.154806709206,
+      "triangleCount": 1220
+    },
+    {
+      "name": "as1__rod-assembly_1__rod_1",
+      "bbox": {
+        "min": [
+          -10,
+          70.00328063964844,
+          55
+        ],
+        "max": [
+          190,
+          79.99671936035156,
+          65
+        ]
+      },
+      "volumeMm3": 15708.39135169486,
+      "surfaceAreaMm2": 6440.2705082117445,
+      "triangleCount": 1136
+    },
+    {
+      "name": "as1__l-bracket-assembly_1__nut-bolt-assembly_1__bolt_1",
+      "bbox": {
+        "min": [
+          17.502254486083984,
+          67.5,
+          -4
+        ],
+        "max": [
+          32.497745513916016,
+          82.5,
+          33
+        ]
+      },
+      "volumeMm3": 3200.718448996564,
+      "surfaceAreaMm2": 1562.9847869092646,
+      "triangleCount": 2472
+    },
+    {
+      "name": "as1__l-bracket-assembly_1__nut-bolt-assembly_1__nut_3",
+      "bbox": {
+        "min": [
+          15,
+          67.5,
+          -3
+        ],
+        "max": [
+          35,
+          82.5,
+          0
+        ]
+      },
+      "volumeMm3": 664.3741297245183,
+      "surfaceAreaMm2": 747.154806709206,
+      "triangleCount": 1220
+    },
+    {
+      "name": "as1__l-bracket-assembly_1__nut-bolt-assembly_2__bolt_1",
+      "bbox": {
+        "min": [
+          40.002254486083984,
+          54.509620666503906,
+          -4
+        ],
+        "max": [
+          54.997745513916016,
+          69.5096206665039,
+          33
+        ]
+      },
+      "volumeMm3": 3200.718448996565,
+      "surfaceAreaMm2": 1562.9847869092644,
+      "triangleCount": 2472
+    },
+    {
+      "name": "as1__l-bracket-assembly_1__nut-bolt-assembly_2__nut_3",
+      "bbox": {
+        "min": [
+          37.5,
+          54.509620666503906,
+          -3
+        ],
+        "max": [
+          57.5,
+          69.5096206665039,
+          0
+        ]
+      },
+      "volumeMm3": 664.3741297245182,
+      "surfaceAreaMm2": 747.154806709206,
+      "triangleCount": 1220
+    },
+    {
+      "name": "as1__l-bracket-assembly_1__nut-bolt-assembly_3__bolt_1",
+      "bbox": {
+        "min": [
+          40.002254486083984,
+          80.4903793334961,
+          -4
+        ],
+        "max": [
+          54.997745513916016,
+          95.4903793334961,
+          33
+        ]
+      },
+      "volumeMm3": 3200.7184489965643,
+      "surfaceAreaMm2": 1562.9847869092641,
+      "triangleCount": 2472
+    },
+    {
+      "name": "as1__l-bracket-assembly_1__nut-bolt-assembly_3__nut_3",
+      "bbox": {
+        "min": [
+          37.5,
+          80.4903793334961,
+          -3
+        ],
+        "max": [
+          57.5,
+          95.4903793334961,
+          0
+        ]
+      },
+      "volumeMm3": 664.3741297245182,
+      "surfaceAreaMm2": 747.1548067092061,
+      "triangleCount": 1220
+    },
+    {
+      "name": "as1__l-bracket-assembly_1__l-bracket_1",
+      "bbox": {
+        "min": [
+          5,
+          25,
+          20
+        ],
+        "max": [
+          55,
+          125,
+          80
+        ]
+      },
+      "volumeMm3": 96858.57305344654,
+      "surfaceAreaMm2": 24628.265381462283,
+      "triangleCount": 4596
+    },
+    {
+      "name": "as1__plate_1",
+      "bbox": {
+        "min": [
+          0,
+          0,
+          -1.7763568394002505e-15
+        ],
+        "max": [
+          180,
+          150,
+          20
+        ]
+      },
+      "volumeMm3": 530574.9651890686,
+      "surfaceAreaMm2": 70027.34944186748,
+      "triangleCount": 6876
+    },
+    {
+      "name": "as1__l-bracket-assembly_2__nut-bolt-assembly_1__bolt_1",
+      "bbox": {
+        "min": [
+          147.50225830078125,
+          67.5,
+          -4
+        ],
+        "max": [
+          162.49774169921875,
+          82.5,
+          33
+        ]
+      },
+      "volumeMm3": 3200.7184489965593,
+      "surfaceAreaMm2": 1562.9847869092641,
+      "triangleCount": 2472
+    },
+    {
+      "name": "as1__l-bracket-assembly_2__nut-bolt-assembly_1__nut_3",
+      "bbox": {
+        "min": [
+          145,
+          67.5,
+          -3
+        ],
+        "max": [
+          165,
+          82.5,
+          1.8369700935892946e-15
+        ]
+      },
+      "volumeMm3": 664.3741297245181,
+      "surfaceAreaMm2": 747.154806709206,
+      "triangleCount": 1220
+    },
+    {
+      "name": "as1__l-bracket-assembly_2__nut-bolt-assembly_2__bolt_1",
+      "bbox": {
+        "min": [
+          125.00225830078125,
+          80.4903793334961,
+          -4
+        ],
+        "max": [
+          139.99774169921875,
+          95.4903793334961,
+          33
+        ]
+      },
+      "volumeMm3": 3200.718448996555,
+      "surfaceAreaMm2": 1562.984786909262,
+      "triangleCount": 2472
+    },
+    {
+      "name": "as1__l-bracket-assembly_2__nut-bolt-assembly_2__nut_3",
+      "bbox": {
+        "min": [
+          122.5,
+          80.4903793334961,
+          -3
+        ],
+        "max": [
+          142.5,
+          95.4903793334961,
+          1.8369700935892946e-15
+        ]
+      },
+      "volumeMm3": 664.3741297245181,
+      "surfaceAreaMm2": 747.154806709206,
+      "triangleCount": 1220
+    },
+    {
+      "name": "as1__l-bracket-assembly_2__nut-bolt-assembly_3__bolt_1",
+      "bbox": {
+        "min": [
+          125.00225830078125,
+          54.509620666503906,
+          -4
+        ],
+        "max": [
+          139.99774169921875,
+          69.5096206665039,
+          33
+        ]
+      },
+      "volumeMm3": 3200.718448996555,
+      "surfaceAreaMm2": 1562.9847869092614,
+      "triangleCount": 2472
+    },
+    {
+      "name": "as1__l-bracket-assembly_2__nut-bolt-assembly_3__nut_3",
+      "bbox": {
+        "min": [
+          122.5,
+          54.509620666503906,
+          -3
+        ],
+        "max": [
+          142.5,
+          69.5096206665039,
+          1.8369700935892946e-15
+        ]
+      },
+      "volumeMm3": 664.3741297245181,
+      "surfaceAreaMm2": 747.1548067092061,
+      "triangleCount": 1220
+    },
+    {
+      "name": "as1__l-bracket-assembly_2__l-bracket_1",
+      "bbox": {
+        "min": [
+          125,
+          25,
+          20
+        ],
+        "max": [
+          175,
+          125,
+          80
+        ]
+      },
+      "volumeMm3": 96858.57305344654,
+      "surfaceAreaMm2": 24628.265381462283,
+      "triangleCount": 4596
+    }
+  ],
+  "diagnostics": []
+}
