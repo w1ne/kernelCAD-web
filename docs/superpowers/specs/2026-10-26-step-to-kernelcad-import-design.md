@@ -2,11 +2,11 @@
 
 ## Goal
 
-Add a first-party `kernelcad import-step` command that turns a STEP assembly into a portable KernelCAD project: editable `.kcad.ts` source, exact solid geometry as STEP part assets, and a machine-readable import manifest. CAD applications may remain the upstream readers for SolidWorks or Parasolid; KernelCAD owns the STEP-to-KernelCAD translation.
+Add a first-party `kernelcad import-step` command that turns a STEP assembly into a KernelCAD project portable across compatible KernelCAD/OCCT builds: editable `.kcad.ts` source, exact solid geometry as native OCCT BREP part assets, and a machine-readable import manifest. CAD applications may remain the upstream readers for SolidWorks or Parasolid; KernelCAD owns the STEP-to-KernelCAD translation.
 
 ## Scope and boundaries
 
-The importer accepts ISO-10303-21 STEP files containing 3D solids. It reads product definitions and occurrences with OCCT's XCAF STEP reader, including assembly paths, occurrence placements, product names, and component colors. The generated project uses KernelCAD's existing `lib.fromSTEP` and `Assembly` APIs.
+The importer accepts ISO-10303-21 STEP files containing 3D solids. It reads product definitions and occurrences with OCCT's XCAF STEP reader, including assembly paths, occurrence placements, product names, and component colors. The generated project uses KernelCAD's existing `lib.fromBREP` and `Assembly` APIs. `lib.fromBREP` is the project-native lossless BRep loader; STEP remains the interchange input.
 
 This is a static assembly import. It does not infer mates, joints, motion, feature history, or manufacturing intent. The generated scene has one root assembly with one KernelCAD part per STEP occurrence. Original nested paths remain in the manifest and in path-qualified part names; this records the source hierarchy without claiming that KernelCAD's current flattened `subAssembly` API provides nested solver semantics. Component-level colors are in scope; face-level colors are not.
 
@@ -17,7 +17,7 @@ Native `.sldprt`, `.sldasm`, and Parasolid parsing is out of scope. Mesh convers
 1. Initialize the same pinned OCCT WASM runtime used by KernelCAD. Read STEP into a `TDocStd_Document` with `STEPCAFControl_Reader`, enabling names and colors. The existing `src/kernel/backends/occt/stepAssemblyExport.ts` demonstrates the project's XCAF ownership and lifetime pattern for assembly documents and the matching STEP writer.
 2. Traverse XCAF free-shape labels recursively. Convert geometry and placements to KernelCAD's canonical millimetres exactly once, and record the source units. For each component occurrence, record its source product path, referenced definition, composed rigid transform, and effective component color. Deduplicate geometry by referenced XCAF definition, not by display name or approximate bounding box.
 3. Validate each unique definition before writing. Require at least one valid closed solid; preserve multiple solids within a component as one compound part. Refuse unsupported non-rigid placement transforms and invalid/open geometry with a report identifying the source path.
-4. Write each unique component definition as a STEP solid asset using OCCT's exact BRep transfer. Do not mesh or simplify it. Emit `lib.fromSTEP` calls for each occurrence, applying its rigid transform and color before adding it to the root KernelCAD assembly. Group generated occurrences by definition so the existing content-addressed STEP cache can reuse part parses while every occurrence gets a separate captured shape.
+4. Serialize each unique component definition directly from its transferred OCCT shape to a native BREP asset with `BRepToolsWrapper.Write`. Do not mesh, simplify, or translate the geometry through another interchange schema. Emit `lib.fromBREP` calls for each occurrence, applying its rigid transform and color before adding it to the root KernelCAD assembly. Group occurrences by definition so a bounded content-addressed BREP cache can reuse parsing while each occurrence receives an independently transformable shape.
 5. Write outputs to a staging directory and atomically publish the bundle. The destination must not already exist; never overwrite or merge into an existing path.
 
 ## Command and bundle
@@ -33,12 +33,12 @@ The output directory contains:
 ```text
 <assembly-name>.kcad.ts
 manifest.json
-parts/<definition-id>.step
+parts/<definition-id>.brep
 ```
 
 The generated script uses relative asset paths and returns a KernelCAD root assembly scene. Part identifiers and script-safe names are deterministic and collision-safe. Original source names and full component paths remain unmodified in `manifest.json`.
 
-The manifest records its schema version, input filename and SHA-256, source length units, unique definitions, occurrence paths, placements in millimetres, effective colors, output asset paths, and per-definition solid counts, bounds, volumes, and validation results. It distinguishes fatal errors from non-fatal metadata omissions. KernelCAD's existing importer may normalize same-domain topology during STEP loading; geometry remains exact BRep rather than tessellated mesh, but original face IDs and native feature history are not promised.
+The manifest records its schema version, input filename and SHA-256, source length units, OCCT BREP serialization version, unique definitions, occurrence paths, placements in millimetres, effective colors, output asset paths, and per-definition solid counts, bounds, volumes, and validation results. It distinguishes fatal errors from non-fatal metadata omissions. The BREP assets retain exact OCCT surfaces and topology without tessellation or STEP schema translation. Original STEP entity IDs, native feature history, and exact source face labels are not promised.
 
 ## Error behavior
 
@@ -48,7 +48,7 @@ The command is local CLI functionality. It does not change the existing single-s
 
 ## Acceptance criteria
 
-- A single-part STEP produces one asset and a `.kcad.ts` model that evaluates through the existing KernelCAD import path.
+- A single-part STEP produces one `.brep` asset and a `.kcad.ts` model that evaluates through the existing `lib.fromBREP` import path.
 - A fixture with nested product definitions, repeated occurrences, non-identity rotations/translations, names, colors, and non-default length units produces the expected paths, placements, colors, and unique-part count.
 - The generated model's world-space bounds and per-component solid/volume summaries agree with the source import within the STEP transfer and KernelCAD tolerance policy; no component may disappear silently.
 - Invalid/open and empty fixtures fail with a path-specific report and leave no partial bundle.
@@ -56,4 +56,4 @@ The command is local CLI functionality. It does not change the existing single-s
 
 ## Implementation locations
 
-The implementation is expected to add a focused XCAF reader/traversal module under `src/kernel/import/`, a bundle/script emitter beside it, and a CLI command registered through `src/agent/cli/index.ts`. The legacy `src/lib/parts/fromSTEP.ts` path stays compatible and is reused by generated projects. The existing XCAF writer in `src/kernel/backends/occt/stepAssemblyExport.ts` is the reference for safe WASM object ownership; it should not be replaced.
+The implementation is expected to add a focused XCAF reader/traversal module under `src/kernel/import/`, a BREP bundle/script emitter beside it, a bounded cache for repeated `lib.fromBREP` loads, and a CLI command registered through `src/agent/cli/index.ts`. The legacy `src/lib/parts/fromSTEP.ts` path stays compatible and serves as the STEP import behavior reference. The existing XCAF writer in `src/kernel/backends/occt/stepAssemblyExport.ts` and BREP writer in `src/kernel/backends/occt/occtBackend.ts` are the references for safe WASM ownership and serialization; neither should be replaced.
