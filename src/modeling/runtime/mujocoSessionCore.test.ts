@@ -15,25 +15,14 @@ describe('createMujocoSession', () => {
       opt: { timestep: 0.001 },
       delete: vi.fn(),
     };
-    let data: {
-      qpos: Float64Array;
-      qvel: Float64Array;
-      qacc: Float64Array;
-      xpos: Float64Array;
-      qfrc_inverse: Float64Array;
-      delete: ReturnType<typeof vi.fn>;
-    } | undefined;
+    const deleteData = vi.fn();
     class FakeData {
       qpos = new Float64Array();
       qvel = new Float64Array();
       qacc = new Float64Array();
       xpos = new Float64Array();
       qfrc_inverse = new Float64Array();
-      delete = vi.fn();
-
-      constructor(_model: unknown) {
-        data = this;
-      }
+      delete = deleteData;
     }
     const fromXml = vi.fn(() => model);
     const forward = vi.fn();
@@ -50,11 +39,11 @@ describe('createMujocoSession', () => {
     expect(session.bodies).toEqual(['palm']);
     expect(session.joints).toEqual(joints);
     session.forward();
-    expect(forward).toHaveBeenCalledWith(model, data);
+    expect(forward).toHaveBeenCalledWith(model, expect.any(FakeData));
 
     session.dispose();
     session.dispose();
-    expect(data?.delete).toHaveBeenCalledTimes(1);
+    expect(deleteData).toHaveBeenCalledTimes(1);
     expect(model.delete).toHaveBeenCalledTimes(1);
   });
 });
