@@ -97,6 +97,7 @@
 - [ ] Add the PowerShell installer to `product-web/scripts/install.ps1` and `product-web/site/install.ps1`.
 - [ ] Update `docs/product-web-source-manifest.json` and `docs/runtime-source-source-manifest.json` hashes and source revision for all changed snapshot files.
 - [ ] Confirm `/install.sh` and `/install.ps1` are deployed from `product-web/site/`, and let private-product CI verify snapshot consistency before merge.
+- [ ] Merge this private deployment PR only after the public `v0.17.3` release has all five archives and `SHA256SUMS`; the current `v0.17.2` Linux archive does not contain the bundled runtime required by these installers.
 
 ## Self-review checklist
 
