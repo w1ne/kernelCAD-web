@@ -8,9 +8,9 @@
 
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { runCollabCheck } from '../../../src/agent/cli/commands/collabCheck';
 
 const example = readFileSync(resolve('examples/collab/bracket-and-motor-plate.kcad.ts'), 'utf8');
@@ -46,6 +46,33 @@ function fixture(): { dir: string; file: string; cleanup: () => void } {
 }
 
 describe('kernelcad collab check', () => {
+  it('reads a nested model path from a worktree directory', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'kc-collab-worktree-'));
+    const repo = join(root, 'repo');
+    const alternate = join(root, 'alternate');
+    const nestedPath = 'examples/collab/bracket.kcad.ts';
+    const repoFile = join(repo, nestedPath);
+    const alternateFile = join(alternate, nestedPath);
+    mkdirSync(dirname(repoFile), { recursive: true });
+    mkdirSync(dirname(alternateFile), { recursive: true });
+    git(repo, 'init', '-q');
+    git(repo, 'config', 'user.email', 'test@example.com');
+    git(repo, 'config', 'user.name', 'Test');
+    git(repo, 'checkout', '-q', '-b', 'main');
+    writeFileSync(repoFile, example);
+    git(repo, 'add', nestedPath);
+    git(repo, 'commit', '-q', '-m', 'base');
+    writeFileSync(alternateFile, example.replace("param('bracketFillet', 1.0", "param('bracketFillet', 1.2"));
+    try {
+      const result = await runCollabCheck({ file: repoFile, base: 'main', head: 'main', yours: alternate }, repo);
+      expect(result.exitCode).toBe(0);
+      expect(result.report.status).toBe('pass');
+      expect(result.mergedSource).toContain("param('bracketFillet', 1.2");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('passes a disjoint fillet edit and writes the merged source', async () => {
     const { dir, file, cleanup } = fixture();
     try {

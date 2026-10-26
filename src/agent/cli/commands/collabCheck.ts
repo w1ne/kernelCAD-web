@@ -73,8 +73,10 @@ function yoursSource(cwd: string, yours: string, file: string, gitPath: string):
 } {
   const candidate = resolve(cwd, yours);
   if (existsSync(candidate) && statSync(candidate).isDirectory()) {
-    const chosen = resolve(candidate, basename(file));
-    if (!existsSync(chosen)) throw new Error(`--yours directory has no ${basename(file)}: ${candidate}`);
+    const nested = resolve(candidate, gitPath);
+    const flat = resolve(candidate, basename(file));
+    const chosen = existsSync(nested) ? nested : flat;
+    if (!existsSync(chosen)) throw new Error(`--yours directory has no ${gitPath} or ${basename(file)}: ${candidate}`);
     return { source: readFileSync(chosen, 'utf8'), fileName: basename(file), scriptDir: dirname(chosen) };
   }
   return {
