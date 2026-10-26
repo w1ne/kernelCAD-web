@@ -320,9 +320,12 @@ async function runDropOnRelease(
   }
 
   try {
+    // Tendon limits are stiff constraints. The default 1 ms step can ring on
+    // gram-scale links; use the same 0.2 ms step the retention tests use.
+    const dt = session.ntendon > 0 ? 0.0002 : DROP_TEST_DT_S;
     const { qpos: finalQpos, xpos: finalXpos } = session.step(
       DROP_TEST_DURATION_S,
-      DROP_TEST_DT_S,
+      dt,
     );
     const out: CompilerDiagnostic[] = [];
     const passiveMates = collectFreePassiveMates(arm);
