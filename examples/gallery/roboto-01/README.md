@@ -22,11 +22,13 @@ model source:
 
 - the bundled file hash and byte count match the pinned upstream mesh;
 - the model loads that exact `roboto-01/meshes/<link>.STL` file;
-- the only operations applied to a loaded body are the metre→millimetre
-  `.scale(1000)` and the PBR `.material(...)` finish.
+- the loader matches the approved metre→millimetre `.scale(1000)` and PBR
+  `.material(...)` chain exactly, and passes each loaded body directly to its
+  assembly part.
 
 ```bash
 node examples/gallery/roboto-01/verify-identity.mjs
+npx vitest run scripts/robotoIdentityOperations.test.ts
 ```
 
 The expected result is `25/25 parts are byte-identical to the pinned upstream meshes`.

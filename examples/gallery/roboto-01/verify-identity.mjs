@@ -15,6 +15,7 @@ import { createHash } from 'node:crypto';
 import { readFile, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { findGeometryOperationIssues } from './verify-identity-operations.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const modelPath = join(here, '..', 'roboto-01.kcad.ts');
@@ -67,6 +68,7 @@ const loadBody = loadLinkBody(modelSource);
 
 const failures = [];
 const rows = [];
+failures.push(...findGeometryOperationIssues(modelSource));
 
 if (manifest.size !== 25) failures.push(`MESH-SOURCES.txt lists ${manifest.size} meshes, expected 25`);
 if (links.length !== 25) failures.push(`model declares ${links.length} links, expected 25`);
