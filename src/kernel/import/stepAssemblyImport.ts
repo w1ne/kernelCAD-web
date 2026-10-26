@@ -22,6 +22,24 @@ interface Deletable { delete(): void }
 type Track = <T extends Deletable>(value: T) => T;
 type Vec3 = [number, number, number];
 
+interface XcafTraversalContext {
+  oc: any;
+  track: Track;
+  colorTool: any;
+  warnings: string[];
+  definitionsByLabel: Map<string, StepImportDefinition>;
+  occurrences: StepImportOccurrence[];
+  occurrenceIndex: number;
+}
+
+interface XcafProductIdentity {
+  isComponent: boolean;
+  definitionLabel: any;
+  definitionName?: string;
+  chosenName: string;
+  path: string[];
+}
+
 function withScope<T>(run: (track: Track) => T): T {
   const owned: Deletable[] = [];
   const track: Track = <V extends Deletable>(value: V): V => {
@@ -299,6 +317,257 @@ function definitionStatistics(oc: any, shape: any, sourcePath: string[]): {
   }
 }
 
+function resolveXcafProductIdentity(
+  context: XcafTraversalContext,
+  label: any,
+  parentPath: string[],
+  fallbackTag?: number,
+): XcafProductIdentity {
+  const { oc, track } = context;
+  const occurrenceName = readLabelName(oc, label);
+  const referred = track(new oc.TDF_Label());
+  const isComponent = oc.XCAFDoc_ShapeTool.IsComponent(label);
+  let definitionLabel = label;
+  if (isComponent) {
+    if (!oc.XCAFDoc_ShapeTool.GetReferredShape(label, referred)) {
+      const fallbackName = occurrenceName ?? `Component ${fallbackTag ?? 1}`;
+      throw new StepAssemblyImportError('read', 'XCAF component has no referred product definition.', [...parentPath, fallbackName]);
+    }
+    definitionLabel = referred;
+  }
+
+  const definitionName = readLabelName(oc, definitionLabel);
+  const chosenName = occurrenceName ?? definitionName ?? `Component ${fallbackTag ?? context.occurrenceIndex + 1}`;
+  const path = [...parentPath, chosenName];
+  if (occurrenceName === undefined && definitionName === undefined) {
+    context.warnings.push(`Missing product name at ${sourcePathText(path)}; used a deterministic generated name.`);
+  }
+  return { isComponent, definitionLabel, definitionName, chosenName, path };
+}
+
+function resolveXcafProductColor(
+  context: XcafTraversalContext,
+  label: any,
+  identity: XcafProductIdentity,
+  inheritedColor?: StepComponentColor,
+): StepComponentColor | undefined {
+  const occurrenceColor = (identity.isComponent
+    ? readInstanceColor(context.oc, context.colorTool, label)
+    : undefined) ?? readLabelColor(context.oc, context.colorTool, label);
+  const definitionColor = identity.definitionLabel !== label
+    ? readLabelColor(context.oc, context.colorTool, identity.definitionLabel)
+    : undefined;
+  return occurrenceColor ?? definitionColor ?? inheritedColor;
+}
+
+function resolveXcafProductTransform(
+  context: XcafTraversalContext,
+  label: any,
+  identity: XcafProductIdentity,
+  parentTransform: StepMatrix4,
+): StepMatrix4 {
+  if (!identity.isComponent) return parentTransform;
+  const location = context.track(context.oc.XCAFDoc_ShapeTool.GetLocation(label));
+  const trsf = context.track(location.Transformation());
+  return multiply(parentTransform, matrixFromTrsf(trsf, identity.path));
+}
+
+function appendXcafLeafOccurrence(
+  context: XcafTraversalContext,
+  identity: XcafProductIdentity,
+  transform: StepMatrix4,
+  color?: StepComponentColor,
+): void {
+  const { oc, track, definitionsByLabel } = context;
+  const defKey = labelKey(identity.definitionLabel);
+  let definition = definitionsByLabel.get(defKey);
+  if (definition === undefined) {
+    const shape = track(oc.XCAFDoc_ShapeTool.GetShape_2(identity.definitionLabel));
+    if (shape.IsNull()) {
+      throw new StepAssemblyImportError('invalid-solid', 'STEP product definition has no geometry.', identity.path);
+    }
+    const statistics = definitionStatistics(oc, shape, identity.path);
+    definition = {
+      id: `def-${createHash('sha256').update(defKey).digest('hex')}`,
+      sourceLabel: defKey,
+      name: identity.definitionName ?? identity.chosenName,
+      ...statistics,
+    };
+    definitionsByLabel.set(defKey, definition);
+  }
+
+  context.occurrenceIndex++;
+  context.occurrences.push({
+    id: `occ-${String(context.occurrenceIndex).padStart(6, '0')}`,
+    name: identity.chosenName,
+    sourcePath: identity.path,
+    definitionId: definition.id,
+    transform,
+    ...(color !== undefined ? { color } : {}),
+  });
+  if (color !== undefined && color.alpha < 0.999) {
+    context.warnings.push(`Translucent component color at ${sourcePathText(identity.path)} is recorded in the manifest; KernelCAD .color() keeps RGB only.`);
+  }
+}
+
+function visitXcafProduct(
+  context: XcafTraversalContext,
+  label: any,
+  parentTransform: StepMatrix4,
+  parentPath: string[],
+  inheritedColor?: StepComponentColor,
+  fallbackTag?: number,
+): void {
+  const identity = resolveXcafProductIdentity(context, label, parentPath, fallbackTag);
+  const color = resolveXcafProductColor(context, label, identity, inheritedColor);
+  const transform = resolveXcafProductTransform(context, label, identity, parentTransform);
+  if (context.oc.XCAFDoc_ShapeTool.IsAssembly(identity.definitionLabel)) {
+    visitXcafAssemblyChildren(context, identity, transform, color);
+    return;
+  }
+  appendXcafLeafOccurrence(context, identity, transform, color);
+}
+
+function visitXcafAssemblyChildren(
+  context: XcafTraversalContext,
+  identity: XcafProductIdentity,
+  transform: StepMatrix4,
+  color?: StepComponentColor,
+): void {
+  let childCount = 0;
+  children(context.oc, identity.definitionLabel, (child, tag) => {
+    if (!context.oc.XCAFDoc_ShapeTool.IsComponent(child)) return;
+    childCount++;
+    visitXcafProduct(context, child, transform, identity.path, color, tag);
+  });
+  if (childCount === 0) {
+    throw new StepAssemblyImportError('empty', 'STEP assembly product has no component occurrences.', identity.path);
+  }
+}
+
+function visitXcafRoots(
+  context: XcafTraversalContext,
+  baseLabel: any,
+  inputName: string,
+): void {
+  let rootCount = 0;
+  children(context.oc, baseLabel, (root, tag) => {
+    if (!context.oc.XCAFDoc_ShapeTool.IsFree(root)) return;
+    rootCount++;
+    visitXcafProduct(context, root, IDENTITY, [], undefined, tag);
+  });
+  if (rootCount === 0 || context.occurrences.length === 0) {
+    throw new StepAssemblyImportError('empty', `STEP input '${inputName}' contains no free 3D product occurrences.`);
+  }
+}
+
+function transferXcafDocument(oc: any, tempPath: string, inputName: string, track: Track): { baseLabel: any; colorTool: any } {
+  const reader = track(new oc.STEPCAFControl_Reader_1());
+  reader.SetColorMode(true);
+  reader.SetNameMode(true);
+  reader.SetLayerMode(true);
+  if (reader.ReadFile(tempPath) !== oc.IFSelect_ReturnStatus.IFSelect_RetDone) {
+    throw new StepAssemblyImportError('read', `OCCT could not read STEP input '${inputName}'.`);
+  }
+
+  const format = track(new oc.TCollection_ExtendedString_2('XmlOcaf', true));
+  const docHandle = track(new oc.Handle_TDocStd_Document_2(new oc.TDocStd_Document(format)));
+  const progress = track(new oc.Message_ProgressRange_1());
+  if (!reader.Transfer_1(docHandle, progress)) {
+    throw new StepAssemblyImportError('read', `OCCT could not transfer STEP product data from '${inputName}'.`);
+  }
+
+  const main = track(docHandle.get().Main());
+  const shapeToolHandle = track(oc.XCAFDoc_DocumentTool.ShapeTool(main));
+  const colorToolHandle = track(oc.XCAFDoc_DocumentTool.ColorTool(main));
+  const baseLabel = track(shapeToolHandle.get().BaseLabel());
+  return { baseLabel, colorTool: colorToolHandle.get() };
+}
+
+function readXcafAssembly(
+  oc: any,
+  tempPath: string,
+  inputName: string,
+  sourceLengthUnits: string[],
+  warnings: string[],
+): StepAssemblySnapshot {
+  return withScope((track) => {
+    const document = transferXcafDocument(oc, tempPath, inputName, track);
+    const context: XcafTraversalContext = {
+      oc,
+      track,
+      colorTool: document.colorTool,
+      warnings,
+      definitionsByLabel: new Map(),
+      occurrences: [],
+      occurrenceIndex: 0,
+    };
+    visitXcafRoots(context, document.baseLabel, inputName);
+    return {
+      sourceLengthUnits,
+      definitions: [...context.definitionsByLabel.values()],
+      occurrences: context.occurrences,
+      warnings: [...new Set(warnings)],
+    };
+  });
+}
+
+function validateStepDocuments(
+  inputName: string,
+  bytes: Uint8Array,
+  externalDocuments: ReadonlyMap<string, Uint8Array>,
+): Array<[string, Uint8Array]> {
+  const documents: Array<[string, Uint8Array]> = [[inputName, bytes]];
+  for (const [fileName, fileBytes] of externalDocuments) {
+    const normalized = fileName.replaceAll('\\', '/');
+    const segments = normalized.split('/');
+    if (
+      normalized !== fileName
+      || normalized === inputName
+      || segments.some((segment) => segment === '' || segment === '.' || segment === '..')
+      || !/\.step$|\.stp$/i.test(normalized)
+    ) {
+      throw new StepAssemblyImportError('external-reference', `Invalid staged STEP external document path '${fileName}'.`);
+    }
+    documents.push([normalized, fileBytes]);
+  }
+  return documents;
+}
+
+function stageStepDocuments(
+  oc: any,
+  tempDir: string,
+  documents: Array<[string, Uint8Array]>,
+  stagedFiles: string[],
+  stagedDirectories: string[],
+): void {
+  oc.FS.mkdir(tempDir);
+  for (const [fileName, fileBytes] of documents) {
+    let currentDirectory = tempDir;
+    for (const segment of fileName.split('/').slice(0, -1)) {
+      currentDirectory += `/${segment}`;
+      try {
+        oc.FS.mkdir(currentDirectory);
+        stagedDirectories.push(currentDirectory);
+      } catch (error) {
+        if (!oc.FS.analyzePath(currentDirectory).exists) throw error;
+      }
+    }
+    const virtualPath = `${tempDir}/${fileName}`;
+    oc.FS.writeFile(virtualPath, fileBytes);
+    stagedFiles.push(virtualPath);
+  }
+}
+
+function removeStagedDocuments(oc: any, stagedFiles: string[], stagedDirectories: string[]): void {
+  for (const path of stagedFiles.reverse()) {
+    try { oc.FS.unlink(path); } catch { /* best-effort cleanup after OCCT failure */ }
+  }
+  for (const path of stagedDirectories.reverse()) {
+    try { oc.FS.rmdir(path); } catch { /* best-effort cleanup after OCCT failure */ }
+  }
+}
+
 /**
  * Read a STEP assembly with XCAF names, component colors, and placements.
  * OCCT's default STEP transfer unit is one millimetre, matching the rest of
@@ -316,179 +585,20 @@ export async function importStepAssembly(
   }
   await initOcct();
   const oc = getOcctRuntime() as any;
-  const documents: Array<[string, Uint8Array]> = [[inputName, bytes]];
-  for (const [fileName, fileBytes] of externalDocuments) {
-    const normalized = fileName.replaceAll('\\', '/');
-    const segments = normalized.split('/');
-    if (
-      normalized !== fileName
-      || normalized === inputName
-      || segments.some((segment) => segment === '' || segment === '.' || segment === '..')
-      || !/\.step$|\.stp$/i.test(normalized)
-    ) {
-      throw new StepAssemblyImportError('external-reference', `Invalid staged STEP external document path '${fileName}'.`);
-    }
-    documents.push([normalized, fileBytes]);
-  }
+  const documents = validateStepDocuments(inputName, bytes, externalDocuments);
   const sourceLengthUnits = [...new Set(documents.flatMap(([, fileBytes]) =>
     parseSourceLengthUnits(new TextDecoder().decode(fileBytes))))].sort();
   const warnings: string[] = [];
   if (sourceLengthUnits.length === 0) warnings.push('No STEP length unit declaration was recognized; OCCT transferred geometry into millimetres using its default STEP unit policy.');
 
   const tempDir = `/kernelcad-step-${process.pid}-${randomUUID()}`;
-  const tempPath = `${tempDir}/${inputName}`;
   const stagedFiles: string[] = [];
   const stagedDirectories: string[] = [tempDir];
   try {
-    oc.FS.mkdir(tempDir);
-    for (const [fileName, fileBytes] of documents) {
-      const segments = fileName.split('/');
-      let currentDirectory = tempDir;
-      for (const segment of segments.slice(0, -1)) {
-        currentDirectory += `/${segment}`;
-        try {
-          oc.FS.mkdir(currentDirectory);
-          stagedDirectories.push(currentDirectory);
-        } catch (error) {
-          const exists = oc.FS.analyzePath(currentDirectory).exists;
-          if (!exists) throw error;
-        }
-      }
-      const virtualPath = `${tempDir}/${fileName}`;
-      oc.FS.writeFile(virtualPath, fileBytes);
-      stagedFiles.push(virtualPath);
-    }
-    return withScope((track) => {
-      const reader = track(new oc.STEPCAFControl_Reader_1());
-      reader.SetColorMode(true);
-      reader.SetNameMode(true);
-      reader.SetLayerMode(true);
-
-      const status = reader.ReadFile(tempPath);
-      if (status !== oc.IFSelect_ReturnStatus.IFSelect_RetDone) {
-        throw new StepAssemblyImportError('read', `OCCT could not read STEP input '${inputName}'.`);
-      }
-
-      const format = track(new oc.TCollection_ExtendedString_2('XmlOcaf', true));
-      const docHandle = track(new oc.Handle_TDocStd_Document_2(new oc.TDocStd_Document(format)));
-      const progress = track(new oc.Message_ProgressRange_1());
-      if (!reader.Transfer_1(docHandle, progress)) {
-        throw new StepAssemblyImportError('read', `OCCT could not transfer STEP product data from '${inputName}'.`);
-      }
-
-      const main = track(docHandle.get().Main());
-      const shapeToolHandle = track(oc.XCAFDoc_DocumentTool.ShapeTool(main));
-      const colorToolHandle = track(oc.XCAFDoc_DocumentTool.ColorTool(main));
-      const shapeTool = shapeToolHandle.get();
-      const colorTool = colorToolHandle.get();
-      const baseLabel = track(shapeTool.BaseLabel());
-      const definitionsByLabel = new Map<string, StepImportDefinition>();
-      const occurrences: StepImportOccurrence[] = [];
-      let occurrenceIndex = 0;
-
-      const visit = (
-        label: any,
-        parentTransform: StepMatrix4,
-        parentPath: string[],
-        inheritedColor?: StepComponentColor,
-        fallbackTag?: number,
-      ): void => {
-        const occurrenceName = readLabelName(oc, label);
-        const referred = track(new oc.TDF_Label());
-        const isComponent = oc.XCAFDoc_ShapeTool.IsComponent(label);
-        let definitionLabel = label;
-        if (isComponent) {
-          if (!oc.XCAFDoc_ShapeTool.GetReferredShape(label, referred)) {
-            throw new StepAssemblyImportError('read', 'XCAF component has no referred product definition.', [...parentPath, occurrenceName ?? `Component ${fallbackTag ?? 1}`]);
-          }
-          definitionLabel = referred;
-        }
-
-        const definitionName = readLabelName(oc, definitionLabel);
-        const chosenName = occurrenceName ?? definitionName ?? `Component ${fallbackTag ?? occurrenceIndex + 1}`;
-        if (occurrenceName === undefined && definitionName === undefined) {
-          warnings.push(`Missing product name at ${sourcePathText([...parentPath, chosenName])}; used a deterministic generated name.`);
-        }
-        const path = [...parentPath, chosenName];
-        const occurrenceColor = (isComponent ? readInstanceColor(oc, colorTool, label) : undefined)
-          ?? readLabelColor(oc, colorTool, label);
-        const ownColor = occurrenceColor
-          ?? (definitionLabel !== label ? readLabelColor(oc, colorTool, definitionLabel) : undefined)
-          ?? inheritedColor;
-
-        let worldTransform = parentTransform;
-        if (isComponent) {
-          const location = track(oc.XCAFDoc_ShapeTool.GetLocation(label));
-          const trsf = track(location.Transformation());
-          worldTransform = multiply(parentTransform, matrixFromTrsf(trsf, path));
-        }
-
-        if (oc.XCAFDoc_ShapeTool.IsAssembly(definitionLabel)) {
-          let childCount = 0;
-          children(oc, definitionLabel, (child, tag) => {
-            if (!oc.XCAFDoc_ShapeTool.IsComponent(child)) return;
-            childCount++;
-            visit(child, worldTransform, path, ownColor, tag);
-          });
-          if (childCount === 0) {
-            throw new StepAssemblyImportError('empty', 'STEP assembly product has no component occurrences.', path);
-          }
-          return;
-        }
-
-        const defKey = labelKey(definitionLabel);
-        let definition = definitionsByLabel.get(defKey);
-        if (definition === undefined) {
-          const shape = track(oc.XCAFDoc_ShapeTool.GetShape_2(definitionLabel));
-          if (shape.IsNull()) throw new StepAssemblyImportError('invalid-solid', 'STEP product definition has no geometry.', path);
-          const statistics = definitionStatistics(oc, shape, path);
-          const defId = `def-${createHash('sha256').update(defKey).digest('hex')}`;
-          definition = {
-            id: defId,
-            sourceLabel: defKey,
-            name: definitionName ?? chosenName,
-            ...statistics,
-          };
-          definitionsByLabel.set(defKey, definition);
-        }
-
-        occurrenceIndex++;
-        occurrences.push({
-          id: `occ-${String(occurrenceIndex).padStart(6, '0')}`,
-          name: chosenName,
-          sourcePath: path,
-          definitionId: definition.id,
-          transform: worldTransform,
-          ...(ownColor !== undefined ? { color: ownColor } : {}),
-        });
-        if (ownColor !== undefined && ownColor.alpha < 0.999) {
-          warnings.push(`Translucent component color at ${sourcePathText(path)} is recorded in the manifest; KernelCAD .color() keeps RGB only.`);
-        }
-      };
-
-      let rootCount = 0;
-      children(oc, baseLabel, (root, tag) => {
-        if (!oc.XCAFDoc_ShapeTool.IsFree(root)) return;
-        rootCount++;
-        visit(root, IDENTITY, [], undefined, tag);
-      });
-      if (rootCount === 0 || occurrences.length === 0) {
-        throw new StepAssemblyImportError('empty', `STEP input '${inputName}' contains no free 3D product occurrences.`);
-      }
-      return {
-        sourceLengthUnits,
-        definitions: [...definitionsByLabel.values()],
-        occurrences,
-        warnings: [...new Set(warnings)],
-      };
-    });
+    stageStepDocuments(oc, tempDir, documents, stagedFiles, stagedDirectories);
+    return readXcafAssembly(oc, `${tempDir}/${inputName}`, inputName, sourceLengthUnits, warnings);
   } finally {
-    for (const path of stagedFiles.reverse()) {
-      try { oc.FS.unlink(path); } catch { /* best-effort cleanup after OCCT failure */ }
-    }
-    for (const path of stagedDirectories.reverse()) {
-      try { oc.FS.rmdir(path); } catch { /* best-effort cleanup after OCCT failure */ }
-    }
+    removeStagedDocuments(oc, stagedFiles, stagedDirectories);
   }
 }
 
