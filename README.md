@@ -42,7 +42,7 @@ curl -fsSL https://kernelcad.com/install.sh | sh
 
 This installs the self-contained CLI under `~/.kernelcad/versions/` and links
 `kernelcad` into `~/.local/bin`. Pin a version with
-`KERNELCAD_VERSION=v0.17.1`. Node.js 20 or newer is required. There is no npm
+`KERNELCAD_VERSION=v0.17.2`. Node.js 20 or newer is required. There is no npm
 package and no global npm install.
 
 ### Coding agents: one command
