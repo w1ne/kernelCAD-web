@@ -41,6 +41,15 @@ import {
 import { getOC } from 'replicad';
 import { isValidShape } from '../../kernel/backends/occt/booleanRecovery';
 
+// STEP validity only needs a topology-preserving tessellation for the
+// downstream closed-manifold verdict. Use CADGenBench's minimum linear
+// deflection and angular tolerance so small edges on helical / threaded faces
+// do not trigger export-grade over-tessellation. The fixed minimum is
+// conservative for parts larger than 5 mm, where CADGenBench raises its
+// deflection with part scale.
+const STEP_VALIDITY_MESH_ANGULAR_DEFLECTION_RAD = 0.5;
+const STEP_VALIDITY_MESH_LINEAR_DEFLECTION_MM = 0.005;
+
 import type {
   ExportInput,
   ExportResult,
@@ -364,7 +373,11 @@ function stepShapeVerifyFailure(
   if (!isValidShape(getOC(), replicadShape.wrapped)) {
     return brepInvalidDiagnostic(targetId, partName);
   }
-  const report = verifyWatertight(meshShapeForExport(replicadShape));
+  const report = verifyWatertight(meshShapeForExport(replicadShape, {
+    linear: STEP_VALIDITY_MESH_LINEAR_DEFLECTION_MM,
+    relative: false,
+    angularRad: STEP_VALIDITY_MESH_ANGULAR_DEFLECTION_RAD,
+  }));
   if (!report.ok) return stlNotWatertightDiagnostic(report, targetId, partName, 'STEP mesh');
   return undefined;
 }
