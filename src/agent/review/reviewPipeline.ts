@@ -18,6 +18,7 @@ import {
   type MechanicalPlausibilityDiagnostic,
 } from '../../modeling/mates/mechanicalPlausibility';
 import { checkFastenedMateContact, checkMechanismTruth, type MechanismCoverage } from '../../modeling/runtime/mechanismTruth';
+import { loadMujocoSession } from '../../modeling/runtime/mujocoSession';
 import { captureMotionFailures } from '../../modeling/runtime/motionLimits';
 import { needsMechanismVerdict, summarizeMechanism, type MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
 import { checkOrphanParts } from '../../modeling/runtime/mechanismOrphan';
@@ -662,7 +663,9 @@ async function runMechanismTruthStage(
     ? wantMechanism
     : input.includePhysics;
   try {
-    const verdict = await checkMechanismTruth(arm, { physicsCheck });
+    const verdict = physicsCheck
+      ? await checkMechanismTruth(arm, { physicsCheck: true, physicsSessionFactory: loadMujocoSession })
+      : await checkMechanismTruth(arm, { physicsCheck: false });
     // Preserve 'unverified' (e.g. a skipped BREP sweep, issue #348) —
     // don't collapse it to 'real'.
     return {

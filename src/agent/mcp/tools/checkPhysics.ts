@@ -13,6 +13,7 @@ import {
   checkMechanismTruth,
   type MechanismCoverage,
 } from '../../../modeling/runtime/mechanismTruth';
+import { loadMujocoSession } from '../../../modeling/runtime/mujocoSession';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export interface CheckPhysicsInput extends EvaluateInput {
@@ -62,7 +63,9 @@ export async function checkPhysicsTool(input: CheckPhysicsInput): Promise<CheckP
       errorCode: 'feature.invalid-args',
     };
   }
-  const verdict = await checkMechanismTruth(arm, { physicsCheck: input.physics !== false });
+  const verdict = input.physics === false
+    ? await checkMechanismTruth(arm)
+    : await checkMechanismTruth(arm, { physicsCheck: true, physicsSessionFactory: loadMujocoSession });
   return {
     ok: verdict.mechanism === 'real' && verdict.failures.length === 0,
     source: 'local',
