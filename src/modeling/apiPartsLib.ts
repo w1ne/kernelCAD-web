@@ -23,7 +23,8 @@ export function makePartsLib(ctx: ApiContext): Pick<KernelCadApi, 'lib'> {
   const { session } = ctx;
   return {
     lib: {
-      fromSTEP: (path) => fromSTEPViaHost({ session, scriptDir: ctx.scriptDir }, path),
+      fromSTEP: (path, opts) =>
+        fromSTEPViaHost({ session, scriptDir: ctx.scriptDir }, path, opts),
       fromBREP: (path) => fromBREPViaHost({ session, scriptDir: ctx.scriptDir }, path),
       fromSTL: (path, opts) =>
         fromSTLViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
