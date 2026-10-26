@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { publishStagedStepBundle } from './stepBundleWriter';
+import { publishStagedStepBundle, renameDirectoryNoReplace } from './stepBundleWriter';
 
 describe('publishStagedStepBundle', () => {
   let root: string;
@@ -49,5 +49,32 @@ describe('publishStagedStepBundle', () => {
     await expect(publishStagedStepBundle(staging, outDir)).rejects.toThrow(/already exists/);
     expect(await readdir(outDir)).toEqual(['keep.txt']);
     expect(await readFile(join(outDir, 'keep.txt'), 'utf8')).toBe('pre-existing data');
+  });
+
+  it('atomically moves a complete staged directory into its final path', async () => {
+    const staging = join(root, 'staging');
+    const outDir = join(root, 'bundle');
+    await mkdir(join(staging, 'parts'), { recursive: true });
+    await writeFile(join(staging, 'manifest.json'), 'complete');
+    await writeFile(join(staging, 'parts', 'part.brep'), 'solid');
+
+    await renameDirectoryNoReplace(staging, outDir);
+
+    expect(await readFile(join(outDir, 'manifest.json'), 'utf8')).toBe('complete');
+    expect(await readFile(join(outDir, 'parts', 'part.brep'), 'utf8')).toBe('solid');
+    await expect(readdir(staging)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  it('does not replace an existing empty directory', async () => {
+    const staging = join(root, 'staging');
+    const outDir = join(root, 'bundle');
+    await mkdir(staging);
+    await writeFile(join(staging, 'manifest.json'), 'new bundle');
+    await mkdir(outDir);
+
+    await expect(renameDirectoryNoReplace(staging, outDir)).rejects.toThrow(/already exists/);
+
+    expect(await readdir(outDir)).toEqual([]);
+    expect(await readFile(join(staging, 'manifest.json'), 'utf8')).toBe('new bundle');
   });
 });

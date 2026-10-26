@@ -5,9 +5,9 @@
 // places/colors its independently transformable imported shape.
 
 import { createHash } from 'node:crypto';
-import { lstat, link, mkdir, mkdtemp, open, readdir, rm, rmdir, unlink, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, open, rm, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
-import { pipeline } from 'node:stream/promises';
+import process from 'node:process';
 import { decomposeStepTransform } from './stepAssemblyImport';
 import type { StepAssemblySnapshot, StepImportOccurrence } from './stepAssemblyTypes';
 
@@ -96,105 +96,55 @@ function errorCode(error: unknown): string | undefined {
     : undefined;
 }
 
-async function publishFileNoReplace(source: string, destination: string, createdFiles: string[]): Promise<void> {
-  try {
-    // Staging is a sibling of the output, so hard links publish each file
-    // atomically and fail with EEXIST instead of replacing a raced path.
-    await link(source, destination);
-    createdFiles.push(destination);
-    return;
-  } catch (error) {
-    const code = errorCode(error);
-    if (code === 'EEXIST') throw new Error(`Output path already exists: '${destination}'.`);
-    if (!['EPERM', 'ENOTSUP', 'EOPNOTSUPP', 'EXDEV'].includes(code ?? '')) throw error;
-
-    // Some filesystems disallow hard links. An exclusive create followed by a
-    // streamed copy still prevents an existing destination from being replaced.
-    const sourceHandle = await open(source, 'r');
-    let destinationHandle: Awaited<ReturnType<typeof open>> | undefined;
-    try {
-      try {
-        destinationHandle = await open(destination, 'wx');
-      } catch (copyError) {
-        if (errorCode(copyError) === 'EEXIST') throw new Error(`Output path already exists: '${destination}'.`);
-        throw copyError;
-      }
-      createdFiles.push(destination);
-      await pipeline(
-        sourceHandle.createReadStream({ autoClose: false }),
-        destinationHandle.createWriteStream({ autoClose: false }),
-      );
-    } finally {
-      await sourceHandle.close().catch(() => undefined);
-      await destinationHandle?.close().catch(() => undefined);
-    }
+function throwRenameError(destination: string, nativeCode: number, existsError: boolean): never {
+  if (existsError) {
+    const error = new Error(`Output path already exists: '${destination}'.`);
+    Object.assign(error, { code: 'EEXIST' });
+    throw error;
   }
+  throw new Error(`Cannot atomically publish STEP bundle to '${destination}' (native error ${nativeCode}).`);
 }
 
-async function publishDirectoryContents(
-  source: string,
-  destination: string,
-  createdDirectories: string[],
-  createdFiles: string[],
-): Promise<void> {
-  await mkdir(destination);
-  createdDirectories.push(destination);
-  const entries = await readdir(source, { withFileTypes: true });
-  entries.sort((a, b) => {
-    if (a.isDirectory() !== b.isDirectory()) return a.isDirectory() ? -1 : 1;
-    if (a.name === 'manifest.json') return 1;
-    if (b.name === 'manifest.json') return -1;
-    return a.name.localeCompare(b.name);
-  });
-
-  for (const entry of entries) {
-    const sourcePath = join(source, entry.name);
-    const destinationPath = join(destination, entry.name);
-    if (entry.isDirectory()) {
-      await publishDirectoryContents(sourcePath, destinationPath, createdDirectories, createdFiles);
-      continue;
-    }
-    if (!entry.isFile()) throw new Error(`Unexpected entry in staged STEP bundle: '${sourcePath}'.`);
-
-    await publishFileNoReplace(sourcePath, destinationPath, createdFiles);
+/** Rename a complete staged bundle into place with an OS-level no-replace guarantee. */
+export async function renameDirectoryNoReplace(staging: string, outDir: string): Promise<void> {
+  if (!['darwin', 'linux', 'win32'].includes(process.platform)) {
+    throw new Error(`Atomic no-replace STEP bundle publication is unsupported on '${process.platform}'.`);
   }
+  const koffi = (await import('koffi')).default;
+
+  if (process.platform === 'darwin') {
+    const libSystem = koffi.load(null);
+    const renameExclusive = libSystem.func('int renamex_np(const char *from, const char *to, unsigned int flags)');
+    if (renameExclusive(staging, outDir, 0x00000004) === 0) return; // RENAME_EXCL
+    const nativeCode = koffi.errno();
+    throwRenameError(outDir, nativeCode, nativeCode === koffi.os.errno.EEXIST || nativeCode === koffi.os.errno.ENOTEMPTY || nativeCode === koffi.os.errno.EISDIR);
+  }
+
+  if (process.platform === 'linux') {
+    const libc = koffi.load(null);
+    const renameNoReplace = libc.func('int renameat2(int oldDirFd, const char *oldPath, int newDirFd, const char *newPath, unsigned int flags)');
+    if (renameNoReplace(-100, staging, -100, outDir, 0x00000001) === 0) return; // AT_FDCWD, RENAME_NOREPLACE
+    const nativeCode = koffi.errno();
+    throwRenameError(outDir, nativeCode, nativeCode === koffi.os.errno.EEXIST || nativeCode === koffi.os.errno.ENOTEMPTY || nativeCode === koffi.os.errno.EISDIR);
+  }
+
+  if (process.platform === 'win32') {
+    const kernel32 = koffi.load('kernel32.dll');
+    const moveFile = kernel32.func('int __stdcall MoveFileW(const wchar_t *from, const wchar_t *to)');
+    const getLastError = kernel32.func('uint32_t __stdcall GetLastError(void)');
+    if (moveFile(staging, outDir) !== 0) return;
+    const nativeCode = getLastError();
+    throwRenameError(outDir, nativeCode, nativeCode === 80 || nativeCode === 183);
+  }
+
 }
 
-/** Claim the final directory atomically, then publish each staged path without replacement. */
+/** Publish the complete staging directory in one atomic no-replace operation. */
 export async function publishStagedStepBundle(staging: string, outDir: string): Promise<void> {
-  const createdDirectories: string[] = [];
-  const createdFiles: string[] = [];
   try {
-    try {
-      // mkdir is the no-replace operation for the final directory. A path that
-      // appeared after the early check is rejected instead of being renamed over.
-      await mkdir(outDir);
-    } catch (error) {
-      if (errorCode(error) === 'EEXIST') throw new Error(`Output path already exists: '${outDir}'.`);
-      throw error;
-    }
-    createdDirectories.push(outDir);
-
-    const entries = await readdir(staging, { withFileTypes: true });
-    entries.sort((a, b) => {
-      if (a.isDirectory() !== b.isDirectory()) return a.isDirectory() ? -1 : 1;
-      if (a.name === 'manifest.json') return 1;
-      if (b.name === 'manifest.json') return -1;
-      return a.name.localeCompare(b.name);
-    });
-    for (const entry of entries) {
-      const sourcePath = join(staging, entry.name);
-      const destinationPath = join(outDir, entry.name);
-      if (entry.isDirectory()) {
-        await publishDirectoryContents(sourcePath, destinationPath, createdDirectories, createdFiles);
-        continue;
-      }
-      if (!entry.isFile()) throw new Error(`Unexpected entry in staged STEP bundle: '${sourcePath}'.`);
-      await publishFileNoReplace(sourcePath, destinationPath, createdFiles);
-    }
+    await renameDirectoryNoReplace(staging, outDir);
   } catch (error) {
-    for (const path of createdFiles.reverse()) await unlink(path).catch(() => undefined);
-    for (const path of createdDirectories.reverse()) await rmdir(path).catch(() => undefined);
+    if (errorCode(error) === 'EEXIST') throw new Error(`Output path already exists: '${outDir}'.`);
     throw error;
   }
 }

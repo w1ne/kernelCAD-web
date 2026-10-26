@@ -126,6 +126,7 @@
     "fflate": "^0.8.3",
     "framer-motion": "^12.33.0",
     "isosurface": "1.0.0",
+    "koffi": "^3.3.3",
     "lucide-react": "^0.563.0",
     "manifold-3d": "3.5.4",
     "mqtt": "^5.15.2",
