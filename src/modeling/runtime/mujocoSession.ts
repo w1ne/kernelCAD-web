@@ -117,6 +117,11 @@ export class MujocoSession {
         return Number(this.model.njnt);
     }
 
+    /** Number of tendons. Stiff tendon limits need a finer integration step. */
+    get ntendon(): number {
+        return Number(this.model.ntendon);
+    }
+
     /** Joint name list, in the order the MJCF emitter pushed them.
      *  Used to translate qpos / qfrc indices back to mate names. */
     get joints(): readonly { mjcfName: string; mateName: string }[] {

@@ -9,7 +9,7 @@
 // end-to-end RED case is asserted on the Luxo lamp in
 // tests/integration/examples/luxoLampClevis.validate.test.ts.
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
 import { createModelingApi } from '../api';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
@@ -17,12 +17,13 @@ import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { Transform } from '../../shared/runtime/se3';
 import { checkTendonBodyIntersectAtPose } from './tendonBodyIntersect';
+import * as jointMeshContinuity from './jointMeshContinuity';
 import type { Assembly } from '../capture/assembly';
 
 // A tendon from base.sb (world origin) to arm.sa (world (100,0,0)); the
 // straight cable runs along +X at z=0. Bodies are placed by hand so we
 // know exactly what the cable does or does not pass through.
-async function buildArm(opts: { wrapObstacle?: boolean } = {}): Promise<{
+async function buildArm(opts: { wrapObstacle?: boolean; routeAroundGuide?: boolean } = {}): Promise<{
   arm: Assembly;
   boxes: Record<string, OcctBackend>;
 }> {
@@ -32,13 +33,21 @@ async function buildArm(opts: { wrapObstacle?: boolean } = {}): Promise<{
 
   const baseBox = kcad.box(20, 20, 20, true);
   const armBox = kcad.box(120, 20, 20, true);
-  const obsBox = kcad.box(20, 20, 20, true);
+  const obsSize = opts.wrapObstacle ? 8 : 20;
+  const obsBox = kcad.box(obsSize, 20, obsSize, true);
+  const guideBox = kcad.box(4, 4, 4, true);
+  const pathTrapBox = kcad.box(8, 8, 1, true);
 
   arm.part('base', baseBox).connector('sb', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
   const obs = arm.part('obstacle', obsBox);
   if (opts.wrapObstacle) {
     obs.wrapGeom('rail', { axis: [0, 1, 0], origin: [0, 0, 0], radius: 6, halfLengthMm: 30 });
   }
+  const guide = arm.part('guide', guideBox);
+  if (opts.routeAroundGuide) {
+    guide.wrapGeom('rail', { axis: [0, 1, 0], origin: [0, 0, 0], radius: 6, halfLengthMm: 30 });
+  }
+  arm.part('path-trap', pathTrapBox);
   arm.part('arm', armBox).connector('sa', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
 
   arm.tendon('balance', {
@@ -47,12 +56,15 @@ async function buildArm(opts: { wrapObstacle?: boolean } = {}): Promise<{
     restLengthMm: 90,
     stiffnessNmm: 0.6,
     ...(opts.wrapObstacle ? { wrapGeoms: [{ partName: 'obstacle', wrapName: 'rail' }] } : {}),
+    ...(opts.routeAroundGuide ? { via: [{ wrap: { partName: 'guide', wrapName: 'rail', sidesite: [0, 0, 20] } }] } : {}),
   });
 
   const boxes: Record<string, OcctBackend> = {
     base: (await baseBox.lower()) as OcctBackend,
     arm: (await armBox.lower()) as OcctBackend,
     obstacle: (await obsBox.lower()) as OcctBackend,
+    guide: (await guideBox.lower()) as OcctBackend,
+    'path-trap': (await pathTrapBox.lower()) as OcctBackend,
   };
   return { arm, boxes };
 }
@@ -120,7 +132,24 @@ describe('checkTendonBodyIntersectAtPose — criterion 8 helper', () => {
     expect(fired(results, 'obstacle')).toBe(false);
   });
 
-  it('is GREEN on the obstacle when the tendon routes around it via a wrap geom', async () => {
+  it('skips exact BREP distance queries for bodies outside the tendon clearance bounds', async () => {
+    const { arm, boxes } = await buildArm();
+    const sample = makeSample(boxes, {
+      base: Transform.identity(),
+      arm: Transform.translation(100, 0, 0),
+      obstacle: Transform.translation(50, 0, 200),
+    });
+    const measureGap = vi.spyOn(jointMeshContinuity, 'measureGapToBody');
+    try {
+      const results = checkTendonBodyIntersectAtPose(arm, sample);
+      expect(fired(results, 'obstacle')).toBe(false);
+      expect(measureGap.mock.calls.some(([shape]) => shape === boxes.obstacle)).toBe(false);
+    } finally {
+      measureGap.mockRestore();
+    }
+  });
+
+  it('is GREEN on the obstacle when the tangent route clears its wrap geom owner', async () => {
     const { arm, boxes } = await buildArm({ wrapObstacle: true });
     // Obstacle still on the line, but the tendon declares a wrap rail on
     // it — the cable rides on the rail, so the wrap owner is excluded.
@@ -131,5 +160,18 @@ describe('checkTendonBodyIntersectAtPose — criterion 8 helper', () => {
     });
     const results = checkTendonBodyIntersectAtPose(arm, sample);
     expect(fired(results, 'obstacle')).toBe(false);
+  });
+
+  it('checks the tangent path around a wrap instead of the chord through its center', async () => {
+    const { arm, boxes } = await buildArm({ routeAroundGuide: true });
+    const sample = makeSample(boxes, {
+      base: Transform.identity(),
+      arm: Transform.translation(100, 0, 0),
+      obstacle: Transform.translation(50, 0, 200),
+      guide: Transform.translation(50, 0, 0),
+      'path-trap': Transform.translation(25, 0, 0),
+    });
+    const results = checkTendonBodyIntersectAtPose(arm, sample);
+    expect(fired(results, 'path-trap')).toBe(false);
   });
 });
