@@ -6,7 +6,7 @@
 
 import { createHash } from 'node:crypto';
 import { lstat, mkdir, mkdtemp, open, rm, writeFile } from 'node:fs/promises';
-import { basename, dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve, win32 } from 'node:path';
 import process from 'node:process';
 import { decomposeStepTransform } from './stepAssemblyImport';
 import type { StepAssemblySnapshot, StepImportOccurrence } from './stepAssemblyTypes';
@@ -105,6 +105,10 @@ function throwRenameError(destination: string, nativeCode: number, existsError: 
   throw new Error(`Cannot atomically publish STEP bundle to '${destination}' (native error ${nativeCode}).`);
 }
 
+export function toWindowsExtendedPath(path: string): string {
+  return win32.toNamespacedPath(path);
+}
+
 /** Rename a complete staged bundle into place with an OS-level no-replace guarantee. */
 export async function renameDirectoryNoReplace(staging: string, outDir: string): Promise<void> {
   if (!['darwin', 'linux', 'win32'].includes(process.platform)) {
@@ -132,7 +136,7 @@ export async function renameDirectoryNoReplace(staging: string, outDir: string):
     const kernel32 = koffi.load('kernel32.dll');
     const moveFile = kernel32.func('int __stdcall MoveFileW(const wchar_t *from, const wchar_t *to)');
     const getLastError = kernel32.func('uint32_t __stdcall GetLastError(void)');
-    if (moveFile(staging, outDir) !== 0) return;
+    if (moveFile(toWindowsExtendedPath(staging), toWindowsExtendedPath(outDir)) !== 0) return;
     const nativeCode = getLastError();
     throwRenameError(outDir, nativeCode, nativeCode === 80 || nativeCode === 183);
   }

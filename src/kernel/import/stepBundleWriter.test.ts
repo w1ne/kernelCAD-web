@@ -4,7 +4,17 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { publishStagedStepBundle, renameDirectoryNoReplace } from './stepBundleWriter';
+import { publishStagedStepBundle, renameDirectoryNoReplace, toWindowsExtendedPath } from './stepBundleWriter';
+
+describe('toWindowsExtendedPath', () => {
+  it('converts drive-letter paths to the Windows extended-length form', () => {
+    expect(toWindowsExtendedPath('C:\\deep\\folder\\bundle')).toBe('\\\\?\\C:\\deep\\folder\\bundle');
+  });
+
+  it('converts UNC paths to the Windows extended-length form', () => {
+    expect(toWindowsExtendedPath('\\\\server\\share\\deep\\bundle')).toBe('\\\\?\\UNC\\server\\share\\deep\\bundle');
+  });
+});
 
 describe('publishStagedStepBundle', () => {
   let root: string;
