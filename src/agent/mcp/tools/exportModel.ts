@@ -40,7 +40,7 @@ export interface ExportModelInput {
   feature_id?: string;
   /** Per-format options bag; discriminator `options.format` must match `format`. */
   options?: ExportOptions;
-  /** Skip the STL watertight verify gate (default: verify on). */
+  /** Skip the default STL/STEP validity and watertightness gates. */
   no_verify?: boolean;
 }
 
@@ -164,9 +164,9 @@ function exportMetadataFields(
  * carries per-format knobs (see the kernelcad-mcp skill for the per-format
  * keys).
  *
- * STL and STEP exports run a watertight verify by default; a failing mesh
- * still writes the file (so the broken mesh can be inspected) but fails the
- * call with `export.mesh.not-watertight` unless `{ no_verify: true }`.
+ * STL and STEP exports run validity checks by default; STEP also checks the
+ * source B-rep. A failing shape still writes the file for inspection and
+ * returns its diagnostic unless `{ no_verify: true }`.
  *
  * Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`.
  */
