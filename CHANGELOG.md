@@ -1,5 +1,7 @@
 # Unreleased
 
+# v0.17.2 — 2026-10-26
+
 ## S7 + S8 Part A — collaborative feature graph, change-sets, merge and gate
 
 - `src/collab` captures a feature graph from `.kcad.ts` source without lowering
