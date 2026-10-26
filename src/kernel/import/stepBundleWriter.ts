@@ -5,8 +5,9 @@
 // places/colors its independently transformable imported shape.
 
 import { createHash } from 'node:crypto';
-import { open, lstat, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
+import { lstat, link, mkdir, mkdtemp, open, readdir, rm, rmdir, unlink, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
+import { pipeline } from 'node:stream/promises';
 import { decomposeStepTransform } from './stepAssemblyImport';
 import type { StepAssemblySnapshot, StepImportOccurrence } from './stepAssemblyTypes';
 
@@ -89,7 +90,116 @@ async function pathExists(path: string): Promise<boolean> {
   }
 }
 
-/** Write a complete bundle to a sibling staging directory, then publish it. */
+function errorCode(error: unknown): string | undefined {
+  return typeof error === 'object' && error !== null && 'code' in error
+    ? String((error as { code?: unknown }).code)
+    : undefined;
+}
+
+async function publishFileNoReplace(source: string, destination: string, createdFiles: string[]): Promise<void> {
+  try {
+    // Staging is a sibling of the output, so hard links publish each file
+    // atomically and fail with EEXIST instead of replacing a raced path.
+    await link(source, destination);
+    createdFiles.push(destination);
+    return;
+  } catch (error) {
+    const code = errorCode(error);
+    if (code === 'EEXIST') throw new Error(`Output path already exists: '${destination}'.`);
+    if (!['EPERM', 'ENOTSUP', 'EOPNOTSUPP', 'EXDEV'].includes(code ?? '')) throw error;
+
+    // Some filesystems disallow hard links. An exclusive create followed by a
+    // streamed copy still prevents an existing destination from being replaced.
+    const sourceHandle = await open(source, 'r');
+    let destinationHandle: Awaited<ReturnType<typeof open>> | undefined;
+    try {
+      try {
+        destinationHandle = await open(destination, 'wx');
+      } catch (copyError) {
+        if (errorCode(copyError) === 'EEXIST') throw new Error(`Output path already exists: '${destination}'.`);
+        throw copyError;
+      }
+      createdFiles.push(destination);
+      await pipeline(
+        sourceHandle.createReadStream({ autoClose: false }),
+        destinationHandle.createWriteStream({ autoClose: false }),
+      );
+    } finally {
+      await sourceHandle.close().catch(() => undefined);
+      await destinationHandle?.close().catch(() => undefined);
+    }
+  }
+}
+
+async function publishDirectoryContents(
+  source: string,
+  destination: string,
+  createdDirectories: string[],
+  createdFiles: string[],
+): Promise<void> {
+  await mkdir(destination);
+  createdDirectories.push(destination);
+  const entries = await readdir(source, { withFileTypes: true });
+  entries.sort((a, b) => {
+    if (a.isDirectory() !== b.isDirectory()) return a.isDirectory() ? -1 : 1;
+    if (a.name === 'manifest.json') return 1;
+    if (b.name === 'manifest.json') return -1;
+    return a.name.localeCompare(b.name);
+  });
+
+  for (const entry of entries) {
+    const sourcePath = join(source, entry.name);
+    const destinationPath = join(destination, entry.name);
+    if (entry.isDirectory()) {
+      await publishDirectoryContents(sourcePath, destinationPath, createdDirectories, createdFiles);
+      continue;
+    }
+    if (!entry.isFile()) throw new Error(`Unexpected entry in staged STEP bundle: '${sourcePath}'.`);
+
+    await publishFileNoReplace(sourcePath, destinationPath, createdFiles);
+  }
+}
+
+/** Claim the final directory atomically, then publish each staged path without replacement. */
+export async function publishStagedStepBundle(staging: string, outDir: string): Promise<void> {
+  const createdDirectories: string[] = [];
+  const createdFiles: string[] = [];
+  try {
+    try {
+      // mkdir is the no-replace operation for the final directory. A path that
+      // appeared after the early check is rejected instead of being renamed over.
+      await mkdir(outDir);
+    } catch (error) {
+      if (errorCode(error) === 'EEXIST') throw new Error(`Output path already exists: '${outDir}'.`);
+      throw error;
+    }
+    createdDirectories.push(outDir);
+
+    const entries = await readdir(staging, { withFileTypes: true });
+    entries.sort((a, b) => {
+      if (a.isDirectory() !== b.isDirectory()) return a.isDirectory() ? -1 : 1;
+      if (a.name === 'manifest.json') return 1;
+      if (b.name === 'manifest.json') return -1;
+      return a.name.localeCompare(b.name);
+    });
+    for (const entry of entries) {
+      const sourcePath = join(staging, entry.name);
+      const destinationPath = join(outDir, entry.name);
+      if (entry.isDirectory()) {
+        await publishDirectoryContents(sourcePath, destinationPath, createdDirectories, createdFiles);
+        continue;
+      }
+      if (!entry.isFile()) throw new Error(`Unexpected entry in staged STEP bundle: '${sourcePath}'.`);
+      await publishFileNoReplace(sourcePath, destinationPath, createdFiles);
+    }
+  } catch (error) {
+    for (const path of createdFiles.reverse()) await unlink(path).catch(() => undefined);
+    for (const path of createdDirectories.reverse()) await rmdir(path).catch(() => undefined);
+    throw error;
+  }
+}
+
+/** Build in a sibling staging directory, then claim and fill the destination without replacement. */
 export async function writeStepBundle(input: WriteStepBundleInput): Promise<WrittenStepBundle> {
   const outDir = resolve(input.outDir);
   const parent = dirname(outDir);
@@ -178,8 +288,7 @@ export async function writeStepBundle(input: WriteStepBundleInput): Promise<Writ
     await writeFile(join(staging, scriptPath), script, { flag: 'wx' });
     await writeFile(join(staging, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, { flag: 'wx' });
     if (await pathExists(outDir)) throw new Error(`Output path already exists: '${outDir}'.`);
-    await rename(staging, outDir);
-    staging = undefined;
+    await publishStagedStepBundle(staging, outDir);
     return {
       outDir,
       script: join(outDir, scriptPath),
