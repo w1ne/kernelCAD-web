@@ -348,12 +348,24 @@ function firstStepVerifyFailure(
 ): CompilerDiagnostic | undefined {
   for (const p of parts) {
     const partName = parts.length > 1 ? p.name : undefined;
-    if (!isValidShape(getOC(), p.shape.getReplicadShape().wrapped)) {
-      return brepInvalidDiagnostic(targetId, partName);
-    }
-    const report = verifyWatertight(meshShapeForExport(p.shape.getReplicadShape()));
-    if (!report.ok) return stlNotWatertightDiagnostic(report, targetId, partName, 'STEP mesh');
+    const failure = stepShapeVerifyFailure(p.shape, targetId, partName);
+    if (failure) return failure;
   }
+  return undefined;
+}
+
+/** Apply the STEP B-rep and downstream mesh gates to one exported shape. */
+function stepShapeVerifyFailure(
+  shape: OcctBackend,
+  targetId: string,
+  partName?: string,
+): CompilerDiagnostic | undefined {
+  const replicadShape = shape.getReplicadShape();
+  if (!isValidShape(getOC(), replicadShape.wrapped)) {
+    return brepInvalidDiagnostic(targetId, partName);
+  }
+  const report = verifyWatertight(meshShapeForExport(replicadShape));
+  if (!report.ok) return stlNotWatertightDiagnostic(report, targetId, partName, 'STEP mesh');
   return undefined;
 }
 
@@ -683,7 +695,7 @@ export async function exportSingleShape(
     case 'gcode':
       return exportSingleGcode(input, shape, targetId, run, diagnostics, featureCount);
     case 'step':
-      return exportSingleStep(shape, diagnostics, featureCount);
+      return exportSingleStep(input, shape, targetId, diagnostics, featureCount);
     case 'dxf':
       return exportShapeDxf(shape, targetId, input.options, run, diagnostics, featureCount);
     case '3mf':
@@ -747,12 +759,16 @@ async function exportSingleGcode(
 }
 
 async function exportSingleStep(
+  input: ExportInput,
   shape: OcctBackend,
+  targetId: string,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
   const bytes = stampStepOriginatingSystem(await shape.exportSTEPAsync(), attributionGenerator());
-  return { bytes, featureCount, diagnostics };
+  const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+  const failure = verify ? stepShapeVerifyFailure(shape, targetId) : undefined;
+  return { bytes, featureCount, diagnostics: failure ? [...diagnostics, failure] : diagnostics };
 }
 
 async function exportSingle3mf(
