@@ -1,5 +1,35 @@
 # Unreleased
 
+## S7 + S8 Part A — collaborative feature graph, change-sets, merge and gate
+
+- `src/collab` captures a feature graph from `.kcad.ts` source without lowering
+  (stable ids, resolved params, id refs, statement spans, project params,
+  requirement inputs, unowned source), lifts an edit into typed change-set ops,
+  and merges three-way on feature id.
+- Structural conflicts are typed and returned with both values:
+  `collab.conflict.param` carries base/head/yours, plus `deleted-ref`, `cycle`,
+  `forward-ref`, `duplicate-id`, `invalid-value`, `same-feature` and `unowned`.
+  Disjoint edits on a stale base auto-rebase; feature order is never commuted.
+- `footprint` computes writes, static reads, same-body downstream features,
+  assembly placements and the requirements whose inputs fall in the closure;
+  `independent(a, b)` decides what may be evaluated in parallel.
+- `gateCandidate` evaluates only the merged candidate and rejects a feature that
+  was healthy in both parents, a binding change outside the write footprint, or
+  a requirement that passed at head. Requirements already failing at head are
+  reported as pre-existing; an evaluation throw always rejects.
+- `kernelcad collab check --file … --base … --head … --yours <ref|dir> [--json]
+  [--out]` runs the whole local gate for separate agent branches/worktrees.
+  Exit 0 = pass, 1 = conflict/reject.
+- New diagnostics: `collab.conflict.*` and `collab.gate.*`.
+- Example `examples/collab/bracket-and-motor-plate.kcad.ts`; cookbook
+  `collab-gate` and `collab-local-gate`; assemblies skill section "Several
+  agents on one repo".
+- Task 0 measured p95 incremental evaluation at 5.78 s on five real assemblies
+  (below the 10 s decision gate), so dependency-keyed reuse is not a
+  precondition for the hosted sequencer.
+- Hosted queue, sequencer, agents/claims, MCP tools and the OCCT worker pool
+  remain Part B in the private server repository.
+
 ## S6 — edit preview against intent
 
 - `set_param({ ..., preview: true })` builds the current and revised source in

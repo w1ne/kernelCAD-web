@@ -827,6 +827,38 @@ arm.mate('attach', 'base.mount', 'bracket.flange', 'fastened');
 
 See `cookbook/snippets/Q-S5-connector-queries.kcad.ts`.
 
+## Several agents on one repo
+
+Agents often work in separate git worktrees or branches. Before merging an
+assembly edit, check it locally against current head:
+
+```bash
+kernelcad collab check --file examples/collab/bracket-and-motor-plate.kcad.ts \
+  --base origin/develop --head origin/develop --yours my-branch --json
+```
+
+The command captures base/head/yours without lowering, lifts your edit into a
+feature-id change-set, merges it onto head, then evaluates **only** the merged
+candidate and gates it against the requirements that passed at head. Exit 0
+means the change can land; exit 1 is a structural conflict or a rejected gate
+result (the JSON carries `MergeResult` / `GateVerdict`). `--out <path>` writes
+the merged source on pass; `--yours <dir>` reads the file from a directory
+instead of a git ref.
+
+Hard rules the gate enforces:
+
+- the same parameter set to different values on both sides is a
+  `collab.conflict.param` returning `base`, `head` and `yours` — never
+  last-writer-wins;
+- a feature that built at head must still build in the merged candidate;
+- a selector that re-binds outside your write footprint is rejected;
+- a requirement that passed at head and now fails is rejected with its measured
+  value, limit and the feature ids in its input closure. Requirements already
+  failing at head are reported as pre-existing, not blamed on you.
+
+Runnable model: `examples/collab/bracket-and-motor-plate.kcad.ts`. Moving the
+bracket hole 2 mm fails `hole-pattern`; changing the bracket fillet passes.
+
 ## Verification gates
 
 After authoring a multi-part assembly, run before reporting done:
