@@ -84,7 +84,7 @@ npx tsx eval/benchmarks/cadgenbench/run.ts --scripts-from path/to/scripts --task
 | `--model` | default `$EVAL_MODEL` or the eval default model; it must accept images |
 | `--edit-fallback passthrough` | an editing task without a valid edit submits the unchanged input. The benchmark scores a no-op edit at no more than 0.4. An invalid candidate scores 0. |
 | `--retry-failed` | also rerun tasks that ended `invalid` or `failed` (by default, resume skips them) |
-| `--visual-review` | opt in to one additional model review of a valid generation candidate, with browser-free front/right/top/isometric STEP previews; requires a vision-capable LLM. The previous valid script and STEP are retained as a checkpoint. A revised script is promoted only after the local validity gate passes. This is an unscored model judgment, not proof of improved similarity. |
+| `--visual-review` | opt in to a model review of a valid generation candidate, with browser-free front/right/top/isometric STEP previews; requires a vision-capable LLM. A valid revision is promoted only if a second model comparison explicitly prefers it; the previous valid script and STEP are retained as a checkpoint. This self-comparison is unscored and does not prove improved similarity. |
 | `--revision <sha>` | pin a dataset revision (default `main`, resolved to a sha and recorded in `run.json`) |
 | `--data-dir <dir>` | use a local copy of the inputs instead of downloading them |
 | `--agree` | sets `agree_to_publish: true` in `meta.json` (default false) |
@@ -95,8 +95,9 @@ npx tsx eval/benchmarks/cadgenbench/run.ts --scripts-from path/to/scripts --task
 - `tasks/<id>/`: `state.json` (resume record: status, attempts, tokens, cost,
   time, pre-check and official verdicts), `prompt.md`, `transcript.md`,
   `model.kcad.ts`, `model.step`.
-- With visual review, `visual-view-*.png`, `visual-response.md`, and
-  `visual-review.json` retain the views, response, outcome and any failure.
+- With visual review, `visual-view-*.png`, `visual-revised-view-*.png`,
+  `visual-response.md`, `visual-comparison.md`, and `visual-review.json`
+  retain the views, responses, outcome and any failure when available.
   When a revision is promoted, `visual-checkpoint.kcad.ts` and
   `visual-checkpoint.step` retain the previous valid candidate.
 - `submission/<id>/output.step` and `submission.zip`: `meta.json` plus one

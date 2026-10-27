@@ -437,11 +437,12 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
         const reviewPath = join(workDir, 'visual-review.kcad.ts');
         const refinement = await refineVisualCandidate({
           prompt, original, drawing: loadImages(task.images),
-          render: async () => {
-            const views = await (cfg.visualRender ?? renderCandidateViews)(gate.stepPathFor(scriptPath));
+          render: async code => {
+            const revised = code !== original;
+            const views = await (cfg.visualRender ?? renderCandidateViews)(gate.stepPathFor(revised ? reviewPath : scriptPath));
             for (let i = 0; i < views.length; i++) {
               if (views[i].mediaType !== 'image/png') throw new Error('visual preview must be PNG');
-              writeFileSync(join(workDir, `visual-view-${i + 1}.png`), Buffer.from(views[i].data, 'base64'));
+              writeFileSync(join(workDir, `visual-${revised ? 'revised-' : ''}view-${i + 1}.png`), Buffer.from(views[i].data, 'base64'));
             }
             return views;
           },
@@ -454,6 +455,7 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
         const reviewFailure = refinement.outcome === 'rejected' ? gate.lastFailure(reviewPath) : undefined;
         writeFileSync(join(workDir, 'visual-review.json'), JSON.stringify({outcome: refinement.outcome, tokensIn: refinement.tokensIn, tokensOut: refinement.tokensOut, ...(refinement.error ? {error: refinement.error} : {}), ...(reviewFailure ? {gateFailure: reviewFailure} : {})}, null, 2)+'\n');
         if (refinement.responseText !== undefined) writeFileSync(join(workDir, 'visual-response.md'), refinement.responseText+'\n');
+        if (refinement.comparisonText !== undefined) writeFileSync(join(workDir, 'visual-comparison.md'), refinement.comparisonText+'\n');
         if (refinement.outcome === 'accepted') {
           copyFileSync(scriptPath, join(workDir, 'visual-checkpoint.kcad.ts'));
           copyFileSync(gate.stepPathFor(scriptPath), join(workDir, 'visual-checkpoint.step'));

@@ -6,7 +6,7 @@
 // (validity.test.ts, the CLI export tests).
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { MockAgentClient } from '../../agent';
 import type { EvaluateResult } from '../../types';
@@ -145,13 +145,17 @@ describe('runTask with an LLM', () => {
   it('uses a visually revised candidate only after the validity gate passes', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-visual-'));
     const runDir = join(root, 'run');
-    const agent = new MockAgentClient([reply('return box(1,1,1);'), reply('return box(2,2,2);')]);
-    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, visualReview: true, visualRender: async () => [{ mediaType:'image/png', data:'render' }] }));
+    const agent = new MockAgentClient([reply('return box(1,1,1);'), reply('return box(2,2,2);'), {text:'B', tokens_in:1,tokens_out:1}]);
+    const paths: string[] = [];
+    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, visualReview: true, visualRender: async path => { paths.push(path); return [{ mediaType:'image/png', data:'render' }]; } }));
     expect(s.status).toBe('valid');
     expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toBe('return box(2,2,2);');
     expect(readFileSync(join(runDir, 'tasks/101/model.kcad.ts'), 'utf8')).toBe('return box(2,2,2);');
     expect(readFileSync(join(runDir, 'tasks/101/model.step'), 'utf8')).toBe('return box(2,2,2);');
     expect(readFileSync(join(runDir, 'tasks/101/visual-checkpoint.step'), 'utf8')).toBe('return box(1,1,1);');
+    expect(readFileSync(join(runDir, 'tasks/101/visual-comparison.md'), 'utf8')).toBe('B\n');
+    expect(existsSync(join(runDir, 'tasks/101/visual-revised-view-1.png'))).toBe(true);
+    expect(paths.map(path => basename(path))).toEqual(['model.step', 'visual-review.step']);
   });
   it('feeds a validity failure back as a repair prompt and accepts the fixed candidate', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));

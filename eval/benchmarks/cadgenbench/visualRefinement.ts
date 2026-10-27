@@ -15,6 +15,7 @@ export interface VisualRefinementResult {
   tokensIn: number;
   tokensOut: number;
   responseText?: string;
+  comparisonText?: string;
   error?: string;
 }
 export async function refineVisualCandidate(input: VisualRefinementInput): Promise<VisualRefinementResult> {
@@ -35,8 +36,24 @@ export async function refineVisualCandidate(input: VisualRefinementInput): Promi
   if (!/```(?:ts|typescript|javascript|js)?\s*\n/i.test(response.text)) return keep('no_script', response.tokens_in, response.tokens_out, response.text);
   const proposal = extractScript(response.text);
   if (proposal === null) return keep('no_script', response.tokens_in, response.tokens_out, response.text);
+  if (proposal === input.original) return keep('unchanged', response.tokens_in, response.tokens_out, response.text);
   try {
     if (!(await input.check(proposal))) return keep('rejected', response.tokens_in, response.tokens_out, response.text);
   } catch (e) { return keep('check_failed', response.tokens_in, response.tokens_out, response.text, e instanceof Error ? e.message : String(e)); }
-  return { code: proposal, outcome: 'accepted', tokensIn: response.tokens_in, tokensOut: response.tokens_out, responseText: response.text };
+  let revisedViews: AgentImage[];
+  try {
+    revisedViews = await input.render(proposal);
+    if (revisedViews.length !== views.length || revisedViews.length === 0) throw new Error('Revised preview view count differs from original');
+  } catch (e) { return keep('comparison_render_failed', response.tokens_in, response.tokens_out, response.text, e instanceof Error ? e.message : String(e)); }
+  let comparison: AgentResponse;
+  try {
+    comparison = await input.revise([{
+      role: 'user', images: [...input.drawing, ...views, ...revisedViews],
+      content: `${input.prompt}\n\nThe first ${input.drawing.length} image(s) are the drawing. The next ${views.length} image(s) show candidate A; the final ${revisedViews.length} image(s) show candidate B in matching views. Compare the geometry against the drawing. Reply with exactly A, B, or UNCERTAIN. Choose B only if it is clearly more faithful; if you cannot tell, choose UNCERTAIN.`,
+    }]);
+  } catch (e) { return keep('comparison_failed', response.tokens_in, response.tokens_out, response.text, e instanceof Error ? e.message : String(e)); }
+  const tokensIn=response.tokens_in+comparison.tokens_in, tokensOut=response.tokens_out+comparison.tokens_out;
+  return { code: /^\s*B\s*$/i.test(comparison.text) ? proposal : input.original,
+    outcome: /^\s*B\s*$/i.test(comparison.text) ? 'accepted' : 'comparison_not_preferred',
+    tokensIn, tokensOut, responseText: response.text, comparisonText: comparison.text };
 }
