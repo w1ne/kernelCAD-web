@@ -7,7 +7,9 @@
 
 import { getHostFs } from '../../shared/runtime/hostFs';
 
-const IMPORT_CALL = /\b(?:fromSTEP|fromBREP|fromSTL|fromDXF|fromSVG|fromGLB|fromGLTF|referenceImage|fontPath)\s*\(\s*/g;
+// `meshFromSTL` must be listed whole: a `\bfromSTL` boundary does not see it.
+// `fromGLB` / `fromGLTF` are not loaders. `fetchPart` is resolved below.
+const IMPORT_CALL = /\b(?:meshFromSTL|fromSTEP|fromBREP|fromSTL|fromDXF|fromSVG|referenceImage|fontPath|fetchPart)\s*\(\s*/g;
 
 function hashBytes(bytes: Uint8Array): string {
   let h1 = 0x811c9dc5;
@@ -20,9 +22,20 @@ function hashBytes(bytes: Uint8Array): string {
   return `${bytes.length.toString(16)}:${(h1 >>> 0).toString(16)}:${(h2 >>> 0).toString(16)}`;
 }
 
-function quotedPath(rest: string): string | null {
+function quotedPath(rest: string): { path: string; end: number } | null {
   const literal = /^(?:'([^'\\]*)'|"([^"\\]*)"|`([^`$\\]*)`)/.exec(rest);
-  return literal?.[1] ?? literal?.[2] ?? literal?.[3] ?? null;
+  const path = literal?.[1] ?? literal?.[2] ?? literal?.[3];
+  if (!literal || path === undefined) return null;
+  return { path, end: literal[0].length };
+}
+
+function unprovable(): string {
+  return `unprovable:${Math.random().toString(16).slice(2)}`;
+}
+
+/** A second argument can select different bytes than the literal alone. */
+function literalOnly(rest: string, end: number): boolean {
+  return /^\s*\)/.test(rest.slice(end));
 }
 
 function hashImport(path: string, scriptDir: string | undefined): string {
@@ -37,14 +50,32 @@ function hashImport(path: string, scriptDir: string | undefined): string {
   }
 }
 
-/** Stable when every imported literal path's bytes are unchanged. */
-export function importIdentity(code: string, scriptDir: string | undefined): string {
+async function hashFetchPart(id: string): Promise<string> {
+  if (!getHostFs()) return unprovable();
+  try {
+    const { loadCatalog, resolveById } = await import('../parts/catalog');
+    const hit = resolveById(loadCatalog(), id);
+    if (!hit) return unprovable();
+    const step = hashImport(hit.stepPath, undefined);
+    const manifest = hit.stepPath.replace(/\.step$/i, '.json');
+    const side = getHostFs()?.fileExists(manifest) ? hashImport(manifest, undefined) : 'no-manifest';
+    return `fetch:${id}:${step}:${side}`;
+  } catch {
+    return unprovable();
+  }
+}
+
+/** Stable when every imported literal's bytes are unchanged. */
+export async function importIdentity(code: string, scriptDir: string | undefined): Promise<string> {
   const parts: string[] = [];
   const re = new RegExp(IMPORT_CALL);
   while (re.exec(code) !== null) {
-    const path = quotedPath(code.slice(re.lastIndex));
-    if (path === null) return `unprovable:${Math.random().toString(16).slice(2)}`;
-    parts.push(hashImport(path, scriptDir));
+    const name = /([A-Za-z]+)\s*\(\s*$/.exec(code.slice(0, re.lastIndex))?.[1] ?? '';
+    const rest = code.slice(re.lastIndex);
+    const quoted = quotedPath(rest);
+    if (!quoted || !literalOnly(rest, quoted.end)) return unprovable();
+    if (name === 'fetchPart') parts.push(await hashFetchPart(quoted.path));
+    else parts.push(hashImport(quoted.path, scriptDir));
   }
   return parts.join('|');
 }

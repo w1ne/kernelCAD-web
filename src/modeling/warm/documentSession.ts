@@ -160,7 +160,7 @@ class WarmDocuments implements WarmDocumentStore {
 
   async open(input: WarmOpen): Promise<WarmDocument> {
     const hash = sourceHash(input.code);
-    const imports = importIdentity(input.code, input.scriptDir);
+    const imports = await importIdentity(input.code, input.scriptDir);
     const existing = this.docs.get(input.id);
     if (existing && sameIdentity(existing, input, hash, imports)) {
       this.touch(existing);
@@ -247,7 +247,7 @@ class WarmDocuments implements WarmDocumentStore {
       ...entry,
       model,
       overrides,
-      importHash: importIdentity(entry.code, entry.scriptDir),
+      importHash: await importIdentity(entry.code, entry.scriptDir),
     };
     return { ...fullResult(stored), document: this.insert(stored) };
   }

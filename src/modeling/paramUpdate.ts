@@ -139,7 +139,7 @@ async function applyParamEdits(
     settleFeatureFailures(session, featureErrorIds(result.diagnostics), relowered);
   }
   populateCache(session, result.shapes);
-  stampAnalyses(model.records, session.paramTable, result.shapes);
+  stampAnalyses(model.records, session.paramTable, result.shapes, session.getSurfaceRecords());
   // This run lowered (or reused) every record under the edited param table,
   // so it is the session's full lower now. Recording it lets the next
   // `meshFeaturesPerFeature` mesh the re-lowered shapes instead of lowering
@@ -217,8 +217,9 @@ function stampAnalyses(
   records: readonly FeatureRecord[],
   paramTable: CaptureSession['paramTable'],
   shapes: ReadonlyMap<string, ShapeBackend>,
+  surfaces: ReturnType<CaptureSession['getSurfaceRecords']>,
 ): void {
-  const fingerprints = featureFingerprints(records, paramTable);
+  const fingerprints = featureFingerprints(records, paramTable, surfaces);
   for (const [id, fpShape] of shapes) {
     const fp = fingerprints.get(id);
     if (fp) stampFingerprint(fpShape, fp);

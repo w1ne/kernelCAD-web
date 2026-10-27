@@ -1434,6 +1434,11 @@ export class OcctBackend implements ShapeBackend {
   }
 
   dispose(): void {
+    const envelope = this.analysisBody;
+    this.analysisBody = undefined;
+    if (envelope && envelope !== this) {
+      try { envelope.dispose(); } catch { /* envelope may already be freed */ }
+    }
     const maybeDelete = (this.shape as { delete?: () => void }).delete;
     if (typeof maybeDelete === 'function') {
       maybeDelete.call(this.shape);
