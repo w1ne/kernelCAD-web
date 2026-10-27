@@ -49,6 +49,25 @@ export function inverseNormal(normal: Vec3, transforms: readonly ShapeTransform[
   );
 }
 
+/** Recover a pre-transform direction. Vectors use the inverse linear map. */
+export function inverseVector(vector: Vec3, transforms: readonly ShapeTransform[]): Vec3 {
+  return [...transforms].reverse().reduce(applyInverseLinear, vector);
+}
+
+function applyInverseLinear(vector: Vec3, transform: ShapeTransform): Vec3 {
+  switch (transform.op) {
+    case 'translate':
+      return vector;
+    case 'rotateAxis':
+    case 'reflect':
+      return mul(transpose(linearOf(transform)), vector);
+    case 'scale':
+      return [vector[0] / transform.sx, vector[1] / transform.sy, vector[2] / transform.sz];
+    default:
+      return vector;
+  }
+}
+
 /** Free vector (an authored axis or UV offset), scaled and rotated. */
 export function forwardVector(vector: Vec3, transforms: readonly ShapeTransform[]): Vec3 {
   return transforms.reduce((current, transform) => mul(linearOf(transform), current), vector);

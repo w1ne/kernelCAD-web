@@ -139,7 +139,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Assemble',
     blurb: 'Build a mechanism from parts: connectors, mates, joints, posed Scenes.',
-    names: ['assembly', 'joint', 'part', 'parts', 'assemblyName'],
+    names: ['assembly', 'joint', 'part', 'parts', 'assemblyName', 'resolutionInputs'],
   },
   {
     task: 'Curves & surfaces',

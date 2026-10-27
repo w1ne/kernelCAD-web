@@ -264,6 +264,94 @@ describe('topology connector origins follow a rebuilt face', () => {
       expect.closeTo(10, 3),
     ]);
   });
+
+  it('agrees on a front-face hole after rotateZ and a part at', async () => {
+    // Front centre (20, 0, 5). rotateZ(90) sends (x, y) to (-y, x) → (0, 20, 5).
+    // Part at [50, 0, 0] then lifts that mouth to (50, 20, 5). The scene cap
+    // and solveMates must land on that drilled mouth, not on the face that
+    // happens to sit on the world min-Y plane after the move.
+    const model = await buildModel({
+      fileName: 'rotated-at-hole-follow.kcad.ts',
+      code: `
+        const plate = box(40, 20, 10)
+          .hole('front', { u: 0, v: 0, diameter: 4, depth: 'through' })
+          .rotateZ(90);
+        const arm = assembly('stack');
+        arm.part('plate', plate, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'plate.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(solved[0], 3);
+    expect(scene[1]).toBeCloseTo(solved[1], 3);
+    expect(scene[2]).toBeCloseTo(solved[2], 3);
+    expect(solved[0]).toBeCloseTo(50, 3);
+    expect(solved[1]).toBeCloseTo(20, 3);
+    expect(solved[2]).toBeCloseTo(5, 3);
+  });
+
+  it('agrees on a top-face hole after reflect and a part at', async () => {
+    // Top hole at u=10 sits on (30, 10, 10). reflect('xy') sends z to -z,
+    // then part at [50, 0, 0] lifts the mouth to (80, 10, -10).
+    const model = await buildModel({
+      fileName: 'reflected-at-hole-follow.kcad.ts',
+      code: `
+        const plate = box(40, 20, 10)
+          .hole('top', { u: 10, v: 0, diameter: 4, depth: 'through' })
+          .reflect('xy');
+        const arm = assembly('stack');
+        arm.part('plate', plate, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'plate.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(solved[0], 3);
+    expect(scene[1]).toBeCloseTo(solved[1], 3);
+    expect(scene[2]).toBeCloseTo(solved[2], 3);
+    expect(solved[0]).toBeCloseTo(80, 3);
+    expect(solved[1]).toBeCloseTo(10, 3);
+    expect(solved[2]).toBeCloseTo(-10, 3);
+  });
+
+  it('places a polar side hole on the wall, not the face centroid', async () => {
+    // cylinder(h, r) spans z = 0..h. angleDeg 0 is +X on the wall, so the
+    // mouth is (r, 0, z), then part at [50, 0, 0] lifts it. The side-face
+    // centroid sits on the axis and is not the mouth.
+    const model = await buildModel({
+      fileName: 'polar-at-hole-follow.kcad.ts',
+      code: `
+        const collar = cylinder(10, 20).hole(
+          { ofSurfaceType: 'CYLINDER' },
+          { at: { angleDeg: 0, z: 5 }, diameter: 4, depth: 8 },
+        );
+        const arm = assembly('stack');
+        arm.part('collar', collar, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'collar.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(solved[0], 3);
+    expect(scene[1]).toBeCloseTo(solved[1], 3);
+    expect(scene[2]).toBeCloseTo(solved[2], 3);
+    expect(solved[0]).toBeCloseTo(70, 3);
+    expect(solved[1]).toBeCloseTo(0, 3);
+    expect(solved[2]).toBeCloseTo(5, 3);
+  });
 });
 
 async function solvedCapPoint(

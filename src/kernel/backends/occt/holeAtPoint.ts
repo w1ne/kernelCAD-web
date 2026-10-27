@@ -103,9 +103,9 @@ function closestOnFace(oc: Oc, face: Face, p: Vec3): { dist: number; point: Vec3
   }
 }
 
-interface CylinderFrame { origin: Vec3; dir: Vec3; radius: number }
+export interface CylinderAxisFrame { origin: Vec3; dir: Vec3; radius: number }
 
-function cylinderOf(oc: Oc, face: Face): CylinderFrame | undefined {
+function cylinderOf(oc: Oc, face: Face): CylinderAxisFrame | undefined {
   if (face.geomType !== 'CYLINDRE') return undefined;
   const adaptor = new oc.BRepAdaptor_Surface_2(face.wrapped, true);
   try {
@@ -124,8 +124,33 @@ function cylinderOf(oc: Oc, face: Face): CylinderFrame | undefined {
   }
 }
 
+/** Largest cylindrical face the hole selector matches. Polar `at` drills that
+ *  cylinder, the same choice `placePolar` makes. The mouth may already have
+ *  been cut away, so this does not require the polar point to still lie on
+ *  the trimmed face. */
+export function polarCylinderAxis(
+  feature: FeatureRecord,
+  target: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+): CylinderAxisFrame | undefined {
+  const oc = replicad.getOC() as Oc;
+  const faces = candidateFaces(feature, target, records);
+  if ('error' in faces) return undefined;
+  let best: CylinderAxisFrame | undefined;
+  for (const face of faces) {
+    const cyl = cylinderOf(oc, face);
+    if (cyl && (!best || cyl.radius > best.radius)) best = cyl;
+  }
+  return best;
+}
+
 /** World point at polar angle `angleDeg` about the cylinder axis, axial coordinate `z`. */
-function polarPoint(c: CylinderFrame, angleDeg: number, z: number): Vec3 {
+export function polarPointOnAxis(frame: CylinderAxisFrame, angleDeg: number, z: number): Vec3 {
+  return polarPoint(frame, angleDeg, z);
+}
+
+/** World point at polar angle `angleDeg` about the cylinder axis, axial coordinate `z`. */
+function polarPoint(c: CylinderAxisFrame, angleDeg: number, z: number): Vec3 {
   const ref0: Vec3 = Math.abs(c.dir[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
   const ref = unit(sub(ref0, scale(c.dir, dot(ref0, c.dir))));
   const side = cross(c.dir, ref);

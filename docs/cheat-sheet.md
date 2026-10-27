@@ -188,6 +188,7 @@ Build a mechanism from parts: connectors, mates, joints, posed Scenes.
 | `Scene.part(name: string) => ScenePart` | Look up a part by its assembly-unique name. |
 | `Scene.parts : readonly ScenePart[]` | Frozen, ordered list of parts in the Scene; ordering matches the order parts were added to the Assembly. |
 | `Scene.assemblyName : string` | Name passed to `assembly(name?)` at capture time; "unnamed-assembly" if no name was provided. |
+| `Shape.resolutionInputs() => { records: FeatureRecord[]; paramTable: ParamTable }` | Live feature records and param table for this shape. |
 
 ## Curves & surfaces
 

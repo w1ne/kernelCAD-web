@@ -42,7 +42,7 @@
   "src/modeling/capture/assemblyJoints.ts": 20,
   "src/modeling/capture/assemblyMateCapacity.ts": 9,
   "src/modeling/capture/assemblyModel.ts": 1,
-  "src/modeling/capture/assemblyParts.ts": 22,
+  "src/modeling/capture/assemblyParts.ts": 21,
   "src/modeling/capture/assemblySolve.ts": 14,
   "src/modeling/capture/authoringFeatureRecords.ts": 4,
   "src/modeling/capture/bridgeCurves.ts": 3,

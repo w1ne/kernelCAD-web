@@ -22,6 +22,7 @@ import type { LoopPin } from '../../../../shared/kinematics/loopClosure';
 import { resolveTopologyFrameOnBackend } from '../connectorTopology';
 import { built, finished, noShape, type LowerContext, type LowerOutcome } from './context';
 import { normalizeAxis, readVec3Param } from './helpers';
+import { translatePreservingLineage } from './transforms';
 
 /** `assemblyPart` — clones the wrapped source shape and applies its `at:`. */
 export function lowerAssemblyPart(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
@@ -42,7 +43,7 @@ export function lowerAssemblyPart(ctx: LowerContext, r: FeatureRecord): LowerOut
   const at = (r.metadata as { at?: Vec3Param } | undefined)?.at;
   if (at !== undefined) {
     const [tx, ty, tz] = readVec3Param(at);
-    shape = shape.translate(tx, ty, tz);
+    shape = translatePreservingLineage(shape, tx, ty, tz);
   }
   return built(shape);
 }

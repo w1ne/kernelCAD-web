@@ -23,13 +23,14 @@ import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { faceFrameOrigin } from '../../../kernel/backends/occt/faceFrame';
 import { detectCylindricalHoles } from '../../../kernel/backends/occt/holeDetection';
-import { isPointPlacedHole } from '../../../kernel/backends/occt/holeAtPoint';
+import { isPointPlacedHole, polarCylinderAxis, polarPointOnAxis } from '../../../kernel/backends/occt/holeAtPoint';
 import { ancestorFeatureClosure, holeAxisQueryName } from '../../parts/holeAutoConnectors';
 import {
   forwardPoint,
   forwardVector,
   inverseNormal,
   inversePoint,
+  inverseVector,
   transformsAfterCut,
 } from './holeAxisTransforms';
 
@@ -153,6 +154,12 @@ function mouthFrame(
   const outward = faceOutwardNormal(face);
   const into = neg(outward);
   const transforms = transformsAfterCut(ctx.records ?? [], hit.feature.id, ctx.consumerId, ctx.paramTable);
+  if (featureIsPolar(hit.feature)) {
+    const polar = polarAuthoredFrame(backend, hit.feature, ctx.records, transforms, ctx.bakedTranslation);
+    if (!polar) return null;
+    const outwardNow = normalize(forwardVector(polar.outward, transforms));
+    return pointPlacedFrame(polar.point, hit.feature, transforms, neg(outwardNow), ctx.bakedTranslation);
+  }
   const point = pointPlacedOrigin(hit.feature);
   if (point) return pointPlacedFrame(point, hit.feature, transforms, into, ctx.bakedTranslation);
   const normal0 = normalize(inverseNormal(outward, transforms));
@@ -180,12 +187,55 @@ function entryFace(
   feature: FeatureRecord,
   records: readonly FeatureRecord[] | undefined,
 ): Face | null {
+  // A canonical name on a solid that lost its lineage resolves to the planar
+  // face on the world bbox plane. After rotate or reflect that is a different
+  // face, and the mate would silently fasten there. Miss instead.
+  if (canonicalLineageLost(backend, feature)) return null;
   const picked = pickFace(feature, backend, records);
   return 'error' in picked ? null : picked;
 }
 
+function canonicalLineageLost(backend: OcctBackend, feature: FeatureRecord): boolean {
+  if (backend.historyMap !== undefined || backend.kind !== undefined) return false;
+  const face = feature.inputs.face;
+  return face?.kind === 'face' && face.ref.kind === 'canonical';
+}
+
+function featureIsPolar(feature: FeatureRecord): boolean {
+  return feature.params.atAngleDeg !== undefined && feature.params.atZ !== undefined;
+}
+
+/** Polar `at` stored only angle and axial z. Rebuild the cartesian mouth
+ *  `placePolar` would have cut, in the pre-transform frame, so
+ *  `pointPlacedFrame` can replay post-cut transforms and part `at`. */
+function polarAuthoredFrame(
+  backend: OcctBackend,
+  feature: FeatureRecord,
+  records: readonly FeatureRecord[] | undefined,
+  transforms: ReturnType<typeof transformsAfterCut>,
+  baked: Vec3 | undefined,
+): { point: Vec3; outward: Vec3 } | null {
+  if (!featureIsPolar(feature)) return null;
+  const axis = polarCylinderAxis(feature, backend, records);
+  if (!axis) return null;
+  const unbake = (p: Vec3): Vec3 => baked === undefined
+    ? p
+    : [p[0] - baked[0], p[1] - baked[1], p[2] - baked[2]];
+  const origin = inversePoint(unbake(axis.origin), transforms);
+  const dir = normalize(inverseVector(axis.dir, transforms));
+  const ref = perpendicular(axis.dir);
+  const sample = inversePoint(unbake(add(axis.origin, scale(ref, axis.radius))), transforms);
+  const radius = distToAxis(sample, origin, dir);
+  if (!(radius > 1e-9)) return null;
+  const angle = feature.params.atAngleDeg.evaluated;
+  const z = feature.params.atZ.evaluated;
+  const point = polarPointOnAxis({ origin, dir, radius }, angle, z);
+  const onAxis = add(origin, scale(dir, z - dot(origin, dir)));
+  return { point, outward: normalize(sub(point, onAxis)) };
+}
+
 function pointPlacedOrigin(feature: FeatureRecord): Vec3 | null {
-  if (!isPointPlacedHole(feature)) return null;
+  if (!isPointPlacedHole(feature) || featureIsPolar(feature)) return null;
   const { atX, atY, atZ } = feature.params;
   if (!atX || !atY || !atZ) return null;
   return [atX.evaluated, atY.evaluated, atZ.evaluated];
@@ -234,7 +284,9 @@ function faceOutwardNormal(face: Face): Vec3 {
 }
 
 const add = (a: Vec3, b: Vec3): Vec3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const scale = (v: Vec3, s: number): Vec3 => [v[0] * s, v[1] * s, v[2] * s];
+const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const neg = (v: Vec3): Vec3 => [-v[0], -v[1], -v[2]];
 const cross = (a: Vec3, b: Vec3): Vec3 => [
   a[1] * b[2] - a[2] * b[1],
@@ -245,4 +297,14 @@ const cross = (a: Vec3, b: Vec3): Vec3 => [
 function normalize(v: Vec3): Vec3 {
   const length = Math.hypot(v[0], v[1], v[2]);
   return length < 1e-12 ? v : scale(v, 1 / length);
+}
+
+function perpendicular(dir: Vec3): Vec3 {
+  const ref0: Vec3 = Math.abs(dir[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+  const along = scale(dir, dot(dir, ref0));
+  return normalize(sub(ref0, along));
+}
+
+function distToAxis(point: Vec3, origin: Vec3, dir: Vec3): number {
+  return Math.hypot(...sub(sub(point, origin), scale(dir, dot(dir, sub(point, origin)))));
 }

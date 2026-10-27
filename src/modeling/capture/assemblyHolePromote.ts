@@ -2,10 +2,10 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
 // Promoted `bolt-holes-N` frames, and the one-time replace when the author
-// declares the same name. Split out of assemblyParts.ts for the line budget.
+// declares the same name.
 
 import type { FeatureId } from '../../shared/intent/types';
-import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { Connector } from '../mates/connector';
 import { holeAxisAutoConnectorsForShape } from '../parts/holeAutoConnectors';
 import type { Shape } from './proxy';
@@ -37,12 +37,15 @@ export function takeConnectorSlot(
   if (existing < 0) return;
   const promoted = promotedNames(mateConnectors);
   if (!promoted.has(connectorName)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly.connector.duplicate-name: part '${partName}' already has a connector named '${connectorName}'.`,
-      id,
-      `invalid-args.assembly.connector-duplicate-name — rename one of the connectors on '${partName}'.`,
-    );
+    invalidArgs({
+      api: 'assembly.connector.duplicate-name',
+      path: 'name',
+      got: connectorName,
+      requires: `a connector name that is not already declared on part '${partName}'. A promoted bolt-holes-N can be replaced once`,
+      example: `plate.connector('bolt-holes-2', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })`,
+      featureId: id,
+      hintSlug: 'invalid-args.assembly.connector-duplicate-name',
+    });
   }
   mateConnectors.splice(existing, 1);
   promoted.delete(connectorName);
