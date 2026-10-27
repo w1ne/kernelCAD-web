@@ -88,6 +88,8 @@ export interface BuiltModelParamUpdateResult {
   relowered: string[];
   skipped: string[];
   warnings: SoftWarning[];
+  /** Affected features placed from the cached solid instead of lowered. */
+  rigidReused: string[];
 }
 
 export interface BuiltModelParamUpdate {

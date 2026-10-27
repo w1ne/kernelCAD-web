@@ -25,6 +25,7 @@ import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
 import { writeStepAssembly } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
+import { memoBox, memoMass, memoVolume } from './analysisMemo';
 import { KernelError } from '../../../shared/intent/kernelError';
 import {
   resolveExtrudeTwistAngle,
@@ -1099,9 +1100,14 @@ export class OcctBackend implements ShapeBackend {
   }
 
   boundingBox(opts?: { exact?: boolean }): { min: Vec3; max: Vec3 } {
-    if (opts?.exact) {
-      const exact = this.tessellatedBoundingBox();
-      if (exact) return exact;
+    const exact = opts?.exact === true;
+    return memoBox(this, exact, () => this.boundsUncached(exact));
+  }
+
+  private boundsUncached(exact: boolean): { min: Vec3; max: Vec3 } {
+    if (exact) {
+      const tight = this.tessellatedBoundingBox();
+      if (tight) return tight;
       // Empty / unmeshable shape — fall through to Bnd_Box.
     }
     const bb = this.shape.boundingBox;
@@ -1149,13 +1155,19 @@ export class OcctBackend implements ShapeBackend {
    * pattern in `curve3dEval.ts` for `LinearProperties`.
    */
   massProperties(density: number = 1000, gyrationAxis?: GyrationAxis): MassProperties {
+    // A caller-supplied axis is part of the question, so it is not memoised.
+    if (gyrationAxis) return this.massUncached(density, gyrationAxis);
+    return memoMass(this, density, () => this.massUncached(density));
+  }
+
+  private massUncached(density: number, gyrationAxis?: GyrationAxis): MassProperties {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = (this.shape as any).wrapped;
     return computeMassProperties(wrapped, density, gyrationAxis);
   }
 
   volume(): number {
-    return Math.abs(replicad.measureVolume(this.shape));
+    return memoVolume(this, () => Math.abs(replicad.measureVolume(this.shape)));
   }
 
   surfaceArea(): number {
