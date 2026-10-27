@@ -467,4 +467,53 @@ endsolid t
     expect(after).not.toBe(before);
     expect(predecessorsByRecord([consumer]).get('thick')).toEqual(['surface_1']);
   });
+
+  it('does not return a memoised volume or box after dispose', async () => {
+    await initOcct();
+    const box = OcctBackend.box(2, 2, 2);
+    expect(box.volume()).toBeCloseTo(8, 3);
+    box.boundingBox();
+    box.dispose();
+    expect(() => box.volume()).toThrow();
+    expect(() => box.boundingBox()).toThrow();
+  });
+
+  it('does not reuse a document after its font file disappears', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'warm-font-'));
+    const goneA = await importIdentity(`return sketch.text('A', { font: fontPath('A.ttf') });`, dir);
+    const goneB = await importIdentity(`return sketch.text('A', { font: fontPath('A.ttf') });`, dir);
+    expect(goneA).not.toBe(goneB);
+    try {
+      copyFileSync('src/shared/fonts/LiberationSans-Regular.ttf', join(dir, 'A.ttf'));
+      const code = `return sketch.text('A', { size: 6, font: fontPath('A.ttf') }).extrude(1);`;
+      const store = createWarmDocumentStore({ build: (input) => buildModel(input) });
+      await store.open({ id: 'plaque', code, fileName: 'a.kcad.ts', scriptDir: dir });
+      rmSync(join(dir, 'A.ttf'));
+      const again = await store.open({ id: 'plaque', code, fileName: 'a.kcad.ts', scriptDir: dir });
+      expect(again.model.rootShape).toBeUndefined();
+      expect(again.model.diagnostics.some((d) => d.severity === 'error' && /ENOENT/.test(d.message))).toBe(true);
+      const third = await store.open({ id: 'plaque', code, fileName: 'a.kcad.ts', scriptDir: dir });
+      expect(third.model).not.toBe(again.model);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('re-lowers a Coons thicken when a boundary curve moves', async () => {
+    const code = `
+      const z = param('z', 0, { min: -5, max: 30 });
+      const bottom = nurbsCurve([[0, 0, z], [12, 0, z]], { degree: 1 });
+      const right = nurbsCurve([[12, 0, z], [12, 8, z]], { degree: 1 });
+      const top = nurbsCurve([[12, 8, z], [0, 8, z]], { degree: 1 });
+      const left = nurbsCurve([[0, 8, z], [0, 0, z]], { degree: 1 });
+      return surfaceFromBoundary([bottom, right, top, left]).thicken(2);
+    `;
+    const warm = await buildModel({ code, fileName: 'warm.kcad.ts' });
+    const thicken = warm.records.find((record) => record.kind === 'surfaceThicken')!;
+    const lowered = spyLowers();
+    const edited = await updateModelParams(warm, [{ name: 'z', value: 6 }]);
+    expect(lowered).toContain(thicken.id);
+    const cold = await coldAt(code, "param('z', 0,", "param('z', 6,");
+    expectSameSolid(rootOf(edited.model), rootOf(cold));
+  });
 });

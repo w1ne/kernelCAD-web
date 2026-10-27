@@ -599,6 +599,8 @@ export class RecomputeEngine {
   }
 
   private async runPass(records: readonly FeatureRecord[], opts?: RecomputeOptions): Promise<RecomputeResult> {
+    const surfaceCache = (this.lowerer as { surfaceCache?: { clear(): void } }).surfaceCache;
+    surfaceCache?.clear();
     const shapes = opts?.seedShapes ? new Map(opts.seedShapes) : new Map<FeatureId, ShapeBackend>();
     const diagnostics: CompilerDiagnostic[] = [];
     const health = new Map<FeatureId, 'healthy' | 'warning' | 'error'>();

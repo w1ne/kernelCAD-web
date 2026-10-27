@@ -122,6 +122,15 @@ function shiftBox(box: Box, motion: Motion): Box {
   };
 }
 
+/** Drop memoised volume, box, and mass for a disposed wrapper. */
+export function forgetAnalysis(shape: ShapeBackend): void {
+  volumes.delete(shape);
+  boxes.delete(shape);
+  exactBoxes.delete(shape);
+  masses.delete(shape);
+  fingerprints.delete(shape);
+}
+
 /** Volume is placement-invariant. A box moves with `motion`. */
 export function copyRigidAnalysis(from: ShapeBackend, to: ShapeBackend, motion: Motion): void {
   const volume = volumes.get(from);

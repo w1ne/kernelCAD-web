@@ -48,9 +48,9 @@ describe('fonts: resolver + bundle loader', () => {
     expect((await resolveAndLoadFont(fontPath(tmp), undefined)).fontFamily).toBe('CachedFamily961');
     const registered = replicad.getFont('CachedFamily961');
     expect(registered).toBeDefined();
-    // The file is gone: a second call can only succeed from the cache.
+    // The file is gone: a second call must fail rather than reuse the old face.
     rmSync(tmp);
-    expect((await resolveAndLoadFont(fontPath(tmp), undefined)).fontFamily).toBe('CachedFamily961');
+    await expect(resolveAndLoadFont(fontPath(tmp), undefined)).rejects.toThrow();
     expect(replicad.getFont('CachedFamily961')).toBe(registered);
   });
 

@@ -50,6 +50,15 @@ function hashImport(path: string, scriptDir: string | undefined): string {
   }
 }
 
+/** A missing font must not become a stable identity. The next open rebuilds. */
+function hashFontPath(path: string, scriptDir: string | undefined): string {
+  const hashed = hashImport(path, scriptDir);
+  if (hashed.startsWith('missing:') || hashed.startsWith('unreadable:') || hashed.startsWith('unread:')) {
+    return unprovable();
+  }
+  return hashed;
+}
+
 async function hashFetchPart(id: string): Promise<string> {
   if (!getHostFs()) return unprovable();
   try {
@@ -75,6 +84,7 @@ export async function importIdentity(code: string, scriptDir: string | undefined
     const quoted = quotedPath(rest);
     if (!quoted || !literalOnly(rest, quoted.end)) return unprovable();
     if (name === 'fetchPart') parts.push(await hashFetchPart(quoted.path));
+    else if (name === 'fontPath') parts.push(hashFontPath(quoted.path, scriptDir));
     else parts.push(hashImport(quoted.path, scriptDir));
   }
   return parts.join('|');

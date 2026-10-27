@@ -25,7 +25,7 @@ import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
 import { writeStepAssembly } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
-import { memoBox, memoMass, memoVolume } from './analysisMemo';
+import { forgetAnalysis, memoBox, memoMass, memoVolume } from './analysisMemo';
 import { KernelError } from '../../../shared/intent/kernelError';
 import {
   resolveExtrudeTwistAngle,
@@ -1434,6 +1434,7 @@ export class OcctBackend implements ShapeBackend {
   }
 
   dispose(): void {
+    forgetAnalysis(this);
     const envelope = this.analysisBody;
     this.analysisBody = undefined;
     if (envelope && envelope !== this) {

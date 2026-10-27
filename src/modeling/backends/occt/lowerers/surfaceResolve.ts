@@ -140,7 +140,8 @@ function buildSurfaceFromRecord(
       });
       return undefined;
     }
-    const { face } = lowerCoonsPatch(surfRec.data, ctx.allRecords, ctx.importedGeometry);
+    const records = ctx.allRecords.map((rec) => ctx.inputs.resolveRecord?.(rec) ?? rec);
+    const { face } = lowerCoonsPatch(surfRec.data, records, ctx.importedGeometry);
     return { kind: 'face', face };
   }
   if (surfRec.data.kind === 'surfaceTrim') {

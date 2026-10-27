@@ -16,20 +16,23 @@ let bundledLoadPromise: Promise<void> | undefined;
 /** Basename → hash of the bytes last passed to `loadFont`. */
 const fontBytesByFamily = new Map<string, string>();
 
+/** Same two-word FNV as `importIdentity`, so a same-length collision that
+ *  misses document identity also misses this cache. */
 function fontHash(bytes: Uint8Array): string {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < bytes.length; i++) h = Math.imul(h ^ (bytes[i] ?? 0), 0x01000193);
-  return `${bytes.length.toString(16)}:${(h >>> 0).toString(16)}`;
+  let h1 = 0x811c9dc5;
+  let h2 = 0x01000193 ^ bytes.length;
+  for (let i = 0; i < bytes.length; i++) {
+    const code = bytes[i] ?? 0;
+    h1 = Math.imul(h1 ^ code, 0x01000193);
+    h2 = Math.imul(h2 ^ code, 0x01000193);
+  }
+  return `${bytes.length.toString(16)}:${(h1 >>> 0).toString(16)}:${(h2 >>> 0).toString(16)}`;
 }
 
 async function loadFontFile(abs: string, base: string): Promise<string> {
-  let buf: Buffer;
-  try {
-    buf = nodeFs.readFileSync(abs);
-  } catch (err) {
-    if (fontBytesByFamily.has(base) && getFont(base)) return base;
-    throw err;
-  }
+  // A missing or unreadable file must fail the rebuild. Returning the
+  // previously registered face would store the old glyphs.
+  const buf = nodeFs.readFileSync(abs);
   const hash = fontHash(buf);
   if (fontBytesByFamily.get(base) === hash && getFont(base)) return base;
   const bytes = new ArrayBuffer(buf.byteLength);
