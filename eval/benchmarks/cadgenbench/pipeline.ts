@@ -290,7 +290,7 @@ async function runLlmLoop(
   const result = await runClosedLoop({
     prompt,
     gateRunner: gate,
-    extractScript,
+    extractScript: text => /```(?:ts|typescript|javascript|js)?[ \t]*\r?\n[\s\S]*?```/i.test(text) ? extractScript(text.replace(/\r\n/g, '\n')) : null,
     buildRepairPrompt,
     maxAttempts: cfg.maxAttempts,
     candidates: 1,

@@ -130,6 +130,16 @@ describe('runTask without an LLM', () => {
 });
 
 describe('runTask with an LLM', () => {
+  it('asks for code when the model replies with prose instead of exporting prose', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-prose-'));
+    const count = {exports:0, repairs:0};
+    const agent = new MockAgentClient([{text:'Please provide another view.', tokens_in:1, tokens_out:1}, reply('return box(1,1,1);')]);
+    const result = await runTask(tasks(root).gen, cfg(join(root,'run'), {...stubs(count), agent}));
+    expect(result.status).toBe('valid');
+    expect(count.exports).toBe(1);
+    expect(agent.calls[1].messages.at(-1)?.content).toContain('Could not extract a code block');
+  });
+
   it('keeps the valid checkpoint if visual refinement proposes invalid geometry', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-visual-'));
     const runDir = join(root, 'run');
