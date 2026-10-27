@@ -156,6 +156,8 @@ describe('runTask with an LLM', () => {
     expect(readFileSync(join(runDir, 'tasks/101/visual-comparison.md'), 'utf8')).toBe('B\n');
     expect(existsSync(join(runDir, 'tasks/101/visual-revised-view-1.png'))).toBe(true);
     expect(paths.map(path => basename(path))).toEqual(['model.step', 'visual-review.step']);
+    expect(agent.calls[2].messages[0].content).not.toContain('## Output contract');
+    expect(agent.calls[2].messages[0].content).toContain('Reproduce it.');
   });
   it('feeds a validity failure back as a repair prompt and accepts the fixed candidate', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));

@@ -436,7 +436,7 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
         const original = readFileSync(scriptPath, 'utf8');
         const reviewPath = join(workDir, 'visual-review.kcad.ts');
         const refinement = await refineVisualCandidate({
-          prompt, original, drawing: loadImages(task.images),
+          prompt, referencePrompt: task.description, original, drawing: loadImages(task.images),
           render: async code => {
             const revised = code !== original;
             const views = await (cfg.visualRender ?? renderCandidateViews)(gate.stepPathFor(revised ? reviewPath : scriptPath));

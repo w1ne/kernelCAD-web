@@ -20,6 +20,17 @@ describe('visual refinement', () => {
     expect(check).toHaveBeenCalledWith('return box(2,2,2);');
   });
 
+  it('does not include the initial script-only output contract in the A/B comparison', async () => {
+    const revise = vi.fn()
+      .mockResolvedValueOnce({text:'```ts\nreturn box(2,2,2);\n```',tokens_in:1,tokens_out:1})
+      .mockResolvedValueOnce({text:'B',tokens_in:1,tokens_out:1});
+    await refineVisualCandidate({prompt:'Return one script block.', referencePrompt:'Reproduce the drawing.', original:'return box(1,1,1);', drawing:[drawing], render:async()=>[view], revise, check:async()=>true});
+    const comparison = revise.mock.calls[1][0][0].content;
+    expect(comparison).toContain('Reproduce the drawing.');
+    expect(comparison).not.toContain('Return one script block.');
+    expect(comparison).toContain('exactly A, B, or UNCERTAIN');
+  });
+
   it('retains the valid original when the proposed geometry fails its gate', async () => {
     const result = await refineVisualCandidate({ prompt:'drawing task', original:'return box(1,1,1);', drawing:[drawing], render:async()=>[view], revise:async()=>({text:'```ts\nbroken();\n```',tokens_in:3,tokens_out:2}), check:async()=>false });
     expect(result).toMatchObject({ code:'return box(1,1,1);', outcome:'rejected' });
