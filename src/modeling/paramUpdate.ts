@@ -19,6 +19,10 @@ import type { SoftWarning } from '../shared/runtime/softWarning';
 import { KernelError } from '../shared/intent/kernelError';
 import { affectedFeatureIds } from './paramAffect';
 import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
+import { stampFingerprint } from '../kernel/backends/occt/analysisMemo';
+import { featureFingerprints } from './warm/featureFingerprint';
+import { captureBaseline, planRigidReuse } from './warm/rigidReuse';
+import type { ParamValue } from '../shared/runtime/paramTable';
 
 export function populateCache(session: CaptureSession, shapes: Map<FeatureId, ShapeBackend>): void {
   for (const [id, shape] of shapes) {
@@ -59,6 +63,14 @@ function selectionsAfterUpdate(
   };
 }
 
+function savedParamValues(session: CaptureSession, edits: readonly ParamUpdateEdit[]): Array<{ name: string; value: ParamValue }> {
+  return edits.map((edit) => ({ name: edit.name, value: session.paramTable.get(edit.name).value }));
+}
+
+function restoreParamValues(session: CaptureSession, saved: readonly { name: string; value: ParamValue }[]): void {
+  for (const entry of saved) session.paramTable.set(entry.name, entry.value);
+}
+
 export async function updateModelParams(
   model: BuiltModel,
   edits: ParamUpdateEdit[],
@@ -66,14 +78,31 @@ export async function updateModelParams(
 ): Promise<BuiltModelParamUpdate> {
   const session = model.session;
   validateParamEdits(session, edits);
+  // Shapes in the cache still match the table. Captured before the edit so a
+  // later failure can put the table back and a rigid placement has a baseline.
+  captureBaseline(session, model.records);
+  const saved = savedParamValues(session, edits);
+  try {
+    return await applyParamEdits(model, edits, options);
+  } catch (err) {
+    restoreParamValues(session, saved);
+    throw err;
+  }
+}
 
+async function applyParamEdits(
+  model: BuiltModel,
+  edits: ParamUpdateEdit[],
+  options: UpdateModelParamsOptions | undefined,
+): Promise<BuiltModelParamUpdate> {
+  const session = model.session;
   const editedNames = new Set<string>();
   for (const edit of edits) {
     session.paramTable.set(edit.name, edit.value);
     editedNames.add(edit.name);
   }
 
-  const { seedShapes, relowered, skipped } = buildSeedShapes(session, model.records, editedNames);
+  const { seedShapes, relowered, skipped, rigidReused } = buildSeedShapes(session, model.records, editedNames);
   await initOcct();
   // Slice 2E: reuse the per-session engine attached by `buildModel` so any
   // `onRelower` subscribers registered after the initial build still fire on
@@ -105,7 +134,9 @@ export async function updateModelParams(
     gatedFeatureNames: session.gatedFeatureNames,
   });
 
+  const produced = producedShape(model, result.shapes);
   populateCache(session, result.shapes);
+  stampAnalyses(model.records, session.paramTable, result.shapes);
   // This run lowered (or reused) every record under the edited param table,
   // so it is the session's full lower now. Recording it lets the next
   // `meshFeaturesPerFeature` mesh the re-lowered shapes instead of lowering
@@ -125,19 +156,6 @@ export async function updateModelParams(
   for (const id of relowered) {
     session.cachedFeatureMeshes.delete(id);
   }
-  const tailId = model.records.length > 0 ? model.records[model.records.length - 1].id : undefined;
-  const tailShape = tailId ? result.shapes.get(tailId) : undefined;
-  const rootShape = model.rootId ? result.shapes.get(model.rootId) : undefined;
-  // A virtual tail (`shape.dimension()`, `shape.datum()`, ...) has no shape
-  // of its own; the returned root still does.
-  const shape = tailShape ?? rootShape;
-  if (!shape) {
-    throw new KernelError(
-      'recompute.lowering.exception',
-      'params.update: no shape produced for the chain tail; check upstream diagnostics.',
-      tailId,
-    );
-  }
 
   const nextModel: BuiltModel = {
     ...model,
@@ -145,9 +163,9 @@ export async function updateModelParams(
     ...selectionsAfterUpdate(model, result, options?.preview === true),
     health: result.health,
     warnings: session.warnings.slice(warningsBefore),
-    tailId,
-    tailShape,
-    rootShape,
+    tailId: produced.tailId,
+    tailShape: produced.tailShape,
+    rootShape: produced.rootShape,
   };
 
   // Slice 2E: notify `onRelower` subscribers with the records re-lowered by
@@ -162,12 +180,46 @@ export async function updateModelParams(
   return {
     model: nextModel,
     result: {
-      shape,
+      shape: produced.shape,
       relowered,
       skipped,
+      rigidReused,
       warnings: nextModel.warnings,
     },
   };
+}
+
+function producedShape(
+  model: BuiltModel,
+  shapes: Map<FeatureId, ShapeBackend>,
+): { shape: ShapeBackend; tailId?: FeatureId; tailShape?: ShapeBackend; rootShape?: ShapeBackend } {
+  const tailId = model.records.length > 0 ? model.records[model.records.length - 1].id : undefined;
+  const tailShape = tailId ? shapes.get(tailId) : undefined;
+  const rootShape = model.rootId ? shapes.get(model.rootId) : undefined;
+  // A virtual tail (`shape.dimension()`, `shape.datum()`, ...) has no shape
+  // of its own; the returned root still does. Checked before the cache is
+  // replaced so a failure leaves the previous solids in place.
+  const shape = tailShape ?? rootShape;
+  if (!shape) {
+    throw new KernelError(
+      'recompute.lowering.exception',
+      'params.update: no shape produced for the chain tail; check upstream diagnostics.',
+      tailId,
+    );
+  }
+  return { shape, tailId, tailShape, rootShape };
+}
+
+function stampAnalyses(
+  records: readonly FeatureRecord[],
+  paramTable: CaptureSession['paramTable'],
+  shapes: ReadonlyMap<string, ShapeBackend>,
+): void {
+  const fingerprints = featureFingerprints(records, paramTable);
+  for (const [id, fpShape] of shapes) {
+    const fp = fingerprints.get(id);
+    if (fp) stampFingerprint(fpShape, fp);
+  }
 }
 
 function validateParamEdits(session: CaptureSession, edits: ParamUpdateEdit[]): void {
@@ -221,14 +273,25 @@ function buildSeedShapes(
   session: CaptureSession,
   records: readonly FeatureRecord[],
   editedNames: Set<string>,
-): { seedShapes: Map<FeatureId, ShapeBackend>; relowered: string[]; skipped: string[] } {
+): { seedShapes: Map<FeatureId, ShapeBackend>; relowered: string[]; skipped: string[]; rigidReused: string[] } {
   const affected = affectedFeatureIds(records, editedNames);
+  const rigid = planRigidReuse(session, records, affected);
   const seedShapes = new Map<FeatureId, ShapeBackend>();
   const relowered: string[] = [];
   const skipped: string[] = [];
+  const rigidReused: string[] = [];
 
   for (const record of records) {
     if (affected.has(record.id)) {
+      const placed = rigid.get(record.id);
+      if (placed) {
+        rigidReused.push(record.id);
+        seedShapes.set(record.id, placed);
+        // A zero motion reuses the same solid, so its mesh is still valid.
+        if (placed === session.cachedShapes.get(record.id)) skipped.push(record.id);
+        else relowered.push(record.id);
+        continue;
+      }
       relowered.push(record.id);
       continue;
     }
@@ -237,5 +300,5 @@ function buildSeedShapes(
     if (cached) seedShapes.set(record.id, cached);
   }
 
-  return { seedShapes, relowered, skipped };
+  return { seedShapes, relowered, skipped, rigidReused };
 }
