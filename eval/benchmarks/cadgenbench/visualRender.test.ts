@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest';
-import { formatExtents } from './visualRender';
+import { formatExtents, sharedFrame } from './visualRender';
 
 describe('candidate preview dimensions', () => {
   it('shows world-axis extents in millimetres with consistent precision', () => {
@@ -9,5 +9,11 @@ describe('candidate preview dimensions', () => {
   it('rejects non-finite or inverted bounds rather than showing false dimensions', () => {
     expect(() => formatExtents({ min:[0,0,0], max:[NaN,1,1] })).toThrow();
     expect(() => formatExtents({ min:[2,0,0], max:[1,1,1] })).toThrow();
+  });
+});
+
+describe('shared comparison frame', () => {
+  it('uses the union of both projected bounds for equal scale and position', () => {
+    expect(sharedFrame([[0,0,0], [10,4,0]], [[-10,-2,0], [20,2,0]])).toEqual({centerX:5, centerY:1, scale:440/30});
   });
 });

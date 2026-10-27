@@ -147,7 +147,7 @@ describe('runTask with an LLM', () => {
     const runDir = join(root, 'run');
     const agent = new MockAgentClient([reply('return box(1,1,1);'), reply('return box(2,2,2);'), {text:'B', tokens_in:1,tokens_out:1}]);
     const paths: string[] = [];
-    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, visualReview: true, visualRender: async path => { paths.push(path); return [{ mediaType:'image/png', data:'render' }]; } }));
+    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, visualReview: true, visualRender: async path => { paths.push(path); return [{ mediaType:'image/png', data:'render' }]; }, visualComparison: async (a,b) => { paths.push(a,b); return [[{mediaType:'image/png', data:'a'}],[{mediaType:'image/png', data:'b'}]]; } }));
     expect(s.status).toBe('valid');
     expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toBe('return box(2,2,2);');
     expect(readFileSync(join(runDir, 'tasks/101/model.kcad.ts'), 'utf8')).toBe('return box(2,2,2);');
@@ -155,7 +155,8 @@ describe('runTask with an LLM', () => {
     expect(readFileSync(join(runDir, 'tasks/101/visual-checkpoint.step'), 'utf8')).toBe('return box(1,1,1);');
     expect(readFileSync(join(runDir, 'tasks/101/visual-comparison.md'), 'utf8')).toBe('B\n');
     expect(existsSync(join(runDir, 'tasks/101/visual-revised-view-1.png'))).toBe(true);
-    expect(paths.map(path => basename(path))).toEqual(['model.step', 'visual-review.step']);
+    expect(existsSync(join(runDir, 'tasks/101/visual-comparison-view-1.png'))).toBe(true);
+    expect(paths.map(path => basename(path))).toEqual(['model.step', 'model.step', 'visual-review.step']);
     expect(agent.calls[2].messages[0].content).not.toContain('## Output contract');
     expect(agent.calls[2].messages[0].content).toContain('Reproduce it.');
   });

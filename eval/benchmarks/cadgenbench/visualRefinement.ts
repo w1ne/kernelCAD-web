@@ -8,6 +8,7 @@ export interface VisualRefinementInput {
   original: string;
   drawing: AgentImage[];
   render: (code: string) => Promise<AgentImage[]>;
+  compare: (original: string, proposal: string) => Promise<[AgentImage[], AgentImage[]]>;
   revise: (messages: AgentMessage[]) => Promise<AgentResponse>;
   check: (code: string) => Promise<boolean>;
 }
@@ -42,16 +43,16 @@ export async function refineVisualCandidate(input: VisualRefinementInput): Promi
   try {
     if (!(await input.check(proposal))) return keep('rejected', response.tokens_in, response.tokens_out, response.text);
   } catch (e) { return keep('check_failed', response.tokens_in, response.tokens_out, response.text, e instanceof Error ? e.message : String(e)); }
-  let revisedViews: AgentImage[];
+  let comparisonViews: AgentImage[], revisedViews: AgentImage[];
   try {
-    revisedViews = await input.render(proposal);
-    if (revisedViews.length !== views.length || revisedViews.length === 0) throw new Error('Revised preview view count differs from original');
+    [comparisonViews, revisedViews] = await input.compare(input.original, proposal);
+    if (comparisonViews.length !== views.length || revisedViews.length !== views.length || revisedViews.length === 0) throw new Error('Revised preview view count differs from original');
   } catch (e) { return keep('comparison_render_failed', response.tokens_in, response.tokens_out, response.text, e instanceof Error ? e.message : String(e)); }
   let comparison: AgentResponse;
   try {
     comparison = await input.revise([{
-      role: 'user', images: [...input.drawing, ...views, ...revisedViews],
-      content: `${input.referencePrompt ?? input.prompt}\n\nThe first ${input.drawing.length} image(s) are the drawing. The next ${views.length} image(s) show candidate A; the final ${revisedViews.length} image(s) show candidate B in matching views. Views are fitted independently: compare the displayed approximate mesh extents in mm as well as shape. Reply with exactly A, B, or UNCERTAIN. Choose B only if it is clearly more faithful to the drawing; if you cannot tell, choose UNCERTAIN.`,
+      role: 'user', images: [...input.drawing, ...comparisonViews, ...revisedViews],
+      content: `${input.referencePrompt ?? input.prompt}\n\nThe first ${input.drawing.length} image(s) are the drawing. The next ${views.length} image(s) show candidate A; the final ${revisedViews.length} image(s) show candidate B in matching views. Matching views share the same camera scale and position: compare the displayed approximate mesh extents in mm as well as shape. Reply with exactly A, B, or UNCERTAIN. Choose B only if it is clearly more faithful to the drawing; if you cannot tell, choose UNCERTAIN.`,
     }]);
   } catch (e) { return keep('comparison_failed', response.tokens_in, response.tokens_out, response.text, e instanceof Error ? e.message : String(e)); }
   const tokensIn=response.tokens_in+comparison.tokens_in, tokensOut=response.tokens_out+comparison.tokens_out;

@@ -40,7 +40,7 @@ import { candidatePath, taskSubmissionDir } from './submission';
 import { isFinished, readTaskState, taskWorkDir, writeTaskState, type TaskState } from './state';
 import { mapPool } from '../../lib/pool';
 import { refineVisualCandidate } from './visualRefinement';
-import { renderCandidateViews } from './visualRender';
+import { renderCandidateViews, renderCandidateComparison } from './visualRender';
 import { checkStepValidity, withOcctLock, type StepValidity } from './validity';
 import {
   classifyEditPromotion,
@@ -82,6 +82,8 @@ export interface PipelineConfig {
   visualReview?: boolean;
   /** Optional preview seam; default renders the candidate STEP without a browser. */
   visualRender?: (stepPath: string) => Promise<AgentImage[]>;
+  /** Optional paired preview seam, expected to use a shared frame. */
+  visualComparison?: (first: string, second: string) => Promise<[AgentImage[], AgentImage[]]>;
   temperature?: number;
   /** Directory of pre-written `<id>.kcad.ts` scripts; replaces the LLM step. */
   scriptsFrom?: string;
@@ -445,6 +447,18 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
               writeFileSync(join(workDir, `visual-${revised ? 'revised-' : ''}view-${i + 1}.png`), Buffer.from(views[i].data, 'base64'));
             }
             return views;
+          },
+          compare: async () => {
+            const paths = [gate.stepPathFor(scriptPath), gate.stepPathFor(reviewPath)] as const;
+            const pair = await (cfg.visualComparison ?? renderCandidateComparison)(...paths);
+            for (let candidate = 0; candidate < pair.length; candidate++) {
+              for (let i = 0; i < pair[candidate].length; i++) {
+                const image = pair[candidate][i];
+                if (image.mediaType !== 'image/png') throw new Error('visual preview must be PNG');
+                writeFileSync(join(workDir, `visual-${candidate ? 'revised-' : 'comparison-'}view-${i + 1}.png`), Buffer.from(image.data, 'base64'));
+              }
+            }
+            return pair;
           },
           revise: messages => cfg.agent!.generate({system: cfg.skillMd, messages, model: cfg.model, max_tokens: cfg.maxTokens, ...(cfg.temperature !== undefined ? {temperature: cfg.temperature} : {})}),
           check: async code => { writeFileSync(reviewPath, code); return (await gate.run(reviewPath)).ok; },
