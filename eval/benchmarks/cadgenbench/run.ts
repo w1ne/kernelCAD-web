@@ -27,7 +27,7 @@ import { runAll, type PipelineConfig, type Prices } from './pipeline';
 import { renderSummaryMarkdown, summarize } from './report';
 import { writeTaskState, type TaskState } from './state';
 import { buildSubmissionZip, candidatePath, hasCandidate } from './submission';
-import { assertRunIdentity, buildRunIdentity } from './runIdentity';
+import { assertRunIdentity, buildRunIdentity, identifyCli } from './runIdentity';
 
 export interface CliOptions {
   selection: TaskSelection;
@@ -206,11 +206,12 @@ async function main(): Promise<void> {
   }
   const skillMd = agent ? buildSystemPrompt(SWEEP_SKILLS) : '';
   const sourceRevision = gitSha();
+  const cli = identifyCli(env, process.cwd());
   const identity = buildRunIdentity(tasks, {
     revision, mode, model: agent ? opts.model : null, baseUrl: opts.baseUrl ?? null,
     gitSha: sourceRevision, maxAttempts: opts.maxAttempts, maxTokens: opts.maxTokens,
     temperature: opts.temperature ?? null, editFallback: opts.editFallback,
-    keepInvalid: opts.keepInvalid, skillMd, scriptsFrom: opts.scriptsFrom ?? null,
+    keepInvalid: opts.keepInvalid, skillMd, scriptsFrom: opts.scriptsFrom ?? null, cli,
   });
   const runFile = join(opts.runDir, 'run.json');
   if (existsSync(runFile)) {
@@ -227,6 +228,7 @@ async function main(): Promise<void> {
     model: agent ? opts.model : null,
     baseUrl: opts.baseUrl ?? null,
     gitSha: sourceRevision,
+    cli,
     identity,
     maxAttempts: opts.maxAttempts,
     maxTokens: opts.maxTokens,

@@ -110,7 +110,10 @@ When a task is rerun, its previous submission candidate is moved to
 `tasks/<id>/previous-candidates/` before the new attempt. A failed retry leaves
 the submission entry empty while retaining the previous STEP for inspection.
 Resume compares an identity covering the selected inputs, descriptions, model
-settings, system instructions, source revision and supplied scripts. A mismatch
+settings, system instructions, source revision, supplied scripts and the
+invoked CLI file's path and SHA-256. A mismatch
 or an older run without an identity is rejected; use a fresh run directory.
 The revision records whether the checkout was dirty, but does not hash every
-uncommitted source change. Use a clean committed checkout for comparable runs.
+uncommitted source change. A CLI wrapper or JavaScript entry may depend on
+other files that its own digest does not cover. Use a clean committed checkout
+and record all runtime dependencies for comparable runs.

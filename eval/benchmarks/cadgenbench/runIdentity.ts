@@ -1,11 +1,26 @@
 // SPDX-License-Identifier: MIT
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { delimiter, isAbsolute, join, resolve } from 'node:path';
 import type { CadGenBenchTask } from './dataset';
 
 function digestFile(path: string): string | null {
   return existsSync(path) ? createHash('sha256').update(readFileSync(path)).digest('hex') : null;
+}
+
+/** Identify the invoked file. Scripts may depend on other files; this is not
+ * a complete runtime dependency fingerprint. */
+export function identifyCli(env: NodeJS.ProcessEnv, cwd: string): { path: string; sha256: string; script: boolean } {
+  const local = resolve(cwd, 'dist/cli/index.js');
+  const requested = env.KERNELCAD_BIN || (existsSync(local) ? local : 'kernelcad');
+  const candidates = isAbsolute(requested) || requested.includes('/') || requested.includes('\\')
+    ? [resolve(cwd, requested)]
+    : (env.PATH ?? '').split(delimiter).map(p => resolve(cwd, p || '.', requested));
+  const found = candidates.find(p => existsSync(p));
+  if (!found) throw new Error(`Cannot identify kernelCAD CLI: ${requested}`);
+  const path = realpathSync(found);
+  const bytes = readFileSync(path);
+  return { path, sha256: createHash('sha256').update(bytes).digest('hex'), script: bytes.subarray(0, 2).toString() === '#!' || path.endsWith('.js') };
 }
 
 export function buildRunIdentity(tasks: CadGenBenchTask[], settings: Record<string, unknown>): string {

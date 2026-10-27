@@ -1,11 +1,21 @@
 // SPDX-License-Identifier: MIT
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, realpathSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildRunIdentity, assertRunIdentity } from './runIdentity';
+import { buildRunIdentity, assertRunIdentity, identifyCli } from './runIdentity';
 
 describe('benchmark run identity', () => {
+  it('records CLI identity and detects when the selected executable changes', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cgb-cli-'));
+    const cli = join(dir, 'kernelcad.js');
+    writeFileSync(cli, 'first build');
+    const before = identifyCli({ KERNELCAD_BIN: cli }, dir);
+    expect(before.path).toBe(realpathSync(cli));
+    expect(before.sha256).toMatch(/^[0-9a-f]{64}$/);
+    writeFileSync(cli, 'second build');
+    expect(identifyCli({ KERNELCAD_BIN: cli }, dir).sha256).not.toBe(before.sha256);
+  });
   it('detects changed model settings and input bytes before resuming', () => {
     const dir = mkdtempSync(join(tmpdir(), 'cgb-identity-'));
     const image = join(dir, 'input.png');
