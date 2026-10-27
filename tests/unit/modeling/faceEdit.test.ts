@@ -102,9 +102,19 @@ describe('offsetFaces and moveFaces', () => {
     expect(edited.codes.join('\n')).toMatch(/FACE_EDIT_INCONSISTENT/);
     expect(edited.codes.join('\n')).toMatch(/face count changed/);
     expect(edited.codes.join('\n')).toMatch(/gained face/);
+    expect(edited.codes.join('\n')).toMatch(/glued prism/);
     expect(edited.volume).toBeCloseTo(6000, 2);
     expect(edited.faces).toBe(5);
     expectBounds(edited, [30, 40, 10]);
+  });
+
+  it('rejects a step on one half of an unsewn top without calling it a glued prism', async () => {
+    const edited = await solidOf(`box(10, 10, 10).union(box(10, 10, 10).translate(10, 0, 0)).offsetFaces({ near: [5, 5, 10] }, 2)`);
+    expect(edited.codes.join('\n')).toMatch(/FACE_EDIT_INCONSISTENT/);
+    expect(edited.codes.join('\n')).toMatch(/face count changed against the sewn solid/);
+    expect(edited.codes.join('\n')).not.toMatch(/glued prism|gained face/);
+    expect(edited.volume).toBeCloseTo(2000, 2);
+    expectBounds(edited, [20, 10, 10]);
   });
 
   it('rejects a pull that consumes the solid and keeps the box', async () => {

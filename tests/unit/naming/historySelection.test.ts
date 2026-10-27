@@ -8,13 +8,19 @@ import { buildModel } from '../../../src/modeling/buildModel';
 import type { QueryScene } from '../../../src/kernel/naming/query';
 import type { FeatureKind } from '../../../src/shared/intent/types';
 
-async function sceneOf(code: string): Promise<QueryScene & { ids: Record<string, string> }> {
-  const model = await buildModel({ code, fileName: 'history.kcad.ts' });
+async function sceneOf(code: string, kernel?: 'occt' | 'smlib'): Promise<QueryScene & { ids: Record<string, string>; diagnostics: { featureId?: string; code: string }[] }> {
+  const model = await buildModel({ code, fileName: 'history.kcad.ts', kernel });
   expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
   const id = (kind: FeatureKind) => model.records.find((record) => record.kind === kind)?.id ?? '';
   const last = model.records[model.records.length - 1];
   const backend = model.shapes.get(last.id) as OcctBackend;
-  return { backend, featureId: last.id, records: model.records, ids: { box: id('box'), cylinder: id('cylinder'), boolean: id('boolean'), fillet: id('fillet') } };
+  return {
+    backend,
+    featureId: last.id,
+    records: model.records,
+    diagnostics: model.diagnostics.map((d) => ({ featureId: d.featureId, code: d.code })),
+    ids: { box: id('box'), cylinder: id('cylinder'), boolean: id('boolean'), fillet: id('fillet') },
+  };
 }
 
 function handles(scene: QueryScene, query: ReturnType<typeof q.face>): string[] {
@@ -60,5 +66,28 @@ describe('history selectors after a cut and a fillet', () => {
     const newEdges = evaluate(q.edge(q.newSince(scene.ids.box)), scene);
     expect(newEdges.length).toBeGreaterThan(0);
     expect(newEdges.every((edge) => edge.kind === 'edge')).toBe(true);
+  });
+});
+
+describe('SMLib primitive lineage through a later boolean', () => {
+  const cut = `
+    export default box(10, 10, 10).subtract(cylinder(12, 3));
+  `;
+
+  it('keeps one hole wall derived from the accepted cylinder', async () => {
+    const scene = await sceneOf(cut, 'smlib');
+    const accepted = scene.diagnostics.filter((d) =>
+      d.code === 'recompute.kernel.guard-fallback' &&
+      (d.featureId === scene.ids.cylinder || d.featureId === scene.ids.box));
+    expect(accepted).toEqual([]);
+    const hole = handles(scene, q.face(q.derivedFrom(scene.ids.cylinder)));
+    expect(hole).toHaveLength(1);
+  });
+
+  it('keeps plate edges derived from the accepted box', async () => {
+    const scene = await sceneOf(cut, 'smlib');
+    const plateEdges = evaluate(q.edge(q.derivedFrom(scene.ids.box)), scene);
+    expect(plateEdges.length).toBeGreaterThan(0);
+    expect(plateEdges.every((edge) => edge.kind === 'edge')).toBe(true);
   });
 });

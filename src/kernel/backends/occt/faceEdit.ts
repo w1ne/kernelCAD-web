@@ -240,6 +240,39 @@ function samePlane(old: FaceInfo, neu: FaceInfo): boolean {
   return neu.area + 1e-3 >= old.area;
 }
 
+/** An edge that meets the edited face and runs along its normal got longer, so
+ * the face slid and its boundary moved. Extra faces are then a step. When no
+ * such edge grows, the outline stayed and a gained face is a glued prism. */
+function boundaryMoved(
+  oc: OC,
+  bodyShape: unknown,
+  resultShape: unknown,
+  origin: Vec3,
+  normal: Vec3,
+  distance: number,
+): boolean {
+  const before = edgeInfos(oc, bodyShape);
+  const after = edgeInfos(oc, resultShape);
+  const span = Math.abs(distance);
+  return before.some((old) => {
+    if (Math.abs(Math.abs(dot(old.dir, normal)) - 1) > 1e-4) return false;
+    const half = old.length / 2;
+    const ends: Vec3[] = [
+      [old.mid[0] - old.dir[0] * half, old.mid[1] - old.dir[1] * half, old.mid[2] - old.dir[2] * half],
+      [old.mid[0] + old.dir[0] * half, old.mid[1] + old.dir[1] * half, old.mid[2] + old.dir[2] * half],
+    ];
+    if (!ends.some((point) => Math.abs(dot(sub(point, origin), normal)) <= 1e-3)) return false;
+    return after.some((neu) => {
+      if (Math.abs(Math.abs(dot(old.dir, neu.dir)) - 1) > 1e-4) return false;
+      const rel = sub(old.mid, neu.mid);
+      const along = dot(rel, neu.dir);
+      const off = Math.hypot(rel[0] - neu.dir[0] * along, rel[1] - neu.dir[1] * along, rel[2] - neu.dir[2] * along);
+      if (off > 1e-3) return false;
+      return neu.length > old.length + span * 0.5;
+    });
+  });
+}
+
 function sameEdge(old: EdgeInfo, neu: EdgeInfo): boolean {
   if (Math.abs(dot(old.dir, neu.dir)) <= 1 - 1e-4) return false;
   const rel = sub(old.mid, neu.mid);
@@ -498,13 +531,13 @@ function offsetOne(
   if (faceHashes.length !== beforeFaces) {
     const sewNotes = [sewn.error, baseline.error].filter((note): note is string => Boolean(note));
     const sewNote = sewNotes.length ? ` Sewing coplanar faces failed: ${sewNotes.join(' ')}.` : '';
-    const gained = faceHashes.length > beforeFaces
-      ? ' A gained face means the prism was glued on instead of the neighbouring faces extending.'
+    const glued = faceHashes.length > beforeFaces && !boundaryMoved(oc, bodyShape, result.shape, origin, normal, distance)
+      ? ' A gained face means a glued prism was added instead of the neighbouring faces extending.'
       : '';
     throw new FaceEditError(
       'FACE_EDIT_INCONSISTENT',
-      `moving this face by ${distance} mm left ${faceHashes.length} faces; the solid had ${beforeFaces}. ` +
-        `The face count changed.${gained} ` +
+      `moving this face by ${distance} mm left ${faceHashes.length} faces; the sewn solid had ${beforeFaces}. ` +
+        `The face count changed against the sewn solid.${glued} ` +
         `Pick a face whose boundary can move with it, or build the change as a boolean.${sewNote}`,
     );
   }
