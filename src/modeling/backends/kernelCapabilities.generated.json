@@ -37,6 +37,8 @@
         "importedStl",
         "loft",
         "mirror",
+        "moveFaces",
+        "offsetFaces",
         "pattern",
         "projectCurve",
         "referenceImage",
@@ -70,6 +72,8 @@
         "extrude",
         "fillet",
         "importedStep",
+        "moveFaces",
+        "offsetFaces",
         "sphere"
       ]
     }

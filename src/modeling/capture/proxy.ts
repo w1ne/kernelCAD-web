@@ -70,6 +70,25 @@ export type EdgeSelector =
   | Query<unknown>
   | undefined;
 
+function faceEditList(
+  featureId: string,
+  faces: FaceSelector | CanonicalFace | string | readonly (FaceSelector | CanonicalFace | string)[],
+  api: string,
+): (FaceSelector | CanonicalFace | string)[] {
+  const list = Array.isArray(faces) ? [...faces] : [faces];
+  if (list.length === 0 || list.some((face) => face === undefined || face === null || face === '')) {
+    invalidArgs({
+      api,
+      path: 'faces',
+      got: faces,
+      requires: "one or more faces: a canonical name ('top'), a label, a FaceQuery, kc.q / @kcq[...], or an array of those",
+      example: "box(10, 10, 10).offsetFaces('top', 2)",
+      featureId,
+    });
+  }
+  return list;
+}
+
 export type FaceSelector =
   | FaceQuery
   | { face: CanonicalFace | string }
@@ -918,6 +937,61 @@ export class Shape {
       pullDir: opts.pullDir,
     });
   }
+
+  /**
+   * Push or pull planar faces along their outward normals by `distance` mm.
+   * Positive grows the solid. A non-planar face is rejected by name.
+   */
+  offsetFaces(
+    faces: FaceSelector | CanonicalFace | string | readonly (FaceSelector | CanonicalFace | string)[],
+    distance: Editable<number>,
+  ): Shape {
+    const list = faceEditList(this.id, faces, 'offsetFaces(faces, distance)');
+    if (!isParamRef(distance) && !(typeof distance === 'number' && Number.isFinite(distance))) {
+      invalidArgs({
+        api: 'offsetFaces(faces, distance)',
+        path: 'distance',
+        got: distance,
+        requires: 'a finite distance in mm; positive moves each face along its outward normal',
+        unit: 'mm',
+        example: "box(10, 10, 10).offsetFaces('top', 2)",
+        featureId: this.id,
+      });
+    }
+    return this.session.faceEditFeature('offsetFaces', this, list, {
+      distance: toParam(distance, 'mm'),
+    });
+  }
+
+  /**
+   * Move planar faces by `by`. The vector must be parallel to each face's
+   * outward normal; a sideways move is rejected by name.
+   */
+  moveFaces(
+    faces: FaceSelector | CanonicalFace | string | readonly (FaceSelector | CanonicalFace | string)[],
+    by: EditableVec3,
+  ): Shape {
+    const list = faceEditList(this.id, faces, 'moveFaces(faces, by)');
+    if (!isValidEditableVec3(by)) {
+      invalidArgs({
+        api: 'moveFaces(faces, by)',
+        path: 'by',
+        got: by,
+        requires: 'a finite [x, y, z] displacement in mm, parallel to the face normal',
+        unit: 'mm',
+        example: "box(10, 10, 10).moveFaces('top', [0, 0, 2])",
+        featureId: this.id,
+      });
+    }
+    const vec = toVec3Param(by as EditableVec3, 'mm');
+    return this.session.faceEditFeature('moveFaces', this, list, {
+      dx: vec.x,
+      dy: vec.y,
+      dz: vec.z,
+    });
+  }
+
+
 
   /**
    * W2.2: Add a sheet-metal bend along a linear edge. The Shape must trace

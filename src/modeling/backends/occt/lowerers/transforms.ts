@@ -3,7 +3,7 @@
 import type { LowerResult, ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { MeshBackend } from '../../../../kernel/backends/meshBackend';
-import { propagateTransformHistory } from '../../../../kernel/naming/evolutionRecord';
+import { propagateEdgeTransformHistory, propagateTransformHistory } from '../../../../kernel/naming/evolutionRecord';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { isValidPlaneSpec } from '../../../../shared/intent/types';
 import type { Vec3 } from '../../../../shared/intent/types';
@@ -41,6 +41,8 @@ export function applyTransforms(
     const inputBackend = shape as OcctBackend;
     const inputHashes = inputBackend.faceHashes();
     const inputMap = inputBackend.historyMap;
+    const inputEdgeHashes = inputBackend.edgeHashes();
+    const inputEdgeMap = inputBackend.edgeHistoryMap;
     switch (t.op) {
       case 'translate':
         shape = shape.translate(t.vec.x.evaluated, t.vec.y.evaluated, t.vec.z.evaluated);
@@ -82,6 +84,10 @@ export function applyTransforms(
         const wrapped = (outputBackend.getReplicadShape() as any);
         const carried = new OcctBackend(wrapped, undefined, newMap);
         if (outputBackend.analysisBody !== undefined) carried.analysisBody = outputBackend.analysisBody;
+        const outputEdgeHashes = carried.edgeHashes();
+        if (inputEdgeMap && outputEdgeHashes.length === inputEdgeHashes.length) {
+          carried.edgeHistoryMap = propagateEdgeTransformHistory(inputEdgeMap, inputEdgeHashes, outputEdgeHashes);
+        }
         shape = carried;
       }
       // else: defensive path — face count mismatch (unexpected for these ops).

@@ -124,7 +124,7 @@ describe('kernel capabilities list', () => {
     expect(caps.kernels.smlib).toEqual({
       available: true,
       target: 'export-smlib',
-      features: ['boolean', 'box', 'cylinder', 'extrude', 'fillet', 'importedStep', 'sphere'],
+      features: ['boolean', 'box', 'cylinder', 'extrude', 'fillet', 'importedStep', 'moveFaces', 'offsetFaces', 'sphere'],
     });
   });
 
