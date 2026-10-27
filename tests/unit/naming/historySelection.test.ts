@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
+import { faceHashOf, surfaceTypeOf } from '../../../src/kernel/backends/occt/createdRefs';
 import { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { q } from '../../../src/kernel/naming/queryConstructors';
 import { evaluate } from '../../../src/kernel/naming/queryEvaluator';
@@ -74,14 +75,21 @@ describe('SMLib primitive lineage through a later boolean', () => {
     export default box(10, 10, 10).subtract(cylinder(12, 3));
   `;
 
-  it('keeps one hole wall derived from the accepted cylinder', async () => {
+  it('keeps hole walls derived from the accepted cylinder', async () => {
     const scene = await sceneOf(cut, 'smlib');
     const accepted = scene.diagnostics.filter((d) =>
       d.code === 'recompute.kernel.guard-fallback' &&
       (d.featureId === scene.ids.cylinder || d.featureId === scene.ids.box));
     expect(accepted).toEqual([]);
-    const hole = handles(scene, q.face(q.derivedFrom(scene.ids.cylinder)));
-    expect(hole).toHaveLength(1);
+    const hole = evaluate(q.face(q.derivedFrom(scene.ids.cylinder)), scene);
+    expect(hole.length).toBeGreaterThan(0);
+    expect(hole.every((face) => face.kind === 'face')).toBe(true);
+    const liveFaces = new Set(scene.backend.faceHashes());
+    expect(hole.every((face) => liveFaces.has(face.handle))).toBe(true);
+    const surfaceByHash = new Map(
+      scene.backend.getReplicadShape().faces.map((face) => [faceHashOf(face), surfaceTypeOf(face)]),
+    );
+    expect(hole.every((face) => surfaceByHash.get(face.handle) === 'CYLINDRE')).toBe(true);
   });
 
   it('keeps plate edges derived from the accepted box', async () => {
@@ -89,5 +97,7 @@ describe('SMLib primitive lineage through a later boolean', () => {
     const plateEdges = evaluate(q.edge(q.derivedFrom(scene.ids.box)), scene);
     expect(plateEdges.length).toBeGreaterThan(0);
     expect(plateEdges.every((edge) => edge.kind === 'edge')).toBe(true);
+    const liveEdges = new Set(scene.backend.edgeHashes());
+    expect(plateEdges.every((edge) => liveEdges.has(edge.handle))).toBe(true);
   });
 });
