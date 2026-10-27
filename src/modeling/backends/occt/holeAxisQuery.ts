@@ -4,10 +4,11 @@
 // Resolve a `hole-axis` topology query to the hole's entry-face mouth and
 // the unit axis pointing into the body. Authored `.hole()` / `.holes()`
 // records win: the query name is the feature name, `hole<ordinal>`,
-// `holes<ordinal>[i]`, or `bolt-holes-N` (1-based, sorted by current u then
-// v — the same order `bolt-holes-N` is emitted). A `bolt-holes-N` name with
-// no authored hole falls back to the Nth detected cylindrical hole sorted
-// by (x, y), using that detector's axisOrigin / axisDirection.
+// `holes<ordinal>[i]`, or `bolt-holes-N` (1-based). `bolt-holes-N` follows
+// feature creation order, then current (u, v) inside each feature — the same
+// order promotion assigns. A `bolt-holes-N` name with no authored hole falls
+// back to the Nth detected cylindrical hole sorted by (x, y), using that
+// detector's axisOrigin / axisDirection. Mouths replay post-cut transforms.
 //
 // Mouth + into-body axis matches the catalog synthesizeConnectors rule for
 // a drilled hole. The historical auto-connector vec3 (face-local bottom
@@ -23,12 +24,23 @@ import { pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { faceFrameOrigin } from '../../../kernel/backends/occt/faceFrame';
 import { detectCylindricalHoles } from '../../../kernel/backends/occt/holeDetection';
 import { isPointPlacedHole } from '../../../kernel/backends/occt/holeAtPoint';
-import { ancestorFeatureIds, holeAxisQueryName } from '../../parts/holeAutoConnectors';
+import { ancestorFeatureClosure, holeAxisQueryName } from '../../parts/holeAutoConnectors';
+import {
+  forwardPoint,
+  forwardVector,
+  inverseNormal,
+  inversePoint,
+  transformsAfterCut,
+} from './holeAxisTransforms';
 
 export interface HoleAxisContext {
   records?: readonly FeatureRecord[];
   consumerId?: string;
   paramTable?: ParamTable;
+  /** Translation baked into `backend` that is not a feature transform.
+   *  Assembly parts pass their `at`. Face-sampled mouths already include it;
+   *  a point-placed mouth does not. */
+  bakedTranslation?: Vec3;
 }
 
 const MISS =
@@ -47,12 +59,12 @@ export function resolveHoleAxis(
   ctx: HoleAxisContext,
 ): { origin: Vec3; axis: Vec3 } {
   const instances = authoredHoles(ctx);
-  const hit = matchAuthoredHole(instances, name);
+  const hit = matchAuthoredHole(instances, name, ctx.records);
   // Authored holes own the name. A missed `bolt-holes-N` must not fall
   // through to seam-split detected bores on the same solid.
   if (hit || instances.length > 0) {
     if (!hit) throw notFound(backend, name);
-    const frame = mouthFrame(backend, hit, ctx.records);
+    const frame = mouthFrame(backend, hit, ctx);
     if (!frame) {
       throw new Error(
         `assembly.connector.topology-not-resolvable: hole '${name}' is authored but its entry face is not on the shape. ${MISS}`,
@@ -74,10 +86,16 @@ function notFound(backend: OcctBackend, name: string): Error {
   );
 }
 
-function matchAuthoredHole(instances: readonly HoleInstance[], name: string): HoleInstance | null {
+function matchAuthoredHole(
+  instances: readonly HoleInstance[],
+  name: string,
+  records: readonly FeatureRecord[] | undefined,
+): HoleInstance | null {
   const bolt = boltHolesIndex(name);
   if (bolt !== undefined) {
-    const sorted = [...instances].sort((a, b) => a.u - b.u || a.v - b.v);
+    const order = new Map((records ?? []).map((record, index) => [record.id, index]));
+    const sorted = [...instances].sort((a, b) =>
+      (order.get(a.feature.id) ?? 0) - (order.get(b.feature.id) ?? 0) || a.u - b.u || a.v - b.v);
     return sorted[bolt - 1] ?? null;
   }
   return instances.find((instance) => instance.ref === name) ?? null;
@@ -87,7 +105,7 @@ function authoredHoles(ctx: HoleAxisContext): HoleInstance[] {
   const records = ctx.records ?? [];
   const chain = ctx.consumerId === undefined
     ? null
-    : new Set(ancestorFeatureIds(records, ctx.consumerId));
+    : new Set(ancestorFeatureClosure(records, ctx.consumerId));
   const out: HoleInstance[] = [];
   for (const record of records) {
     if (chain !== null && !chain.has(record.id)) continue;
@@ -127,19 +145,34 @@ function uvOf(feature: FeatureRecord): { u: number; v: number } {
 function mouthFrame(
   backend: OcctBackend,
   hit: HoleInstance,
-  records: readonly FeatureRecord[] | undefined,
+  ctx: HoleAxisContext,
 ): { origin: Vec3; axis: Vec3 } | null {
-  const point = pointPlacedOrigin(hit.feature);
-  const face = entryFace(backend, hit.feature, records);
-  if (!face) return point ? { origin: point, axis: pointPlacedAxis(hit.feature) ?? [0, 0, -1] } : null;
+  const face = entryFace(backend, hit.feature, ctx.records);
+  // A missed entry face is not a hole. Do not invent `[0, 0, -1]`.
+  if (!face) return null;
   const outward = faceOutwardNormal(face);
   const into = neg(outward);
-  if (point) return { origin: point, axis: pointPlacedAxis(hit.feature) ?? into };
-  const { uBasis, vBasis } = buildUvBasis(outward);
-  return {
-    origin: add(faceFrameOrigin(face), add(scale(uBasis, hit.u), scale(vBasis, hit.v))),
-    axis: into,
-  };
+  const transforms = transformsAfterCut(ctx.records ?? [], hit.feature.id, ctx.consumerId, ctx.paramTable);
+  const point = pointPlacedOrigin(hit.feature);
+  if (point) return pointPlacedFrame(point, hit.feature, transforms, into, ctx.bakedTranslation);
+  const normal0 = normalize(inverseNormal(outward, transforms));
+  const { uBasis, vBasis } = buildUvBasis(normal0);
+  const mouth0 = add(inversePoint(faceFrameOrigin(face), transforms), add(scale(uBasis, hit.u), scale(vBasis, hit.v)));
+  return { origin: forwardPoint(mouth0, transforms), axis: into };
+}
+
+function pointPlacedFrame(
+  point: Vec3,
+  feature: FeatureRecord,
+  transforms: ReturnType<typeof transformsAfterCut>,
+  into: Vec3,
+  bakedTranslation: Vec3 | undefined,
+): { origin: Vec3; axis: Vec3 } {
+  const moved = forwardPoint(point, transforms);
+  const origin = bakedTranslation === undefined ? moved : add(moved, bakedTranslation);
+  const authored = pointPlacedAxis(feature);
+  const axis = authored === null ? into : normalize(forwardVector(authored, transforms));
+  return { origin, axis };
 }
 
 function entryFace(

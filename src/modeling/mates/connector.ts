@@ -263,6 +263,13 @@ export interface ResolvedConnectorFrame {
   axis?: Vec3;
 }
 
+/** Prefer the axis resolved from the shape. A stored capture-time axis is the fallback. */
+export function connectorDirection(resolved: Vec3 | undefined, stored: Vec3 | undefined): Vec3 {
+  if (resolved !== undefined) return resolved;
+  if (stored !== undefined) return stored;
+  return [0, 0, 1];
+}
+
 export async function resolveConnectorFrame(
   shape: Shape,
   origin: ConnectorOrigin,

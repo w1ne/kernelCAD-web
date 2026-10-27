@@ -2,8 +2,13 @@
 
 - `hole-axis` topology queries resolve an authored `.hole()` / `.holes()` to
   the entry-face mouth and the axis into the hole, and re-resolve after a
-  param edit. `.hole()` / `.holes()` register `bolt-holes-N` with that query
-  so mates follow the hole. Catalog STEP bolt-holes stay numeric vec3.
+  param edit. `.hole()` / `.holes()` promote `bolt-holes-N` (feature order,
+  then u/v; a later hole does not reuse `bolt-holes-1`; a boolean cutter
+  counts; pattern copies do not) so mates follow the hole, including after
+  rotate / scale / reflect / translate and part `at`. A later
+  `part.connector('bolt-holes-N', ...)` replaces the promoted frame.
+  Joint, export, and motion paths read the resolved into-body axis.
+  Catalog STEP bolt-holes stay numeric vec3.
 
 # v0.17.2 — 2026-10-26
 

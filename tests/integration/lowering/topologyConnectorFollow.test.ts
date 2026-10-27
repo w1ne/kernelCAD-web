@@ -151,4 +151,129 @@ describe('topology connector origins follow a rebuilt face', () => {
     expect(cap.point([0, 0, 0])[0]).toBeCloseTo(28, 3);
     expect(cap.point([0, 0, 0])[1]).toBeCloseTo(0, 3);
   });
+
+  it('keeps an earlier holes feature when a later hole is chained', async () => {
+    // Corner box. Top centre (20, 20, 10); the holes feature's first bore
+    // is u=-10. The chained front hole must not steal bolt-holes-1.
+    const model = await buildModel({
+      fileName: 'chained-holes-follow.kcad.ts',
+      code: `
+        const u = param('u', -10, { min: -15, max: 15 });
+        const plate = box(40, 40, 10)
+          .holes('top', {
+            positions: [{ u, v: 0 }, { u: 10, v: 0 }],
+            diameter: 4,
+            depth: 'through',
+          })
+          .hole('front', { u: 0, v: 0, diameter: 4, depth: 'through' });
+        const arm = assembly('stack');
+        arm.part('plate', plate);
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'plate.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const mouth = capPoint(model.rootShape);
+    expect(mouth[0]).toBeCloseTo(10, 3);
+    expect(mouth[1]).toBeCloseTo(20, 3);
+    expect(mouth[2]).toBeCloseTo(10, 3);
+
+    const updated = await updateModelParams(model, [{ name: 'u', value: 0 }]);
+    const moved = capPoint(updated.result.shape);
+    expect(moved[0]).toBeCloseTo(20, 3);
+    expect(moved[1]).toBeCloseTo(20, 3);
+    expect(moved[2]).toBeCloseTo(10, 3);
+
+    const arm = updated.model.session.assemblies.get('stack');
+    if (!arm) throw new Error('missing assembly stack');
+    const plate = arm.__parts().find((part) => part.name === 'plate');
+    const bolt = plate?.mateConnectors.find((connector) => connector.name === 'bolt-holes-1');
+    expect(bolt?.origin).toMatchObject({
+      kind: 'topology',
+      query: { kind: 'hole-axis', name: 'holes1[0]' },
+    });
+  });
+
+  it('follows a top-face hole through an in-plane rotate', async () => {
+    // Corner box, top centre (20, 10, 10), hole at u=10 → (30, 10, 10).
+    // rotateZ(90) about the origin is right-handed: (x, y) → (-y, x).
+    const model = await buildModel({
+      fileName: 'rotated-hole-follow.kcad.ts',
+      code: `
+        const u = param('u', 10, { min: -15, max: 15 });
+        const plate = box(40, 20, 10)
+          .hole('top', { u, v: 0, diameter: 4, depth: 'through' })
+          .rotateZ(90);
+        const arm = assembly('stack');
+        arm.part('plate', plate);
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'plate.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const mouth = capPoint(model.rootShape);
+    expect(mouth[0]).toBeCloseTo(-10, 3);
+    expect(mouth[1]).toBeCloseTo(30, 3);
+    expect(mouth[2]).toBeCloseTo(10, 3);
+
+    const updated = await updateModelParams(model, [{ name: 'u', value: 0 }]);
+    const moved = capPoint(updated.result.shape);
+    expect(moved[0]).toBeCloseTo(-10, 3);
+    expect(moved[1]).toBeCloseTo(20, 3);
+    expect(moved[2]).toBeCloseTo(10, 3);
+
+    const arm = updated.model.session.assemblies.get('stack');
+    if (!arm) throw new Error('missing assembly stack');
+    const solved = await solveMates(arm, {});
+    const cap = solved.poses.get('cap');
+    if (!cap) throw new Error('solveMates did not place cap');
+    expect(cap.point([0, 0, 0])[0]).toBeCloseTo(-10, 3);
+    expect(cap.point([0, 0, 0])[1]).toBeCloseTo(20, 3);
+    expect(cap.point([0, 0, 0])[2]).toBeCloseTo(10, 3);
+  });
+
+  it('places a point-authored hole with the part at on both solvers', async () => {
+    // Top face of the corner box passes through z=10. The point is the
+    // mouth in the shape frame; part at [50, 0, 0] shifts the placed solid.
+    const model = await buildModel({
+      fileName: 'at-hole-follow.kcad.ts',
+      code: `
+        const plate = box(40, 20, 10).hole('top', {
+          at: [30, 10, 10], diameter: 4, depth: 'through',
+        });
+        const arm = assembly('stack');
+        arm.part('plate', plate, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'plate.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const mouth = capPoint(model.rootShape);
+    expect(mouth[0]).toBeCloseTo(80, 3);
+    expect(mouth[1]).toBeCloseTo(10, 3);
+    expect(mouth[2]).toBeCloseTo(10, 3);
+    expect(await solvedCapPoint('stack', model)).toEqual([
+      expect.closeTo(80, 3),
+      expect.closeTo(10, 3),
+      expect.closeTo(10, 3),
+    ]);
+  });
 });
+
+async function solvedCapPoint(
+  assemblyName: string,
+  model: Awaited<ReturnType<typeof buildModel>>,
+): Promise<number[]> {
+  const arm = model.session.assemblies.get(assemblyName);
+  if (!arm) throw new Error(`missing assembly ${assemblyName}`);
+  const solved = await solveMates(arm, {});
+  const cap = solved.poses.get('cap');
+  if (!cap) throw new Error('solveMates did not place cap');
+  return [...cap.point([0, 0, 0])];
+}

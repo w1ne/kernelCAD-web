@@ -17,7 +17,7 @@ import { toVec3Param } from '../../shared/runtime/editableHelpers';
 import { paramExprToDebugString, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
 import type { PartLineage } from '../../kernel/naming/evolutionRecord';
-import { holeAxisAutoConnectorsForShape } from '../parts/holeAutoConnectors';
+import { promoteAuthoredHoleConnectors, takeConnectorSlot } from './assemblyHolePromote';
 import type { Shape } from './proxy';
 import type { CaptureSession } from './captureSession';
 import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLibrary';
@@ -335,14 +335,7 @@ function createPartConnector(
   ): AssemblyConnectorRef | AssemblyPartRef => {
     if (opts !== undefined) {
       assertTopoRefSafeName(connectorName, 'connector-name', id);
-      if (mateConnectors.some((c) => c.name === connectorName)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.connector.duplicate-name: part '${name}' already has a connector named '${connectorName}'.`,
-          id,
-          `invalid-args.assembly.connector-duplicate-name — rename one of the connectors on '${name}'.`,
-        );
-      }
+      takeConnectorSlot(mateConnectors, connectorName, name, id);
       // F-surface F4: opts.origin accepts a `@kc[<part>/<kind>/<name>]` string
       // alongside the structured ConnectorOrigin union. Normalise here BEFORE
       // constructing the Connector record so downstream solvers see only the
@@ -705,20 +698,6 @@ function resolvePartMaterialAndValidateOpts(
   return { resolvedMaterial, effectiveDensity };
 }
 
-/** Merge promoted catalog connectors into the user-declared connector map,
- *  rejecting a name collision. Split out of `recordPartInternal` for the
- *  same complexity-budget reason as `resolvePartMaterialAndValidateOpts`;
- *  no behavior change. */
-function promoteHoleAxisConnectors(session: CaptureSession, shape: Shape, part: AssemblyPartRef): void {
-  for (const connector of holeAxisAutoConnectorsForShape(session.getRecords(), session.autoConnectors, shape.id)) {
-    part.connector(connector.name, {
-      type: 'frame',
-      origin: { kind: 'topology', query: { kind: 'hole-axis', name: connector.topology.name } },
-      normal: connector.axis,
-    });
-  }
-}
-
 function mergeCatalogConnectors(
   connectors: Record<string, AssemblyConnectorFrameStored>,
   transformedCatalogConnectors: readonly TransformedCatalogConnector[],
@@ -803,7 +782,7 @@ export function recordPartInternal(
   // have no feature to re-resolve). Authored hole-axis connectors do not:
   // bolt-holes-N follows the hole after a param edit. Sub-assembly import
   // copies mate connectors itself, so it skips this pass.
-  if (promoteCatalogConnectors) promoteHoleAxisConnectors(state.session, shape, part);
+  promoteAuthoredHoleConnectors(promoteCatalogConnectors, state.session, shape, part);
   const stored: AssemblyPartStored = {
     ...part,
     originalShape: shape,

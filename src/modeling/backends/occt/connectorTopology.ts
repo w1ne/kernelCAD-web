@@ -70,6 +70,9 @@ export interface TopologyResolutionContext {
   /** Live param table. Hole u/v are read after `resolveParams`, so a param
    *  edit moves the mouth instead of reusing the capture-time number. */
   paramTable?: ParamTable;
+  /** Translation already baked into `backend` and absent from feature
+   *  transforms. Assembly parts pass `at`. Point-placed holes add it. */
+  bakedTranslation?: Vec3;
 }
 
 export interface TopologyFrame {

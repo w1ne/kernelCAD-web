@@ -6,8 +6,13 @@
 // connector. The numeric origin stays the historical face-local bottom-face
 // point. When `holeRef` is set, the connector also carries a `hole-axis`
 // topology query (entry-face mouth + into-body axis) so mates re-resolve
-// after a param edit. Numbering is by (u, v) so the same script emits the
-// same connector names across re-runs.
+// after a param edit.
+//
+// Numbering on one feature is (u, v). Across a part, promotion renumbers
+// every authored hole in the shape's ancestor closure: feature creation
+// order, then that feature's (u, v) order. A later `.hole()` does not reuse
+// `bolt-holes-1`. A boolean cutter's holes are in the closure. A pattern
+// does not mint a hole feature per copy, so only the source hole is numbered.
 
 import { formatTopoRef } from '../../kernel/naming';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
@@ -80,31 +85,26 @@ export function holeAxisQueryName(
   return `${named ?? `holes${ordinal}`}[${index ?? 0}]`;
 }
 
-/** Feature ids from `startId` back through `target` / `shape` / `base`. */
-export function ancestorFeatureIds(records: readonly FeatureRecord[], startId: string): string[] {
+/** Feature ids reachable through every feature input, `startId` first.
+ *  Boolean cutters are included. Pattern copies are not separate features:
+ *  only the source hole hanging off `base` is in this set. */
+export function ancestorFeatureClosure(records: readonly FeatureRecord[], startId: string): string[] {
   const byId = new Map(records.map((record) => [record.id, record]));
   const order: string[] = [];
-  const visited = new Set<string>();
-  let current: string | undefined = startId;
-  while (current !== undefined && !visited.has(current)) {
-    visited.add(current);
+  const seen = new Set<string>();
+  const stack = [startId];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (current === undefined || seen.has(current)) continue;
+    seen.add(current);
     order.push(current);
-    current = parentFeatureId(byId.get(current));
+    const inputs = byId.get(current)?.inputs;
+    if (!inputs) continue;
+    for (const ref of Object.values(inputs)) {
+      if (ref.kind === 'feature') stack.push(ref.id);
+    }
   }
   return order;
-}
-
-function parentFeatureId(record: FeatureRecord | undefined): string | undefined {
-  const inputs = record?.inputs;
-  if (!inputs) return undefined;
-  for (const key of ['target', 'shape', 'base'] as const) {
-    const ref = inputs[key];
-    if (ref?.kind === 'feature') return ref.id;
-  }
-  for (const ref of Object.values(inputs)) {
-    if (ref.kind === 'feature') return ref.id;
-  }
-  return undefined;
 }
 
 function isHoleAxisAuto(raw: unknown): raw is AutoConnector & { topology: { kind: 'hole-axis'; name: string } } {
@@ -115,20 +115,36 @@ function isHoleAxisAuto(raw: unknown): raw is AutoConnector & { topology: { kind
     && typeof connector.topology.name === 'string';
 }
 
-/** Hole-axis auto connectors on `shapeId` or an ancestor feature. Nearest wins. */
+/** Hole-axis autos on `shapeId`'s ancestor closure, renumbered `bolt-holes-1..N`.
+ *  Feature creation order, then each feature's stored (u, v) order. */
 export function holeAxisAutoConnectorsForShape(
   records: readonly FeatureRecord[],
   autoConnectors: ReadonlyMap<string, ReadonlyArray<unknown>>,
   shapeId: string,
 ): Array<AutoConnector & { topology: { kind: 'hole-axis'; name: string } }> {
+  const closure = new Set(ancestorFeatureClosure(records, shapeId));
   const out: Array<AutoConnector & { topology: { kind: 'hole-axis'; name: string } }> = [];
-  const seen = new Set<string>();
-  for (const id of ancestorFeatureIds(records, shapeId)) {
-    for (const raw of autoConnectors.get(id) ?? []) {
-      if (!isHoleAxisAuto(raw) || seen.has(raw.name)) continue;
-      seen.add(raw.name);
-      out.push(raw);
+  let ordinal = 1;
+  for (const record of records) {
+    if (!closure.has(record.id) || record.suppressed) continue;
+    if (record.kind !== 'hole' && record.kind !== 'holes') continue;
+    for (const raw of autoConnectors.get(record.id) ?? []) {
+      if (!isHoleAxisAuto(raw)) continue;
+      const name = `bolt-holes-${ordinal}`;
+      ordinal += 1;
+      out.push(renameBolt(raw, name));
     }
   }
   return out;
+}
+
+function renameBolt(
+  connector: AutoConnector & { topology: { kind: 'hole-axis'; name: string } },
+  name: string,
+): AutoConnector & { topology: { kind: 'hole-axis'; name: string } } {
+  return {
+    ...connector,
+    name,
+    ref: connector.ref.replace(/\/connector\/[^/\]]+/, `/connector/${name}`),
+  };
 }

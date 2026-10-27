@@ -18,7 +18,7 @@ import {
   resolveHoleOpts, resolveHolesOpts,
   type EditableHoleOpts, type EditableHolesOpts,
 } from '../validation/holeValidation';
-import { generateBoltHoleConnectors, holeAxisQueryName, type HoleCenter } from '../parts/holeAutoConnectors';
+import { attachHolesConnectors, attachSingleHoleConnectors } from './emitHoleConnectors';
 import {
   validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
   resolveCutoutOpts,
@@ -1034,29 +1034,7 @@ export class Shape {
       params,
       metadata,
     });
-    // Auto-emit bolt-holes-1. The numeric origin stays the historical
-    // face-local bottom point. The hole-axis query is what mates re-resolve
-    // (entry-face mouth + into-body axis) after a param edit.
-    const holeDepth =
-      resolved.depth === 'through'
-        ? 0 // through-hole: the baked point sits on the entry face plane
-        : typeof resolved.depth === 'number'
-          ? resolved.depth
-          : 0;
-    const centers: HoleCenter[] = [
-      // An `at` hole's face frame is centred on its entry point.
-      {
-        u: resolved.at ? 0 : resolved.u,
-        v: resolved.at ? 0 : resolved.v,
-        depthMm: holeDepth,
-        axis: [0, 0, -1],
-        holeRef: holeAxisQueryName('hole', metadata),
-      },
-    ];
-    const partName =
-      (metadata as { partName?: string }).partName ?? holeShape.id;
-    const conns = generateBoltHoleConnectors(centers, { partName });
-    this.session.attachAutoConnectors(holeShape.id, conns);
+    attachSingleHoleConnectors(this.session, holeShape.id, metadata, resolved);
     return holeShape;
   }
 
@@ -1103,24 +1081,7 @@ export class Shape {
       params,
       metadata,
     });
-    // Auto-emit bolt-holes-1..N connectors, one per hole position.
-    const holesDepth =
-      resolved.depth === 'through'
-        ? 0
-        : typeof resolved.depth === 'number'
-          ? resolved.depth
-          : 0;
-    const centers: HoleCenter[] = resolved.positions.map((p, index) => ({
-      u: p.u,
-      v: p.v,
-      depthMm: holesDepth,
-      axis: [0, 0, -1] as [number, number, number],
-      holeRef: holeAxisQueryName('holes', metadata, index),
-    }));
-    const partName =
-      (metadata as { partName?: string }).partName ?? holesShape.id;
-    const conns = generateBoltHoleConnectors(centers, { partName });
-    this.session.attachAutoConnectors(holesShape.id, conns);
+    attachHolesConnectors(this.session, holesShape.id, metadata, resolved);
     return holesShape;
   }
 

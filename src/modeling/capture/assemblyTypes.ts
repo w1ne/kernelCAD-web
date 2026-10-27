@@ -104,8 +104,9 @@ export interface AssemblyPartRef {
    *  for use in `opts.connect`. */
   connector(name: string): AssemblyConnectorRef;
   /** Register a v0.6 mate-style connector on this part and return the
-   *  part-ref for chaining. Throws `assembly.connector.duplicate-name` if a
-   *  connector with the same name is already registered on this part. */
+   *  part-ref for chaining. A later declare replaces a promoted `bolt-holes-N`
+   *  row. Throws `assembly.connector.duplicate-name` if the author already
+   *  registered that name. */
   connector(name: string, opts: AssemblyConnectorOpts): AssemblyPartRef;
   /** P11 Slice 2 — declare a named collision-OFF wrap cylinder for tendon
    *  routing and return the part-ref for chaining. Throws
