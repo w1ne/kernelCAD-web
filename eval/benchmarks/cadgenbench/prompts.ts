@@ -4,8 +4,8 @@
 //
 // Task prompts for the two CADGenBench task families. The benchmark prompt
 // (description.yaml / edit_description.txt) is passed through verbatim; the
-// rest only retargets the output to a kernelCAD `.kcad.ts` script and states
-// the submission contract (one closed solid, millimetres, recommended pose).
+// rest states the submission contract and general modeling checks for a
+// kernelCAD `.kcad.ts` script (one closed solid, millimetres, recommended pose).
 // No per-task engineering hints.
 
 import { readFileSync } from 'node:fs';
@@ -38,6 +38,14 @@ mechanical part. Build that part as a kernelCAD \`.kcad.ts\` script.
   implicit, infer it from the stated dimensions and the view proportions.
 - Model every feature the drawing shows: holes, counterbores, slots, pockets,
   fillets, chamfers. Draw a threaded hole as a plain hole of the drawn size.
+- Before writing geometry, make a compact dimension ledger in script comments:
+  record primary extents, axis/origin, each feature's size, location and count,
+  and which values are inferred. Reconcile the views and section cuts instead
+  of treating an outline in one view as the whole part.
+- Before returning, cross-check the script against that ledger: units, radii
+  versus diameters, spacing, wall thickness, feature count, blind versus
+  through features, and whether all openings actually pass through material.
+  Keep unsupported details as explicit assumptions rather than invented facts.
 - Pose (recommended by the benchmark): bounding-box centre at the origin,
   longest extent along X, middle along Y, shortest along Z; if the part has an
   obvious mounting face, put it on the -Z side with its normal along -Z.
@@ -85,6 +93,11 @@ requested change (booleans, features), and return the edited solid.
 
 - Leave everything the request does not mention unchanged.
 - Keep the input's coordinate frame: do not move, rotate or re-centre the part.
+- Identify the target face or feature using the request and input observations;
+  record its position, orientation and relevant dimensions in script comments.
+  Compute the requested direction and magnitude before editing. Distinguish an
+  inward move into a pocket from removal of material, and preserve unrelated
+  holes and faces. Do not claim a measurement or verification you did not run.
 
 Starting solid:
 ${solid}
