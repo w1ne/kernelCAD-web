@@ -130,6 +130,27 @@ describe('runTask without an LLM', () => {
 });
 
 describe('runTask with an LLM', () => {
+  it('keeps the valid checkpoint if visual refinement proposes invalid geometry', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-visual-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return box(1,1,1);'), reply('OPEN')]);
+    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, visualReview: true, visualRender: async () => [{ mediaType:'image/png', data:'render' }] }));
+    expect(s.status).toBe('valid');
+    expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toBe('return box(1,1,1);');
+    expect(agent.calls).toHaveLength(2);
+  });
+
+  it('uses a visually revised candidate only after the validity gate passes', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-visual-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return box(1,1,1);'), reply('return box(2,2,2);')]);
+    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, visualReview: true, visualRender: async () => [{ mediaType:'image/png', data:'render' }] }));
+    expect(s.status).toBe('valid');
+    expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toBe('return box(2,2,2);');
+    expect(readFileSync(join(runDir, 'tasks/101/model.kcad.ts'), 'utf8')).toBe('return box(2,2,2);');
+    expect(readFileSync(join(runDir, 'tasks/101/model.step'), 'utf8')).toBe('return box(2,2,2);');
+    expect(readFileSync(join(runDir, 'tasks/101/visual-checkpoint.step'), 'utf8')).toBe('return box(1,1,1);');
+  });
   it('feeds a validity failure back as a repair prompt and accepts the fixed candidate', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
     const runDir = join(root, 'run');

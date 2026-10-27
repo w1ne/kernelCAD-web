@@ -37,6 +37,7 @@ export interface CliOptions {
   baseUrl?: string;
   apiKeyEnv: string;
   noLlm: boolean;
+  visualReview: boolean;
   scriptsFrom?: string;
   maxAttempts: number;
   maxTokens: number;
@@ -105,6 +106,7 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     baseUrl: value('--base-url'),
     apiKeyEnv: value('--api-key-env') ?? (value('--base-url') ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY'),
     noLlm: has('--no-llm'),
+    visualReview: has('--visual-review'),
     scriptsFrom: value('--scripts-from') ? resolve(value('--scripts-from')!) : undefined,
     maxAttempts: int('--max-attempts', 3),
     maxTokens: int('--max-tokens', 16000),
@@ -196,6 +198,7 @@ async function main(): Promise<void> {
 
   // 2. Producer.
   const agent = makeAgent(opts, env);
+  if (opts.visualReview && !agent) throw new Error('--visual-review requires an LLM connection; it cannot run in --no-llm or --scripts-from mode.');
   const mode: TaskState['mode'] = opts.scriptsFrom ? 'scripts-from' : agent ? 'llm' : 'passthrough';
   if (!agent && !opts.scriptsFrom) {
     log(
@@ -211,7 +214,7 @@ async function main(): Promise<void> {
     revision, mode, model: agent ? opts.model : null, baseUrl: opts.baseUrl ?? null,
     gitSha: sourceRevision, maxAttempts: opts.maxAttempts, maxTokens: opts.maxTokens,
     temperature: opts.temperature ?? null, editFallback: opts.editFallback,
-    keepInvalid: opts.keepInvalid, skillMd, scriptsFrom: opts.scriptsFrom ?? null, cli,
+    keepInvalid: opts.keepInvalid, visualReview: opts.visualReview, skillMd, scriptsFrom: opts.scriptsFrom ?? null, cli,
   });
   const runFile = join(opts.runDir, 'run.json');
   if (existsSync(runFile)) {
@@ -232,6 +235,7 @@ async function main(): Promise<void> {
     identity,
     maxAttempts: opts.maxAttempts,
     maxTokens: opts.maxTokens,
+    visualReview: opts.visualReview,
     editFallback: opts.editFallback,
     workers: opts.workers,
     tasks: tasks.map((t) => t.id),
@@ -246,6 +250,7 @@ async function main(): Promise<void> {
     skillMd,
     maxAttempts: opts.maxAttempts,
     maxTokens: opts.maxTokens,
+    visualReview: opts.visualReview,
     ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
     ...(opts.scriptsFrom ? { scriptsFrom: opts.scriptsFrom } : {}),
     editFallback: opts.editFallback,

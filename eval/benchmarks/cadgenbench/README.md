@@ -84,6 +84,7 @@ npx tsx eval/benchmarks/cadgenbench/run.ts --scripts-from path/to/scripts --task
 | `--model` | default `$EVAL_MODEL` or the eval default model; it must accept images |
 | `--edit-fallback passthrough` | an editing task without a valid edit submits the unchanged input. The benchmark scores a no-op edit at no more than 0.4. An invalid candidate scores 0. |
 | `--retry-failed` | also rerun tasks that ended `invalid` or `failed` (by default, resume skips them) |
+| `--visual-review` | opt in to one additional model review of a valid generation candidate, with browser-free front/right/top/isometric STEP previews; requires a vision-capable LLM. The previous valid script and STEP are retained as a checkpoint. A revised script is promoted only after the local validity gate passes. This is an unscored model judgment, not proof of improved similarity. |
 | `--revision <sha>` | pin a dataset revision (default `main`, resolved to a sha and recorded in `run.json`) |
 | `--data-dir <dir>` | use a local copy of the inputs instead of downloading them |
 | `--agree` | sets `agree_to_publish: true` in `meta.json` (default false) |

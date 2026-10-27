@@ -31,4 +31,9 @@ describe('parseArgs', () => {
   it('reads the official-gate Python from the environment', () => {
     expect(parseArgs(['--official-check'], { CADGENBENCH_PYTHON: '/venv/bin/python' }).python).toBe('/venv/bin/python');
   });
+
+  it('keeps visual review opt-in', () => {
+    expect(parseArgs([], {}).visualReview).toBe(false);
+    expect(parseArgs(['--visual-review'], {}).visualReview).toBe(true);
+  });
 });

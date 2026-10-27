@@ -39,6 +39,8 @@ import { EDIT_INPUT_NAME, editingPrompt, generationPrompt, loadImages } from './
 import { candidatePath, taskSubmissionDir } from './submission';
 import { isFinished, readTaskState, taskWorkDir, writeTaskState, type TaskState } from './state';
 import { mapPool } from '../../lib/pool';
+import { refineVisualCandidate } from './visualRefinement';
+import { renderCandidateViews } from './visualRender';
 import { checkStepValidity, withOcctLock, type StepValidity } from './validity';
 import {
   classifyEditPromotion,
@@ -76,6 +78,10 @@ export interface PipelineConfig {
   skillMd: string;
   maxAttempts: number;
   maxTokens: number;
+  /** Opt-in one visual review after the first valid generation candidate. */
+  visualReview?: boolean;
+  /** Optional preview seam; default renders the candidate STEP without a browser. */
+  visualRender?: (stepPath: string) => Promise<AgentImage[]>;
   temperature?: number;
   /** Directory of pre-written `<id>.kcad.ts` scripts; replaces the LLM step. */
   scriptsFrom?: string;
@@ -400,6 +406,7 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
     // 1. Produce a script: pre-written, LLM, or nothing.
     let passed = false;
     let produced = false;
+    let checkedScript = scriptPath;
     if (cfg.scriptsFrom) {
       const src = join(cfg.scriptsFrom, `${task.id}.kcad.ts`);
       if (!existsSync(src)) return finish({ mode: 'scripts-from', status: 'failed', error: `no script at ${src}` });
@@ -425,6 +432,27 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
       state.tokensOut = loop.tokensOut;
       produced = loop.scriptPath !== undefined;
       passed = loop.passed;
+      if (passed && cfg.visualReview && task.type === 'generation') {
+        const original = readFileSync(scriptPath, 'utf8');
+        const reviewPath = join(workDir, 'visual-review.kcad.ts');
+        const refinement = await refineVisualCandidate({
+          prompt, original, drawing: loadImages(task.images),
+          render: () => (cfg.visualRender ?? renderCandidateViews)(gate.stepPathFor(scriptPath)),
+          revise: messages => cfg.agent!.generate({system: cfg.skillMd, messages, model: cfg.model, max_tokens: cfg.maxTokens, ...(cfg.temperature !== undefined ? {temperature: cfg.temperature} : {})}),
+          check: async code => { writeFileSync(reviewPath, code); return (await gate.run(reviewPath)).ok; },
+        });
+        state.tokensIn += refinement.tokensIn;
+        state.tokensOut += refinement.tokensOut;
+        if (refinement.outcome !== 'render_failed') state.attempts++;
+        writeFileSync(join(workDir, 'visual-review.json'), JSON.stringify({outcome: refinement.outcome, tokensIn: refinement.tokensIn, tokensOut: refinement.tokensOut}, null, 2)+'\n');
+        if (refinement.outcome === 'accepted') {
+          copyFileSync(scriptPath, join(workDir, 'visual-checkpoint.kcad.ts'));
+          copyFileSync(gate.stepPathFor(scriptPath), join(workDir, 'visual-checkpoint.step'));
+          copyFileSync(reviewPath, scriptPath);
+          copyFileSync(gate.stepPathFor(reviewPath), gate.stepPathFor(scriptPath));
+          checkedScript = reviewPath;
+        }
+      }
     } else if (task.type === 'generation') {
       writeFileSync(join(workDir, 'prompt.md'), generationPrompt(task));
       return finish({ status: 'needs_key', error: 'generation needs an LLM: set ANTHROPIC_API_KEY (or --base-url + --api-key-env)' });
@@ -443,12 +471,12 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
     //    valid solid, but it is not an answer to the edit and must not be
     //    submitted. Passthrough remains only for a run with no producer at all;
     //    it is never a silent fallback after a real edit failed.
-    const checked = produced ? gate.lastValidity(scriptPath) : undefined;
-    const why = gate.lastFailure(scriptPath);
+    const checked = produced ? gate.lastValidity(checkedScript) : undefined;
+    const why = gate.lastFailure(checkedScript);
     const promotionFailed = why?.gate === EDIT_PROMOTION_GATE;
     let status: TaskState['status'] | undefined;
     if (checked !== undefined && !promotionFailed) {
-      status = acceptCandidate(cfg, task, gate.stepPathFor(scriptPath), checked);
+      status = acceptCandidate(cfg, task, gate.stepPathFor(checkedScript), checked);
     }
     const fallback =
       task.type === 'editing' &&
@@ -472,7 +500,7 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
         fallbackPath,
       );
     }
-    if (status !== undefined) return finish({ status });
+    if (status !== undefined) return finish({ status }, checkedScript);
     return finish({
       status: 'failed',
       error: produced
