@@ -223,6 +223,12 @@ or material left on the bore axis fails the feature with
 `top`, `front` and `right`, profile y runs along hole `v`. On `bottom`, `back`
 and `left`, profile y runs the opposite way (-Y or -Z).
 
+For `cutout(..., { depth: 'through' })`, the profile is cut through all
+material in the inward direction, including material beyond an internal
+recess. This differs from a drilled `hole` with `depth: 'through'`, which
+stops at the first exit along its axis. Use a numeric cutout depth for a blind
+pocket, and inspect the result when the part has internal cavities.
+
 Created refs emitted per feature kind (resolvable via `{ face: '<name>' }`):
 
 | Ref | Emitted when |
