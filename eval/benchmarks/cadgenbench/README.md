@@ -102,3 +102,15 @@ npx tsx eval/benchmarks/cadgenbench/run.ts --scripts-from path/to/scripts --task
 Resume skips a task that is `valid`, `invalid` or `failed` for the same
 producer (LLM, scripts-from, or passthrough). The `needs_key` and
 `infra_error` states always rerun.
+If a previously valid task's submission STEP is missing, empty, or differs
+from the recorded SHA-256, the task is rerun; this may invoke the model again.
+Older task states without a candidate digest also rerun.
+
+When a task is rerun, its previous submission candidate is moved to
+`tasks/<id>/previous-candidates/` before the new attempt. A failed retry leaves
+the submission entry empty while retaining the previous STEP for inspection.
+Resume compares an identity covering the selected inputs, descriptions, model
+settings, system instructions, source revision and supplied scripts. A mismatch
+or an older run without an identity is rejected; use a fresh run directory.
+The revision records whether the checkout was dirty, but does not hash every
+uncommitted source change. Use a clean committed checkout for comparable runs.

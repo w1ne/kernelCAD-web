@@ -14,7 +14,7 @@
 // See README.md in this directory for the options and full-run commands.
 
 import { execFile, execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { AnthropicAgentClient } from '../../agent';
 import { OpenAICompatAgentClient } from '../../agentOpenAICompat';
@@ -27,6 +27,7 @@ import { runAll, type PipelineConfig, type Prices } from './pipeline';
 import { renderSummaryMarkdown, summarize } from './report';
 import { writeTaskState, type TaskState } from './state';
 import { buildSubmissionZip, candidatePath, hasCandidate } from './submission';
+import { assertRunIdentity, buildRunIdentity } from './runIdentity';
 
 export interface CliOptions {
   selection: TaskSelection;
@@ -203,6 +204,21 @@ async function main(): Promise<void> {
         : `${opts.apiKeyEnv} is not set: generation tasks are recorded as needs_key; editing tasks submit the unchanged input.`,
     );
   }
+  const skillMd = agent ? buildSystemPrompt(SWEEP_SKILLS) : '';
+  const sourceRevision = gitSha();
+  const identity = buildRunIdentity(tasks, {
+    revision, mode, model: agent ? opts.model : null, baseUrl: opts.baseUrl ?? null,
+    gitSha: sourceRevision, maxAttempts: opts.maxAttempts, maxTokens: opts.maxTokens,
+    temperature: opts.temperature ?? null, editFallback: opts.editFallback,
+    keepInvalid: opts.keepInvalid, skillMd, scriptsFrom: opts.scriptsFrom ?? null,
+  });
+  const runFile = join(opts.runDir, 'run.json');
+  if (existsSync(runFile)) {
+    const previous = JSON.parse(readFileSync(runFile, 'utf8')) as { identity?: unknown };
+    assertRunIdentity(previous.identity, identity);
+  } else if (existsSync(join(opts.runDir, 'tasks')) || existsSync(join(opts.runDir, 'submission'))) {
+    assertRunIdentity(undefined, identity);
+  }
   mkdirSync(opts.runDir, { recursive: true });
   const envelope = {
     benchmark: 'CADGenBench',
@@ -210,7 +226,8 @@ async function main(): Promise<void> {
     mode,
     model: agent ? opts.model : null,
     baseUrl: opts.baseUrl ?? null,
-    gitSha: gitSha(),
+    gitSha: sourceRevision,
+    identity,
     maxAttempts: opts.maxAttempts,
     maxTokens: opts.maxTokens,
     editFallback: opts.editFallback,
@@ -218,13 +235,13 @@ async function main(): Promise<void> {
     tasks: tasks.map((t) => t.id),
     startedAt: new Date().toISOString(),
   };
-  writeFileSync(join(opts.runDir, 'run.json'), JSON.stringify(envelope, null, 2) + '\n');
+  writeFileSync(runFile, JSON.stringify(envelope, null, 2) + '\n');
 
   const cfg: PipelineConfig = {
     runDir: opts.runDir,
     agent,
     model: opts.model,
-    skillMd: agent ? buildSystemPrompt(SWEEP_SKILLS) : '',
+    skillMd,
     maxAttempts: opts.maxAttempts,
     maxTokens: opts.maxTokens,
     ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),

@@ -23,7 +23,8 @@
 // The accepted STEP is written to `<runDir>/submission/<id>/output.step` only
 // when it passes the pre-check (or `keepInvalid` is set).
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash, randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { runClosedLoop } from '../../../src/agent/loop/closedLoop.js';
 import type { GateReport, GateRunner, GateVerdict, LoopMessage } from '../../../src/agent/loop/types.js';
@@ -386,6 +387,14 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
   };
 
   try {
+    // A retry must not leave the previous result in the submission if this
+    // attempt fails. Preserve the old file for audit outside the submission.
+    const priorCandidate = candidatePath(cfg.runDir, task.id);
+    if (existsSync(priorCandidate)) {
+      const archiveDir = join(workDir, 'previous-candidates');
+      mkdirSync(archiveDir, { recursive: true });
+      renameSync(priorCandidate, join(archiveDir, `${randomUUID()}.step`));
+    }
     if (task.type === 'editing') copyFileSync(task.inputStep!, join(workDir, EDIT_INPUT_NAME));
 
     // 1. Produce a script: pre-written, LLM, or nothing.
@@ -483,6 +492,13 @@ export interface RunAllOptions {
   retryFailed: boolean;
 }
 
+function candidateDigest(path: string): string | undefined {
+  try {
+    const bytes = readFileSync(path);
+    return bytes.length ? createHash('sha256').update(bytes).digest('hex') : undefined;
+  } catch { return undefined; }
+}
+
 /**
  * Run tasks with bounded concurrency and resume: a task whose state.json is
  * already terminal for this run's producer is skipped, every other task runs
@@ -498,11 +514,19 @@ export async function runAll(
   const producer: TaskState['mode'] = cfg.scriptsFrom ? 'scripts-from' : cfg.agent ? 'llm' : 'passthrough';
   return mapPool(tasks, opts.workers, async (task, i) => {
     const prev = readTaskState(cfg.runDir, task.id);
-    if (isFinished(prev, { retryFailed: opts.retryFailed, mode: producer })) {
+    const candidate = candidatePath(cfg.runDir, task.id);
+    const invalidResumeCandidate = prev?.status === 'valid' && (!prev.candidateSha256 || candidateDigest(candidate) !== prev.candidateSha256);
+    if (isFinished(prev, { retryFailed: opts.retryFailed, mode: producer }) && !invalidResumeCandidate) {
       log(`[${i + 1}/${tasks.length}] ${task.id} ${prev!.status} (resumed, skipped)`);
       return { ...prev!, resumed: true };
     }
+    if (invalidResumeCandidate) log(`[${i + 1}/${tasks.length}] ${task.id} submission STEP missing or changed; rerunning`);
     const state = await runTask(task, cfg);
+    if (state.status === 'valid') {
+      const digest = candidateDigest(candidate);
+      if (digest) state.candidateSha256 = digest;
+      else { state.status = 'infra_error'; state.error = 'valid candidate is missing or unreadable'; }
+    }
     writeTaskState(cfg.runDir, state);
     log(
       `[${i + 1}/${tasks.length}] ${task.id} ${task.type} ${state.status}${state.fallback ? ' (passthrough fallback)' : ''} ` +

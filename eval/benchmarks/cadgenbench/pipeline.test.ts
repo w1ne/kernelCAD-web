@@ -4,7 +4,7 @@
 // script text as the "STEP", and the pre-check calls a STEP valid unless it
 // contains the word OPEN. The kernel stages have their own tests
 // (validity.test.ts, the CLI export tests).
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -241,6 +241,51 @@ describe('runTask with an LLM', () => {
 });
 
 describe('runAll resume', () => {
+  it('reruns rather than trusting a modified STEP from a valid prior task', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-tamper-'));
+    const runDir = join(root, 'run');
+    const { gen } = tasks(root);
+    const scripts = join(root, 'scripts');
+    mkdirSync(scripts);
+    writeFileSync(join(scripts, '101.kcad.ts'), 'return box(2, 2, 2);');
+    const config = cfg(runDir, { scriptsFrom: scripts });
+    await runAll([gen], config, { workers: 1, retryFailed: false });
+    writeFileSync(candidatePath(runDir, '101'), 'modified');
+    const result = (await runAll([gen], config, { workers: 1, retryFailed: false }))[0];
+    expect(result).toMatchObject({ status: 'valid', resumed: false });
+    expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toBe('return box(2, 2, 2);');
+  });
+  it('reruns a previously valid task when its submission STEP is missing', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-resume-'));
+    const runDir = join(root, 'run');
+    const { gen } = tasks(root);
+    const scripts = join(root, 'scripts');
+    mkdirSync(scripts);
+    writeFileSync(join(scripts, '101.kcad.ts'), 'return box(2, 2, 2);');
+    const config = cfg(runDir, { scriptsFrom: scripts });
+    expect((await runAll([gen], config, { workers: 1, retryFailed: false }))[0].status).toBe('valid');
+    rmSync(candidatePath(runDir, '101'));
+    const rerun = (await runAll([gen], config, { workers: 1, retryFailed: false }))[0];
+    expect(rerun).toMatchObject({ status: 'valid', resumed: false });
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(true);
+  });
+  it('does not submit a stale candidate when a replacement attempt fails', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const { gen } = tasks(root);
+    const scripts = join(root, 'scripts');
+    mkdirSync(scripts);
+    writeFileSync(join(scripts, '101.kcad.ts'), 'return box(2, 2, 2);');
+    const config = cfg(runDir, { scriptsFrom: scripts });
+    expect((await runTask(gen, config)).status).toBe('valid');
+    writeFileSync(join(scripts, '101.kcad.ts'), 'THROW');
+    expect((await runTask(gen, config)).status).toBe('failed');
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(false);
+    const archive = join(runDir, 'tasks/101/previous-candidates');
+    const archived = readdirSync(archive);
+    expect(archived).toHaveLength(1);
+    expect(readFileSync(join(archive, archived[0]), 'utf8')).toBe('return box(2, 2, 2);');
+  });
   it('skips finished tasks and reruns needs_key once a producer exists', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
     const runDir = join(root, 'run');
