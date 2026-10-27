@@ -23,7 +23,12 @@ import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { faceFrameOrigin } from '../../../kernel/backends/occt/faceFrame';
 import { detectCylindricalHoles } from '../../../kernel/backends/occt/holeDetection';
-import { isPointPlacedHole, polarCylinderAxis, polarPointOnAxis } from '../../../kernel/backends/occt/holeAtPoint';
+import {
+  isPointPlacedHole,
+  orientDominantCylinderDir,
+  polarCylinderAxis,
+  polarPointOnAxis,
+} from '../../../kernel/backends/occt/holeAtPoint';
 import { ancestorFeatureClosure, holeAxisQueryName } from '../../parts/holeAutoConnectors';
 import {
   forwardPoint,
@@ -207,7 +212,10 @@ function featureIsPolar(feature: FeatureRecord): boolean {
 
 /** Polar `at` stored only angle and axial z. Rebuild the cartesian mouth
  *  `placePolar` would have cut, in the pre-transform frame, so
- *  `pointPlacedFrame` can replay post-cut transforms and part `at`. */
+ *  `pointPlacedFrame` can replay post-cut transforms and part `at`.
+ *  Map the geometric axis back first, then flip its dominant component.
+ *  Flipping in the post-transform frame and inverting that sign mirrors
+ *  axial `z` when a later rotate or reflect negates the axis. */
 function polarAuthoredFrame(
   backend: OcctBackend,
   feature: FeatureRecord,
@@ -222,9 +230,10 @@ function polarAuthoredFrame(
     ? p
     : [p[0] - baked[0], p[1] - baked[1], p[2] - baked[2]];
   const origin = inversePoint(unbake(axis.origin), transforms);
-  const dir = normalize(inverseVector(axis.dir, transforms));
+  const mappedDir = normalize(inverseVector(axis.dir, transforms));
   const ref = perpendicular(axis.dir);
   const sample = inversePoint(unbake(add(axis.origin, scale(ref, axis.radius))), transforms);
+  const dir = orientDominantCylinderDir(mappedDir);
   const radius = distToAxis(sample, origin, dir);
   if (!(radius > 1e-9)) return null;
   const angle = feature.params.atAngleDeg.evaluated;

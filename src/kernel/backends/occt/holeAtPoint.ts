@@ -105,7 +105,16 @@ function closestOnFace(oc: Oc, face: Face, p: Vec3): { dist: number; point: Vec3
 
 export interface CylinderAxisFrame { origin: Vec3; dir: Vec3; radius: number }
 
-function cylinderOf(oc: Oc, face: Face): CylinderAxisFrame | undefined {
+/** Point `dir` toward its dominant positive component. `z` then reads as a
+ *  coordinate along that axis, and the polar angle is right-handed about it.
+ *  `placePolar` applies this in the frame it cuts; a later replay must apply
+ *  it in that same frame, not in the post-transform frame. */
+export function orientDominantCylinderDir(dir: Vec3): Vec3 {
+  const k = [0, 1, 2].reduce((m, i) => (Math.abs(dir[i]) > Math.abs(dir[m]) ? i : m), 0);
+  return dir[k] < 0 ? scale(dir, -1) : dir;
+}
+
+function readCylinder(oc: Oc, face: Face): CylinderAxisFrame | undefined {
   if (face.geomType !== 'CYLINDRE') return undefined;
   const adaptor = new oc.BRepAdaptor_Surface_2(face.wrapped, true);
   try {
@@ -113,21 +122,28 @@ function cylinderOf(oc: Oc, face: Face): CylinderAxisFrame | undefined {
     const ax = cyl.Position();
     const loc = ax.Location();
     const d = ax.Direction();
-    let dir: Vec3 = [d.X(), d.Y(), d.Z()];
-    // Orient the axis toward its dominant + world axis so `z` reads as a
-    // world coordinate and the angle sense is right-handed about +axis.
-    const k = [0, 1, 2].reduce((m, i) => (Math.abs(dir[i]) > Math.abs(dir[m]) ? i : m), 0);
-    if (dir[k] < 0) dir = scale(dir, -1);
-    return { origin: [loc.X(), loc.Y(), loc.Z()], dir, radius: cyl.Radius() as number };
+    return {
+      origin: [loc.X(), loc.Y(), loc.Z()],
+      dir: [d.X(), d.Y(), d.Z()],
+      radius: cyl.Radius() as number,
+    };
   } finally {
     adaptor.delete();
   }
 }
 
+function cylinderOf(oc: Oc, face: Face): CylinderAxisFrame | undefined {
+  const raw = readCylinder(oc, face);
+  if (!raw) return undefined;
+  return { ...raw, dir: orientDominantCylinderDir(raw.dir) };
+}
+
 /** Largest cylindrical face the hole selector matches. Polar `at` drills that
- *  cylinder, the same choice `placePolar` makes. The mouth may already have
- *  been cut away, so this does not require the polar point to still lie on
- *  the trimmed face. */
+ *  cylinder, the same choice `placePolar` makes. The direction is the
+ *  geometric axis, not yet flipped toward its dominant positive component:
+ *  the caller maps it into the frame it needs, then
+ *  `orientDominantCylinderDir`. The mouth may already have been cut away,
+ *  so this does not require the polar point to still lie on the trimmed face. */
 export function polarCylinderAxis(
   feature: FeatureRecord,
   target: OcctBackend,
@@ -138,7 +154,7 @@ export function polarCylinderAxis(
   if ('error' in faces) return undefined;
   let best: CylinderAxisFrame | undefined;
   for (const face of faces) {
-    const cyl = cylinderOf(oc, face);
+    const cyl = readCylinder(oc, face);
     if (cyl && (!best || cyl.radius > best.radius)) best = cyl;
   }
   return best;

@@ -352,6 +352,152 @@ describe('topology connector origins follow a rebuilt face', () => {
     expect(solved[1]).toBeCloseTo(0, 3);
     expect(solved[2]).toBeCloseTo(5, 3);
   });
+
+  it('places a polar side hole on the drilled mouth after reflect xy and a part at', async () => {
+    // Wall point (20, 0, 5). reflect('xy') sends z to -z, then part at
+    // [50, 0, 0] lifts the mouth to (70, 0, -5). A sign flip taken in the
+    // post-transform frame mirrors that axial z back to +5.
+    const model = await buildModel({
+      fileName: 'polar-reflect-xy-at-hole-follow.kcad.ts',
+      code: `
+        const collar = cylinder(10, 20).hole(
+          { ofSurfaceType: 'CYLINDER' },
+          { at: { angleDeg: 0, z: 5 }, diameter: 4, depth: 8 },
+        ).reflect('xy');
+        const arm = assembly('stack');
+        arm.part('collar', collar, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'collar.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(solved[0], 3);
+    expect(scene[1]).toBeCloseTo(solved[1], 3);
+    expect(scene[2]).toBeCloseTo(solved[2], 3);
+    expect(solved[0]).toBeCloseTo(70, 3);
+    expect(solved[1]).toBeCloseTo(0, 3);
+    expect(solved[2]).toBeCloseTo(-5, 3);
+  });
+
+  it('places a polar side hole on the drilled mouth after rotateX and a part at', async () => {
+    // Wall point (20, 0, 5). rotateX(90) sends (x, y, z) to (x, -z, y),
+    // then part at [50, 0, 0] lifts the mouth to (70, -5, 0).
+    const model = await buildModel({
+      fileName: 'polar-rotate-x-at-hole-follow.kcad.ts',
+      code: `
+        const collar = cylinder(10, 20).hole(
+          { ofSurfaceType: 'CYLINDER' },
+          { at: { angleDeg: 0, z: 5 }, diameter: 4, depth: 8 },
+        ).rotateX(90);
+        const arm = assembly('stack');
+        arm.part('collar', collar, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'collar.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(solved[0], 3);
+    expect(scene[1]).toBeCloseTo(solved[1], 3);
+    expect(scene[2]).toBeCloseTo(solved[2], 3);
+    expect(solved[0]).toBeCloseTo(70, 3);
+    expect(solved[1]).toBeCloseTo(-5, 3);
+    expect(solved[2]).toBeCloseTo(0, 3);
+  });
+
+  it('places a polar side hole on the drilled mouth after rotateZ and a part at', async () => {
+    // Wall point (20, 0, 5). rotateZ(90) sends (x, y) to (-y, x), then part
+    // at [50, 0, 0] lifts the mouth to (50, 20, 5). Z is unchanged.
+    const model = await buildModel({
+      fileName: 'polar-rotate-z-at-hole-follow.kcad.ts',
+      code: `
+        const collar = cylinder(10, 20).hole(
+          { ofSurfaceType: 'CYLINDER' },
+          { at: { angleDeg: 0, z: 5 }, diameter: 4, depth: 8 },
+        ).rotateZ(90);
+        const arm = assembly('stack');
+        arm.part('collar', collar, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'collar.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(solved[0], 3);
+    expect(scene[1]).toBeCloseTo(solved[1], 3);
+    expect(scene[2]).toBeCloseTo(solved[2], 3);
+    expect(solved[0]).toBeCloseTo(50, 3);
+    expect(solved[1]).toBeCloseTo(20, 3);
+    expect(solved[2]).toBeCloseTo(5, 3);
+  });
+
+  it('places a polar side hole on the drilled mouth after a translate and a part at', async () => {
+    // Wall point (20, 0, 5). translate(0, 0, 10) then part at [50, 0, 0]
+    // lifts the mouth to (70, 0, 15).
+    const model = await buildModel({
+      fileName: 'polar-translate-at-hole-follow.kcad.ts',
+      code: `
+        const collar = cylinder(10, 20).hole(
+          { ofSurfaceType: 'CYLINDER' },
+          { at: { angleDeg: 0, z: 5 }, diameter: 4, depth: 8 },
+        ).translate(0, 0, 10);
+        const arm = assembly('stack');
+        arm.part('collar', collar, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'collar.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(solved[0], 3);
+    expect(scene[1]).toBeCloseTo(solved[1], 3);
+    expect(scene[2]).toBeCloseTo(solved[2], 3);
+    expect(solved[0]).toBeCloseTo(70, 3);
+    expect(solved[1]).toBeCloseTo(0, 3);
+    expect(solved[2]).toBeCloseTo(15, 3);
+  });
+
+  it('places a polar side hole on the drilled mouth after reflect yz and a part at', async () => {
+    // Wall point (20, 0, 5). reflect('yz') sends x to -x, then part at
+    // [50, 0, 0] lifts the mouth to (30, 0, 5). The cylinder axis sign stays.
+    const model = await buildModel({
+      fileName: 'polar-reflect-yz-at-hole-follow.kcad.ts',
+      code: `
+        const collar = cylinder(10, 20).hole(
+          { ofSurfaceType: 'CYLINDER' },
+          { at: { angleDeg: 0, z: 5 }, diameter: 4, depth: 8 },
+        ).reflect('yz');
+        const arm = assembly('stack');
+        arm.part('collar', collar, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'collar.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(solved[0], 3);
+    expect(scene[1]).toBeCloseTo(solved[1], 3);
+    expect(scene[2]).toBeCloseTo(solved[2], 3);
+    expect(solved[0]).toBeCloseTo(30, 3);
+    expect(solved[1]).toBeCloseTo(0, 3);
+    expect(solved[2]).toBeCloseTo(5, 3);
+  });
 });
 
 async function solvedCapPoint(
