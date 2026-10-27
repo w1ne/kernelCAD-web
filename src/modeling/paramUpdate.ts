@@ -21,7 +21,7 @@ import { affectedFeatureIds } from './paramAffect';
 import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
 import { stampFingerprint } from '../kernel/backends/occt/analysisMemo';
 import { featureFingerprints } from './warm/featureFingerprint';
-import { captureBaseline, planRigidReuse } from './warm/rigidReuse';
+import { captureBaseline, failedFeatureIds, planRigidReuse, settleFeatureFailures } from './warm/rigidReuse';
 import type { ParamValue } from '../shared/runtime/paramTable';
 
 export function populateCache(session: CaptureSession, shapes: Map<FeatureId, ShapeBackend>): void {
@@ -135,6 +135,9 @@ async function applyParamEdits(
   });
 
   const produced = producedShape(model, result.shapes);
+  if (options?.preview !== true) {
+    settleFeatureFailures(session, featureErrorIds(result.diagnostics), relowered);
+  }
   populateCache(session, result.shapes);
   stampAnalyses(model.records, session.paramTable, result.shapes);
   // This run lowered (or reused) every record under the edited param table,
@@ -269,19 +272,34 @@ function validateParamEdits(session: CaptureSession, edits: ParamUpdateEdit[]): 
   }
 }
 
+function featureErrorIds(diagnostics: readonly { severity: string; featureId?: string }[]): string[] {
+  const ids: string[] = [];
+  for (const diagnostic of diagnostics) {
+    if (diagnostic.severity === 'error' && diagnostic.featureId) ids.push(diagnostic.featureId);
+  }
+  return ids;
+}
+
 function buildSeedShapes(
   session: CaptureSession,
   records: readonly FeatureRecord[],
   editedNames: Set<string>,
 ): { seedShapes: Map<FeatureId, ShapeBackend>; relowered: string[]; skipped: string[]; rigidReused: string[] } {
   const affected = affectedFeatureIds(records, editedNames);
-  const rigid = planRigidReuse(session, records, affected);
+  const { seeds: rigid, blocked } = planRigidReuse(session, records, affected);
+  const failed = failedFeatureIds(session);
   const seedShapes = new Map<FeatureId, ShapeBackend>();
   const relowered: string[] = [];
   const skipped: string[] = [];
   const rigidReused: string[] = [];
 
   for (const record of records) {
+    // A selector's placed ancestor, or a feature that last lowered with an
+    // error, is not seeded. The cached solid is not the baseline.
+    if (blocked.has(record.id) || failed.has(record.id)) {
+      relowered.push(record.id);
+      continue;
+    }
     if (affected.has(record.id)) {
       const placed = rigid.get(record.id);
       if (placed) {

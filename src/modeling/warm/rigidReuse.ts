@@ -13,8 +13,9 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { copyRigidAnalysis, type Motion } from '../../kernel/backends/occt/analysisMemo';
 import { registerOcctResetHook } from '../../kernel/backends/occt/backendInit';
+import { propagateTransformHistory } from '../../kernel/naming/evolutionRecord';
 import type { FeatureRecord, ShapeTransform } from '../../shared/intent/featureRecord';
-import type { Param, PatternSpec } from '../../shared/intent/types';
+import type { FeatureRef, Param, PatternSpec } from '../../shared/intent/types';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { stableStringify } from '../compute/prefixReuse';
@@ -25,8 +26,13 @@ const EPS = 1e-6;
 const ZERO: Motion = { x: 0, y: 0, z: 0 };
 
 const PRIMITIVES = new Set(['box', 'cylinder', 'sphere', 'torus']);
-const X_KEYS = new Set(['x', 'midX', 'ax', 'bx', 'atx', 'btx', 'acx', 'bcx', 'cx']);
-const Y_KEYS = new Set(['y', 'midY', 'ay', 'by', 'aty', 'bty', 'acy', 'bcy', 'cy']);
+// Positions only. Hermite tangents (`atx`…) and curvatures (`acx`…) are
+// derivatives: a translation leaves them put, and a matching delta is a
+// shape change, not a shift.
+const X_KEYS = new Set(['x', 'midX', 'ax', 'bx', 'cx']);
+const Y_KEYS = new Set(['y', 'midY', 'ay', 'by', 'cy']);
+const INVARIANT_FIELDS = new Set(['startTangent', 'endTangent']);
+const NO_FAILURES: ReadonlySet<string> = new Set();
 
 interface Baseline {
   epoch: number;
@@ -46,6 +52,8 @@ interface PlaneAcc {
 
 let epoch = 0;
 const baselines = new WeakMap<object, Baseline>();
+/** Features whose last lower reported an error. Their cached solid is not a baseline. */
+const failedFeatures = new WeakMap<object, Set<string>>();
 
 registerOcctResetHook(() => {
   epoch += 1;
@@ -109,7 +117,12 @@ function walkObject(prev: object, next: object, acc: PlaneAcc): boolean {
   const nextObj = next as Record<string, unknown>;
   const keys = Object.keys(prevObj);
   if (keys.length !== Object.keys(nextObj).length) return false;
-  return keys.every((child) => child in nextObj && walkPlane(prevObj[child], nextObj[child], child, acc));
+  return keys.every((child) => {
+    if (!(child in nextObj)) return false;
+    // Spline tangents are {x,y} directions, not points.
+    if (INVARIANT_FIELDS.has(child)) return sameCanon(prevObj[child], nextObj[child]);
+    return walkPlane(prevObj[child], nextObj[child], child, acc);
+  });
 }
 
 function coordinateDelta(key: string, prev: unknown, next: unknown): number | undefined {
@@ -182,6 +195,8 @@ function sketchShift(
   if (!prev || !next || prev.kind !== 'sketch' || next.kind !== 'sketch') return null;
   const prevCommands = (prev.metadata as { commands?: unknown } | undefined)?.commands;
   const nextCommands = (next.metadata as { commands?: unknown } | undefined)?.commands;
+  // `sketch.text` has no command list. Walking two missing lists is not a zero shift.
+  if (!Array.isArray(prevCommands) || !Array.isArray(nextCommands)) return null;
   return planeMotion(prevCommands, nextCommands);
 }
 
@@ -228,6 +243,10 @@ function proveProfile(
   if (!sketch || sketch.kind !== 'feature') return delta;
   const profile = sketchShift(sketch.id, baseline, resolved);
   if (!profile) return null;
+  // A non-zero twist spins the profile about the sketch origin, so an in-plane
+  // shift is not a copy of the cached solid. A pure trailing translate is.
+  const twist = asCoord(next.params.twistAngle) ?? 0;
+  if (next.kind === 'extrude' && !close(twist, 0) && (!close(profile.dx, 0) || !close(profile.dy, 0))) return null;
   if (next.kind === 'revolve' && !close(profile.dx, 0)) return null;
   const intrinsic = next.kind === 'revolve'
     ? { x: 0, y: 0, z: profile.dy }
@@ -248,6 +267,21 @@ function proveFromInputs(
   return placed ? add(placed, delta) : null;
 }
 
+function hasNonTranslate(transforms: readonly ShapeTransform[]): boolean {
+  return transforms.some((transform) => transform.op !== 'translate');
+}
+
+/** Input motion is proved in the pre-transform frame. A rotate, scale, or
+ *  reflect does not commute with it, so only a trailing translate is placed. */
+function extrinsicMotion(next: FeatureRecord, motion: Motion, delta: Motion): Motion | null {
+  if (!hasNonTranslate(next.transforms)) return motion;
+  const dx = motion.x - delta.x;
+  const dy = motion.y - delta.y;
+  const dz = motion.z - delta.z;
+  if (!close(dx, 0) || !close(dy, 0) || !close(dz, 0)) return null;
+  return delta;
+}
+
 function proveFeature(
   prev: FeatureRecord,
   next: FeatureRecord,
@@ -258,48 +292,90 @@ function proveFeature(
   const delta = transformDelta(prev.transforms, next.transforms);
   if (!delta || !sameBody(prev, next)) return null;
   if (PRIMITIVES.has(next.kind)) return delta;
-  if (next.kind === 'boolean' || next.kind === 'pattern') return proveFromInputs(prev, next, delta, motions);
-  if (next.kind === 'revolve' || next.kind === 'extrude') return proveProfile(next, delta, baseline, resolved);
-  return null;
+  const motion = next.kind === 'boolean' || next.kind === 'pattern'
+    ? proveFromInputs(prev, next, delta, motions)
+    : next.kind === 'revolve' || next.kind === 'extrude'
+      ? proveProfile(next, delta, baseline, resolved)
+      : null;
+  return motion ? extrinsicMotion(next, motion, delta) : null;
 }
 
-function refsFace(record: FeatureRecord): boolean {
-  return Object.values(record.inputs).some((ref) => ref.kind === 'face' || ref.kind === 'edge');
+function linkedFeatureId(ref: FeatureRef): string | undefined {
+  if (ref.kind === 'feature') return ref.id;
+  if (ref.kind === 'face' || ref.kind === 'edge' || ref.kind === 'vertex') return ref.featureId;
+  return undefined;
 }
 
-/** A feature that will really lower and names a face or edge forces that
- *  feature to lower too, so the selector sees a freshly built history. */
+function hasSelector(record: FeatureRecord): boolean {
+  return Object.values(record.inputs).some((ref) => (
+    ref.kind === 'face' || ref.kind === 'edge' || ref.kind === 'vertex'
+  ));
+}
+
+/** A lowering selector must not consume a placed ancestor. Placement copies
+ *  face history, but a partial map (one operand moved, one not) can bind a
+ *  canonical name to the wrong survivor. Those ancestors lower instead. */
+function blockPlacedAncestors(
+  root: FeatureRecord,
+  byId: ReadonlyMap<string, FeatureRecord>,
+  proved: ReadonlySet<string>,
+  blocked: Set<string>,
+): void {
+  const stack: FeatureRecord[] = [root];
+  const seen = new Set<string>([root.id]);
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (!current) continue;
+    for (const ref of Object.values(current.inputs)) {
+      const id = linkedFeatureId(ref);
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      if (proved.has(id) || ref.kind !== 'feature') blocked.add(id);
+      const next = byId.get(id);
+      if (next) stack.push(next);
+    }
+  }
+}
+
 function blockRigidSeeds(
   records: readonly FeatureRecord[],
   affected: ReadonlySet<string>,
   proved: ReadonlySet<string>,
 ): Set<string> {
   const blocked = new Set<string>();
+  const byId = new Map(records.map((record) => [record.id, record]));
   for (const record of records) {
     if (affected.has(record.id) && !proved.has(record.id)) blocked.add(record.id);
   }
-  let grew = true;
-  while (grew) {
-    grew = false;
-    for (const record of records) {
-      if (!blocked.has(record.id) || !refsFace(record)) continue;
-      for (const ref of Object.values(record.inputs)) {
-        if ((ref.kind === 'face' || ref.kind === 'edge') && !blocked.has(ref.featureId)) {
-          blocked.add(ref.featureId);
-          grew = true;
-        }
-      }
-    }
+  for (const record of records) {
+    if (blocked.has(record.id) && hasSelector(record)) blockPlacedAncestors(record, byId, proved, blocked);
   }
   return blocked;
+}
+
+function withKind(source: OcctBackend, moved: OcctBackend, motion: Motion, history: OcctBackend['historyMap']): OcctBackend {
+  const carried = new OcctBackend(moved.getReplicadShape(), source.kind, history);
+  if (moved.analysisBody !== undefined) carried.analysisBody = moved.analysisBody;
+  copyRigidAnalysis(source, carried, motion);
+  return carried;
+}
+
+/** Keep `kind` and face lineage. A face-count change is not a rigid copy.
+ *  Solids with no lineage skip the face walk; a translate does not change it. */
+function carryPlacement(source: OcctBackend, moved: OcctBackend, motion: Motion): OcctBackend | null {
+  if (source.historyMap === undefined) return withKind(source, moved, motion, undefined);
+  const inputHashes = source.faceHashes();
+  const outputHashes = moved.faceHashes();
+  if (outputHashes.length !== inputHashes.length) return null;
+  const history = propagateTransformHistory(source.historyMap, inputHashes, outputHashes);
+  return withKind(source, moved, motion, history);
 }
 
 function place(shape: ShapeBackend, motion: Motion): ShapeBackend | null {
   if (!(shape instanceof OcctBackend)) return null;
   if (close(motion.x, 0) && close(motion.y, 0) && close(motion.z, 0)) return shape;
   const moved = shape.clone().translate(motion.x, motion.y, motion.z);
-  copyRigidAnalysis(shape, moved, motion);
-  return moved;
+  return carryPlacement(shape, moved, motion);
 }
 
 /** Snapshot the shapes that match the session's current param table. */
@@ -314,23 +390,55 @@ export function captureBaseline(
   });
 }
 
+/** Feature ids whose last lower failed. Empty when this session has none. */
+export function failedFeatureIds(session: object): ReadonlySet<string> {
+  return failedFeatures.get(session) ?? NO_FAILURES;
+}
+
+/**
+ * Remember features that lowered with an error so the next edit does not
+ * seed that solid. A feature that lowers cleanly is dropped from the set.
+ * Any failure also drops the rigid baseline: the run is not a provable state.
+ */
+export function settleFeatureFailures(
+  session: object,
+  failedIds: readonly string[],
+  relowered: readonly string[],
+): void {
+  const set = failedFeatures.get(session) ?? new Set<string>();
+  const failed = new Set(failedIds);
+  for (const id of relowered) if (!failed.has(id)) set.delete(id);
+  for (const id of failedIds) set.add(id);
+  if (set.size === 0) failedFeatures.delete(session);
+  else failedFeatures.set(session, set);
+  if (failedIds.length > 0) baselines.delete(session);
+}
+
+export interface RigidReusePlan {
+  seeds: Map<string, ShapeBackend>;
+  /** Must lower even when the edit did not touch them. */
+  blocked: ReadonlySet<string>;
+}
+
 /**
  * Cached solids that may be seeded in place of a lower. Empty when this
  * session has no baseline for the current kernel epoch (first edit, or the
  * kernel was reset).
  */
-export function planRigidReuse(
-  session: { paramTable: ParamTable; cachedShapes: ReadonlyMap<string, ShapeBackend> },
+function proveRecords(
   records: readonly FeatureRecord[],
   affected: ReadonlySet<string>,
-): Map<string, ShapeBackend> {
-  const baseline = baselines.get(session);
-  const seeds = new Map<string, ShapeBackend>();
-  if (!baseline || baseline.epoch !== epoch) return seeds;
-  const resolved = new Map(records.map((record) => [record.id, resolveParams(record, session.paramTable)]));
+  failed: ReadonlySet<string> | undefined,
+  baseline: Baseline,
+  resolved: Map<string, FeatureRecord>,
+): { motions: Map<string, Motion | null>; proved: Set<string> } {
   const motions = new Map<string, Motion | null>();
   const proved = new Set<string>();
   for (const record of records) {
+    if (failed?.has(record.id)) {
+      motions.set(record.id, null);
+      continue;
+    }
     if (!affected.has(record.id)) {
       motions.set(record.id, ZERO);
       continue;
@@ -341,6 +449,19 @@ export function planRigidReuse(
     motions.set(record.id, motion);
     if (motion) proved.add(record.id);
   }
+  return { motions, proved };
+}
+
+export function planRigidReuse(
+  session: { paramTable: ParamTable; cachedShapes: ReadonlyMap<string, ShapeBackend> },
+  records: readonly FeatureRecord[],
+  affected: ReadonlySet<string>,
+): RigidReusePlan {
+  const baseline = baselines.get(session);
+  const seeds = new Map<string, ShapeBackend>();
+  if (!baseline || baseline.epoch !== epoch) return { seeds, blocked: NO_FAILURES };
+  const resolved = new Map(records.map((record) => [record.id, resolveParams(record, session.paramTable)]));
+  const { motions, proved } = proveRecords(records, affected, failedFeatures.get(session), baseline, resolved);
   const blocked = blockRigidSeeds(records, affected, proved);
   for (const record of records) {
     if (!proved.has(record.id) || blocked.has(record.id)) continue;
@@ -349,5 +470,5 @@ export function planRigidReuse(
     const placed = cached && motion ? place(cached, motion) : null;
     if (placed) seeds.set(record.id, placed);
   }
-  return seeds;
+  return { seeds, blocked };
 }

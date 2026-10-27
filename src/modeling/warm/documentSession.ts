@@ -12,6 +12,7 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { BuildModelInput, BuiltModel, ParamUpdateEdit } from '../buildModel';
 import { updateModelParams } from '../paramUpdate';
+import { importIdentity } from './importIdentity';
 
 export interface WarmDocument {
   readonly id: string;
@@ -55,8 +56,21 @@ interface Entry {
   code: string;
   fileName: string;
   scriptDir?: string;
+  /** Bytes of `lib.fromSTEP` / font files the source names. */
+  importHash: string;
   model: BuiltModel;
   overrides: Record<string, ParamUpdateEdit['value']>;
+}
+
+function sameIdentity(existing: Entry, input: WarmOpen, hash: string, imports: string): boolean {
+  return existing.sourceHash === hash
+    && existing.fileName === input.fileName
+    && existing.scriptDir === input.scriptDir
+    && existing.importHash === imports;
+}
+
+function featureFailed(diagnostics: readonly { severity: string }[]): boolean {
+  return diagnostics.some((diagnostic) => diagnostic.severity === 'error');
 }
 
 const DEFAULT_MAX = 4;
@@ -146,8 +160,9 @@ class WarmDocuments implements WarmDocumentStore {
 
   async open(input: WarmOpen): Promise<WarmDocument> {
     const hash = sourceHash(input.code);
+    const imports = importIdentity(input.code, input.scriptDir);
     const existing = this.docs.get(input.id);
-    if (existing && existing.sourceHash === hash && existing.fileName === input.fileName) {
+    if (existing && sameIdentity(existing, input, hash, imports)) {
       this.touch(existing);
       return view(existing);
     }
@@ -156,6 +171,7 @@ class WarmDocuments implements WarmDocumentStore {
     return this.insert({
       id: input.id,
       sourceHash: hash,
+      importHash: imports,
       code: input.code,
       fileName: input.fileName,
       scriptDir: input.scriptDir,
@@ -185,6 +201,14 @@ class WarmDocuments implements WarmDocumentStore {
 
   private async editIncremental(entry: Entry, edits: readonly ParamUpdateEdit[]): Promise<WarmEditResult> {
     const updated = await updateModelParams(entry.model, [...edits]);
+    // A lower that kept the unfinished base (unresolved fillet, chamfer, shell,
+    // draft) must not become the next baseline. Rebuild from source instead.
+    if (featureFailed(updated.model.diagnostics)) {
+      throw new KernelError(
+        'recompute.lowering.exception',
+        'params.update: feature failed; warm baseline refused',
+      );
+    }
     disposeReplaced(entry.model.shapes, updated.model.shapes);
     entry.model = updated.model;
     for (const edit of edits) entry.overrides[edit.name] = edit.value;
@@ -219,7 +243,12 @@ class WarmDocuments implements WarmDocumentStore {
       disposeModelShapes(model);
       throw err;
     }
-    const stored: Entry = { ...entry, model, overrides };
+    const stored: Entry = {
+      ...entry,
+      model,
+      overrides,
+      importHash: importIdentity(entry.code, entry.scriptDir),
+    };
     return { ...fullResult(stored), document: this.insert(stored) };
   }
 }

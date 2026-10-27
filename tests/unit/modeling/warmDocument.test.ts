@@ -1,11 +1,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 import { buildModel, updateModelParams, type BuiltModel } from '../../../src/modeling/buildModel';
 import { createWarmDocumentStore } from '../../../src/modeling/warm/documentSession';
+import { featureFingerprints } from '../../../src/modeling/warm/featureFingerprint';
 import type { ShapeBackend } from '../../../src/kernel/backends/backend';
+import type { FeatureRecord } from '../../../src/shared/intent/featureRecord';
+import { ParamTable } from '../../../src/shared/runtime/paramTable';
 
 function faceCount(shape: ShapeBackend): number {
   return (shape as OcctBackend).getReplicadShape().faces.length;
@@ -182,5 +188,177 @@ describe('warm document rebuild', () => {
     expect(store.has('cross')).toBe(false);
     const reopened = await store.open({ id: 'cross', code, fileName: 'cross.kcad.ts' });
     expect(rootOf(reopened.model).volume()).toBeGreaterThan(0);
+  });
+
+  it('does not place a translated union through a later rotate', async () => {
+    const code = `
+      const z = param('z', 0, { min: 0, max: 40 });
+      const a = cylinder(6, 3).translate(0, 0, z);
+      const b = cylinder(5, 2).translate(0, 0, z.add(12));
+      return a.union(b).rotateX(90);
+    `;
+    const warm = await buildModel({ code, fileName: 'warm.kcad.ts' });
+    const edited = await updateModelParams(warm, [{ name: 'z', value: 15 }]);
+    const cold = await coldAt(code, "param('z', 0,", "param('z', 15,");
+    expectSameSolid(rootOf(edited.model), rootOf(cold));
+  });
+
+  it('does not translate a twisted extrude when the profile shifts in plane', async () => {
+    const code = `
+      const x = param('x', 0, { min: -20, max: 20 });
+      return path()
+        .moveTo(x, 0).lineTo(x.add(10), 0).lineTo(x.add(10), 8).lineTo(x, 8).close()
+        .extrude(12, { twistAngle: 90 });
+    `;
+    const warm = await buildModel({ code, fileName: 'warm.kcad.ts' });
+    const edited = await updateModelParams(warm, [{ name: 'x', value: 10 }]);
+    const cold = await coldAt(code, "param('x', 0,", "param('x', 10,");
+    expectSameSolid(rootOf(edited.model), rootOf(cold));
+  });
+
+  it('re-lowers an extrude of sketch text when the text size changes', async () => {
+    const code = `
+      const size = param('size', 4, { min: 1, max: 20 });
+      const x = param('x', 0, { min: 0, max: 30 });
+      return sketch.text('A', { size, position: [x, 0] }).extrude(1);
+    `;
+    const warm = await buildModel({ code, fileName: 'warm.kcad.ts' });
+    const extrude = warm.records.find((record) => record.kind === 'extrude')!;
+    const lowered = spyLowers();
+    const edited = await updateModelParams(warm, [{ name: 'size', value: 8 }]);
+    expect(lowered).toContain(extrude.id);
+    const cold = await coldAt(code, "param('size', 4,", "param('size', 8,");
+    expectSameSolid(rootOf(edited.model), rootOf(cold));
+  });
+
+  it('fillets a moved cap instead of storing the uncut union', async () => {
+    const code = `
+      const x = param('x', 0, { min: 0, max: 40 });
+      const cap = path()
+        .moveTo(0, 0).lineTo(10, 0).lineTo(10, 6).lineTo(0, 6).close()
+        .extrude(4, { faceLabels: { cap: 'top' } })
+        .translate(x, 0, 0);
+      const foot = box(4, 4, 2).translate(0, 0, -3);
+      return cap.union(foot).fillet(0.5, 'cap');
+    `;
+    const warm = await buildModel({ code, fileName: 'warm.kcad.ts' });
+    const edited = await updateModelParams(warm, [{ name: 'x', value: 12 }]);
+    const cold = await coldAt(code, "param('x', 0,", "param('x', 12,");
+    expectSameSolid(rootOf(edited.model), rootOf(cold));
+    const again = await updateModelParams(edited.model, [{ name: 'x', value: 18 }]);
+    const coldAgain = await coldAt(code, "param('x', 0,", "param('x', 18,");
+    expectSameSolid(rootOf(again.model), rootOf(coldAgain));
+  });
+
+  it('does not treat a spline tangent delta as a profile translation', async () => {
+    const code = `
+      const x = param('x', 0, { min: -5, max: 20 });
+      return path()
+        .moveTo(x, 0)
+        .spline([[x, 0], [x.add(8), 3], [x.add(4), 8]], { startTangent: [x.add(1), 0.5], endTangent: [1, 0] })
+        .lineTo(x, 8)
+        .close()
+        .extrude(2);
+    `;
+    const warm = await buildModel({ code, fileName: 'warm.kcad.ts' });
+    const edited = await updateModelParams(warm, [{ name: 'x', value: 5 }]);
+    const cold = await coldAt(code, "param('x', 0,", "param('x', 5,");
+    expectSameSolid(rootOf(edited.model), rootOf(cold));
+  });
+
+  it('rebuilds when scriptDir or an imported file changes', async () => {
+    const code = `const s = param('s', 4, { min: 1, max: 20 }); return box(s, s, s);`;
+    const store = createWarmDocumentStore({ build: (input) => buildModel(input) });
+    const first = await store.open({ id: 'doc', code, fileName: 'a.kcad.ts', scriptDir: '/tmp/warm-a' });
+    const lowered = spyLowers();
+    const same = await store.open({ id: 'doc', code, fileName: 'a.kcad.ts', scriptDir: '/tmp/warm-a' });
+    expect(same.model).toBe(first.model);
+    expect(lowered).toHaveLength(0);
+    const moved = await store.open({ id: 'doc', code, fileName: 'a.kcad.ts', scriptDir: '/tmp/warm-b' });
+    expect(moved.model).not.toBe(first.model);
+    expect(lowered.length).toBeGreaterThan(0);
+
+    const dir = mkdtempSync(join(tmpdir(), 'warm-import-'));
+    try {
+      const stl = `solid t
+facet normal 0 0 -1
+ outer loop
+  vertex 0 0 0
+  vertex 10 0 0
+  vertex 0 10 0
+ endloop
+endfacet
+facet normal 0 -1 0
+ outer loop
+  vertex 0 0 0
+  vertex 0 0 10
+  vertex 10 0 0
+ endloop
+endfacet
+facet normal -1 0 0
+ outer loop
+  vertex 0 0 0
+  vertex 0 10 0
+  vertex 0 0 10
+ endloop
+endfacet
+facet normal 1 1 1
+ outer loop
+  vertex 10 0 0
+  vertex 0 0 10
+  vertex 0 10 0
+ endloop
+endfacet
+endsolid t
+`;
+      writeFileSync(join(dir, 'part.stl'), stl);
+      const imported = `return await lib.fromSTL('part.stl');`;
+      const opened = await store.open({ id: 'stl', code: imported, fileName: 'part.kcad.ts', scriptDir: dir });
+      const before = rootOf(opened.model).volume();
+      writeFileSync(join(dir, 'part.stl'), stl.replaceAll('10', '20'));
+      const replaced = await store.open({ id: 'stl', code: imported, fileName: 'part.kcad.ts', scriptDir: dir });
+      expect(replaced.model).not.toBe(opened.model);
+      const cold = await buildModel({ code: imported, fileName: 'part.kcad.ts', scriptDir: dir });
+      expectSameSolid(rootOf(replaced.model), rootOf(cold));
+      expect(rootOf(replaced.model).volume()).not.toBeCloseTo(before, 1);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('does not keep a failed fillet as the warm document', async () => {
+    const code = `
+      const w = param('w', 10, { min: 4, max: 30 });
+      return box(w, 8, 6).fillet(0.4, 'missing');
+    `;
+    const store = createWarmDocumentStore({ build: (input) => buildModel(input) });
+    await store.open({ id: 'bad-fillet', code, fileName: 'bad.kcad.ts' });
+    await expect(store.edit('bad-fillet', [{ name: 'w', value: 14 }])).rejects.toThrow(/no shape produced/);
+    expect(store.has('bad-fillet')).toBe(false);
+  });
+
+  it('includes a vertex input in the feature fingerprint', () => {
+    const upstream = (color: string): FeatureRecord => ({
+      id: 'up',
+      kind: 'box',
+      inputs: {},
+      params: {},
+      transforms: [],
+      suppressed: false,
+      metadata: { color },
+    });
+    const consumer: FeatureRecord = {
+      id: 'tip',
+      kind: 'fillet',
+      inputs: { tip: { kind: 'vertex', featureId: 'up', ref: { kind: 'tracked', vertexName: 'a' } } },
+      params: {},
+      transforms: [],
+      suppressed: false,
+    };
+    const table = new ParamTable();
+    const before = featureFingerprints([upstream('red'), consumer], table).get('tip');
+    const after = featureFingerprints([upstream('blue'), consumer], table).get('tip');
+    expect(before).toBeDefined();
+    expect(after).not.toBe(before);
   });
 });

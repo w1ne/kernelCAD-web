@@ -13,7 +13,7 @@ function inputIds(record: FeatureRecord): string[] {
   const ids: string[] = [];
   for (const ref of Object.values(record.inputs)) {
     if (ref.kind === 'feature') ids.push(ref.id);
-    else if (ref.kind === 'face' || ref.kind === 'edge') ids.push(ref.featureId);
+    else if (ref.kind === 'face' || ref.kind === 'edge' || ref.kind === 'vertex') ids.push(ref.featureId);
   }
   return ids;
 }
