@@ -516,4 +516,69 @@ endsolid t
     const cold = await coldAt(code, "param('z', 0,", "param('z', 6,");
     expectSameSolid(rootOf(edited.model), rootOf(cold));
   });
+
+  it('re-lowers a sewn Coons patch when a boundary curve moves', async () => {
+    const code = `
+      const z = param('z', 0, { min: -5, max: 30 });
+      const bottom = nurbsCurve([[0, 0, z], [12, 0, z]], { degree: 1 });
+      const right = nurbsCurve([[12, 0, z], [12, 8, z]], { degree: 1 });
+      const top = nurbsCurve([[12, 8, z], [0, 8, z]], { degree: 1 });
+      const left = nurbsCurve([[0, 8, z], [0, 0, z]], { degree: 1 });
+      return sew([surfaceFromBoundary([bottom, right, top, left])]);
+    `;
+    const warm = await buildModel({ code, fileName: 'warm.kcad.ts' });
+    const sewn = warm.records.find((record) => record.kind === 'surfaceSew')!;
+    const lowered = spyLowers();
+    const edited = await updateModelParams(warm, [{ name: 'z', value: 6 }]);
+    expect(lowered).toContain(sewn.id);
+    const cold = await coldAt(code, "param('z', 0,", "param('z', 6,");
+    expectSameSolid(rootOf(edited.model), rootOf(cold));
+  });
+
+  it('reuses a fromSTL import that passes options when the file is unchanged', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'warm-stl-opts-'));
+    try {
+      writeFileSync(join(dir, 'part.stl'), `solid t
+facet normal 0 0 -1
+ outer loop
+  vertex 0 0 0
+  vertex 10 0 0
+  vertex 0 10 0
+ endloop
+endfacet
+facet normal 0 -1 0
+ outer loop
+  vertex 0 0 0
+  vertex 0 0 10
+  vertex 10 0 0
+ endloop
+endfacet
+facet normal -1 0 0
+ outer loop
+  vertex 0 0 0
+  vertex 0 10 0
+  vertex 0 0 10
+ endloop
+endfacet
+facet normal 1 1 1
+ outer loop
+  vertex 10 0 0
+  vertex 0 0 10
+  vertex 0 10 0
+ endloop
+endfacet
+endsolid t
+`);
+      const code = `return await lib.fromSTL('part.stl', { allowOpen: true });`;
+      const store = createWarmDocumentStore({ build: (input) => buildModel(input) });
+      const first = await store.open({ id: 'stl-opts', code, fileName: 'part.kcad.ts', scriptDir: dir });
+      const lowered = spyLowers();
+      const again = await store.open({ id: 'stl-opts', code, fileName: 'part.kcad.ts', scriptDir: dir });
+      expect(again.model).toBe(first.model);
+      expect(lowered).toHaveLength(0);
+      expect(rootOf(again.model).volume()).toBeGreaterThan(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

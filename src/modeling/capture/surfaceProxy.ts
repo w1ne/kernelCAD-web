@@ -20,7 +20,7 @@ function featureIdOfRef(ref: { kind: string; id?: string; featureId?: string; su
 }
 
 /** Feature ids named by a surface record: loft sections, Coons curves, trim cutters. */
-function namedSurfaceFeatureIds(session: CaptureSession, surfaceId: string, seen = new Set<string>()): string[] {
+export function namedSurfaceFeatureIds(session: CaptureSession, surfaceId: string, seen = new Set<string>()): string[] {
   if (seen.has(surfaceId)) return [];
   seen.add(surfaceId);
   const rec = session.getSurfaceRecord(surfaceId);

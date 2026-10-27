@@ -33,9 +33,25 @@ function unprovable(): string {
   return `unprovable:${Math.random().toString(16).slice(2)}`;
 }
 
-/** A second argument can select different bytes than the literal alone. */
-function literalOnly(rest: string, end: number): boolean {
-  return /^\s*\)/.test(rest.slice(end));
+/**
+ * Text of the second argument, or `''` when the call is only the path.
+ * `null` when the path is not a single literal the call actually ends.
+ */
+function optionsSource(rest: string, end: number): string | null {
+  const tail = rest.slice(end);
+  if (/^\s*\)/.test(tail)) return '';
+  const comma = /^\s*,\s*/.exec(tail);
+  if (!comma) return null;
+  let depth = 0;
+  for (let i = comma[0].length; i < tail.length; i++) {
+    const ch = tail[i];
+    if (ch === '(' || ch === '{' || ch === '[') depth += 1;
+    else if (ch === ')' || ch === '}' || ch === ']') {
+      if (ch === ')' && depth === 0) return tail.slice(comma[0].length, i);
+      depth -= 1;
+    }
+  }
+  return null;
 }
 
 function hashImport(path: string, scriptDir: string | undefined): string {
@@ -59,19 +75,33 @@ function hashFontPath(path: string, scriptDir: string | undefined): string {
   return hashed;
 }
 
-async function hashFetchPart(id: string): Promise<string> {
+async function hashFetchPart(id: string, options: string): Promise<string> {
   if (!getHostFs()) return unprovable();
   try {
     const { loadCatalog, resolveById } = await import('../parts/catalog');
     const hit = resolveById(loadCatalog(), id);
     if (!hit) return unprovable();
     const step = hashImport(hit.stepPath, undefined);
+    if (step.startsWith('missing:') || step.startsWith('unreadable:') || step.startsWith('unread:')) {
+      return unprovable();
+    }
     const manifest = hit.stepPath.replace(/\.step$/i, '.json');
     const side = getHostFs()?.fileExists(manifest) ? hashImport(manifest, undefined) : 'no-manifest';
-    return `fetch:${id}:${step}:${side}`;
+    const base = `fetch:${id}:${step}:${side}`;
+    if (!options.trim()) return base;
+    return `${base}|opts:${hashBytes(new TextEncoder().encode(options))}`;
   } catch {
     return unprovable();
   }
+}
+
+async function hashCall(name: string, path: string, scriptDir: string | undefined, options: string): Promise<string> {
+  if (name === 'fetchPart') return hashFetchPart(path, options);
+  const hashed = name === 'fontPath' ? hashFontPath(path, scriptDir) : hashImport(path, scriptDir);
+  if (hashed.startsWith('unprovable:')) return hashed;
+  // The path was a literal, but its bytes could not be read.
+  if (hashed.startsWith('missing:') || hashed.startsWith('unreadable:')) return unprovable();
+  return hashed;
 }
 
 /** Stable when every imported literal's bytes are unchanged. */
@@ -82,10 +112,10 @@ export async function importIdentity(code: string, scriptDir: string | undefined
     const name = /([A-Za-z]+)\s*\(\s*$/.exec(code.slice(0, re.lastIndex))?.[1] ?? '';
     const rest = code.slice(re.lastIndex);
     const quoted = quotedPath(rest);
-    if (!quoted || !literalOnly(rest, quoted.end)) return unprovable();
-    if (name === 'fetchPart') parts.push(await hashFetchPart(quoted.path));
-    else if (name === 'fontPath') parts.push(hashFontPath(quoted.path, scriptDir));
-    else parts.push(hashImport(quoted.path, scriptDir));
+    if (!quoted) return unprovable();
+    const options = optionsSource(rest, quoted.end);
+    if (options === null) return unprovable();
+    parts.push(await hashCall(name, quoted.path, scriptDir, options));
   }
   return parts.join('|');
 }
