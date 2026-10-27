@@ -7,10 +7,18 @@ import { importStepCached } from '../../../src/modeling/parts/stepParseCache';
 import type { AgentImage } from '../../types';
 import { withOcctLock } from './validity';
 
+export function formatExtents(bounds: {min: readonly number[]; max: readonly number[]}): string {
+  if (bounds.min.length !== 3 || bounds.max.length !== 3) throw new Error('Preview bounds must have three axes');
+  const sizes = bounds.min.map((v,i) => bounds.max[i]-v);
+  if (sizes.some(v => !Number.isFinite(v) || v < 0)) throw new Error('Preview bounds are invalid');
+  return `Mesh extents: X ${sizes[0].toFixed(2)}  Y ${sizes[1].toFixed(2)}  Z ${sizes[2].toFixed(2)} mm`;
+}
+
 export async function renderCandidateViews(stepPath: string): Promise<AgentImage[]> {
   return withOcctLock(async () => {
     await initOcct();
     const backend = await importStepCached(readFileSync(stepPath));
+    const extents = formatExtents(backend.boundingBox({exact:true}));
     const mesh = backend.getReplicadShape().mesh({ tolerance: 0.25, angularTolerance: 0.3 });
     if (!mesh.triangles.length || mesh.triangles.length / 3 > 100_000) throw new Error('preview mesh is empty or exceeds the triangle budget');
     const vertices: [number,number,number][] = [];
@@ -41,7 +49,7 @@ export async function renderCandidateViews(stepPath: string): Promise<AgentImage
         triangles.push({depth:(p[0][2]+p[1][2]+p[2][2])/3,path,shade});
       }
       triangles.sort((a,b)=>a.depth-b.depth);
-      const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" fill="white"/><g>${triangles.map(t=>`<polygon points="${t.path}" fill="rgb(${t.shade},${t.shade},${t.shade})"/>`).join('')}</g><text x="12" y="24" font-family="sans-serif" font-size="18" fill="#172635">${view.name}</text></svg>`;
+      const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" fill="white"/><g>${triangles.map(t=>`<polygon points="${t.path}" fill="rgb(${t.shade},${t.shade},${t.shade})"/>`).join('')}</g><text x="12" y="24" font-family="sans-serif" font-size="18" fill="#172635">${view.name}</text><text x="12" y="498" font-family="sans-serif" font-size="14" fill="#172635">${extents}</text></svg>`;
       const png=await sharp(Buffer.from(svg)).png().toBuffer();
       output.push({mediaType:'image/png',data:png.toString('base64')});
     }
