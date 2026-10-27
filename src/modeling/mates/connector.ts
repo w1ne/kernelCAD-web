@@ -9,7 +9,7 @@
 import type { Vec3 } from '../../shared/intent/types';
 import type { Shape } from '../capture/proxy';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
-import { resolveTopologyOriginOnBackend } from '../backends/occt/connectorTopology';
+import { resolveTopologyFrameOnBackend } from '../backends/occt/connectorTopology';
 import { parseTopoRef } from '../../kernel/naming';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { isParamRef } from '../../shared/runtime/paramRef';
@@ -24,7 +24,8 @@ export type TopologyQuery =
   | { kind: 'face-center'; name: string }
   | { kind: 'face-normal'; name: string }
   | { kind: 'vertex'; name: string }
-  | { kind: 'edge-axis'; name: string };
+  | { kind: 'edge-axis'; name: string }
+  | { kind: 'hole-axis'; name: string };
 
 /** Fluid port data carried by an `axis` connector: the tube system the port
  *  belongs to, the tube outer diameter (mm) and an optional minimum straight
@@ -250,23 +251,41 @@ export function makeConnector(input: MakeConnectorInput): Connector {
  * or by a user-declared label from upstream `metadata.faceLabels` (when
  * `records` is supplied). `edge-axis` resolves canonical box edges
  * (`edge-<face>-<face>`) and canonical cylinder cap edges (`edge-top` /
- * `edge-bottom`). `vertex` is deferred to v0.7 (no vertex-labeling
- * infrastructure exists yet — see v0.7 followup). Callers convert the
- * thrown message into a structured `assembly.connector.topology-not-resolvable`
- * diagnostic in T8.
+ * `edge-bottom`). `hole-axis` resolves an authored hole to its entry-face
+ * mouth; `axis` on the returned frame points into the hole. `vertex` is
+ * deferred to v0.7 (no vertex-labeling infrastructure exists yet — see
+ * v0.7 followup). Callers convert the thrown message into a structured
+ * `assembly.connector.topology-not-resolvable` diagnostic in T8.
  */
+export interface ResolvedConnectorFrame {
+  origin: Vec3;
+  /** Unit axis from the hole mouth into the hole. Set for `hole-axis`. */
+  axis?: Vec3;
+}
+
+export async function resolveConnectorFrame(
+  shape: Shape,
+  origin: ConnectorOrigin,
+  records?: readonly FeatureRecord[],
+): Promise<ResolvedConnectorFrame> {
+  if (origin.kind === 'vec3') return { origin: origin.value };
+  const backend = await shape.lower();
+  // Face and edge queries keep the old contract: omitted `records` means
+  // canonical names only. `hole-axis` always needs the live param table,
+  // and the session records when the caller did not pass any.
+  const live = origin.query.kind === 'hole-axis' ? shape.resolutionInputs() : undefined;
+  return resolveTopologyFrameOnBackend(backend, origin.query, {
+    records: records ?? live?.records,
+    consumerId: shape.id,
+    paramTable: live?.paramTable,
+  });
+}
+
 export async function resolveConnectorOrigin(
   shape: Shape,
   origin: ConnectorOrigin,
   records?: readonly FeatureRecord[],
 ): Promise<{ kind: 'vec3'; value: Vec3 }> {
-  if (origin.kind === 'vec3') {
-    return { kind: 'vec3', value: origin.value };
-  }
-  const backend = await shape.lower();
-  const value = resolveTopologyOriginOnBackend(backend, origin.query, {
-    records,
-    consumerId: shape.id,
-  });
-  return { kind: 'vec3', value };
+  const frame = await resolveConnectorFrame(shape, origin, records);
+  return { kind: 'vec3', value: frame.origin };
 }

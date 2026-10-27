@@ -17,6 +17,7 @@ import { toVec3Param } from '../../shared/runtime/editableHelpers';
 import { paramExprToDebugString, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
 import type { PartLineage } from '../../kernel/naming/evolutionRecord';
+import { holeAxisAutoConnectorsForShape } from '../parts/holeAutoConnectors';
 import type { Shape } from './proxy';
 import type { CaptureSession } from './captureSession';
 import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLibrary';
@@ -708,6 +709,16 @@ function resolvePartMaterialAndValidateOpts(
  *  rejecting a name collision. Split out of `recordPartInternal` for the
  *  same complexity-budget reason as `resolvePartMaterialAndValidateOpts`;
  *  no behavior change. */
+function promoteHoleAxisConnectors(session: CaptureSession, shape: Shape, part: AssemblyPartRef): void {
+  for (const connector of holeAxisAutoConnectorsForShape(session.getRecords(), session.autoConnectors, shape.id)) {
+    part.connector(connector.name, {
+      type: 'frame',
+      origin: { kind: 'topology', query: { kind: 'hole-axis', name: connector.topology.name } },
+      normal: connector.axis,
+    });
+  }
+}
+
 function mergeCatalogConnectors(
   connectors: Record<string, AssemblyConnectorFrameStored>,
   transformedCatalogConnectors: readonly TransformedCatalogConnector[],
@@ -788,6 +799,11 @@ export function recordPartInternal(
         : { axis: connector.axis }),
     });
   }
+  // Generic autoConnectors stay off the mate graph (heuristic STEP frames
+  // have no feature to re-resolve). Authored hole-axis connectors do not:
+  // bolt-holes-N follows the hole after a param edit. Sub-assembly import
+  // copies mate connectors itself, so it skips this pass.
+  if (promoteCatalogConnectors) promoteHoleAxisConnectors(state.session, shape, part);
   const stored: AssemblyPartStored = {
     ...part,
     originalShape: shape,

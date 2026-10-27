@@ -41,4 +41,15 @@ describe('generateBoltHoleConnectors', () => {
     expect(conns[1].origin[0]).toBe(0);
     expect(conns[2].origin[0]).toBe(10);
   });
+
+  it('keeps each hole-axis ref on the hole it was authored for', () => {
+    const holes: HoleCenter[] = [
+      { u: 10, v: 0, depthMm: 3, axis: [0, 0, -1], holeRef: 'holes1[1]' },
+      { u: -10, v: 0, depthMm: 3, axis: [0, 0, -1], holeRef: 'holes1[0]' },
+    ];
+    const conns = generateBoltHoleConnectors(holes, { partName: 'bracket' });
+    expect(conns[0].name).toBe('bolt-holes-1');
+    expect(conns[0].topology).toEqual({ kind: 'hole-axis', name: 'holes1[0]' });
+    expect(conns[1].topology).toEqual({ kind: 'hole-axis', name: 'holes1[1]' });
+  });
 });

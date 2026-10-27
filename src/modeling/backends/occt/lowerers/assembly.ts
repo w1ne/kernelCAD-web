@@ -19,7 +19,7 @@ import { resolvedPartAt } from '../../../mates/partFrame';
 import { mateFk, mateFkWithPlacedParts, type ResolvedMatePart } from '../../../mates/solver';
 import { drivenMateNames } from '../../../mates/loopAdapter';
 import type { LoopPin } from '../../../../shared/kinematics/loopClosure';
-import { resolveTopologyOriginOnBackend } from '../connectorTopology';
+import { resolveTopologyFrameOnBackend } from '../connectorTopology';
 import { built, finished, noShape, type LowerContext, type LowerOutcome } from './context';
 import { normalizeAxis, readVec3Param } from './helpers';
 
@@ -207,13 +207,15 @@ function resolveMateParts(
       }
       try {
         if (!(partBackend instanceof OcctBackend)) throw new Error('Display mesh bodies do not provide topology for connector queries; use numeric connector origins.');
-        const value = resolveTopologyOriginOnBackend(partBackend, c.origin.query, {
+        const frame = resolveTopologyFrameOnBackend(partBackend, c.origin.query, {
           records,
           consumerId: partId,
+          paramTable: ctx.inputs.paramTable,
         });
         resolvedConnectors.push({
           ...c,
-          origin: { kind: 'vec3', value },
+          origin: { kind: 'vec3', value: frame.origin },
+          ...(frame.axis !== undefined ? { axis: frame.axis } : {}),
         });
       } catch (err) {
         const msg = (err as Error).message;

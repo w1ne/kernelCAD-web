@@ -18,7 +18,7 @@ import {
   resolveHoleOpts, resolveHolesOpts,
   type EditableHoleOpts, type EditableHolesOpts,
 } from '../validation/holeValidation';
-import { generateBoltHoleConnectors, type HoleCenter } from '../parts/holeAutoConnectors';
+import { generateBoltHoleConnectors, holeAxisQueryName, type HoleCenter } from '../parts/holeAutoConnectors';
 import {
   validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
   resolveCutoutOpts,
@@ -1034,16 +1034,24 @@ export class Shape {
       params,
       metadata,
     });
-    // Auto-emit bolt-holes-1 connector at the hole's bottom face + through-axis.
+    // Auto-emit bolt-holes-1. The numeric origin stays the historical
+    // face-local bottom point. The hole-axis query is what mates re-resolve
+    // (entry-face mouth + into-body axis) after a param edit.
     const holeDepth =
       resolved.depth === 'through'
-        ? 0 // through-hole: the connector sits at the back of the parent face
+        ? 0 // through-hole: the baked point sits on the entry face plane
         : typeof resolved.depth === 'number'
           ? resolved.depth
           : 0;
     const centers: HoleCenter[] = [
       // An `at` hole's face frame is centred on its entry point.
-      { u: resolved.at ? 0 : resolved.u, v: resolved.at ? 0 : resolved.v, depthMm: holeDepth, axis: [0, 0, -1] },
+      {
+        u: resolved.at ? 0 : resolved.u,
+        v: resolved.at ? 0 : resolved.v,
+        depthMm: holeDepth,
+        axis: [0, 0, -1],
+        holeRef: holeAxisQueryName('hole', metadata),
+      },
     ];
     const partName =
       (metadata as { partName?: string }).partName ?? holeShape.id;
@@ -1102,11 +1110,12 @@ export class Shape {
         : typeof resolved.depth === 'number'
           ? resolved.depth
           : 0;
-    const centers: HoleCenter[] = resolved.positions.map((p) => ({
+    const centers: HoleCenter[] = resolved.positions.map((p, index) => ({
       u: p.u,
       v: p.v,
       depthMm: holesDepth,
       axis: [0, 0, -1] as [number, number, number],
+      holeRef: holeAxisQueryName('holes', metadata, index),
     }));
     const partName =
       (metadata as { partName?: string }).partName ?? holesShape.id;
@@ -1392,6 +1401,18 @@ export class Shape {
       this.translate(dx, dy, dz);
     }
     return this;
+  }
+
+  /** Live feature records and param table. Mate topology reads these so a
+   *  param edit re-resolves `hole-axis` against the current hole. */
+  resolutionInputs(): {
+    records: ReturnType<CaptureSession['getRecords']>;
+    paramTable: CaptureSession['paramTable'];
+  } {
+    return {
+      records: this.session.getRecords(),
+      paramTable: this.session.paramTable,
+    };
   }
 
   /**

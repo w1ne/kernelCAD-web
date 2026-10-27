@@ -334,7 +334,7 @@ arm.part('servo', servoShape, { connectors: undefined })
   });
 ```
 
-Topology queries: `face-center` / `face-normal` resolve canonical box/cylinder faces and any user-declared `faceLabels`. `edge-axis` resolves canonical box edges (`edge-<face1>-<face2>`, order insignificant) and cylinder cap edges (`edge-top` / `edge-bottom`). `vertex` raises `assembly.connector.topology-not-resolvable` with hint `vertex labeling not yet supported` — deferred to v0.7. Post-boolean shapes where the canonical face/edge no longer exists also surface `assembly.connector.topology-not-resolvable`.
+Topology queries: `face-center` / `face-normal` resolve canonical box/cylinder faces and any user-declared `faceLabels`. `edge-axis` resolves canonical box edges (`edge-<face1>-<face2>`, order insignificant) and cylinder cap edges (`edge-top` / `edge-bottom`). `hole-axis` resolves an authored `.hole()` / `.holes()` — feature name, `hole1`, `holes1[0]`, or `bolt-holes-N` in (u, v) order — to the entry-face mouth and the axis into the hole, so a param edit that moves the hole moves the mate. `.hole()` / `.holes()` register `bolt-holes-N` with that query. Catalog STEP bolt-holes stay numeric vec3 (no feature to re-resolve). `vertex` raises `assembly.connector.topology-not-resolvable` with hint `vertex labeling not yet supported` — deferred to v0.7. Post-boolean shapes where the canonical face/edge no longer exists also surface `assembly.connector.topology-not-resolvable`.
 
 The same topology origin can be expressed as a `@kc[...]` string ref — preferred for agent emission and cross-tool handoff because the resolver walks the lineage map first and falls back to the geometry snapshot when lineage is destroyed:
 

@@ -1,5 +1,10 @@
 # Unreleased
 
+- `hole-axis` topology queries resolve an authored `.hole()` / `.holes()` to
+  the entry-face mouth and the axis into the hole, and re-resolve after a
+  param edit. `.hole()` / `.holes()` register `bolt-holes-N` with that query
+  so mates follow the hole. Catalog STEP bolt-holes stay numeric vec3.
+
 # v0.17.2 — 2026-10-26
 
 ## S7 + S8 Part A — collaborative feature graph, change-sets, merge and gate

@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { isSceneBackend } from '../../../src/kernel/backends/sceneBackend';
 import { buildModel, updateModelParams } from '../../../src/modeling/buildModel';
+import { resolveConnectorFrame } from '../../../src/modeling/mates/connector';
 import { solveMates } from '../../../src/modeling/mates/solver';
 
 function capPoint(shape: unknown): number[] {
@@ -95,5 +96,59 @@ describe('topology connector origins follow a rebuilt face', () => {
     const cap = solved.poses.get('cap');
     if (!cap) throw new Error('solveMates did not place cap');
     expect(cap.point([0, 0, 0])[0]).toBeCloseTo(50, 3);
+  });
+
+  it('moves a bolt-hole mate with the hole when the hole position param changes', async () => {
+    // Corner-anchored box(40, 20, 10). The front face (y = 0) is centred at
+    // (20, 0, 5); hole u is +X from that centre. hole-axis origin is the
+    // entry-face mouth, and its axis points into the body (+Y), not the
+    // capture-time [0, 0, -1] baked on the auto-connector record.
+    const model = await buildModel({
+      fileName: 'hole-axis-follow.kcad.ts',
+      code: `
+        const u = param('u', 0, { min: -15, max: 15 });
+        const plate = box(40, 20, 10).hole('front', { u, v: 0, diameter: 4, depth: 'through' });
+        const arm = assembly('stack');
+        arm.part('plate', plate);
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'plate.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const mouth = capPoint(model.rootShape);
+    expect(mouth[0]).toBeCloseTo(20, 3);
+    expect(mouth[1]).toBeCloseTo(0, 3);
+    expect(mouth[2]).toBeCloseTo(5, 3);
+
+    const updated = await updateModelParams(model, [{ name: 'u', value: 8 }]);
+    const moved = capPoint(updated.result.shape);
+    expect(moved[0]).toBeCloseTo(28, 3);
+    expect(moved[1]).toBeCloseTo(0, 3);
+    expect(moved[2]).toBeCloseTo(5, 3);
+
+    const arm = updated.model.session.assemblies.get('stack');
+    if (!arm) throw new Error('missing assembly stack');
+    const plate = arm.__parts().find((part) => part.name === 'plate');
+    const bolt = plate?.mateConnectors.find((connector) => connector.name === 'bolt-holes-1');
+    if (!bolt) throw new Error('missing plate.bolt-holes-1');
+    expect(bolt.origin).toMatchObject({
+      kind: 'topology',
+      query: { kind: 'hole-axis', name: 'hole1' },
+    });
+    const frame = await resolveConnectorFrame(plate.originalShape, bolt.origin);
+    expect(frame.origin[0]).toBeCloseTo(28, 3);
+    expect(frame.origin[1]).toBeCloseTo(0, 3);
+    expect(frame.origin[2]).toBeCloseTo(5, 3);
+    expect(frame.axis?.[0]).toBeCloseTo(0, 3);
+    expect(frame.axis?.[1]).toBeCloseTo(1, 3);
+    expect(frame.axis?.[2]).toBeCloseTo(0, 3);
+
+    const solved = await solveMates(arm, {});
+    const cap = solved.poses.get('cap');
+    if (!cap) throw new Error('solveMates did not place cap');
+    expect(cap.point([0, 0, 0])[0]).toBeCloseTo(28, 3);
+    expect(cap.point([0, 0, 0])[1]).toBeCloseTo(0, 3);
   });
 });

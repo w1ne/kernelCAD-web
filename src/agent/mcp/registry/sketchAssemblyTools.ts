@@ -143,7 +143,7 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
               { type: 'object', description: 'Topology-derived origin.', properties: {
                 kind: { type: 'string', enum: ['topology'] },
                 query: { type: 'object', properties: {
-                  kind: { type: 'string', enum: ['face-center', 'face-normal', 'vertex', 'edge-axis'] },
+                  kind: { type: 'string', enum: ['face-center', 'face-normal', 'vertex', 'edge-axis', 'hole-axis'] },
                   name: { type: 'string' },
                 }, required: ['kind', 'name'] },
               }, required: ['kind', 'query'] },
