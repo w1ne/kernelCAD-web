@@ -18,6 +18,9 @@ export function preserveProvenance(reference: OcctBackend, imported: OcctBackend
   if (!reference.historyMap?.size) return placed;
   const history: HistoryMap = new Map();
   for (const lineage of reference.historyMap.values()) {
+    // A cylinder wall is seeded with only rootHash and rootFeatureId so a later
+    // OCCT cut can still see the hole. STEP has no name for that face.
+    if (!lineage.canonicalName && !lineage.featureId && !lineage.labelName) continue;
     if (!lineage.canonicalName || lineage.featureId || lineage.labelName) {
       throw new GuardError('NAMING_HISTORY', 'Primitive carries additional lineage that STEP cannot preserve');
     }

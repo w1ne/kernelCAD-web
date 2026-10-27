@@ -81,32 +81,30 @@ describe('offsetFaces and moveFaces', () => {
     expect(sideways.faces).toBe(6);
   });
 
-  it('offsets two adjacent box faces into a 12×10×12 solid, or rejects the glued prism', async () => {
+  it('offsets two adjacent box faces into a 12×10×12 solid', async () => {
     const edited = await solidOf(`${box}.offsetFaces(['top', 'right'], 2)`);
-    const refused = /FACE_EDIT_INCONSISTENT|FACE_EDIT_FAILED/.test(edited.codes.join('\n'));
-    if (refused) {
-      expect(edited.volume).toBeCloseTo(1000, 3);
-      expect(edited.faces).toBe(6);
-      return;
-    }
     expect(edited.codes).toEqual([]);
     expect(edited.volume).toBeCloseTo(1440, 3);
     expect(edited.faces).toBe(6);
     expectBounds(edited, [12, 10, 12]);
   });
 
-  it('rejects a hypotenuse offset that would glue a slab, or builds the larger triangle', async () => {
-    const edited = await solidOf(`extrudePolygon([[0, 0], [30, 0], [0, 40]], 10).offsetFaces({ near: [15, 20, 5] }, 2)`);
-    const refused = /FACE_EDIT_INCONSISTENT|FACE_EDIT_FAILED/.test(edited.codes.join('\n'));
-    if (refused) {
-      expect(edited.volume).toBeCloseTo(6000, 2);
-      expect(edited.faces).toBe(5);
-      return;
-    }
+  it('offsets the free end of an unsewn union into a 22×10×10 bar', async () => {
+    const edited = await solidOf(`${box}.union(${box}.translate(10, 0, 0)).offsetFaces('right', 2)`);
     expect(edited.codes).toEqual([]);
-    expect(edited.volume).toBeCloseTo(7041.6667, 1);
+    expect(edited.volume).toBeCloseTo(2200, 3);
+    expect(edited.faces).toBe(6);
+    expectBounds(edited, [22, 10, 10]);
+  });
+
+  it('rejects a hypotenuse offset that would glue a slab', async () => {
+    const edited = await solidOf(`extrudePolygon([[0, 0], [30, 0], [0, 40]], 10).offsetFaces({ near: [15, 20, 5] }, 2)`);
+    expect(edited.codes.join('\n')).toMatch(/FACE_EDIT_INCONSISTENT/);
+    expect(edited.codes.join('\n')).toMatch(/face count changed/);
+    expect(edited.codes.join('\n')).toMatch(/gained face/);
+    expect(edited.volume).toBeCloseTo(6000, 2);
     expect(edited.faces).toBe(5);
-    expectBounds(edited, [32.5, 130 / 3, 10]);
+    expectBounds(edited, [30, 40, 10]);
   });
 
   it('rejects a pull that consumes the solid and keeps the box', async () => {

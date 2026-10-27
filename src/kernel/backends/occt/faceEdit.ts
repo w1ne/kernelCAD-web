@@ -258,6 +258,13 @@ interface SewnSolid {
 }
 
 /**
+ * `ShapeUpgrade_UnifySameDomain` with face unify did not finish in five minutes
+ * on a large B-spline solid in this WASM build. Above this size, leave the
+ * seams and let the face-count gate reject the edit.
+ */
+const MAX_COPLANAR_SEW_FACES = 256;
+
+/**
  * Merge faces that the prism glued on as a coplanar seam.
  * Linear tolerance stays at 1e-6. The boolean's own SimplifyResult would pass
  * the exact fuse's fuzzy value, which is 0, and a 0 tolerance never treats two
@@ -268,6 +275,9 @@ function sewCoplanar(oc: OC, shape: unknown): SewnSolid {
   let unify: any;
   try {
     const beforeFaces = faceInfos(oc, shape);
+    if (beforeFaces.length > MAX_COPLANAR_SEW_FACES) {
+      return { shape, faceRemap: new Map(), edgeRemap: new Map() };
+    }
     const beforeEdges = edgeInfos(oc, shape);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     unify = new (oc as any).ShapeUpgrade_UnifySameDomain_2(shape, true, true, false);
@@ -424,10 +434,8 @@ function offsetOne(
   const normal = outwardNormal(oc, topo);
   const area = surfaceArea(oc, topo);
   if (!(area > 0)) throw new FaceEditError('FACE_EDIT_FAILED', 'the selected face has no area');
-  const before = body.volume();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const bodyShape = (body.getReplicadShape() as any).wrapped;
-  const beforeFaces = hashesOf(oc, bodyShape, 'face').length;
   const origin = surfaceCenter(oc, topo);
   const consumed = body.historyMap?.get(hashOf(topo));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -482,12 +490,21 @@ function offsetOne(
       `moving this face by ${distance} mm removed the solid. Use a smaller distance so some material remains.`,
     );
   }
+  // The prism sew also merges coplanar seams the input still carried.
+  // Compare with that same unify, and measure area × distance from it.
+  const baseline = sewCoplanar(oc, bodyShape);
+  const beforeFaces = hashesOf(oc, baseline.shape, 'face').length;
+  const before = volumeOf(oc, baseline.shape);
   if (faceHashes.length !== beforeFaces) {
-    const sewNote = sewn.error ? ` Sewing coplanar faces failed: ${sewn.error}.` : '';
+    const sewNotes = [sewn.error, baseline.error].filter((note): note is string => Boolean(note));
+    const sewNote = sewNotes.length ? ` Sewing coplanar faces failed: ${sewNotes.join(' ')}.` : '';
+    const gained = faceHashes.length > beforeFaces
+      ? ' A gained face means the prism was glued on instead of the neighbouring faces extending.'
+      : '';
     throw new FaceEditError(
       'FACE_EDIT_INCONSISTENT',
       `moving this face by ${distance} mm left ${faceHashes.length} faces; the solid had ${beforeFaces}. ` +
-        `A gained face means the prism was glued on instead of the neighbouring faces extending. ` +
+        `The face count changed.${gained} ` +
         `Pick a face whose boundary can move with it, or build the change as a boolean.${sewNote}`,
     );
   }
@@ -551,9 +568,10 @@ export interface PlanarFaceEdit {
  * Move planar faces along their outward normals. `BRepOffset_MakeOffset`
  * (per-face offset values) is not in this OCCT build, so each planar face is
  * extruded along its normal and fused or cut. Coplanar faces are then sewn.
- * The face count must stay the same, the moved face must lie on the offset
- * plane, the solid must stay non-empty, and the volume change must match
- * area × distance. Anything else throws `FaceEditError`.
+ * The face count must match the input after the same coplanar sew, the moved
+ * face must lie on the offset plane, the solid must stay non-empty, and the
+ * volume change must match area × distance against that sewn solid. Anything
+ * else throws `FaceEditError`.
  */
 export function editPlanarFaces(
   body: OcctBackend,
