@@ -23,3 +23,12 @@ The default font of Text, Lato Regular, is included unmodified (in dist/_fonts.j
   Licensed under the SIL Open Font License, Version 1.1.
 
 The license text is in fonts/OFL.txt.
+
+SolidCraft reference oracle
+
+The case files under assets/reference-parts/solidcraft/cases/ are expected.json
+and recipe.json from SolidCraft (https://github.com/tangency-labs/solidcraft),
+commit 7a6c884418698e9c9fb0e6f97b9b847998c58c49. SolidCraft is licensed
+Apache-2.0 OR MIT; this copy is used under the Apache License, Version 2.0.
+See assets/reference-parts/solidcraft/NOTICE and LICENSE-APACHE. kernelCAD
+models under assets/reference-parts/solidcraft/parts/ are original sources.

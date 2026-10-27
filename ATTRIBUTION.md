@@ -46,6 +46,12 @@ hand edits.
 | --- | --- | --- | --- | --- |
 | `examples/from-reference/hatchback/hatchback.kcad.ts`, cookbook `automotive-body-envelope` | `hatchback` from [osrf/gazebo_models](https://github.com/osrf/gazebo_models) (commit `8163eb4b`) | Copyright 2012 Nathan Koenig (Open Source Robotics Foundation); modified: measured and re-modelled, mesh not included | [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/) | [`PROVENANCE.md`](examples/from-reference/hatchback/PROVENANCE.md) |
 
+## Vendored measurement oracles
+
+| Used in | Source | What is included | License | Pin |
+| --- | --- | --- | --- | --- |
+| SolidCraft CI ledger (`assets/reference-parts/solidcraft/`, `docs/solidcraft-ledger.md`) | [tangency-labs/solidcraft](https://github.com/tangency-labs/solidcraft) | `expected.json` and `recipe.json` for each oracle case. Engine code and reference meshes are not included. kernelCAD `.kcad.ts` parts under `parts/` are original. | Apache-2.0 (upstream is Apache-2.0 OR MIT; this copy uses Apache-2.0). Text: [`LICENSE-APACHE`](assets/reference-parts/solidcraft/LICENSE-APACHE) | `7a6c884418698e9c9fb0e6f97b9b847998c58c49` |
+
 ## Opt-in solid-modeling dependency
 
 `@classcad/smlibwasm` is pinned to 0.3.1. The ClassCAD JavaScript bindings are
