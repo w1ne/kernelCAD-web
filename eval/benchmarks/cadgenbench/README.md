@@ -95,6 +95,10 @@ npx tsx eval/benchmarks/cadgenbench/run.ts --scripts-from path/to/scripts --task
 - `tasks/<id>/`: `state.json` (resume record: status, attempts, tokens, cost,
   time, pre-check and official verdicts), `prompt.md`, `transcript.md`,
   `model.kcad.ts`, `model.step`.
+- With visual review, `visual-view-*.png`, `visual-response.md`, and
+  `visual-review.json` retain the views, response, outcome and any failure.
+  When a revision is promoted, `visual-checkpoint.kcad.ts` and
+  `visual-checkpoint.step` retain the previous valid candidate.
 - `submission/<id>/output.step` and `submission.zip`: `meta.json` plus one
   folder per task. A task without a candidate keeps an empty folder, and the
   grader scores it as `missing`.

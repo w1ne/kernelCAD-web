@@ -138,6 +138,8 @@ describe('runTask with an LLM', () => {
     expect(s.status).toBe('valid');
     expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toBe('return box(1,1,1);');
     expect(agent.calls).toHaveLength(2);
+    expect(readFileSync(join(runDir, 'tasks/101/visual-response.md'), 'utf8')).toContain('OPEN');
+    expect(existsSync(join(runDir, 'tasks/101/visual-view-1.png'))).toBe(true);
   });
 
   it('uses a visually revised candidate only after the validity gate passes', async () => {

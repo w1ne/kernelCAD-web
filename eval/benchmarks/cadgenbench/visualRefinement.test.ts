@@ -12,6 +12,7 @@ describe('visual refinement', () => {
     const check = vi.fn(async () => true);
     const result = await refineVisualCandidate({ prompt:'drawing task', original:'return box(1,1,1);', drawing:[drawing], render:async()=>[view], revise, check });
     expect(result).toMatchObject({ code:'return box(2,2,2);', outcome:'accepted', tokensIn:12, tokensOut:4 });
+    expect(result.responseText).toContain('return box(2,2,2);');
     expect(revise.mock.calls[0][0][0].images).toEqual([drawing, view]);
     expect(check).toHaveBeenCalledWith('return box(2,2,2);');
   });
@@ -25,6 +26,7 @@ describe('visual refinement', () => {
     const revise = vi.fn();
     const result = await refineVisualCandidate({ prompt:'drawing task', original:'return box(1,1,1);', drawing:[drawing], render:async()=>{throw new Error('render failed');}, revise, check:async()=>true });
     expect(result).toMatchObject({ code:'return box(1,1,1);', outcome:'render_failed' });
+    expect(result.error).toBe('render failed');
     expect(revise).not.toHaveBeenCalled();
   });
 

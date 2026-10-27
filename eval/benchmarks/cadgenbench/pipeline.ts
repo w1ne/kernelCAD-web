@@ -437,14 +437,23 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
         const reviewPath = join(workDir, 'visual-review.kcad.ts');
         const refinement = await refineVisualCandidate({
           prompt, original, drawing: loadImages(task.images),
-          render: () => (cfg.visualRender ?? renderCandidateViews)(gate.stepPathFor(scriptPath)),
+          render: async () => {
+            const views = await (cfg.visualRender ?? renderCandidateViews)(gate.stepPathFor(scriptPath));
+            for (let i = 0; i < views.length; i++) {
+              if (views[i].mediaType !== 'image/png') throw new Error('visual preview must be PNG');
+              writeFileSync(join(workDir, `visual-view-${i + 1}.png`), Buffer.from(views[i].data, 'base64'));
+            }
+            return views;
+          },
           revise: messages => cfg.agent!.generate({system: cfg.skillMd, messages, model: cfg.model, max_tokens: cfg.maxTokens, ...(cfg.temperature !== undefined ? {temperature: cfg.temperature} : {})}),
           check: async code => { writeFileSync(reviewPath, code); return (await gate.run(reviewPath)).ok; },
         });
         state.tokensIn += refinement.tokensIn;
         state.tokensOut += refinement.tokensOut;
         if (refinement.outcome !== 'render_failed') state.attempts++;
-        writeFileSync(join(workDir, 'visual-review.json'), JSON.stringify({outcome: refinement.outcome, tokensIn: refinement.tokensIn, tokensOut: refinement.tokensOut}, null, 2)+'\n');
+        const reviewFailure = refinement.outcome === 'rejected' ? gate.lastFailure(reviewPath) : undefined;
+        writeFileSync(join(workDir, 'visual-review.json'), JSON.stringify({outcome: refinement.outcome, tokensIn: refinement.tokensIn, tokensOut: refinement.tokensOut, ...(refinement.error ? {error: refinement.error} : {}), ...(reviewFailure ? {gateFailure: reviewFailure} : {})}, null, 2)+'\n');
+        if (refinement.responseText !== undefined) writeFileSync(join(workDir, 'visual-response.md'), refinement.responseText+'\n');
         if (refinement.outcome === 'accepted') {
           copyFileSync(scriptPath, join(workDir, 'visual-checkpoint.kcad.ts'));
           copyFileSync(gate.stepPathFor(scriptPath), join(workDir, 'visual-checkpoint.step'));
