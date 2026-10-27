@@ -102,10 +102,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
+    "@classcad/smlibwasm": "0.6.0",
     "@gltf-transform/core": "^4.3.0",
     "@gltf-transform/extensions": "^4.4.1",
     "@gltf-transform/functions": "^4.4.1",
-    "@classcad/smlibwasm": "0.3.1",
     "@google/model-viewer": "^4.2.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@monaco-editor/react": "^4.7.0",
