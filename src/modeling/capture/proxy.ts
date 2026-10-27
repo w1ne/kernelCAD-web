@@ -117,12 +117,13 @@ export class Shape {
 
   // Lazy lowered backend — cached per-Shape so consecutive selectEdges /
   // selectEdge calls don't re-run RecomputeEngine.run() against the full
-  // record list. Invalidated by record-count growth (capture is append-only,
-  // so length growth is the only signal we need today).
+  // record list. Invalidated by record-count growth, a transform appended
+  // to this shape, or a param-table change (`lowerInputsKey`).
   private _loweredBackend?: import('../../kernel/backends/occt/occtBackend').OcctBackend;
   private _loweredMeshBackend?: import('../../kernel/backends/meshBackend').MeshBackend;
   private _loweredAtRecordCount?: number;
   private _loweredAtTransformCount?: number;
+  private _loweredAtInputsKey?: string;
 
   constructor(id: FeatureId, session: CaptureSession) {
     this.id = id;
@@ -1403,37 +1404,41 @@ export class Shape {
    */
   async lower(): Promise<import('../../kernel/backends/occt/occtBackend').OcctBackend> {
     const records = this.session.getRecords();
-    // C1 fix: cache invalidates on either record-count growth OR a transform
-    // appended to THIS shape. `appendTransform` mutates `record.transforms`
-    // in place — `records.length` is unchanged after Shape.translate/rotate/scale.
-    // Without the transform-count check, the cache returns the un-transformed
-    // backend after a transform, producing silent incorrect results.
+    // Cache invalidates on record-count growth, a transform appended to THIS
+    // shape (`appendTransform` mutates `record.transforms` in place, so
+    // `records.length` does not change), or a param-table change. A param
+    // edit republishes `lastFullLower`; that solid wins over this cache so a
+    // topology connector re-resolves on the new face.
     const ownRecord = records.find(r => r.id === this.id);
     const transformCount = ownRecord?.transforms.length ?? 0;
-    if (this._loweredMeshBackend && this._loweredAtRecordCount === records.length && this._loweredAtTransformCount === transformCount) {
-      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
-    }
-    if (
-      this._loweredBackend &&
-      this._loweredAtRecordCount === records.length &&
-      this._loweredAtTransformCount === transformCount
-    ) {
-      return this._loweredBackend;
-    }
+    const inputsKey = this.session.lowerInputsKey();
+    const cacheFresh = this._loweredAtRecordCount === records.length
+      && this._loweredAtTransformCount === transformCount
+      && this._loweredAtInputsKey === inputsKey;
     const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
-    // Reuse the session's last full lower when nothing it depends on changed.
+    // The session's last full lower is param-keyed. A param edit republishes
+    // it (`params.update`) with the new solids; prefer that over this Shape's
+    // private cache, which was filled on the previous lower.
     const reused = this.session.reusableLoweredShape(this.id);
     if (reused instanceof MeshBackend) {
       this._loweredMeshBackend = reused;
       this._loweredAtRecordCount = records.length;
       this._loweredAtTransformCount = transformCount;
-      throw new Error('Shape.lower(): display mesh body has no BRep backend; solid operations are unavailable.');
+      this._loweredAtInputsKey = inputsKey;
+      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
     }
     if (reused instanceof OcctBackend) {
       this._loweredBackend = reused;
       this._loweredAtRecordCount = records.length;
       this._loweredAtTransformCount = transformCount;
+      this._loweredAtInputsKey = inputsKey;
       return reused;
+    }
+    if (this._loweredMeshBackend && cacheFresh) {
+      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
+    }
+    if (this._loweredBackend && cacheFresh) {
+      return this._loweredBackend;
     }
     const { RecomputeEngine } = await import('../compute/recomputeEngine');
     const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
@@ -1464,6 +1469,7 @@ export class Shape {
     this._loweredBackend = shape;
     this._loweredAtRecordCount = records.length;
     this._loweredAtTransformCount = transformCount;
+    this._loweredAtInputsKey = inputsKey;
     return shape;
   }
 }
