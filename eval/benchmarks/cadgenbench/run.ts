@@ -18,6 +18,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { AnthropicAgentClient } from '../../agent';
 import { OpenAICompatAgentClient } from '../../agentOpenAICompat';
+import { ChatGPTPlanAgentClient } from '../../chatgptPlanAgent';
+import { chatgptTokenProvider } from './chatgptCredentials';
 import { buildSystemPrompt, SWEEP_SKILLS } from '../../lib/systemPrompt';
 import { isKernelcadAvailable } from '../../oracle/kernelcad-client';
 import { MODEL as DEFAULT_MODEL } from '../../run';
@@ -35,6 +37,7 @@ export interface CliOptions {
   workers: number;
   model: string;
   baseUrl?: string;
+  chatgptPlanDir?: string;
   apiKeyEnv: string;
   noLlm: boolean;
   visualReview: boolean;
@@ -81,6 +84,8 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     selection.editing = int('--editing', 0, 0);
   }
 
+  if (has('--chatgpt-plan-dir') && !value('--model')) throw new Error('--chatgpt-plan-dir requires an account-supported --model');
+  if (has('--chatgpt-plan-dir') && (has('--no-llm') || has('--scripts-from') || has('--temperature'))) throw new Error('--chatgpt-plan-dir cannot be combined with --no-llm, --scripts-from, or --temperature');
   const model = value('--model') ?? DEFAULT_MODEL;
   const slug = model.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+$/, '').replace('T', '-');
@@ -104,6 +109,7 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     workers: int('--workers', 2),
     model,
     baseUrl: value('--base-url'),
+    chatgptPlanDir: value('--chatgpt-plan-dir') ? resolve(value('--chatgpt-plan-dir')!) : undefined,
     apiKeyEnv: value('--api-key-env') ?? (value('--base-url') ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY'),
     noLlm: has('--no-llm'),
     visualReview: has('--visual-review'),
@@ -132,6 +138,11 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
 
 function makeAgent(opts: CliOptions, env: NodeJS.ProcessEnv): AgentClient | null {
   if (opts.noLlm || opts.scriptsFrom) return null;
+  if (opts.chatgptPlanDir) {
+    if (opts.baseUrl) throw new Error('--chatgpt-plan-dir cannot be combined with --base-url');
+    if (!existsSync(join(opts.chatgptPlanDir, 'credentials.json'))) throw new Error('ChatGPT plan credentials not found; complete sign-in first');
+    return new ChatGPTPlanAgentClient({token:chatgptTokenProvider(opts.chatgptPlanDir)});
+  }
   const key = env[opts.apiKeyEnv];
   if (!key) return null;
   return opts.baseUrl
@@ -211,7 +222,7 @@ async function main(): Promise<void> {
   const sourceRevision = gitSha();
   const cli = identifyCli(env, process.cwd());
   const identity = buildRunIdentity(tasks, {
-    revision, mode, model: agent ? opts.model : null, baseUrl: opts.baseUrl ?? null,
+    revision, mode, model: agent ? opts.model : null, baseUrl: opts.chatgptPlanDir ? 'https://api.openai.com/v1/responses (ChatGPT plan)' : opts.baseUrl ?? null,
     gitSha: sourceRevision, maxAttempts: opts.maxAttempts, maxTokens: opts.maxTokens,
     temperature: opts.temperature ?? null, editFallback: opts.editFallback,
     keepInvalid: opts.keepInvalid, visualReview: opts.visualReview, skillMd, scriptsFrom: opts.scriptsFrom ?? null, cli,
@@ -229,7 +240,7 @@ async function main(): Promise<void> {
     dataset: { repo: 'HuggingAI4Engineering/cadgenbench-data', revision, license: 'ODC-BY-1.0', dir: dataDir },
     mode,
     model: agent ? opts.model : null,
-    baseUrl: opts.baseUrl ?? null,
+    baseUrl: opts.chatgptPlanDir ? 'https://api.openai.com/v1/responses (ChatGPT plan)' : opts.baseUrl ?? null,
     gitSha: sourceRevision,
     cli,
     identity,

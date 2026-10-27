@@ -124,3 +124,16 @@ The revision records whether the checkout was dirty, but does not hash every
 uncommitted source change. A CLI wrapper or JavaScript entry may depend on
 other files that its own digest does not cover. Use a clean committed checkout
 and record all runtime dependencies for comparable runs.
+
+### Local ChatGPT plan connection (experimental)
+
+For an authorized, locally hosted runner, set `CADGENBENCH_AUTH_DIR` to a private
+owner-only directory outside the repository and run `tsx
+ eval/benchmarks/cadgenbench/chatgptSignIn.ts`. Complete the OpenAI consent in the
+browser. The registration uses PKCE and validates the signed ID token; its
+credentials must never be committed or shared. Then pass `--chatgpt-plan-dir`
+with the same directory and an account-supported `--model`. This path uses the
+streaming Responses API with image inputs. It rejects temperature because that
+setting is not supported by this connection. Usage consumes the authorized
+ChatGPT plan allowance. Model availability and account limits are determined by
+OpenAI. The connection must be tested on the user's account before a run.

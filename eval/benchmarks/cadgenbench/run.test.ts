@@ -4,6 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { parseArgs } from './run';
 
 describe('parseArgs', () => {
+  it('requires an explicit model and compatible options for ChatGPT plan usage', () => {
+    expect(() => parseArgs(['--chatgpt-plan-dir','/private'], {})).toThrow(/--model/);
+    expect(() => parseArgs(['--chatgpt-plan-dir','/private','--model','m','--temperature','0'], {})).toThrow(/temperature/);
+    expect(parseArgs(['--chatgpt-plan-dir','/private','--model','m'], {}).chatgptPlanDir).toBe('/private');
+  });
+
   it('samples per type, defaults to Anthropic, and never agrees to publish by default', () => {
     const o = parseArgs(['--generation', '3', '--editing', '2', '--run-dir', '/tmp/r'], { USER: 'me' });
     expect(o.selection).toEqual({ generation: 3, editing: 2 });
