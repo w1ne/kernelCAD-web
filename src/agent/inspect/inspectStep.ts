@@ -16,13 +16,10 @@ import { KernelError, isKernelError } from '../../shared/intent/kernelError';
 export type { StepSolidReport, StepInspectReport } from '../../kernel/import/inspectStep';
 
 /**
- * Inspect a STEP file on disk and report its solid tree.
- *
- * @throws {KernelError} `feature.invalid-args` when the file cannot be
- *   read; `feature.kernel-failed` when the bytes do not parse as a STEP
- *   model containing at least one 3D solid.
+ * Read a STEP path. Both inspectors share these two raise sites so a second
+ * entry point does not grow the invalid-args ratchet.
  */
-export async function inspectStepFile(path: string): Promise<StepInspectReport> {
+async function readStepBytes(path: string): Promise<Buffer> {
   if (typeof path !== 'string' || path.length === 0) {
     throw new KernelError(
       'feature.invalid-args',
@@ -31,10 +28,8 @@ export async function inspectStepFile(path: string): Promise<StepInspectReport> 
       'invalid-args.inspect.step — pass an absolute path to a .step file.',
     );
   }
-
-  let buf: Buffer;
   try {
-    buf = await readFile(path);
+    return await readFile(path);
   } catch {
     throw new KernelError(
       'feature.invalid-args',
@@ -43,8 +38,17 @@ export async function inspectStepFile(path: string): Promise<StepInspectReport> 
       `invalid-args.inspect.step.path — verify the file exists and is readable at '${path}'.`,
     );
   }
+}
 
-  return inspectStepBuffer(buf, path);
+/**
+ * Inspect a STEP file on disk and report its solid tree.
+ *
+ * @throws {KernelError} `feature.invalid-args` when the file cannot be
+ *   read; `feature.kernel-failed` when the bytes do not parse as a STEP
+ *   model containing at least one 3D solid.
+ */
+export async function inspectStepFile(path: string): Promise<StepInspectReport> {
+  return inspectStepBuffer(await readStepBytes(path), path);
 }
 
 /**
@@ -57,25 +61,7 @@ export async function inspectStepFile(path: string): Promise<StepInspectReport> 
  * geometry change and a real edit is judged against the wrong baseline.
  */
 export async function inspectNormalizedStepFile(path: string): Promise<StepInspectReport> {
-  if (typeof path !== 'string' || path.length === 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'inspectStepFile(path): path must be a non-empty string.',
-      undefined,
-      'invalid-args.inspect.step — pass an absolute path to a .step file.',
-    );
-  }
-  let buf: Buffer;
-  try {
-    buf = await readFile(path);
-  } catch {
-    throw new KernelError(
-      'feature.invalid-args',
-      `inspectStepFile: cannot read STEP file at ${path}.`,
-      undefined,
-      `invalid-args.inspect.step.path — verify the file exists and is readable at '${path}'.`,
-    );
-  }
+  const buf = await readStepBytes(path);
   try {
     const backend = await importStepCached(buf);
     try {
