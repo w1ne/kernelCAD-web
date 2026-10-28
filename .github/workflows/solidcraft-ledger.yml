@@ -1,0 +1,27 @@
+name: SolidCraft ledger
+
+# Every implemented SolidCraft case, including ones flagged ci:nightly.
+# Pending rows are listed by the runner and are not failures. This job is not
+# part of the pull-request gate; PR CI runs only the fast subset
+# (npm run test:solidcraft-ledger) inside ci.yml.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: solidcraft-ledger
+  cancel-in-progress: true
+
+jobs:
+  solidcraft-ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+      - name: SolidCraft oracle ledger (all implemented cases)
+        run: npm run test:solidcraft-ledger:all

@@ -1,0 +1,44 @@
+SolidCraft oracle pin
+=====================
+
+Project: SolidCraft
+Upstream: https://github.com/tangency-labs/solidcraft
+Oracle docs: https://github.com/tangency-labs/solidcraft/blob/7a6c884418698e9c9fb0e6f97b9b847998c58c49/docs/oracle.md
+Pinned commit: 7a6c884418698e9c9fb0e6f97b9b847998c58c49
+Pinned commit time: 2026-10-27 17:16:40 -0400
+
+Licence
+-------
+SolidCraft is Apache-2.0 OR MIT. This vendored copy is used under the
+Apache License, Version 2.0. The licence text is LICENSE-APACHE in this
+directory. Attribution is in NOTICE, in the repository NOTICE, and in
+ATTRIBUTION.md.
+
+What is vendored
+----------------
+cases/<id>/expected.json
+cases/<id>/recipe.json
+
+Copied from tests/oracle/<id>/ at the pinned commit. recipe.json is the
+SolidCraft feature recipe, kept as provenance for the expected numbers.
+expected.json is the measurement oracle (volume, area, centre of mass,
+bounding box).
+
+What is not vendored
+--------------------
+SolidCraft engine code, FreeCAD oracle tooling, and reference.stl meshes.
+kernelCAD parts under parts/ are original kernelCAD source, not SolidCraft
+code. They are checked against the vendored expected values.
+
+How to bump the pin
+-------------------
+1. Check out the new SolidCraft commit.
+2. Replace cases/<id>/{expected.json,recipe.json} only. Do not copy engine
+   code or reference.stl files.
+3. Update the commit SHA and time in this file, NOTICE, the repository
+   NOTICE, ATTRIBUTION.md, and source.commit in
+   assets/reference-parts/solidcraft-ledger.json.
+4. Refresh expected metrics in the ledger manifest from the new
+   expected.json files. Do not edit those numbers by hand.
+5. Re-run npm run solidcraft-ledger:regenerate and review the diff.
+   A bump is a deliberate SHA change, not a silent edit of expected values.

@@ -1,0 +1,21 @@
+SolidCraft reference oracle (expected.json and recipe.json only)
+
+Copyright (c) 2026 SolidCraft contributors.
+
+Licensed under the Apache License, Version 2.0. SolidCraft is dual-licensed
+Apache-2.0 OR MIT; this copy is used under the Apache-2.0 terms.
+The license text is in LICENSE-APACHE beside this file.
+
+Source: https://github.com/tangency-labs/solidcraft
+Pinned commit: 7a6c884418698e9c9fb0e6f97b9b847998c58c49
+(2026-10-27 17:16:40 -0400)
+
+This directory vendors tests/oracle/<id>/{recipe.json,expected.json} from that
+commit. SolidCraft engine code is not included. reference.stl meshes are not
+included. kernelCAD models under parts/ are original sources written for this
+repository.
+
+To bump the pin, change the commit SHA in SOURCE.txt, this NOTICE, the
+repository NOTICE, ATTRIBUTION.md, and
+assets/reference-parts/solidcraft-ledger.json, then replace the case files
+from the new commit. Do not edit expected numbers by hand.
