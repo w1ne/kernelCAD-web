@@ -6,6 +6,10 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import type { BuiltModel } from '../../composition/buildModel';
+import type { ShapeBackend } from '../../kernel/backends/backend';
+import { disposeModelShapes, registerRetainedShapeSource, releaseReplacedShapes } from '../../modeling/warm/releaseShapes';
+import { getActiveMcpSession } from './activeSession';
+import { retainedMcpViewerModel, setRetainedMcpViewerModel } from './viewerRetain';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
 
@@ -177,9 +181,12 @@ export function createLiveViewer(options: ViewerOptions = {}) {
     async update(next: BuiltModel, review?: McpViewerReview): Promise<string> {
       starting ??= start().catch(error => { starting = undefined; throw error; });
       const link = await starting;
+      const previous = state.model;
       state.model = next;
+      setRetainedMcpViewerModel(next);
       state.review = review;
       state.mesh = undefined;
+      if (previous && previous !== next) disposeModelShapes(previous);
       for (const client of state.clients) client.write(UPDATE_FRAME);
       return link;
     },
@@ -190,9 +197,14 @@ export function createLiveViewer(options: ViewerOptions = {}) {
       if (server) await new Promise<void>(done => { server!.close(() => done()); server!.closeAllConnections(); });
       server = undefined;
       starting = undefined;
+      const served = state.model;
       state.model = undefined;
+      setRetainedMcpViewerModel(undefined);
       state.review = undefined;
       state.mesh = undefined;
+      // Drop the reference before releasing so the retain hook does not
+      // keep the solids this close is finished with.
+      if (served) releaseClosedViewerModel(served);
     },
   };
 }
@@ -208,6 +220,32 @@ let lastViewerResult: McpViewerResult | undefined;
 export function getMcpViewerResult() { return lastViewerResult; }
 
 let viewer: ReturnType<typeof createLiveViewer> | undefined;
+
+function viewerHeldShapes(model: BuiltModel): ShapeBackend[] {
+  const shapes: ShapeBackend[] = [];
+  if (model.shapes) {
+    for (const shape of model.shapes.values()) shapes.push(shape);
+  }
+  if (model.rootShape) shapes.push(model.rootShape);
+  if (model.tailShape) shapes.push(model.tailShape);
+  return shapes;
+}
+
+registerRetainedShapeSource(() => {
+  const model = retainedMcpViewerModel();
+  return model ? viewerHeldShapes(model) : [];
+});
+
+/** Free solids the viewer was the last owner of. A session that still owns
+ *  the model keeps the cache; a session that has already moved on does not. */
+function releaseClosedViewerModel(model: BuiltModel): void {
+  const active = getActiveMcpSession();
+  if (!model.session || active?.session !== model.session) {
+    disposeModelShapes(model);
+    return;
+  }
+  releaseReplacedShapes(viewerHeldShapes(model), model.session.cachedShapes.values());
+}
 export async function updateMcpViewer(model: BuiltModel, review?: McpViewerReview): Promise<McpViewerResult> {
   if (process.env.KERNELCAD_MCP_MODE === 'hosted') {
     lastViewerResult = { viewerMode: 'hosted', viewerHint: 'Use open_in_studio to view this model in hosted Studio.' };

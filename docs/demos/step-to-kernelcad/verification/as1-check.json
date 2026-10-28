@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "sourceUnits": [
+    "millimetre"
+  ],
+  "definitions": 5,
+  "occurrences": 18,
+  "loadedParts": 18,
+  "coloredOccurrences": 18,
+  "maxPathDepth": 4,
+  "maxWorldBoundsErrorMm": 0.003306540201123198,
+  "maxRelativeVolumeError": 2.8415329753795057e-15,
+  "exactBundleFileCount": 7,
+  "partsDiagnostics": 0
+}

@@ -7,7 +7,9 @@ import {
   type PrefixReuseInput,
   type RecordHealth,
 } from '../../../src/modeling/compute/prefixReuse';
+import { copyDrilledPolarFrames } from '../../../src/shared/intent/drilledPolarFrame';
 import type { FeatureRecord } from '../../../src/shared/intent/featureRecord';
+import type { Vec3 } from '../../../src/shared/intent/types';
 
 function rec(id: string, kind = 'box', extra: Partial<FeatureRecord> = {}): FeatureRecord {
   return {
@@ -121,6 +123,23 @@ describe('structuralHashRecord', () => {
     const a = rec('box_1', 'box', { metadata: { color: '#fff', paramRefs: ['w'] } });
     const b = rec('box_1', 'box', { metadata: { color: '#fff' } });
     expect(structuralHashRecord(a, undefined)).toBe(structuralHashRecord(b, undefined));
+  });
+
+  it('ignores a drilled polar frame stamped at lower time', () => {
+    const frame = { origin: [0, 0, 0] as Vec3, dir: [0, 0, 1] as Vec3, radius: 6 };
+    const stamped = rec('hole_1', 'hole', { metadata: { name: 'side', drilledPolarFrame: frame } });
+    const fresh = rec('hole_1', 'hole', { metadata: { name: 'side' } });
+    expect(structuralHashRecord(stamped, undefined)).toBe(structuralHashRecord(fresh, undefined));
+  });
+
+  it('copies a drilled polar frame onto records whose lower is skipped', () => {
+    const frame = { origin: [-20, 0, 0] as Vec3, dir: [0, 0, 1] as Vec3, radius: 8 };
+    const prev = rec('hole_1', 'hole', { metadata: { name: 'side', drilledPolarFrame: frame } });
+    const next = rec('hole_1', 'hole', { metadata: { name: 'side' } });
+    copyDrilledPolarFrames([prev], [next], ['hole_1']);
+    expect(next.metadata?.drilledPolarFrame).toEqual(frame);
+    expect(next.metadata?.name).toBe('side');
+    expect(structuralHashRecord(prev, undefined)).toBe(structuralHashRecord(next, undefined));
   });
 });
 

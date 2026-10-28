@@ -362,6 +362,16 @@ kc.box(10).fillet({ edges: kc.q.face(kc.q.createdBy('arm')) });  // tsc error
 
 Queries built without a kind narrower (`kc.q.createdBy('arm')`, target `'any'`) are always accepted; they narrow downstream by the consumer's evaluator branch.
 
+`createdBy(id)` matches the birth stamp (`featureId` or `rootFeatureId`). It is not "new since" and it is not "passed through". `derivedFrom(id)` matches faces and edges whose descent chain includes that feature's output, including faces the feature inherited and kept. `newSince(id)` is the complement: faces and edges that do not descend from that output (the wall of a later hole, the rounds of a later fillet). Both take the same id as `createdBy`, and both work on faces and on edges:
+
+```typescript
+const rounds = kc.q.face(kc.q.newSince(plate.id));
+const kept = kc.q.face(kc.q.derivedFrom(plate.id));
+const holeWall = kc.q.face(kc.q.derivedFrom(cutter.id));
+```
+
+`@kcq[face(newSince("box_1"))]` and `@kcq[edge(derivedFrom("fillet_1"))]` are the string form. `moveFaces` / `offsetFaces` accept these selectors.
+
 ### Authoring sugar — `q` and `kc.q` inside a `.kcad.ts` script
 
 The constructor namespace is reachable from any `.kcad.ts` source without an explicit `import`. Both forms work:

@@ -102,10 +102,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
+    "@classcad/smlibwasm": "0.6.2",
     "@gltf-transform/core": "^4.3.0",
     "@gltf-transform/extensions": "^4.4.1",
     "@gltf-transform/functions": "^4.4.1",
-    "@classcad/smlibwasm": "0.3.1",
     "@google/model-viewer": "^4.2.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@monaco-editor/react": "^4.7.0",
@@ -126,6 +126,7 @@
     "fflate": "^0.8.3",
     "framer-motion": "^12.33.0",
     "isosurface": "1.0.0",
+    "koffi": "^3.3.3",
     "lucide-react": "^0.563.0",
     "manifold-3d": "3.5.4",
     "mqtt": "^5.15.2",
@@ -134,7 +135,7 @@
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "replicad": "^0.23.1",
-    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#5ea0fe4f4fc1f38453d228d38aea2eeb09f3dadd",
+    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#96f1a3d347c4f407f9efbab6473513a0b2705b4a",
     "sharp": "^0.33.5",
     "shiki": "^1.29.2",
     "sucrase": "^3.35.1",
@@ -146,7 +147,7 @@
     "zod": "^4.3.6"
   },
   "overrides": {
-    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#5ea0fe4f4fc1f38453d228d38aea2eeb09f3dadd"
+    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#96f1a3d347c4f407f9efbab6473513a0b2705b4a"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260504.1",

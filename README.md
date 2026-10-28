@@ -36,14 +36,30 @@ hosted setup, local CLI setup, and connection verification.
 
 ### Local CLI: one line
 
+For Node.js users (Node.js 22.12 or newer):
+
+```bash
+npm install --global kernelcad
+```
+
+For a self-contained install that includes Node.js, Linux and macOS users can run:
+
 ```bash
 curl -fsSL https://kernelcad.com/install.sh | sh
 ```
 
-This installs the self-contained CLI under `~/.kernelcad/versions/` and links
-`kernelcad` into `~/.local/bin`. Pin a version with
-`KERNELCAD_VERSION=v0.17.2`. Node.js 20 or newer is required. There is no npm
-package and no global npm install.
+On Windows PowerShell, run:
+
+```powershell
+irm https://kernelcad.com/install.ps1 | iex
+```
+
+The direct installers download a platform archive, verify its SHA-256 checksum,
+and install it under the user's home directory. Pin a release with
+`KERNELCAD_VERSION=vX.Y.Z` on Linux/macOS or `$env:KERNELCAD_VERSION='vX.Y.Z'`
+in PowerShell. Builds are available for Linux x64/ARM64, macOS Intel/Apple
+Silicon, and Windows x64. Direct installs do not require a separately installed
+Node.js.
 
 ### Coding agents: one command
 
@@ -122,6 +138,26 @@ kernelcad export step model.kcad.ts -o model.step
 kernelcad export stl model.kcad.ts -o model.stl
 ```
 
+Translate an assembly exported from SolidWorks or another CAD application as
+STEP into a KernelCAD project:
+
+```bash
+kernelcad import-step robot.step --out robot-kcad
+kernelcad evaluate robot-kcad/robot.kcad.ts
+```
+
+The bundle contains a `.kcad.ts` root assembly, `manifest.json` with the source
+product paths, units, placements, colors, and geometry measurements, and exact
+native OCCT BREP assets content-addressed by geometry. Byte-identical product
+definitions share an asset. The original STEP assembly hierarchy is recorded
+in the manifest; the current KernelCAD scene is flattened into independently
+placeable occurrences. Local STEP `DOCUMENT_FILE` dependencies are read
+recursively, included in the import provenance hashes, and must stay inside the
+input directory. Component colors are preserved; per-face color mapping is not
+part of this import. It does not infer mates, joints, motion, feature history,
+or read native SolidWorks/Parasolid data.
+See the [retained import demo, bundle, and verification evidence](docs/demos/step-to-kernelcad/README.md).
+
 When a rendered artifact is produced, inspect the image/video itself and report
 what is visible: proportions, interfaces, floating geometry, occlusion, camera
 framing, and whether required features are legible. Passing tests are not a
@@ -159,8 +195,11 @@ and mechanism checks tied to physical components.
 ## Get Started
 
 ```bash
-curl -fsSL https://kernelcad.com/install.sh | sh
+npm install --global kernelcad
 ```
+
+The npm package requires Node.js 22.12 or newer. For a self-contained install,
+use the platform installer above.
 
 Drop this in `bracket.kcad.ts`:
 

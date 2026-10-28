@@ -110,7 +110,10 @@ select<T>(items: Iterable<T>): ShapeList<T>;
 // arm.part(...) like any primitive.
 
 // STEP — the default for vendor catalog components.
-lib.fromSTEP(path: string): Promise<Shape>;
+// Length units (mm, inch, metre) come back in millimetres.
+// SolidWorks .sldprt/.sldasm are refused. Save as STEP AP214 or AP242 with
+// solid bodies. opts.solid picks one body (zero-based) from a multi-body file.
+lib.fromSTEP(path: string, opts?: { solid?: number }): Promise<Shape>;
 
 // Native BREP — lossless (exact analytic surfaces and full topology, no
 // schema translation, no tessellation). Every downstream op is valid on the
@@ -406,6 +409,14 @@ Check world-frame spacing after reuse changes. The authoring `Shape` API has no
 
 // Face features:
 .shell(thickness: number, { face: FaceSelector }): Shape  // face REQUIRED
+// Direct face edit. Positive distance / an outward vector grows the solid.
+// OCCT only slides a planar face along its normal and rejects anything else
+// by name (`feature.face-edit.rejected`). `kernel: 'smlib'` uses the guarded
+// native Part.offsetFaces / Part.moveFaces.
+.offsetFaces(faces: FaceSelector | string | Array<FaceSelector | string>, distance: Editable<number>): Shape
+.moveFaces(faces: FaceSelector | string | Array<FaceSelector | string>, by: [Editable<number>, Editable<number>, Editable<number>]): Shape
+//   box(40, 30, 10).offsetFaces('top', 2)
+//   box(40, 30, 10).moveFaces(kc.q.face(kc.q.createdBy(plateId)), [0, 0, -1])
 // Draft — taper faces for mold release (Slice E). angleDeg: 0–90.
 // neutralPlane defaults to the selected face; pullDir defaults to face normal.
 .draft(angleDeg: Editable<number>, opts: { face: FaceSelector | string; neutralPlane?: string; pullDir?: [number, number, number] }): Shape

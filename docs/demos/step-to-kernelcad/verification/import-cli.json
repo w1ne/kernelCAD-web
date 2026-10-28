@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "bundle": {
+    "outDir": "/home/andrii/projects/kernelCAD-web-worktrees/step-to-kernelcad/docs/demos/step-to-kernelcad/bundle",
+    "script": "/home/andrii/projects/kernelCAD-web-worktrees/step-to-kernelcad/docs/demos/step-to-kernelcad/bundle/Smoke Box.kcad.ts",
+    "manifest": "/home/andrii/projects/kernelCAD-web-worktrees/step-to-kernelcad/docs/demos/step-to-kernelcad/bundle/manifest.json",
+    "partAssets": 1,
+    "occurrenceCount": 1,
+    "definitionCount": 1
+  },
+  "warnings": []
+}

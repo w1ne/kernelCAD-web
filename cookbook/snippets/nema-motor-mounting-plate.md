@@ -13,9 +13,10 @@ when_to_use: >-
   Prompt asks for a NEMA mounting plate, stepper motor mount, or motor flange
   plate with the standard four-bolt pattern (±15.5 mm, Ø3.2 clearance). Prefer
   catalog `lib.standard.nema17()` when the parts catalog is available; this
-  snippet uses a BREP stand-in motor so evaluate stays offline/CI-green. Declare
-  matching `bolt-holes-N` frames on the plate (`.holes()` auto-connectors stay
-  on the holes feature id) and mate with the 4-arg form.
+  snippet uses a BREP stand-in motor so evaluate stays offline/CI-green.
+  `.holes()` promotes `bolt-holes-N` onto the plate; the explicit
+  `plate.connector` calls replace those frames with numeric origins. Mate
+  with the 4-arg form.
 ---
 
 ```typescript

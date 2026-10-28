@@ -19,6 +19,7 @@
 // one that affects geometry.
 
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import { DRILLED_POLAR_FRAME_KEY } from '../../shared/intent/drilledPolarFrame';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 
@@ -40,9 +41,10 @@ export function structuralHashRecord(
 ): string {
   const resolved = paramTable ? (resolveParams(record, paramTable) as FeatureRecord) : record;
   // Strip derived / non-geometric keys from metadata. `paramRefs` is a derived
-  // dependency index populated at capture time, not a geometry input — two
-  // structurally-identical records always derive the same paramRefs, so
-  // including it is harmless, but we drop it to keep the hash about geometry.
+  // dependency index populated at capture time, not a geometry input.
+  // `drilledPolarFrame` is stamped when the hole is lowered; a fresh capture
+  // of the same hole does not have it yet. Including either would make a
+  // lowered record hash differently from the capture it came from.
   const metadata = stripDerivedMetadata(resolved.metadata);
   // Build a canonical, key-sorted view of exactly the fields that affect
   // lowering. `id` is intentionally EXCLUDED — prefix matching checks id
@@ -65,7 +67,7 @@ function stripDerivedMetadata(
   if (metadata === undefined) return undefined;
   const out: Record<string, unknown> = {};
   for (const key of Object.keys(metadata)) {
-    if (key === 'paramRefs') continue;
+    if (key === 'paramRefs' || key === DRILLED_POLAR_FRAME_KEY) continue;
     out[key] = (metadata as Record<string, unknown>)[key];
   }
   return out;

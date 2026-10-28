@@ -141,6 +141,17 @@ if (newVersion !== projectedVersion) {
     process.exit(1);
 }
 
+// Keep the installer's pinned-release examples and fallback guidance aligned
+// with the package version. The installer version sentinel runs on every PR.
+for (const installerPath of ['scripts/install.sh', 'scripts/install.ps1']) {
+    const installer = readFileSync(installerPath, 'utf-8');
+    const updatedInstaller = installer.replace(/v\d+\.\d+\.\d+/g, `v${newVersion}`);
+    if (updatedInstaller !== installer) {
+        writeFileSync(installerPath, updatedInstaller);
+        console.log(`✅ Updated ${installerPath} version hints`);
+    }
+}
+
 // 5. Create Release Notes File
 const date = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
 const releaseChanges = formatReleaseChanges(commitLog);
@@ -166,8 +177,22 @@ Release assets are attached separately when a version has a demo capture, static
 
 ## Install And Upgrade
 
+Install the npm package (requires Node.js 22.12 or newer):
+
+\`\`\`bash
+npm install --global kernelcad@${newVersion}
+\`\`\`
+
+Or use a self-contained installer that includes Node.js:
+
 \`\`\`bash
 curl -fsSL https://kernelcad.com/install.sh | KERNELCAD_VERSION=v${newVersion} sh
+\`\`\`
+
+On Windows PowerShell:
+
+\`\`\`powershell
+$env:KERNELCAD_VERSION='v${newVersion}'; irm https://kernelcad.com/install.ps1 | iex
 \`\`\`
 
 For repo development:

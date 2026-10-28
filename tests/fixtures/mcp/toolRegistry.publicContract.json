@@ -5144,7 +5144,8 @@
                         "face-center",
                         "face-normal",
                         "vertex",
-                        "edge-axis"
+                        "edge-axis",
+                        "hole-axis"
                       ]
                     },
                     "name": {

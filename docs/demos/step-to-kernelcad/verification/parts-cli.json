@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "parts": [
+    {
+      "name": "Smoke-Box",
+      "bbox": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          10,
+          20,
+          30
+        ]
+      },
+      "volumeMm3": 6000,
+      "surfaceAreaMm2": 2199.9999999999995,
+      "triangleCount": 12
+    }
+  ],
+  "diagnostics": []
+}

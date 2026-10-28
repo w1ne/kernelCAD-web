@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { BuiltModel } from '../../composition/buildModel';
+import { clearActiveMcpSession, setActiveMcpSession } from './activeSession';
 import { createLiveViewer } from './liveViewer';
 
 vi.mock('node:fs', async importOriginal => {
@@ -108,5 +109,41 @@ describe('live MCP Studio viewer', () => {
     const viewer = createLiveViewer({ dist: '/does-not-exist' });
     await expect(viewer.update(model('first'))).rejects.toThrow('KERNELCAD_VIEWER_DIST');
     await viewer.close();
+  });
+
+  it('close disposes a model whose session the viewer no longer shares', async () => {
+    const disposed: string[] = [];
+    const shape = { dispose() { disposed.push('shape'); }, isDeleted: () => false };
+    const session = { cachedShapes: { values: () => [] as object[], clear() { disposed.push('clear'); } } };
+    const viewer = await fixture();
+    await viewer.update({ code: 'old', shapes: new Map([['a', shape]]), session } as unknown as BuiltModel);
+    setActiveMcpSession({ session: { cachedShapes: { values: () => [], clear() {} } } as never });
+    try {
+      await viewer.close();
+      expect(disposed).toContain('shape');
+    } finally {
+      clearActiveMcpSession();
+    }
+  });
+
+  it('close keeps a solid the active session cache still owns and drops one it does not', async () => {
+    const disposed: string[] = [];
+    const stale = { dispose() { disposed.push('stale'); }, isDeleted: () => false };
+    const live = { dispose() { disposed.push('live'); }, isDeleted: () => false };
+    const session = { cachedShapes: { values: () => [live], clear() { disposed.push('clear'); } } };
+    const viewer = await fixture();
+    await viewer.update({
+      code: 'old',
+      shapes: new Map([['a', stale]]),
+      rootShape: stale,
+      session,
+    } as unknown as BuiltModel);
+    setActiveMcpSession({ session: session as never });
+    try {
+      await viewer.close();
+      expect(disposed).toEqual(['stale']);
+    } finally {
+      clearActiveMcpSession();
+    }
   });
 });

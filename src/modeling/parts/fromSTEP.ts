@@ -11,10 +11,17 @@
 import { readFile } from 'node:fs/promises';
 import { resolveScriptRelativePath } from '../../shared/runtime/scriptRelativePath';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { pickSolid } from '../../kernel/backends/occt/stepSolidPicker';
 import { importStepCached, isStepBackendHealed, StepParseError } from './stepParseCache';
 import { Shape } from '../capture/proxy';
 import type { CaptureSession } from '../capture/captureSession';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
+import {
+  isSolidworksNativePath,
+  SOLIDWORKS_STEP_EXPORT,
+  stepLengthToMillimetres,
+} from './stepLengthUnit';
 
 export interface FromSTEPContext {
   session: CaptureSession;
@@ -24,7 +31,12 @@ export interface FromSTEPContext {
   scriptDir?: string;
 }
 
-export async function fromSTEP(ctx: FromSTEPContext, path: string): Promise<Shape> {
+export interface FromStepOptions {
+  /** Zero-based body when the STEP file holds several solids. */
+  solid?: number;
+}
+
+export async function fromSTEP(ctx: FromSTEPContext, path: string, opts?: FromStepOptions): Promise<Shape> {
   if (typeof path !== 'string' || path.length === 0) {
     throw new KernelError(
       'feature.invalid-args',
@@ -32,6 +44,20 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string): Promise<Shap
       undefined,
       "invalid-args.lib.fromSTEP — pass a relative or absolute path to a .step file (e.g. lib.fromSTEP('parts/servo.step')).",
     );
+  }
+  assertSolidIndex(opts?.solid);
+
+  // Native SolidWorks bytes are not STEP. Refuse before any read or parse
+  // so a .sldprt/.sldasm path cannot reach the OCCT STEP reader.
+  if (isSolidworksNativePath(path)) {
+    invalidArgs({
+      api: 'lib.fromSTEP(path)',
+      path: 'path',
+      got: path,
+      requires: 'a STEP file; export SolidWorks parts or assemblies as STEP AP214 or AP242 with solid bodies',
+      example: "await lib.fromSTEP('parts/servo.step')",
+      hintSlug: 'invalid-args.lib.fromSTEP.solidworks',
+    });
   }
 
   const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
@@ -48,22 +74,78 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string): Promise<Shap
     );
   }
 
-  // Parse (or reuse a content-hash-cached parse of) the STEP bytes. The cache
-  // is what keeps a Studio rebuild from re-importing an unchanged part on
-  // every code edit. We re-raise its failures as this call's KernelErrors so
-  // the agent-facing diagnostics are unchanged.
-  let backend: OcctBackend;
+  if (buf.length === 0) {
+    invalidArgs({
+      api: 'lib.fromSTEP(path)',
+      path: 'path',
+      got: absPath,
+      requires: 'a non-empty STEP file; export SolidWorks parts or assemblies as STEP AP214 or AP242 with solid bodies',
+      example: "await lib.fromSTEP('parts/servo.step')",
+      hintSlug: 'invalid-args.lib.fromSTEP.empty',
+    });
+  }
+
+  // Parse or reuse a content-hash-cached parse; the helper keeps diagnostics
+  // stable while leaving this API's validation and metadata path readable.
+  let backend = await importStepOrThrow(buf, absPath);
+  // Solid selection wraps the child body in a fresh backend. Preserve the
+  // import's repair status before that wrapper drops the parse-cache marker.
+  const healed = isStepBackendHealed(backend);
+
+  if (opts?.solid !== undefined) {
+    backend = solidAt(backend, opts.solid, absPath);
+  }
+
+  // The STEP reader's cascade unit is millimetres, so a metre or inch file
+  // is already scaled by `lengthToMm` when it arrives here. Recording the
+  // factor keeps that conversion on the import path; scaling the shape
+  // again would double it.
+  const lengthToMm = stepLengthToMillimetres(buf.toString('utf8'));
+
+  // Park the lowered shape on the session's `importedGeometry` map (not in
+  // metadata): replicad shapes carry circular refs that trip the
+  // ParamRef metadata walker. The lowerer fetches by feature id.
+  const shape = ctx.session.createShape({
+    kind: 'importedStep',
+    params: {},
+    inputs: {},
+    metadata: {
+      sourcePath: absPath,
+      lengthToMm,
+      ...(opts?.solid !== undefined ? { solidIndex: opts.solid } : {}),
+      healed,
+    },
+  });
+  ctx.session.importedGeometry.set(shape.id, backend);
+  return shape;
+}
+
+function assertSolidIndex(solid: number | undefined): void {
+  if (solid === undefined) return;
+  if (!Number.isInteger(solid) || solid < 0) {
+    invalidArgs({
+      api: 'lib.fromSTEP(path, opts)',
+      path: 'opts.solid',
+      got: solid,
+      showType: true,
+      requires: 'a non-negative integer zero-based solid index',
+      example: "await lib.fromSTEP('parts/servo.step', { solid: 0 })",
+      hintSlug: 'invalid-args.lib.fromSTEP.solid',
+    });
+  }
+}
+
+/** Import cached STEP bytes and preserve the API-facing failure messages. */
+async function importStepOrThrow(buf: Buffer, absPath: string): Promise<OcctBackend> {
   try {
-    backend = await importStepCached(buf);
+    return await importStepCached(buf);
   } catch (e) {
     if (e instanceof StepParseError && e.reason === 'no-solid') {
-      // A Shape3D-class result is required (Solid / CompSolid / Compound);
-      // 2D drawings and empty imports are rejected before the lowerer.
       throw new KernelError(
         'feature.kernel-failed',
-        `lib.fromSTEP: ${absPath} did not contain a 3D solid.`,
+        `lib.fromSTEP: ${absPath} did not contain a 3D solid. ${SOLIDWORKS_STEP_EXPORT}`,
         undefined,
-        'kernel-failed.lib.fromSTEP.no-solid — the STEP file must contain at least one closed solid body.',
+        `kernel-failed.lib.fromSTEP.no-solid — ${SOLIDWORKS_STEP_EXPORT}`,
       );
     }
     if (e instanceof StepParseError && e.reason === 'out-of-memory') {
@@ -77,26 +159,25 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string): Promise<Shap
     const msg = e instanceof Error ? e.message : String(e);
     throw new KernelError(
       'feature.kernel-failed',
-      `lib.fromSTEP: replicad failed to parse STEP at ${absPath}: ${msg}`,
+      `lib.fromSTEP: ${absPath} is not a STEP solid. ${SOLIDWORKS_STEP_EXPORT} (${msg})`,
       undefined,
-      'kernel-failed.lib.fromSTEP.parse — file is not a valid STEP solid; re-export from the source CAD as AP203/AP214 with solid bodies.',
+      `kernel-failed.lib.fromSTEP.parse — ${SOLIDWORKS_STEP_EXPORT}`,
     );
   }
+}
 
-  // Park the lowered shape on the session's `importedGeometry` map (not in
-  // metadata): replicad shapes carry circular refs that trip the
-  // ParamRef metadata walker. The lowerer fetches by feature id.
-  const shape = ctx.session.createShape({
-    kind: 'importedStep',
-    params: {},
-    inputs: {},
-    metadata: {
-      sourcePath: absPath,
-      healed: isStepBackendHealed(backend),
-    },
-  });
-  ctx.session.importedGeometry.set(shape.id, backend);
-  return shape;
+/** One solid from an imported STEP compound. */
+function solidAt(backend: OcctBackend, index: number, absPath: string): OcctBackend {
+  const { solid, count } = pickSolid(backend, index);
+  if (!solid) {
+    throw new KernelError(
+      'feature.kernel-failed',
+      `lib.fromSTEP: ${absPath} has ${count} solid${count === 1 ? '' : 's'}, so solid ${index} is not there. ${SOLIDWORKS_STEP_EXPORT}`,
+      undefined,
+      `kernel-failed.lib.fromSTEP.no-solid — ${SOLIDWORKS_STEP_EXPORT}`,
+    );
+  }
+  return solid;
 }
 
 /**
