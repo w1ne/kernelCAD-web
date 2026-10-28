@@ -30,7 +30,8 @@ import { runClosedLoop } from '../../../src/agent/loop/closedLoop.js';
 import type { GateReport, GateRunner, GateVerdict, LoopMessage } from '../../../src/agent/loop/types.js';
 import { buildRepairPrompt } from '../../../src/agent/loop/repairPrompt';
 import { repairScriptTool } from '../../../src/agent/mcp/tools/repairScript';
-import { inspectStepTool } from '../../../src/agent/mcp/tools/inspectStep';
+import { inspectNormalizedStepFile } from '../../../src/agent/inspect/inspectStep';
+import type { StepInspectReport } from '../../../src/kernel/import/inspectStep';
 import { exportStep } from '../../oracle/kernelcad-client';
 import { extractScript } from '../../lib';
 import type { AgentClient, AgentImage, EvaluateResult } from '../../types';
@@ -42,6 +43,7 @@ import { mapPool } from '../../lib/pool';
 import { refineVisualCandidate } from './visualRefinement';
 import { renderCandidateViews, renderCandidateComparison } from './visualRender';
 import { checkStepValidity, withOcctLock, type StepValidity } from './validity';
+import { generationLedgerMismatch } from './generationLedger';
 import {
   classifyEditPromotion,
   unknownEditPromotion,
@@ -98,6 +100,10 @@ export interface PipelineConfig {
   /** Write a candidate that fails the pre-check instead of leaving the task missing. */
   keepInvalid: boolean;
   prices?: Prices;
+  /** Compare a generation script's extent ledger with the exported solid.
+   *  Defaults on for generation tasks. A mismatch is repaired; the last valid
+   *  solid is still eligible for submission. */
+  generationLedger?: boolean;
   /** Test seams; default to the kernelCAD CLI and the in-process pre-check. */
   gate?: GateRunner;
   exportStep?: (scriptPath: string, outPath: string) => Promise<EvaluateResult>;
@@ -185,7 +191,30 @@ export function createCandidateGate(cfg: PipelineConfig): CandidateGate {
     const v = await precheck(stepPath);
     validity.set(scriptPath, v);
     const verdicts = [...report.verdicts, verdictFromValidity(v)];
-    return { ok: v.valid, verdicts };
+    if (v.valid && cfg.generationLedger) {
+      const mismatch = generationLedgerMismatch(readFileSync(scriptPath, 'utf8'), v);
+      if (mismatch) {
+        verdicts.push({
+          gate: 'ledger',
+          ok: false,
+          code: 'cadgenbench.ledger-mismatch',
+          message: mismatch,
+          hint: 'Change the geometry so the measured solid matches the drawing. Update the ledger only when the drawing numbers themselves were copied wrong.',
+        });
+      }
+    }
+    return { ok: verdicts.every((verdict) => verdict.ok), verdicts };
+  }
+}
+
+/** Editing baseline: the healed import the script receives, not the raw file. */
+async function inspectEditingSolid(
+  file: string,
+): Promise<{ ok: true; report: StepInspectReport } | { ok: false; error: string }> {
+  try {
+    return { ok: true, report: await inspectNormalizedStepFile(file) };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
   }
 }
 
@@ -193,13 +222,13 @@ export function createCandidateGate(cfg: PipelineConfig): CandidateGate {
  *  failure is `unknown` rather than a rejection: a missing measurement is not
  *  evidence that the edit is wrong. */
 async function autoEditPromotion(ctx: EditPromotionContext): Promise<EditPromotionResult> {
-  const before = await withOcctLock(() => inspectStepTool({ file: ctx.inputStepPath }));
-  if (!before.ok || !before.report) {
-    return unknownEditPromotion(`could not inspect the input solid: ${before.error ?? 'no report'}`);
+  const before = await withOcctLock(() => inspectEditingSolid(ctx.inputStepPath));
+  if (!before.ok) {
+    return unknownEditPromotion(`could not inspect the input solid: ${before.error}`);
   }
-  const after = await withOcctLock(() => inspectStepTool({ file: ctx.stepPath }));
-  if (!after.ok || !after.report) {
-    return unknownEditPromotion(`could not inspect the candidate solid: ${after.error ?? 'no report'}`);
+  const after = await withOcctLock(() => inspectEditingSolid(ctx.stepPath));
+  if (!after.ok) {
+    return unknownEditPromotion(`could not inspect the candidate solid: ${after.error}`);
   }
   return classifyEditPromotion({
     request: ctx.task.description,
@@ -375,7 +404,9 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
   mkdirSync(taskSubmissionDir(cfg.runDir, task.id), { recursive: true });
   const scriptPath = join(workDir, 'model.kcad.ts');
   const realEdit = Boolean(cfg.agent || cfg.scriptsFrom);
-  const baseGate = createCandidateGate(cfg);
+  const baseGate = createCandidateGate(
+    task.type === 'generation' && cfg.generationLedger !== false ? { ...cfg, generationLedger: true } : cfg,
+  );
   const gate =
     task.type === 'editing' && realEdit && cfg.editPromotion !== 'off'
       ? withPromotionGate(baseGate, cfg, task)
@@ -423,8 +454,8 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
       if (task.type === 'generation') {
         prompt = generationPrompt(task);
       } else {
-        const inspected = await withOcctLock(() => inspectStepTool({ file: join(workDir, EDIT_INPUT_NAME) }));
-        prompt = editingPrompt(task, inspected.ok ? inspected.report! : null);
+        const inspected = await withOcctLock(() => inspectEditingSolid(join(workDir, EDIT_INPUT_NAME)));
+        prompt = editingPrompt(task, inspected.ok ? inspected.report : null);
       }
       writeFileSync(join(workDir, 'prompt.md'), prompt);
       const loop = await runLlmLoop(cfg, cfg.agent, gate, prompt, loadImages(task.images), scriptPath);

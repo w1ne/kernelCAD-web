@@ -8,6 +8,7 @@ describe('CADGenBench task prompts', () => {
     expect(prompt).toContain('Reproduce this drawing.');
     expect(prompt).toContain('dimension ledger');
     expect(prompt).toContain('cross-check');
+    expect(prompt).toContain('// ledger: extents');
     expect(prompt).toContain('ONE closed solid');
   });
   it('preserves an editing request and asks to measure the target without changing other geometry', () => {
@@ -16,5 +17,7 @@ describe('CADGenBench task prompts', () => {
     expect(prompt).toContain('target face');
     expect(prompt).toContain('Leave everything the request does not mention unchanged.');
     expect(prompt).toContain('do not move, rotate or re-centre');
+    expect(prompt).toContain('return one fenced script');
+    expect(prompt).toContain('unchanged solid is rejected');
   });
 });

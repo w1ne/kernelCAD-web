@@ -45,7 +45,13 @@ mechanical part. Build that part as a kernelCAD \`.kcad.ts\` script.
 - Before returning, cross-check the script against that ledger: units, radii
   versus diameters, spacing, wall thickness, feature count, blind versus
   through features, and whether all openings actually pass through material.
+  A drawn diameter is the bore diameter, not the radius. A cut that does not
+  intersect the body is a failed feature.
   Keep unsupported details as explicit assumptions rather than invented facts.
+- End the comments with the posed solid's bounding sizes in millimetres, and
+  the volume when you can compute it from those dimensions:
+  \`// ledger: extents <X> <Y> <Z>; volume <mm3>\`
+  X, Y, Z are the bounding-box sizes after the pose below, longest along X.
 - Pose (recommended by the benchmark): bounding-box centre at the origin,
   longest extent along X, middle along Y, shortest along Z; if the part has an
   obvious mounting face, put it on the -Z side with its normal along -Z.
@@ -98,6 +104,7 @@ requested change (booleans, features), and return the edited solid.
   Compute the requested direction and magnitude before editing. Distinguish an
   inward move into a pocket from removal of material, and preserve unrelated
   holes and faces. Do not claim a measurement or verification you did not run.
+- The measurements below are the import \`lib.fromSTEP\` edits. On every attempt, return one fenced script. State an uncertain dimension as an assumption and still apply the requested change. Returning the unchanged solid is rejected.
 
 Starting solid:
 ${solid}

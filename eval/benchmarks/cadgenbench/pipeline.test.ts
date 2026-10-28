@@ -130,6 +130,57 @@ describe('runTask without an LLM', () => {
 });
 
 describe('runTask with an LLM', () => {
+  it('repairs the earlier script when the last reply has no code block', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-prose-keep-'));
+    const runDir = join(root, 'run');
+    const counter = { exports: 0, repairs: 0 };
+    const agent = new MockAgentClient([
+      reply('THROW'),
+      { text: 'I cannot provide a corrected script.', tokens_in: 1, tokens_out: 1 },
+    ]);
+    const s = await runTask(tasks(root).edit, cfg(runDir, { agent, maxAttempts: 2, ...stubs(counter) }));
+    expect(counter.repairs).toBe(1);
+    expect(s.status).toBe('failed');
+    expect(s.error).toMatch(/cli\.script-exception/);
+    expect(s.error).not.toMatch(/no script extracted/);
+  });
+
+  it('feeds a generation ledger mismatch back before accepting a corrected solid', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-ledger-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([
+      reply('// ledger: extents 10 10 10; volume 1000\nreturn box(1,1,1);'),
+      reply('// ledger: extents 1 1 1; volume 1\nreturn box(1,1,1);'),
+    ]);
+    const measured: StepValidity = {
+      valid: true, solidCount: 1, shellCount: 1, faceCount: 6, brepValid: true,
+      watertight: true, meshManifold: true, triangleCount: 12, errors: [],
+      extentsMm: [1, 1, 1], volumeMm3: 1,
+    };
+    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, precheck: async () => measured }));
+    expect(s).toMatchObject({ status: 'valid', attempts: 2 });
+    expect(agent.calls[1].messages.at(-1)?.content).toMatch(/cadgenbench\.ledger-mismatch/);
+    expect(agent.calls[1].messages.at(-1)?.content).toMatch(/10\.000/);
+    expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toContain('extents 1 1 1');
+  });
+
+  it('submits a valid solid when the ledger still disagrees on the last attempt', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-ledger-last-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('// ledger: extents 10 10 10; volume 1000\nreturn box(1,1,1);')]);
+    const s = await runTask(tasks(root).gen, cfg(runDir, {
+      agent,
+      maxAttempts: 1,
+      precheck: async () => ({
+        valid: true, solidCount: 1, shellCount: 1, faceCount: 6, brepValid: true,
+        watertight: true, meshManifold: true, triangleCount: 12, errors: [],
+        extentsMm: [1, 1, 1], volumeMm3: 1,
+      }),
+    }));
+    expect(s.status).toBe('valid');
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(true);
+  });
+
   it('asks for code when the model replies with prose instead of exporting prose', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-prose-'));
     const count = {exports:0, repairs:0};

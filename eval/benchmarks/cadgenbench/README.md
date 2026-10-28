@@ -29,6 +29,13 @@ the leaderboard is a separate, manual decision.
   export error or a failed validity check (open shell, non-manifold mesh,
   BRepCheck error) becomes a typed verdict in the repair prompt.
   `--max-attempts` sets the number of attempts (default 3).
+- A later reply with no code block does not discard the previous script.
+  The gate failure stays, and the deterministic repair can still run.
+- Editing observations and promotion measure the healed import that
+  `lib.fromSTEP` edits. A generation script may end its comments with
+  `// ledger: extents <X> <Y> <Z>; volume <mm3>`. A valid export whose
+  bounding box or volume disagrees with that ledger is sent back for repair.
+  The last valid solid is still submitted if the ledger never agrees.
 - If no attempt produces a script that exports, one deterministic
   `repair_script` iteration runs.
 - The pre-check (`validity.ts`) mirrors the benchmark gate: BRepCheck, closed
@@ -53,6 +60,9 @@ that requires them) to the previous major version.
 ```bash
 uv venv -p 3.12 ~/.venvs/cadgenbench
 VIRTUAL_ENV=~/.venvs/cadgenbench uv pip install "git+https://github.com/huggingface/cadgenbench"
+# build123d 0.13 requires OCCT 8, and analyze_step then fails on Bnd_Box::Limits.
+# The last OCCT 7 line is build123d 0.12.0 (cadquery-ocp-novtk 7.9.3.1.1).
+VIRTUAL_ENV=~/.venvs/cadgenbench uv pip install "build123d==0.12.0"
 export CADGENBENCH_PYTHON=~/.venvs/cadgenbench/bin/python
 ```
 

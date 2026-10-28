@@ -60,6 +60,10 @@ describe('checkStepValidity', () => {
     expect(v.errors).toEqual([]);
     expect(v).toMatchObject({ valid: true, solidCount: 1, shellCount: 1, brepValid: true, watertight: true, meshManifold: true });
     expect(v.triangleCount).toBeGreaterThan(0);
+    expect(v.extentsMm?.[0]).toBeCloseTo(20, 1);
+    expect(v.extentsMm?.[1]).toBeCloseTo(10, 1);
+    expect(v.extentsMm?.[2]).toBeCloseTo(5, 1);
+    expect(v.volumeMm3).toBeGreaterThan(0);
   });
 
   it('fails an open shell (a box with one face missing)', async () => {

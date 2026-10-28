@@ -40,6 +40,10 @@ export interface StepValidity {
   /** Export tessellation is a closed, orientation-consistent 2-manifold. */
   meshManifold: boolean;
   triangleCount: number;
+  /** Axis-aligned bounding sizes in millimetres, when the STEP imported as a shape. */
+  extentsMm?: [number, number, number];
+  /** Solid volume in mm³, when the STEP imported as a shape. */
+  volumeMm3?: number;
   /** Human-readable reasons, empty when valid. Fed verbatim into repair prompts. */
   errors: string[];
 }
@@ -185,6 +189,15 @@ export function checkStepValidity(path: string): Promise<StepValidity> {
       shape = await replicad.importSTEP(new Blob([new Uint8Array(bytes)]));
       const oc = getOC() as any;
       const wrapped = (shape as any).wrapped;
+      if (typeof (shape as { boundingBox?: { bounds: number[][] } }).boundingBox?.bounds !== 'undefined') {
+        const [[x0, y0, z0], [x1, y1, z1]] = (shape as replicad.Shape3D).boundingBox.bounds;
+        result.extentsMm = [Math.abs(x1 - x0), Math.abs(y1 - y0), Math.abs(z1 - z0)];
+        try {
+          result.volumeMm3 = Math.abs(replicad.measureVolume(shape as replicad.Shape3D));
+        } catch {
+          // A non-solid import still reports extents; volume is optional.
+        }
+      }
 
       result.solidCount = countSubShapes(oc, wrapped, 'TopAbs_SOLID');
       result.faceCount = countSubShapes(oc, wrapped, 'TopAbs_FACE');
