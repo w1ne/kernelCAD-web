@@ -14,7 +14,7 @@
 // See README.md in this directory for the options and full-run commands.
 
 import { execFile, execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { AnthropicAgentClient } from '../../agent';
 import { OpenAICompatAgentClient } from '../../agentOpenAICompat';
@@ -51,6 +51,9 @@ export interface CliOptions {
   keepInvalid: boolean;
   retryFailed: boolean;
   officialCheck: boolean;
+  /** `auto` blocks a valid edit that does not change the requested feature;
+   *  `off` submits the best valid candidate regardless of the edit verdict. */
+  editPromotion: 'auto' | 'off';
   python?: string;
   prices?: Prices;
   revision: string;
@@ -97,6 +100,10 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
   if (editFallback !== 'none' && editFallback !== 'passthrough') {
     throw new Error(`--edit-fallback must be 'none' or 'passthrough', got ${editFallback}`);
   }
+  const editPromotion = value('--edit-promotion') ?? 'auto';
+  if (editPromotion !== 'auto' && editPromotion !== 'off') {
+    throw new Error(`--edit-promotion must be 'auto' or 'off', got ${editPromotion}`);
+  }
   const priceIn = num('--price-in');
   const priceOut = num('--price-out');
   if ((priceIn === undefined) !== (priceOut === undefined)) {
@@ -121,6 +128,7 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     temperature: num('--temperature'),
     seed: num('--seed'),
     editFallback,
+    editPromotion,
     keepInvalid: has('--keep-invalid'),
     retryFailed: has('--retry-failed'),
     officialCheck: has('--official-check'),
@@ -230,10 +238,33 @@ async function main(): Promise<void> {
   const skillMd = agent ? buildSystemPrompt(SWEEP_SKILLS) : '';
   const sourceRevision = gitSha();
   const cli = identifyCli(env, process.cwd());
+  const officialCache = new Map<string, { valid: boolean; detail?: string }>();
+  /** One STEP through the benchmark's own gate, cached by content identity. */
+  const checkOfficial = async (path: string) => {
+    try {
+      const st = statSync(path);
+      const key = `${path}|${st.size}|${st.mtimeMs}`;
+      const cached = officialCache.get(key);
+      if (cached) return cached;
+      const rows = await officialGate(opts.python!, [path]);
+      const row = rows.get(path);
+      if (!row) return undefined;
+      const verdict = {
+        valid: row.valid,
+        detail: row.valid ? 'pass' : row.errors.slice(0, 3).join('; '),
+      };
+      officialCache.set(key, verdict);
+      return verdict;
+    } catch (e) {
+      log(`official gate failed for ${path}: ${e instanceof Error ? e.message : String(e)}`);
+      return undefined;
+    }
+  };
   const identity = buildRunIdentity(tasks, {
     revision, mode, model: agent ? opts.model : null, baseUrl: opts.chatgptPlanDir ? 'https://api.openai.com/v1/responses (ChatGPT plan)' : opts.baseUrl ?? null,
     gitSha: sourceRevision, maxAttempts: opts.maxAttempts, maxTokens: opts.maxTokens,
     temperature: opts.temperature ?? null, seed: opts.seed ?? null, editFallback: opts.editFallback,
+    editPromotion: opts.editPromotion, officialCheck: opts.officialCheck,
     keepInvalid: opts.keepInvalid, visualReview: opts.visualReview, skillMd, scriptsFrom: opts.scriptsFrom ?? null, cli,
   });
   const runFile = join(opts.runDir, 'run.json');
@@ -257,6 +288,8 @@ async function main(): Promise<void> {
     maxTokens: opts.maxTokens,
     temperature: opts.temperature ?? null,
     seed: opts.seed ?? null,
+    editPromotion: opts.editPromotion,
+    officialCheck: opts.officialCheck,
     visualReview: opts.visualReview,
     editFallback: opts.editFallback,
     workers: opts.workers,
@@ -276,6 +309,8 @@ async function main(): Promise<void> {
     ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
     ...(opts.scriptsFrom ? { scriptsFrom: opts.scriptsFrom } : {}),
     editFallback: opts.editFallback,
+    editPromotion: opts.editPromotion,
+    ...(opts.officialCheck ? { official: checkOfficial } : {}),
     keepInvalid: opts.keepInvalid,
     ...(opts.prices ? { prices: opts.prices } : {}),
     log,

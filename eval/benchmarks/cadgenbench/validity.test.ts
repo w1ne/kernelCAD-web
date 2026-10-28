@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import * as replicad from 'replicad';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { checkStepValidity, deflectionForDiagonal, meshManifoldErrors } from './validity';
+import { checkStepValidity, deflectionForDiagonal, gateMeshDeflections, meshManifoldErrors } from './validity';
 
 // Closed tetrahedron, outward-consistent winding.
 const TET = {
@@ -37,6 +37,15 @@ describe('deflectionForDiagonal', () => {
     expect(deflectionForDiagonal(100)).toBeCloseTo(0.1);
     expect(deflectionForDiagonal(1)).toBe(0.005);
     expect(deflectionForDiagonal(5000)).toBe(0.5);
+  });
+});
+
+describe('gateMeshDeflections', () => {
+  it('mirrors the grader ladder: requested, /4, /16, /32', () => {
+    expect(gateMeshDeflections(100)).toEqual([0.1, 0.025, 0.00625, 0.003125]);
+    const clamped = gateMeshDeflections(10_000);
+    expect(clamped[0]).toBe(0.5);
+    expect(clamped[3]).toBeCloseTo(0.5 / 32);
   });
 });
 

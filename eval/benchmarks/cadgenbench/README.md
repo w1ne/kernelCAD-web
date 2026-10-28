@@ -40,8 +40,15 @@ the leaderboard is a separate, manual decision.
   `repair_script` iteration runs.
 - The pre-check (`validity.ts`) mirrors the benchmark gate: BRepCheck, closed
   and consistently oriented shells, and a closed, orientation-consistent
-  tessellation at the grader's deflection. Only a candidate that passes goes to
-  `submission/<id>/output.step`. Use `--keep-invalid` to override this.
+  tessellation at the grader's deflection. It tries the grader's deflection
+  ladder (requested, /4, /16, /32) and accepts the first rung that closes.
+  Only a candidate that passes goes to `submission/<id>/output.step`. Use
+  `--keep-invalid` to override this.
+- With `--official-check`, the benchmark's own `analyze_step` is authoritative
+  for acceptance: a candidate it accepts is kept even when the local
+  pre-check's different tessellator rejected it, and one it rejects is not
+  submitted even when the local check accepted it. The local verdict is still
+  recorded in `state.json` for comparison.
 
 ## Setup
 
@@ -93,6 +100,7 @@ npx tsx eval/benchmarks/cadgenbench/run.ts --scripts-from path/to/scripts --task
 |---|---|
 | `--model` | default `$EVAL_MODEL` or the eval default model; it must accept images |
 | `--edit-fallback passthrough` | an editing task without a valid edit submits the unchanged input. The benchmark scores a no-op edit at no more than 0.4. An invalid candidate scores 0. |
+| `--edit-promotion off` | submit the best valid editing candidate even when promotion says the edit is a no-op, wrong direction, wrong size or wrong topology. Default `auto` keeps promotion as a blocker. |
 | `--retry-failed` | also rerun tasks that ended `invalid` or `failed` (by default, resume skips them) |
 | `--visual-review` | opt in to a model review of a valid generation candidate, with browser-free front/right/top/isometric STEP previews; requires a vision-capable LLM. A valid revision is promoted only if a second model comparison explicitly prefers it; the previous valid script and STEP are retained as a checkpoint. This self-comparison is unscored and does not prove improved similarity. |
 | `--revision <sha>` | pin a dataset revision (default `main`, resolved to a sha and recorded in `run.json`) |

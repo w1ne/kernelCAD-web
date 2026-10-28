@@ -44,6 +44,12 @@ describe('parseArgs', () => {
     expect(() => parseArgs(['--seed', '-1'], {})).toThrow(/--seed/);
   });
 
+  it('keeps edit promotion on by default and can turn it off for submission runs', () => {
+    expect(parseArgs([], {}).editPromotion).toBe('auto');
+    expect(parseArgs(['--edit-promotion', 'off'], {}).editPromotion).toBe('off');
+    expect(() => parseArgs(['--edit-promotion', 'nope'], {})).toThrow(/--edit-promotion/);
+  });
+
   it('keeps visual review opt-in', () => {
     expect(parseArgs([], {}).visualReview).toBe(false);
     expect(parseArgs(['--visual-review'], {}).visualReview).toBe(true);

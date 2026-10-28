@@ -109,6 +109,14 @@ export interface PipelineConfig {
   exportStep?: (scriptPath: string, outPath: string) => Promise<EvaluateResult>;
   precheck?: (stepPath: string) => Promise<StepValidity>;
   repair?: (scriptPath: string) => Promise<boolean>;
+  /**
+   * The benchmark's own validity gate (`analyze_step`). When configured it is
+   * authoritative for acceptance: a candidate it accepts is kept even when the
+   * local pre-check rejected it, and one it rejects is not submitted even when
+   * the local pre-check accepted it. The local check remains the fast mirror
+   * and the repair-prompt source.
+   */
+  official?: (stepPath: string) => Promise<OfficialVerdict | undefined>;
   log?: (line: string) => void;
 }
 
@@ -148,9 +156,56 @@ export function verdictFromValidity(v: StepValidity): GateVerdict {
 interface CandidateGate extends GateRunner {
   /** Pre-check verdict of the last STEP exported for a script path. */
   lastValidity(scriptPath: string): StepValidity | undefined;
+  /** Official-gate verdict of the last STEP, when the official gate ran. */
+  lastOfficial(scriptPath: string): OfficialVerdict | undefined;
+  /** Whether the last STEP is accepted (official gate first when configured). */
+  lastAcceptance(scriptPath: string): boolean | undefined;
+  /** Whether a successful export wrote a STEP (even if a later gate rejected it). */
+  lastProduced(scriptPath: string): boolean | undefined;
   /** First failing verdict of the last gate run for a script path. */
   lastFailure(scriptPath: string): GateVerdict | undefined;
   stepPathFor(scriptPath: string): string;
+}
+
+/** Result of the benchmark's own validity gate for one STEP. */
+export interface OfficialVerdict {
+  valid: boolean;
+  /** Human-readable failure detail from `analyze_step`. */
+  detail?: string;
+}
+
+/** Keep the gate report consistent with the authoritative acceptance verdict:
+ *  an official accept hides local failures, an official reject adds one. */
+function reconcileVerdicts(
+  verdicts: GateVerdict[],
+  accepted: boolean,
+  official: OfficialVerdict | undefined,
+): GateVerdict[] {
+  if (official === undefined) return verdicts;
+  const failures = verdicts.filter((v) => !v.ok);
+  if (accepted && failures.length > 0) {
+    return [
+      ...verdicts.filter((v) => v.ok),
+      {
+        gate: 'official',
+        ok: true,
+        message: `official gate accepted the STEP after the local gate rejected it (${failures.map((f) => f.code ?? f.gate).join(', ')})`,
+      },
+    ];
+  }
+  if (!accepted && failures.length === 0) {
+    return [
+      ...verdicts,
+      {
+        gate: 'official',
+        ok: false,
+        code: 'cadgenbench.official.invalid',
+        message: `official gate rejected the STEP: ${official.detail ?? 'invalid'}`,
+        hint: 'The benchmark gate is authoritative; rebuild the feature it names.',
+      },
+    ];
+  }
+  return verdicts;
 }
 
 /**
@@ -163,11 +218,17 @@ export function createCandidateGate(cfg: PipelineConfig): CandidateGate {
   const exporter = cfg.exportStep ?? exportStep;
   const precheck = cfg.precheck ?? checkStepValidity;
   const validity = new Map<string, StepValidity>();
+  const officialVerdicts = new Map<string, OfficialVerdict>();
+  const acceptance = new Map<string, boolean>();
+  const produced = new Map<string, boolean>();
   const failures = new Map<string, GateVerdict>();
   const stepPathFor = (scriptPath: string) => scriptPath.replace(/(\.kcad)?\.ts$/, '.step');
   return {
     stepPathFor,
     lastValidity: (p) => validity.get(p),
+    lastOfficial: (p) => officialVerdicts.get(p),
+    lastAcceptance: (p) => acceptance.get(p),
+    lastProduced: (p) => produced.get(p),
     lastFailure: (p) => failures.get(p),
     async run(scriptPath: string): Promise<GateReport> {
       const report = await runStages(scriptPath);
@@ -180,21 +241,55 @@ export function createCandidateGate(cfg: PipelineConfig): CandidateGate {
 
   async function runStages(scriptPath: string): Promise<GateReport> {
     validity.delete(scriptPath);
+    officialVerdicts.delete(scriptPath);
+    acceptance.delete(scriptPath);
+    produced.delete(scriptPath);
     const report: GateReport = base ? await base.run(scriptPath) : { ok: true, verdicts: [] };
     if (!report.ok) return report;
     const stepPath = stepPathFor(scriptPath);
     if (existsSync(stepPath)) rmSync(stepPath);
     const exported = await exporter(scriptPath, stepPath);
-    if (!exported.ok || !existsSync(stepPath)) {
-      return { ok: false, verdicts: [...report.verdicts, ...verdictsFromExport(exported)] };
+    const stepExists = existsSync(stepPath);
+    produced.set(scriptPath, exported.ok && stepExists);
+    let v: StepValidity | undefined;
+    if (stepExists) {
+      v = await precheck(stepPath);
+      validity.set(scriptPath, v);
     }
-    const v = await precheck(stepPath);
-    validity.set(scriptPath, v);
-    const verdicts = [...report.verdicts, verdictFromValidity(v)];
-    if (v.valid && cfg.generationLedger) {
+    const verdicts = [...report.verdicts];
+    if (!exported.ok) verdicts.push(...verdictsFromExport(exported));
+    else if (v) verdicts.push(verdictFromValidity(v));
+    else {
+      verdicts.push({
+        gate: 'validity',
+        ok: false,
+        code: 'cadgenbench.no-step',
+        message: 'STEP export reported success but wrote no file.',
+      });
+    }
+
+    // The benchmark's own gate is authoritative when available: the local
+    // pre-check is a fast mirror (a different tessellator), so it may reject a
+    // STEP the grader accepts, or accept one it rejects.
+    let accepted = exported.ok && v?.valid === true;
+    let official: OfficialVerdict | undefined;
+    if (cfg.official && stepExists) {
+      try {
+        official = await cfg.official(stepPath);
+      } catch (e) {
+        cfg.log?.(`official gate unavailable for ${scriptPath}: ${e instanceof Error ? e.message : String(e)}`);
+      }
+      if (official) {
+        officialVerdicts.set(scriptPath, official);
+        accepted = official.valid;
+      }
+    }
+    acceptance.set(scriptPath, accepted);
+    const reconciled = reconcileVerdicts(verdicts, accepted, official);
+    if (accepted && v?.valid && cfg.generationLedger) {
       const mismatch = generationLedgerMismatch(readFileSync(scriptPath, 'utf8'), v);
       if (mismatch) {
-        verdicts.push({
+        reconciled.push({
           gate: 'ledger',
           ok: false,
           code: 'cadgenbench.ledger-mismatch',
@@ -203,7 +298,7 @@ export function createCandidateGate(cfg: PipelineConfig): CandidateGate {
         });
       }
     }
-    return { ok: verdicts.every((verdict) => verdict.ok), verdicts };
+    return { ok: reconciled.every((verdict) => verdict.ok), verdicts: reconciled };
   }
 }
 
@@ -269,6 +364,9 @@ function withPromotionGate(base: CandidateGate, cfg: PipelineConfig, task: CadGe
   return {
     stepPathFor: base.stepPathFor,
     lastValidity: (p) => base.lastValidity(p),
+    lastOfficial: (p) => base.lastOfficial(p),
+    lastAcceptance: (p) => base.lastAcceptance(p),
+    lastProduced: (p) => base.lastProduced(p),
     lastFailure: (p) => promotionFailures.get(p) ?? base.lastFailure(p),
     async run(scriptPath: string): Promise<GateReport> {
       const report = await base.run(scriptPath);
@@ -383,13 +481,12 @@ function baseState(task: CadGenBenchTask, cfg: PipelineConfig): TaskState {
 }
 
 /** Copy the gated STEP into the submission layout; returns the final status. */
-function acceptCandidate(cfg: PipelineConfig, task: CadGenBenchTask, stepPath: string, v: StepValidity | undefined): TaskState['status'] {
-  const valid = v?.valid === true;
-  if (existsSync(stepPath) && (valid || cfg.keepInvalid)) {
+function acceptCandidate(cfg: PipelineConfig, task: CadGenBenchTask, stepPath: string, accepted: boolean): TaskState['status'] {
+  if (existsSync(stepPath) && (accepted || cfg.keepInvalid)) {
     mkdirSync(taskSubmissionDir(cfg.runDir, task.id), { recursive: true });
     copyFileSync(stepPath, candidatePath(cfg.runDir, task.id));
   }
-  return valid ? 'valid' : 'invalid';
+  return accepted ? 'valid' : 'invalid';
 }
 
 /** Run one task end to end. Never throws: a crash is recorded as `infra_error`. */
@@ -422,6 +519,8 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
     };
     const v = gate.lastValidity(checkedScript);
     if (v) s.precheck = { valid: v.valid, errors: v.errors, faceCount: v.faceCount, solidCount: v.solidCount };
+    const official = gate.lastOfficial(checkedScript);
+    if (official) s.official = { valid: official.valid, detail: official.valid ? 'pass' : official.detail ?? 'invalid' };
     return s;
   };
 
@@ -527,12 +626,15 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
     //    valid solid, but it is not an answer to the edit and must not be
     //    submitted. Passthrough remains only for a run with no producer at all;
     //    it is never a silent fallback after a real edit failed.
-    const checked = produced ? gate.lastValidity(checkedScript) : undefined;
+    const checked = produced ? gate.lastAcceptance(checkedScript) : undefined;
+    const exportedCandidate = produced ? gate.lastProduced(checkedScript) : undefined;
     const why = gate.lastFailure(checkedScript);
     const promotionFailed = why?.gate === EDIT_PROMOTION_GATE;
     let status: TaskState['status'] | undefined;
-    if (checked !== undefined && !promotionFailed) {
-      status = acceptCandidate(cfg, task, gate.stepPathFor(checkedScript), checked);
+    if (checked === true && !promotionFailed) {
+      status = acceptCandidate(cfg, task, gate.stepPathFor(checkedScript), true);
+    } else if (checked === false && exportedCandidate === true && !promotionFailed) {
+      status = acceptCandidate(cfg, task, gate.stepPathFor(checkedScript), false);
     }
     const fallback =
       task.type === 'editing' &&
@@ -544,8 +646,11 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
       const fallbackPath = join(workDir, 'passthrough.kcad.ts');
       writeFileSync(fallbackPath, passthroughScript());
       await gate.run(fallbackPath);
-      const v = gate.lastValidity(fallbackPath);
-      const fbStatus = v ? acceptCandidate(cfg, task, gate.stepPathFor(fallbackPath), v) : 'failed';
+      const fbAccepted = gate.lastAcceptance(fallbackPath);
+      const fbProduced = gate.lastProduced(fallbackPath) === true;
+      const fbStatus = fbAccepted === true || (fbAccepted === false && fbProduced)
+        ? acceptCandidate(cfg, task, gate.stepPathFor(fallbackPath), fbAccepted === true)
+        : 'failed';
       // Without a producer the passthrough IS the mode; after a failed LLM or
       // scripts-from attempt it is recorded as a fallback of that mode, so a
       // resumed run of the same mode does not pay for the task again.

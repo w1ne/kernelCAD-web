@@ -250,6 +250,36 @@ describe('runTask with an LLM', () => {
     }
   });
 
+  it('keeps a candidate the official gate accepts after the local pre-check rejects it', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return OPEN;')]);
+    const s = await runTask(tasks(root).gen, cfg(runDir, {
+      agent,
+      maxAttempts: 1,
+      official: async () => ({ valid: true, detail: 'pass' }),
+    }));
+    expect(s.status).toBe('valid');
+    expect(s.precheck?.valid).toBe(false);
+    expect(s.official).toMatchObject({ valid: true });
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(true);
+  });
+
+  it('drops a candidate the official gate rejects even when the local pre-check accepts it', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return box(1, 1, 1);')]);
+    const s = await runTask(tasks(root).gen, cfg(runDir, {
+      agent,
+      maxAttempts: 1,
+      official: async () => ({ valid: false, detail: 'mesh not closed: 4 open edges' }),
+    }));
+    expect(s.status).toBe('invalid');
+    expect(s.precheck?.valid).toBe(true);
+    expect(s.official).toMatchObject({ valid: false, detail: 'mesh not closed: 4 open edges' });
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(false);
+  });
+
   it('runs one deterministic repair when the script does not evaluate, then reports the diagnostic', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
     const counter = { exports: 0, repairs: 0 };
