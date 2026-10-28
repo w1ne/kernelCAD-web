@@ -707,7 +707,18 @@ export function finishMeshFeatures(
 ): MeshFeaturesResult {
   const bounds = buildMeshBounds(features, meshBounds);
   const consumed = new Set(features.flatMap((feature) => feature.predecessors));
-  const terminalFeatures = features.filter((feature) => !consumed.has(feature.featureId));
+  // Scene fan-out meshes use composite ids (`sceneId__partName`) while
+  // assemblyExport consumes the Scene feature id. When an export exists,
+  // its root mesh already represents those parts; don't count both forms.
+  const exportedScenes = new Set(
+    features
+      .filter((feature) => feature.featureKind === 'assemblyExport')
+      .flatMap((feature) => feature.predecessors),
+  );
+  const terminalFeatures = features.filter((feature) =>
+    !consumed.has(feature.featureId)
+    && !(feature.assemblyFeatureId !== undefined && exportedScenes.has(feature.assemblyFeatureId)),
+  );
   const solidCount = terminalFeatures.every((feature) => feature.solidCount !== undefined)
     ? terminalFeatures.reduce((count, feature) => count + (feature.solidCount ?? 0), 0)
     : undefined;
