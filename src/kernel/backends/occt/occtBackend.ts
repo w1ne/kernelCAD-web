@@ -22,10 +22,11 @@ import { locateShape } from './occtPlacement';
 import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
-import { sceneToWorldFrameParts } from './sceneToWorldFrame';
+import { releaseWorldFrameParts, sceneToWorldFrameParts } from './sceneToWorldFrame';
 import { writeStepAssembly } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
-import { forgetAnalysis, memoBox, memoMass, memoVolume } from './analysisMemo';
+import { memoBox, memoMass, memoVolume } from './analysisMemo';
+import { disposeOcctHandles } from './occtDispose';
 import { KernelError } from '../../../shared/intent/kernelError';
 import {
   resolveExtrudeTwistAngle,
@@ -69,6 +70,8 @@ export class OcctBackend implements ShapeBackend {
   /** v0.2: per-shape face/edge identity tracking. Undefined for shapes that don't
    *  participate in history walks (legacy paths that don't construct lineage). */
   readonly historyMap?: import('../../naming/evolutionRecord').HistoryMap;
+  /** Edge ancestry. Populated for primitives and for operations that record it. */
+  edgeHistoryMap?: import('../../naming/evolutionRecord').EdgeHistoryMap;
   private _drawing: replicad.Drawing | null = null;
   private _commands: SketchCommand[] | null = null;
   // When `_commands` contains at least one Slice D NURBS segment (`spline`,
@@ -121,6 +124,7 @@ export class OcctBackend implements ShapeBackend {
 
   clone(): OcctBackend {
     const out = new OcctBackend(this.shape.clone() as ReplicadShape3D, this.kind, this.historyMap);
+    if (this.edgeHistoryMap) out.edgeHistoryMap = this.edgeHistoryMap;
     if (this.analysisBody !== undefined) out.analysisBody = this.analysisBody.clone();
     return out;
   }
@@ -1434,16 +1438,7 @@ export class OcctBackend implements ShapeBackend {
   }
 
   dispose(): void {
-    forgetAnalysis(this);
-    const envelope = this.analysisBody;
-    this.analysisBody = undefined;
-    if (envelope && envelope !== this) {
-      try { envelope.dispose(); } catch { /* envelope may already be freed */ }
-    }
-    const maybeDelete = (this.shape as { delete?: () => void }).delete;
-    if (typeof maybeDelete === 'function') {
-      maybeDelete.call(this.shape);
-    }
+    disposeOcctHandles(this, this.shape);
   }
 }
 
@@ -1474,13 +1469,17 @@ export async function exportSceneToSTEPAsync(
   // `sceneToWorldFrameParts` enforces the non-empty-scene invariant and
   // owns the clone-before-transform contract for every multi-body exporter.
   const worldParts = sceneToWorldFrameParts(sceneBackend);
-  return writeStepAssembly(
-    worldParts.map((p) => ({
-      shape: p.shape.getReplicadShape().wrapped,
-      name: p.name,
-      color: resolveColor(p.color),
-    })),
-  );
+  try {
+    return await writeStepAssembly(
+      worldParts.map((p) => ({
+        shape: p.shape.getReplicadShape().wrapped,
+        name: p.name,
+        color: resolveColor(p.color),
+      })),
+    );
+  } finally {
+    releaseWorldFrameParts(worldParts);
+  }
 }
 
 /**

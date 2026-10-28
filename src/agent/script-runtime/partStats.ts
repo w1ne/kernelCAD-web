@@ -9,6 +9,7 @@
 // exactly.
 
 import { meshShapeForExport } from '../../kernel/backends/occt/occtBackend';
+import { releaseWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { resolveWorldFrameScene } from './export';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 
@@ -44,19 +45,23 @@ export async function listPartStats(input: ListPartStatsInput): Promise<ListPart
   if (!resolved.parts) {
     return { parts: [], featureCount: resolved.featureCount, diagnostics: resolved.diagnostics };
   }
-  const parts: PartStats[] = resolved.parts.map((p) => {
-    const mesh = meshShapeForExport(p.shape.getReplicadShape());
-    const bb = p.shape.boundingBox({ exact: true });
-    return {
-      name: p.name,
-      bbox: {
-        min: [bb.min[0], bb.min[1], bb.min[2]],
-        max: [bb.max[0], bb.max[1], bb.max[2]],
-      },
-      volumeMm3: p.shape.volume(),
-      surfaceAreaMm2: p.shape.surfaceArea(),
-      triangleCount: mesh.triangles.length / 3,
-    };
-  });
-  return { parts, featureCount: resolved.featureCount, diagnostics: resolved.diagnostics };
+  try {
+    const parts: PartStats[] = resolved.parts.map((p) => {
+      const mesh = meshShapeForExport(p.shape.getReplicadShape());
+      const bb = p.shape.boundingBox({ exact: true });
+      return {
+        name: p.name,
+        bbox: {
+          min: [bb.min[0], bb.min[1], bb.min[2]],
+          max: [bb.max[0], bb.max[1], bb.max[2]],
+        },
+        volumeMm3: p.shape.volume(),
+        surfaceAreaMm2: p.shape.surfaceArea(),
+        triangleCount: mesh.triangles.length / 3,
+      };
+    });
+    return { parts, featureCount: resolved.featureCount, diagnostics: resolved.diagnostics };
+  } finally {
+    releaseWorldFrameParts(resolved.parts);
+  }
 }

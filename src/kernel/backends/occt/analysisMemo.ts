@@ -115,13 +115,6 @@ export function stampFingerprint(shape: ShapeBackend, fp: string): void {
   if (known.mass) masses.set(shape, new Map(known.mass));
 }
 
-function shiftBox(box: Box, motion: Motion): Box {
-  return {
-    min: [box.min[0] + motion.x, box.min[1] + motion.y, box.min[2] + motion.z],
-    max: [box.max[0] + motion.x, box.max[1] + motion.y, box.max[2] + motion.z],
-  };
-}
-
 /** Drop memoised volume, box, and mass for a disposed wrapper. */
 export function forgetAnalysis(shape: ShapeBackend): void {
   volumes.delete(shape);
@@ -129,6 +122,13 @@ export function forgetAnalysis(shape: ShapeBackend): void {
   exactBoxes.delete(shape);
   masses.delete(shape);
   fingerprints.delete(shape);
+}
+
+function shiftBox(box: Box, motion: Motion): Box {
+  return {
+    min: [box.min[0] + motion.x, box.min[1] + motion.y, box.min[2] + motion.z],
+    max: [box.max[0] + motion.x, box.max[1] + motion.y, box.max[2] + motion.z],
+  };
 }
 
 /** Volume is placement-invariant. A box moves with `motion`. */

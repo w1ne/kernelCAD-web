@@ -386,6 +386,8 @@ filter      ::= entityKind '(' filterList? ')'
 entityKind  ::= 'face' | 'edge' | 'vertex' | 'connector' | 'part' | 'solid'
 filterList  ::= filterExpr (',' filterExpr)*
 filterExpr  ::= 'createdBy(' string (',' entityKind)? ')'
+              | 'newSince(' string (',' entityKind)? ')'
+              | 'derivedFrom(' string (',' entityKind)? ')'
               | 'ownedByPart(' expr ')'
               | 'ownerPart(' expr ')'
               | 'containsPoint([' x ',' y ',' z '])'
@@ -401,6 +403,8 @@ filterExpr  ::= 'createdBy(' string (',' entityKind)? ')'
 
 ```
 @kcq[face(createdBy("arm"))]                           # equivalent to kc.q.face(kc.q.createdBy('arm'))
+@kcq[face(newSince("box_1"))]                          # faces that do not descend from box_1
+@kcq[edge(derivedFrom("fillet_1"))]                    # edges that descend from fillet_1's output
 @kcq[face(createdBy("arm"), closestTo([0,0,10]))]      # narrowed face
 @kcq[union(face(createdBy("a")), face(createdBy("b")))]
 @kcq[subtraction(face(createdBy("a")), face(withLabel("lid")))]

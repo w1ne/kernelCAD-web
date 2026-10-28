@@ -9,7 +9,7 @@ import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occ
 import { exportMeshObj, exportMeshUsd, type NamedMesh } from '../../kernel/export/meshFormats';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
-import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
+import { releaseWorldFrameParts, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPatternWithHoles } from '../../modeling/sheetMetalFlatPattern';
 import { findRootSheetMetalRecord } from '../../modeling/sheetMetal';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
@@ -401,8 +401,13 @@ export async function exportSceneBackend(
     // defect at export time — the file is still written for inspection.
     const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
     if (verify) {
-      const failure = firstStepVerifyFailure(sceneToWorldFrameParts(scene), targetId);
-      if (failure) result.diagnostics.push(failure);
+      const parts = sceneToWorldFrameParts(scene);
+      try {
+        const failure = firstStepVerifyFailure(parts, targetId);
+        if (failure) result.diagnostics.push(failure);
+      } finally {
+        releaseWorldFrameParts(parts);
+      }
     }
     return result;
   }
@@ -416,11 +421,16 @@ export async function exportSceneBackend(
     return exportSceneGlb(input, scene, targetId, diagnostics, featureCount);
   }
   if (format === 'obj' || format === 'usd') {
-    const parts = sceneToWorldFrameParts(scene).map(part => ({
-      name: part.name,
-      mesh: meshShapeForExport(part.shape.getReplicadShape()),
-    }));
-    return { bytes: format === 'obj' ? exportMeshObj(parts) : exportMeshUsd(parts), featureCount, diagnostics };
+    const worldParts = sceneToWorldFrameParts(scene);
+    try {
+      const parts = worldParts.map(part => ({
+        name: part.name,
+        mesh: meshShapeForExport(part.shape.getReplicadShape()),
+      }));
+      return { bytes: format === 'obj' ? exportMeshObj(parts) : exportMeshUsd(parts), featureCount, diagnostics };
+    } finally {
+      releaseWorldFrameParts(worldParts);
+    }
   }
   if (format === 'stl' || format === 'gcode') {
     return exportSceneFusedMesh(input, format, scene, targetId, run, diagnostics, featureCount);
@@ -466,10 +476,14 @@ export async function exportScene3mf(
   const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
   try {
     const worldParts = sceneToWorldFrameParts(scene);
-    const { bytes, bedWarnings, meshWarnings } = await export3mfWithReportAsync(
-      worldParts, { assemblyName: scene.assemblyName, ...opts3mf },
-    );
-    return { bytes, featureCount, diagnostics: [...diagnostics, ...threeMfMeshDiagnostics(meshWarnings, targetId), ...threeMfBedDiagnostics(bedWarnings, targetId)] };
+    try {
+      const { bytes, bedWarnings, meshWarnings } = await export3mfWithReportAsync(
+        worldParts, { assemblyName: scene.assemblyName, ...opts3mf },
+      );
+      return { bytes, featureCount, diagnostics: [...diagnostics, ...threeMfMeshDiagnostics(meshWarnings, targetId), ...threeMfBedDiagnostics(bedWarnings, targetId)] };
+    } finally {
+      releaseWorldFrameParts(worldParts);
+    }
   } catch (e) {
     const notWatertight = notWatertightDiagnostic(e, diagnostics, featureCount, targetId);
     if (notWatertight) return notWatertight;
@@ -490,8 +504,12 @@ export async function exportSceneGlb(
   const optsGlb: ExportGlbOptions = { ...((input.options as ExportGlbOptions | undefined) ?? { format: 'glb' }), scriptDir: (input.options as ExportGlbOptions | undefined)?.scriptDir ?? input.scriptDir };
   try {
     const worldParts = sceneToWorldFrameParts(scene);
-    const bytes = await exportGlbAsync(worldParts, optsGlb);
-    return { bytes, featureCount, diagnostics };
+    try {
+      const bytes = await exportGlbAsync(worldParts, optsGlb);
+      return { bytes, featureCount, diagnostics };
+    } finally {
+      releaseWorldFrameParts(worldParts);
+    }
   } catch (e) {
     const dracoDiag = dracoConflictDiagnostic(e, diagnostics, featureCount, targetId);
     if (dracoDiag) return dracoDiag;
@@ -513,27 +531,38 @@ export async function exportSceneFusedMesh(
   featureCount: number,
 ): Promise<ExportResult> {
   const worldParts = sceneToWorldFrameParts(scene);
-  const fuseOverBudget = format === 'stl' ? freeformFuseOverBudget(worldParts) : undefined;
-  if (fuseOverBudget !== undefined) {
-    const verifyShells = (input.options as { verify?: boolean } | undefined)?.verify !== false;
-    return exportSceneStlAsShells(worldParts, fuseOverBudget, targetId, diagnostics, featureCount, verifyShells);
+  const temps: OcctBackend[] = [];
+  try {
+    const fuseOverBudget = format === 'stl' ? freeformFuseOverBudget(worldParts) : undefined;
+    if (fuseOverBudget !== undefined) {
+      const verifyShells = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+      return exportSceneStlAsShells(worldParts, fuseOverBudget, targetId, diagnostics, featureCount, verifyShells);
+    }
+    let fused: OcctBackend = worldParts[0]!.shape;
+    for (let i = 1; i < worldParts.length; i++) {
+      const next = fused.union(worldParts[i]!.shape);
+      if (fused !== worldParts[0]!.shape) temps.push(fused);
+      fused = next;
+    }
+    if (fused !== worldParts[0]!.shape) temps.push(fused);
+    if (format === 'gcode') {
+      return await sliceShapeToGcode(
+        fused, input.options as GcodeOptions | undefined, diagnostics, featureCount, targetId,
+        findDfmSpec(run.records)?.fdm?.buildDirection,
+      );
+    }
+    const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+    const { bytes, report } = await fused.exportSTLWithReportAsync();
+    if (verify && !report.ok) {
+      return fusedSeamFallback(worldParts, bytes, report, targetId, diagnostics, featureCount);
+    }
+    return { bytes, featureCount, diagnostics };
+  } finally {
+    for (const temp of temps) {
+      try { temp.dispose(); } catch { /* intermediate already freed */ }
+    }
+    releaseWorldFrameParts(worldParts);
   }
-  let fused: OcctBackend = worldParts[0]!.shape;
-  for (let i = 1; i < worldParts.length; i++) {
-    fused = fused.union(worldParts[i]!.shape);
-  }
-  if (format === 'gcode') {
-    return sliceShapeToGcode(
-      fused, input.options as GcodeOptions | undefined, diagnostics, featureCount, targetId,
-      findDfmSpec(run.records)?.fdm?.buildDirection,
-    );
-  }
-  const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
-  const { bytes, report } = await fused.exportSTLWithReportAsync();
-  if (verify && !report.ok) {
-    return fusedSeamFallback(worldParts, bytes, report, targetId, diagnostics, featureCount);
-  }
-  return { bytes, featureCount, diagnostics };
 }
 
 /**

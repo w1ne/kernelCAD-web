@@ -3,7 +3,7 @@
 import type { LowerResult, ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { MeshBackend } from '../../../../kernel/backends/meshBackend';
-import { propagateTransformHistory } from '../../../../kernel/naming/evolutionRecord';
+import { propagateEdgeTransformHistory, propagateTransformHistory } from '../../../../kernel/naming/evolutionRecord';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { isValidPlaneSpec } from '../../../../shared/intent/types';
 import type { Vec3 } from '../../../../shared/intent/types';
@@ -41,6 +41,8 @@ export function applyTransforms(
     const inputBackend = shape as OcctBackend;
     const inputHashes = inputBackend.faceHashes();
     const inputMap = inputBackend.historyMap;
+    const inputEdgeHashes = inputBackend.edgeHashes();
+    const inputEdgeMap = inputBackend.edgeHistoryMap;
     switch (t.op) {
       case 'translate':
         shape = shape.translate(t.vec.x.evaluated, t.vec.y.evaluated, t.vec.z.evaluated);
@@ -82,6 +84,10 @@ export function applyTransforms(
         const wrapped = (outputBackend.getReplicadShape() as any);
         const carried = new OcctBackend(wrapped, undefined, newMap);
         if (outputBackend.analysisBody !== undefined) carried.analysisBody = outputBackend.analysisBody;
+        const outputEdgeHashes = carried.edgeHashes();
+        if (inputEdgeMap && outputEdgeHashes.length === inputEdgeHashes.length) {
+          carried.edgeHistoryMap = propagateEdgeTransformHistory(inputEdgeMap, inputEdgeHashes, outputEdgeHashes);
+        }
         shape = carried;
       }
       // else: defensive path — face count mismatch (unexpected for these ops).
@@ -89,6 +95,32 @@ export function applyTransforms(
     }
   }
   return shape;
+}
+
+/**
+ * Part `at` is not a feature transform, but `OcctBackend.translate` drops
+ * `historyMap`. Remap face hashes the same way {@link applyTransforms} does
+ * so a later canonical pick still names the authored face. A face-count
+ * mismatch leaves the solid without lineage; callers must fail that pick
+ * instead of accepting the world-bbox plane.
+ */
+export function translatePreservingLineage(
+  shape: ShapeBackend,
+  tx: number,
+  ty: number,
+  tz: number,
+): ShapeBackend {
+  if (!(shape instanceof OcctBackend) || shape.historyMap === undefined) {
+    return shape.translate(tx, ty, tz);
+  }
+  const inputHashes = shape.faceHashes();
+  const moved = shape.translate(tx, ty, tz);
+  const outputHashes = moved.faceHashes();
+  if (outputHashes.length !== inputHashes.length) return moved;
+  const lineage = propagateTransformHistory(shape.historyMap, inputHashes, outputHashes);
+  const carried = new OcctBackend(moved.getReplicadShape(), undefined, lineage);
+  if (moved.analysisBody !== undefined) carried.analysisBody = moved.analysisBody;
+  return carried;
 }
 
 /**

@@ -36,7 +36,7 @@ import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { Transform, type Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import {
-  resolveConnectorOrigin,
+  resolveConnectorFrame,
   type Connector,
   type ConnectorOrigin,
 } from './connector';
@@ -272,7 +272,11 @@ async function resolvedConnectorLookup(
       const side = parseConnectorRef(ref);
       const part = partByName.get(side.partName)!;
       const c = findConnector(part, side.connectorName);
-      table.set(ref, { origin: await originVec3(part, c.origin), axis: connectorAxis(c) });
+      const frame = await resolveConnectorFrame(part.originalShape, c.origin);
+      table.set(ref, {
+        origin: frame.origin as Se3Vec3,
+        axis: (frame.axis ?? c.axis ?? [0, 0, 1]) as Se3Vec3,
+      });
     }
   }
   return (partName, connectorName) => table.get(`${partName}.${connectorName}`)!;
@@ -805,8 +809,10 @@ async function composeChildTransform(
   const parentConnector = findConnector(parentPart, parentSide.connectorName);
   const childConnector = findConnector(childPart, childSide.connectorName);
 
-  const parentOrigin = await originVec3(parentPart, parentConnector.origin);
-  const childOrigin = await originVec3(childPart, childConnector.origin);
+  const parentFrame = await resolveConnectorFrame(parentPart.originalShape, parentConnector.origin);
+  const childFrame = await resolveConnectorFrame(childPart.originalShape, childConnector.origin);
+  const parentOrigin = parentFrame.origin as Se3Vec3;
+  const childOrigin = childFrame.origin as Se3Vec3;
 
   // Build SE(3): parentWorldT
   //   ∘ T(parentOrigin)
@@ -818,7 +824,9 @@ async function composeChildTransform(
   const parentToConnector = Transform.translation(parentOrigin[0], parentOrigin[1], parentOrigin[2]);
   const childInverse = Transform.translation(-childOrigin[0], -childOrigin[1], -childOrigin[2]);
   const pose = resolveMatePose(edge.mate, arm, poses);
-  const jointLocalT = jointTransformForMate(edge.mate.type, pose, parentConnector);
+  const jointLocalT = jointTransformForMate(
+    edge.mate.type, pose, parentConnector, parentFrame.axis as Se3Vec3 | undefined,
+  );
   return parentT.compose(parentToConnector).compose(jointLocalT).compose(childInverse);
 }
 
@@ -838,8 +846,8 @@ function findConnector(part: AssemblyPartStored, connectorName: string): Connect
 /** Resolve a connector's origin to a numeric Vec3. For vec3 origins this is
  *  a no-op; for topology origins it lowers the part shape. */
 async function originVec3(part: AssemblyPartStored, origin: ConnectorOrigin): Promise<Se3Vec3> {
-  const resolved = await resolveConnectorOrigin(part.originalShape, origin);
-  return resolved.value as Se3Vec3;
+  const frame = await resolveConnectorFrame(part.originalShape, origin);
+  return frame.origin as Se3Vec3;
 }
 
 /** Per-mate-type local SE(3) contribution at the connector frame, honoring
@@ -862,6 +870,7 @@ function jointTransformForMate(
   type: MateType,
   pose: number | [number, number, number] | undefined,
   parentConnector: Connector,
+  resolvedAxis?: Se3Vec3,
 ): Transform {
   switch (type) {
     case 'fastened':
@@ -869,12 +878,12 @@ function jointTransformForMate(
       return Transform.identity();
     case 'revolute': {
       const deg = (pose as number | undefined) ?? 0;
-      const ax = connectorAxis(parentConnector);
+      const ax = connectorAxis(parentConnector, resolvedAxis);
       return Transform.rotationAxisAngleDeg(ax, deg);
     }
     case 'prismatic': {
       const stroke = (pose as number | undefined) ?? 0;
-      const ax = connectorAxis(parentConnector);
+      const ax = connectorAxis(parentConnector, resolvedAxis);
       const len = Math.hypot(ax[0], ax[1], ax[2]) || 1;
       const dx = (ax[0] / len) * stroke;
       const dy = (ax[1] / len) * stroke;
@@ -889,7 +898,7 @@ function jointTransformForMate(
       // for pin_slot) defaults to 0. A multi-DOF pose surface lands when
       // Pattern A grows beyond scalar/triple inputs.
       const deg = (pose as number | undefined) ?? 0;
-      const ax = connectorAxis(parentConnector);
+      const ax = connectorAxis(parentConnector, resolvedAxis);
       return Transform.rotationAxisAngleDeg(ax, deg);
     }
     case 'ball': {
@@ -911,6 +920,6 @@ function jointTransformForMate(
 
 /** The parent connector's rotation / translation axis with the documented
  *  `+Z` default when the connector omits one. */
-function connectorAxis(parentConnector: Connector): Se3Vec3 {
-  return (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
+function connectorAxis(parentConnector: Connector, resolvedAxis?: Se3Vec3): Se3Vec3 {
+  return (resolvedAxis ?? parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
 }

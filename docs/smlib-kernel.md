@@ -5,6 +5,8 @@ OCCT remains the default. Select `kernel: 'smlib'` in `buildModel` /
 `--kernel smlib` where the kernel option is advertised. `HeadlessKernel` runs
 raw replicad scripts and remains OCCT-only. No Studio layout changes are required.
 The pinned SMLib package requires Node 22.18 or newer for Node execution.
+0.6.2 keeps that engine range (`>=22.18`). kernelCAD itself stays on
+`>=22.12`; selecting `kernel: 'smlib'` still needs 22.18.
 
 ```ts
 await buildModel({
@@ -14,10 +16,15 @@ await buildModel({
 });
 ```
 
-The registry loads `@classcad/smlibwasm@0.3.1` only during an eligible opt-in
+The registry loads `@classcad/smlibwasm@0.6.2` only during an eligible opt-in
 feature build. Factory creation and capability inspection do not load WASM.
 Native candidates cover boxes, cylinders, spheres, straight primitive/profile
-extrusions, Booleans, constant G1 fillets and single-solid STEP imports. Supported
+extrusions, Booleans, constant G1 fillets, `moveFaces`, `offsetFaces` and
+single-solid STEP imports. `moveFaces` / `offsetFaces` are accepted only when
+the OCCT reference succeeds and volume and area agree; an OCCT
+`feature.face-edit.rejected` result is returned with `OCCT_REFERENCE_FAILED`.
+Fillets pass `propagate: false` so 0.6's tangent-run default does not round
+edges the record did not select. Supported
 sketch commands are move/line, three-point arc, unconstrained spline and close.
 The capability manifest includes the OCCT fallback feature set; it is not a
 claim that every advertised feature has a native SMLib implementation.
@@ -32,7 +39,7 @@ exceptions also emit named fallback diagnostics. OCCT errors remain errors.
 | --- | --- |
 | Profile crossings | AABB broad phase followed by segment crossing/touch predicates, with 1e-9 tolerance. Polygon lines are tested directly. Curves are sampled at 32 points per supported segment: screening only, not certified curve intersection. |
 | OCCT reference | Native volume **and area**, and the final interchange result, must agree within 0.1% relative / 1e-5 absolute. Nonfinite/nonpositive measures reject. |
-| STEP import invariant | Compare normalized OCCT producer volume/area to SMLib post-import measures at 1e-5 relative / 1e-5 absolute. This remains useful because a minimal torus-face seam repair still collapses its area in 0.3.1. |
+| STEP import invariant | Compare normalized OCCT producer volume/area to SMLib post-import measures at 1e-5 relative / 1e-5 absolute. Kept on 0.6.0. GT2 direct import now preserves its volume; an smlib torus face round-trips. The old OCCT single-face collapse is not shown gone, so the check stays. |
 | Cut no-op | Independently computed OCCT material-intersection volume certifies positive overlap; an unchanged SMLib cut then rejects. AABB overlap never certifies this guard. |
 | STEP normalization | Every SMLib STEP input is first exported by OCCT, including original imported files. Raw producer bytes never reach the guarded reader. |
 
@@ -62,14 +69,30 @@ validation does not establish deployed behavior or hardware acceptance.
 Dependency notices and license texts are retained in [ATTRIBUTION.md](../ATTRIBUTION.md),
 [NOTICE](../NOTICE) and [licenses/smlibwasm](../licenses/smlibwasm/).
 
-## ClassCAD 0.3.1 validation
+## ClassCAD validation
 
-Direct Node `fromStep` on the full GT2 STEP repro returns 1613.939256648 mm³
-with 49 faces on Node 22.23.2. The isolated torus-face STEP still collapses
-from 23.777406229 mm² to 6.57e-11 mm² during seam repair. Bow-tie and
-1200-point self-intersecting profile cuts still return unchanged, valid target
-solids; the profile and certified no-op guards remain enabled. These are local
-Node repro results, not deployed or hardware acceptance. See the
+On 0.3.1, direct Node `fromStep` of the full GT2 STEP repro returned
+1613.939256648 mm³ with 49 faces on Node 22.23.2. The isolated torus-face STEP
+collapsed from 23.777406229 mm² to 6.57e-11 mm² during seam repair. Bow-tie and
+1200-point self-intersecting profile cuts returned unchanged, valid target
+solids.
+
+Re-checked on 0.6.0, Node 22.23.2, this machine:
+
+- GT2 `fromStep` of `tests/fixtures/smlib/gt2-raw.step` returns
+  1613.939256648 mm³ and 49 faces. The 0.3.1 volume is preserved. The import
+  invariant stays, as a check against drift, not because this file still loses volume.
+- The bow-tie cut no longer returns the uncut solid. 0.6 throws
+  `ModelingError` ("the kernel returned a result that is the part given back
+  uncut"). The profile self-intersection guard and `cutNoOp` stay, for a
+  candidate that still comes back unchanged.
+- An smlib torus face written with `toStep` and read with `fromStep` keeps its
+  area (631.654681670 mm² both ways). The 0.3.1 OCCT-exported single-face
+  collapse (23.777 mm² to ~0) was not reproduced here; the import invariant
+  stays until that file is shown to survive seam repair.
+
+The profile guard and the certified cut no-op stay enabled.
+These are local Node repro results, not deployed or hardware acceptance. See the
 [capture notes and sources](demos/smlib-guarded/README.md); bulky visual and
 machine-readable evidence is kept out of the repo at
 `/Volumes/LabWired/gb/smlib-evidence/docs/demos/smlib-guarded/`.

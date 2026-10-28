@@ -409,6 +409,14 @@ Check world-frame spacing after reuse changes. The authoring `Shape` API has no
 
 // Face features:
 .shell(thickness: number, { face: FaceSelector }): Shape  // face REQUIRED
+// Direct face edit. Positive distance / an outward vector grows the solid.
+// OCCT only slides a planar face along its normal and rejects anything else
+// by name (`feature.face-edit.rejected`). `kernel: 'smlib'` uses the guarded
+// native Part.offsetFaces / Part.moveFaces.
+.offsetFaces(faces: FaceSelector | string | Array<FaceSelector | string>, distance: Editable<number>): Shape
+.moveFaces(faces: FaceSelector | string | Array<FaceSelector | string>, by: [Editable<number>, Editable<number>, Editable<number>]): Shape
+//   box(40, 30, 10).offsetFaces('top', 2)
+//   box(40, 30, 10).moveFaces(kc.q.face(kc.q.createdBy(plateId)), [0, 0, -1])
 // Draft — taper faces for mold release (Slice E). angleDeg: 0–90.
 // neutralPlane defaults to the selected face; pullDir defaults to face normal.
 .draft(angleDeg: Editable<number>, opts: { face: FaceSelector | string; neutralPlane?: string; pullDir?: [number, number, number] }): Shape

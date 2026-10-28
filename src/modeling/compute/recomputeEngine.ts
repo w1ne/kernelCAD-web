@@ -599,6 +599,8 @@ export class RecomputeEngine {
   }
 
   private async runPass(records: readonly FeatureRecord[], opts?: RecomputeOptions): Promise<RecomputeResult> {
+    // A parked surface from the previous parameter value must not be reused,
+    // and it must not stay pinned for the life of the session.
     const surfaceCache = (this.lowerer as { surfaceCache?: { clear(): void } }).surfaceCache;
     surfaceCache?.clear();
     const shapes = opts?.seedShapes ? new Map(opts.seedShapes) : new Map<FeatureId, ShapeBackend>();

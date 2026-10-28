@@ -114,7 +114,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Finish edges',
     blurb: 'Break edges, add draft, hollow out a wall, fold sheet metal.',
-    names: ['fillet', 'filletIntersection', 'chamfer', 'draft', 'shell', 'bend', 'flattenPattern'],
+    names: ['fillet', 'filletIntersection', 'chamfer', 'draft', 'shell', 'offsetFaces', 'moveFaces', 'bend', 'flattenPattern'],
   },
   {
     task: 'Select geometry',
@@ -139,7 +139,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Assemble',
     blurb: 'Build a mechanism from parts: connectors, mates, joints, posed Scenes.',
-    names: ['assembly', 'joint', 'part', 'parts', 'assemblyName'],
+    names: ['assembly', 'joint', 'part', 'parts', 'assemblyName', 'resolutionInputs'],
   },
   {
     task: 'Curves & surfaces',

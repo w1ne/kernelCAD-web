@@ -293,6 +293,22 @@ export function buildBendFeatureSpec(
   };
 }
 
+export function buildFaceEditFeatureSpec(
+  kind: 'moveFaces' | 'offsetFaces',
+  baseId: FeatureId,
+  faces: readonly (ShapeOperationFaceSelector | string)[],
+  params: Record<string, Param>,
+): ShapeOperationFeatureSpec {
+  const inputs: Record<string, FeatureRef> = {
+    base: { kind: 'feature', id: baseId },
+  };
+  faces.forEach((face, index) => {
+    const key = index === 0 ? 'face' : `face_${index + 1}`;
+    inputs[key] = buildFaceInputRef(baseId, face as ShapeOperationFaceSelector);
+  });
+  return { kind, params, inputs };
+}
+
 export function buildDraftFeatureSpec(
   baseId: FeatureId,
   angleDeg: Editable<number>,

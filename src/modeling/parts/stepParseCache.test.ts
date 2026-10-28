@@ -14,6 +14,7 @@ import {
   StepParseError,
   __stepParseCacheStats,
   __resetStepParseCache,
+  __setStepParseCacheLimitsForTests,
 } from './stepParseCache';
 
 let boxBytes: Buffer;
@@ -59,6 +60,16 @@ describe('importStepCached', () => {
     const stats = __stepParseCacheStats();
     expect(stats.misses).toBe(2);
     expect(stats.size).toBe(2);
+  });
+
+  it('does not pin a master that is over the byte budget', async () => {
+    __setStepParseCacheLimitsForTests({ maxBytes: 1 });
+    const first = await importStepCached(boxBytes);
+    expect(__stepParseCacheStats().size).toBe(0);
+    const second = await importStepCached(boxBytes);
+    expect(__stepParseCacheStats().misses).toBe(2);
+    first.dispose();
+    second.dispose();
   });
 
   it('throws StepParseError(parse) on bytes that are not STEP', async () => {
