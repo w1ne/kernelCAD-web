@@ -64,6 +64,12 @@ benchmark package installed from its repository, exported as
 OCCT Python bindings resolved to major version 8. Pin them (and the package
 that requires them) to the previous major version.
 
+For OpenCode Go, use `https://opencode.ai/inference/go/openai/v1`. A Console
+OAuth token reachable from more than one workspace also needs the active
+workspace id: export `OPENCODE_ORG_ID` (the handoff loader does this) and the
+client sends it as `x-opencode-org-id`. A personal `oc_sk_...` API key is bound
+to one workspace and does not need it.
+
 ```bash
 uv venv -p 3.12 ~/.venvs/cadgenbench
 VIRTUAL_ENV=~/.venvs/cadgenbench uv pip install "git+https://github.com/huggingface/cadgenbench"

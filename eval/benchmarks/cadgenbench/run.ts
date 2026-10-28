@@ -163,6 +163,9 @@ function makeAgent(opts: CliOptions, env: NodeJS.ProcessEnv): AgentClient | null
         ...(opts.seed !== undefined ? { seed: opts.seed } : {}),
         ...(env.CADGENBENCH_SESSION_ID ? { sessionId: env.CADGENBENCH_SESSION_ID } : {}),
         ...(env.CADGENBENCH_USER_AGENT ? { userAgent: env.CADGENBENCH_USER_AGENT } : {}),
+        ...(env.OPENCODE_ORG_ID ?? env.CADGENBENCH_ORG_ID
+          ? { orgId: (env.OPENCODE_ORG_ID ?? env.CADGENBENCH_ORG_ID)! }
+          : {}),
       })
     : new AnthropicAgentClient(key);
 }

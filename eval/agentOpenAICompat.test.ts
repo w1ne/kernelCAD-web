@@ -50,6 +50,7 @@ describe('OpenAICompatAgentClient', () => {
       apiKey: 'k',
       sessionId: 'cadgenbench-session-1',
       userAgent: 'kernelcad-cadgenbench/1.0',
+      orgId: 'wrk_test',
       seed: 42,
       fetchImpl: fetchImpl as unknown as typeof fetch,
     });
@@ -59,6 +60,7 @@ describe('OpenAICompatAgentClient', () => {
     expect(init.headers).toMatchObject({
       'User-Agent': 'kernelcad-cadgenbench/1.0',
       'x-opencode-session': 'cadgenbench-session-1',
+      'x-opencode-org-id': 'wrk_test',
     });
     expect(JSON.parse(init.body as string).seed).toBe(42);
   });

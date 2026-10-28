@@ -25,6 +25,12 @@ export interface OpenAICompatOptions {
   /** Sampling seed forwarded verbatim; the endpoint may ignore it. */
   seed?: number;
   /**
+   * Console workspace/org selector sent as `x-opencode-org-id`. An OAuth
+   * token reachable from more than one workspace is rejected with 403
+   * "Workspace selection is required" until this is sent.
+   */
+  orgId?: string;
+  /**
    * Ceiling for automatic output-budget escalation. Reasoning models can
    * spend the whole `max_tokens` on hidden reasoning and return an empty
    * message with `finish_reason: 'length'`; the client then retries with
@@ -69,6 +75,7 @@ export class OpenAICompatAgentClient implements AgentClient {
   private readonly retryMaxMs: number;
   private readonly fetchImpl: typeof fetch;
   private readonly sessionId?: string;
+  private readonly orgId?: string;
   private readonly userAgent: string;
   private readonly seed?: number;
   private readonly maxTokensCeiling: number;
@@ -85,6 +92,7 @@ export class OpenAICompatAgentClient implements AgentClient {
     // ignore it, but keeping it off them avoids surprising a strict gateway.
     const openCodeHost = /(^|\.)opencode\.ai$/.test(safeHostname(this.baseUrl));
     this.sessionId = opts.sessionId ?? (openCodeHost ? `cadgenbench-${randomUUID()}` : undefined);
+    this.orgId = opts.orgId;
     this.userAgent = opts.userAgent ?? 'kernelcad-cadgenbench/1.0';
     this.seed = opts.seed;
     this.maxTokensCeiling = Math.max(opts.maxTokensCeiling ?? 64_000, 1);
@@ -142,6 +150,7 @@ export class OpenAICompatAgentClient implements AgentClient {
             Authorization: `Bearer ${this.apiKey}`,
             'User-Agent': this.userAgent,
             ...(this.sessionId ? { 'x-opencode-session': this.sessionId } : {}),
+            ...(this.orgId ? { 'x-opencode-org-id': this.orgId } : {}),
           },
           body: JSON.stringify(buildBody(maxTokens)),
           signal: AbortSignal.timeout(this.requestTimeoutMs),
