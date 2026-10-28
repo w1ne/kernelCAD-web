@@ -22,10 +22,11 @@ import { locateShape } from './occtPlacement';
 import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
-import { sceneToWorldFrameParts } from './sceneToWorldFrame';
+import { releaseWorldFrameParts, sceneToWorldFrameParts } from './sceneToWorldFrame';
 import { writeStepAssembly } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
 import { memoBox, memoMass, memoVolume } from './analysisMemo';
+import { disposeOcctHandles } from './occtDispose';
 import { KernelError } from '../../../shared/intent/kernelError';
 import {
   resolveExtrudeTwistAngle,
@@ -1434,10 +1435,7 @@ export class OcctBackend implements ShapeBackend {
   }
 
   dispose(): void {
-    const maybeDelete = (this.shape as { delete?: () => void }).delete;
-    if (typeof maybeDelete === 'function') {
-      maybeDelete.call(this.shape);
-    }
+    disposeOcctHandles(this, this.shape);
   }
 }
 
@@ -1468,13 +1466,17 @@ export async function exportSceneToSTEPAsync(
   // `sceneToWorldFrameParts` enforces the non-empty-scene invariant and
   // owns the clone-before-transform contract for every multi-body exporter.
   const worldParts = sceneToWorldFrameParts(sceneBackend);
-  return writeStepAssembly(
-    worldParts.map((p) => ({
-      shape: p.shape.getReplicadShape().wrapped,
-      name: p.name,
-      color: resolveColor(p.color),
-    })),
-  );
+  try {
+    return await writeStepAssembly(
+      worldParts.map((p) => ({
+        shape: p.shape.getReplicadShape().wrapped,
+        name: p.name,
+        color: resolveColor(p.color),
+      })),
+    );
+  } finally {
+    releaseWorldFrameParts(worldParts);
+  }
 }
 
 /**

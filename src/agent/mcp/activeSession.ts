@@ -4,6 +4,8 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CaptureSession } from '../../modeling/capture/captureSession';
 import type { SelectionRecord } from '../../shared/intent/selectionRecord';
 import { buildModel, buildModelFromFile } from '../../composition/buildModel';
+import { disposeSessionGeometry } from '../../modeling/warm/releaseShapes';
+import { retainedMcpViewerModel } from './viewerRetain';
 
 export interface ScriptSourceInput {
   file?: string;
@@ -37,11 +39,19 @@ export function getActiveMcpSession(): ActiveMcpSession | undefined {
 }
 
 export function setActiveMcpSession(next: ActiveMcpSession | undefined): void {
+  const previous = activeSession;
   activeSession = next;
+  if (!previous || previous.session === next?.session) return;
+  // The local viewer still serves the previous model until its own update
+  // replaces it. Hosted evaluation does not keep that model.
+  const viewerHoldsPrevious = process.env.KERNELCAD_MCP_MODE !== 'hosted'
+    && retainedMcpViewerModel()?.session === previous.session;
+  if (viewerHoldsPrevious) return;
+  disposeSessionGeometry(previous.session);
 }
 
 export function clearActiveMcpSession(): void {
-  activeSession = undefined;
+  setActiveMcpSession(undefined);
 }
 
 export async function establishActiveMcpSession(input: ScriptSourceInput): Promise<ActiveMcpSession> {

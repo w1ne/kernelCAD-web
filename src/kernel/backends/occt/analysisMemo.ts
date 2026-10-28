@@ -115,6 +115,15 @@ export function stampFingerprint(shape: ShapeBackend, fp: string): void {
   if (known.mass) masses.set(shape, new Map(known.mass));
 }
 
+/** Drop memoised volume, box, and mass for a disposed wrapper. */
+export function forgetAnalysis(shape: ShapeBackend): void {
+  volumes.delete(shape);
+  boxes.delete(shape);
+  exactBoxes.delete(shape);
+  masses.delete(shape);
+  fingerprints.delete(shape);
+}
+
 function shiftBox(box: Box, motion: Motion): Box {
   return {
     min: [box.min[0] + motion.x, box.min[1] + motion.y, box.min[2] + motion.z],

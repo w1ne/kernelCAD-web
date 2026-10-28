@@ -26,6 +26,7 @@ import * as replicad from 'replicad';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct, registerOcctResetHook } from '../../kernel/backends/occt/occtBackend';
 import { describeOcctThrow, isOcctOutOfMemory } from '../../kernel/backends/occt/occtException';
+import { approxOcctBytes } from '../../kernel/backends/occt/shapeWeight';
 import { healImportedStep } from './healStep';
 
 /** Backends whose STEP import was normalized by `healImportedStep`. Weak so a
@@ -61,8 +62,19 @@ export class StepParseError extends Error {
  *  distinct imported parts in the current model; a few dozen covers a large
  *  assembly while bounding WASM-heap growth across a long session. */
 const MAX_ENTRIES = 32;
+/** Approximate native bytes of masters. A count cap of 32 still fits a
+ *  gigabyte when each master is a large assembly, and the wasm heap never
+ *  shrinks back under the evaluator RSS cap. */
+const MAX_BYTES = 128 * 1024 * 1024;
 
-const cache = new Map<string, OcctBackend>();
+interface CachedMaster {
+  master: OcctBackend;
+  bytes: number;
+}
+
+const cache = new Map<string, CachedMaster>();
+let maxEntries = MAX_ENTRIES;
+let maxBytes = MAX_BYTES;
 let hits = 0;
 let misses = 0;
 
@@ -80,8 +92,9 @@ function sha256Hex(bytes: Buffer | Uint8Array): string {
 
 /**
  * Parse STEP bytes into an OcctBackend, reusing a cached parse when the exact
- * same bytes were seen before. Always returns a fresh clone the caller owns
- * and may safely consume (transform / dispose) without affecting the cache.
+ * same bytes were seen before. Returns a fresh clone the caller owns, unless
+ * the solid is larger than the byte budget: then the caller owns the only
+ * copy and nothing is pinned.
  *
  * @throws StepParseError('parse')    replicad.importSTEP rejected the bytes
  * @throws StepParseError('no-solid') the import held no 3D solid body
@@ -95,7 +108,7 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
     cache.delete(key);
     cache.set(key, cached);
     hits++;
-    return cloneMaster(cached);
+    return cloneMaster(cached.master);
   }
 
   await initOcct();
@@ -142,21 +155,35 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
   const healed = healImportedStep(imported as replicad.Shape3D);
   const master = new OcctBackend(healed.shape);
   if (healed.unified || healed.repaired) healedStepBackends.add(master);
-  cache.set(key, master);
   misses++;
+  const weight = approxOcctBytes(master);
+  // A single master over the budget is handed to the caller and not pinned.
+  // The next import of the same bytes parses again rather than retaining a
+  // solid the evaluator cannot afford to keep.
+  if (weight <= maxBytes) {
+    cache.set(key, { master, bytes: weight });
+    evictMasters(key);
+    return cloneMaster(master);
+  }
+  return master;
+}
 
-  // Evict oldest beyond capacity; dispose the evicted master's OCCT handle so
-  // the WASM heap doesn't grow unbounded. Outstanding clones are independent
-  // handles and are unaffected.
-  while (cache.size > MAX_ENTRIES) {
+function cacheBytes(): number {
+  let total = 0;
+  for (const entry of cache.values()) total += entry.bytes;
+  return total;
+}
+
+/** Evict oldest masters past the count cap and the byte budget. */
+function evictMasters(protectKey?: string): void {
+  while (cache.size > maxEntries || cacheBytes() > maxBytes) {
     const oldestKey = cache.keys().next().value as string | undefined;
-    if (oldestKey === undefined) break;
+    if (oldestKey === undefined || oldestKey === protectKey) break;
     const evicted = cache.get(oldestKey);
     cache.delete(oldestKey);
-    evicted?.dispose();
+    evicted?.master.dispose();
+    if (cache.size === 0) break;
   }
-
-  return cloneMaster(master);
 }
 
 /** Clone a cached master, carrying its healed-import mark to the clone. */
@@ -175,7 +202,7 @@ export function __stepParseCacheStats(): { hits: number; misses: number; size: n
  *  the hit/miss counters alone — this runs on the OOM recovery path, where the
  *  instrumentation is what tells us reclamation happened. */
 function purgeMasters(): void {
-  for (const v of cache.values()) v.dispose();
+  for (const v of cache.values()) v.master.dispose();
   cache.clear();
 }
 
@@ -184,4 +211,12 @@ export function __resetStepParseCache(): void {
   purgeMasters();
   hits = 0;
   misses = 0;
+  maxEntries = MAX_ENTRIES;
+  maxBytes = MAX_BYTES;
+}
+
+/** Test-only: tighten the cache so a unit test can force eviction. */
+export function __setStepParseCacheLimitsForTests(limits: { maxEntries?: number; maxBytes?: number }): void {
+  if (limits.maxEntries !== undefined) maxEntries = limits.maxEntries;
+  if (limits.maxBytes !== undefined) maxBytes = limits.maxBytes;
 }

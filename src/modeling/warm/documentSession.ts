@@ -4,15 +4,16 @@
 // One warm model per open document. A param edit reuses the loaded solids
 // (`updateModelParams`). A source change, a kernel error, or eviction drops
 // the entry and frees its OCCT handles. The least-recently-used document is
-// evicted past `maxDocuments`.
+// evicted past `maxDocuments` or the retained-byte budget.
 
 import { isOcctWasmPoisoned } from '../../kernel/backends/occt/occtException';
 import { KernelError } from '../../shared/intent/kernelError';
-import type { ShapeBackend } from '../../kernel/backends/backend';
-import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { BuildModelInput, BuiltModel, ParamUpdateEdit } from '../buildModel';
 import { updateModelParams } from '../paramUpdate';
 import { importIdentity } from './importIdentity';
+import { disposeModelShapes, retainedShapeBytes } from './releaseShapes';
+
+export { disposeModelShapes } from './releaseShapes';
 
 export interface WarmDocument {
   readonly id: string;
@@ -47,6 +48,12 @@ export interface WarmOpen {
 export interface WarmDocumentStoreOptions {
   /** Live documents. The least recently used is evicted past this. Default 4. */
   maxDocuments?: number;
+  /**
+   * Approximate native bytes of the solids kept across every open document.
+   * The least recently used document is evicted past this. One document is
+   * always kept, even when it alone is over the budget. Default 256 MiB.
+   */
+  maxRetainedBytes?: number;
   build(input: BuildModelInput): Promise<BuiltModel>;
 }
 
@@ -60,6 +67,8 @@ interface Entry {
   importHash: string;
   model: BuiltModel;
   overrides: Record<string, ParamUpdateEdit['value']>;
+  /** Approximate native bytes of `model`, charged against `maxRetainedBytes`. */
+  bytes: number;
 }
 
 function sameIdentity(existing: Entry, input: WarmOpen, hash: string, imports: string): boolean {
@@ -86,47 +95,23 @@ export function sourceHash(text: string): string {
   return `${text.length.toString(16)}:${(h1 >>> 0).toString(16)}:${(h2 >>> 0).toString(16)}`;
 }
 
-function disposeShape(shape: ShapeBackend, seen: Set<object>): void {
-  if (seen.has(shape)) return;
-  seen.add(shape);
-  if (isSceneBackend(shape)) {
-    for (const part of shape.parts) disposeShape(part.shape, seen);
-    return;
-  }
-  try {
-    shape.dispose?.();
-  } catch {
-    // A failed lower may already have freed this handle.
-  }
-}
-
-export function disposeModelShapes(model: BuiltModel): void {
-  const seen = new Set<object>();
-  for (const shape of model.shapes.values()) disposeShape(shape, seen);
-  for (const shape of model.session.cachedShapes.values()) disposeShape(shape, seen);
-}
-
-function disposeReplaced(previous: ReadonlyMap<string, ShapeBackend>, next: ReadonlyMap<string, ShapeBackend>): void {
-  const kept = new Set<ShapeBackend>(next.values());
-  const seen = new Set<object>();
-  for (const shape of previous.values()) {
-    if (kept.has(shape) || isSceneBackend(shape)) continue;
-    disposeShape(shape, seen);
-  }
-}
-
 function view(entry: Entry): WarmDocument {
   return { id: entry.id, sourceHash: entry.sourceHash, model: entry.model };
 }
 
+const DEFAULT_MAX_BYTES = 256 * 1024 * 1024;
+
 class WarmDocuments implements WarmDocumentStore {
   private readonly docs = new Map<string, Entry>();
   private readonly maxDocuments: number;
+  private readonly maxRetainedBytes: number;
   private readonly build: WarmDocumentStoreOptions['build'];
 
   constructor(options: WarmDocumentStoreOptions) {
     this.maxDocuments = options.maxDocuments ?? DEFAULT_MAX;
     if (this.maxDocuments < 1) throw new Error('warm document store requires maxDocuments >= 1');
+    this.maxRetainedBytes = options.maxRetainedBytes ?? DEFAULT_MAX_BYTES;
+    if (this.maxRetainedBytes < 1) throw new Error('warm document store requires maxRetainedBytes >= 1');
     this.build = options.build;
   }
 
@@ -142,8 +127,19 @@ class WarmDocuments implements WarmDocumentStore {
     disposeModelShapes(entry.model);
   }
 
+  private totalBytes(): number {
+    let total = 0;
+    for (const entry of this.docs.values()) total += entry.bytes;
+    return total;
+  }
+
   private evictOverflow(): void {
-    while (this.docs.size > this.maxDocuments) {
+    while (
+      this.docs.size > this.maxDocuments
+      // A lone document stays even when it alone is over the byte budget.
+      // Evicting it would drop the only model the session can edit.
+      || (this.docs.size > 1 && this.totalBytes() > this.maxRetainedBytes)
+    ) {
       const oldest = this.docs.keys().next().value;
       if (oldest === undefined) return;
       this.evict(oldest);
@@ -177,6 +173,7 @@ class WarmDocuments implements WarmDocumentStore {
       scriptDir: input.scriptDir,
       model,
       overrides: {},
+      bytes: retainedShapeBytes(model),
     });
   }
 
@@ -209,8 +206,10 @@ class WarmDocuments implements WarmDocumentStore {
         'params.update: feature failed; warm baseline refused',
       );
     }
-    disposeReplaced(entry.model.shapes, updated.model.shapes);
+    // `updateModelParams` already freed solids the new baseline does not keep.
     entry.model = updated.model;
+    entry.bytes = retainedShapeBytes(updated.model);
+    this.evictOverflow();
     for (const edit of edits) entry.overrides[edit.name] = edit.value;
     return {
       document: view(entry),
@@ -247,6 +246,7 @@ class WarmDocuments implements WarmDocumentStore {
       ...entry,
       model,
       overrides,
+      bytes: retainedShapeBytes(model),
       importHash: importIdentity(entry.code, entry.scriptDir),
     };
     return { ...fullResult(stored), document: this.insert(stored) };

@@ -22,6 +22,11 @@
 //   alive until a finalizer task runs, i.e. after the whole synchronous mesh
 //   loop. An M6 threaded rod-and-nut's export mesh held ~1.2 GB of JS heap
 //   that way; the copies are now deleted as they are read.
+// - `fuse` / `cut` / `intersect` / `shell` / `fillet` / `chamfer` register
+//   the algorithm builder with replicad's `GCWithScope`. The builder holds
+//   a copy of the result solid until that scope function is collected.
+//   V8 does not collect on wasm pressure, so a long edit loop ratchets the
+//   heap. The builder is deleted as soon as the result handle is taken.
 
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
@@ -76,8 +81,78 @@ export function installReplicadLeakFixes(): void {
   };
 
   (replicad.Face.prototype as unknown as FaceProto).triangulation = triangulation;
+  releaseBooleanBuilders();
 
   shape[PATCHED] = true;
+}
+
+interface Deletable {
+  delete?: () => void;
+  isDeleted?: () => boolean;
+}
+
+/** Delete algorithm objects replicad only drops into a GC scope. */
+function releaseConstructed<T>(oc: Record<string, unknown>, names: readonly string[], run: () => T): T {
+  const created: Deletable[] = [];
+  const saved = new Map<string, unknown>();
+  for (const name of names) {
+    const ctor = oc[name];
+    if (typeof ctor !== 'function') continue;
+    saved.set(name, ctor);
+    oc[name] = new Proxy(ctor as new (...args: unknown[]) => Deletable, {
+      construct(target, args, newTarget) {
+        const obj = Reflect.construct(target, args, newTarget) as Deletable;
+        created.push(obj);
+        return obj;
+      },
+    });
+  }
+  try {
+    return run();
+  } finally {
+    for (const [name, ctor] of saved) oc[name] = ctor;
+    for (let i = created.length - 1; i >= 0; i -= 1) {
+      const obj = created[i]!;
+      try {
+        if (typeof obj.isDeleted === 'function' && obj.isDeleted()) continue;
+        obj.delete?.();
+      } catch {
+        // Already freed by an explicit delete inside the operation.
+      }
+      // replicad's scope finalizer calls delete() again. A second embind
+      // delete throws "already deleted" and, on some builds, poisons wasm.
+      obj.delete = () => {};
+    }
+  }
+}
+
+function methodOwner(start: object, name: string): Record<string, unknown> | undefined {
+  let proto: object | null = start;
+  while (proto && proto !== Object.prototype) {
+    if (Object.prototype.hasOwnProperty.call(proto, name)) return proto as Record<string, unknown>;
+    proto = Object.getPrototypeOf(proto) as object | null;
+  }
+  return undefined;
+}
+
+function wrapBuilderMethod(proto: Record<string, unknown>, name: string, builders: readonly string[]): void {
+  const original = proto[name];
+  if (typeof original !== 'function') return;
+  proto[name] = function (this: { oc: Record<string, unknown> }, ...args: unknown[]) {
+    return releaseConstructed(this.oc, builders, () => (original as (...a: unknown[]) => unknown).apply(this, args));
+  };
+}
+
+function releaseBooleanBuilders(): void {
+  const proto = methodOwner(replicad.Solid.prototype, 'fuse');
+  if (!proto) return;
+  const progress = 'Message_ProgressRange_1';
+  wrapBuilderMethod(proto, 'fuse', ['BRepAlgoAPI_Fuse_3', progress]);
+  wrapBuilderMethod(proto, 'cut', ['BRepAlgoAPI_Cut_3', progress]);
+  wrapBuilderMethod(proto, 'intersect', ['BRepAlgoAPI_Common_3', progress]);
+  wrapBuilderMethod(proto, 'shell', ['BRepOffsetAPI_MakeThickSolid', 'TopTools_ListOfShape_1', progress]);
+  wrapBuilderMethod(proto, 'fillet', ['BRepFilletAPI_MakeFillet']);
+  wrapBuilderMethod(proto, 'chamfer', ['BRepFilletAPI_MakeChamfer']);
 }
 
 /** replicad's `Face.triangulation`, same output, with every copy deleted. */
