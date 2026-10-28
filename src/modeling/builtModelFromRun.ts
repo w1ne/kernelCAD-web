@@ -34,8 +34,9 @@ export interface ScriptRunForBuild {
 /**
  * Resolve the FeatureId of the value the script `return`ed.
  * Shape → its feature id; Scene → the upstream solvedAssembly /
- * assemblyModel record id; anything else (Region, plain data, no
- * return) → fall back to the chain tail.
+ * assemblyModel record id; Region/plain data/no return → fall back to the
+ * chain tail. Arrays with no solid return no root, while arrays of Shapes are
+ * normalized to a Scene by runScriptCore before reaching the lowerer.
  */
 export function resolveRootId(
   returnValue: unknown,
@@ -43,6 +44,7 @@ export function resolveRootId(
 ): FeatureId | undefined {
   if (returnValue instanceof Shape) return returnValue.id;
   if (returnValue instanceof Scene) return returnValue.__sourceFeatureId() ?? tailId;
+  if (Array.isArray(returnValue)) return undefined;
   return tailId;
 }
 

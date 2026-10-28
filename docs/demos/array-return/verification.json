@@ -1,0 +1,40 @@
+{
+  "provenance": "Local buildModel + OCCT display mesh; not a deployed UI or hardware acceptance test.",
+  "rootKind": "SceneBackend",
+  "rootId": "assemblyModel_1",
+  "bodyCount": 2,
+  "parts": [
+    {
+      "name": "bracket",
+      "volumeMm3": 1680,
+      "bounds": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          30,
+          14,
+          4
+        ]
+      }
+    },
+    {
+      "name": "pin",
+      "volumeMm3": 274.8893571891069,
+      "bounds": {
+        "min": [
+          34.5,
+          -2.5,
+          0
+        ],
+        "max": [
+          39.5,
+          2.5,
+          14
+        ]
+      }
+    }
+  ]
+}
