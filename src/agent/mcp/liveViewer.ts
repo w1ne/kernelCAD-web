@@ -9,6 +9,7 @@ import type { BuiltModel } from '../../composition/buildModel';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import { disposeModelShapes, registerRetainedShapeSource, releaseReplacedShapes } from '../../modeling/warm/releaseShapes';
 import { getActiveMcpSession } from './activeSession';
+import { retainedMcpViewerModel, setRetainedMcpViewerModel } from './viewerRetain';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
 
@@ -182,7 +183,7 @@ export function createLiveViewer(options: ViewerOptions = {}) {
       const link = await starting;
       const previous = state.model;
       state.model = next;
-      retainedModel = next;
+      setRetainedMcpViewerModel(next);
       state.review = review;
       state.mesh = undefined;
       if (previous && previous !== next) disposeModelShapes(previous);
@@ -198,7 +199,7 @@ export function createLiveViewer(options: ViewerOptions = {}) {
       starting = undefined;
       const served = state.model;
       state.model = undefined;
-      retainedModel = undefined;
+      setRetainedMcpViewerModel(undefined);
       state.review = undefined;
       state.mesh = undefined;
       // Drop the reference before releasing so the retain hook does not
@@ -219,12 +220,6 @@ let lastViewerResult: McpViewerResult | undefined;
 export function getMcpViewerResult() { return lastViewerResult; }
 
 let viewer: ReturnType<typeof createLiveViewer> | undefined;
-let retainedModel: BuiltModel | undefined;
-
-/** The model the local MCP viewer is still serving, if any. */
-export function retainedMcpViewerModel(): BuiltModel | undefined {
-  return retainedModel;
-}
 
 function viewerHeldShapes(model: BuiltModel): ShapeBackend[] {
   const shapes: ShapeBackend[] = [];
@@ -236,7 +231,10 @@ function viewerHeldShapes(model: BuiltModel): ShapeBackend[] {
   return shapes;
 }
 
-registerRetainedShapeSource(() => retainedModel ? viewerHeldShapes(retainedModel) : []);
+registerRetainedShapeSource(() => {
+  const model = retainedMcpViewerModel();
+  return model ? viewerHeldShapes(model) : [];
+});
 
 /** Free solids the viewer was the last owner of. A session that still owns
  *  the model keeps the cache; a session that has already moved on does not. */

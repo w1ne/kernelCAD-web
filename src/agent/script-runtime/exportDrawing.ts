@@ -145,6 +145,7 @@ async function renderDrawingSheet(
 ): Promise<ExportResult> {
   const modelName = opts.modelName ?? drawingModelName(fileName);
   const drawingParts = drawingPartsForBackend(lowered);
+  let explodedParts: readonly WorldFramePart[] | undefined;
   try {
     const styleError = drawingStyleError(opts.style);
     if (styleError !== undefined) return { bytes: new Uint8Array(), featureCount, diagnostics: [...diagnostics, styleError] };
@@ -169,6 +170,7 @@ async function renderDrawingSheet(
 
     const exploded = await resolveExplodedParts(opts.exploded, lowered, arm, diagnostics, featureCount);
     if ('result' in exploded) return exploded.result;
+    explodedParts = exploded.parts;
 
     const bom = await resolveDrawingBom(
       opts.balloons === true || opts.partsList === true, arm, run,
@@ -198,6 +200,8 @@ async function renderDrawingSheet(
     };
   } finally {
     releaseDrawingParts(drawingParts);
+    // Second clone set. `releaseDrawingParts` skips a shape that is the caller's solid.
+    if (explodedParts !== undefined) releaseDrawingParts(explodedParts);
   }
 }
 

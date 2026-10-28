@@ -5,7 +5,7 @@ import type { CaptureSession } from '../../modeling/capture/captureSession';
 import type { SelectionRecord } from '../../shared/intent/selectionRecord';
 import { buildModel, buildModelFromFile } from '../../composition/buildModel';
 import { disposeSessionGeometry } from '../../modeling/warm/releaseShapes';
-import { retainedMcpViewerModel } from './liveViewer';
+import { retainedMcpViewerModel } from './viewerRetain';
 
 export interface ScriptSourceInput {
   file?: string;
