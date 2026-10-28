@@ -63,6 +63,44 @@ describe('OpenAICompatAgentClient', () => {
     expect(JSON.parse(init.body as string).seed).toBe(42);
   });
 
+  it('raises the output budget when reasoning truncates an empty reply', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({ choices: [{ message: { content: '' }, finish_reason: 'length' }], usage: {} }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ choices: [{ message: { content: 'ok' }, finish_reason: 'stop' }], usage: {} }),
+      );
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://api.example.com/v1',
+      apiKey: 'k',
+      retryBaseMs: 1,
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const out = await client.generate(REQ);
+    expect(out.text).toBe('ok');
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    const first = JSON.parse((fetchImpl.mock.calls[0][1] as RequestInit).body as string);
+    const second = JSON.parse((fetchImpl.mock.calls[1][1] as RequestInit).body as string);
+    expect(first.max_tokens).toBe(100);
+    expect(second.max_tokens).toBe(200);
+  });
+
+  it('leaves the session header off non-OpenCode endpoints', async () => {
+    const fetchImpl = vi.fn(async () =>
+      jsonResponse({ choices: [{ message: { content: 'ok' } }], usage: {} }),
+    );
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://api.example.com/v1',
+      apiKey: 'k',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    await client.generate(REQ);
+    const init = fetchImpl.mock.calls[0][1] as RequestInit;
+    expect(init.headers).not.toHaveProperty('x-opencode-session');
+  });
+
   it('retries 429 then succeeds', async () => {
     const fetchImpl = vi
       .fn()

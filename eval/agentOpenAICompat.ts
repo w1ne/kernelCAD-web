@@ -24,10 +24,24 @@ export interface OpenAICompatOptions {
   userAgent?: string;
   /** Sampling seed forwarded verbatim; the endpoint may ignore it. */
   seed?: number;
+  /**
+   * Ceiling for automatic output-budget escalation. Reasoning models can
+   * spend the whole `max_tokens` on hidden reasoning and return an empty
+   * message with `finish_reason: 'length'`; the client then retries with
+   * twice the budget, up to this ceiling, instead of handing the loop an
+   * empty reply. Default 64000.
+   */
+  maxTokensCeiling?: number;
+  /** Per-request wall clock limit in ms. Default 600000 (10 min), enough for
+   *  a long reasoning pass at a 64k output budget. */
+  requestTimeoutMs?: number;
 }
 
 interface ChatCompletionResponse {
-  choices?: Array<{ message?: { content?: string | null } }>;
+  choices?: Array<{
+    message?: { content?: string | null };
+    finish_reason?: string | null;
+  }>;
   usage?: { prompt_tokens?: number; completion_tokens?: number };
 }
 
@@ -57,6 +71,8 @@ export class OpenAICompatAgentClient implements AgentClient {
   private readonly sessionId?: string;
   private readonly userAgent: string;
   private readonly seed?: number;
+  private readonly maxTokensCeiling: number;
+  private readonly requestTimeoutMs: number;
 
   constructor(opts: OpenAICompatOptions) {
     this.baseUrl = opts.baseUrl.replace(/\/+$/, '');
@@ -71,6 +87,8 @@ export class OpenAICompatAgentClient implements AgentClient {
     this.sessionId = opts.sessionId ?? (openCodeHost ? `cadgenbench-${randomUUID()}` : undefined);
     this.userAgent = opts.userAgent ?? 'kernelcad-cadgenbench/1.0';
     this.seed = opts.seed;
+    this.maxTokensCeiling = Math.max(opts.maxTokensCeiling ?? 64_000, 1);
+    this.requestTimeoutMs = Math.max(opts.requestTimeoutMs ?? 600_000, 1);
   }
 
   async generate(args: {
@@ -85,9 +103,9 @@ export class OpenAICompatAgentClient implements AgentClient {
       args.systemAddendum && args.systemAddendum.length > 0
         ? `${args.system}\n\n${args.systemAddendum}`
         : args.system;
-    const body = {
+    const buildBody = (maxTokens: number) => ({
       model: args.model,
-      max_tokens: args.max_tokens,
+      max_tokens: maxTokens,
       messages: [
         { role: 'system', content: system },
         ...args.messages.map((m) => ({
@@ -106,8 +124,9 @@ export class OpenAICompatAgentClient implements AgentClient {
       ],
       ...(args.temperature !== undefined ? { temperature: args.temperature } : {}),
       ...(this.seed !== undefined ? { seed: this.seed } : {}),
-    };
+    });
 
+    let maxTokens = args.max_tokens;
     let lastErr: Error | undefined;
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       if (attempt > 0) {
@@ -124,8 +143,8 @@ export class OpenAICompatAgentClient implements AgentClient {
             'User-Agent': this.userAgent,
             ...(this.sessionId ? { 'x-opencode-session': this.sessionId } : {}),
           },
-          body: JSON.stringify(body),
-          signal: AbortSignal.timeout(180_000),
+          body: JSON.stringify(buildBody(maxTokens)),
+          signal: AbortSignal.timeout(this.requestTimeoutMs),
         });
       } catch (err) {
         lastErr = err instanceof Error ? err : new Error(String(err));
@@ -147,8 +166,25 @@ export class OpenAICompatAgentClient implements AgentClient {
         lastErr = err instanceof Error ? err : new Error(String(err));
         continue;
       }
-      const text = data.choices?.[0]?.message?.content ?? '';
+      const choice = data.choices?.[0];
+      const text = choice?.message?.content ?? '';
       if (text.length === 0) {
+        // A reasoning model can spend the whole budget on hidden reasoning:
+        // the reply is empty and `finish_reason` is 'length'. Grow the budget
+        // instead of handing the closed loop an empty "no script" reply.
+        if (choice?.finish_reason === 'length' && maxTokens < this.maxTokensCeiling) {
+          const raised = Math.min(this.maxTokensCeiling, maxTokens * 2);
+          lastErr = new Error(
+            `OpenAI-compat response truncated at ${maxTokens} max_tokens (reasoning only); retrying with ${raised}`,
+          );
+          maxTokens = raised;
+          continue;
+        }
+        if (choice?.finish_reason === 'length') {
+          throw new Error(
+            `OpenAI-compat response truncated: reasoning consumed ${maxTokens} max_tokens and returned no text; raise --max-tokens`,
+          );
+        }
         return { text: '', tokens_in: num(data.usage?.prompt_tokens), tokens_out: 0 };
       }
       return {

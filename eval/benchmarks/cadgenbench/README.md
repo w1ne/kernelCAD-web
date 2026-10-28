@@ -96,6 +96,8 @@ npx tsx eval/benchmarks/cadgenbench/run.ts --scripts-from path/to/scripts --task
 | `--retry-failed` | also rerun tasks that ended `invalid` or `failed` (by default, resume skips them) |
 | `--visual-review` | opt in to a model review of a valid generation candidate, with browser-free front/right/top/isometric STEP previews; requires a vision-capable LLM. A valid revision is promoted only if a second model comparison explicitly prefers it; the previous valid script and STEP are retained as a checkpoint. This self-comparison is unscored and does not prove improved similarity. |
 | `--revision <sha>` | pin a dataset revision (default `main`, resolved to a sha and recorded in `run.json`) |
+| `--seed <n>` | forwarded to OpenAI-compatible endpoints and recorded in `run.json`; some providers ignore it |
+| `--max-tokens <n>` | output budget per reply (default 16000). Reasoning models can spend it all on hidden reasoning and return no text; raise it (for example 64000) or let the OpenAI-compatible client escalate automatically |
 | `--data-dir <dir>` | use a local copy of the inputs instead of downloading them |
 | `--agree` | sets `agree_to_publish: true` in `meta.json` (default false) |
 
