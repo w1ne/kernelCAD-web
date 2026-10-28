@@ -70,12 +70,6 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | infill, weak spots, stronger, will it hold, stress | `feaStudy` + `export` 3mf `infill: { fromFea }` (local ccx + gmsh) | stress-graded-infill-fdm |
 | screw, nut, bearing, motor, servo | `lib.standard.*`, `lib.findPart`, MCP `find_part` | kernelcad-parts |
 
-For a profile cut, `cutout(..., { depth: 'through' })` cuts through all
-material inward from the selected face, even across internal cavities. A
-`hole(..., { depth: 'through' })` stops at the first exit along the drill
-axis, which is useful for a set screw entering a bore. Inspect the result when
-the requested hole must continue through material beyond a cavity.
-
 ## Before you finish
 
 A clean evaluate proves the script ran, not that it is the part the user asked for. A solid block is valid geometry and still fails the design. Before you report done:
