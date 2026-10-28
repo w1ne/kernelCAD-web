@@ -16,6 +16,8 @@
 //   - `edge-axis` — resolve canonical box edges by name
 //     (`edge-<face>-<face>`, e.g. `edge-top-front`) or canonical cylinder
 //     cap edges (`edge-top` / `edge-bottom`). Returns the edge midpoint.
+//   - `hole-axis` — authored `.hole()` / `.holes()` mouth and into-body
+//     axis (see holeAxisQuery.ts). Re-resolves after a param edit.
 //   - `vertex` — typed but unimplemented (no vertex-labeling infrastructure
 //     yet). Deferred to v0.7. Throws `topology-not-resolvable` with a clear
 //     `vertex labeling not yet supported` message.
@@ -39,8 +41,10 @@ import type { FeatureId } from '../../../shared/intent/types';
 import type { FeatureRecord, FaceLabelsMap, CanonicalFace } from '../../../shared/intent/featureRecord';
 import type { FaceQuery } from '../../../kernel/backends/occt/edgeQueries';
 import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
+import type { ParamTable } from '../../../shared/runtime/paramTable';
 import type { TopologyQuery } from '../../mates/connector';
 import { resolveFaceQuery } from '../../../kernel/backends/occt/edgeQueries';
+import { resolveHoleAxis } from './holeAxisQuery';
 
 type CanonicalFaceName = CanonicalFace;
 
@@ -60,8 +64,21 @@ export interface TopologyResolutionContext {
   /** Feature records from the capture session, ordered oldest → newest. */
   records?: readonly FeatureRecord[];
   /** ID of the consumer shape (the Connector's parent shape). Used to scope
-   *  the upstream walk so labels declared after the consumer are ignored. */
+   *  the upstream walk so labels declared after the consumer are ignored.
+   *  `hole-axis` walks this id back through `shape` / `target` to the hole. */
   consumerId?: FeatureId;
+  /** Live param table. Hole u/v are read after `resolveParams`, so a param
+   *  edit moves the mouth instead of reusing the capture-time number. */
+  paramTable?: ParamTable;
+  /** Translation already baked into `backend` and absent from feature
+   *  transforms. Assembly parts pass `at`. Point-placed holes add it. */
+  bakedTranslation?: Vec3;
+}
+
+export interface TopologyFrame {
+  origin: Vec3;
+  /** Unit axis from the hole mouth into the hole. Set for `hole-axis`. */
+  axis?: Vec3;
 }
 
 /**
@@ -75,6 +92,19 @@ export function resolveTopologyOriginOnBackend(
   query: TopologyQuery,
   ctx: TopologyResolutionContext = {},
 ): Vec3 {
+  return resolveTopologyFrameOnBackend(backend, query, ctx).origin;
+}
+
+/**
+ * Resolve `query` to an origin and, for `hole-axis`, the into-body axis.
+ * Throws on unresolvable queries; the message always starts with
+ * `assembly.connector.topology-not-resolvable`.
+ */
+export function resolveTopologyFrameOnBackend(
+  backend: OcctBackend,
+  query: TopologyQuery,
+  ctx: TopologyResolutionContext = {},
+): TopologyFrame {
   switch (query.kind) {
     case 'face-center':
     case 'face-normal': {
@@ -87,7 +117,7 @@ export function resolveTopologyOriginOnBackend(
           `assembly.connector.topology-not-resolvable: face '${query.name}' not found on shape (kind='${backend.kind ?? 'composite'}').`,
         );
       }
-      return faceCentroid(face);
+      return { origin: faceCentroid(face) };
     }
     case 'vertex': {
       // Deferred to v0.7. There is no vertex-labeling infrastructure today
@@ -105,8 +135,10 @@ export function resolveTopologyOriginOnBackend(
           `assembly.connector.topology-not-resolvable: edge '${query.name}' not found on shape (kind='${backend.kind ?? 'composite'}'). Use 'edge-<face1>-<face2>' (e.g. 'edge-top-front') for box edges or 'edge-top'/'edge-bottom' for cylinder caps.`,
         );
       }
-      return edgeMidpoint(edge);
+      return { origin: edgeMidpoint(edge) };
     }
+    case 'hole-axis':
+      return resolveHoleAxis(backend, query.name, ctx);
   }
   // Exhaustiveness — TypeScript should already have caught this.
   const _exhaustive: never = query;

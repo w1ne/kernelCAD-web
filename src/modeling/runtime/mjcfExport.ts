@@ -62,7 +62,7 @@ import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { MateRecord } from '../mates/mate';
 import { parseConnectorRef } from '../mates/mate';
 import type { Connector } from '../mates/connector';
-import { resolveConnectorOrigin } from '../mates/connector';
+import { connectorDirection, resolveConnectorFrame, resolveConnectorOrigin } from '../mates/connector';
 import type { TendonRecord, TendonViaRef } from '../mates/tendon';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
@@ -354,8 +354,8 @@ async function resolveMateFrames(
         if (part === undefined) continue;
         const connector = part.mateConnectors.find((c) => c.name === aRef.connectorName);
         if (connector === undefined) continue;
-        const resolved = await resolveConnectorOrigin(part.originalShape, connector.origin);
-        const axis = (connector.axis ?? [0, 0, 1]) as Vec3;
+        const resolved = await resolveConnectorFrame(part.originalShape, connector.origin);
+        const axis = connectorDirection(resolved.axis, connector.axis);
         let childOrigin: Vec3 = [0, 0, 0];
         const bRef = parseConnectorRef(m.b);
         const child = partByName.get(bRef.partName);
@@ -363,7 +363,7 @@ async function resolveMateFrames(
         if (child !== undefined && childConnector !== undefined) {
             childOrigin = (await resolveConnectorOrigin(child.originalShape, childConnector.origin)).value;
         }
-        resolvedMateAxes.set(m.name, { origin: resolved.value, axis, childOrigin });
+        resolvedMateAxes.set(m.name, { origin: resolved.origin, axis, childOrigin });
     }
     return resolvedMateAxes;
 }

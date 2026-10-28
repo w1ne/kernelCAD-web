@@ -71,7 +71,7 @@ import { Transform } from '../../shared/runtime/se3';
 import type { Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
-import { resolveConnectorOrigin, type Connector } from './connector';
+import { connectorDirection, resolveConnectorFrame } from './connector';
 import { parseConnectorRef, type MateRecord } from './mate';
 import type { ValidatorDiagnostic } from './validator';
 
@@ -455,17 +455,13 @@ async function resolveSide(
   if (!part) return undefined;
   const connector = part.mateConnectors.find((c) => c.name === connectorName);
   if (!connector) return undefined;
-  const localOrigin = await resolveLocalOrigin(part, connector);
-  const localAxis = (connector.axis ?? [0, 0, 1]) as Vec3;
+  const frame = await resolveConnectorFrame(part.originalShape, connector.origin);
+  const localOrigin = frame.origin;
+  const localAxis = connectorDirection(frame.axis, connector.axis);
   const worldT = worldTransforms.get(partName) ?? Transform.identity();
   const origin = worldT.point(localOrigin as Se3Vec3) as Vec3;
   const direction = worldT.axisDir(localAxis as Se3Vec3) as Vec3;
   return { partName, origin, direction };
-}
-
-async function resolveLocalOrigin(part: AssemblyPartStored, connector: Connector): Promise<Vec3> {
-  const resolved = await resolveConnectorOrigin(part.originalShape, connector.origin);
-  return resolved.value;
 }
 
 // =============================================================================

@@ -98,6 +98,32 @@ export function applyTransforms(
 }
 
 /**
+ * Part `at` is not a feature transform, but `OcctBackend.translate` drops
+ * `historyMap`. Remap face hashes the same way {@link applyTransforms} does
+ * so a later canonical pick still names the authored face. A face-count
+ * mismatch leaves the solid without lineage; callers must fail that pick
+ * instead of accepting the world-bbox plane.
+ */
+export function translatePreservingLineage(
+  shape: ShapeBackend,
+  tx: number,
+  ty: number,
+  tz: number,
+): ShapeBackend {
+  if (!(shape instanceof OcctBackend) || shape.historyMap === undefined) {
+    return shape.translate(tx, ty, tz);
+  }
+  const inputHashes = shape.faceHashes();
+  const moved = shape.translate(tx, ty, tz);
+  const outputHashes = moved.faceHashes();
+  if (outputHashes.length !== inputHashes.length) return moved;
+  const lineage = propagateTransformHistory(shape.historyMap, inputHashes, outputHashes);
+  const carried = new OcctBackend(moved.getReplicadShape(), undefined, lineage);
+  if (moved.analysisBody !== undefined) carried.analysisBody = moved.analysisBody;
+  return carried;
+}
+
+/**
  * Turn a per-kind lowerer's outcome into the `LowerResult` `lower()` returns.
  * Terminal outcomes pass straight through (they historically `return`ed out of
  * the switch, skipping the transform loop); everything else gets `r.transforms`.

@@ -40,7 +40,7 @@ import { solveMates } from '../modeling/mates/solver';
 import { parseConnectorRef, type MateRecord } from '../modeling/mates/mate';
 import { partAtFor, sceneMotion } from '../modeling/mates/partFrame';
 import { rememberedRestScene } from '../modeling/mates/loweredAssemblyScene';
-import { resolveConnectorOrigin } from '../modeling/mates/connector';
+import { connectorDirection, resolveConnectorFrame, resolveConnectorOrigin } from '../modeling/mates/connector';
 import { sampleTrackAt } from '../modeling/animation/animationSampler';
 import type { NormalizedAnimationTrack } from '../shared/intent/animationViewRecord';
 import { clampToParam, currentValue, evaluate, exprOf } from '../modeling/runtime/motionLimits';
@@ -523,8 +523,8 @@ async function jointFrame(arm: Assembly, mate: MateRecord, parentPart: string): 
   const part = arm.__parts().find((p) => p.name === ref.partName) as AssemblyPartStored | undefined;
   const c = part?.mateConnectors.find((x) => x.name === ref.connectorName);
   if (part === undefined || c === undefined) return undefined;
-  const o = await resolveConnectorOrigin(part.originalShape, c.origin, arm.__session().getRecords());
-  return { originLocal: o.value as V3, axisLocal: (c.axis ?? [0, 0, 1]) as V3 };
+  const frame = await resolveConnectorFrame(part.originalShape, c.origin, arm.__session().getRecords());
+  return { originLocal: frame.origin as V3, axisLocal: connectorDirection(frame.axis, c.axis) as V3 };
 }
 
 function bodiesAt(ctx: JointCtx, k: number, names: ReadonlySet<string>): BodyLoadState[] {

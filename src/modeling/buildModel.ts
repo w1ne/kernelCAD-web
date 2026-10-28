@@ -15,6 +15,7 @@ import type { FeatureId } from '../shared/intent/types';
 import type { CaptureSession } from './capture/captureSession';
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { runScript, type RunScriptFacadeOptions } from './runtime/runScript';
+import { copyDrilledPolarFrames } from '../shared/intent/drilledPolarFrame';
 import { computePrefixReuse, type RecordHealth } from './compute/prefixReuse';
 import { populateCache } from './paramUpdate';
 import { assembleBuiltModel, builtModelFromRun, resolveRootId } from './builtModelFromRun';
@@ -197,6 +198,10 @@ export async function rebuildModelIncremental(
     // byte-identical to the normal build path (no half-seeded state leaks).
     return withSelectionDrift(prevModel.selections, await buildModel(input, opts));
   }
+
+  // Seeded holes are not lowered again. The new capture has no cut-frame
+  // axis yet; copy it from the records that drilled those holes.
+  copyDrilledPolarFrames(prevModel.records, run.records, decision.reusableIds);
 
   // 3. Seed the engine with the previous build's cached prefix shapes and lower
   //    only the appended tail.
