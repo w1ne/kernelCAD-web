@@ -22,10 +22,11 @@ import { locateShape } from './occtPlacement';
 import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
-import { sceneToWorldFrameParts } from './sceneToWorldFrame';
+import { releaseWorldFrameParts, sceneToWorldFrameParts } from './sceneToWorldFrame';
 import { writeStepAssembly } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
-import { forgetAnalysis, memoBox, memoMass, memoVolume } from './analysisMemo';
+import { memoBox, memoMass, memoVolume } from './analysisMemo';
+import { disposeOcctHandles } from './occtDispose';
 import { KernelError } from '../../../shared/intent/kernelError';
 import {
   resolveExtrudeTwistAngle,
@@ -1434,23 +1435,7 @@ export class OcctBackend implements ShapeBackend {
   }
 
   dispose(): void {
-    // The memo would still answer volume() after the native solid is gone.
-    forgetAnalysis(this);
-    // Catalog fasteners keep a second solid (the nominal envelope). Dropping
-    // only the display solid leaves that envelope in the wasm heap until a
-    // JS GC, which does not run on wasm pressure.
-    const envelope = this.analysisBody;
-    this.analysisBody = undefined;
-    if (envelope && envelope !== this) {
-      try { envelope.dispose(); } catch { /* envelope may already be freed */ }
-    }
-    const shape = this.shape as { delete?: () => void; isDeleted?: () => boolean };
-    try {
-      if (typeof shape.isDeleted === 'function' && shape.isDeleted()) return;
-      shape.delete?.();
-    } catch {
-      // A second dispose, or a lower that already freed the handle.
-    }
+    disposeOcctHandles(this, this.shape);
   }
 }
 
@@ -1490,9 +1475,7 @@ export async function exportSceneToSTEPAsync(
       })),
     );
   } finally {
-    for (const part of worldParts) {
-      try { part.shape.dispose(); } catch { /* clone already freed */ }
-    }
+    releaseWorldFrameParts(worldParts);
   }
 }
 

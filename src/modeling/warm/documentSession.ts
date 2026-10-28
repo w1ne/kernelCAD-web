@@ -136,6 +136,8 @@ class WarmDocuments implements WarmDocumentStore {
   private evictOverflow(): void {
     while (
       this.docs.size > this.maxDocuments
+      // A lone document stays even when it alone is over the byte budget.
+      // Evicting it would drop the only model the session can edit.
       || (this.docs.size > 1 && this.totalBytes() > this.maxRetainedBytes)
     ) {
       const oldest = this.docs.keys().next().value;

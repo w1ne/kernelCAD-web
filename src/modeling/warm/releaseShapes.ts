@@ -43,6 +43,24 @@ function keepTree(shape: object, kept: Set<object>): void {
   }
 }
 
+const retainedSources: Array<() => Iterable<object>> = [];
+
+/** A host that still serves solids (the local MCP viewer) registers them
+ *  here. `releaseReplacedShapes` will not dispose a shape the source returns. */
+export function registerRetainedShapeSource(source: () => Iterable<object>): () => void {
+  retainedSources.push(source);
+  return () => {
+    const index = retainedSources.indexOf(source);
+    if (index >= 0) retainedSources.splice(index, 1);
+  };
+}
+
+function retainRegistered(kept: Set<object>): void {
+  for (const source of retainedSources) {
+    for (const shape of source()) keepTree(shape, kept);
+  }
+}
+
 function disposeShape(shape: object, seen: Set<object>, kept?: Set<object>): void {
   if (seen.has(shape) || kept?.has(shape)) return;
   seen.add(shape);
@@ -68,6 +86,7 @@ export function releaseReplacedShapes(
 ): void {
   const kept = new Set<object>();
   for (const shape of live) keepTree(shape, kept);
+  retainRegistered(kept);
   const seen = new Set<object>();
   for (const shape of previous) disposeShape(shape, seen, kept);
 }
@@ -87,12 +106,14 @@ export function disposeSessionGeometry(session: SessionGeometry, seen = new Set<
 }
 
 export function disposeModelShapes(model: {
-  shapes: { values(): Iterable<ShapeBackend> };
-  session: SessionGeometry;
+  shapes?: { values(): Iterable<ShapeBackend> };
+  session?: SessionGeometry;
 }): void {
   const seen = new Set<object>();
-  for (const shape of model.shapes.values()) disposeShape(shape, seen);
-  disposeSessionGeometry(model.session, seen);
+  if (model.shapes) {
+    for (const shape of model.shapes.values()) disposeShape(shape, seen);
+  }
+  if (model.session) disposeSessionGeometry(model.session, seen);
 }
 
 /** Charged native bytes of the solids a built model still owns. */

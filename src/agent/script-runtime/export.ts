@@ -31,7 +31,7 @@ export type {
   DrawingReport,
   Iso2768Class,
 } from '../../kernel/backends/occt/exportSvgDrawing';
-import { sceneToWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
+import { releaseWorldFrameParts, sceneToWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
@@ -605,40 +605,44 @@ export async function runAndExportParts(input: ExportPartsInput): Promise<Export
     return { parts: [], featureCount, diagnostics: resolved.diagnostics };
   }
   const worldParts = resolved.parts;
-  const validNames = worldParts.map(p => p.name);
-  if (input.parts !== undefined) {
-    const unknown = input.parts.filter(n => !validNames.includes(n));
-    if (unknown.length > 0) {
-      return {
-        parts: [], featureCount,
-        diagnostics: [...resolved.diagnostics, {
-          target: 'export-occt',
-          code: 'export.part.not-found',
-          severity: 'error',
-          message: `Unknown part name(s): ${unknown.join(', ')}. Valid names: ${validNames.join(', ')}.`,
-          hint: HINT_TEMPLATES['export.part.not-found'].template,
-          nextAction: NEXT_ACTIONS['export.part.not-found'],
-        }],
-      };
+  try {
+    const validNames = worldParts.map(p => p.name);
+    if (input.parts !== undefined) {
+      const unknown = input.parts.filter(n => !validNames.includes(n));
+      if (unknown.length > 0) {
+        return {
+          parts: [], featureCount,
+          diagnostics: [...resolved.diagnostics, {
+            target: 'export-occt',
+            code: 'export.part.not-found',
+            severity: 'error',
+            message: `Unknown part name(s): ${unknown.join(', ')}. Valid names: ${validNames.join(', ')}.`,
+            hint: HINT_TEMPLATES['export.part.not-found'].template,
+            nextAction: NEXT_ACTIONS['export.part.not-found'],
+          }],
+        };
+      }
     }
-  }
-  const selected = input.parts === undefined
-    ? worldParts
-    : worldParts.filter(p => input.parts!.includes(p.name));
+    const selected = input.parts === undefined
+      ? worldParts
+      : worldParts.filter(p => input.parts!.includes(p.name));
 
-  const parts: PartStlExport[] = [];
-  for (const p of selected) {
-    const mesh = meshShapeForExport(p.shape.getReplicadShape());
-    const report = verifyWatertight(mesh);
-    parts.push({
-      name: p.name,
-      fileSafeName: fileSafePartName(p.name),
-      bytes: partStlBytes(p.shape, mesh),
-      report,
-      triangleCount: mesh.triangles.length / 3,
-    });
+    const parts: PartStlExport[] = [];
+    for (const p of selected) {
+      const mesh = meshShapeForExport(p.shape.getReplicadShape());
+      const report = verifyWatertight(mesh);
+      parts.push({
+        name: p.name,
+        fileSafeName: fileSafePartName(p.name),
+        bytes: partStlBytes(p.shape, mesh),
+        report,
+        triangleCount: mesh.triangles.length / 3,
+      });
+    }
+    return { parts, featureCount, diagnostics: resolved.diagnostics };
+  } finally {
+    releaseWorldFrameParts(worldParts);
   }
-  return { parts, featureCount, diagnostics: resolved.diagnostics };
 
   });
 }

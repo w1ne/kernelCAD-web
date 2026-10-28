@@ -139,11 +139,18 @@ async function applyParamEdits(
   if (options?.preview !== true) {
     settleFeatureFailures(session, featureErrorIds(result.diagnostics), relowered);
   }
+  // The caller's BuiltModel can still point at an older generation than the
+  // session cache (animation frames, param sweeps). Both are previous solids.
+  // Snapshot before populateCache overwrites the cache entries.
+  const replaced = options?.preview === true
+    ? undefined
+    : [...model.shapes.values(), ...session.cachedShapes.values()];
   populateCache(session, result.shapes);
   // Preview keeps the previous solids: the passthrough shapes alias them,
-  // and the release edit is what replaces the baseline.
-  if (options?.preview !== true) {
-    releaseReplacedShapes(model.shapes.values(), session.cachedShapes.values());
+  // and the release edit is what replaces the baseline. Shapes a host still
+  // serves (the local MCP viewer) stay in the keep set via releaseReplacedShapes.
+  if (replaced) {
+    releaseReplacedShapes(replaced, session.cachedShapes.values());
   }
   stampAnalyses(model.records, session.paramTable, result.shapes);
   // This run lowered (or reused) every record under the edited param table,

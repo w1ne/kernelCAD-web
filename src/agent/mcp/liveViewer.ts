@@ -6,7 +6,9 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import type { BuiltModel } from '../../composition/buildModel';
-import { disposeModelShapes } from '../../modeling/warm/releaseShapes';
+import type { ShapeBackend } from '../../kernel/backends/backend';
+import { disposeModelShapes, registerRetainedShapeSource, releaseReplacedShapes } from '../../modeling/warm/releaseShapes';
+import { getActiveMcpSession } from './activeSession';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
 
@@ -194,10 +196,14 @@ export function createLiveViewer(options: ViewerOptions = {}) {
       if (server) await new Promise<void>(done => { server!.close(() => done()); server!.closeAllConnections(); });
       server = undefined;
       starting = undefined;
+      const served = state.model;
       state.model = undefined;
       retainedModel = undefined;
       state.review = undefined;
       state.mesh = undefined;
+      // Drop the reference before releasing so the retain hook does not
+      // keep the solids this close is finished with.
+      if (served) releaseClosedViewerModel(served);
     },
   };
 }
@@ -218,6 +224,29 @@ let retainedModel: BuiltModel | undefined;
 /** The model the local MCP viewer is still serving, if any. */
 export function retainedMcpViewerModel(): BuiltModel | undefined {
   return retainedModel;
+}
+
+function viewerHeldShapes(model: BuiltModel): ShapeBackend[] {
+  const shapes: ShapeBackend[] = [];
+  if (model.shapes) {
+    for (const shape of model.shapes.values()) shapes.push(shape);
+  }
+  if (model.rootShape) shapes.push(model.rootShape);
+  if (model.tailShape) shapes.push(model.tailShape);
+  return shapes;
+}
+
+registerRetainedShapeSource(() => retainedModel ? viewerHeldShapes(retainedModel) : []);
+
+/** Free solids the viewer was the last owner of. A session that still owns
+ *  the model keeps the cache; a session that has already moved on does not. */
+function releaseClosedViewerModel(model: BuiltModel): void {
+  const active = getActiveMcpSession();
+  if (!model.session || active?.session !== model.session) {
+    disposeModelShapes(model);
+    return;
+  }
+  releaseReplacedShapes(viewerHeldShapes(model), model.session.cachedShapes.values());
 }
 export async function updateMcpViewer(model: BuiltModel, review?: McpViewerReview): Promise<McpViewerResult> {
   if (process.env.KERNELCAD_MCP_MODE === 'hosted') {

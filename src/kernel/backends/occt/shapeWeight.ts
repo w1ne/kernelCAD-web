@@ -6,6 +6,12 @@
 // the evaluator's memory cap. Counting sub-shapes with a deleted explorer
 // avoids replicad's `.faces` getter, which allocates a Face wrapper per face
 // and leaves those handles for the GC.
+//
+// The charge is a face and edge count, not the wasm allocation. A solid with
+// few faces can still hold a large B-spline or tessellation payload and stay
+// under a byte cap until a count cap evicts it. `analysisBody` (the fastener
+// envelope) is a second solid and is charged on its own. A warm store keeps
+// its only document even when that document alone is over the byte budget.
 
 import { getOC } from 'replicad';
 import { isSceneBackend } from '../sceneBackend';
@@ -34,7 +40,7 @@ function countSubshapes(wrapped: object, kind: 'TopAbs_FACE' | 'TopAbs_EDGE'): n
   return count;
 }
 
-function approxOne(shape: object): number {
+function approxWrapped(shape: object): number {
   const wrapped = (shape as { getReplicadShape?: () => { wrapped?: object } }).getReplicadShape?.()?.wrapped;
   if (!wrapped) return UNKNOWN_BYTES;
   try {
@@ -46,15 +52,20 @@ function approxOne(shape: object): number {
   }
 }
 
+function approxOne(shape: object, seen: Set<object>): number {
+  if (seen.has(shape)) return 0;
+  seen.add(shape);
+  let total = approxWrapped(shape);
+  const envelope = (shape as { analysisBody?: object }).analysisBody;
+  if (envelope && envelope !== shape) total += approxOne(envelope, seen);
+  return total;
+}
+
 /** Bytes to charge a cache for `shape`. Scenes sum their part solids once. */
 export function approxOcctBytes(shape: object): number {
-  if (!isSceneBackend(shape)) return approxOne(shape);
   const seen = new Set<object>();
+  if (!isSceneBackend(shape)) return approxOne(shape, seen);
   let total = 0;
-  for (const part of shape.parts) {
-    if (seen.has(part.shape)) continue;
-    seen.add(part.shape);
-    total += approxOne(part.shape);
-  }
+  for (const part of shape.parts) total += approxOne(part.shape, seen);
   return total;
 }
