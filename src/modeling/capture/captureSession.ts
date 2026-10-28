@@ -267,6 +267,13 @@ export class CaptureSession {
     return seed;
   }
 
+  /** Identity of everything a full lower depends on besides the record list:
+   *  feature gates and the live param table. `Shape.lower()` refuses a
+   *  cached solid when this changes, so a param edit re-resolves topology. */
+  lowerInputsKey(): string {
+    return this.fullLowerInputsKey();
+  }
+
   private fullLowerInputsKey(): string {
     const gates = [...this.gatedFeatureNames].map(([k, v]) => `${k}=${v ?? ''}`).join(',');
     return `${gates}|${JSON.stringify(this.paramTable.serialize())}`;
