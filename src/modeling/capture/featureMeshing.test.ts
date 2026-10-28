@@ -141,19 +141,19 @@ describe('meshFeaturesPerFeature', () => {
     expect(features.some(f => f.featureId === 'feat-a')).toBe(true);
   });
 
-  it('propagates record.metadata.color onto FeatureMesh.color', async () => {
+  it('propagates part colors through array-return Scene fan-out meshes', async () => {
     const code = `
       const housing = box(20, 20, 10).color('servo');
       const plain = box(5, 5, 5).translate(30, 0, 0);
       return [housing, plain];
     `;
-    const { records } = await runScript({ code, fileName: 'color.kcad.ts' });
-    const { features } = await meshFeaturesPerFeature(records);
-    const housingMesh = features.find((f) => (records.find((r) => r.id === f.featureId)?.metadata as { color?: string } | undefined)?.color === 'servo');
+    const model = await buildModel({ code, fileName: 'color.kcad.ts' });
+    const { features } = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+    const partMeshes = features.filter((f) => f.assemblyFeatureId === model.rootId);
+    const housingMesh = partMeshes.find((f) => f.assemblyPartName === 'housing');
     expect(housingMesh).toBeDefined();
     expect(housingMesh!.color).toBe('servo');
-    // The plain box has no color metadata → mesh color is undefined.
-    const plainMesh = features.find((f) => f.featureId !== housingMesh!.featureId && f.featureKind === 'box');
+    const plainMesh = partMeshes.find((f) => f.assemblyPartName === 'plain');
     expect(plainMesh).toBeDefined();
     expect(plainMesh!.color).toBeUndefined();
   });

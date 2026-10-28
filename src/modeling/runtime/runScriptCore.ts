@@ -20,6 +20,7 @@ import type { ApiContext, KernelCadApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { Shape } from '../capture/proxy';
 import { getReturnedVariables } from '../../shared/codeGeneration/ast';
 import { findTopLevelImport, normalizeUserScript } from '../../shared/runtime/normalizeUserScript';
@@ -95,12 +96,14 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
   // every other capture-time API misuse uses.
   const importStatement = findTopLevelImport(code);
   if (importStatement !== undefined) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `local imports are not supported in .kcad.ts — define helpers in the same file (imports are stripped before execution). Found: ${importStatement}`,
-      undefined,
-      'Move the imported helper into this .kcad.ts file. The kernelCAD API (box, path, assembly, …) and the lib.* loaders are injected as globals — no import needed.',
-    );
+    invalidArgs({
+      api: 'local imports are not supported in .kcad.ts',
+      path: 'import statement',
+      gotText: importStatement,
+      requires: 'helpers to be defined in the same file; imports are stripped before execution',
+      example: 'const body = box(10, 10, 10); return body;',
+      hint: 'Move the imported helper into this .kcad.ts file. The kernelCAD API (box, path, assembly, …) and the lib.* loaders are injected as globals — no import needed.',
+    });
   }
 
   const session = new CaptureSession();

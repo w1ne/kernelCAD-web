@@ -22,7 +22,17 @@ describe('array return values', () => {
     expect(isSceneBackend(model.rootShape)).toBe(true);
     if (!isSceneBackend(model.rootShape)) throw new Error('Expected an array-return SceneBackend');
     expect(model.rootShape.parts.map(part => part.name)).toEqual(['bracket', 'pin']);
-    expect(model.rootShape.parts.every(part => part.shape.volume() > 0)).toBe(true);
+    const partsByName = new Map(model.rootShape.parts.map(part => [part.name, part]));
+    expect(partsByName.get('bracket')?.shape.volume()).toBeCloseTo(600, 5);
+    expect(partsByName.get('pin')?.shape.volume()).toBeCloseTo(48 * Math.PI, 2);
+    const bracketBounds = partsByName.get('bracket')!.shape.boundingBox();
+    const pinBounds = partsByName.get('pin')!.shape.boundingBox();
+    [20, 10, 3].forEach((size, axis) => {
+      expect(bracketBounds.max[axis] - bracketBounds.min[axis]).toBeCloseTo(size, 5);
+    });
+    [4, 4, 12].forEach((size, axis) => {
+      expect(pinBounds.max[axis] - pinBounds.min[axis]).toBeCloseTo(size, 3);
+    });
 
     const meshing = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
     expect(meshing.failedFeatureIds).toEqual([]);
