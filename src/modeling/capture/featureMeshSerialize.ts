@@ -35,6 +35,8 @@ export interface FeatureMeshSerialized {
   faces: FaceGeometrySerialized[];
   mesh?: { positions: SerializedFloats; normals: SerializedFloats; indices: SerializedIndices };
   volume?: number;
+  /** BREP solids represented by this display feature; used for honest body counts. */
+  solidCount?: number;
   edges?: SerializedFloats;
   /** Legacy color attribute (ColorToken or `#rrggbb` hex). Renderer resolves via
    *  ROLE_PALETTE; absent means use the renderer's default material color.
@@ -148,6 +150,7 @@ function serializeFeatureMesh(m: FeatureMesh, typedArrayCopies: boolean): Featur
     })),
     ...serializeIndexedMesh(m.mesh, out),
     volume: m.volume,
+    ...(m.solidCount !== undefined ? { solidCount: m.solidCount } : {}),
     edges: m.edges ? out.floats(m.edges) : undefined,
     ...(m.color !== undefined ? { color: m.color } : {}),
     ...(m.material !== undefined ? { material: m.material } : {}),
@@ -183,6 +186,7 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
     })),
     ...rehydrateIndexedMesh(s.mesh),
     volume: s.volume,
+    ...(s.solidCount !== undefined ? { solidCount: s.solidCount } : {}),
     edges: s.edges ? asFloat32(s.edges) : undefined,
     ...(s.color !== undefined ? { color: s.color } : {}),
     ...(s.material !== undefined ? { material: s.material } : {}),

@@ -7,6 +7,7 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import { COARSE_MESH_OPTIONS } from '../../kernel/backends/occt/meshing';
 import { runScript } from '../runtime/runScript';
 import { meshFeaturesPerFeature } from './featureMeshing';
+import { serializeForBridge } from './featureMeshSerialize';
 import { buildModel, updateModelParams } from '../buildModel';
 
 beforeAll(async () => {
@@ -14,6 +15,19 @@ beforeAll(async () => {
 });
 
 describe('meshFeaturesPerFeature', () => {
+  it('reports BREP solid count for a disconnected union in the mesh and root payload', async () => {
+    const model = await buildModel({ fileName: 'disconnected-union.kcad.ts', code: `
+      const body = box(10, 10, 10);
+      return body.union(box(10, 10, 10).translate(30, 0, 0));
+    ` });
+    const meshing = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+    const rootMesh = meshing.features.find((feature) => feature.featureId === model.rootId);
+
+    expect(rootMesh?.solidCount).toBe(2);
+    expect(meshing.solidCount).toBe(2);
+    expect(serializeForBridge(rootMesh!).solidCount).toBe(2);
+  });
+
   it('refreshes cached assembly-part triangles when a parameter changes local geometry', async () => {
     const model = await buildModel({ fileName: 'animated-assembly.kcad.ts', code: `
       const x = param('x', 0);
