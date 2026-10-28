@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { CaptureSession } from './capture/captureSession';
 import { Shape } from './capture/proxy';
-import type { SurfaceProxy } from './capture/surfaceProxy';
+import { namedSurfaceFeatureIds, type SurfaceProxy } from './capture/surfaceProxy';
 import type { Curve3D } from './capture/curveProxy';
 import type { Sketch } from './capture/sketch';
 import type { Vec3 } from '../shared/intent/types';
@@ -301,9 +301,13 @@ export function makeSweepMethods(
       }
       const inputs: Record<string, import('../shared/intent/types').FeatureRef> = {};
       for (let i = 0; i < surfaces.length; i++) {
-        inputs[`surface_${i}`] = { kind: 'surface', surfaceId: surfaces[i].id };
-        for (const fid of surfaces[i].__trimDependencyIds()) {
+        const surface = surfaces[i];
+        inputs[`surface_${i}`] = { kind: 'surface', surfaceId: surface.id };
+        for (const fid of surface.__trimDependencyIds()) {
           inputs[fid] = { kind: 'feature', id: fid };
+        }
+        for (const fid of namedSurfaceFeatureIds(session, surface.id)) {
+          inputs[`src_${i}_${fid}`] = { kind: 'feature', id: fid };
         }
       }
       const tolerance = opts?.tolerance ?? 1e-6;

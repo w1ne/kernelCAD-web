@@ -27,6 +27,20 @@ export interface SurfaceFromBoundaryCaptureArgs {
   sampling?: number;
 }
 
+function coord(value: unknown): number {
+  if (typeof value === 'number') return value;
+  if (value !== null && typeof value === 'object' && 'evaluated' in value) {
+    const evaluated = (value as { evaluated: unknown }).evaluated;
+    if (typeof evaluated === 'number') return evaluated;
+  }
+  return Number.NaN;
+}
+
+function asPoint(point: unknown): [number, number, number] {
+  const xyz = point as unknown[];
+  return [coord(xyz?.[0]), coord(xyz?.[1]), coord(xyz?.[2])];
+}
+
 export interface CurveEndpointPair {
   start: [number, number, number];
   end: [number, number, number];
@@ -116,10 +130,7 @@ export function buildCoonsPatchSurfaceRecord(
       return resolvers.evaluateCurveEndpoints(args.curveIds[i], metadata);
     } catch {
       const cp = metadata.controlPoints;
-      return {
-        start: cp[0] as [number, number, number],
-        end: cp[cp.length - 1] as [number, number, number],
-      };
+      return { start: asPoint(cp[0]), end: asPoint(cp[cp.length - 1]) };
     }
   });
 

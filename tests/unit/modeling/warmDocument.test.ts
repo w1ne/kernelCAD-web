@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { OcctBackend, initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
+import { predecessorsByRecord } from '../../../src/modeling/compute/recomputeEngine';
 import { buildModel, updateModelParams, type BuiltModel } from '../../../src/modeling/buildModel';
 import { createWarmDocumentStore } from '../../../src/modeling/warm/documentSession';
 import { featureFingerprints } from '../../../src/modeling/warm/featureFingerprint';
+import { importIdentity } from '../../../src/modeling/warm/importIdentity';
 import type { ShapeBackend } from '../../../src/kernel/backends/backend';
 import type { FeatureRecord } from '../../../src/shared/intent/featureRecord';
+import type { SurfaceRecord } from '../../../src/shared/intent/surfaceRecord';
 import { ParamTable } from '../../../src/shared/runtime/paramTable';
 
 function faceCount(shape: ShapeBackend): number {
@@ -388,5 +391,222 @@ endsolid t
     const after = featureFingerprints([upstream('blue'), consumer], table).get('tip');
     expect(before).toBeDefined();
     expect(after).not.toBe(before);
+  });
+
+  it('rebuilds a display mesh when meshFromSTL bytes change', async () => {
+    const stl = (span: number) => `solid t
+facet normal 0 0 1
+ outer loop
+  vertex 0 0 0
+  vertex ${span} 0 0
+  vertex 0 ${span} 0
+ endloop
+endfacet
+endsolid t
+`;
+    const dir = mkdtempSync(join(tmpdir(), 'warm-mesh-'));
+    try {
+      writeFileSync(join(dir, 'part.stl'), stl(10));
+      const code = `return await lib.meshFromSTL('part.stl');`;
+      const store = createWarmDocumentStore({ build: (input) => buildModel(input) });
+      const opened = await store.open({ id: 'mesh', code, fileName: 'part.kcad.ts', scriptDir: dir });
+      writeFileSync(join(dir, 'part.stl'), stl(30));
+      const replaced = await store.open({ id: 'mesh', code, fileName: 'part.kcad.ts', scriptDir: dir });
+      expect(replaced.model).not.toBe(opened.model);
+      const cold = await buildModel({ code, fileName: 'part.kcad.ts', scriptDir: dir });
+      const warmBox = rootOf(replaced.model).boundingBox();
+      const coldBox = rootOf(cold).boundingBox();
+      expect(warmBox.max[0]).toBeCloseTo(coldBox.max[0], 3);
+      expect(warmBox.max[1]).toBeCloseTo(coldBox.max[1], 3);
+      expect(rootOf(opened.model).boundingBox().max[0]).not.toBeCloseTo(warmBox.max[0], 0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('rebuilds fetchPart when the catalog step changes and refuses an unknown id', async () => {
+    const missingA = await importIdentity(`return await lib.fetchPart('no-such-part-zz');`, undefined);
+    const missingB = await importIdentity(`return await lib.fetchPart('no-such-part-zz');`, undefined);
+    expect(missingA).not.toBe(missingB);
+
+    const dir = mkdtempSync(join(tmpdir(), 'warm-part-'));
+    const family = 'socket-head-cap-screw';
+    const prev = process.env.KERNELCAD_PARTS_DIR;
+    try {
+      mkdirSync(join(dir, family), { recursive: true });
+      const index = JSON.parse(readFileSync('assets/parts-seed/index.json', 'utf8')) as { records: { id: string }[] };
+      index.records = index.records.filter((record) => record.id === 'iso-4762-m2x4');
+      writeFileSync(join(dir, 'index.json'), JSON.stringify(index));
+      const step = join(dir, family, 'iso-4762-m2x4.step');
+      copyFileSync('assets/parts-seed/socket-head-cap-screw/iso-4762-m2x4.step', step);
+      process.env.KERNELCAD_PARTS_DIR = dir;
+      const code = `return await lib.fetchPart('iso-4762-m2x4');`;
+      const store = createWarmDocumentStore({ build: (input) => buildModel(input) });
+      const opened = await store.open({ id: 'part', code, fileName: 'part.kcad.ts', scriptDir: dir });
+      const before = rootOf(opened.model).volume();
+      copyFileSync('assets/parts-seed/heat-set-insert/heatset-m2-5-l3-8.step', step);
+      const replaced = await store.open({ id: 'part', code, fileName: 'part.kcad.ts', scriptDir: dir });
+      expect(replaced.model).not.toBe(opened.model);
+      const cold = await buildModel({ code, fileName: 'part.kcad.ts', scriptDir: dir });
+      expectSameSolid(rootOf(replaced.model), rootOf(cold));
+      expect(rootOf(replaced.model).volume()).not.toBeCloseTo(before, 1);
+    } finally {
+      if (prev === undefined) delete process.env.KERNELCAD_PARTS_DIR;
+      else process.env.KERNELCAD_PARTS_DIR = prev;
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('dispose frees an analysis envelope and leaves a placed clone', async () => {
+    await initOcct();
+    const main = OcctBackend.box(4, 4, 4);
+    const envelope = OcctBackend.box(1, 1, 1);
+    const placed = envelope.clone().translate(10, 0, 0);
+    const placedVolume = placed.volume();
+    main.analysisBody = envelope;
+    main.dispose();
+    expect(placed.volume()).toBeCloseTo(placedVolume, 3);
+    expect(() => envelope.volume()).toThrow();
+  });
+
+  it('includes a surface input in the fingerprint and the affect graph', () => {
+    const surface = (x: number): SurfaceRecord => ({
+      id: 'surface_1',
+      kind: 'nurbsSurface',
+      params: {},
+      data: {
+        kind: 'nurbsSurface',
+        controls: [[[x, 0, 0], [1, 0, 0]], [[x, 1, 0], [1, 1, 0]]],
+        degree: { u: 1, v: 1 },
+      },
+    });
+    const consumer: FeatureRecord = {
+      id: 'thick',
+      kind: 'surfaceThicken',
+      inputs: { surface: { kind: 'surface', surfaceId: 'surface_1' } },
+      params: {},
+      transforms: [],
+      suppressed: false,
+    };
+    const table = new ParamTable();
+    const before = featureFingerprints([consumer], table, [surface(0)]).get('thick');
+    const after = featureFingerprints([consumer], table, [surface(3)]).get('thick');
+    expect(before).toBeDefined();
+    expect(after).not.toBe(before);
+    expect(predecessorsByRecord([consumer]).get('thick')).toEqual(['surface_1']);
+  });
+
+  it('does not return a memoised volume or box after dispose', async () => {
+    await initOcct();
+    const box = OcctBackend.box(2, 2, 2);
+    expect(box.volume()).toBeCloseTo(8, 3);
+    box.boundingBox();
+    box.dispose();
+    expect(() => box.volume()).toThrow();
+    expect(() => box.boundingBox()).toThrow();
+  });
+
+  it('does not reuse a document after its font file disappears', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'warm-font-'));
+    const goneA = await importIdentity(`return sketch.text('A', { font: fontPath('A.ttf') });`, dir);
+    const goneB = await importIdentity(`return sketch.text('A', { font: fontPath('A.ttf') });`, dir);
+    expect(goneA).not.toBe(goneB);
+    try {
+      copyFileSync('src/shared/fonts/LiberationSans-Regular.ttf', join(dir, 'A.ttf'));
+      const code = `return sketch.text('A', { size: 6, font: fontPath('A.ttf') }).extrude(1);`;
+      const store = createWarmDocumentStore({ build: (input) => buildModel(input) });
+      await store.open({ id: 'plaque', code, fileName: 'a.kcad.ts', scriptDir: dir });
+      rmSync(join(dir, 'A.ttf'));
+      const again = await store.open({ id: 'plaque', code, fileName: 'a.kcad.ts', scriptDir: dir });
+      expect(again.model.rootShape).toBeUndefined();
+      expect(again.model.diagnostics.some((d) => d.severity === 'error' && /ENOENT/.test(d.message))).toBe(true);
+      const third = await store.open({ id: 'plaque', code, fileName: 'a.kcad.ts', scriptDir: dir });
+      expect(third.model).not.toBe(again.model);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('re-lowers a Coons thicken when a boundary curve moves', async () => {
+    const code = `
+      const z = param('z', 0, { min: -5, max: 30 });
+      const bottom = nurbsCurve([[0, 0, z], [12, 0, z]], { degree: 1 });
+      const right = nurbsCurve([[12, 0, z], [12, 8, z]], { degree: 1 });
+      const top = nurbsCurve([[12, 8, z], [0, 8, z]], { degree: 1 });
+      const left = nurbsCurve([[0, 8, z], [0, 0, z]], { degree: 1 });
+      return surfaceFromBoundary([bottom, right, top, left]).thicken(2);
+    `;
+    const warm = await buildModel({ code, fileName: 'warm.kcad.ts' });
+    const thicken = warm.records.find((record) => record.kind === 'surfaceThicken')!;
+    const lowered = spyLowers();
+    const edited = await updateModelParams(warm, [{ name: 'z', value: 6 }]);
+    expect(lowered).toContain(thicken.id);
+    const cold = await coldAt(code, "param('z', 0,", "param('z', 6,");
+    expectSameSolid(rootOf(edited.model), rootOf(cold));
+  });
+
+  it('re-lowers a sewn Coons patch when a boundary curve moves', async () => {
+    const code = `
+      const z = param('z', 0, { min: -5, max: 30 });
+      const bottom = nurbsCurve([[0, 0, z], [12, 0, z]], { degree: 1 });
+      const right = nurbsCurve([[12, 0, z], [12, 8, z]], { degree: 1 });
+      const top = nurbsCurve([[12, 8, z], [0, 8, z]], { degree: 1 });
+      const left = nurbsCurve([[0, 8, z], [0, 0, z]], { degree: 1 });
+      return sew([surfaceFromBoundary([bottom, right, top, left])]);
+    `;
+    const warm = await buildModel({ code, fileName: 'warm.kcad.ts' });
+    const sewn = warm.records.find((record) => record.kind === 'surfaceSew')!;
+    const lowered = spyLowers();
+    const edited = await updateModelParams(warm, [{ name: 'z', value: 6 }]);
+    expect(lowered).toContain(sewn.id);
+    const cold = await coldAt(code, "param('z', 0,", "param('z', 6,");
+    expectSameSolid(rootOf(edited.model), rootOf(cold));
+  });
+
+  it('reuses a fromSTL import that passes options when the file is unchanged', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'warm-stl-opts-'));
+    try {
+      writeFileSync(join(dir, 'part.stl'), `solid t
+facet normal 0 0 -1
+ outer loop
+  vertex 0 0 0
+  vertex 10 0 0
+  vertex 0 10 0
+ endloop
+endfacet
+facet normal 0 -1 0
+ outer loop
+  vertex 0 0 0
+  vertex 0 0 10
+  vertex 10 0 0
+ endloop
+endfacet
+facet normal -1 0 0
+ outer loop
+  vertex 0 0 0
+  vertex 0 10 0
+  vertex 0 0 10
+ endloop
+endfacet
+facet normal 1 1 1
+ outer loop
+  vertex 10 0 0
+  vertex 0 0 10
+  vertex 0 10 0
+ endloop
+endfacet
+endsolid t
+`);
+      const code = `return await lib.fromSTL('part.stl', { allowOpen: true });`;
+      const store = createWarmDocumentStore({ build: (input) => buildModel(input) });
+      const first = await store.open({ id: 'stl-opts', code, fileName: 'part.kcad.ts', scriptDir: dir });
+      const lowered = spyLowers();
+      const again = await store.open({ id: 'stl-opts', code, fileName: 'part.kcad.ts', scriptDir: dir });
+      expect(again.model).toBe(first.model);
+      expect(lowered).toHaveLength(0);
+      expect(rootOf(again.model).volume()).toBeGreaterThan(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

@@ -194,11 +194,19 @@ function walkResolveObject(obj: Record<string, unknown>, table: ParamTable): unk
   return changed ? out : obj;
 }
 
+function paramRefExpr(node: object): ParamRefExpr | undefined {
+  const branded = node as { _brand?: string; _expr?: ParamRefExpr };
+  if (branded._brand === 'ParamRef' && branded._expr) return branded._expr;
+  return undefined;
+}
+
 function walkResolve(node: unknown, table: ParamTable): unknown {
   if (node === null || node === undefined) return node;
   if (Array.isArray(node)) return walkResolveArray(node, table);
   if (typeof node !== 'object') return node;
   if (isParam(node)) return resolveParamNode(node, table);
+  const expr = paramRefExpr(node);
+  if (expr) return resolveExpr(expr, table);
   return walkResolveObject(node as Record<string, unknown>, table);
 }
 
@@ -232,6 +240,11 @@ function walkCollect(node: unknown, refs: Set<string>, seen: WeakSet<object>): v
     } else {
       collectExprNames(node.paramRef, refs);
     }
+    return;
+  }
+  const expr = paramRefExpr(node);
+  if (expr) {
+    collectExprNames(expr, refs);
     return;
   }
   const obj = node as Record<string, unknown>;
