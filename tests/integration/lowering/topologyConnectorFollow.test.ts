@@ -563,6 +563,87 @@ describe('topology connector origins follow a rebuilt face', () => {
     expect(solved[1]).toBeCloseTo(0, 3);
     expect(solved[2]).toBeCloseTo(5, 3);
   });
+
+  it('places a polar side hole on the drilled boss when two bosses share a radius', async () => {
+    // Two Ø16 bosses, 40 mm apart. angleDeg 0 at z 5 is on the +X wall of
+    // each. The cut lands on the boss at x = -20 (mouth local (-12, 0, 5)).
+    // Part at [50, 0, 0] lifts that mouth to (38, 0, 5). The undrilled boss
+    // still contains its polar point, at local (28, 0, 5) / world (78, 0, 5).
+    const model = await buildModel({
+      fileName: 'polar-equal-radii-bosses-hole-follow.kcad.ts',
+      code: `
+        const bosses = cylinder(10, 8).translate(-20, 0, 0)
+          .union(cylinder(10, 8).translate(20, 0, 0))
+          .hole(
+            { ofSurfaceType: 'CYLINDER' },
+            { at: { angleDeg: 0, z: 5 }, diameter: 3, depth: 4 },
+          );
+        const arm = assembly('stack');
+        arm.part('bosses', bosses, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'bosses.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(solved[0], 3);
+    expect(scene[1]).toBeCloseTo(solved[1], 3);
+    expect(scene[2]).toBeCloseTo(solved[2], 3);
+    expect(solved[0]).toBeCloseTo(38, 3);
+    expect(solved[1]).toBeCloseTo(0, 3);
+    expect(solved[2]).toBeCloseTo(5, 3);
+  });
+
+  it('keeps a drilled polar step after another model lowers a polar hole', async () => {
+    // Each capture session mints its own hole_1. A later polar lower must
+    // not retarget this shaft: the mouth stays on the r = 6 step at
+    // (56, 0, 27), not the r = 12 section at (62, 0, 27).
+    const model = await buildModel({
+      fileName: 'polar-stepped-shaft-session-hole-follow.kcad.ts',
+      code: `
+        const shaft = cylinder(20, 12)
+          .union(cylinder(15, 6).translate(0, 0, 20))
+          .hole(
+            { ofSurfaceType: 'CYLINDER' },
+            { at: { angleDeg: 0, z: 27 }, diameter: 3, depth: 4 },
+          );
+        const arm = assembly('stack');
+        arm.part('shaft', shaft, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'shaft.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const before = await solvedCapPoint('stack', model);
+    expect(before[0]).toBeCloseTo(56, 3);
+    expect(before[1]).toBeCloseTo(0, 3);
+    expect(before[2]).toBeCloseTo(27, 3);
+
+    const other = await buildModel({
+      fileName: 'polar-other-session-hole.kcad.ts',
+      code: `
+        return cylinder(20, 12).hole(
+          { ofSurfaceType: 'CYLINDER' },
+          { at: { angleDeg: 0, z: 10 }, diameter: 3, depth: 4 },
+        );
+      `,
+    });
+    expect(other.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(56, 3);
+    expect(scene[1]).toBeCloseTo(0, 3);
+    expect(scene[2]).toBeCloseTo(27, 3);
+    expect(solved[0]).toBeCloseTo(56, 3);
+    expect(solved[1]).toBeCloseTo(0, 3);
+    expect(solved[2]).toBeCloseTo(27, 3);
+  });
 });
 
 async function solvedCapPoint(

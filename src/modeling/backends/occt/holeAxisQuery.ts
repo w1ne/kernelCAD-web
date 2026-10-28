@@ -213,11 +213,12 @@ function featureIsPolar(feature: FeatureRecord): boolean {
 /** Polar `at` stored only angle and axial z. Rebuild the cartesian mouth
  *  `placePolar` would have cut, in the pre-transform frame, so
  *  `pointPlacedFrame` can replay post-cut transforms and part `at`.
- *  Several cylinders: replay the radius `placePolar` drilled. Distance from
- *  each candidate's own pre-transform polar point to that face breaks a
- *  tie. Map the geometric axis back first, then flip its dominant
- *  component. Flipping in the post-transform frame and inverting that sign
- *  mirrors axial `z` when a later rotate or reflect negates the axis. */
+ *  Several cylinders: replay the cut-frame axis (origin, direction, and
+ *  radius) `placePolar` stored on the hole record. Distance to the face
+ *  prefers the cylinder the drill did not open. Map the geometric axis
+ *  back first, then flip its dominant component. Flipping in the
+ *  post-transform frame and inverting that sign mirrors axial `z` when a
+ *  later rotate or reflect negates the axis. */
 function polarAuthoredFrame(
   backend: OcctBackend,
   feature: FeatureRecord,
@@ -234,7 +235,7 @@ function polarAuthoredFrame(
       if (!local) return undefined;
       return bakePoint(forwardPoint(polarPointOnAxis(local, angle, z), transforms), baked);
     },
-    cutRadius: (raw) => cylinderInCutFrame(raw, transforms, baked)?.radius,
+    cutFrame: (raw) => cylinderInCutFrame(raw, transforms, baked) ?? undefined,
   });
   if (!axis) return null;
   const local = cylinderInCutFrame(axis, transforms, baked);
