@@ -38,6 +38,19 @@ export class SmlibLowerer implements FeatureLowerer {
     this.supports = new Set(NATIVE_ATTEMPT_KINDS);
   }
 
+  /** OCCT must have produced a solid this lowerer knows how to attempt. */
+  private assertNativeAttempt(record: FeatureRecord, reference: LowerResult): void {
+    if (reference.diagnostics.some((d) => d.severity === 'error') || !reference.shape) {
+      throw new GuardError('OCCT_REFERENCE_FAILED', 'OCCT reference did not produce an acceptable result');
+    }
+    if (!(NATIVE_ATTEMPT_KINDS as readonly string[]).includes(record.kind)) {
+      throw new GuardError('UNSUPPORTED_FEATURE', `Native ${record.kind} is not implemented`);
+    }
+    if (record.transforms.length) {
+      throw new GuardError('UNSUPPORTED_TRANSFORM', 'Post-feature transforms use OCCT');
+    }
+  }
+
   async lower(record: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
     // Build once, preserving OCCT's own diagnostics and result for fallback.
     const reference = await this.reference.lower(record, inputs);
@@ -45,13 +58,7 @@ export class SmlibLowerer implements FeatureLowerer {
     const occtOwned: ShapeBackend[] = [];
     let compatibility: OcctBackend | undefined;
     try {
-      if (reference.diagnostics.some(d => d.severity === 'error') || !reference.shape) {
-        throw new GuardError('OCCT_REFERENCE_FAILED', 'OCCT reference did not produce an acceptable result');
-      }
-      if (!['box','cylinder','sphere','extrude','boolean','fillet','moveFaces','offsetFaces','importedStep'].includes(record.kind)) {
-        throw new GuardError('UNSUPPORTED_FEATURE', `Native ${record.kind} is not implemented`);
-      }
-      if (record.transforms.length) throw new GuardError('UNSUPPORTED_TRANSFORM', 'Post-feature transforms use OCCT');
+      this.assertNativeAttempt(record, reference);
       this.checkProfile(record, inputs);
       const sm = await loadSmlib();
       takeSmlibWarnings();

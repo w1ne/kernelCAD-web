@@ -4,7 +4,7 @@ import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import type { Face } from 'replicad';
 import { OcctBackend } from './occtBackend';
-import { booleanShapesWithHistory, mergeBooleanHistory } from './historyAwareBooleans';
+import { booleanShapesWithHistory, mergeBooleanHistory, type BooleanHistoryResult } from './historyAwareBooleans';
 import { isValidShape, volumeOf } from './booleanRecovery';
 import { stampSolid } from '../../naming/operationLineage';
 import type { EdgeHistoryMap, HistoryMap } from '../../naming/evolutionRecord';
@@ -455,37 +455,28 @@ function adopt(
   return out;
 }
 
-function offsetOne(
-  body: OcctBackend,
-  face: Face,
-  distance: number,
-  featureId: string,
-): { backend: OcctBackend; history: Map<string, string[]> } {
-  const oc = getOC();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const topo = (face as any).wrapped as unknown;
-  const normal = outwardNormal(oc, topo);
-  const area = surfaceArea(oc, topo);
-  if (!(area > 0)) throw new FaceEditError('FACE_EDIT_FAILED', 'the selected face has no area');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const bodyShape = (body.getReplicadShape() as any).wrapped;
-  const origin = surfaceCenter(oc, topo);
-  const consumed = body.historyMap?.get(hashOf(topo));
+/** Positive distance follows the outward normal. Negative distance runs into the material. */
+function extrudeFacePrism(oc: OC, topo: unknown, normal: Vec3, distance: number): unknown {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dir = new (oc as any).gp_Vec_4(normal[0] * distance, normal[1] * distance, normal[2] * distance);
-  // Positive distance follows the outward normal: the prism is fused on.
-  // Negative distance runs into the material: the prism is cut away.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const prism = new (oc as any).BRepPrimAPI_MakePrism_1(topo, dir, true, true);
-  let tool: unknown;
   try {
     if (!prism.IsDone()) throw new FaceEditError('FACE_EDIT_FAILED', 'OCCT could not extrude the selected face');
-    tool = prism.Shape();
+    return prism.Shape();
   } finally {
     dir.delete();
     prism.delete();
   }
-  let result;
+}
+
+function booleanOffset(
+  oc: OC,
+  bodyShape: unknown,
+  tool: unknown,
+  distance: number,
+): { result: BooleanHistoryResult; sewError?: string } {
+  let result: BooleanHistoryResult;
   try {
     result = booleanShapesWithHistory(bodyShape, [tool], distance > 0 ? 'fuse' : 'cut');
   } catch (e) {
@@ -514,22 +505,37 @@ function offsetOne(
       'OCCT built a solid that fails its topology check after sewing coplanar faces. Use a smaller distance, or build the change as a boolean.',
     );
   }
+  return { result, sewError: sewn.error };
+}
+
+/**
+ * The prism sew also merges coplanar seams the input still carried.
+ * Compare with that same unify, and measure area × distance from it.
+ * An empty cut has volume 0, and area × distance is 0 too, so that case is rejected first.
+ */
+function certifyPlanarOffset(
+  oc: OC,
+  bodyShape: unknown,
+  result: BooleanHistoryResult,
+  resultSewError: string | undefined,
+  origin: Vec3,
+  normal: Vec3,
+  area: number,
+  distance: number,
+): { faceHashes: string[]; landed: string } {
   const faceHashes = hashesOf(oc, result.shape, 'face');
   const after = volumeOf(oc, result.shape);
-  // An empty cut has volume 0, and area × distance is 0 too. Reject before that comparison.
   if (faceHashes.length === 0 || !(after > 0)) {
     throw new FaceEditError(
       'FACE_EDIT_FAILED',
       `moving this face by ${distance} mm removed the solid. Use a smaller distance so some material remains.`,
     );
   }
-  // The prism sew also merges coplanar seams the input still carried.
-  // Compare with that same unify, and measure area × distance from it.
   const baseline = sewCoplanar(oc, bodyShape);
   const beforeFaces = hashesOf(oc, baseline.shape, 'face').length;
   const before = volumeOf(oc, baseline.shape);
   if (faceHashes.length !== beforeFaces) {
-    const sewNotes = [sewn.error, baseline.error].filter((note): note is string => Boolean(note));
+    const sewNotes = [resultSewError, baseline.error].filter((note): note is string => Boolean(note));
     const sewNote = sewNotes.length ? ` Sewing coplanar faces failed: ${sewNotes.join(' ')}.` : '';
     const glued = faceHashes.length > beforeFaces && !boundaryMoved(oc, bodyShape, result.shape, origin, normal, distance)
       ? ' A gained face means a glued prism was added instead of the neighbouring faces extending.'
@@ -559,9 +565,33 @@ function offsetOne(
         `The face did not slide along its normal. Pick a face whose boundary can move with it, or use a smaller distance.`,
     );
   }
+  return { faceHashes, landed: landed[0] };
+}
+
+function offsetOne(
+  body: OcctBackend,
+  face: Face,
+  distance: number,
+  featureId: string,
+): { backend: OcctBackend; history: Map<string, string[]> } {
+  const oc = getOC();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const topo = (face as any).wrapped as unknown;
+  const normal = outwardNormal(oc, topo);
+  const area = surfaceArea(oc, topo);
+  if (!(area > 0)) throw new FaceEditError('FACE_EDIT_FAILED', 'the selected face has no area');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bodyShape = (body.getReplicadShape() as any).wrapped;
+  const origin = surfaceCenter(oc, topo);
+  const consumed = body.historyMap?.get(hashOf(topo));
+  const tool = extrudeFacePrism(oc, topo, normal, distance);
+  const { result, sewError } = booleanOffset(oc, bodyShape, tool, distance);
+  const { faceHashes, landed } = certifyPlanarOffset(
+    oc, bodyShape, result, sewError, origin, normal, area, distance,
+  );
   const faceMap = mergeBooleanHistory(body.historyMap, undefined, result);
   // The prism consumes the selected face. The face on the offset plane is that face, moved.
-  if (consumed) faceMap.set(landed[0], consumed);
+  if (consumed) faceMap.set(landed, consumed);
   const edgeMap = keepLive(
     mergeEdges(body.edgeHistoryMap, result.edgeHistory, result.deletedEdges),
     hashesOf(oc, result.shape, 'edge'),

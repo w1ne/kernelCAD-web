@@ -67,23 +67,18 @@ function remapEdges(reference: OcctBackend, imported: OcctBackend): EdgeHistoryM
   return out;
 }
 
-/** STEP has no kernelCAD lineage. Re-seed primitive names geometrically;
- * never pretend that old face hashes address the reconstructed solid.
- * Non-primitive lineage needs certified face correspondence, so fail closed. */
-export function preserveProvenance(reference: OcctBackend, imported: OcctBackend): OcctBackend {
-  const kind = reference.kind;
-  const primitive = kind === 'box' || kind === 'cylinder' || kind === 'sphere';
-  if (reference.historyMap?.size && !primitive) {
-    throw new GuardError('NAMING_HISTORY', 'STEP reconstruction cannot preserve non-primitive face lineage');
-  }
-  const shape = imported.getReplicadShape();
-  const placed = new OcctBackend(shape, primitive ? kind : undefined);
-  if (!reference.historyMap?.size) return placed;
+function isNamedPrimitive(kind: OcctBackend['kind']): boolean {
+  return kind === 'box' || kind === 'cylinder' || kind === 'sphere';
+}
+
+/** Canonical primitive faces. A cylinder wall has only rootHash and rootFeatureId,
+ * so it is left for the single unnamed imported face. */
+function seedNamedFaces(placed: OcctBackend, reference: OcctBackend): { history: HistoryMap; seeded: Set<string> } {
   const history: HistoryMap = new Map();
   const seeded = new Set<string>();
-  for (const [refHash, lineage] of reference.historyMap) {
-    // A cylinder wall is seeded with only rootHash and rootFeatureId. STEP has
-    // no name for it; the single unnamed imported face receives it below.
+  const source = reference.historyMap;
+  if (!source) return { history, seeded };
+  for (const [refHash, lineage] of source) {
     if (!lineage.canonicalName && !lineage.featureId && !lineage.labelName) continue;
     if (!lineage.canonicalName || lineage.featureId || lineage.labelName) {
       throw new GuardError('NAMING_HISTORY', 'Primitive carries additional lineage that STEP cannot preserve');
@@ -93,14 +88,39 @@ export function preserveProvenance(reference: OcctBackend, imported: OcctBackend
     history.set(hash, { ...lineage, rootHash: hash });
     seeded.add(refHash);
   }
-  const skipped = [...reference.historyMap.entries()].filter(([hash]) => !seeded.has(hash));
+  return { history, seeded };
+}
+
+/** STEP has no name for one skipped reference face. It belongs on the one imported face that stayed unnamed. */
+function copyUnnamedFace(history: HistoryMap, reference: OcctBackend, placed: OcctBackend, seeded: Set<string>): void {
+  const source = reference.historyMap;
+  if (!source) return;
+  const skipped = [...source.entries()].filter(([hash]) => !seeded.has(hash));
   const unmatched = [...new Set(placed.faceHashes())].filter((hash) => !history.has(hash));
   if (skipped.length === 1 && unmatched.length === 1) {
     const [, lineage] = skipped[0];
     history.set(unmatched[0], { ...lineage, rootHash: unmatched[0] });
-  } else if (skipped.length !== 0 || unmatched.length !== 0) {
+    return;
+  }
+  if (skipped.length !== 0 || unmatched.length !== 0) {
     throw new GuardError('NAMING_HISTORY', 'Primitive face correspondence is ambiguous');
   }
+}
+
+/** STEP has no kernelCAD lineage. Re-seed primitive names geometrically;
+ * never pretend that old face hashes address the reconstructed solid.
+ * Non-primitive lineage needs certified face correspondence, so fail closed. */
+export function preserveProvenance(reference: OcctBackend, imported: OcctBackend): OcctBackend {
+  const kind = reference.kind;
+  const primitive = isNamedPrimitive(kind);
+  if (reference.historyMap?.size && !primitive) {
+    throw new GuardError('NAMING_HISTORY', 'STEP reconstruction cannot preserve non-primitive face lineage');
+  }
+  const shape = imported.getReplicadShape();
+  const placed = new OcctBackend(shape, primitive ? kind : undefined);
+  if (!reference.historyMap?.size) return placed;
+  const { history, seeded } = seedNamedFaces(placed, reference);
+  copyUnnamedFace(history, reference, placed, seeded);
   const out = new OcctBackend(shape, kind, history);
   const edges = remapEdges(reference, imported);
   if (edges) out.edgeHistoryMap = edges;

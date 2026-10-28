@@ -5,7 +5,7 @@ OCCT remains the default. Select `kernel: 'smlib'` in `buildModel` /
 `--kernel smlib` where the kernel option is advertised. `HeadlessKernel` runs
 raw replicad scripts and remains OCCT-only. No Studio layout changes are required.
 The pinned SMLib package requires Node 22.18 or newer for Node execution.
-0.6.0 keeps that engine range (`>=22.18`). kernelCAD itself stays on
+0.6.2 keeps that engine range (`>=22.18`). kernelCAD itself stays on
 `>=22.12`; selecting `kernel: 'smlib'` still needs 22.18.
 
 ```ts
@@ -16,7 +16,7 @@ await buildModel({
 });
 ```
 
-The registry loads `@classcad/smlibwasm@0.6.0` only during an eligible opt-in
+The registry loads `@classcad/smlibwasm@0.6.2` only during an eligible opt-in
 feature build. Factory creation and capability inspection do not load WASM.
 Native candidates cover boxes, cylinders, spheres, straight primitive/profile
 extrusions, Booleans, constant G1 fillets, `moveFaces`, `offsetFaces` and
