@@ -70,6 +70,13 @@ function selectorRoot(label: string): string {
 
 /** Build the dependency graph and its derived lookups (topo order,
  *  predecessor lists, id → record index) for one `run()` call. */
+function inputUpstream(ref: FeatureRecord['inputs'][string]): string | undefined {
+  if (ref.kind === 'feature') return ref.id;
+  if (ref.kind === 'surface') return ref.surfaceId;
+  if (ref.kind === 'face' || ref.kind === 'edge' || ref.kind === 'vertex') return ref.featureId;
+  return undefined;
+}
+
 function buildRecomputeGraph(records: readonly FeatureRecord[]): {
   order: FeatureId[];
   predecessorsOf: Map<FeatureId, FeatureId[]>;
@@ -81,11 +88,13 @@ function buildRecomputeGraph(records: readonly FeatureRecord[]): {
   for (const r of records) {
     const preds: FeatureId[] = [];
     for (const ref of Object.values(r.inputs)) {
-      if (ref.kind === 'feature' || ref.kind === 'face' || ref.kind === 'edge' || ref.kind === 'vertex') {
-        const upstreamId = ref.kind === 'feature' ? ref.id : ref.featureId;
-        graph.addEdge(upstreamId, r.id);
-        preds.push(upstreamId);
-      }
+      const upstreamId = inputUpstream(ref);
+      if (!upstreamId) continue;
+      // Surfaces are not feature records. Register the node so the edge is
+      // legal; `processRecord` skips an id that has no record.
+      if (ref.kind === 'surface') graph.addNode(upstreamId);
+      graph.addEdge(upstreamId, r.id);
+      preds.push(upstreamId);
     }
     predecessorsOf.set(r.id, preds);
   }
@@ -505,7 +514,8 @@ export class RecomputeEngine {
     },
   ): Promise<number> {
     const { idToRecord, predecessorsOf, shapes, diagnostics, health, selections, onEvent, opts } = ctx;
-    const r = idToRecord.get(id)!;
+    const r = idToRecord.get(id);
+    if (!r) return 0;
     const prepared = this.prepareRecord(id, r, opts, health);
     if (prepared === null) return 0;
 

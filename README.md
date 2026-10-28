@@ -120,6 +120,12 @@ scorecard. See the
 [reference-parts scorecard](docs/reference-parts-scorecard.md) and its
 [local validation demo](docs/demos/reference-parts-scorecard/README.md).
 
+The [SolidCraft oracle ledger](docs/solidcraft-ledger.md) vendors that project's
+public reference cases (Apache-2.0) and checks the kernelCAD parts that have
+been modelled so far. Cases without a kernelCAD source stay pending and do not
+fail CI. Pull-request CI runs the fast subset; the nightly job runs every
+implemented part.
+
 ## Agent workflow
 
 For agents and contributors, `.kcad.ts` source is the design source of truth.

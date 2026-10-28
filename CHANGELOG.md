@@ -1,5 +1,12 @@
 # Unreleased
 
+- SolidCraft oracle ledger. The public SolidCraft reference cases (expected
+  values and recipes only, Apache-2.0, pinned commit
+  `7a6c884418698e9c9fb0e6f97b9b847998c58c49`) are vendored beside a kernelCAD
+  ledger. Pending cases are recorded and are not CI failures. The report does
+  not lock a part count or a pass-count baseline. PR CI runs the fast subset
+  (`npm run test:solidcraft-ledger`, 60 s budget). The nightly job runs every
+  implemented part.
 - `hole-axis` topology queries resolve an authored `.hole()` / `.holes()` to
   the entry-face mouth and the axis into the hole, and re-resolve after a
   param edit. `.hole()` / `.holes()` promote `bolt-holes-N` (feature order,

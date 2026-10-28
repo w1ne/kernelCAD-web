@@ -2,7 +2,9 @@ name: CI
 
 # Push path-filters and the PR `changes` job (below) skip CI on truly content-only changes (top-level README/LICENSE/
 # CHANGELOG, plus docs/ which is human-written prose). The reference-parts
-# scorecard is an exception: its committed table is checked by a fast OCCT job.
+# scorecard and the SolidCraft ledger are exceptions: each committed table is
+# checked by its own fast OCCT job. The SolidCraft PR job runs only the fast
+# subset; the full implemented set is the nightly workflow.
 # Anything that COULD
 # affect runtime — src/, tests/, scripts/, eval/, package*.json,
 # tsconfig*.json, .github/workflows/ — still triggers CI.
@@ -21,6 +23,7 @@ on:
       - '!RELEASE_NOTES.md'
       - '!docs/**'
       - 'docs/reference-parts-scorecard.md'
+      - 'docs/solidcraft-ledger.md'
       - '!doc/**'
       - '!archive/**'
   pull_request:
@@ -50,6 +53,7 @@ jobs:
   # run per name, so a code-touching PR can never be green-lit by a stand-in.
   # Keep the case-list in sync with the push `paths` filter above.
   # A scorecard-only docs PR runs only the reference-parts geometry/report gate.
+  # A SolidCraft-ledger-only docs PR runs only that ledger's fast subset.
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -59,6 +63,7 @@ jobs:
     outputs:
       docs_only: ${{ steps.detect.outputs.docs_only }}
       reference_parts: ${{ steps.detect.outputs.reference_parts }}
+      solidcraft: ${{ steps.detect.outputs.solidcraft }}
     steps:
       - id: detect
         env:
@@ -69,22 +74,26 @@ jobs:
           set -euo pipefail
           docs_only=false
           reference_parts=true
+          solidcraft=true
           if [ "$EVENT" = "pull_request" ]; then
             reference_parts=false
+            solidcraft=false
             files=$(gh api --paginate "repos/${{ github.repository }}/pulls/${PR}/files" --jq '.[] | .filename, (.previous_filename // empty)')
             if [ -n "$files" ]; then
               docs_only=true
               while IFS= read -r f; do
                 case "$f" in
                   docs/reference-parts-scorecard.md) reference_parts=true ;;
+                  docs/solidcraft-ledger.md) solidcraft=true ;;
                   README.md|CONTRIBUTING.md|CHANGELOG.md|LICENSE|RELEASE_NOTES.md|docs/*|doc/*|archive/*) ;;
-                  *) echo "non-docs file: $f"; docs_only=false; reference_parts=true ;;
+                  *) echo "non-docs file: $f"; docs_only=false; reference_parts=true; solidcraft=true ;;
                 esac
               done <<< "$files"
             fi
           fi
           echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
           echo "reference_parts=$reference_parts" >> "$GITHUB_OUTPUT"
+          echo "solidcraft=$solidcraft" >> "$GITHUB_OUTPUT"
 
   reference-parts:
     runs-on: ubuntu-latest
@@ -96,6 +105,21 @@ jobs:
       - uses: ./.github/actions/setup-cad
       - name: Reference-parts geometry and scorecard gate
         run: npm run test:reference-parts
+
+  # Fast SolidCraft subset only. The full implemented set is
+  # .github/workflows/solidcraft-ledger.yml (nightly / workflow_dispatch).
+  # The node script itself refuses a PR budget above 60s.
+  solidcraft-ledger:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.solidcraft == 'true'
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+      - name: SolidCraft oracle ledger (PR subset)
+        run: npm run test:solidcraft-ledger
+
   lint:
     runs-on: ubuntu-latest
     needs: changes
@@ -170,19 +194,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 2
-    needs: [changes, test-shard, reference-parts]
+    needs: [changes, test-shard, reference-parts, solidcraft-ledger]
     if: always()
     steps:
       - name: All test shards green
         run: |
           [ "${{ needs.changes.result }}" = "success" ] || { echo "changes job: ${{ needs.changes.result }}"; exit 1; }
           if [ "${{ needs.changes.outputs.docs_only }}" = "true" ]; then
-            [ "${{ needs.changes.outputs.reference_parts }}" = "true" ] || exit 0
+            if [ "${{ needs.changes.outputs.reference_parts }}" != "true" ] && [ "${{ needs.changes.outputs.solidcraft }}" != "true" ]; then
+              exit 0
+            fi
           else
             [ "${{ needs.test-shard.result }}" = "success" ] || { echo "shard result: ${{ needs.test-shard.result }}"; exit 1; }
           fi
           if [ "${{ needs.changes.outputs.reference_parts }}" = "true" ]; then
             [ "${{ needs.reference-parts.result }}" = "success" ] || { echo "reference-parts result: ${{ needs.reference-parts.result }}"; exit 1; }
+          fi
+          if [ "${{ needs.changes.outputs.solidcraft }}" = "true" ]; then
+            [ "${{ needs.solidcraft-ledger.result }}" = "success" ] || { echo "solidcraft-ledger result: ${{ needs.solidcraft-ledger.result }}"; exit 1; }
           fi
 
   # Exercises the FEA solve and USD-Isaac export against the REAL external

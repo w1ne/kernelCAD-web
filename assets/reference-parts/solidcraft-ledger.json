@@ -1,0 +1,2857 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "project": "SolidCraft",
+    "url": "https://github.com/tangency-labs/solidcraft",
+    "commit": "7a6c884418698e9c9fb0e6f97b9b847998c58c49",
+    "committedAt": "2026-10-27 17:16:40 -0400",
+    "license": "Apache-2.0",
+    "licenseNote": "SolidCraft is Apache-2.0 OR MIT. This vendored oracle is used under the Apache-2.0 terms. The licence text is assets/reference-parts/solidcraft/LICENSE-APACHE."
+  },
+  "units": {
+    "length": "mm",
+    "volume": "mm^3",
+    "surfaceArea": "mm^2"
+  },
+  "tolerances": {
+    "volumeRelative": 0.001,
+    "surfaceAreaRelative": 0.001,
+    "bboxAbsoluteFloorMm": 0.05,
+    "bboxRelativeOfDiagonal": 0.001,
+    "centerOfMassAbsoluteFloorMm": 0.05,
+    "centerOfMassRelativeOfDiagonal": 0.001,
+    "notes": "Volume and surface area use SolidCraft's default relative tolerance of 1e-3. Bounding box and centre of mass use the looser of 0.05 mm (the reference-parts scorecard floor; an exact OCCT bbox on a cylinder is about 0.024 mm) and 1e-3 of the expected bbox diagonal (SolidCraft's absolute rule)."
+  },
+  "limits": {
+    "perPartMs": 20000,
+    "prTotalMs": 60000,
+    "nightlyPerPartMs": 60000,
+    "nightlyTotalMs": 2700000
+  },
+  "cases": [
+    {
+      "id": "01-box",
+      "name": "Box extrude",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/01-box.kcad.ts",
+      "expected": {
+        "volumeMm3": 24000,
+        "surfaceAreaMm2": 5200,
+        "centerOfMass": [
+          20,
+          15,
+          10
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            40,
+            30,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "box 40 x 30 x 20 from the origin: V = abc, A = 2(ab + bc + ca)"
+      },
+      "bodyCount": 1,
+      "faces": 6
+    },
+    {
+      "id": "02-cylinder",
+      "name": "Cylinder",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/02-cylinder.kcad.ts",
+      "expected": {
+        "volumeMm3": 35342.917352885175,
+        "surfaceAreaMm2": 6126.105674500097,
+        "centerOfMass": [
+          0,
+          0,
+          25
+        ],
+        "bbox": {
+          "min": [
+            -15,
+            -15,
+            0
+          ],
+          "max": [
+            15,
+            15,
+            50
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "cylinder r=15 h=50 on XY: V = pi r^2 h, A = 2 pi r^2 + 2 pi r h"
+      },
+      "bodyCount": 1,
+      "faces": 3
+    },
+    {
+      "id": "03-box-through-hole",
+      "name": "Box with through hole",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/03-box-through-hole.kcad.ts",
+      "expected": {
+        "volumeMm3": 45738.05328941535,
+        "surfaceAreaMm2": 9327.787565803084,
+        "centerOfMass": [
+          30,
+          20,
+          10
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            60,
+            40,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "box 60x40x20 minus centred through cylinder r=6: V = abc - pi r^2 c, A = 2(ab+bc+ca) - 2 pi r^2 + 2 pi r c; hole is centred so the centroid stays at the box centre"
+      },
+      "bodyCount": 1,
+      "faces": 7
+    },
+    {
+      "id": "04-revolve-vase",
+      "name": "Revolved vase profile",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 112499.47865571639,
+        "surfaceAreaMm2": 13156.614546780698,
+        "centerOfMass": [
+          0,
+          0,
+          35.737480169007014
+        ],
+        "bbox": {
+          "min": [
+            -25.10960958218893,
+            -25.10960958218893,
+            0
+          ],
+          "max": [
+            25.10960958218893,
+            25.10960958218893,
+            80
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "revolve of a line/3-point-arc profile (XZ, x = radius, z = -sketch y) 360 deg about Z. Pappus/Green: V = 2 pi * int x dA, z_c = int x z dA / int x dA, A = sum over profile edges of 2 pi int x ds (bottom disk r20, frustum r20->25, torus zone of the arc (centre (-16.000000, 33.000000), R=41.109610), frustum r15->18, top disk r18)"
+      },
+      "bodyCount": 1,
+      "faces": 5
+    },
+    {
+      "id": "05-taper-extrude",
+      "name": "Tapered extrude",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 61814.82595953696,
+        "surfaceAreaMm2": 9676.91517028238,
+        "centerOfMass": [
+          0,
+          0,
+          16.162703882981894
+        ],
+        "bbox": {
+          "min": [
+            -25.28980942125395,
+            -25.28980942125395,
+            0
+          ],
+          "max": [
+            25.28980942125395,
+            25.28980942125395,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "square frustum: base 40 at z=0, top a1 = 40 + 2*30*tan10 at z=30 (positive taper grows outward); V = h/3 (A0 + A1 + sqrt(A0 A1)), z_c = h (A0 + 2 sqrt(A0A1) + 3 A1) / (4 (A0 + sqrt(A0A1) + A1)), sides = 4 trapezoids (a0+a1)/2 * h/cos(10)"
+      },
+      "bodyCount": 1,
+      "faces": 6
+    },
+    {
+      "id": "06-symmetric-extrude",
+      "name": "Symmetric extrude",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/06-symmetric-extrude.kcad.ts",
+      "expected": {
+        "volumeMm3": 30000,
+        "surfaceAreaMm2": 6200,
+        "centerOfMass": [
+          0,
+          0,
+          0
+        ],
+        "bbox": {
+          "min": [
+            -25,
+            -15,
+            -10
+          ],
+          "max": [
+            25,
+            15,
+            10
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "50 (x) by 20 (z) rectangle on XZ extruded +-15 along Y: box 50x30x20 centred at origin"
+      },
+      "bodyCount": 1,
+      "faces": 6
+    },
+    {
+      "id": "07-fillet-all-edges",
+      "name": "Box with all edges filleted",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/07-fillet-all-edges.kcad.ts",
+      "expected": {
+        "volumeMm3": 23340.84937505542,
+        "surfaceAreaMm2": 4726.265361880023,
+        "centerOfMass": [
+          20,
+          15,
+          10
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            40,
+            30,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "box 40x30x20 with every edge rounded r=3 = inner box (34x24x14) grown by a ball r (Steiner): V = abc + 2r(ab+bc+ca) + pi r^2 (a+b+c) + 4/3 pi r^3, A = 2(ab+bc+ca) + 2 pi r (a+b+c) + 4 pi r^2; faces 6 planes + 12 quarter cylinders + 8 sphere octants"
+      },
+      "bodyCount": 1,
+      "faces": 26
+    },
+    {
+      "id": "08-chamfer",
+      "name": "Box with top edges chamfered",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/08-chamfer.kcad.ts",
+      "expected": {
+        "volumeMm3": 23730.666666666668,
+        "surfaceAreaMm2": 5029.352380466497,
+        "centerOfMass": [
+          19.999999999999996,
+          15,
+          9.894145409596582
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            40,
+            30,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "box 40x30x20 with the 4 top edges chamfered 2: lower box 40x30x18 + top slab with section (36+2u)x(26+2u) at depth u (V, moment by exact polynomial integration); A = bottom + sides(h=18) + top 36x26 + 4 trapezoid bevels of slant 2 sqrt2"
+      },
+      "bodyCount": 1,
+      "faces": 10
+    },
+    {
+      "id": "09-shell",
+      "name": "Shelled open box",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/09-shell.kcad.ts",
+      "expected": {
+        "volumeMm3": 13632,
+        "surfaceAreaMm2": 13992,
+        "centerOfMass": [
+          25,
+          20,
+          11.598591549295774
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            50,
+            40,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "50x40x30 box shelled inward 2 with the top open: box minus cavity [2,48]x[2,38]x[2,30]; A = outer bottom + outer sides + rim + cavity floor + cavity walls"
+      },
+      "bodyCount": 1,
+      "faces": 11
+    },
+    {
+      "id": "10-rect-pattern-holes",
+      "name": "Rectangular pattern of holes",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/10-rect-pattern-holes.kcad.ts",
+      "expected": {
+        "volumeMm3": 29803.53996706153,
+        "surfaceAreaMm2": 14652.38934211693,
+        "centerOfMass": [
+          44.99999999999998,
+          34.99999999999999,
+          2.4999999999999964
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            90,
+            70,
+            5
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "plate 90x70x5 minus 12 through cylinders r=3 at (15+20i, 15+20j), i<4, j<3: V = abc - 12 pi r^2 t, A = 2(ab+bc+ca) + 12(2 pi r t - 2 pi r^2)"
+      },
+      "bodyCount": 1,
+      "faces": 18
+    },
+    {
+      "id": "11-circular-pattern-flange",
+      "name": "Flange with circular hole pattern",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/11-circular-pattern-flange.kcad.ts",
+      "expected": {
+        "volumeMm3": 66758.84388878311,
+        "surfaceAreaMm2": 19320.79481957723,
+        "centerOfMass": [
+          0,
+          0,
+          5
+        ],
+        "bbox": {
+          "min": [
+            -50,
+            -50,
+            0
+          ],
+          "max": [
+            50,
+            50,
+            10
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "annulus R50/r15 h10 minus 6 through cylinders r=5 on a 40 radius: V = pi(R^2-r^2)h - 6 pi rh^2 h, A = 2 pi(R^2-r^2) + 2 pi(R+r)h + 6(2 pi rh h - 2 pi rh^2); 6-fold symmetry keeps the centroid on the axis"
+      },
+      "bodyCount": 1,
+      "faces": 10
+    },
+    {
+      "id": "12-mirror-feature",
+      "name": "Mirror feature",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/12-mirror-feature.kcad.ts",
+      "expected": {
+        "volumeMm3": 21392.920065876977,
+        "surfaceAreaMm2": 6530.973355292325,
+        "centerOfMass": [
+          0,
+          14.999999999999998,
+          6.98250171986157
+        ],
+        "bbox": {
+          "min": [
+            -30,
+            0,
+            0
+          ],
+          "max": [
+            30,
+            30,
+            25
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "block [-30,30]x[0,30]x[0,10] + two bosses r=6 h=15 at (+-15,15) on top (mirror across YZ): V = abc + 2 pi r^2 h, A = 2(ab+bc+ca) + 2 * 2 pi r h"
+      },
+      "bodyCount": 1,
+      "faces": 10
+    },
+    {
+      "id": "13-combine-join",
+      "name": "Boolean union",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/13-combine-join.kcad.ts",
+      "expected": {
+        "volumeMm3": 45571.68026350791,
+        "surfaceAreaMm2": 8634.336052701581,
+        "centerOfMass": [
+          26.46176756194705,
+          19.999999999999996,
+          13.970793611305016
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            52,
+            40,
+            40
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "box [0,40]^2x[0,20] union cylinder r=12 at (40,20) z 0..40: V = box + half-cylinder (x>40, z<20, centroid 40 + 4r/3pi) + full cylinder z 20..40; A = bottom (1600 + pi r^2/2) + box top (1600 - pi r^2/2) + cyl top + 3 full sides + x=40 side minus 24x20 + cyl side (pi r 40 outside half + pi r 20 upper inside half)"
+      },
+      "bodyCount": 1,
+      "faces": 9
+    },
+    {
+      "id": "14-combine-cut",
+      "name": "Boolean subtract",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/14-combine-cut.kcad.ts",
+      "expected": {
+        "volumeMm3": 42931.41652942297,
+        "surfaceAreaMm2": 9706.858347057703,
+        "centerOfMass": [
+          0,
+          0,
+          -10.720336182305564
+        ],
+        "bbox": {
+          "min": [
+            -25,
+            -25,
+            -20
+          ],
+          "max": [
+            25,
+            25,
+            0
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "box [-25,25]^2x[-20,0] minus sphere r=15 at the origin (lower hemisphere removed): V = abc - 2/3 pi r^3, hemisphere centroid z = -3r/8; A = 2(ab+bc+ca) - pi r^2 + 2 pi r^2"
+      },
+      "bodyCount": 1,
+      "faces": 7
+    },
+    {
+      "id": "15-combine-intersect",
+      "name": "Boolean intersect",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/15-combine-intersect.kcad.ts",
+      "expected": {
+        "volumeMm3": 54454.27266222308,
+        "surfaceAreaMm2": 7382.7427359360145,
+        "centerOfMass": [
+          0,
+          0,
+          0
+        ],
+        "bbox": {
+          "min": [
+            -20,
+            -20,
+            -20
+          ],
+          "max": [
+            20,
+            20,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "cube [-20,20]^3 intersect sphere R=25: sphere minus 6 disjoint caps of height h=5 (caps cannot overlap: two would need x^2+y^2 > 800 > R^2); V = 4/3 pi R^3 - 6 pi h^2 (3R-h)/3, A = 4 pi R^2 - 6 * 2 pi R h + 6 pi (R^2-20^2)"
+      },
+      "bodyCount": 1,
+      "faces": 7
+    },
+    {
+      "id": "16-sweep",
+      "name": "Sweep along path",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 2584.7244290365306,
+        "surfaceAreaMm2": 1779.6982871223033,
+        "centerOfMass": [
+          13.958930123810118,
+          0,
+          36.04106987618987
+        ],
+        "bbox": {
+          "min": [
+            -3,
+            -3,
+            0
+          ],
+          "max": [
+            50,
+            3,
+            53
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "circle r=3 swept along line 30 (+Z) + tangent R20 quarter arc + line 30 (+X): two cylinders + quarter torus (Pappus: V = pi r^2 R theta, A = 2 pi r R theta; torus centroid at rho = (R^2 + r^2/4)/R * sin(theta/2)/(theta/2) from the bend axis along the bisector) + 2 end disks"
+      },
+      "bodyCount": 1,
+      "faces": 5
+    },
+    {
+      "id": "17-loft",
+      "name": "Loft square to circle",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 35125.49757633739,
+        "surfaceAreaMm2": 6495.0000512370025,
+        "centerOfMass": [
+          4.902280481153527e-11,
+          9.800242527565077e-16,
+          15.119060422795876
+        ],
+        "bbox": {
+          "min": [
+            -20.0000001,
+            -20.0000001,
+            -1e-7
+          ],
+          "max": [
+            20.0000001,
+            20.0000001,
+            40.000000100000015
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part.makeLoft"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "18-hole-features",
+      "name": "Hole features (counterbore, countersink, blind drilled)",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 33890.710358950084,
+        "surfaceAreaMm2": 8568.695781624992,
+        "centerOfMass": [
+          30.307000593669976,
+          20.000000000000004,
+          7.38224663372136
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            60,
+            40,
+            15
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "plate 60x40x15 minus: counterbore (r7 x 5 deep + r4 through), countersink (90 deg cone frustum r6->r3 over 3 mm + r3 through), blind r3 hole 10 deep to the shoulder with a 118 deg cone point (height 3/tan59, centroid 1/4 up from the apex); areas: removed top/bottom disks, cylinder walls 2 pi r h, cb floor annulus, cone laterals pi r s"
+      },
+      "bodyCount": 1,
+      "faces": 13
+    },
+    {
+      "id": "19-l-bracket-constrained",
+      "name": "Constrained L-bracket sketch extruded",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/19-l-bracket-constrained.kcad.ts",
+      "expected": {
+        "volumeMm3": 14720,
+        "surfaceAreaMm2": 5472,
+        "centerOfMass": [
+          20.956521739130434,
+          10.956521739130435,
+          10
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            60,
+            40,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "solved L: (0,0)-(60,0)-(60,8)-(8,8)-(8,40)-(0,40); area 60x8 + 8x32, extruded 20: V = A2 h, A = 2 A2 + perimeter*h, centroid of the two rectangles"
+      },
+      "bodyCount": 1,
+      "faces": 8
+    },
+    {
+      "id": "20-slot-constrained",
+      "name": "Constrained slot extruded",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/20-slot-constrained.kcad.ts",
+      "expected": {
+        "volumeMm3": 2965.4866776461627,
+        "surfaceAreaMm2": 1774.6902302738526,
+        "centerOfMass": [
+          20,
+          0,
+          2.5
+        ],
+        "bbox": {
+          "min": [
+            -6,
+            -6,
+            0
+          ],
+          "max": [
+            46,
+            6,
+            5
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "obround: arc centres (0,0) and (40,0), R6, tangent horizontal lines y=+-6: A2 = 2rL + pi r^2, V = A2 h, A = 2 A2 + perimeter (2L + 2 pi r) h"
+      },
+      "bodyCount": 1,
+      "faces": 6
+    },
+    {
+      "id": "21-draft",
+      "name": "Draft side faces",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 54574.73735870641,
+        "surfaceAreaMm2": 8781.998445243411,
+        "centerOfMass": [
+          0,
+          0,
+          15.614983642248854
+        ],
+        "bbox": {
+          "min": [
+            -22.62465990577772,
+            -22.62465990577772,
+            0
+          ],
+          "max": [
+            22.62465990577772,
+            22.62465990577772,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "40x40x30 box, 5 deg draft hinged on the bottom (z=0), pull -Z: square frustum 40 -> 40 + 2*30*tan5; V = h/3 (A0 + A1 + sqrt(A0A1)), sides 4 trapezoids of slant h/cos5"
+      },
+      "bodyCount": 1,
+      "faces": 6
+    },
+    {
+      "id": "22-split-body",
+      "name": "Split body by angled plane",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 75398.22368615503,
+        "surfaceAreaMm2": 12955.175474262087,
+        "centerOfMass": [
+          0,
+          0,
+          0
+        ],
+        "bbox": {
+          "min": [
+            -20,
+            -20,
+            -30
+          ],
+          "max": [
+            20,
+            20,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "cylinder r20 z -30..30 split by the plane through the X axis tilted 30 deg (z = y tan30, stays within |z|<=11.6 inside the cylinder): 2 congruent halves (point symmetry), V total = pi r^2 h, A total = cylinder + 2 ellipses pi r (r/cos30)"
+      },
+      "bodyCount": 2,
+      "faces": 6
+    },
+    {
+      "id": "23-bracket-multifeature",
+      "name": "Multi-feature bracket",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 59331.128616959795,
+        "surfaceAreaMm2": 18290.736978057597,
+        "centerOfMass": [
+          40.00000000000001,
+          34.567350242237325,
+          15.289013135744947
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            80,
+            50,
+            50
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part extrude join, Part makeFillet, Part extrude join, Part extrude cut, Part makeChamfer"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "24-user-parameters",
+      "name": "Parametric block driven by user parameters",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/24-user-parameters.kcad.ts",
+      "expected": {
+        "volumeMm3": 34821.90275490383,
+        "surfaceAreaMm2": 8114.15926535898,
+        "centerOfMass": [
+          30,
+          20,
+          7.5
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            60,
+            40,
+            15
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "width 60 x depth 40 x height 15 block from the origin with a centred d10 through hole: V = (wd - pi r^2) h, A = 2(wd - pi r^2) + 2(w+d)h + 2 pi r h"
+      },
+      "bodyCount": 1,
+      "faces": 7
+    },
+    {
+      "id": "25-sketch-triangle",
+      "name": "Sketch solver: triangle with lengths and angle",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 4032.1546015511467,
+        "surfaceAreaMm2": 2274.0990841900384,
+        "centerOfMass": [
+          22.87457478565265,
+          10.752412270803058,
+          2.5
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            50,
+            32.257236812409175,
+            5
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "solved triangle (0,0), (50,0), P = t(cos60, sin60) with t = 25 + sqrt(150) from |P-(50,0)| = 45 (the root nearest the drawn apex); V = (1/2 * 50 * Py) * 5, A = 2 A2 + perimeter*5, centroid = vertex mean"
+      },
+      "bodyCount": 1,
+      "faces": 5
+    },
+    {
+      "id": "26-sketch-belt",
+      "name": "Sketch solver: tangent lines between circles",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 11326.169514235082,
+        "surfaceAreaMm2": 5637.404150511762,
+        "centerOfMass": [
+          15.321857347287981,
+          0,
+          2.5
+        ],
+        "bbox": {
+          "min": [
+            -20,
+            -20,
+            0
+          ],
+          "max": [
+            60,
+            20,
+            5
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "belt: convex hull of circles R20 @ (0,0) and r10 @ (50,0) (external tangents, sin a = (R-r)/d) minus the d8 hole at (50,0), extruded 5 as one body; hull area = (R+r) sqrt(d^2-(R-r)^2) + R^2(pi+2a)/2 + r^2(pi-2a)/2; moments by Green's theorem over the line/arc boundary"
+      },
+      "bodyCount": 1,
+      "faces": 7
+    },
+    {
+      "id": "27-sketch-trapezoid",
+      "name": "Sketch solver: parallel/perpendicular/midpoint/symmetry",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 5342.256661176918,
+        "surfaceAreaMm2": 3066.94581842842,
+        "centerOfMass": [
+          0,
+          11.275769231975591,
+          2.5
+        ],
+        "bbox": {
+          "min": [
+            -30,
+            0,
+            0
+          ],
+          "max": [
+            30,
+            25,
+            5
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "solved trapezoid bottom (-30,0)-(30,0), top (-15,25)-(15,25) minus two d6 holes at (+-18, 8) (symmetric about the axis, 36 apart, 8 above l1); trapezoid centroid y = H(a+2b)/(3(a+b)); V = A2 t, A = 2 A2 + perimeter t"
+      },
+      "bodyCount": 1,
+      "faces": 8
+    },
+    {
+      "id": "28-blind-pocket-fillets",
+      "name": "Blind pocket with filleted corners",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 84299.24852854047,
+        "surfaceAreaMm2": 16279.571562823978,
+        "centerOfMass": [
+          39.99999999999999,
+          29.999999999999996,
+          9.161827142086619
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            80,
+            60,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part extrude cut, Part makeFillet"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "29-two-sided-and-partial-revolve",
+      "name": "Two-sided extrude + partial revolve cut",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 25731.30662164881,
+        "surfaceAreaMm2": 6312.602171854095,
+        "centerOfMass": [
+          0.17244881492337513,
+          -8.273218841749548,
+          9.4709883773001
+        ],
+        "bbox": {
+          "min": [
+            -20,
+            -25,
+            0
+          ],
+          "max": [
+            20,
+            10,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "block [-20,20]x[-25,10]x[0,20] minus the 270 deg revolve (from +X towards +Y) of the 8x8 square r 4..12, z 12..20; the removed section is the annular sector minus the circular segment y > 10 (R^2 acos(d/R) - d sqrt(R^2-d^2), y-moment 2/3 (R^2-d^2)^1.5) that lies outside the block; sector moments (R^3-r^3)/3 (sin, 1-cos); A = box - top opening + floor - front-face notch 2 sqrt(44) x 8 + inner wall r th h + outer wall (th - pi + 2 asin(5/6)) R h + 2 end caps"
+      },
+      "bodyCount": 1,
+      "faces": 12
+    },
+    {
+      "id": "30-fillet-after-shell",
+      "name": "Fillets after shell",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 21745.87649398271,
+        "surfaceAreaMm2": 14968.331952825032,
+        "centerOfMass": [
+          30.000000000000004,
+          20.000000000000007,
+          11.575289961678543
+        ],
+        "bbox": {
+          "min": [
+            -8.881784197001252e-16,
+            -8.881784197001252e-16,
+            0
+          ],
+          "max": [
+            60,
+            40,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, makeThickness shell, Part makeFillet"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "31-fillet-l-all-edges",
+      "name": "All-edge fillet on an L block",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 14321.625800678561,
+        "surfaceAreaMm2": 5024.044667641301,
+        "centerOfMass": [
+          20.90086014062925,
+          10.902918183990028,
+          10.000000000000005
+        ],
+        "bbox": {
+          "min": [
+            -4.440892098500626e-16,
+            -4.440892098500626e-16,
+            -4.440892098500626e-16
+          ],
+          "max": [
+            60,
+            40,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part makeFillet"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "32-boss-plate-fillets",
+      "name": "Boss on plate: base and top fillets",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 33590.34963015678,
+        "surfaceAreaMm2": 9929.863617615047,
+        "centerOfMass": [
+          0,
+          0,
+          5.602823546473236
+        ],
+        "bbox": {
+          "min": [
+            -30,
+            -30,
+            0
+          ],
+          "max": [
+            30,
+            30,
+            23
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "plate 60x60x8 + boss (r10, z 8..23) with R3 concave base and R2 convex top fillets taken as one solid of revolution: V, z-moment and lateral area from Pappus/Green on its (r,z) profile (quarter-circle fillet arcs); plate top loses the r13 disc"
+      },
+      "bodyCount": 1,
+      "faces": 10
+    },
+    {
+      "id": "33-fillet-tangent-chain",
+      "name": "Fillet chain across tangent faces",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 8237.12239193832,
+        "surfaceAreaMm2": 2793.569488148386,
+        "centerOfMass": [
+          20,
+          0,
+          4.975870942023957
+        ],
+        "bbox": {
+          "min": [
+            -8,
+            -8,
+            0
+          ],
+          "max": [
+            48,
+            8,
+            10
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "obround (R8, centres 40 apart) x 10 minus R2 fillet spandrel R^2(1-pi/4) and 1 mm chamfer triangle swept round the whole loop. Swept volumes use Pappus; Z moments account for inward-offset perimeter P(u)=P-2pi*u: fillet top-depth moment P*A*d-2pi*r^4*(19/24-pi/4), A=r^2*(1-pi/4), d=r*(10-3pi)/(3*(4-pi)); bottom chamfer Z moment P*c^3/6-pi*c^4/12; surfaces use fillet arc centroid inset r-2r/pi"
+      },
+      "bodyCount": 1,
+      "faces": 14
+    },
+    {
+      "id": "34-chamfer-then-fillet",
+      "name": "Chamfer then fillet",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 22892.42132988775,
+        "surfaceAreaMm2": 4753.688476928938,
+        "centerOfMass": [
+          20.000000000000004,
+          15.000000000000012,
+          9.95512677479753
+        ],
+        "bbox": {
+          "min": [
+            -1.3322676295501878e-15,
+            -8.881784197001252e-16,
+            0
+          ],
+          "max": [
+            40,
+            30,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part makeChamfer, Part makeFillet"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "35-fillet-curved-curved",
+      "name": "Fillet between two cylinders",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 63171.61517720092,
+        "surfaceAreaMm2": 10269.29821399885,
+        "centerOfMass": [
+          0.0000012666242694772013,
+          -8.296669862737878e-8,
+          2.5627304852052224
+        ],
+        "bbox": {
+          "min": [
+            -40.0000001,
+            -15.0000001,
+            -15.0000001
+          ],
+          "max": [
+            40.0000001,
+            15.0000001,
+            35.0000001
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part extrude join, Part makeFillet"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "36-corner-blend-two-radii",
+      "name": "Corner blends with two radii",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 57800.23972405685,
+        "surfaceAreaMm2": 8585.524087145672,
+        "centerOfMass": [
+          24.999999999999996,
+          19.999999999999996,
+          14.865497483183885
+        ],
+        "bbox": {
+          "min": [
+            -1.7763568394002505e-15,
+            -1.0000000177635683e-7,
+            0
+          ],
+          "max": [
+            50,
+            40,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part makeFillet"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "37-pyramid-apex-blend",
+      "name": "Pyramid apex: 4-edge corner blend",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 15465.577113384288,
+        "surfaceAreaMm2": 3914.585460194058,
+        "centerOfMass": [
+          -7.50627101581177e-12,
+          1.801248348273918e-11,
+          7.673359735250147
+        ],
+        "bbox": {
+          "min": [
+            -18.26296581635734,
+            -18.262965816357344,
+            -2.220446049250313e-16
+          ],
+          "max": [
+            18.262965816357344,
+            18.262965816357344,
+            28.373982542073644
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part.makeLoft, Part makeFillet"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "38-coincident-cylinders",
+      "name": "Union of coaxial equal cylinders",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/38-coincident-cylinders.kcad.ts",
+      "expected": {
+        "volumeMm3": 15707.963267948966,
+        "surfaceAreaMm2": 3769.9111843077517,
+        "centerOfMass": [
+          0,
+          0,
+          25
+        ],
+        "bbox": {
+          "min": [
+            -10,
+            -10,
+            0
+          ],
+          "max": [
+            10,
+            10,
+            50
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "union of r10 z0..30 and r10 z20..50 = cylinder r10 h50: V = pi r^2 h, A = 2 pi r h + 2 pi r^2"
+      },
+      "bodyCount": 1,
+      "faces": 3
+    },
+    {
+      "id": "39-tee-pipe",
+      "name": "Tee pipe (cylinder through cylinder)",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 24097.79380441197,
+        "surfaceAreaMm2": 16710.06166887699,
+        "centerOfMass": [
+          0.00000475919240426363,
+          -3.866233490238524e-7,
+          4.436155001585041
+        ],
+        "bbox": {
+          "min": [
+            -40.0000001,
+            -15.0000001,
+            -15.0000001
+          ],
+          "max": [
+            40.0000001,
+            15.0000001,
+            40.0000001
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part extrude join, Part extrude cut"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "40-box-sphere-torus",
+      "name": "Box + sphere - torus",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 36287.43285471473,
+        "surfaceAreaMm2": 10696.165473259409,
+        "centerOfMass": [
+          0,
+          0,
+          -4.390960875015068
+        ],
+        "bbox": {
+          "min": [
+            -30,
+            -30,
+            -12
+          ],
+          "max": [
+            30,
+            30,
+            12
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "box 60x60x10 (z -10..0) + upper hemisphere r12 + spherical cap h2 below z=-10 (V = pi h^2(3R-h)/3, A = 2 pi R h) - lower half torus R22 r4 (Pappus: V = pi r^2/2 * 2 pi R, centroid -4r/3pi, A = pi r * 2 pi R); top loses disc r12 and annulus 18..26, bottom loses disc r sqrt(44)"
+      },
+      "bodyCount": 1,
+      "faces": 10,
+      "note": "faces: bottom, 4 sides, top split by the groove into an annulus (r 12..18) and the outer part, upper sphere, lower cap, torus"
+    },
+    {
+      "id": "41-tube-radial-holes",
+      "name": "Many small holes in a curved wall",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 20243.55643647215,
+        "surfaceAreaMm2": 14873.859284949844,
+        "centerOfMass": [
+          -0.0000945514125510865,
+          -0.00016121064416442976,
+          29.9999903705421
+        ],
+        "bbox": {
+          "min": [
+            -20.0000001,
+            -20.000000101011352,
+            -1e-7
+          ],
+          "max": [
+            20.0000001,
+            20.000000101011356,
+            60.0000001
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part extrude cut, pattern (tools transformed and re-applied)"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "42-overlapping-patterns",
+      "name": "Overlapping hole patterns",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 38487.063633850754,
+        "surfaceAreaMm2": 21686.603498756176,
+        "centerOfMass": [
+          -4.7262358616155635e-15,
+          2.1740684963431593e-15,
+          2.499999999999997
+        ],
+        "bbox": {
+          "min": [
+            -50,
+            -50,
+            -1e-7
+          ],
+          "max": [
+            50,
+            50,
+            5.0000001
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part extrude cut, pattern (tools transformed and re-applied), Part extrude cut, pattern (tools transformed and re-applied)"
+      },
+      "bodyCount": 1,
+      "faces": 39
+    },
+    {
+      "id": "43-cut-splits-body",
+      "name": "Cut that splits a body in two",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 28000,
+        "surfaceAreaMm2": 7200,
+        "centerOfMass": [
+          40,
+          10,
+          10
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            80,
+            20,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "two boxes 35x20x20 (x 0..35 and 45..80): V = 2abc, A = 2*2(ab+bc+ca)"
+      },
+      "bodyCount": 2,
+      "faces": 12
+    },
+    {
+      "id": "44-shell-l-bracket",
+      "name": "Shelled L block",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 8384.000000000004,
+        "surfaceAreaMm2": 8784.000000000004,
+        "centerOfMass": [
+          21.26717557251906,
+          11.267175572519093,
+          9.244274809160306
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            60,
+            40,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "L prism (area 736, perimeter 200) x 20 minus cavity = L shrunk by 2 (SolidCraft's intersection-join shell convention: inner faces offset by 2 and extended to meet, sharp inner corner at (6,6); area 352) from z=2 to 20. A rounded (arc) join would give V 8368.5487, A 8768.5487, 16 faces"
+      },
+      "bodyCount": 1,
+      "faces": 15
+    },
+    {
+      "id": "45-shell-boss-plate",
+      "name": "Shelled boss-on-plate",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 13676.601535159018,
+        "surfaceAreaMm2": 14156.601535159018,
+        "centerOfMass": [
+          0,
+          0,
+          10.785311024697076
+        ],
+        "bbox": {
+          "min": [
+            -30,
+            -30,
+            0
+          ],
+          "max": [
+            30,
+            30,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "plate 60x60x10 + boss r12 h20 minus cavity (box 56x56x8 + cylinder r10 z8..28) under SolidCraft's intersection-join shell convention (offset faces extended to meet: sharp circular inner edge at r10, z8). A rounded (arc) join would give V 13620.2567, A 14104.4455, 16 faces (torus round r2)"
+      },
+      "bodyCount": 1,
+      "faces": 15
+    },
+    {
+      "id": "46-shell-two-open-faces",
+      "name": "Shell with two open faces",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 16044,
+        "surfaceAreaMm2": 11398,
+        "centerOfMass": [
+          25,
+          24.1095736724009,
+          10.890426327599103
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            50,
+            40,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "box 50x40x30 minus cavity x3..47, y0..37, z3..30 (3 mm walls, top and front open)"
+      },
+      "bodyCount": 1,
+      "faces": 10
+    },
+    {
+      "id": "47-draft-curved-pocket",
+      "name": "Draft on an obround pocket",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 111387.71155072484,
+        "surfaceAreaMm2": 17700.360856055668,
+        "centerOfMass": [
+          40.00000000000002,
+          30.000000000000004,
+          11.912254219746519
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            80,
+            60,
+            25
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part extrude cut, PartDesign Draft"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "48-pulley",
+      "name": "Grooved pulley",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 168510.84114835176,
+        "surfaceAreaMm2": 23718.644332702832,
+        "centerOfMass": [
+          0,
+          0,
+          19.999999999999996
+        ],
+        "bbox": {
+          "min": [
+            -40,
+            -40,
+            0
+          ],
+          "max": [
+            40,
+            40,
+            40
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "revolve of the 12-segment (r,z) polygon about Z: V = 2 pi int r dA, Mz = 2 pi int r z dA, A = 2 pi int r ds (Pappus)"
+      },
+      "bodyCount": 1,
+      "faces": 12
+    },
+    {
+      "id": "49-helical-sweep",
+      "name": "Helical sweep (spline helix)",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 4737.410112522892,
+        "surfaceAreaMm2": 4767.351236008563,
+        "centerOfMass": [
+          0,
+          0,
+          12
+        ],
+        "bbox": {
+          "min": [
+            -22,
+            -22,
+            -2
+          ],
+          "max": [
+            22,
+            22,
+            26
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "true helix coil (screw motion of the axial d4 section, R20, pitch 8, 3 turns): V = turns * 2 pi R * pi a^2; lateral A = turns * 2 pi * int sqrt(r^2 + (p/2pi)^2 (dr/ds)^2) ds (periodic trapezoid, exact to round-off) + two end discs; COM z = pitch*turns/2"
+      },
+      "bodyCount": 1,
+      "faces": 3
+    },
+    {
+      "id": "50-sweep-tight-bend",
+      "name": "Sweep with a bend radius equal to the profile radius",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 3758.4429286578784,
+        "surfaceAreaMm2": 1660.4568041426407,
+        "centerOfMass": [
+          6.436662063480004,
+          0,
+          18.563337936519996
+        ],
+        "bbox": {
+          "min": [
+            -5,
+            -5,
+            0
+          ],
+          "max": [
+            25,
+            5,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "tube r5 along line 20 + R5 quarter bend + line 20: V = pi r^2 L, A = 2 pi r L + 2 pi r^2 (Pappus, valid while bend radius >= r; here equal so the inner side pinches to a line); bend centroid at (R^2 + r^2/4)/R * sinc(pi/4) along the bisector"
+      },
+      "bodyCount": 1,
+      "faces": 5
+    },
+    {
+      "id": "51-loft-rect-circle-offset",
+      "name": "Skewed loft rectangle to circle",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 61133.11623557925,
+        "surfaceAreaMm2": 9411.65454371453,
+        "centerOfMass": [
+          4.254944428543755,
+          2.1274722141148166,
+          21.274722141148143
+        ],
+        "bbox": {
+          "min": [
+            -30.0000001,
+            -15.0000001,
+            -1e-7
+          ],
+          "max": [
+            30.0000001,
+            20.0000001,
+            50.00000010000001
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part.makeLoft"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "52-circular-pattern-fillet",
+      "name": "Circular pattern of boss + fillet",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 47206.85017171979,
+        "surfaceAreaMm2": 14142.17116758171,
+        "centerOfMass": [
+          3.8532318867475695e-17,
+          5.394524641446597e-16,
+          5.313317447963345
+        ],
+        "bbox": {
+          "min": [
+            -40,
+            -40,
+            0
+          ],
+          "max": [
+            40,
+            40,
+            18
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "disc r40 h8 + 6 x (boss r6 h10 with R2 concave base fillet as a solid of revolution, Pappus/Green on its (r,z) profile) at radius 28; disc top loses 6 discs r8"
+      },
+      "bodyCount": 1,
+      "faces": 21
+    },
+    {
+      "id": "53-path-pattern",
+      "name": "Pattern along a path",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 35010.3983141192,
+        "surfaceAreaMm2": 16463.89378290154,
+        "centerOfMass": [
+          60.00000001136545,
+          29.96522867057171,
+          2.5
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            120,
+            60,
+            5
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "plate 120x60x5 minus 7 through holes d6 at arc lengths k*17.875031 along the arc through (100,15),(60,45),(20,15) (centre (60,10/3), R 125/3), translated copies"
+      },
+      "bodyCount": 1,
+      "faces": 13
+    },
+    {
+      "id": "54-mirror-body-fillets",
+      "name": "Mirror a filleted body",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 22780.08851424851,
+        "surfaceAreaMm2": 6972.831792783061,
+        "centerOfMass": [
+          -1.4178560266764932e-15,
+          20.00000000000026,
+          5
+        ],
+        "bbox": {
+          "min": [
+            -30,
+            0,
+            0
+          ],
+          "max": [
+            30,
+            40,
+            10
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "prism h10 of the 60x40 rectangle with four R5 corner rounds and two d8 holes at (+-15,20): V = A h, area = 2A + perimeter*h"
+      },
+      "bodyCount": 1,
+      "faces": 12
+    },
+    {
+      "id": "55-tapped-hole-cosmetic",
+      "name": "Tapped hole with cosmetic thread",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 17539.467413298902,
+        "surfaceAreaMm2": 4762.405554138465,
+        "centerOfMass": [
+          20,
+          15,
+          7.469794810863136
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            40,
+            30,
+            15
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "plate 40x30x15 minus d6.8 cylinder 12 deep (to the shoulder) and 118 deg drill point cone (h = r/tan59, V = pi r^2 h/3, lateral pi r * r/sin59); cosmetic thread adds no geometry"
+      },
+      "bodyCount": 1,
+      "faces": 8
+    },
+    {
+      "id": "56-holes-on-curved-face",
+      "name": "Holes on a cylindrical face",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 77942.84309053734,
+        "surfaceAreaMm2": 10593.056836186597,
+        "centerOfMass": [
+          -0.07534872185918355,
+          -0.07534952345333637,
+          19.999998003198982
+        ],
+        "bbox": {
+          "min": [
+            -25.0000001,
+            -25.0000001,
+            -1e-7
+          ],
+          "max": [
+            25.0000001,
+            25.00000011239331,
+            40.0000001
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, hole tool (cylinder/cone) cut"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "57-hole-pattern-sketch-points",
+      "name": "Counterbore holes from sketch points",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 36766.71211083357,
+        "surfaceAreaMm2": 11818.152551429443,
+        "centerOfMass": [
+          39.99999999999997,
+          25,
+          4.889369275430759
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            80,
+            50,
+            10
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "plate 80x50x10 minus 6 counterbored through holes (cb d10 x 5.5, hole d5.5) at x 15/40/65, y 15/35"
+      },
+      "bodyCount": 1,
+      "faces": 24
+    },
+    {
+      "id": "58-phone-stand",
+      "name": "Phone stand",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 74559.17735612375,
+        "surfaceAreaMm2": 29148.784986945895,
+        "centerOfMass": [
+          30.24137598608169,
+          -1.2447738706242872e-15,
+          23.750201033013706
+        ],
+        "bbox": {
+          "min": [
+            -14.035643557,
+            -35,
+            0
+          ],
+          "max": [
+            90,
+            35,
+            87.567700833
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part makeFillet, Part extrude cut"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "59-enclosure-base",
+      "name": "Enclosure base with bosses and ribs",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 34309.48619533657,
+        "surfaceAreaMm2": 33795.610175573434,
+        "centerOfMass": [
+          50,
+          29.999999999999954,
+          10.205570681943714
+        ],
+        "bbox": {
+          "min": [
+            -8.881784197001252e-16,
+            -8.881784197001252e-16,
+            0
+          ],
+          "max": [
+            100,
+            60,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part makeFillet, makeThickness shell, Part extrude join, Part extrude cut"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "60-pipe-flange",
+      "name": "Weld-neck pipe flange",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 323660.9792237058,
+        "surfaceAreaMm2": 56984.564025960535,
+        "centerOfMass": [
+          8.992072670155864e-17,
+          -3.0983486149956997e-15,
+          14.841104660417978
+        ],
+        "bbox": {
+          "min": [
+            -75,
+            -75,
+            0
+          ],
+          "max": [
+            75,
+            75,
+            50
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part revolve, Part extrude cut, pattern (tools transformed and re-applied), Part makeChamfer, Part makeFillet"
+      },
+      "bodyCount": 1,
+      "note": "No reference.stl: over 409600 bytes even at 0.02 mm deflection (11380 facets)."
+    },
+    {
+      "id": "61-shaft-keyway",
+      "name": "Stepped shaft with keyway and chamfers",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 47526.16490034648,
+        "surfaceAreaMm2": 9677.092709919276,
+        "centerOfMass": [
+          -0.15632153741345178,
+          2.2099613089702305e-12,
+          60.00000055531035
+        ],
+        "bbox": {
+          "min": [
+            -12.5000001,
+            -12.5000001,
+            0
+          ],
+          "max": [
+            12.5000001,
+            12.5000001,
+            120
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part revolve, Part makeChamfer, Part extrude cut"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "62-heat-sink",
+      "name": "Heat sink with 15 fins",
+      "ci": "pr",
+      "status": "pass",
+      "source": "assets/reference-parts/solidcraft/parts/62-heat-sink.kcad.ts",
+      "expected": {
+        "volumeMm3": 43125,
+        "surfaceAreaMm2": 45725,
+        "centerOfMass": [
+          30.48913043478261,
+          25,
+          12.282608695652174
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            60,
+            50,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "base 60x50x5 + 15 fins 1.5x50x25 at x = 2 + 4k: sums of boxes; fin ends coplanar with the base ends"
+      },
+      "bodyCount": 1,
+      "faces": 66,
+      "note": "faces: bottom, x=0, x=60, y=0 and y=50 (each merged with the fin ends), 16 base-top strips, 15x3 fin faces"
+    },
+    {
+      "id": "63-hinge-knuckle",
+      "name": "Hinge leaf with knuckles",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 4436.251164993785,
+        "surfaceAreaMm2": 3740.579063328514,
+        "centerOfMass": [
+          19.99999999999998,
+          18.446306909750707,
+          2.0056940715466656
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            40,
+            37,
+            8
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Part extrude, Part extrude join, Part extrude cut"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "64-sketch-tangent-arc-chain",
+      "name": "Sketch solver: tangent arc chain",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 4799.999999999989,
+        "surfaceAreaMm2": 3843.711905601287,
+        "centerOfMass": [
+          38.11191357516195,
+          -9.585748181923725,
+          1.5
+        ],
+        "bbox": {
+          "min": [
+            0,
+            -20,
+            0
+          ],
+          "max": [
+            80,
+            5.3667504192892,
+            3
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "solved sketch: 80x20 rectangle whose top is 4 tangent R12 arcs on 20 mm chords alternating up/down (net area 1600); prism h3: V = A h, area = 2A + perimeter*h, Green's theorem for centroid"
+      },
+      "bodyCount": 1,
+      "faces": 9
+    },
+    {
+      "id": "65-sketch-gear-tooth",
+      "name": "Sketch solver: gear-tooth sector",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 3988.0844756019715,
+        "surfaceAreaMm2": 1945.485055624576,
+        "centerOfMass": [
+          -4.250889726760085e-15,
+          29.27488680616214,
+          4
+        ],
+        "bbox": {
+          "min": [
+            -10.352761804100844,
+            0,
+            0
+          ],
+          "max": [
+            10.35276180410083,
+            50,
+            8
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "freecad",
+        "upstream": "freecad 1.1.4",
+        "details": "FreeCAD (OpenCASCADE) build of recipe.json by tools/freecad-oracle/build.py: Sketcher-solved sketch, Part extrude"
+      },
+      "bodyCount": 1
+    },
+    {
+      "id": "66-sketch-linkage",
+      "name": "Sketch solver: symmetric link",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 8045.386394390547,
+        "surfaceAreaMm2": 4308.174742415074,
+        "centerOfMass": [
+          26.196311954241445,
+          -2.1175331398316964e-16,
+          3.0000000000000004
+        ],
+        "bbox": {
+          "min": [
+            -12,
+            -12,
+            0
+          ],
+          "max": [
+            68,
+            12,
+            6
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "solved sketch: hull of circles R12 at (0,0) and R8 at (60,0) (outer tangent lines, cos a = 4/60) minus holes d12, d8 (concentric) and d4 at (30,+-4) (symmetry keeps radii equal); prism h6"
+      },
+      "bodyCount": 1,
+      "faces": 10
+    },
+    {
+      "id": "67-sm-base-flange",
+      "name": "Sheet metal: base flange",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 15000,
+        "surfaceAreaMm2": 12800,
+        "centerOfMass": [
+          50,
+          30,
+          1.25
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            100,
+            60,
+            2.5
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "plate 100 x 60 x t, t = 2.5 (Steel (mm) rule), thickness along +Z: V = 100*60*t, A = 2(ab+bc+ca)"
+      },
+      "bodyCount": 1,
+      "faces": 6
+    },
+    {
+      "id": "68-sm-edge-flange",
+      "name": "Sheet metal: one edge flange",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 18972.621556370217,
+        "surfaceAreaMm2": 16057.549676223574,
+        "centerOfMass": [
+          50,
+          23.996671893539865,
+          3.572504424184866
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            100,
+            60,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "extrusion along x (100) of the YZ section: base y 5..60 x t; 90 deg bend annulus R 2.5..5 about (y 5, z 5); flange y 0..2.5, z 5..20. Setback (R+t)tan45 = 5 (inside bend position, outer-face height datum: outer face of flange reaches z = 20); V = L*A_sec, A = 2 A_sec + L P_sec"
+      },
+      "bodyCount": 1,
+      "note": "trim/setback and height datum are SolidCraft's documented edge-flange conventions (sheet.rs add_flanges)"
+    },
+    {
+      "id": "69-sm-tray",
+      "name": "Sheet metal: tray (4 flanges, corner reliefs)",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 29666.23357665006,
+        "surfaceAreaMm2": 24980.085907711007,
+        "centerOfMass": [
+          49.99999999999999,
+          29.999999999999996,
+          8.051722040173603
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            100,
+            60,
+            25
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "tray: base 90 x 50 x 2.5 (each edge trimmed by the setback 5); four 90 deg bends R 2.5..5 along the trimmed edges (90, 50, 90, 50 long); four walls 2.5 thick, z 5..25, each running on past its bend by ext = (R+t) - (t + gap/sqrt2) = 0.732233047 at both ends; open corners. A = sum of prisms - 2 x joints"
+      },
+      "bodyCount": 1,
+      "faces": 46,
+      "note": "corner treatment is SolidCraft's convention (sheet.rs close_corners: panels extended until their inner corners are the rule gap = t apart; no corner fill, open corner relief below the walls)"
+    },
+    {
+      "id": "70-sm-flange-45",
+      "name": "Sheet metal: 45 deg flange",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 18450.776872252372,
+        "surfaceAreaMm2": 15629.637035246944,
+        "centerOfMass": [
+          50,
+          23.482458906299712,
+          2.253104112858446
+        ],
+        "bbox": {
+          "min": [
+            0,
+            -10.606601717798213,
+            0
+          ],
+          "max": [
+            100,
+            60,
+            12.37436867076458
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "as 68 with a 45 deg bend: setback (R+t)tan22.5 = 2.071068, base y 2.071068..60, bend annulus 2.5..5 over 45 deg about (y 2.071068, z 5), flat leg 15 - setback = 12.928932 turned 45 deg; extrusion along x 100"
+      },
+      "bodyCount": 1,
+      "note": "SolidCraft convention: flange height (15) is measured along the flange's outer face from the virtual sharp at the original edge (y 0, z 0), so the outer top corner is at (y, z) = (-15 cos45, 15 sin45)."
+    },
+    {
+      "id": "71-sm-custom-rule",
+      "name": "Sheet metal: custom rule (t=1.5, K=0.33, R=3)",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 10053.716694115408,
+        "surfaceAreaMm2": 13896.29850950676,
+        "centerOfMass": [
+          40,
+          24.999999999999996,
+          5.19228129375018
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            80,
+            50,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "U channel, rule t 1.5, R 3, K 0.33 (K unused folded): base y 4.5..45.5 x 1.5; two 90 deg bend annuli R 3..4.5; flanges y 0..1.5 and 48.5..50, z 4.5..20; extrusion along x 80"
+      },
+      "bodyCount": 1,
+      "note": "the rule edit applies to the whole sheet body (base built before it is 1.5 thick too, as the recipe's edge picks at z = 1.5 state)"
+    },
+    {
+      "id": "72-sm-contour-flange",
+      "name": "Sheet metal: contour flange",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 12097.621556370217,
+        "surfaceAreaMm2": 10412.00210735098,
+        "centerOfMass": [
+          36.037689993681276,
+          25,
+          15.087581425863405
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            70,
+            50,
+            32.5
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "contour flange, width 50 along +Y, XZ section: plate x 0..35 z 0..2.5; bend R 2.5..5 about (35, 5) (sketch corner = outer virtual sharp, setback R+t); wall x 37.5..40 z 5..27.5; bend R 2.5..5 about (42.5, 27.5) (sketch corner = inner virtual sharp, setback R); plate x 42.5..70 z 30..32.5"
+      },
+      "bodyCount": 1,
+      "note": "SolidCraft convention: the sketch lines are the sheet face away from the material (material right of travel); thickness grows to the material side"
+    },
+    {
+      "id": "73-sm-hem",
+      "name": "Sheet metal: flat hem",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 21334.723242251002,
+        "surfaceAreaMm2": 17994.473058645817,
+        "centerOfMass": [
+          50,
+          21.698805014882137,
+          5.264118547850942
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            100,
+            60,
+            22.51
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "68's part (height 20) plus a flat hem on the flange top edge: 180 deg bend, inner radius = hem gap 0.01, outer 2.51, about (y 2.51, z 20), folded toward +y (inside); hem leg 8 - (0.01 + 2.5) = 5.49: y 2.52..5.02, z 14.51..20; extrusion along x 100"
+      },
+      "bodyCount": 1,
+      "note": "SolidCraft conventions: hem gap 0.01 mm (rule hem_gap), hem length measured to the outer face of the hem bend (top at z 22.51), hem folds over the flange's inner face."
+    },
+    {
+      "id": "74-sm-unfold-refold",
+      "name": "Sheet metal: unfold, cut across bend, refold",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 15800.304003966867,
+        "surfaceAreaMm2": 13610.326162673397,
+        "centerOfMass": [
+          40,
+          25.774257210144707,
+          5.531072022389276
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            80,
+            50,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "U channel 80x50 (t 2.5, R 2.5, base y 5..45, flanges z 5..20) with the flat-pattern slot x 35..45, y -12..10 refolded: BA = (pi/2)(R + K t) = 5.654866776, so the slot removes base y 5..10, the whole y=0 bend and the flange from z 5 to 5 + (12 - (BA - 5)) = 16.345133224; x-segments 0..35 / 35..45 / 45..80"
+      },
+      "bodyCount": 1,
+      "note": "unfold/refold maps flat distance through the K-factor neutral layer (K 0.44)"
+    },
+    {
+      "id": "75-sm-bracket-holes",
+      "name": "Sheet metal: bracket with holes for DXF",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 13916.012042595696,
+        "surfaceAreaMm2": 12035.962275939059,
+        "centerOfMass": [
+          42.447144354989774,
+          13.304901335083745,
+          7.787102510037218
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            80,
+            40,
+            30
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "base x 0..75, y 5..40, z 0..2.5 (trimmed 5 by each flange's setback); bend 1 (R 2.5..5 about y 5, z 5) x 0..75; flange 1 y 0..2.5, z 5..30, x 0..80; bend 2 (R 2.5..5 about x 75, z 5) y 5..40; flange 2 x 77.5..80, z 5..15, y 5..40; minus two d6 through holes at (25,20), (55,20) in the base. A = sum of prism areas - 2 x 4 joint areas (75t, 75t, 35t, 35t) + hole walls - hole discs"
+      },
+      "bodyCount": 1,
+      "note": "SolidCraft convention: the second flange trims the base under the first bend, so bend 1 stops at x 75 while flange 1's panel runs to x 80 (open corner relief, no fill)."
+    },
+    {
+      "id": "76-sm-thickness-variant",
+      "name": "Sheet metal: thickness change",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 22520.575041173113,
+        "surfaceAreaMm2": 16064.12819493887,
+        "centerOfMass": [
+          50,
+          24.30326264966137,
+          3.788688791962308
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            100,
+            60,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "final rule thickness 3 (bend radius = Thickness = 3): base y 6..60 x 3; bend annulus R 3..6 about (y 6, z 6); flange y 0..3, z 6..20; extrusion along x 100"
+      },
+      "bodyCount": 1,
+      "note": "the rule's thickness edits regenerate the whole sheet body; only the final 3 mm state matters"
+    },
+    {
+      "id": "77-fillet-variable-linear",
+      "name": "Variable fillet, linear radius",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 23888.407044966672,
+        "surfaceAreaMm2": 5133.743774393379,
+        "centerOfMass": [
+          19.974846161095797,
+          15.065997951540359,
+          9.957359184584975
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            40,
+            30,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "box 40x30x20 with its top front edge (y=0, z=20) rounded at a radius running straight from 2 (x=0) to 5 (x=40): sections are quarter rounds, V = abc - (1 - pi/4) L (a^2 + ab + b^2) / 3; moments and the round's area integrated along the edge (tools/oracle-analytic/cases_fillets.py)"
+      },
+      "bodyCount": 1,
+      "faces": 7
+    },
+    {
+      "id": "78-fillet-variable-to-zero",
+      "name": "Variable fillet closing at a corner",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 23954.21827485812,
+        "surfaceAreaMm2": 5162.286695397177,
+        "centerOfMass": [
+          20.019112176659895,
+          15.027387550737057,
+          9.98216853759289
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            40,
+            30,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "as 77 with the radius running from 4 (x=0) down to 0 (x=40), where the round closes to the corner: V = abc - (1 - pi/4) L a^2 / 3; the round is three-sided and the corner at x=40 stays"
+      },
+      "bodyCount": 1,
+      "faces": 7
+    },
+    {
+      "id": "79-fillet-chord-length",
+      "name": "Chord-length fillet",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 23931.327412287184,
+        "surfaceAreaMm2": 5148.007518160999,
+        "centerOfMass": [
+          20,
+          15.041230594339089,
+          9.973117249081739
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            40,
+            30,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "box 40x30x20, top front edge rounded 4 wide across (chord c): r = c / (2 cos 45 deg) = 2 sqrt 2; V = abc - (1 - pi/4) r^2 L, A = 2(ab + bc + ca) - 2 r L + (pi/2) r L - 2 (1 - pi/4) r^2"
+      },
+      "bodyCount": 1,
+      "faces": 7
+    },
+    {
+      "id": "80-fillet-taper-to-fit",
+      "name": "Fillet tapered to the room along its edge",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 6525.960225143974,
+        "surfaceAreaMm2": 2415.0715445174765,
+        "centerOfMass": [
+          14.492429126634498,
+          6.796108235394649,
+          7.422397574623911
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            40,
+            20,
+            15
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "plate (top 20 -> 2 wide over x 0..40, 15 high) with its top front edge filleted at 3, fit: taper. The radius is the taper law: a clamped cubic B-spline in u = x/40 on 8 equal spans, control radii min(3, 0.9 room) at the Greville abscissae, room = min(20 - 18u, 15) tan 45 deg (top face width, front face height): 3.0000, 3.0000, 3.0000, 3.0000, 3.0000, 3.0000, 3.0000, 3.0000, 3.0000, 2.4750, 1.8000. Sections are quarter rounds; V, moments and areas integrated along the edge"
+      },
+      "bodyCount": 1,
+      "faces": 7
+    },
+    {
+      "id": "81-fillet-spline-radius",
+      "name": "Fillet with a B-spline radius",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 23933.601078437176,
+        "surfaceAreaMm2": 5150.5132169272065,
+        "centerOfMass": [
+          20.008680496725603,
+          15.039806270911098,
+          9.974065214901927
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            40,
+            30,
+            20
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "box 40x30x20 with its top front edge (y=0, z=20) rounded at a radius that is a clamped cubic B-spline in u = x/40, knots 0,0,0,0,0.25,0.6,1,1,1,1, control radii 2, 5, 1.5, 4, 1, 3 (r(0) = 2, r(40) = 3). Sections are quarter rounds; V, moments and areas integrated along the edge, exactly per knot span"
+      },
+      "bodyCount": 1,
+      "faces": 7
+    },
+    {
+      "id": "82-thin-extrude-frame",
+      "name": "Thin extrude frame",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 6080,
+        "surfaceAreaMm2": 4256,
+        "centerOfMass": [
+          0,
+          0,
+          5
+        ],
+        "bbox": {
+          "min": [
+            -21,
+            -21,
+            0
+          ],
+          "max": [
+            21,
+            21,
+            10
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "square frame: the lines' 40 mm square walled 3 mm inside and 1 mm outside (mitred corners) is 42 x 42 less 34 x 34, 10 mm tall: V = (42^2 - 34^2) * 10, A = 2 (42^2 - 34^2) + 4 * 42 * 10 + 4 * 34 * 10"
+      },
+      "bodyCount": 1,
+      "faces": 10
+    },
+    {
+      "id": "83-boundary-loop-thicken",
+      "name": "Boundary surface through a loop, thickened",
+      "ci": "nightly",
+      "status": "pending",
+      "expected": {
+        "volumeMm3": 278.53981633974485,
+        "surfaceAreaMm2": 369.9557428756428,
+        "centerOfMass": [
+          4.999999999999999,
+          7.008207500514442,
+          0
+        ],
+        "bbox": {
+          "min": [
+            0,
+            0,
+            -1
+          ],
+          "max": [
+            10,
+            15,
+            1
+          ]
+        }
+      },
+      "provenance": {
+        "kind": "analytic",
+        "upstream": "analytic",
+        "details": "region = 10 x 10 square + half disc r 5 on its top side: A = 100 + 12.5 pi, centroid by moments (half disc's at 4r / (3 pi) above its diameter); slab of thickness 2 over it (symmetric about z = 0): V = 2A, area = 2A + 2 (30 + 5 pi)"
+      },
+      "bodyCount": 1,
+      "faces": 6
+    }
+  ]
+}

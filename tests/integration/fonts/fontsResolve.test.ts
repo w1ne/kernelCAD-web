@@ -8,7 +8,7 @@ import {
   fontPath,
   __resetFontStateForTests,
 } from '../../../src/shared/fonts/index';
-import { mkdirSync, copyFileSync, rmSync } from 'node:fs';
+import { mkdirSync, copyFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import * as nodeFontLoader from '../../../src/shared/fonts/nodeLoader';
@@ -48,9 +48,9 @@ describe('fonts: resolver + bundle loader', () => {
     expect((await resolveAndLoadFont(fontPath(tmp), undefined)).fontFamily).toBe('CachedFamily961');
     const registered = replicad.getFont('CachedFamily961');
     expect(registered).toBeDefined();
-    // The file is gone: a second call can only succeed from the cache.
+    // The file is gone: a second call must fail rather than reuse the old face.
     rmSync(tmp);
-    expect((await resolveAndLoadFont(fontPath(tmp), undefined)).fontFamily).toBe('CachedFamily961');
+    await expect(resolveAndLoadFont(fontPath(tmp), undefined)).rejects.toThrow();
     expect(replicad.getFont('CachedFamily961')).toBe(registered);
   });
 
@@ -68,6 +68,18 @@ describe('fonts: resolver + bundle loader', () => {
     const { fontFamily } = await resolveAndLoadFont(fontPath('LiberationSans-Regular.ttf'), scriptDir);
     // Bundled file basename is "LiberationSans-Regular" — registered under that.
     expect(fontFamily).toBe('LiberationSans-Regular');
+  });
+
+  it('reads a replaced fontPath file instead of keeping the previous face', async () => {
+    const src = resolve(__dirname, '../../../src/shared/fonts/LiberationSans-Regular.ttf');
+    const tmp = resolve(tmpdir(), 'kcad-fonts-replace', 'SwapFace.ttf');
+    mkdirSync(dirname(tmp), { recursive: true });
+    copyFileSync(src, tmp);
+    expect((await resolveAndLoadFont(fontPath(tmp), undefined)).fontFamily).toBe('SwapFace');
+    const first = replicad.getFont('SwapFace');
+    writeFileSync(tmp, Buffer.from('not-a-font'));
+    await expect(resolveAndLoadFont(fontPath(tmp), undefined)).rejects.toThrow();
+    expect(replicad.getFont('SwapFace')).toBe(first);
   });
 
   it('second call with the same path is a no-op (registry hit)', async () => {
