@@ -67,7 +67,7 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import type { Vec3 } from '../../shared/intent/types';
 import { Transform } from '../../shared/runtime/se3';
 import type { Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
-import { resolveConnectorOrigin, type Connector } from './connector';
+import { connectorDirection, resolveConnectorFrame } from './connector';
 import { parseConnectorRef, type MateRecord } from './mate';
 import { partAtFor, placementFromSceneMotion } from './partFrame';
 import type { MateType } from './mateTypes';
@@ -323,8 +323,9 @@ async function resolveSide(
   if (!part) return undefined;
   const connector = part.mateConnectors.find((c) => c.name === connectorName);
   if (!connector) return undefined;
-  const localOrigin = await resolveLocalOrigin(part, connector);
-  const localAxis = (connector.axis ?? [0, 0, 1]) as Vec3;
+  const frame = await resolveConnectorFrame(part.originalShape, connector.origin);
+  const localOrigin = frame.origin;
+  const localAxis = connectorDirection(frame.axis, connector.axis);
   const worldT = worldTransforms.get(partName) ?? Transform.identity();
   // Connector origin is in part-local coords → lift via point transform
   // (includes translation). Axis is a direction → lift via axisDir (rotation
@@ -333,17 +334,6 @@ async function resolveSide(
   const origin = worldT.point(localOrigin as Se3Vec3) as Vec3;
   const direction = worldT.axisDir(localAxis as Se3Vec3) as Vec3;
   return { partName, origin, direction };
-}
-
-/**
- * Lower a connector origin to its part-local numeric Vec3. For `vec3`
- * origins this is a no-op; for topology origins it lowers the part shape
- * once (cheap on the second mate that re-references the same connector
- * because the lowerer caches by feature id).
- */
-async function resolveLocalOrigin(part: AssemblyPartStored, connector: Connector): Promise<Vec3> {
-  const resolved = await resolveConnectorOrigin(part.originalShape, connector.origin);
-  return resolved.value;
 }
 
 /**

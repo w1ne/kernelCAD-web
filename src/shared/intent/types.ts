@@ -139,7 +139,7 @@ export type FeatureKind =
   // boolean
   | 'boolean'
   // edge/face features (v0.2+)
-  | 'fillet' | 'chamfer' | 'shell' | 'hole' | 'holes' | 'cutout' | 'draft' | 'pattern'
+  | 'fillet' | 'chamfer' | 'shell' | 'hole' | 'holes' | 'cutout' | 'draft' | 'moveFaces' | 'offsetFaces' | 'pattern'
   // symmetric (v0.13+)
   | 'mirror'
   // imports (v0.3+)

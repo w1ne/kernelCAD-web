@@ -192,7 +192,8 @@ function parseSubtraction(s: ParserState): QueryAst {
   return { op: 'subtraction', a, b };
 }
 
-function parseCreatedBy(s: ParserState): QueryAst {
+function parseIdFilter(s: ParserState, ident: string): QueryAst {
+  const op = ident as 'createdBy' | 'newSince' | 'derivedFrom';
   const id = readString(s);
   let kind: QueryKind | undefined;
   skipWs(s);
@@ -203,7 +204,7 @@ function parseCreatedBy(s: ParserState): QueryAst {
     kind = k as QueryKind;
   }
   expectChar(s, ')');
-  return kind ? { op: 'createdBy', id, kind } : { op: 'createdBy', id };
+  return kind ? { op, id, kind } : { op, id };
 }
 
 function parseUnaryExpr(s: ParserState, ident: string): QueryAst {
@@ -281,7 +282,9 @@ const EXPR_HANDLERS: ReadonlyMap<string, ExprHandler> = new Map<string, ExprHand
   ['union', parseSetExpr],
   ['intersection', parseSetExpr],
   ['subtraction', parseSubtraction],
-  ['createdBy', parseCreatedBy],
+  ['createdBy', parseIdFilter],
+  ['newSince', parseIdFilter],
+  ['derivedFrom', parseIdFilter],
   ['ownedByPart', parseUnaryExpr],
   ['ownerPart', parseUnaryExpr],
   ['containsPoint', parseContainsPoint],
@@ -362,7 +365,9 @@ function formatAst(ast: QueryAst): string {
     case 'everything':
       return `everything(${ast.kind})`;
     case 'createdBy':
-      return `createdBy("${ast.id}"${ast.kind ? `, ${ast.kind}` : ''})`;
+    case 'newSince':
+    case 'derivedFrom':
+      return `${ast.op}("${ast.id}"${ast.kind ? `, ${ast.kind}` : ''})`;
     case 'containsPoint':
       return `containsPoint([${ast.point.join(',')}])`;
     case 'closestTo':

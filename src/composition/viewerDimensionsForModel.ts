@@ -8,7 +8,7 @@ import type { FeatureRecord } from '../shared/intent/featureRecord';
 import type { ShapeBackend } from '../kernel/backends/backend';
 import type { BuiltModel } from '../modeling/buildModel';
 import { collectDrawingDeclarations } from '../modeling/runtime/drawingDeclarations';
-import { drawingPartsForBackend } from '../kernel/backends/occt/sceneToWorldFrame';
+import { drawingPartsForBackend, releaseDrawingParts, type WorldFramePart } from '../kernel/backends/occt/sceneToWorldFrame';
 import { computeViewerDimensions } from '../kernel/backends/occt/viewerDimensions';
 import type { ViewerDimension } from '../shared/intent/viewerDimension';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
@@ -31,12 +31,21 @@ export function viewerDimensionsForRoot(root: ViewerDimensionsRoot, opts: Opts =
   const auto = opts.auto ?? true;
   if (!auto && declared.length === 0) return { dimensions: [], diagnostics: [] };
   const rootShape = root.rootShape;
-  return computeViewerDimensions({
-    parts: () => drawingPartsForBackend(rootShape),
-    declared,
-    auto,
-    ...(opts.budgetMs !== undefined ? { budgetMs: opts.budgetMs } : {}),
-  });
+  const batches: WorldFramePart[][] = [];
+  try {
+    return computeViewerDimensions({
+      parts: () => {
+        const batch = drawingPartsForBackend(rootShape);
+        batches.push(batch);
+        return batch;
+      },
+      declared,
+      auto,
+      ...(opts.budgetMs !== undefined ? { budgetMs: opts.budgetMs } : {}),
+    });
+  } finally {
+    for (const batch of batches) releaseDrawingParts(batch);
+  }
 }
 
 export function viewerDimensionsForModel(model: BuiltModel, opts: Opts = {}): Result {

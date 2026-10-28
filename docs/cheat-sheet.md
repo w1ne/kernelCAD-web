@@ -128,6 +128,8 @@ Break edges, add draft, hollow out a wall, fold sheet metal.
 | `Shape.chamfer(distance, edges?: EdgeSelector) => Shape` | Bevel edges. |
 | `Shape.draft(angleDeg: Editable<number>, opts: { face: FaceSelector \| string; neutralPlane?: string; pullDir?: [number, number, number] }) => Shape` | Taper the selected face(s) for moldability. |
 | `Shape.shell(thickness, { face: FaceSelector }) => Shape` | Hollow the solid removing the named face. |
+| `Shape.offsetFaces(faces: FaceSelector \| FaceSelector[], distance: Editable<number>) => Shape` | Push or pull planar faces along their outward normals. |
+| `Shape.moveFaces(faces: FaceSelector \| FaceSelector[], by: [number, number, number]) => Shape` | Move planar faces by `by` (mm). |
 | `Shape.bend(edgeRef: EdgeSelector \| string, angle: Editable<number>, radius: Editable<number>) => Shape` | Add a sheet-metal bend along a linear edge. |
 | `Shape.flattenPattern() => Region` | Return the unfolded 2D flat-pattern of this bent sheet-metal Shape as a Region (closed outer wire + holes + bend-line metadata + source plane). |
 
@@ -140,7 +142,7 @@ Pick the edges or faces a feature acts on. Query first, then sort or group what 
 | `selectEdges(shape, query?) => Promise<ShapeList<EdgeSegment>>` | Pre-select edges by EdgeQuery. |
 | `selectEdge(shape, query) => Promise<EdgeSegment>` | Like selectEdges but throws if zero or multiple edges match. |
 | `select : <T>(items: Iterable<T>) => ShapeList<T>` | Wrap any array of topology query results in a `ShapeList` so the selector algebra applies — face summaries from `inspect({ of: 'faces' })`, `ResolvedEntity[]` from `q.face(...).evaluate(scene)`, or a hand-assembled list. |
-| `q : { face, edge, vertex, connector, part, solid, createdBy, ownedByPart, ownerPart, union, intersection, subtraction, containsPoint, closestTo, geometryType, withLabel, withFeatureName, nthElement, fromString, nothing, everything }` | Query DSL constructor namespace. |
+| `q : { face, edge, vertex, connector, part, solid, createdBy, newSince, derivedFrom, ownedByPart, ownerPart, union, intersection, subtraction, containsPoint, closestTo, geometryType, withLabel, withFeatureName, nthElement, fromString, nothing, everything }` | Query DSL constructor namespace. |
 | `faces(shape, query?) => RequirementSelectionHandle` | Select all faces of `shape` matching a FaceQuery (default every face) for a requirement predicate. |
 | `edges(shape, query?) => RequirementSelectionHandle` | Select all edges of `shape` matching an EdgeQuery (default every edge) for a requirement predicate. |
 | `ShapeList.sortBy(criterion: 'X' \| 'Y' \| 'Z' \| Vec3 \| 'area' \| 'length' \| 'radius', opts?: { descending?: boolean; tolerance?: number }) => ShapeList<T>` | Order the list by a criterion, ascending by default. |
@@ -188,6 +190,7 @@ Build a mechanism from parts: connectors, mates, joints, posed Scenes.
 | `Scene.part(name: string) => ScenePart` | Look up a part by its assembly-unique name. |
 | `Scene.parts : readonly ScenePart[]` | Frozen, ordered list of parts in the Scene; ordering matches the order parts were added to the Assembly. |
 | `Scene.assemblyName : string` | Name passed to `assembly(name?)` at capture time; "unnamed-assembly" if no name was provided. |
+| `Shape.resolutionInputs() => { records: FeatureRecord[]; paramTable: ParamTable }` | Live feature records and param table for this shape. |
 
 ## Curves & surfaces
 

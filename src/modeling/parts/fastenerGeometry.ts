@@ -27,6 +27,7 @@
 // form is reported on the part record (`threadForm: 'annular'`).
 
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { approxOcctBytes } from '../../kernel/backends/occt/shapeWeight';
 import { booleanUnsimplified } from '../../kernel/backends/occt/occtRawBoolean';
 import { isoInternalGrooveProfile, isoMinorRadius } from '../../kernel/backends/occt/isoThread';
 import type { Param } from '../../shared/intent/types';
@@ -432,31 +433,48 @@ export function fastenerSolid(part: ResolvedPart, detail: FastenerDetail): OcctB
 // ---------------------------------------------------------------------------
 
 const MAX_CACHED = 64;
-const solidCache = new Map<string, OcctBackend>();
+/** Full threads are large. A count of 64 is enough to blow the evaluator
+ *  RSS cap, and dispose of a display solid used to leave the envelope behind. */
+const MAX_CACHED_BYTES = 128 * 1024 * 1024;
+const solidCache = new Map<string, { solid: OcctBackend; bytes: number }>();
+
+function cachedBytes(): number {
+  let total = 0;
+  for (const entry of solidCache.values()) total += entry.bytes;
+  return total;
+}
+
+function evictFastenerSolids(): void {
+  while (solidCache.size > MAX_CACHED || cachedBytes() > MAX_CACHED_BYTES) {
+    const oldest = solidCache.keys().next().value as string | undefined;
+    if (oldest === undefined) break;
+    solidCache.get(oldest)?.solid.dispose();
+    solidCache.delete(oldest);
+  }
+}
 
 /** {@link fastenerSolid}, built once per (part id, detail) and handed out as
  *  copies: eight identical bolts cost one thread sweep. The cache holds the
- *  most recent MAX_CACHED solids. */
+ *  most recent solids that fit the count and byte budgets. A solid larger
+ *  than the budget is returned to the caller and not pinned. */
 export function cachedFastenerSolid(part: ResolvedPart, detail: FastenerDetail): OcctBackend {
   const key = `${part.id}|${detail}`;
-  let solid = solidCache.get(key);
-  if (solid === undefined) {
-    solid = fastenerSolid(part, detail);
-    if (solidCache.size >= MAX_CACHED) {
-      const oldest = solidCache.keys().next().value as string;
-      solidCache.get(oldest)?.dispose();
-      solidCache.delete(oldest);
-    }
-    solidCache.set(key, solid);
-  } else {
+  const cached = solidCache.get(key);
+  if (cached !== undefined) {
     solidCache.delete(key);
-    solidCache.set(key, solid);
+    solidCache.set(key, cached);
+    return cached.solid.clone();
   }
+  const solid = fastenerSolid(part, detail);
+  const bytes = approxOcctBytes(solid);
+  if (bytes > MAX_CACHED_BYTES) return solid;
+  solidCache.set(key, { solid, bytes });
+  evictFastenerSolids();
   return solid.clone();
 }
 
 /** Test seam: drop every cached solid. */
 export function clearFastenerSolidCache(): void {
-  for (const solid of solidCache.values()) solid.dispose();
+  for (const entry of solidCache.values()) entry.solid.dispose();
   solidCache.clear();
 }

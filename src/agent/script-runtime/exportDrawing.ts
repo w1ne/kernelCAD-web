@@ -9,7 +9,7 @@ import { computeBom } from './bom';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { declaredDrawingAnnotation } from '../../kernel/backends/occt/viewerDimensions/drawingAnnotation';
 import { collectDrawingDeclarations } from '../../modeling/runtime/drawingDeclarations';
-import { drawingPartsForBackend, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
+import { drawingPartsForBackend, releaseDrawingParts, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
@@ -145,56 +145,64 @@ async function renderDrawingSheet(
 ): Promise<ExportResult> {
   const modelName = opts.modelName ?? drawingModelName(fileName);
   const drawingParts = drawingPartsForBackend(lowered);
-  const styleError = drawingStyleError(opts.style);
-  if (styleError !== undefined) return { bytes: new Uint8Array(), featureCount, diagnostics: [...diagnostics, styleError] };
-  const captured = collectDrawingDeclarations(run.records, targetId);
-  if (opts.style === 'architectural') {
-    validateArchitecturalReview(opts, captured);
-    const plan = renderArchitecturalPlan(drawingParts, {
-      ...definedOnly({
-        sheet: opts.sheet,
-        title: opts.titleBlock?.title,
-        revision: opts.titleBlock?.revision,
-        date: opts.date,
-        plan: opts.plan,
-      }),
+  let explodedParts: readonly WorldFramePart[] | undefined;
+  try {
+    const styleError = drawingStyleError(opts.style);
+    if (styleError !== undefined) return { bytes: new Uint8Array(), featureCount, diagnostics: [...diagnostics, styleError] };
+    const captured = collectDrawingDeclarations(run.records, targetId);
+    if (opts.style === 'architectural') {
+      validateArchitecturalReview(opts, captured);
+      const plan = renderArchitecturalPlan(drawingParts, {
+        ...definedOnly({
+          sheet: opts.sheet,
+          title: opts.titleBlock?.title,
+          revision: opts.titleBlock?.revision,
+          date: opts.date,
+          plan: opts.plan,
+        }),
+        modelName,
+      });
+      return { bytes: plan.bytes, featureCount, diagnostics };
+    }
+    const styleHint = architecturalStyleHint(opts.style, drawingParts);
+    const assemblies = run.session.assemblies as Map<string, Assembly>;
+    const arm = firstAssemblyOrUndefined(assemblies);
+
+    const exploded = await resolveExplodedParts(opts.exploded, lowered, arm, diagnostics, featureCount);
+    if ('result' in exploded) return exploded.result;
+    explodedParts = exploded.parts;
+
+    const bom = await resolveDrawingBom(
+      opts.balloons === true || opts.partsList === true, arm, run,
+    );
+    if ('result' in bom) return bom.result;
+
+    // GD&T declared on the feature graph (shape.datum / shape.tolerance) for
+    // this target or anything feeding it.
+    const declarations = mergeDrawingDeclarations(opts, captured);
+    const annotations = effectiveAnnotations(opts, captured, drawingParts);
+    const rendered = renderSvgDrawing(drawingParts, {
+      ...opts,
+      ...(annotations !== undefined ? { annotations } : {}),
       modelName,
+      declarations,
+      ...(exploded.parts !== undefined ? { explodedParts: exploded.parts } : {}),
+      ...(bom.rows !== undefined ? { bomRows: bom.rows } : {}),
     });
-    return { bytes: plan.bytes, featureCount, diagnostics };
+    return {
+      bytes: rendered.bytes,
+      featureCount,
+      diagnostics: [
+        ...diagnostics, ...exploded.diagnostics, ...bom.diagnostics, ...rendered.diagnostics,
+        ...(styleHint === undefined ? [] : [styleHint]),
+      ],
+      ...(rendered.report === undefined ? {} : { drawingReport: rendered.report }),
+    };
+  } finally {
+    releaseDrawingParts(drawingParts);
+    // Second clone set. `releaseDrawingParts` skips a shape that is the caller's solid.
+    if (explodedParts !== undefined) releaseDrawingParts(explodedParts);
   }
-  const styleHint = architecturalStyleHint(opts.style, drawingParts);
-  const assemblies = run.session.assemblies as Map<string, Assembly>;
-  const arm = firstAssemblyOrUndefined(assemblies);
-
-  const exploded = await resolveExplodedParts(opts.exploded, lowered, arm, diagnostics, featureCount);
-  if ('result' in exploded) return exploded.result;
-
-  const bom = await resolveDrawingBom(
-    opts.balloons === true || opts.partsList === true, arm, run,
-  );
-  if ('result' in bom) return bom.result;
-
-  // GD&T declared on the feature graph (shape.datum / shape.tolerance) for
-  // this target or anything feeding it.
-  const declarations = mergeDrawingDeclarations(opts, captured);
-  const annotations = effectiveAnnotations(opts, captured, drawingParts);
-  const rendered = renderSvgDrawing(drawingParts, {
-    ...opts,
-    ...(annotations !== undefined ? { annotations } : {}),
-    modelName,
-    declarations,
-    ...(exploded.parts !== undefined ? { explodedParts: exploded.parts } : {}),
-    ...(bom.rows !== undefined ? { bomRows: bom.rows } : {}),
-  });
-  return {
-    bytes: rendered.bytes,
-    featureCount,
-    diagnostics: [
-      ...diagnostics, ...exploded.diagnostics, ...bom.diagnostics, ...rendered.diagnostics,
-      ...(styleHint === undefined ? [] : [styleHint]),
-    ],
-    ...(rendered.report === undefined ? {} : { drawingReport: rendered.report }),
-  };
 }
 
 function validateArchitecturalReview(opts: SvgDrawingOptions, captured: ReturnType<typeof collectDrawingDeclarations>): void {

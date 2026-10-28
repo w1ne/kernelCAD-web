@@ -22,11 +22,17 @@ import { DIAGNOSTIC_REGISTRY } from '../../../src/shared/diagnostics/registry';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SKILLS_DIR = resolvePath(__dirname, '../../../src/agent/skills');
 
-// Retained as a (now-empty) allowlist so future deliberate orphans can be
-// recorded here with a follow-up note rather than silently passing the
-// gate. The "stale allowlist" guard below fails CI if anything in here
-// becomes registered, keeping the set honest.
-const KNOWN_ORPHANS: ReadonlySet<string> = new Set<string>();
+// Retained as an allowlist so deliberate orphans can be recorded here with a
+// follow-up note rather than silently passing the gate. The stale-allowlist
+// guard below fails CI if anything in here becomes registered.
+//
+// `assembly.connector.duplicate-name` is the message prefix on a
+// `feature.invalid-args` KernelError thrown by takeConnectorSlot. The parts
+// skill quotes that prefix. Follow-up: emit it as its own DiagnosticCode if
+// agents should match on it instead of `feature.invalid-args`.
+const KNOWN_ORPHANS: ReadonlySet<string> = new Set<string>([
+  'assembly.connector.duplicate-name',
+]);
 
 // Match `<group>.<segment>.<segment>(.<segment>)*` where group is one of the
 // known top-level namespaces. Requires at least one inner dot so we don't

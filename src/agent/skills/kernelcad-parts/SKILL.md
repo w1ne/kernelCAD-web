@@ -257,20 +257,22 @@ rejects it. Catalog cookbooks and `kernelcad-assemblies` all use 4-arg.
 
 ## The universal `bolt-holes-N` auto-rule
 
-Any `.hole(...)` or `.holes(...)` feature on an authored or imported Shape
-automatically receives `bolt-holes-N` connector frames at the hole's
-bottom face plus through-axis. Names are numbered first by feature order,
-then by `(u, v)` to break ties, so the same script always emits the same
-connector names across re-runs.
+Any `.hole(...)` or `.holes(...)` feature on an authored Shape receives
+`bolt-holes-N` connector frames. Promotion puts those frames on the assembly
+**part**, so `'bracket.bolt-holes-1'` resolves after `arm.part('bracket',
+shapeWithHoles)`. A later `part.connector('bolt-holes-N', ...)` **replaces**
+the promoted row (use it to pin a numeric origin, as cookbook
+`nema-motor-mounting-plate` does). A second declare of a name you already
+wrote throws `assembly.connector.duplicate-name`.
 
-**Caveat (agent-facing):** those auto frames attach to the **holes feature
-id**, not the assembly part name. A mate ref like `'bracket.bolt-holes-1'`
-will not resolve after `arm.part('bracket', shapeWithHoles)`. Prefer
-**manual** `partRef.connector('bolt-holes-N', { type: 'frame', origin:
-{ kind: 'vec3', value: [...] } })` on the part (same pattern as cookbook
-`nema-motor-mounting-plate`). Bundled / catalog parts already expose
-`bolt-holes-N` on the **part** itself — those refs work without a manual
-frame.
+Numbering is deterministic across every authored hole in the part's ancestor
+closure: feature creation order, then `(u, v)` within that feature. A later
+`.hole()` continues the sequence; it does not reuse `bolt-holes-1`. A hole
+on a boolean cutter is included. A `patternLinear` / `patternGrid` /
+`patternCircular` does not mint a connector per copy — only the source hole
+is numbered. The mate follows the hole after a param edit, including a
+rotate, scale, reflect, or translate applied after the cut. Bundled catalog
+parts already expose their own `bolt-holes-N` as numeric frames.
 
 ```typescript
 const arm = assembly('arm');
@@ -280,7 +282,7 @@ const bracketShape = box(40, 20, 3).holes('top', {
   depth: 'through',
 });
 const bracket = arm.part('bracket', bracketShape);
-// Manual frame on the PART — .holes() auto-connectors stay on the feature id.
+// Replaces the promoted bolt-holes-1 frame with a numeric origin.
 bracket.connector('bolt-holes-1', {
   type: 'frame',
   origin: { kind: 'vec3', value: [-10, 0, 1.5] },
@@ -426,8 +428,8 @@ return arm.model();
 ### NEMA 17 mounted to a plate
 
 Catalog `nema17` already exposes `bolt-holes-1..4` on the **motor part**.
-Plate-side `.holes()` auto-connectors stay on the holes **feature id**, so
-declare matching frames on the plate part (cookbook
+Plate-side `.holes()` promotes `bolt-holes-N` onto the plate; the explicit
+`plate.connector` calls replace those frames with numeric origins (cookbook
 `nema-motor-mounting-plate`).
 
 ```typescript

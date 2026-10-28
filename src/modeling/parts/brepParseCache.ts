@@ -5,10 +5,12 @@
 
 import { createHash } from 'node:crypto';
 import { OcctBackend, registerOcctResetHook } from '../../kernel/backends/occt/occtBackend';
+import { approxOcctBytes } from '../../kernel/backends/occt/shapeWeight';
 import { importBrepBytes } from '../../kernel/backends/occt/importBrep';
 
 const MAX_ENTRIES = 32;
-const cache = new Map<string, OcctBackend>();
+const MAX_BYTES = 128 * 1024 * 1024;
+const cache = new Map<string, { master: OcctBackend; bytes: number }>();
 
 registerOcctResetHook(() => {
   // The OCCT reset hook also runs after WASM poisoning. The old module is
@@ -27,23 +29,31 @@ export function importBrepCached(bytes: Uint8Array | Buffer): OcctBackend {
   if (cached !== undefined) {
     cache.delete(key);
     cache.set(key, cached);
-    return cached.clone();
+    return cached.master.clone();
   }
 
   const master = importBrepBytes(bytes);
-  cache.set(key, master);
-  while (cache.size > MAX_ENTRIES) {
+  const weight = approxOcctBytes(master);
+  if (weight > MAX_BYTES) return master;
+  cache.set(key, { master, bytes: weight });
+  while (cache.size > MAX_ENTRIES || brepCacheBytes() > MAX_BYTES) {
     const oldest = cache.keys().next().value as string | undefined;
     if (oldest === undefined) break;
     const evicted = cache.get(oldest);
     cache.delete(oldest);
-    evicted?.dispose();
+    evicted?.master.dispose();
   }
   return master.clone();
 }
 
+function brepCacheBytes(): number {
+  let total = 0;
+  for (const entry of cache.values()) total += entry.bytes;
+  return total;
+}
+
 /** Clear cached masters while the OCCT heap is healthy. */
 export function clearBrepParseCache(): void {
-  for (const backend of cache.values()) backend.dispose();
+  for (const entry of cache.values()) entry.master.dispose();
   cache.clear();
 }

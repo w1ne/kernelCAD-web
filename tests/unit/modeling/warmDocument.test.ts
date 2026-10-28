@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import { OcctBackend, initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 import { buildModel, updateModelParams, type BuiltModel } from '../../../src/modeling/buildModel';
 import { createWarmDocumentStore } from '../../../src/modeling/warm/documentSession';
@@ -173,6 +173,34 @@ describe('warm document rebuild', () => {
     const edited = await store.edit('other', [{ name: 's', value: 5 }]);
     expect(edited.path).toBe('incremental');
     expect(rootOf(edited.document.model).volume()).toBeCloseTo(125, 3);
+  });
+
+  it('evicts the least recently used document past the retained-byte budget', async () => {
+    const store = createWarmDocumentStore({
+      maxDocuments: 4,
+      maxRetainedBytes: 1,
+      build: (input) => buildModel(input),
+    });
+    const code = `const s = param('s', 4, { min: 1, max: 20 }); return box(s, s, s);`;
+    await store.open({ id: 'a', code, fileName: 'a.kcad.ts' });
+    await store.open({ id: 'b', code, fileName: 'b.kcad.ts' });
+    expect(store.has('a')).toBe(false);
+    expect(store.has('b')).toBe(true);
+    const edited = await store.edit('b', [{ name: 's', value: 6 }]);
+    expect(rootOf(edited.document.model).volume()).toBeCloseTo(216, 3);
+  });
+
+  it('dispose frees an analysis envelope and leaves a placed clone', async () => {
+    await initOcct();
+    const main = OcctBackend.box(4, 4, 4);
+    const envelope = OcctBackend.box(1, 1, 1);
+    const placed = envelope.clone().translate(10, 0, 0);
+    const placedVolume = placed.volume();
+    main.analysisBody = envelope;
+    main.dispose();
+    expect(placed.volume()).toBeCloseTo(placedVolume, 3);
+    expect(() => envelope.volume()).toThrow();
+    placed.dispose();
   });
 
   it('invalidates the cached document when a lower fails', async () => {

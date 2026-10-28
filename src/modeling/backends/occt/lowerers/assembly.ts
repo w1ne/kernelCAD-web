@@ -19,9 +19,10 @@ import { resolvedPartAt } from '../../../mates/partFrame';
 import { mateFk, mateFkWithPlacedParts, type ResolvedMatePart } from '../../../mates/solver';
 import { drivenMateNames } from '../../../mates/loopAdapter';
 import type { LoopPin } from '../../../../shared/kinematics/loopClosure';
-import { resolveTopologyOriginOnBackend } from '../connectorTopology';
+import { resolveTopologyFrameOnBackend } from '../connectorTopology';
 import { built, finished, noShape, type LowerContext, type LowerOutcome } from './context';
 import { normalizeAxis, readVec3Param } from './helpers';
+import { translatePreservingLineage } from './transforms';
 
 /** `assemblyPart` — clones the wrapped source shape and applies its `at:`. */
 export function lowerAssemblyPart(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
@@ -42,7 +43,7 @@ export function lowerAssemblyPart(ctx: LowerContext, r: FeatureRecord): LowerOut
   const at = (r.metadata as { at?: Vec3Param } | undefined)?.at;
   if (at !== undefined) {
     const [tx, ty, tz] = readVec3Param(at);
-    shape = shape.translate(tx, ty, tz);
+    shape = translatePreservingLineage(shape, tx, ty, tz);
   }
   return built(shape);
 }
@@ -155,9 +156,10 @@ function connectorMovedByAt(
  * connector origin where the part's `at` puts it. The scene parts this
  * lowerer emits carry shapes that `lowerAssemblyPart` already moved by `at`,
  * and `mateFk` returns the motion of the shapes in the frame its connectors
- * are given in, so the result is the scene part's `worldTransform`. Topology
- * origins are resolved on that moved shape, so they already are in this
- * frame; vec3 origins are declared on the source shape and get `at` added.
+ * are given in, so the result is the scene part's `worldTransform`. Face-sampled
+ * topology origins are resolved on that moved shape, so they already include
+ * `at`. Point-placed hole mouths receive `at` as `bakedTranslation`. Vec3
+ * origins are declared on the source shape and get `at` added.
  * `opLabel` prefixes the diagnostics so the two callers keep their own
  * message text.
  */
@@ -199,40 +201,67 @@ function resolveMateParts(
     }
     const partBackend = partEntries[i][1];
     const at = loweredPartAt(ctx, partRec);
-    const resolvedConnectors: Connector[] = [];
-    for (const c of rawConnectors) {
-      if (c.origin.kind === 'vec3') {
-        resolvedConnectors.push(connectorMovedByAt(c, c.origin.value, at));
-        continue;
-      }
-      try {
-        if (!(partBackend instanceof OcctBackend)) throw new Error('Display mesh bodies do not provide topology for connector queries; use numeric connector origins.');
-        const value = resolveTopologyOriginOnBackend(partBackend, c.origin.query, {
-          records,
-          consumerId: partId,
-        });
-        resolvedConnectors.push({
-          ...c,
-          origin: { kind: 'vec3', value },
-        });
-      } catch (err) {
-        const msg = (err as Error).message;
-        ctx.diagnostics.push({
-          target: ctx.target,
-          code: 'feature.invalid-args',
-          featureId: r.id,
-          severity: 'error',
-          message: `${opLabel}: failed to resolve connector '${c.name}' on part '${partName}' (${msg}).`,
-          hint: 'invalid-args.assembly.mate-connector-origin-unresolved — declare the connector with a numeric origin or a topology query that resolves on the lowered shape.',
-        });
-        topologyResolutionFailed = true;
-      }
+    const resolvedConnectors = resolvePlacedConnectors(
+      ctx, r, opLabel, partName, partId, partBackend, rawConnectors, records, at,
+    );
+    if (resolvedConnectors === undefined) {
+      topologyResolutionFailed = true;
+      break;
     }
-    if (topologyResolutionFailed) break;
     resolvedParts.push({ id: partId, name: partName, connectors: resolvedConnectors });
   }
   if (topologyResolutionFailed) return undefined;
   return resolvedParts;
+}
+
+/** Connectors in the placed part's frame. Vec3 origins gain `at`. Topology
+ *  is read on the placed solid. Point-placed holes also receive `at` inside
+ *  the hole-axis resolver (`bakedTranslation`); face-sampled mouths already
+ *  include it. */
+function resolvePlacedConnectors(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  opLabel: 'assemblyModel' | 'solvedAssembly',
+  partName: string,
+  partId: FeatureId,
+  partBackend: ShapeBackend,
+  rawConnectors: readonly Connector[],
+  records: readonly FeatureRecord[],
+  at: readonly [number, number, number],
+): Connector[] | undefined {
+  const resolvedConnectors: Connector[] = [];
+  for (const c of rawConnectors) {
+    if (c.origin.kind === 'vec3') {
+      resolvedConnectors.push(connectorMovedByAt(c, c.origin.value, at));
+      continue;
+    }
+    try {
+      if (!(partBackend instanceof OcctBackend)) throw new Error('Display mesh bodies do not provide topology for connector queries; use numeric connector origins.');
+      const frame = resolveTopologyFrameOnBackend(partBackend, c.origin.query, {
+        records,
+        consumerId: partId,
+        paramTable: ctx.inputs.paramTable,
+        bakedTranslation: [at[0], at[1], at[2]],
+      });
+      resolvedConnectors.push({
+        ...c,
+        origin: { kind: 'vec3', value: frame.origin },
+        ...(frame.axis !== undefined ? { axis: frame.axis } : {}),
+      });
+    } catch (err) {
+      const msg = (err as Error).message;
+      ctx.diagnostics.push({
+        target: ctx.target,
+        code: 'feature.invalid-args',
+        featureId: r.id,
+        severity: 'error',
+        message: `${opLabel}: failed to resolve connector '${c.name}' on part '${partName}' (${msg}).`,
+        hint: 'invalid-args.assembly.mate-connector-origin-unresolved — declare the connector with a numeric origin or a topology query that resolves on the lowered shape.',
+      });
+      return undefined;
+    }
+  }
+  return resolvedConnectors;
 }
 
 /** Pose finiteness gate. Capture allows ParamRef poses; if the live ParamTable

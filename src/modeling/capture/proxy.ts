@@ -11,14 +11,15 @@ import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
 import { captureFilletIntersection } from './filletIntersectionCapture';
+import { captureMoveFaces, captureOffsetFaces, type CanonicalFace, type FaceEditInput, type FaceSelector } from './faceEditCapture';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
-import type { Query, FaceMarker, EdgeMarker } from '../../kernel/naming/query';
+import type { Query, EdgeMarker } from '../../kernel/naming/query';
 import {
   validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
   resolveHoleOpts, resolveHolesOpts,
   type EditableHoleOpts, type EditableHolesOpts,
 } from '../validation/holeValidation';
-import { generateBoltHoleConnectors, type HoleCenter } from '../parts/holeAutoConnectors';
+import { attachHolesConnectors, attachSingleHoleConnectors } from './emitHoleConnectors';
 import {
   validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
   resolveCutoutOpts,
@@ -49,8 +50,6 @@ import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
 
-type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
-
 export type EdgeSelector =
   | EdgeQuery
   | EdgeSegment
@@ -70,14 +69,7 @@ export type EdgeSelector =
   | Query<unknown>
   | undefined;
 
-export type FaceSelector =
-  | FaceQuery
-  | { face: CanonicalFace | string }
-  // Q8 — Query DSL value (kc.q.face(...) etc) reaches every face-feature
-  // lowerer (shell / hole / cutout) through the same {face} slot. Captured
-  // at append-time and dispatched through the Q3 evaluator at lower-time.
-  | Query<FaceMarker>
-  | Query<unknown>;
+export type { FaceSelector };
 
 /**
  * IMPORTANT — drift sentinel contract:
@@ -117,12 +109,13 @@ export class Shape {
 
   // Lazy lowered backend — cached per-Shape so consecutive selectEdges /
   // selectEdge calls don't re-run RecomputeEngine.run() against the full
-  // record list. Invalidated by record-count growth (capture is append-only,
-  // so length growth is the only signal we need today).
+  // record list. Invalidated by record-count growth, a transform appended
+  // to this shape, or a param-table change (`lowerInputsKey`).
   private _loweredBackend?: import('../../kernel/backends/occt/occtBackend').OcctBackend;
   private _loweredMeshBackend?: import('../../kernel/backends/meshBackend').MeshBackend;
   private _loweredAtRecordCount?: number;
   private _loweredAtTransformCount?: number;
+  private _loweredAtInputsKey?: string;
 
   constructor(id: FeatureId, session: CaptureSession) {
     this.id = id;
@@ -920,6 +913,24 @@ export class Shape {
   }
 
   /**
+   * Push or pull planar faces along their outward normals by `distance` mm.
+   * Positive grows the solid. A non-planar face is rejected by name.
+   */
+  offsetFaces(faces: FaceEditInput, distance: Editable<number>): Shape {
+    return captureOffsetFaces(this.session, this, faces, distance);
+  }
+
+  /**
+   * Move planar faces by `by`. The vector must be parallel to each face's
+   * outward normal; a sideways move is rejected by name.
+   */
+  moveFaces(faces: FaceEditInput, by: EditableVec3): Shape {
+    return captureMoveFaces(this.session, this, faces, by);
+  }
+
+
+
+  /**
    * W2.2: Add a sheet-metal bend along a linear edge. The Shape must trace
    * its lineage to a `sheetMetal(...)` record (validated at lowering time;
    * non-sheet-metal callers see `feature.invalid-args`).
@@ -1033,21 +1044,7 @@ export class Shape {
       params,
       metadata,
     });
-    // Auto-emit bolt-holes-1 connector at the hole's bottom face + through-axis.
-    const holeDepth =
-      resolved.depth === 'through'
-        ? 0 // through-hole: the connector sits at the back of the parent face
-        : typeof resolved.depth === 'number'
-          ? resolved.depth
-          : 0;
-    const centers: HoleCenter[] = [
-      // An `at` hole's face frame is centred on its entry point.
-      { u: resolved.at ? 0 : resolved.u, v: resolved.at ? 0 : resolved.v, depthMm: holeDepth, axis: [0, 0, -1] },
-    ];
-    const partName =
-      (metadata as { partName?: string }).partName ?? holeShape.id;
-    const conns = generateBoltHoleConnectors(centers, { partName });
-    this.session.attachAutoConnectors(holeShape.id, conns);
+    attachSingleHoleConnectors(this.session, holeShape.id, metadata, resolved);
     return holeShape;
   }
 
@@ -1094,23 +1091,7 @@ export class Shape {
       params,
       metadata,
     });
-    // Auto-emit bolt-holes-1..N connectors, one per hole position.
-    const holesDepth =
-      resolved.depth === 'through'
-        ? 0
-        : typeof resolved.depth === 'number'
-          ? resolved.depth
-          : 0;
-    const centers: HoleCenter[] = resolved.positions.map((p) => ({
-      u: p.u,
-      v: p.v,
-      depthMm: holesDepth,
-      axis: [0, 0, -1] as [number, number, number],
-    }));
-    const partName =
-      (metadata as { partName?: string }).partName ?? holesShape.id;
-    const conns = generateBoltHoleConnectors(centers, { partName });
-    this.session.attachAutoConnectors(holesShape.id, conns);
+    attachHolesConnectors(this.session, holesShape.id, metadata, resolved);
     return holesShape;
   }
 
@@ -1393,6 +1374,18 @@ export class Shape {
     return this;
   }
 
+  /** Live feature records and param table. Mate topology reads these so a
+   *  param edit re-resolves `hole-axis` against the current hole. */
+  resolutionInputs(): {
+    records: ReturnType<CaptureSession['getRecords']>;
+    paramTable: CaptureSession['paramTable'];
+  } {
+    return {
+      records: this.session.getRecords(),
+      paramTable: this.session.paramTable,
+    };
+  }
+
   /**
    * Lower this Shape eagerly — runs recompute against the records up to and
    * including this Shape, returns the resulting OcctBackend so script-runtime
@@ -1403,37 +1396,41 @@ export class Shape {
    */
   async lower(): Promise<import('../../kernel/backends/occt/occtBackend').OcctBackend> {
     const records = this.session.getRecords();
-    // C1 fix: cache invalidates on either record-count growth OR a transform
-    // appended to THIS shape. `appendTransform` mutates `record.transforms`
-    // in place — `records.length` is unchanged after Shape.translate/rotate/scale.
-    // Without the transform-count check, the cache returns the un-transformed
-    // backend after a transform, producing silent incorrect results.
+    // Cache invalidates on record-count growth, a transform appended to THIS
+    // shape (`appendTransform` mutates `record.transforms` in place, so
+    // `records.length` does not change), or a param-table change. A param
+    // edit republishes `lastFullLower`; that solid wins over this cache so a
+    // topology connector re-resolves on the new face.
     const ownRecord = records.find(r => r.id === this.id);
     const transformCount = ownRecord?.transforms.length ?? 0;
-    if (this._loweredMeshBackend && this._loweredAtRecordCount === records.length && this._loweredAtTransformCount === transformCount) {
-      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
-    }
-    if (
-      this._loweredBackend &&
-      this._loweredAtRecordCount === records.length &&
-      this._loweredAtTransformCount === transformCount
-    ) {
-      return this._loweredBackend;
-    }
+    const inputsKey = this.session.lowerInputsKey();
+    const cacheFresh = this._loweredAtRecordCount === records.length
+      && this._loweredAtTransformCount === transformCount
+      && this._loweredAtInputsKey === inputsKey;
     const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
-    // Reuse the session's last full lower when nothing it depends on changed.
+    // The session's last full lower is param-keyed. A param edit republishes
+    // it (`params.update`) with the new solids; prefer that over this Shape's
+    // private cache, which was filled on the previous lower.
     const reused = this.session.reusableLoweredShape(this.id);
     if (reused instanceof MeshBackend) {
       this._loweredMeshBackend = reused;
       this._loweredAtRecordCount = records.length;
       this._loweredAtTransformCount = transformCount;
-      throw new Error('Shape.lower(): display mesh body has no BRep backend; solid operations are unavailable.');
+      this._loweredAtInputsKey = inputsKey;
+      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
     }
     if (reused instanceof OcctBackend) {
       this._loweredBackend = reused;
       this._loweredAtRecordCount = records.length;
       this._loweredAtTransformCount = transformCount;
+      this._loweredAtInputsKey = inputsKey;
       return reused;
+    }
+    if (this._loweredMeshBackend && cacheFresh) {
+      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
+    }
+    if (this._loweredBackend && cacheFresh) {
+      return this._loweredBackend;
     }
     const { RecomputeEngine } = await import('../compute/recomputeEngine');
     const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
@@ -1464,6 +1461,7 @@ export class Shape {
     this._loweredBackend = shape;
     this._loweredAtRecordCount = records.length;
     this._loweredAtTransformCount = transformCount;
+    this._loweredAtInputsKey = inputsKey;
     return shape;
   }
 }

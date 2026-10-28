@@ -369,6 +369,14 @@ export const FEATURE_CODES = {
     description: 'A .bend() produced several solids, an invalid solid, or lost / overlapped material.',
   },
   // Draft (1) — Slice E Task 6/7
+  'feature.face-edit.rejected': {
+    hintTemplate:
+      'moveFaces and offsetFaces on the OCCT kernel only slide a planar face along its normal. Read the message: it names the face and what to change. A sideways hole move or a cylindrical resize is a boolean, not this call.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'select a planar face and a displacement along its normal, or build the change as a boolean' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'moveFaces or offsetFaces refused the request instead of returning a body that is not the one asked for.',
+  },
   'feature.draft.failed': {
     hintTemplate:
       'Draft failed on the selected face(s). Drafts need a planar neutral plane and a consistent pull direction; check that the face is planar and the angle is < 90°.',
