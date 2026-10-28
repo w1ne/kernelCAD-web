@@ -1,11 +1,7 @@
 // tests/unit/diagnostics/unstructuredBodies.test.ts
 //
-// Agent-parts-discipline check: a multi-body model authored as loose
-// top-level bodies (no `assembly().part(...)`) emits the advisory
-// `assembly.structure.unstructured-bodies` (info). It surfaces from the
-// shared evaluate seam, so both `evaluate_script` and the
-// `/__kernelcad/review` payload (via reviewCadTool → evaluateAndBuildScript)
-// carry it. Single-body / assembly-built / sketch-only returns stay silent.
+// Array returns are auto-wrapped into a named Scene, so the retired
+// `assembly.structure.unstructured-bodies` advisory must not fire for them.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
@@ -17,10 +13,10 @@ function has(diags: { code: string }[]): boolean {
   return diags.some(d => d.code === CODE);
 }
 
-describe('assembly.structure.unstructured-bodies', () => {
+describe('retired assembly.structure.unstructured-bodies advisory', () => {
   beforeAll(async () => { await initOcct(); }, 60000);
 
-  it('fires on a loose 2-body return (named variables)', async () => {
+  it('does not diagnose a named multi-Shape array return auto-wrapped as a Scene', async () => {
     const r = await evaluateScriptTool({
       code: `
         const a = box(10, 10, 10);
@@ -29,21 +25,17 @@ describe('assembly.structure.unstructured-bodies', () => {
       `,
     });
     expect(r.ok).toBe(true);
-    expect(has(r.diagnostics)).toBe(true);
-    const d = r.diagnostics.find(x => x.code === CODE)!;
-    expect(d.severity).toBe('info');
-    expect(d.hint).toMatch(/assembly\(\)\.part/);
+    expect(r.parts).toEqual({ count: 2, names: ['a', 'b'] });
+    expect(has(r.diagnostics)).toBe(false);
   });
 
-  it('fires on an anonymous multi-return (no variable names)', async () => {
+  it('does not diagnose an anonymous multi-Shape array return auto-wrapped as a Scene', async () => {
     const r = await evaluateScriptTool({
       code: `return [box(10, 10, 10), box(10, 10, 10).translate(20, 0, 0)];`,
     });
     expect(r.ok).toBe(true);
-    expect(has(r.diagnostics)).toBe(true);
-    const d = r.diagnostics.find(x => x.code === CODE)!;
-    // Message notes that the returned bodies are anonymous expressions.
-    expect(d.message).toMatch(/anonymous|named variables/i);
+    expect(r.parts).toEqual({ count: 2, names: ['part-1', 'part-2'] });
+    expect(has(r.diagnostics)).toBe(false);
   });
 
   it('is silent on a single-body model', async () => {

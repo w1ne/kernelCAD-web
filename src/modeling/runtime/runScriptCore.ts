@@ -15,11 +15,14 @@
 // `kc` alias and the async-return unwrapping all happen here exactly once.
 
 import { CaptureSession } from '../capture/captureSession';
+import { Assembly } from '../capture/assembly';
 import type { ApiContext, KernelCadApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { Shape } from '../capture/proxy';
+import { getReturnedVariables } from '../../shared/codeGeneration/ast';
 import { findTopLevelImport, normalizeUserScript } from '../../shared/runtime/normalizeUserScript';
 import { NO_WRAP_OFFSET, type IsolationOptions, type IsolationResult, type ScriptWrapOffset } from './isolationTypes';
 import { ScriptLocationResolver } from './scriptLocationCapture';
@@ -93,12 +96,14 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
   // every other capture-time API misuse uses.
   const importStatement = findTopLevelImport(code);
   if (importStatement !== undefined) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `local imports are not supported in .kcad.ts — define helpers in the same file (imports are stripped before execution). Found: ${importStatement}`,
-      undefined,
-      'Move the imported helper into this .kcad.ts file. The kernelCAD API (box, path, assembly, …) and the lib.* loaders are injected as globals — no import needed.',
-    );
+    invalidArgs({
+      api: 'local imports are not supported in .kcad.ts',
+      path: 'import statement',
+      gotText: importStatement,
+      requires: 'helpers to be defined in the same file; imports are stripped before execution',
+      example: 'const body = box(10, 10, 10); return body;',
+      hint: 'Move the imported helper into this .kcad.ts file. The kernelCAD API (box, path, assembly, …) and the lib.* loaders are injected as globals — no import needed.',
+    });
   }
 
   const session = new CaptureSession();
@@ -147,12 +152,73 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
   } catch (e) {
     throw withShapeMethodHint(e);
   }
+  returnValue = normalizeArrayReturnValue(returnValue, session, code);
   return {
     records: session.getRecords(),
     session,
     paramTable: session.paramTable,
     returnValue,
   };
+}
+
+/** Convert a returned list of solids into the same named Scene shape used by
+ *  explicit assemblies. A mixed list is rejected because falling back to the
+ *  last captured feature would silently discard its Shape entries. */
+function normalizeArrayReturnValue(returnValue: unknown, session: CaptureSession, code: string): unknown {
+  if (!Array.isArray(returnValue)) return returnValue;
+
+  const shapes = returnValue.filter((value): value is Shape => value instanceof Shape);
+  if (shapes.length === 0) return returnValue;
+  if (shapes.length !== returnValue.length) {
+    const badEntries = returnValue
+      .map((value, index) => ({ value, index }))
+      .filter(({ value }) => !(value instanceof Shape))
+      .map(({ value, index }) => `index ${index}: ${arrayEntryType(value)}`)
+      .join(', ');
+    const shapeIndexes = returnValue
+      .map((value, index) => value instanceof Shape ? index : undefined)
+      .filter((index): index is number => index !== undefined)
+      .join(', ');
+    invalidArgs({
+      api: '.kcad.ts script return value',
+      path: 'return value',
+      gotText: `mixed array: Shape indexes ${shapeIndexes}; non-Shape entries (${badEntries})`,
+      requires: 'each element of a multi-body array return to be a Shape',
+      example: 'return [partA, partB];',
+      hint: 'Remove non-Shape values or return a single Shape/Scene.',
+    });
+  }
+  if (shapes.length === 1) return shapes[0];
+
+  let variableNames: (string | null)[] = [];
+  try {
+    variableNames = getReturnedVariables(code);
+  } catch {
+    // Source parsing is only for useful part labels; generated names remain safe.
+  }
+
+  const assembly = new Assembly('script-return', session);
+  const usedNames = new Set<string>();
+  shapes.forEach((shape, index) => {
+    const candidate = variableNames[index];
+    const baseName = candidate && /^[A-Za-z][A-Za-z0-9_-]*$/.test(candidate)
+      ? candidate
+      : `part-${index + 1}`;
+    let name = baseName;
+    let suffix = 2;
+    while (usedNames.has(name)) name = `${baseName}-${suffix++}`;
+    usedNames.add(name);
+    assembly.part(name, shape);
+  });
+  return assembly.model();
+}
+
+function arrayEntryType(value: unknown): string {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'array';
+  if (typeof value !== 'object') return typeof value;
+  const constructorName = (value as { constructor?: { name?: unknown } }).constructor?.name;
+  return typeof constructorName === 'string' && constructorName.length > 0 ? constructorName : 'object';
 }
 
 /**
