@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
+import { OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 import { createLowerer } from '../../../../src/modeling/backends/kernelRegistry';
 import { buildModel } from '../../../../src/modeling/buildModel';
 
@@ -34,5 +35,19 @@ describe('guarded SMLib registry path (live WASM)', () => {
     const model=await buildModel({code:"export default kc.box(10,10,10).fillet(0.5, {face:'top'});",fileName:'<named-face>',kernel:'smlib'});
     expect(model.diagnostics.filter(d=>d.severity==='error')).toEqual([]);
     expect(model.rootShape!.volume()).toBeGreaterThan(990);
+  });
+  it('accepts a plain cylinder without a naming-history fallback', async () => {
+    const model = await buildModel({
+      code: 'export default cylinder(10, 4);',
+      fileName: 'p.kcad.ts',
+      kernel: 'smlib',
+    });
+    const naming = model.diagnostics.filter((d) =>
+      d.code === 'recompute.kernel.guard-fallback' || d.message.includes('NAMING_HISTORY'));
+    expect(naming).toEqual([]);
+    expect(model.rootShape!.volume()).toBeCloseTo(Math.PI * 16 * 10, 2);
+    expect(model.rootShape).toBeInstanceOf(OcctBackend);
+    expect((model.rootShape as OcctBackend).faceHashes()).toHaveLength(3);
+    model.rootShape?.dispose?.();
   });
 });

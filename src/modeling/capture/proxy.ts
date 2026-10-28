@@ -11,8 +11,9 @@ import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
 import { captureFilletIntersection } from './filletIntersectionCapture';
+import { captureMoveFaces, captureOffsetFaces, type CanonicalFace, type FaceEditInput, type FaceSelector } from './faceEditCapture';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
-import type { Query, FaceMarker, EdgeMarker } from '../../kernel/naming/query';
+import type { Query, EdgeMarker } from '../../kernel/naming/query';
 import {
   validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
   resolveHoleOpts, resolveHolesOpts,
@@ -49,8 +50,6 @@ import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
 
-type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
-
 export type EdgeSelector =
   | EdgeQuery
   | EdgeSegment
@@ -70,14 +69,7 @@ export type EdgeSelector =
   | Query<unknown>
   | undefined;
 
-export type FaceSelector =
-  | FaceQuery
-  | { face: CanonicalFace | string }
-  // Q8 — Query DSL value (kc.q.face(...) etc) reaches every face-feature
-  // lowerer (shell / hole / cutout) through the same {face} slot. Captured
-  // at append-time and dispatched through the Q3 evaluator at lower-time.
-  | Query<FaceMarker>
-  | Query<unknown>;
+export type { FaceSelector };
 
 /**
  * IMPORTANT — drift sentinel contract:
@@ -918,6 +910,24 @@ export class Shape {
       pullDir: opts.pullDir,
     });
   }
+
+  /**
+   * Push or pull planar faces along their outward normals by `distance` mm.
+   * Positive grows the solid. A non-planar face is rejected by name.
+   */
+  offsetFaces(faces: FaceEditInput, distance: Editable<number>): Shape {
+    return captureOffsetFaces(this.session, this, faces, distance);
+  }
+
+  /**
+   * Move planar faces by `by`. The vector must be parallel to each face's
+   * outward normal; a sideways move is rejected by name.
+   */
+  moveFaces(faces: FaceEditInput, by: EditableVec3): Shape {
+    return captureMoveFaces(this.session, this, faces, by);
+  }
+
+
 
   /**
    * W2.2: Add a sheet-metal bend along a linear edge. The Shape must trace

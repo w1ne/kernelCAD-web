@@ -22,6 +22,7 @@ import { lowerBox, lowerCylinder, lowerSphere } from './primitives';
 import { lowerRevolve } from './revolve';
 import { lowerSheetMetal, lowerSheetMetalBend } from './sheetMetal';
 import { lowerDraft, lowerShell } from './shellDraft';
+import { lowerMoveFaces, lowerOffsetFaces } from './faceEdit';
 import { lowerExtrude, lowerSketch } from './sketchExtrude';
 import { lowerShapeThicken, lowerSurfaceSew, lowerSurfaceThicken, lowerSurfaceToShape } from './surfaces';
 import { lowerSweep } from './sweep';
@@ -62,6 +63,8 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   chamfer: lowerChamfer,
   shell: lowerShell,
   draft: lowerDraft,
+  moveFaces: lowerMoveFaces,
+  offsetFaces: lowerOffsetFaces,
   hole: lowerHole,
   holes: lowerHoles,
   cutout: lowerCutout,

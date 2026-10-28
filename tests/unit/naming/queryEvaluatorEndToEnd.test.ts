@@ -69,15 +69,14 @@ describe('Query evaluator end-to-end — Q3 smoke (per actually-use-what-you-shi
     expect(boxFaces.length).toBe(6);
   });
 
-  it('kc.q.edge() on a real box surfaces the Q3 punt code with a clear message', async () => {
+  it('kc.q.edge() on a real box returns the 12 seeded edges', async () => {
     const scene = await buildScene(`return box(10, 10, 10);`);
-    let caught: unknown;
-    try { evaluate(q.edge(), scene); }
-    catch (e) { caught = e; }
-    expect(caught).toBeDefined();
-    const err = caught as { code?: string; message?: string };
-    expect(err.code).toBe('query.unsupported-entity-type');
-    expect(err.message).toMatch(/edge/i);
+    const edges = evaluate(q.edge(), scene);
+    expect(edges).toHaveLength(12);
+    for (const edge of edges) {
+      expect(edge.kind).toBe('edge');
+      expect(edge.ref).toMatch(/^@kc\[/);
+    }
   });
 
   it('canonical-ordering is stable: same scene, two evaluations → identical handle sequence', async () => {

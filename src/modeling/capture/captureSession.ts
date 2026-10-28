@@ -80,6 +80,7 @@ import {
 import {
   createBendFeatureCaptureSpec,
   createDraftFeatureCaptureSpec,
+  createFaceEditCaptureSpec,
   createScalarEdgeFeatureCaptureSpec,
   createVariableEdgeFeatureCaptureSpec,
 } from './shapeOperationCaptureValidation';
@@ -961,6 +962,21 @@ export class CaptureSession {
    * The shape-operation record builder owns selector serialization and
    * metadata defaults; this method only enforces session ownership.
    */
+  faceEditFeature(
+    kind: 'moveFaces' | 'offsetFaces',
+    base: Shape,
+    faces: readonly (import('./proxy').FaceSelector | string)[],
+    params: Record<string, import('../../shared/intent/types').Param>,
+  ): Shape {
+    return this.createShape(createFaceEditCaptureSpec(
+      this.records,
+      kind,
+      base.id,
+      faces,
+      params,
+    ));
+  }
+
   draftFeature(
     base: Shape,
     angleDeg: Editable<number>,

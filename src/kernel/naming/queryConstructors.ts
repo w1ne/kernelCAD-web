@@ -95,6 +95,27 @@ function createdBy(id: string, kind?: QueryKind): Query<unknown> {
   return makeQuery<unknown>('any', ast);
 }
 
+/** Faces and edges that do not descend from feature `id` (new since that result). */
+function newSince(id: string, kind?: QueryKind): Query<unknown> {
+  const ast: QueryAst = kind !== undefined
+    ? { op: 'newSince', id, kind }
+    : { op: 'newSince', id };
+  return makeQuery<unknown>('any', ast);
+}
+
+/**
+ * Faces and edges that descend from feature `id`'s output.
+ * `createdBy` is the birth stamp only (`featureId` or `rootFeatureId`).
+ * A face that merely passed through a later feature is `derivedFrom` that
+ * feature and is not `createdBy` it.
+ */
+function derivedFrom(id: string, kind?: QueryKind): Query<unknown> {
+  const ast: QueryAst = kind !== undefined
+    ? { op: 'derivedFrom', id, kind }
+    : { op: 'derivedFrom', id };
+  return makeQuery<unknown>('any', ast);
+}
+
 // ---------------------------------------------------------------------------
 // Ownership filters
 // ---------------------------------------------------------------------------
@@ -217,6 +238,8 @@ export const q = {
   part,
   solid,
   createdBy,
+  newSince,
+  derivedFrom,
   ownedByPart,
   ownerPart,
   union,

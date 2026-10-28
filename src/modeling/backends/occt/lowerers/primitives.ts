@@ -2,7 +2,13 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
-import type { FaceLineage, HistoryMap } from '../../../../kernel/naming/evolutionRecord';
+import type { EdgeHistoryMap, FaceLineage, HistoryMap } from '../../../../kernel/naming/evolutionRecord';
+
+function seedEdges(shape: OcctBackend, featureId: string): EdgeHistoryMap {
+  const map: EdgeHistoryMap = new Map();
+  for (const hash of shape.edgeHashes()) map.set(hash, { rootHash: hash, rootFeatureId: featureId });
+  return map;
+}
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { emptyResultDiagnostic } from '../additiveNoOp';
 import { built, type LowerContext, type LowerOutcome } from './context';
@@ -29,6 +35,7 @@ export function lowerBox(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const boxWrapped = (rawBox as OcctBackend).getReplicadShape() as any;
   const shape: ShapeBackend = new OcctBackend(boxWrapped, 'box', boxSeedMap);
+  (shape as OcctBackend).edgeHistoryMap = seedEdges(shape as OcctBackend, r.id);
   {
     const e = emptyResultDiagnostic({
       featureId: r.id, opLabel: 'box',
@@ -52,9 +59,13 @@ export function lowerCylinder(ctx: LowerContext, r: FeatureRecord): LowerOutcome
       // defensive: skip if face not found
     }
   }
+  for (const hash of rawCyl.faceHashes()) {
+    if (!cylSeedMap.has(hash)) cylSeedMap.set(hash, { rootHash: hash, rootFeatureId: r.id });
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cylWrapped = (rawCyl as OcctBackend).getReplicadShape() as any;
   const shape: ShapeBackend = new OcctBackend(cylWrapped, 'cylinder', cylSeedMap);
+  (shape as OcctBackend).edgeHistoryMap = seedEdges(shape as OcctBackend, r.id);
   {
     const e = emptyResultDiagnostic({
       featureId: r.id, opLabel: 'cylinder',

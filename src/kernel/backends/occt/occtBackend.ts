@@ -70,6 +70,8 @@ export class OcctBackend implements ShapeBackend {
   /** v0.2: per-shape face/edge identity tracking. Undefined for shapes that don't
    *  participate in history walks (legacy paths that don't construct lineage). */
   readonly historyMap?: import('../../naming/evolutionRecord').HistoryMap;
+  /** Edge ancestry. Populated for primitives and for operations that record it. */
+  edgeHistoryMap?: import('../../naming/evolutionRecord').EdgeHistoryMap;
   private _drawing: replicad.Drawing | null = null;
   private _commands: SketchCommand[] | null = null;
   // When `_commands` contains at least one Slice D NURBS segment (`spline`,
@@ -122,6 +124,7 @@ export class OcctBackend implements ShapeBackend {
 
   clone(): OcctBackend {
     const out = new OcctBackend(this.shape.clone() as ReplicadShape3D, this.kind, this.historyMap);
+    if (this.edgeHistoryMap) out.edgeHistoryMap = this.edgeHistoryMap;
     if (this.analysisBody !== undefined) out.analysisBody = this.analysisBody.clone();
     return out;
   }

@@ -17,6 +17,8 @@ export type QueryAst =
   | { op: 'nothing' }
   | { op: 'everything'; kind: QueryKind }
   | { op: 'createdBy'; id: string; kind?: QueryKind }
+  | { op: 'newSince'; id: string; kind?: QueryKind }
+  | { op: 'derivedFrom'; id: string; kind?: QueryKind }
   | { op: 'ownedByPart'; query: QueryAst }
   | { op: 'ownerPart'; query: QueryAst }
   | { op: 'union'; queries: QueryAst[] }

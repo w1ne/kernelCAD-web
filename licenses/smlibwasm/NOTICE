@@ -1,0 +1,47 @@
+smlibwasm
+Copyright (c) 2026 AWV Informatik AG. Licensed under the MIT License (see LICENSE).
+
+The WebAssembly module (wasm/smlibwasm.wasm and its loader wasm/smlibwasm.mjs) contains the
+SMLib solid modeling kernel and its SM_API wrapper from USD BRep, compiled with Emscripten,
+and code taken from USD BRep's Python bindings (SmPyLib):
+
+  USD BRep
+  Copyright (c) 2020-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+  Licensed under the Apache License, Version 2.0.
+  https://github.com/NVIDIA-Omniverse/usd-brep
+
+The Apache License 2.0 text is in LICENSE.usd-brep. A few USD BRep source files are
+compiled from copies modified by AWV Informatik AG to fix defects; the copies, each with a
+notice of what was changed, are in third_party/patches of the smlibpy repository
+(https://github.com/awv-informatik/smlibpy), whose third_party/patches/README.md lists the
+changes.
+
+The default font of Text, Lato Regular, is included unmodified (in dist/_fonts.js):
+
+  Lato
+  Copyright (c) 2010-2013 by tyPoland Lukasz Dziedzic with Reserved Font Name "Lato".
+  Licensed under the SIL Open Font License, Version 1.1.
+
+The license text is in fonts/OFL.txt.
+
+The static dictionary of the Brotli compression format (RFC 7932, appendix A), with which WOFF2
+fonts are compressed, is included unmodified (dist/_brotli_dictionary.js):
+
+  Brotli
+  Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.
+  https://github.com/google/brotli
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+  and associated documentation files (the "Software"), to deal in the Software without
+  restriction, including without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all copies or
+  substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+  BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
