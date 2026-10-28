@@ -72,6 +72,15 @@ describe('export attribution', () => {
     expect(report.solidCount).toBe(2);
   }, 60000);
 
+  it('STEP: a disconnected union exports the same number of solids as its BREP', async () => {
+    const buf = await exportTo('step', `
+      const body = box(10, 10, 10);
+      return body.union(box(10, 10, 10).translate(30, 0, 0));
+    `, 'disconnected-union.step');
+    const report = await inspectStepBuffer(buf, 'disconnected-union.step');
+    expect(report.solidCount).toBe(2);
+  }, 60000);
+
   it('STL: the 80-byte binary header names kernelCAD and the file is still binary STL', async () => {
     const buf = await exportTo('stl', 'return box(10, 10, 10);', 'box.stl');
     const header = buf.subarray(0, 80).toString('ascii').replace(/\0+$/, '');

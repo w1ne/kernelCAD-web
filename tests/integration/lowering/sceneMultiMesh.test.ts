@@ -15,12 +15,48 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { inspectStepBuffer } from '../../../src/kernel/import/inspectStep';
+import { buildModel } from '../../../src/modeling/buildModel';
 import { runScript } from '../../../src/modeling/runtime/runScript';
 import { meshFeaturesPerFeature } from '../../../src/modeling/capture/featureMeshing';
+import { serializeForBridge } from '../../../src/modeling/capture/featureMeshSerialize';
+import { runAndExport } from '../../../src/agent/script-runtime/export';
 
 beforeAll(async () => { await initOcct(); });
 
 describe('meshing — SceneBackend fan-out', () => {
+  it.each(['toCompound', 'toUnion'] as const)(
+    'reports STEP solid count at the root for Scene.%s()',
+    async (exportMethod) => {
+      const code = `
+        const arm = assembly('two-boxes');
+        arm.part('left', box(10, 10, 10));
+        arm.part('right', box(10, 10, 10).translate(30, 0, 0));
+        return arm.model().${exportMethod}();
+      `;
+      const fileName = `two-boxes-${exportMethod}.kcad.ts`;
+      const model = await buildModel({ fileName, code });
+      const meshing = await meshFeaturesPerFeature(
+        model.records,
+        model.session.paramTable,
+        model.session,
+      );
+      const rootMesh = meshing.features.find((feature) => feature.featureId === model.rootId);
+      const exported = await runAndExport({
+        fileName,
+        code,
+        format: 'step',
+        options: { format: 'step' },
+      });
+      const step = await inspectStepBuffer(Buffer.from(exported.bytes), fileName);
+
+      expect(step.solidCount).toBe(2);
+      expect(rootMesh?.solidCount).toBe(step.solidCount);
+      expect(serializeForBridge(rootMesh!).solidCount).toBe(step.solidCount);
+      expect(meshing.solidCount).toBe(step.solidCount);
+    },
+  );
+
   it('fans solvedAssembly SceneBackend to N FeatureMesh entries with composite ids', async () => {
     const code = `
       const arm = assembly('test');

@@ -78,6 +78,15 @@ function extractRawShape(backend: ShapeBackend): unknown {
   );
 }
 
+function solidCountOf(shape: ShapeBackend): number | undefined {
+  try {
+    return shape.solidComponents().length;
+  } catch {
+    // Display-only mesh backends do not have BREP solids to enumerate.
+    return undefined;
+  }
+}
+
 export interface FeatureMesh {
   featureId: FeatureId;
   featureKind: FeatureKind;
@@ -86,6 +95,10 @@ export interface FeatureMesh {
   faces: FaceGeometry[];
   /** Direct indexed display buffer for display-only mesh bodies. */
   mesh?: { positions: Float32Array; normals: Float32Array; indices: Uint32Array };
+  /** Number of BREP solids represented by this feature mesh. Unlike mesh or
+   *  feature counts, this follows OCCT's TopAbs_SOLID exploration and therefore
+   *  agrees with STEP inspection for disconnected compounds. */
+  solidCount?: number;
   volume?: number;
   edges?: Float32Array;
   /** Color attribute carried from FeatureRecord.metadata.color (a ColorToken
@@ -188,6 +201,9 @@ export type MaterialShadowingWarning = AttributeShadowingWarning;
 export interface MeshFeaturesResult {
   features: FeatureMesh[];
   bounds: Bounds;
+  /** Solid count across terminal/root feature meshes, when every terminal
+   *  mesh has an authoritative BREP count. */
+  solidCount?: number;
   failedFeatureIds: FeatureId[];  // empty array if no failures
   /** Soft warnings collected during per-face material label resolution.
    *  Optional — absent when no labels were referenced. */
@@ -639,6 +655,8 @@ function collectTendonMeshes(
       featureKind: 'solvedAssembly',
       predecessors: [sceneFeatureId],
       faces: [face],
+      // Tendons are viewer-only overlays, not exportable BREP bodies.
+      solidCount: 0,
       assemblyFeatureId: sceneFeatureId,
       assemblyPartName: `__tendon__${t.name}`,
       displayName: `tendon:${t.name}`,
@@ -797,7 +815,7 @@ export async function meshFeaturesPerFeature(
     | Map<FeatureId, FeatureMesh>
     | undefined;
   const cachedAssemblyPartMeshes = session?.cachedAssemblyPartMeshes as
-    | Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>
+    | Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; solidCount?: number; edges?: Float32Array }>>
     | undefined;
   const cachedShapesIn = session?.cachedShapes;
   const assembliesIn = session?.assemblies;
@@ -913,7 +931,7 @@ interface MeshFeatureEventContext {
   readonly meshBounds: MeshBoundsAccumulator;
   readonly failedFeatureIds: FeatureId[];
   readonly constructionClosure: ReadonlySet<FeatureId>;
-  readonly cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>;
+  readonly cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; solidCount?: number; edges?: Float32Array }>>;
   readonly explodeOffsets?: ReadonlyMap<string, readonly [number, number, number]>;
   readonly assembliesIn?: ReadonlyMap<string, unknown>;
   readonly recordById: ReadonlyMap<FeatureId, FeatureRecord>;
@@ -1140,6 +1158,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     predecessors: meshPredecessors(event),
     op: event.op,
     faces: meshed.faces,
+    solidCount: solidCountOf(event.shape),
     volume: meshed.volume,
     edges: meshed.edges,
     ...linkFieldsOf(event, rawShape, meshed, ctx),
@@ -1165,4 +1184,3 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   // Aggregate bounds from this feature's vertices
   accumulateMeshBounds(ctx.meshBounds, meshed.faces);
 }
-

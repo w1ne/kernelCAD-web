@@ -35,6 +35,8 @@ export interface FeatureMeshSerialized {
   faces: FaceGeometrySerialized[];
   mesh?: { positions: SerializedFloats; normals: SerializedFloats; indices: SerializedIndices };
   volume?: number;
+  /** BREP solids represented by this display feature; used for honest body counts. */
+  solidCount?: number;
   edges?: SerializedFloats;
   /** Legacy color attribute (ColorToken or `#rrggbb` hex). Renderer resolves via
    *  ROLE_PALETTE; absent means use the renderer's default material color.
@@ -104,6 +106,68 @@ function serializeIndexedMesh(
   return { mesh: { positions: out.floats(mesh.positions), normals: out.floats(mesh.normals), indices: out.indices(mesh.indices) } };
 }
 
+function serializeFace(
+  face: FeatureMesh['faces'][number],
+  out: { floats: FloatOut; indices: IndexOut },
+): FaceGeometrySerialized {
+  return {
+    vertices: out.floats(face.vertices),
+    indices: out.indices(face.indices),
+    normals: out.floats(face.normals),
+    ...(face.uv !== undefined ? { uv: out.floats(face.uv) } : {}),
+    faceId: face.faceId,
+    plane: face.plane,
+    cylinder: face.cylinder,
+  };
+}
+
+type SerializedCountFields = Pick<FeatureMeshSerialized, 'volume' | 'solidCount' | 'edges'>;
+
+function serializeCountFields(m: FeatureMesh, out: { floats: FloatOut }): SerializedCountFields {
+  return {
+    volume: m.volume,
+    ...(m.solidCount !== undefined ? { solidCount: m.solidCount } : {}),
+    edges: m.edges ? out.floats(m.edges) : undefined,
+  };
+}
+
+type SerializedAppearanceFields = Pick<FeatureMeshSerialized, 'color' | 'material' | 'materialByFaceId'>;
+
+function serializeAppearanceFields(m: FeatureMesh): SerializedAppearanceFields {
+  return {
+    ...(m.color !== undefined ? { color: m.color } : {}),
+    ...(m.material !== undefined ? { material: m.material } : {}),
+    ...(m.materialByFaceId !== undefined ? { materialByFaceId: m.materialByFaceId } : {}),
+  };
+}
+
+type SerializedIdentityFields = Pick<
+  FeatureMeshSerialized,
+  'displayName' | 'filterNames' | 'sourceMetadataName' | 'assemblyFeatureId' | 'assemblyPartName' | 'transform' | 'virtual'
+>;
+
+function serializeIdentityFields(m: FeatureMesh): SerializedIdentityFields {
+  return {
+    ...(m.displayName !== undefined ? { displayName: m.displayName } : {}),
+    ...(m.filterNames !== undefined ? { filterNames: [...m.filterNames] } : {}),
+    ...(m.sourceMetadataName !== undefined ? { sourceMetadataName: m.sourceMetadataName } : {}),
+    ...(m.assemblyFeatureId !== undefined ? { assemblyFeatureId: m.assemblyFeatureId } : {}),
+    ...(m.assemblyPartName !== undefined ? { assemblyPartName: m.assemblyPartName } : {}),
+    ...(m.transform !== undefined ? { transform: Array.from(m.transform) } : {}),
+    ...(m.virtual === true ? { virtual: true } : {}),
+  };
+}
+
+type SerializedPayloadFields = Pick<FeatureMeshSerialized, 'referenceImage' | 'renderEnvironment' | 'cameraTarget'>;
+
+function serializePayloadFields(m: FeatureMesh): SerializedPayloadFields {
+  return {
+    ...(m.referenceImage !== undefined ? { referenceImage: m.referenceImage } : {}),
+    ...(m.renderEnvironment !== undefined ? { renderEnvironment: m.renderEnvironment } : {}),
+    ...(m.cameraTarget !== undefined ? { cameraTarget: m.cameraTarget } : {}),
+  };
+}
+
 /** Already-packed arrays (rebuild worker) are adopted without a copy; plain
  *  arrays convert exactly as before, so the values are identical either way. */
 function asFloat32(values: SerializedFloats): Float32Array {
@@ -117,6 +181,65 @@ function asUint32(values: SerializedIndices): Uint32Array {
 function rehydrateIndexedMesh(mesh: FeatureMeshSerialized['mesh']): Pick<FeatureMesh, 'mesh'> {
   if (!mesh) return {};
   return { mesh: { positions: asFloat32(mesh.positions), normals: asFloat32(mesh.normals), indices: asUint32(mesh.indices) } };
+}
+
+function rehydrateFace(face: FaceGeometrySerialized): FeatureMesh['faces'][number] {
+  return {
+    vertices: asFloat32(face.vertices),
+    indices: asUint32(face.indices),
+    normals: asFloat32(face.normals),
+    ...(face.uv !== undefined ? { uv: asFloat32(face.uv) } : {}),
+    faceId: face.faceId,
+    plane: face.plane,
+    cylinder: face.cylinder,
+  };
+}
+
+type RehydratedCountFields = Pick<FeatureMesh, 'volume' | 'solidCount' | 'edges'>;
+
+function rehydrateCountFields(s: FeatureMeshSerialized): RehydratedCountFields {
+  return {
+    volume: s.volume,
+    ...(s.solidCount !== undefined ? { solidCount: s.solidCount } : {}),
+    edges: s.edges ? asFloat32(s.edges) : undefined,
+  };
+}
+
+type RehydratedAppearanceFields = Pick<FeatureMesh, 'color' | 'material' | 'materialByFaceId'>;
+
+function rehydrateAppearanceFields(s: FeatureMeshSerialized): RehydratedAppearanceFields {
+  return {
+    ...(s.color !== undefined ? { color: s.color } : {}),
+    ...(s.material !== undefined ? { material: s.material } : {}),
+    ...(s.materialByFaceId !== undefined ? { materialByFaceId: s.materialByFaceId } : {}),
+  };
+}
+
+type RehydratedIdentityFields = Pick<
+  FeatureMesh,
+  'displayName' | 'filterNames' | 'sourceMetadataName' | 'assemblyFeatureId' | 'assemblyPartName' | 'transform' | 'virtual'
+>;
+
+function rehydrateIdentityFields(s: FeatureMeshSerialized): RehydratedIdentityFields {
+  return {
+    ...(s.displayName !== undefined ? { displayName: s.displayName } : {}),
+    ...(s.filterNames !== undefined ? { filterNames: [...s.filterNames] } : {}),
+    ...(s.sourceMetadataName !== undefined ? { sourceMetadataName: s.sourceMetadataName } : {}),
+    ...(s.assemblyFeatureId !== undefined ? { assemblyFeatureId: s.assemblyFeatureId as FeatureMesh['featureId'] } : {}),
+    ...(s.assemblyPartName !== undefined ? { assemblyPartName: s.assemblyPartName } : {}),
+    ...(s.transform !== undefined ? { transform: [...s.transform] } : {}),
+    ...(s.virtual === true ? { virtual: true } : {}),
+  };
+}
+
+type RehydratedPayloadFields = Pick<FeatureMesh, 'referenceImage' | 'renderEnvironment' | 'cameraTarget'>;
+
+function rehydratePayloadFields(s: FeatureMeshSerialized): RehydratedPayloadFields {
+  return {
+    ...(s.referenceImage !== undefined ? { referenceImage: s.referenceImage } : {}),
+    ...(s.renderEnvironment !== undefined ? { renderEnvironment: s.renderEnvironment } : {}),
+    ...(s.cameraTarget !== undefined ? { cameraTarget: s.cameraTarget } : {}),
+  };
 }
 
 export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
@@ -137,32 +260,13 @@ function serializeFeatureMesh(m: FeatureMesh, typedArrayCopies: boolean): Featur
     featureKind: m.featureKind,
     predecessors: [...m.predecessors],
     op: m.op,
-    faces: m.faces.map((f) => ({
-      vertices: out.floats(f.vertices),
-      indices: out.indices(f.indices),
-      normals: out.floats(f.normals),
-      ...(f.uv !== undefined ? { uv: out.floats(f.uv) } : {}),
-      faceId: f.faceId,
-      plane: f.plane,
-      cylinder: f.cylinder,
-    })),
+    faces: m.faces.map((face) => serializeFace(face, out)),
     ...serializeIndexedMesh(m.mesh, out),
-    volume: m.volume,
-    edges: m.edges ? out.floats(m.edges) : undefined,
-    ...(m.color !== undefined ? { color: m.color } : {}),
-    ...(m.material !== undefined ? { material: m.material } : {}),
-    ...(m.materialByFaceId !== undefined ? { materialByFaceId: m.materialByFaceId } : {}),
+    ...serializeCountFields(m, out),
+    ...serializeAppearanceFields(m),
     ...copyLinkFields(m),
-    ...(m.displayName !== undefined ? { displayName: m.displayName } : {}),
-    ...(m.filterNames !== undefined ? { filterNames: [...m.filterNames] } : {}),
-    ...(m.sourceMetadataName !== undefined ? { sourceMetadataName: m.sourceMetadataName } : {}),
-    ...(m.assemblyFeatureId !== undefined ? { assemblyFeatureId: m.assemblyFeatureId } : {}),
-    ...(m.assemblyPartName !== undefined ? { assemblyPartName: m.assemblyPartName } : {}),
-    ...(m.transform !== undefined ? { transform: Array.from(m.transform) } : {}),
-    ...(m.virtual === true ? { virtual: true } : {}),
-    ...(m.referenceImage !== undefined ? { referenceImage: m.referenceImage } : {}),
-    ...(m.renderEnvironment !== undefined ? { renderEnvironment: m.renderEnvironment } : {}),
-    ...(m.cameraTarget !== undefined ? { cameraTarget: m.cameraTarget } : {}),
+    ...serializeIdentityFields(m),
+    ...serializePayloadFields(m),
   };
 }
 
@@ -172,31 +276,12 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
     featureKind: s.featureKind as FeatureMesh['featureKind'],
     predecessors: [...s.predecessors] as FeatureMesh['predecessors'],
     op: s.op,
-    faces: s.faces.map((f) => ({
-      vertices: asFloat32(f.vertices),
-      indices: asUint32(f.indices),
-      normals: asFloat32(f.normals),
-      ...(f.uv !== undefined ? { uv: asFloat32(f.uv) } : {}),
-      faceId: f.faceId,
-      plane: f.plane,
-      cylinder: f.cylinder,
-    })),
+    faces: s.faces.map(rehydrateFace),
     ...rehydrateIndexedMesh(s.mesh),
-    volume: s.volume,
-    edges: s.edges ? asFloat32(s.edges) : undefined,
-    ...(s.color !== undefined ? { color: s.color } : {}),
-    ...(s.material !== undefined ? { material: s.material } : {}),
-    ...(s.materialByFaceId !== undefined ? { materialByFaceId: s.materialByFaceId } : {}),
+    ...rehydrateCountFields(s),
+    ...rehydrateAppearanceFields(s),
     ...copyLinkFields(s),
-    ...(s.displayName !== undefined ? { displayName: s.displayName } : {}),
-    ...(s.filterNames !== undefined ? { filterNames: [...s.filterNames] } : {}),
-    ...(s.sourceMetadataName !== undefined ? { sourceMetadataName: s.sourceMetadataName } : {}),
-    ...(s.assemblyFeatureId !== undefined ? { assemblyFeatureId: s.assemblyFeatureId as FeatureMesh['featureId'] } : {}),
-    ...(s.assemblyPartName !== undefined ? { assemblyPartName: s.assemblyPartName } : {}),
-    ...(s.transform !== undefined ? { transform: [...s.transform] } : {}),
-    ...(s.virtual === true ? { virtual: true } : {}),
-    ...(s.referenceImage !== undefined ? { referenceImage: s.referenceImage } : {}),
-    ...(s.renderEnvironment !== undefined ? { renderEnvironment: s.renderEnvironment } : {}),
-    ...(s.cameraTarget !== undefined ? { cameraTarget: s.cameraTarget } : {}),
+    ...rehydrateIdentityFields(s),
+    ...rehydratePayloadFields(s),
   };
 }
