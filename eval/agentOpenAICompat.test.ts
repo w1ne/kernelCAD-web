@@ -41,6 +41,28 @@ describe('OpenAICompatAgentClient', () => {
     expect(body.temperature).toBe(0.2);
   });
 
+  it('identifies itself with a user agent, session id and seed for OpenCode Go', async () => {
+    const fetchImpl = vi.fn(async () =>
+      jsonResponse({ choices: [{ message: { content: 'ok' } }], usage: {} }),
+    );
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://opencode.ai/inference/go/openai/v1',
+      apiKey: 'k',
+      sessionId: 'cadgenbench-session-1',
+      userAgent: 'kernelcad-cadgenbench/1.0',
+      seed: 42,
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const out = await client.generate(REQ);
+    expect(out.text).toBe('ok');
+    const init = fetchImpl.mock.calls[0][1] as RequestInit;
+    expect(init.headers).toMatchObject({
+      'User-Agent': 'kernelcad-cadgenbench/1.0',
+      'x-opencode-session': 'cadgenbench-session-1',
+    });
+    expect(JSON.parse(init.body as string).seed).toBe(42);
+  });
+
   it('retries 429 then succeeds', async () => {
     const fetchImpl = vi
       .fn()

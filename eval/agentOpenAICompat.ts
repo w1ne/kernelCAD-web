@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { randomUUID } from 'node:crypto';
 import type { AgentClient, AgentMessage, AgentResponse } from './types';
 
 export interface OpenAICompatOptions {
@@ -10,6 +11,19 @@ export interface OpenAICompatOptions {
   retryBaseMs?: number;
   retryMaxMs?: number;
   fetchImpl?: typeof fetch;
+  /**
+   * Stable conversation id sent as `x-opencode-session`. OpenCode Go uses it
+   * for routing and prompt caching and rejects requests without it. Defaults
+   * to a per-client UUID, so a run keeps one stable session for its lifetime.
+   */
+  sessionId?: string;
+  /**
+   * Identifying user agent. OpenCode Go asks clients to name themselves
+   * instead of looking like a generic HTTP library.
+   */
+  userAgent?: string;
+  /** Sampling seed forwarded verbatim; the endpoint may ignore it. */
+  seed?: number;
 }
 
 interface ChatCompletionResponse {
@@ -18,6 +32,14 @@ interface ChatCompletionResponse {
 }
 
 const RETRYABLE_STATUS = (status: number): boolean => status === 429 || status >= 500;
+
+function safeHostname(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return '';
+  }
+}
 
 const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
 
@@ -32,6 +54,9 @@ export class OpenAICompatAgentClient implements AgentClient {
   private readonly retryBaseMs: number;
   private readonly retryMaxMs: number;
   private readonly fetchImpl: typeof fetch;
+  private readonly sessionId?: string;
+  private readonly userAgent: string;
+  private readonly seed?: number;
 
   constructor(opts: OpenAICompatOptions) {
     this.baseUrl = opts.baseUrl.replace(/\/+$/, '');
@@ -40,6 +65,12 @@ export class OpenAICompatAgentClient implements AgentClient {
     this.retryBaseMs = opts.retryBaseMs ?? 1000;
     this.retryMaxMs = opts.retryMaxMs ?? 30000;
     this.fetchImpl = opts.fetchImpl ?? fetch;
+    // Only OpenCode Go needs the session header; other compatible endpoints
+    // ignore it, but keeping it off them avoids surprising a strict gateway.
+    const openCodeHost = /(^|\.)opencode\.ai$/.test(safeHostname(this.baseUrl));
+    this.sessionId = opts.sessionId ?? (openCodeHost ? `cadgenbench-${randomUUID()}` : undefined);
+    this.userAgent = opts.userAgent ?? 'kernelcad-cadgenbench/1.0';
+    this.seed = opts.seed;
   }
 
   async generate(args: {
@@ -74,6 +105,7 @@ export class OpenAICompatAgentClient implements AgentClient {
         })),
       ],
       ...(args.temperature !== undefined ? { temperature: args.temperature } : {}),
+      ...(this.seed !== undefined ? { seed: this.seed } : {}),
     };
 
     let lastErr: Error | undefined;
@@ -89,6 +121,8 @@ export class OpenAICompatAgentClient implements AgentClient {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${this.apiKey}`,
+            'User-Agent': this.userAgent,
+            ...(this.sessionId ? { 'x-opencode-session': this.sessionId } : {}),
           },
           body: JSON.stringify(body),
           signal: AbortSignal.timeout(180_000),

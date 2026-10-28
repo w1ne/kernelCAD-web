@@ -38,6 +38,12 @@ describe('parseArgs', () => {
     expect(parseArgs(['--official-check'], { CADGENBENCH_PYTHON: '/venv/bin/python' }).python).toBe('/venv/bin/python');
   });
 
+  it('records a sampling seed', () => {
+    expect(parseArgs(['--seed', '42'], {}).seed).toBe(42);
+    expect(parseArgs([], {}).seed).toBeUndefined();
+    expect(() => parseArgs(['--seed', '-1'], {})).toThrow(/--seed/);
+  });
+
   it('keeps visual review opt-in', () => {
     expect(parseArgs([], {}).visualReview).toBe(false);
     expect(parseArgs(['--visual-review'], {}).visualReview).toBe(true);

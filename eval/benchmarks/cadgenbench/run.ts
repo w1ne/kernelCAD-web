@@ -45,6 +45,8 @@ export interface CliOptions {
   maxAttempts: number;
   maxTokens: number;
   temperature?: number;
+  /** Sampling seed recorded with the run and forwarded to OpenAI-compatible endpoints. */
+  seed?: number;
   editFallback: 'none' | 'passthrough';
   keepInvalid: boolean;
   retryFailed: boolean;
@@ -117,6 +119,7 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     maxAttempts: int('--max-attempts', 3),
     maxTokens: int('--max-tokens', 16000),
     temperature: num('--temperature'),
+    seed: num('--seed'),
     editFallback,
     keepInvalid: has('--keep-invalid'),
     retryFailed: has('--retry-failed'),
@@ -146,7 +149,13 @@ function makeAgent(opts: CliOptions, env: NodeJS.ProcessEnv): AgentClient | null
   const key = env[opts.apiKeyEnv];
   if (!key) return null;
   return opts.baseUrl
-    ? new OpenAICompatAgentClient({ baseUrl: opts.baseUrl, apiKey: key })
+    ? new OpenAICompatAgentClient({
+        baseUrl: opts.baseUrl,
+        apiKey: key,
+        ...(opts.seed !== undefined ? { seed: opts.seed } : {}),
+        ...(env.CADGENBENCH_SESSION_ID ? { sessionId: env.CADGENBENCH_SESSION_ID } : {}),
+        ...(env.CADGENBENCH_USER_AGENT ? { userAgent: env.CADGENBENCH_USER_AGENT } : {}),
+      })
     : new AnthropicAgentClient(key);
 }
 
@@ -224,7 +233,7 @@ async function main(): Promise<void> {
   const identity = buildRunIdentity(tasks, {
     revision, mode, model: agent ? opts.model : null, baseUrl: opts.chatgptPlanDir ? 'https://api.openai.com/v1/responses (ChatGPT plan)' : opts.baseUrl ?? null,
     gitSha: sourceRevision, maxAttempts: opts.maxAttempts, maxTokens: opts.maxTokens,
-    temperature: opts.temperature ?? null, editFallback: opts.editFallback,
+    temperature: opts.temperature ?? null, seed: opts.seed ?? null, editFallback: opts.editFallback,
     keepInvalid: opts.keepInvalid, visualReview: opts.visualReview, skillMd, scriptsFrom: opts.scriptsFrom ?? null, cli,
   });
   const runFile = join(opts.runDir, 'run.json');
@@ -246,6 +255,8 @@ async function main(): Promise<void> {
     identity,
     maxAttempts: opts.maxAttempts,
     maxTokens: opts.maxTokens,
+    temperature: opts.temperature ?? null,
+    seed: opts.seed ?? null,
     visualReview: opts.visualReview,
     editFallback: opts.editFallback,
     workers: opts.workers,
