@@ -69,7 +69,6 @@
   "src/modeling/parts/fromVectorFormats.ts": 2,
   "src/modeling/properties/materialLibrary.ts": 1,
   "src/modeling/runtime/fea/runFeaGate.ts": 1,
-  "src/modeling/runtime/runScriptCore.ts": 1,
   "src/modeling/sdf/primitives.ts": 2,
   "src/modeling/sdf/smoothBlend.ts": 1,
   "src/modeling/sdf/transform.ts": 1,

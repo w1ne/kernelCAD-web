@@ -179,12 +179,14 @@ function normalizeArrayReturnValue(returnValue: unknown, session: CaptureSession
       .map((value, index) => value instanceof Shape ? index : undefined)
       .filter((index): index is number => index !== undefined)
       .join(', ');
-    throw new KernelError(
-      'feature.invalid-args',
-      `array return cannot mix Shape values (indexes ${shapeIndexes}) with non-Shape values (${badEntries}). Return only Shape objects, or return a single Shape or Scene.`,
-      undefined,
-      'Each element of a multi-body array return must be a Shape. Remove non-Shape values or return a single Shape/Scene.',
-    );
+    invalidArgs({
+      api: '.kcad.ts script return value',
+      path: 'return value',
+      gotText: `mixed array: Shape indexes ${shapeIndexes}; non-Shape entries (${badEntries})`,
+      requires: 'each element of a multi-body array return to be a Shape',
+      example: 'return [partA, partB];',
+      hint: 'Remove non-Shape values or return a single Shape/Scene.',
+    });
   }
   if (shapes.length === 1) return shapes[0];
 

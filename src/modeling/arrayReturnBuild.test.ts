@@ -49,7 +49,9 @@ describe('array return values', () => {
     }).then(() => undefined, (reason: unknown) => reason);
     expect(error instanceof KernelError).toBe(true);
     expect((error as KernelError).code).toBe('feature.invalid-args');
-    expect((error as KernelError).message).toMatch(/array return.*non-Shape.*index 1/i);
+    expect((error as KernelError).message).toMatch(
+      /\.kcad\.ts script return value: return value — got mixed array: Shape indexes 0; non-Shape entries \(index 1: number\); requires each element of a multi-body array return to be a Shape\. Example: return \[partA, partB\];/i,
+    );
   });
 
   it('keeps direct Shape and Scene returns on their existing paths', async () => {
