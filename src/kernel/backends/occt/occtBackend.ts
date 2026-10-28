@@ -25,7 +25,7 @@ import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
 import { writeStepAssembly } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
-import { memoBox, memoMass, memoVolume } from './analysisMemo';
+import { forgetAnalysis, memoBox, memoMass, memoVolume } from './analysisMemo';
 import { KernelError } from '../../../shared/intent/kernelError';
 import {
   resolveExtrudeTwistAngle,
@@ -1434,9 +1434,22 @@ export class OcctBackend implements ShapeBackend {
   }
 
   dispose(): void {
-    const maybeDelete = (this.shape as { delete?: () => void }).delete;
-    if (typeof maybeDelete === 'function') {
-      maybeDelete.call(this.shape);
+    // The memo would still answer volume() after the native solid is gone.
+    forgetAnalysis(this);
+    // Catalog fasteners keep a second solid (the nominal envelope). Dropping
+    // only the display solid leaves that envelope in the wasm heap until a
+    // JS GC, which does not run on wasm pressure.
+    const envelope = this.analysisBody;
+    this.analysisBody = undefined;
+    if (envelope && envelope !== this) {
+      try { envelope.dispose(); } catch { /* envelope may already be freed */ }
+    }
+    const shape = this.shape as { delete?: () => void; isDeleted?: () => boolean };
+    try {
+      if (typeof shape.isDeleted === 'function' && shape.isDeleted()) return;
+      shape.delete?.();
+    } catch {
+      // A second dispose, or a lower that already freed the handle.
     }
   }
 }
@@ -1468,13 +1481,19 @@ export async function exportSceneToSTEPAsync(
   // `sceneToWorldFrameParts` enforces the non-empty-scene invariant and
   // owns the clone-before-transform contract for every multi-body exporter.
   const worldParts = sceneToWorldFrameParts(sceneBackend);
-  return writeStepAssembly(
-    worldParts.map((p) => ({
-      shape: p.shape.getReplicadShape().wrapped,
-      name: p.name,
-      color: resolveColor(p.color),
-    })),
-  );
+  try {
+    return await writeStepAssembly(
+      worldParts.map((p) => ({
+        shape: p.shape.getReplicadShape().wrapped,
+        name: p.name,
+        color: resolveColor(p.color),
+      })),
+    );
+  } finally {
+    for (const part of worldParts) {
+      try { part.shape.dispose(); } catch { /* clone already freed */ }
+    }
+  }
 }
 
 /**

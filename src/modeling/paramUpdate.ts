@@ -21,6 +21,7 @@ import { affectedFeatureIds } from './paramAffect';
 import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
 import { stampFingerprint } from '../kernel/backends/occt/analysisMemo';
 import { featureFingerprints } from './warm/featureFingerprint';
+import { releaseReplacedShapes } from './warm/releaseShapes';
 import { captureBaseline, failedFeatureIds, planRigidReuse, settleFeatureFailures } from './warm/rigidReuse';
 import type { ParamValue } from '../shared/runtime/paramTable';
 
@@ -139,6 +140,11 @@ async function applyParamEdits(
     settleFeatureFailures(session, featureErrorIds(result.diagnostics), relowered);
   }
   populateCache(session, result.shapes);
+  // Preview keeps the previous solids: the passthrough shapes alias them,
+  // and the release edit is what replaces the baseline.
+  if (options?.preview !== true) {
+    releaseReplacedShapes(model.shapes.values(), session.cachedShapes.values());
+  }
   stampAnalyses(model.records, session.paramTable, result.shapes);
   // This run lowered (or reused) every record under the edited param table,
   // so it is the session's full lower now. Recording it lets the next

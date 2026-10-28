@@ -6,6 +6,7 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import type { BuiltModel } from '../../composition/buildModel';
+import { disposeModelShapes } from '../../modeling/warm/releaseShapes';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
 
@@ -177,9 +178,12 @@ export function createLiveViewer(options: ViewerOptions = {}) {
     async update(next: BuiltModel, review?: McpViewerReview): Promise<string> {
       starting ??= start().catch(error => { starting = undefined; throw error; });
       const link = await starting;
+      const previous = state.model;
       state.model = next;
+      retainedModel = next;
       state.review = review;
       state.mesh = undefined;
+      if (previous && previous !== next) disposeModelShapes(previous);
       for (const client of state.clients) client.write(UPDATE_FRAME);
       return link;
     },
@@ -191,6 +195,7 @@ export function createLiveViewer(options: ViewerOptions = {}) {
       server = undefined;
       starting = undefined;
       state.model = undefined;
+      retainedModel = undefined;
       state.review = undefined;
       state.mesh = undefined;
     },
@@ -208,6 +213,12 @@ let lastViewerResult: McpViewerResult | undefined;
 export function getMcpViewerResult() { return lastViewerResult; }
 
 let viewer: ReturnType<typeof createLiveViewer> | undefined;
+let retainedModel: BuiltModel | undefined;
+
+/** The model the local MCP viewer is still serving, if any. */
+export function retainedMcpViewerModel(): BuiltModel | undefined {
+  return retainedModel;
+}
 export async function updateMcpViewer(model: BuiltModel, review?: McpViewerReview): Promise<McpViewerResult> {
   if (process.env.KERNELCAD_MCP_MODE === 'hosted') {
     lastViewerResult = { viewerMode: 'hosted', viewerHint: 'Use open_in_studio to view this model in hosted Studio.' };

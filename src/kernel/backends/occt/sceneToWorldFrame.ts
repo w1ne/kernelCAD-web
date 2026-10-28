@@ -74,6 +74,13 @@ export function sceneToWorldFrameParts(scene: SceneBackend): WorldFramePart[] {
   });
 }
 
+/** Free the clones {@link sceneToWorldFrameParts} handed out. The caller's scene is untouched. */
+export function releaseWorldFrameParts(parts: readonly { shape: { dispose?: () => void } }[]): void {
+  for (const part of parts) {
+    try { part.shape.dispose?.(); } catch { /* clone already freed */ }
+  }
+}
+
 /** World-frame parts for a lowered root: a scene's parts, or the single shape as `part`. */
 export function drawingPartsForBackend(lowered: ShapeBackend): WorldFramePart[] {
   return isSceneBackend(lowered)
