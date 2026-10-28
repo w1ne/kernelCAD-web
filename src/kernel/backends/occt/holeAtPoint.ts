@@ -138,26 +138,74 @@ function cylinderOf(oc: Oc, face: Face): CylinderAxisFrame | undefined {
   return { ...raw, dir: orientDominantCylinderDir(raw.dir) };
 }
 
-/** Largest cylindrical face the hole selector matches. Polar `at` drills that
- *  cylinder, the same choice `placePolar` makes. The direction is the
- *  geometric axis, not yet flipped toward its dominant positive component:
- *  the caller maps it into the frame it needs, then
- *  `orientDominantCylinderDir`. The mouth may already have been cut away,
- *  so this does not require the polar point to still lie on the trimmed face. */
+/** Radius `placePolar` drilled, keyed by hole feature id. The mouth sits in
+ *  the opening after the cut, so replay cannot see which cylinder contained
+ *  the polar point. The lowerer records the radius before either solver
+ *  reads the axis. */
+const drilledPolarRadiusMm = new Map<string, number>();
+
+const RADIUS_TIE_MM = 1e-4;
+const DIST_TIE_MM = 1e-4;
+
+export interface PolarCylinderRank {
+  /** Polar point of this candidate, in the face's frame. */
+  pointOnFace: (frame: CylinderAxisFrame) => Vec3 | undefined;
+  /** Candidate radius in the frame `placePolar` cut in. */
+  cutRadius?: (frame: CylinderAxisFrame) => number | undefined;
+}
+
+interface RankedCylinder {
+  frame: CylinderAxisFrame;
+  dist: number | undefined;
+  radiusErr: number | undefined;
+}
+
+function beats(next: RankedCylinder, prev: RankedCylinder | undefined): boolean {
+  if (!prev) return true;
+  const nextErr = next.radiusErr ?? Number.POSITIVE_INFINITY;
+  const prevErr = prev.radiusErr ?? Number.POSITIVE_INFINITY;
+  if (Math.abs(nextErr - prevErr) > RADIUS_TIE_MM) return nextErr < prevErr;
+  const nextDist = next.dist ?? Number.POSITIVE_INFINITY;
+  const prevDist = prev.dist ?? Number.POSITIVE_INFINITY;
+  if (Math.abs(nextDist - prevDist) > DIST_TIE_MM) return nextDist < prevDist;
+  return next.frame.radius > prev.frame.radius;
+}
+
+/** Cylindrical face a polar hole replays.
+ *
+ *  The cylinder `placePolar` drilled wins: its cut-frame radius was stored
+ *  when the hole was lowered. Distance from each candidate's own polar
+ *  point to that face breaks a radius tie, and is the ranking when no
+ *  drilled radius was stored. The cut-time on-face test cannot be reused;
+ *  the mouth is in the opening. Equal distances keep the larger radius.
+ *  The returned direction is the geometric axis, not yet flipped toward
+ *  its dominant positive component. Without `rank`, the largest radius
+ *  is kept. */
 export function polarCylinderAxis(
   feature: FeatureRecord,
   target: OcctBackend,
   records: readonly FeatureRecord[] | undefined,
+  rank?: PolarCylinderRank,
 ): CylinderAxisFrame | undefined {
   const oc = replicad.getOC() as Oc;
   const faces = candidateFaces(feature, target, records);
   if ('error' in faces) return undefined;
-  let best: CylinderAxisFrame | undefined;
+  const drilled = drilledPolarRadiusMm.get(feature.id);
+  let best: RankedCylinder | undefined;
+  let largest: CylinderAxisFrame | undefined;
   for (const face of faces) {
     const cyl = readCylinder(oc, face);
-    if (cyl && (!best || cyl.radius > best.radius)) best = cyl;
+    if (!cyl) continue;
+    if (!largest || cyl.radius > largest.radius) largest = cyl;
+    if (!rank) continue;
+    const cutR = rank.cutRadius?.(cyl);
+    const radiusErr = drilled !== undefined && cutR !== undefined ? Math.abs(cutR - drilled) : undefined;
+    const point = rank.pointOnFace(cyl);
+    const hit = point === undefined ? undefined : closestOnFace(oc, face, point);
+    const next = { frame: cyl, dist: hit?.dist, radiusErr };
+    if (beats(next, best)) best = next;
   }
-  return best;
+  return rank ? (best?.frame ?? largest) : largest;
 }
 
 /** World point at polar angle `angleDeg` about the cylinder axis, axial coordinate `z`. */
@@ -189,7 +237,7 @@ function placeCartesian(oc: Oc, faces: Face[], at: Vec3, featureId: string): { f
   return best;
 }
 
-function placePolar(oc: Oc, faces: Face[], angleDeg: number, z: number, featureId: string): { face: Face; point: Vec3 } | { error: CompilerDiagnostic } {
+function placePolar(oc: Oc, faces: Face[], angleDeg: number, z: number, featureId: string): { face: Face; point: Vec3; radius: number } | { error: CompilerDiagnostic } {
   let best: { face: Face; point: Vec3; radius: number } | undefined;
   for (const face of faces) {
     const cyl = cylinderOf(oc, face);
@@ -220,18 +268,31 @@ export function resolvePointEntry(
   const faces = candidateFaces(feature, target, records);
   if ('error' in faces) return faces;
   const p = feature.params;
-  const placed = p.atAngleDeg !== undefined
-    ? placePolar(oc, faces, p.atAngleDeg.evaluated, p.atZ.evaluated, feature.id)
-    : placeCartesian(oc, faces, [p.atX.evaluated, p.atY.evaluated, p.atZ.evaluated], feature.id);
-  if ('error' in placed) return placed;
+  let placed: { face: Face; point: Vec3 };
+  let polarRadius: number | undefined;
+  if (p.atAngleDeg !== undefined) {
+    const polar = placePolar(oc, faces, p.atAngleDeg.evaluated, p.atZ.evaluated, feature.id);
+    if ('error' in polar) {
+      drilledPolarRadiusMm.delete(feature.id);
+      return polar;
+    }
+    placed = polar;
+    polarRadius = polar.radius;
+  } else {
+    const cartesian = placeCartesian(oc, faces, [p.atX.evaluated, p.atY.evaluated, p.atZ.evaluated], feature.id);
+    if ('error' in cartesian) return cartesian;
+    placed = cartesian;
+  }
   const n = placed.face.normalAt(placed.point);
   const normalOutward = unit([n.x, n.y, n.z]);
   n.delete();
   const axisIntoBody = readAxis(feature) ?? scale(normalOutward, -1);
   if (dot(axisIntoBody, normalOutward) > -1e-3) {
+    if (polarRadius !== undefined) drilledPolarRadiusMm.delete(feature.id);
     return err(feature.id, 'feature.invalid-args',
       `hole: axis ${fmt(axisIntoBody)} does not point into the body at ${fmt(placed.point)} (outward normal ${fmt(normalOutward)}).`,
       'hole(face, { at, axis }): `axis` is the drilling direction INTO the part; flip it, or omit it to drill along the inward face normal.');
   }
+  if (polarRadius !== undefined) drilledPolarRadiusMm.set(feature.id, polarRadius);
   return { face: placed.face, point: placed.point, normalOutward, axisIntoBody };
 }

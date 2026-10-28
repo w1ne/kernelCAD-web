@@ -498,6 +498,71 @@ describe('topology connector origins follow a rebuilt face', () => {
     expect(solved[1]).toBeCloseTo(0, 3);
     expect(solved[2]).toBeCloseTo(5, 3);
   });
+
+  it('places a polar side hole on the drilled step of a multi-radius shaft', async () => {
+    // cylinder(20, 12) is r = 12 for z = 0..20. The union adds r = 6 for
+    // z = 20..35. angleDeg 0 at z 27 sits on that step at local (6, 0, 27).
+    // Part at [50, 0, 0] lifts the mouth to (56, 0, 27). The r = 12 section
+    // does not contain z = 27; replay must not fasten there at (62, 0, 27).
+    const model = await buildModel({
+      fileName: 'polar-stepped-shaft-hole-follow.kcad.ts',
+      code: `
+        const shaft = cylinder(20, 12)
+          .union(cylinder(15, 6).translate(0, 0, 20))
+          .hole(
+            { ofSurfaceType: 'CYLINDER' },
+            { at: { angleDeg: 0, z: 27 }, diameter: 3, depth: 4 },
+          );
+        const arm = assembly('stack');
+        arm.part('shaft', shaft, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'shaft.bolt-holes-1', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(solved[0], 3);
+    expect(scene[1]).toBeCloseTo(solved[1], 3);
+    expect(scene[2]).toBeCloseTo(solved[2], 3);
+    expect(solved[0]).toBeCloseTo(56, 3);
+    expect(solved[1]).toBeCloseTo(0, 3);
+    expect(solved[2]).toBeCloseTo(27, 3);
+  });
+
+  it('places a polar set screw on the outer wall of a collar, not the bore', async () => {
+    // Outer wall r = 11, axial bore r = 4. A blind radial hole at angleDeg 0,
+    // z 5 is drilled on the outer wall. Part at [50, 0, 0] lifts that mouth
+    // to (61, 0, 5). The inner bore still contains its own polar point.
+    const model = await buildModel({
+      fileName: 'polar-collar-blind-hole-follow.kcad.ts',
+      code: `
+        const collar = cylinder(10, 11)
+          .hole('top', { u: 0, v: 0, diameter: 8, depth: 'through' })
+          .hole(
+            { ofSurfaceType: 'CYLINDER' },
+            { at: { angleDeg: 0, z: 5 }, diameter: 4, depth: 4 },
+          );
+        const arm = assembly('stack');
+        arm.part('collar', collar, { at: [50, 0, 0] });
+        arm.part('cap', box(4, 4, 4))
+          .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('pin', 'collar.bolt-holes-2', 'cap.bot', 'fastened');
+        return arm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const scene = capPoint(model.rootShape);
+    const solved = await solvedCapPoint('stack', model);
+    expect(scene[0]).toBeCloseTo(solved[0], 3);
+    expect(scene[1]).toBeCloseTo(solved[1], 3);
+    expect(scene[2]).toBeCloseTo(solved[2], 3);
+    expect(solved[0]).toBeCloseTo(61, 3);
+    expect(solved[1]).toBeCloseTo(0, 3);
+    expect(solved[2]).toBeCloseTo(5, 3);
+  });
 });
 
 async function solvedCapPoint(

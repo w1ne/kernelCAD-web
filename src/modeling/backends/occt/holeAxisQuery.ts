@@ -213,9 +213,11 @@ function featureIsPolar(feature: FeatureRecord): boolean {
 /** Polar `at` stored only angle and axial z. Rebuild the cartesian mouth
  *  `placePolar` would have cut, in the pre-transform frame, so
  *  `pointPlacedFrame` can replay post-cut transforms and part `at`.
- *  Map the geometric axis back first, then flip its dominant component.
- *  Flipping in the post-transform frame and inverting that sign mirrors
- *  axial `z` when a later rotate or reflect negates the axis. */
+ *  Several cylinders: replay the radius `placePolar` drilled. Distance from
+ *  each candidate's own pre-transform polar point to that face breaks a
+ *  tie. Map the geometric axis back first, then flip its dominant
+ *  component. Flipping in the post-transform frame and inverting that sign
+ *  mirrors axial `z` when a later rotate or reflect negates the axis. */
 function polarAuthoredFrame(
   backend: OcctBackend,
   feature: FeatureRecord,
@@ -224,23 +226,49 @@ function polarAuthoredFrame(
   baked: Vec3 | undefined,
 ): { point: Vec3; outward: Vec3 } | null {
   if (!featureIsPolar(feature)) return null;
-  const axis = polarCylinderAxis(feature, backend, records);
+  const angle = feature.params.atAngleDeg.evaluated;
+  const z = feature.params.atZ.evaluated;
+  const axis = polarCylinderAxis(feature, backend, records, {
+    pointOnFace: (raw) => {
+      const local = cylinderInCutFrame(raw, transforms, baked);
+      if (!local) return undefined;
+      return bakePoint(forwardPoint(polarPointOnAxis(local, angle, z), transforms), baked);
+    },
+    cutRadius: (raw) => cylinderInCutFrame(raw, transforms, baked)?.radius,
+  });
   if (!axis) return null;
-  const unbake = (p: Vec3): Vec3 => baked === undefined
-    ? p
-    : [p[0] - baked[0], p[1] - baked[1], p[2] - baked[2]];
-  const origin = inversePoint(unbake(axis.origin), transforms);
+  const local = cylinderInCutFrame(axis, transforms, baked);
+  if (!local) return null;
+  const point = polarPointOnAxis(local, angle, z);
+  const onAxis = add(local.origin, scale(local.dir, z - dot(local.origin, local.dir)));
+  return { point, outward: normalize(sub(point, onAxis)) };
+}
+
+/** Geometric cylinder mapped into the frame `placePolar` cut in. */
+function cylinderInCutFrame(
+  axis: { origin: Vec3; dir: Vec3; radius: number },
+  transforms: ReturnType<typeof transformsAfterCut>,
+  baked: Vec3 | undefined,
+): { origin: Vec3; dir: Vec3; radius: number } | null {
+  const origin = inversePoint(unbakePoint(axis.origin, baked), transforms);
   const mappedDir = normalize(inverseVector(axis.dir, transforms));
   const ref = perpendicular(axis.dir);
-  const sample = inversePoint(unbake(add(axis.origin, scale(ref, axis.radius))), transforms);
+  const radial = add(axis.origin, scale(ref, axis.radius));
+  const sample = inversePoint(unbakePoint(radial, baked), transforms);
   const dir = orientDominantCylinderDir(mappedDir);
   const radius = distToAxis(sample, origin, dir);
   if (!(radius > 1e-9)) return null;
-  const angle = feature.params.atAngleDeg.evaluated;
-  const z = feature.params.atZ.evaluated;
-  const point = polarPointOnAxis({ origin, dir, radius }, angle, z);
-  const onAxis = add(origin, scale(dir, z - dot(origin, dir)));
-  return { point, outward: normalize(sub(point, onAxis)) };
+  return { origin, dir, radius };
+}
+
+function unbakePoint(point: Vec3, baked: Vec3 | undefined): Vec3 {
+  return baked === undefined
+    ? point
+    : [point[0] - baked[0], point[1] - baked[1], point[2] - baked[2]];
+}
+
+function bakePoint(point: Vec3, baked: Vec3 | undefined): Vec3 {
+  return baked === undefined ? point : add(point, baked);
 }
 
 function pointPlacedOrigin(feature: FeatureRecord): Vec3 | null {
