@@ -54,7 +54,7 @@
         <li><strong>Account &amp; identity.</strong> When you sign in, we authenticate you through Google via Supabase Auth and store your email address and account identifier.</li>
         <li><strong>Usage &amp; generated content.</strong> CAD models you generate with the built-in hosted agent — your prompt and the resulting <code>.kcad.ts</code> source — are stored so we can show your history and enforce free-tier limits.</li>
         <li><strong>Billing.</strong> If you subscribe, payment is processed by Stripe. We never receive or store your card details; we store only your subscription status.</li>
-        <li><strong>Analytics.</strong> We use Cloudflare Web Analytics for aggregate visitor counts — no cookies, no IP storage.</li>
+        <li><strong>Analytics.</strong> We use Cloudflare Web Analytics for aggregate visitor counts (no cookies, no IP storage). If you accept cookies, we may also use Google Analytics 4 and Google Ads measurement (Consent Mode v2) to understand marketing performance. You can reject non-essential cookies in the banner. Measurement IDs are unset until we enable them — then the banner appears for EEA/UK visitors.</li>
       </ul>
 
       <h2>Bring-your-own-Claude (MCP)</h2>
@@ -116,5 +116,17 @@
       </nav>
     </div>
   </div>
+
+  <!-- Ads/analytics: Consent Mode v2. IDs empty → full no-op (no gtag load). -->
+  <script>
+    window.__KC_ADS__ = window.__KC_ADS__ || {
+      ga4: "", /* e.g. G-XXXXXXXX */
+      aw: ""   /* e.g. AW-XXXXXXXX */
+    };
+  </script>
+  <link rel="stylesheet" href="/analytics/consent.css" />
+  <script src="/analytics/track.js" defer></script>
+  <script src="/analytics/consent.js" defer></script>
+
 </body>
 </html>

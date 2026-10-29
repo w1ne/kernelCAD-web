@@ -129,5 +129,17 @@
       </nav>
     </div>
   </div>
+
+  <!-- Ads/analytics: Consent Mode v2. IDs empty → full no-op (no gtag load). -->
+  <script>
+    window.__KC_ADS__ = window.__KC_ADS__ || {
+      ga4: "", /* e.g. G-XXXXXXXX */
+      aw: ""   /* e.g. AW-XXXXXXXX */
+    };
+  </script>
+  <link rel="stylesheet" href="/analytics/consent.css" />
+  <script src="/analytics/track.js" defer></script>
+  <script src="/analytics/consent.js" defer></script>
+
 </body>
 </html>

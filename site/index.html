@@ -207,7 +207,7 @@
             <button type="submit" class="btn btn-secondary btn-sm">Subscribe</button>
           </div>
           <p class="signup-status" id="signup-status" role="status" aria-live="polite"></p>
-          <p class="signup-privacy">No cookies. We keep your email only to send release notes. <a href="/privacy.html">Privacy</a>.</p>
+          <p class="signup-privacy">We keep your email only to send release notes. Optional analytics cookies only if you accept. <a href="/privacy.html">Privacy</a>.</p>
         </form>
       </div>
       <div class="footer-links">
@@ -574,5 +574,17 @@
       status.classList.add('error');
     }
   </script>
+
+  <!-- Ads/analytics: Consent Mode v2. IDs empty → full no-op (no gtag load). -->
+  <script>
+    window.__KC_ADS__ = window.__KC_ADS__ || {
+      ga4: "", /* e.g. G-XXXXXXXX */
+      aw: ""   /* e.g. AW-XXXXXXXX */
+    };
+  </script>
+  <link rel="stylesheet" href="/analytics/consent.css" />
+  <script src="/analytics/track.js" defer></script>
+  <script src="/analytics/consent.js" defer></script>
+
 </body>
 </html>
