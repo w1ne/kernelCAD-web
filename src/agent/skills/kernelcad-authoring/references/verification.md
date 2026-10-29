@@ -20,7 +20,7 @@ want to pre-populate retry strategies.
 These root causes account for most non-converging repairs; fix the cause, not the symptom.
 
 - **No-op booleans** — a `subtract`/`cutout` whose tool never intersects the body reports `feature.subtractive-noop`. Check the tool's coordinates and axis against the body before retrying.
-- **Non-finite numeric arguments** — every numeric argument must be a finite number or a numeric `ParamRef`; `NaN`/`undefined` fails capture with `feature.invalid-args`. Derive values with ParamRef methods rather than uninitialized variables.
+- **Non-finite numeric arguments** — every numeric argument must be a finite number or a numeric `ParamRef` that resolves to a finite value. Transform diagnostics name each bad coordinate and its raw value (for example `y=NaN`, `z=undefined`, or a `ParamRef` resolving to `Infinity`); recompute that expression before retrying. Common causes include `Math.sqrt` of a negative value, division by zero, an undeclared variable, or using a param before it exists. Derive values with ParamRef methods rather than uninitialized variables.
 - **Open or degenerate sketches** — `extrude`/`revolve` need a single closed loop: close the path and remove zero-length segments or duplicate points, or the kernel fails with a sketch-construction error.
 - **Undeclared connectors** — declare a connector on the part before referencing it in a mate, and give it a finite `[x, y, z]` origin.
 - **Over-tight fillets/chamfers** — keep the radius below half the local wall/edge thickness; larger radii fail in the kernel.

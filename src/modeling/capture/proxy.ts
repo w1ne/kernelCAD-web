@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { DrawingReviewPlan } from '../../shared/intent/drawingReview';
-import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
+import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3, Param } from '../../shared/intent/types';
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
@@ -26,7 +26,7 @@ import {
   type EditableCutoutOpts,
 } from '../validation/cutoutValidation';
 import { isParamRef, isTypedParamRef, type Editable, type TypedParamRef } from '../../shared/runtime/paramRef';
-import { toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
+import { currentValue, paramValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
@@ -49,6 +49,76 @@ import type {
 import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
+
+const NONFINITE_TRANSFORM_GUIDANCE =
+  'Recompute the expression that produced NaN/undefined; common causes: Math.sqrt of a negative, dividing by zero, reading an undeclared variable, or using a param before it exists. Replace with finite numbers or ParamRefs whose expressions resolve to finite numbers.';
+
+function invalidEditableVec3Components(value: unknown, table: CaptureSession['paramTable']): string[] {
+  const labels = ['x', 'y', 'z'] as const;
+  const components: unknown[] | undefined = Array.isArray(value)
+    ? [value[0], value[1], value[2]]
+    : typeof value === 'object' && value !== null
+      ? [(value as Record<string, unknown>).x, (value as Record<string, unknown>).y, (value as Record<string, unknown>).z]
+      : undefined;
+  if (!components) return [`vector=${formatScalarForError(value)}`];
+
+  const issues: string[] = [];
+  components.forEach((component, index) => {
+    const label = labels[index]!;
+    if (isParamRef(component) && !isTypedParamRef(component)) {
+      try {
+        const resolved = currentValue(component as Editable<number>, table);
+        if (!Number.isFinite(resolved)) issues.push(`${label}=ParamRef(${component.$param}) resolves to ${formatScalarForError(resolved)}`);
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        issues.push(`${label}=ParamRef(${component.$param}) could not resolve (${reason})`);
+      }
+      return;
+    }
+
+    if (typeof component === 'object' && component !== null
+        && typeof (component as Param).unit === 'string'
+        && typeof (component as Param).evaluated === 'number') {
+      const param = component as Param;
+      try {
+        const resolved = paramValue(param, table);
+        if (!Number.isFinite(resolved) || !Number.isFinite(param.evaluated)) {
+          const ref = param.paramRef === undefined ? '' : `ParamRef(${typeof param.paramRef === 'string' ? param.paramRef : formatScalarForError(param.paramRef)}) `;
+          const detail = Number.isFinite(resolved)
+            ? `stores ${formatScalarForError(param.evaluated)} but resolves to ${formatScalarForError(resolved)}`
+            : `resolves to ${formatScalarForError(resolved)}`;
+          issues.push(`${label}=${ref}${detail}`);
+        }
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        issues.push(`${label}=ParamRef could not resolve (${reason})`);
+      }
+      return;
+    }
+
+    if (typeof component !== 'number' || !Number.isFinite(component)) {
+      issues.push(`${label}=${formatScalarForError(component)}`);
+    }
+  });
+  return issues;
+}
+
+function invalidTransformVec3Error(
+  operation: 'translate' | 'rotate-axis' | 'rotate-pivot',
+  label: string,
+  value: unknown,
+  featureId: FeatureId,
+  table: CaptureSession['paramTable'],
+): KernelError {
+  const issues = invalidEditableVec3Components(value, table);
+  const detail = issues.length > 0 ? issues.join(', ') : formatScalarForError(value);
+  return new KernelError(
+    'feature.invalid-args',
+    `${label} must contain three finite numbers (or ParamRefs resolving to finite numbers); invalid component(s): ${detail}.`,
+    featureId,
+    `invalid-args.${operation}.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
+  );
+}
 
 export type EdgeSelector =
   | EdgeQuery
@@ -123,15 +193,12 @@ export class Shape {
   }
 
   translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape {
-    if (!isValidEditableVec3([x, y, z])) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Translate vector must be three finite numbers (or ParamRef<number>); got [${formatScalarForError(x)}, ${formatScalarForError(y)}, ${formatScalarForError(z)}].`,
-        this.id,
-        'Pass three finite numbers (x, y, z) to .translate().',
-      );
+    const vector: EditableVec3 = [x, y, z];
+    const issues = invalidEditableVec3Components(vector, this.session.paramTable);
+    if (!isValidEditableVec3(vector) || issues.length > 0) {
+      throw invalidTransformVec3Error('translate', 'Translate vector', vector, this.id, this.session.paramTable);
     }
-    this.session.appendTransform(this.id, { op: 'translate', vec: toVec3Param([x, y, z], 'mm') });
+    this.session.appendTransform(this.id, { op: 'translate', vec: toVec3Param(vector, 'mm') });
     return this;
   }
 
@@ -140,37 +207,43 @@ export class Shape {
     degrees: Editable<number>,
     pivot?: EditableVec3,
   ): Shape {
-    if (!isValidEditableVec3(axis)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Rotate axis must be a finite Vec3 (numbers or ParamRef<number>); got ${formatScalarForError(axis)}.`,
-        this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
-      );
+    const axisIssues = invalidEditableVec3Components(axis, this.session.paramTable);
+    if (!isValidEditableVec3(axis) || axisIssues.length > 0) {
+      throw invalidTransformVec3Error('rotate-axis', 'Rotate axis', axis, this.id, this.session.paramTable);
     }
     if (typeof degrees !== 'number' && !isParamRef(degrees)) {
       throw new KernelError(
         'feature.invalid-args',
         `Rotate degrees must be a finite number or ParamRef; got ${formatScalarForError(degrees)}.`,
         this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
     }
-    if (typeof degrees === 'number' && !Number.isFinite(degrees)) {
+    let resolvedDegrees: number;
+    try {
+      resolvedDegrees = currentValue(degrees, this.session.paramTable);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
       throw new KernelError(
         'feature.invalid-args',
-        `Rotate degrees must be a finite number or ParamRef; got ${formatScalarForError(degrees)}.`,
+        `Rotate degrees could not be resolved from ${formatScalarForError(degrees)}: ${reason}.`,
         this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
     }
-    if (pivot !== undefined && !isValidEditableVec3(pivot)) {
+    if (!Number.isFinite(resolvedDegrees)) {
       throw new KernelError(
         'feature.invalid-args',
-        `Rotate pivot (when provided) must be a finite Vec3; got ${formatScalarForError(pivot)}.`,
+        `Rotate degrees must resolve to a finite number; got ${isParamRef(degrees) ? `ParamRef(${degrees.$param}) resolves to ${formatScalarForError(resolvedDegrees)}` : formatScalarForError(resolvedDegrees)}.`,
         this.id,
-        'Pass a finite Vec3 as the pivot, or omit it.',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
+    }
+    if (pivot !== undefined) {
+      const pivotIssues = invalidEditableVec3Components(pivot, this.session.paramTable);
+      if (!isValidEditableVec3(pivot) || pivotIssues.length > 0) {
+        throw invalidTransformVec3Error('rotate-pivot', 'Rotate pivot', pivot, this.id, this.session.paramTable);
+      }
     }
     const transform: ShapeTransform = pivot === undefined
       ? { op: 'rotateAxis', axis: toVec3Param(axis, 'unitless'), degrees: toParam(degrees, 'deg') }
