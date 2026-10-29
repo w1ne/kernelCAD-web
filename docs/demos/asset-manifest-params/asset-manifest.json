@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "schemaVersion": 1,
+    "name": "Parametric mounting plate",
+    "description": "A two-hole mounting plate with named size presets.",
+    "license": "CC-BY-4.0",
+    "authors": [
+      "kernelCAD example"
+    ],
+    "tags": [
+      "plate",
+      "mounting",
+      "parametric"
+    ]
+  },
+  "params": {
+    "depth": 40,
+    "holeDiameter": 6,
+    "includeCenterMark": false,
+    "thickness": 6,
+    "width": 80
+  },
+  "presets": [
+    {
+      "schemaVersion": 1,
+      "name": "Compact",
+      "params": {
+        "width": 60,
+        "depth": 30,
+        "thickness": 5,
+        "holeDiameter": 5,
+        "includeCenterMark": false
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "name": "Standard",
+      "params": {
+        "width": 80,
+        "depth": 40,
+        "thickness": 6,
+        "holeDiameter": 6,
+        "includeCenterMark": false
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "name": "Wide",
+      "params": {
+        "width": 120,
+        "depth": 50,
+        "thickness": 8,
+        "holeDiameter": 8,
+        "includeCenterMark": true
+      }
+    }
+  ]
+}

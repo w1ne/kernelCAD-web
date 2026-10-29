@@ -9594,5 +9594,130 @@
       ],
       "additionalProperties": true
     }
+  },
+  {
+    "name": "asset_manifest",
+    "description": "Use this when you need a machine-readable description of the current parametric asset. Read the validated asset metadata, evaluated parameter values, and named presets from the most recently evaluated model. This tool is read-only; parameters reflect their current evaluated values and fall back to their declared defaults.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "meta": {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "type": "integer",
+              "const": 1
+            },
+            "name": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "license": {
+              "type": "string",
+              "enum": [
+                "CC-BY-4.0",
+                "CC-BY-SA-4.0",
+                "CC-BY-NC-4.0",
+                "CC-BY-NC-SA-4.0",
+                "CC0-1.0",
+                "MIT",
+                "BSD-2-Clause",
+                "BSD-3-Clause",
+                "Apache-2.0",
+                "MPL-2.0",
+                "Unlicense"
+              ]
+            },
+            "authors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "sourceUrl": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "license"
+          ],
+          "additionalProperties": false
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        },
+        "presets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "integer",
+                "const": 1
+              },
+              "name": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "params": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "name",
+              "params"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "meta",
+        "params",
+        "presets"
+      ],
+      "additionalProperties": false
+    }
   }
 ]

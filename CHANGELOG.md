@@ -1,5 +1,15 @@
 # Unreleased
 
+- Asset manifests: `meta()` and `presets()` now capture validated asset metadata
+  and named knob overrides on `CaptureSession`; asset content defaults to the
+  SPDX-allowlisted `CC-BY-4.0` licence, separate from the package's MIT licence.
+  Typed `params({ knob: { default, ...metadata } })` entries support all
+  `param()` value kinds while preserving the existing numeric/boolean shorthand.
+  The read-only MCP `asset_manifest` returns versioned metadata, deterministic
+  evaluated params JSON, and sorted presets. See
+  `examples/params/asset-manifest-mounting-plate.kcad.ts` and the
+  `kernelcad-params` skill; local demo bundle:
+  `docs/demos/asset-manifest-params/`.
 - SolidCraft oracle ledger. The public SolidCraft reference cases (expected
   values and recipes only, Apache-2.0, pinned commit
   `7a6c884418698e9c9fb0e6f97b9b847998c58c49`) are vendored beside a kernelCAD
