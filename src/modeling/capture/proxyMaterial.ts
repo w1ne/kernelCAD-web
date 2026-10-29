@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { formatScalarForError } from '../../shared/intent/types';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { SoftWarning } from '../../shared/runtime/softWarning';
@@ -57,12 +58,15 @@ export function cleanMaterialScalars(opts: MaterialCallOpts, id: string): Cleane
   const cleaned: PBRMaterial = { baseColor: opts.baseColor };
   if (opts.name !== undefined) {
     if (typeof opts.name !== 'string' || opts.name.trim().length === 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Shape.material: field 'name' must be a non-empty string; got ${formatScalarForError(opts.name)}.`,
-        id,
-        'Pass a non-empty material name string, or omit the name field.',
-      );
+      invalidArgs({
+        api: 'Shape.material(opts)',
+        path: 'opts.name',
+        got: opts.name,
+        showType: true,
+        requires: 'a non-empty string',
+        example: "shape.material({ baseColor: '#c8a24a', name: 'brass' })",
+        featureId: id,
+      });
     }
     cleaned.name = opts.name.trim();
   }
