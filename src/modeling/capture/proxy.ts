@@ -642,13 +642,14 @@ export class Shape {
   }
 
   /**
-   * Scale this shape uniformly (single positive number) or per-axis
-   * (Vec3 — sx/sy/sz). All factors must be positive and finite.
+   * Scale this shape uniformly (single positive number or numeric ParamRef) or
+   * per-axis (Vec3 — sx/sy/sz). All resolved factors must be positive and finite.
    *
    * Two call shapes are accepted:
    *   - `.scale(2)`           — uniform
-   *   - `.scale([2, 1, 1])`   — per-axis Vec3 form
-   *   - `.scale(2, 2, 2)`     — legacy multi-arg form (must be uniform; see below)
+   *   - `.scale(hexSize)`     — uniform, editable ParamRef
+   *   - `.scale([2, 1, 1])`   — per-axis Vec3 form (each factor may be editable)
+   *   - `.scale(2, 2, 2)`     — legacy multi-arg form
    *
    * The Vec3 form is the canonical agent-facing way to request non-uniform
    * scale. Capture stores per-axis components in the FeatureRecord's
@@ -662,18 +663,18 @@ export class Shape {
    * but lowering will emit a `feature.kernel-failed` diagnostic. Track via
    * the TODO in `src/backends/occt/occtLowerer.ts` near the scale dispatch.
    */
-  scale(factor: number | [number, number, number]): Shape;
-  scale(sx: number, sy: number, sz: number): Shape;
+  scale(factor: Editable<number> | [Editable<number>, Editable<number>, Editable<number>]): Shape;
+  scale(sx: Editable<number>, sy: Editable<number>, sz: Editable<number>): Shape;
   scale(
-    factorOrSx: number | [number, number, number],
-    sy?: number,
-    sz?: number,
+    factorOrSx: Editable<number> | [Editable<number>, Editable<number>, Editable<number>],
+    sy?: Editable<number>,
+    sz?: Editable<number>,
   ): Shape {
     // Normalize the three call shapes into a single ScaleSpec.
-    const scaleSpec: number | [number, number, number] = Array.isArray(factorOrSx)
+    const scaleSpec = Array.isArray(factorOrSx)
       ? factorOrSx
       : (sy !== undefined || sz !== undefined)
-        ? [factorOrSx, sy ?? factorOrSx, sz ?? factorOrSx] as [number, number, number]
+        ? [factorOrSx, sy ?? factorOrSx, sz ?? factorOrSx] as [Editable<number>, Editable<number>, Editable<number>]
         : factorOrSx;
 
     if (!isValidScaleSpec(scaleSpec)) {
@@ -685,9 +686,21 @@ export class Shape {
       );
     }
 
-    const [sx, syOut, szOut]: [number, number, number] = Array.isArray(scaleSpec)
+    const factors: [Editable<number>, Editable<number>, Editable<number>] = Array.isArray(scaleSpec)
       ? [scaleSpec[0], scaleSpec[1], scaleSpec[2]]
       : [scaleSpec, scaleSpec, scaleSpec];
+    if (factors.some((factor) => {
+      const value = currentValue(factor, this.session.paramTable);
+      return !Number.isFinite(value) || value <= 0;
+    })) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Scale factors must resolve to positive finite numbers; got ${formatScalarForError(scaleSpec)}.`,
+        this.id,
+        'invalid-args.scale.zero — provide positive finite scale factors; numeric ParamRefs are resolved when the shape is built.',
+      );
+    }
+    const [sx, syOut, szOut] = factors.map((factor) => isParamRef(factor) ? toParam(factor, 'unitless') : factor);
 
     this.session.appendTransform(this.id, {
       op: 'scale',
