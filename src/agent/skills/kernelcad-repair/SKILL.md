@@ -103,7 +103,7 @@ can tell a fix that respects the design from one that merely silences a gate.
 | `feature.revolve.crosses-axis` | clamp every numeric path x-coordinate up to 0 |
 | `sketch.tangency.no-solution` | raise `opts.radius` to (centre-distance − r1 − r2) / 2 for two circles |
 | `feature.draft.failed` | mould-release angle ladder 8° / 5° / 3° |
-| `feature.kernel-failed` (shell) | thickness ladder under half the thinnest bbox dimension |
+| `feature.kernel-failed` (shell) | no same-body retry; author an inset inner cavity and subtract it from the outer solid |
 | `feature.emboss-text.boolean-noop` | slide `anchorU` / `anchorV` to 0.2, onto remaining solid |
 
 Anything else returns `candidateStatus: 'no-automatic-candidate'` with a

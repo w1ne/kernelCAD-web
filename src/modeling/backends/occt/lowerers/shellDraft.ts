@@ -8,7 +8,6 @@ import { draftWithHistory } from '../../../../kernel/backends/occt/draftWithHist
 import { countFaces, localOpUnchanged } from '../../../../kernel/backends/occt/edgeFeatureValidity';
 import { pickFace } from '../../../../kernel/backends/occt/edgeSelection';
 import {
-  discardOcctShape,
   mergeEdgeFeatureHistory,
   shellWithHistory,
 } from '../../../../kernel/backends/occt/historyAwareEdgeFeatures';
@@ -84,7 +83,7 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'non-Error C++ exception during Build';
-    ctx.diagnostics.push(shellFailureDiagnostic(r.id, msg, thickness, (t) => shellBuilds(base, faces, t)));
+    ctx.diagnostics.push(shellFailureDiagnostic(r.id, msg, thickness));
     return finished(base);
   }
   return built(shape);
@@ -113,16 +112,6 @@ function unchangedOpDiagnostic(featureId: string, op: 'shell' | 'draft', value: 
   };
 }
 
-function shellBuilds(base: OcctBackend, faces: { hash: string }[], thickness: number): boolean {
-  try {
-    // A probe: only whether it builds matters; free the solid.
-    discardOcctShape(shellWithHistory(base, faces, thickness).shape);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function shellFallbackDiagnostic(featureId: string, thickness: number): CompilerDiagnostic {
   return {
     target: 'export-occt',
@@ -137,52 +126,32 @@ function shellFallbackDiagnostic(featureId: string, thickness: number): Compiler
   };
 }
 
-/** Thinner walls tried (as fractions of the requested one) before a retry is
- *  suggested. Only a wall that actually builds is ever suggested. */
-const SHELL_RETRY_FRACTIONS = [0.5, 0.25] as const;
-
 /**
- * `feature.kernel-failed` for shell(). The retry suggestion is VERIFIED: each
- * candidate wall is built before it is offered; when none builds, the hint
- * says so and points at the boolean hollow instead of a guess.
+ * `feature.kernel-failed` for shell(). Once the native joins and offset/subtract
+ * fallback fail, do not probe thinner shell() calls on the same body: steer to
+ * an explicitly authored hollow instead.
  */
 export function shellFailureDiagnostic(
   featureId: string,
   kernelMessage: string,
   thickness: number,
-  tryThickness: (t: number) => boolean,
 ): CompilerDiagnostic {
-  const tried: number[] = [];
-  let verified: number | undefined;
-  for (const f of SHELL_RETRY_FRACTIONS) {
-    const t = Number((thickness * f).toPrecision(3));
-    tried.push(t);
-    if (tryThickness(t)) {
-      verified = t;
-      break;
-    }
-  }
-  const booleanAlt =
-    'If the body is built from stations or stacked lofts, hollow it with a boolean instead of shell(): build the same ' +
-    'body again from profiles inset by the wall thickness, starting one wall above the base and running past the open ' +
-    'top, then `outer.subtract(inner)`. Cookbook: twisted-tapered-thin-wall-vase.';
   const message =
     `OCCT shell failed: ${kernelMessage}. The wall offset could not be closed. Two usual causes: the wall is ` +
-    `thicker than the thinnest part of the body, or curved faces meet at sharp (non-tangent) edges — ` +
-    `a multi-station variableSweep, a ruled loft, or a union of stacked lofts.`;
-  if (verified !== undefined) {
-    return {
-      target: 'export-occt', code: 'feature.kernel-failed', featureId, severity: 'error', message,
-      hint: `A ${verified} mm wall builds on this body, verified by a kernel probe. Use a ${verified} mm wall or a different open face. ${booleanAlt}`,
-      nextAction: { kind: 'retry-with-smaller-param', param: 'thickness', factor: Number((verified / thickness).toFixed(4)) },
-      details: { requestedThickness: thickness, verifiedThickness: verified },
-    };
-  }
+    `thicker than the thinnest local feature, or faces meet at edges the offset cannot resolve.`;
   return {
     target: 'export-occt', code: 'feature.kernel-failed', featureId, severity: 'error', message,
-    hint: `Thinner walls do not help here: ${tried.join(' mm and ')} mm also fail, verified by a kernel probe. Try a different open face. ${booleanAlt}`,
-    nextAction: { kind: 'rewrite-feature', guidance: 'hollow with outer.subtract(inner) or open a different face; thinner walls were verified to fail too' },
-    details: { requestedThickness: thickness, triedThicknesses: tried.join(',') },
+    hint:
+      `Do not retry .shell() on this body. Compare the requested ${thickness} mm wall with the thinnest local feature ` +
+      'while redesigning the cavity; a thinner wall is not an automatic retry. For enclosures with cutouts, author the cavity explicitly: build an ' +
+      'inset inner solid, then subtract it from the outer solid. For an origin-based box, use ' +
+      '`outer.subtract(inner.translate(wall, wall, wall))` and extend the inner cavity through the intended opening; ' +
+      'model cutouts in the cavity or outer body as needed.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'do not retry shell on the same body; author an inset inner cavity and subtract it from the outer solid',
+    },
+    details: { requestedThickness: thickness },
   };
 }
 

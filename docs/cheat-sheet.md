@@ -133,6 +133,11 @@ Break edges, add draft, hollow out a wall, fold sheet metal.
 | `Shape.bend(edgeRef: EdgeSelector \| string, angle: Editable<number>, radius: Editable<number>) => Shape` | Add a sheet-metal bend along a linear edge. |
 | `Shape.flattenPattern() => Region` | Return the unfolded 2D flat-pattern of this bent sheet-metal Shape as a Region (closed outer wire + holes + bend-line metadata + source plane). |
 
+If shelling fails after the kernel's offset strategies, its repair guidance avoids
+retrying `.shell()` on the same body. Compare the wall with the thinnest local
+feature; for an enclosure with cutouts, author an inset inner cavity and subtract
+it from the outer solid (for an origin-based box: `outer.subtract(inner.translate(wall, wall, wall))`).
+
 ## Select geometry
 
 Pick the edges or faces a feature acts on. Query first, then sort or group what comes back.
