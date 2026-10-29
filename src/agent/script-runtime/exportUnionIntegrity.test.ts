@@ -28,7 +28,12 @@ describe('export union integrity', () => {
 
     const codes = result.diagnostics.map((d) => d.code);
     expect(codes).toContain('union.disconnected');
-    expect(result.diagnostics.find((d) => d.code === 'union.disconnected')?.severity).not.toBe('info');
+    const diagnostic = result.diagnostics.find((d) => d.code === 'union.disconnected');
+    expect(diagnostic?.severity).toBe('error');
+    expect(diagnostic?.message).toMatch(/gap 20 mm to the main body/);
+    // Fatal: no bytes, so a scored consumer (the benchmark harness) sees a
+    // failed candidate and feeds the line back to the repair loop.
+    expect(result.bytes.length).toBe(0);
   });
 
   it('does not flag a union that fused into one body', async () => {
