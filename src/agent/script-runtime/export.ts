@@ -4,6 +4,7 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import { resolveRootId } from '../../composition/buildModel';
 import type { DrawingReviewOptions } from '../../shared/intent/drawingReview';
 import { detectMissingReturn } from '../../modeling/validation/missingReturn';
+import { detectUnionDefects } from '../../modeling/validation/unionIntegrity';
 import { runScript } from '../../composition/runScript';
 import type { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { lowerScriptRun } from './lowerScriptRun';
@@ -429,6 +430,15 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   notifySceneBuild(input, run, r);
   const featureCount = run.records.length;
   r.diagnostics = await tubeExportDiagnostics(format, run, r);
+  // Union integrity runs at this seam too. `evaluate` already gates every
+  // union (floating operand / same-stock overlap), but export is a scored
+  // consumer (the CADGenBench harness reads these diagnostics): without the
+  // check a fuse that left its operands as separate solids exported a
+  // watertight file and was accepted, even though the edit never fused. A
+  // disjoint union is a defect whether the STEP is valid or not.
+  r.diagnostics.push(
+    ...detectUnionDefects({ records: run.records, shapes: r.shapes, code }),
+  );
 
   const fatal = r.diagnostics.filter(d => d.severity === 'error');
   if (fatal.length > 0) {

@@ -237,7 +237,35 @@ export function booleanShapesWithHistory(
   const oc = getOC();
   const inputs = [bodyShape, ...toolShapes];
   const exact = attemptBoolean(oc, op, inputs, EXACT_PLAN, []);
-  if (exact.ok) return exact.result;
+  if (exact.ok) {
+    // A fuse of overlapping or touching operands must return ONE connected
+    // body. OCCT's exact general fuse can silently leave a partially merged
+    // compound (no warning, valid topology): the usual trigger is a tool that
+    // is coincident/tangent to a healed import's cylindrical faces. The
+    // compound still passes BRepCheck and the volume stays inside the fuse
+    // bounds, so nothing downstream notices until the edit turns out to be a
+    // no-op. Retry the fuzzy ladder and keep the first attempt that merges
+    // more of the operands.
+    if (op === 'fuse' && fuseLeftUnmerged(oc, inputs, exact.result.shape)) {
+      const exactSolids = solidCount(oc, exact.result.shape);
+      const inputVolumes = inputs.map((s) => volumeOf(oc, s));
+      for (const plan of recoveryPlans(op, combinedDiagonal(oc, inputs))) {
+        const retry = attemptBoolean(oc, op, inputs, plan, inputVolumes);
+        if (retry.ok) {
+          const retrySolids = solidCount(oc, retry.result.shape);
+          if (retrySolids < exactSolids) {
+            freeShape(exact.result.shape);
+            return {
+              ...retry.result,
+              exactFailure: `fuse left ${exactSolids} separate solids; ${plan.strategy} merged them into ${retrySolids}`,
+            };
+          }
+          freeShape(retry.result.shape);
+        }
+      }
+    }
+    return exact.result;
+  }
 
   const inputVolumes = inputs.map((s) => volumeOf(oc, s));
   for (const plan of recoveryPlans(op, combinedDiagonal(oc, inputs))) {
@@ -250,6 +278,74 @@ export function booleanShapesWithHistory(
   }
   if (exact.fallback) return exact.fallback;
   throw new Error(`${exact.error} Fuzzy-boolean retries (scaled fuzzy value, coarse fuzzy${op === 'fuse' ? ', glue' : ''}) also failed.`);
+}
+
+/** Solids in a shape (1 for a plain solid, N for a compound). */
+function solidCount(oc: ReturnType<typeof getOC>, shape: unknown): number {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const o = oc as any;
+  let n = 0;
+  const exp = new o.TopExp_Explorer_2(shape, o.TopAbs_ShapeEnum.TopAbs_SOLID, o.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  try {
+    while (exp.More()) {
+      n++;
+      exp.Next();
+    }
+  } finally {
+    exp.delete();
+  }
+  return n;
+}
+
+/** True when two operand boxes overlap or touch on every axis. */
+function boxesTouch(oc: ReturnType<typeof getOC>, a: unknown, b: unknown): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const o = oc as any;
+  const box = (shape: unknown) => {
+    const bnd = new o.Bnd_Box_1();
+    try {
+      o.BRepBndLib.Add(shape, bnd, false);
+      if (bnd.IsVoid()) return undefined;
+      const lo = bnd.CornerMin();
+      const hi = bnd.CornerMax();
+      const out = [
+        [lo.X(), lo.Y(), lo.Z()],
+        [hi.X(), hi.Y(), hi.Z()],
+      ] as const;
+      lo.delete();
+      hi.delete();
+      return out;
+    } finally {
+      bnd.delete();
+    }
+  };
+  const A = box(a);
+  const B = box(b);
+  if (!A || !B) return false;
+  for (let k = 0; k < 3; k++) {
+    if (Math.min(A[1][k], B[1][k]) < Math.max(A[0][k], B[0][k]) - 1e-6) return false;
+  }
+  return true;
+}
+
+/**
+ * A fuse that produced several solids while its operands overlap or touch is
+ * a partial merge, not a valid union result. Disjoint operands are left alone:
+ * their union is reported by the union-integrity guard, and no fuzzy value can
+ * legitimately connect them. Exported for the regression test.
+ */
+export function fuseLeftUnmerged(
+  oc: ReturnType<typeof getOC>,
+  inputs: readonly unknown[],
+  resultShape: unknown,
+): boolean {
+  if (inputs.length < 2 || solidCount(oc, resultShape) <= 1) return false;
+  for (let i = 0; i < inputs.length; i++) {
+    for (let j = i + 1; j < inputs.length; j++) {
+      if (boxesTouch(oc, inputs[i], inputs[j])) return true;
+    }
+  }
+  return false;
 }
 
 /** Build one boolean with `plan` and judge its result. */
