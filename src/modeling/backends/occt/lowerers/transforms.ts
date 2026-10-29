@@ -4,6 +4,7 @@ import type { LowerResult, ShapeBackend } from '../../../../kernel/backends/back
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { MeshBackend } from '../../../../kernel/backends/meshBackend';
 import { propagateEdgeTransformHistory, propagateTransformHistory } from '../../../../kernel/naming/evolutionRecord';
+import type { FaceHash, EdgeHash } from '../../../../kernel/naming/evolutionRecord';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import type { Param } from '../../../../shared/intent/types';
 import { isValidPlaneSpec } from '../../../../shared/intent/types';
@@ -56,10 +57,9 @@ function resolvePositiveScaleFactors(
 
 function carryTransformHistory(
   shape: ShapeBackend,
-  inputBackend: OcctBackend,
-  inputHashes: number[],
+  inputHashes: readonly FaceHash[],
   inputMap: NonNullable<OcctBackend['historyMap']>,
-  inputEdgeHashes: number[],
+  inputEdgeHashes: readonly EdgeHash[],
   inputEdgeMap: OcctBackend['edgeHistoryMap'],
 ): ShapeBackend {
   const outputBackend = shape as OcctBackend;
@@ -136,7 +136,7 @@ export function applyTransforms(
     // Propagate historyMap if input had one. All four transform ops (translate,
     // rotateAxis, scale, reflect) preserve topology (face count invariant).
     if (inputMap !== undefined) {
-      shape = carryTransformHistory(shape, inputBackend, inputHashes, inputMap, inputEdgeHashes, inputEdgeMap);
+      shape = carryTransformHistory(shape, inputHashes, inputMap, inputEdgeHashes, inputEdgeMap);
     }
   }
   return shape;
