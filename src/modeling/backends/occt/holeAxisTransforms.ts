@@ -11,6 +11,8 @@ import type { Param, PlaneSpec, Vec3 } from '../../../shared/intent/types';
 import { isValidPlaneSpec } from '../../../shared/intent/types';
 import type { ParamTable } from '../../../shared/runtime/paramTable';
 import { resolveParams } from '../../../shared/runtime/resolveParams';
+import { resolvedScaleFactor } from './lowerers/transforms';
+import { KernelError } from '../../../shared/intent/kernelError';
 
 type Mat3 = readonly [
   number, number, number,
@@ -20,8 +22,19 @@ type Mat3 = readonly [
 
 const IDENTITY: Mat3 = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 
-function resolvedScaleFactor(value: number | Param): number {
-  return typeof value === 'number' ? value : value.evaluated;
+function scaleFactors(transform: Extract<ShapeTransform, { op: 'scale' }>): [number, number, number] {
+  const sx = resolvedScaleFactor(transform.sx);
+  const sy = resolvedScaleFactor(transform.sy);
+  const sz = resolvedScaleFactor(transform.sz);
+  if (!Number.isFinite(sx) || !Number.isFinite(sy) || !Number.isFinite(sz) || sx <= 0 || sy <= 0 || sz <= 0) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `scale transform has non-positive or non-finite factors: ${JSON.stringify([sx, sy, sz])}.`,
+      undefined,
+      'Scale factors must be positive finite numbers; check the param values and their declared min/max bounds.',
+    );
+  }
+  return [sx, sy, sz];
 }
 
 /** Hole feature first, then each feature that carried it up to `consumerId`. */
@@ -65,8 +78,10 @@ function applyInverseLinear(vector: Vec3, transform: ShapeTransform): Vec3 {
     case 'rotateAxis':
     case 'reflect':
       return mul(transpose(linearOf(transform)), vector);
-    case 'scale':
-      return [vector[0] / resolvedScaleFactor(transform.sx), vector[1] / resolvedScaleFactor(transform.sy), vector[2] / resolvedScaleFactor(transform.sz)];
+    case 'scale': {
+      const [sx, sy, sz] = scaleFactors(transform as Extract<ShapeTransform, { op: 'scale' }>);
+      return [vector[0] / sx, vector[1] / sy, vector[2] / sz];
+    }
     default:
       return vector;
   }
@@ -138,8 +153,10 @@ function applyPoint(point: Vec3, transform: ShapeTransform): Vec3 {
       return add(point, readVec(transform.vec));
     case 'rotateAxis':
       return rotateAround(point, readVec(transform.axis), transform.degrees.evaluated, pivotOf(transform));
-    case 'scale':
-      return [point[0] * resolvedScaleFactor(transform.sx), point[1] * resolvedScaleFactor(transform.sy), point[2] * resolvedScaleFactor(transform.sz)];
+    case 'scale': {
+      const [sx, sy, sz] = scaleFactors(transform as Extract<ShapeTransform, { op: 'scale' }>);
+      return [point[0] * sx, point[1] * sy, point[2] * sz];
+    }
     case 'reflect':
       return reflectPoint(point, transform.plane);
     default:
@@ -153,12 +170,14 @@ function applyPointInverse(point: Vec3, transform: ShapeTransform): Vec3 {
       return add(point, scale(readVec(transform.vec), -1));
     case 'rotateAxis':
       return rotateAround(point, readVec(transform.axis), -transform.degrees.evaluated, pivotOf(transform));
-    case 'scale':
+    case 'scale': {
+      const [sx, sy, sz] = scaleFactors(transform as Extract<ShapeTransform, { op: 'scale' }>);
       return [
-        point[0] / resolvedScaleFactor(transform.sx),
-        point[1] / resolvedScaleFactor(transform.sy),
-        point[2] / resolvedScaleFactor(transform.sz),
+        point[0] / sx,
+        point[1] / sy,
+        point[2] / sz,
       ];
+    }
     case 'reflect':
       return reflectPoint(point, transform.plane);
     default:
@@ -172,8 +191,10 @@ function linearOf(transform: ShapeTransform): Mat3 {
       return IDENTITY;
     case 'rotateAxis':
       return rotationMatrix(readVec(transform.axis), transform.degrees.evaluated);
-    case 'scale':
-      return [resolvedScaleFactor(transform.sx), 0, 0, 0, resolvedScaleFactor(transform.sy), 0, 0, 0, resolvedScaleFactor(transform.sz)];
+    case 'scale': {
+      const [sx, sy, sz] = scaleFactors(transform as Extract<ShapeTransform, { op: 'scale' }>);
+      return [sx, 0, 0, 0, sy, 0, 0, 0, sz];
+    }
     case 'reflect':
       return reflectLinear(transform.plane);
     default:

@@ -11,7 +11,7 @@ import type { Vec3 } from '../../../../shared/intent/types';
 import type { LowerContext, LowerOutcome } from './context';
 import { absurdGeometryDiagnostic } from '../featureSanity';
 
-function resolvedScaleFactor(value: number | Param): number {
+export function resolvedScaleFactor(value: number | Param): number {
   return typeof value === 'number' ? value : value.evaluated;
 }
 
@@ -40,6 +40,22 @@ export function applyTransforms(
   let shape = input;
   for (const t of r.transforms) {
     if (shape instanceof MeshBackend) {
+      if (t.op === 'scale') {
+        const sx = resolvedScaleFactor(t.sx);
+        const sy = resolvedScaleFactor(t.sy);
+        const sz = resolvedScaleFactor(t.sz);
+        if (!Number.isFinite(sx) || !Number.isFinite(sy) || !Number.isFinite(sz) || sx <= 0 || sy <= 0 || sz <= 0) {
+          ctx.diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `scale transform has non-positive or non-finite factors: ${JSON.stringify([sx, sy, sz])}.`,
+            hint: 'Scale factors must be positive finite numbers; check the param values and their declared min/max bounds.',
+          });
+          continue;
+        }
+      }
       shape = applyMeshTransform(shape, t);
       continue;
     }
@@ -60,9 +76,24 @@ export function applyTransforms(
         shape = shape.rotate(ax, t.degrees.evaluated, pv);
         break;
       }
-      case 'scale':
-        shape = shape.scale([resolvedScaleFactor(t.sx), resolvedScaleFactor(t.sy), resolvedScaleFactor(t.sz)]);
+      case 'scale': {
+        const sx = resolvedScaleFactor(t.sx);
+        const sy = resolvedScaleFactor(t.sy);
+        const sz = resolvedScaleFactor(t.sz);
+        if (!Number.isFinite(sx) || !Number.isFinite(sy) || !Number.isFinite(sz) || sx <= 0 || sy <= 0 || sz <= 0) {
+          ctx.diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `scale transform has non-positive or non-finite factors: ${JSON.stringify([sx, sy, sz])}.`,
+            hint: 'Scale factors must be positive finite numbers; check the param values and their declared min/max bounds.',
+          });
+          break; // skip applying the transform; preserve the prior shape
+        }
+        shape = shape.scale([sx, sy, sz]);
         break;
+      }
       case 'reflect':
         if (!isValidPlaneSpec(t.plane)) {
           ctx.diagnostics.push({
