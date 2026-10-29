@@ -37,7 +37,7 @@
   "src/modeling/backends/occt/lowerers/surfaceResolve.ts": 4,
   "src/modeling/backends/occt/lowerers/surfaces.ts": 3,
   "src/modeling/backends/occt/lowerers/sweep.ts": 9,
-  "src/modeling/backends/occt/lowerers/transforms.ts": 3,
+  "src/modeling/backends/occt/lowerers/transforms.ts": 2,
   "src/modeling/backends/occt/projectCurveLowerer.ts": 1,
   "src/modeling/capture/assemblyFeatureRecords.ts": 5,
   "src/modeling/capture/assemblyIntents.ts": 17,
