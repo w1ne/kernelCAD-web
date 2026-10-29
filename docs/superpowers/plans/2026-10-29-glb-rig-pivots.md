@@ -62,7 +62,7 @@
 ### Task 5: Verify, commit, push, and open PR
 
 - [x] Run focused suite under 60 seconds plus typecheck/lint as appropriate.
-- [ ] Commit on `feat/glb-rig-pivots`, push, open a PR against `develop`, and capture the PR number/full SHA.
-- [ ] Complete evidence file with test duration, commit/PR, demo inspection, and limitations.
+- [x] Commit on `feat/glb-rig-pivots`, push, and open PR #1160 against `develop` (initial implementation commit `b288543ef425cb7b79a08c91f3779764a50bf422`).
+- [x] Complete `/Volumes/LabWired/kc-work/logs/pr5-evidence.md` with test duration, commit/PR, demo inspection, and limitations.
 
 > The source/docs branch is not deployed here: the requested workflow explicitly forbids merging. Verify the updated public docs page after the PR is merged and deployed.
