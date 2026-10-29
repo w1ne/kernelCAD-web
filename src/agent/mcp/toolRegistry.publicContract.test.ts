@@ -36,6 +36,7 @@ import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { blockoutToolEntries } from './registry/blockoutTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { explodeViewToolEntries } from './registry/explodeViewTools';
+import { assetManifestToolEntries } from './registry/assetManifestTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -98,6 +99,7 @@ const EXPECTED_TOOL_NAMES = [
   'explode_view',
   'apply_surface_blend',
   'blockout_assembly',
+  'asset_manifest',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -399,10 +401,11 @@ describe('toolRegistry public contract', () => {
       'fit_plane',
       'mesh_boolean',
       'explode_view',
-      'apply_surface_blend',
-      'blockout_assembly',
-    ]);
-    expect(TOOL_REGISTRY).toHaveLength(58);
+       'apply_surface_blend',
+       'blockout_assembly',
+       'asset_manifest',
+     ]);
+    expect(TOOL_REGISTRY).toHaveLength(59);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -460,8 +463,14 @@ describe('toolRegistry public contract', () => {
 
   it('appends the generic blockout assembly generator at the registry tail', () => {
     expect(blockoutToolEntries.map(entry => entry.definition.name)).toEqual(['blockout_assembly']);
-    expect(TOOL_REGISTRY.slice(-blockoutToolEntries.length)).toEqual(blockoutToolEntries);
+    expect(TOOL_REGISTRY.slice(-2, -1)).toEqual(blockoutToolEntries);
     expect(blockoutToolEntries[0].definition.description).toMatch(/^Use this when /);
+  });
+
+  it('appends the read-only asset manifest tool after the historical blockout tail', () => {
+    expect(assetManifestToolEntries.map(entry => entry.definition.name)).toEqual(['asset_manifest']);
+    expect(TOOL_REGISTRY.slice(-assetManifestToolEntries.length)).toEqual(assetManifestToolEntries);
+    expect(TOOL_REGISTRY.at(-1)?.definition.name).toBe('asset_manifest');
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

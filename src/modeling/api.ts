@@ -47,6 +47,7 @@ import type { SdfField } from './sdf/index';
 import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import type { ParamRef, TypedParamRef, Editable } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
+import type { AssetMetadataInput, AssetPresets } from '../shared/assets/assetSchema';
 import { q as queryNamespace } from '../kernel/naming/queryConstructors';
 import { makeJointNamespace } from './joints';
 import type {
@@ -332,6 +333,11 @@ export interface KernelCadApi {
   param(name: string, defaultValue: `#${string}`, meta?: ParamMetadata): TypedParamRef<`#${string}`>;
   param(name: string, defaultValue: string, meta?: ParamMetadata): TypedParamRef<string>;
   params<R extends Record<string, number | boolean>>(decl: R): { [K in keyof R]: ParamRef<R[K]> };
+  params<D extends Record<string, BatchParamDeclaration>>(decl: D): { [K in keyof D]: BatchParamRef<D[K]> };
+  /** Set validated, asset-facing metadata; the content licence defaults to CC-BY-4.0. */
+  meta(metadata: AssetMetadataInput): void;
+  /** Declare named presets as maps of knob overrides. */
+  presets(presets: AssetPresets): void;
 
   path(): PathBuilder;
   /**
@@ -753,6 +759,17 @@ export interface KernelCadApi {
     clevis(opts: ClevisJointOptions): ClevisJoint;
   };
 }
+
+type BatchParamOptions = { default: number | boolean | string } & ParamMetadata;
+type BatchParamDeclaration = number | boolean | BatchParamOptions;
+type BatchParamDefault<T> = T extends { default: infer V } ? V : T;
+type BatchParamRef<T> = BatchParamDefault<T> extends number
+  ? ParamRef<BatchParamDefault<T>>
+  : BatchParamDefault<T> extends boolean
+    ? ParamRef<BatchParamDefault<T>>
+    : BatchParamDefault<T> extends string
+      ? TypedParamRef<BatchParamDefault<T>>
+      : never;
 
 export interface SpringOptions {
   length: number;
