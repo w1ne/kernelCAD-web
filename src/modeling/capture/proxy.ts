@@ -26,7 +26,7 @@ import {
   type EditableCutoutOpts,
 } from '../validation/cutoutValidation';
 import { isParamRef, isTypedParamRef, type Editable, type TypedParamRef } from '../../shared/runtime/paramRef';
-import { toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
+import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
@@ -49,6 +49,8 @@ import type {
 import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
+
+import { NONFINITE_TRANSFORM_GUIDANCE, invalidEditableVec3Components, invalidTransformVec3Error } from './transformGuards';
 
 export type EdgeSelector =
   | EdgeQuery
@@ -123,15 +125,12 @@ export class Shape {
   }
 
   translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape {
-    if (!isValidEditableVec3([x, y, z])) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Translate vector must be three finite numbers (or ParamRef<number>); got [${formatScalarForError(x)}, ${formatScalarForError(y)}, ${formatScalarForError(z)}].`,
-        this.id,
-        'Pass three finite numbers (x, y, z) to .translate().',
-      );
+    const vector: EditableVec3 = [x, y, z];
+    const issues = invalidEditableVec3Components(vector, this.session.paramTable);
+    if (!isValidEditableVec3(vector) || issues.length > 0) {
+      throw invalidTransformVec3Error('translate', 'Translate vector', vector, this.id, this.session.paramTable);
     }
-    this.session.appendTransform(this.id, { op: 'translate', vec: toVec3Param([x, y, z], 'mm') });
+    this.session.appendTransform(this.id, { op: 'translate', vec: toVec3Param(vector, 'mm') });
     return this;
   }
 
@@ -140,37 +139,43 @@ export class Shape {
     degrees: Editable<number>,
     pivot?: EditableVec3,
   ): Shape {
-    if (!isValidEditableVec3(axis)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Rotate axis must be a finite Vec3 (numbers or ParamRef<number>); got ${formatScalarForError(axis)}.`,
-        this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
-      );
+    const axisIssues = invalidEditableVec3Components(axis, this.session.paramTable);
+    if (!isValidEditableVec3(axis) || axisIssues.length > 0) {
+      throw invalidTransformVec3Error('rotate-axis', 'Rotate axis', axis, this.id, this.session.paramTable);
     }
     if (typeof degrees !== 'number' && !isParamRef(degrees)) {
       throw new KernelError(
         'feature.invalid-args',
         `Rotate degrees must be a finite number or ParamRef; got ${formatScalarForError(degrees)}.`,
         this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
     }
-    if (typeof degrees === 'number' && !Number.isFinite(degrees)) {
+    let resolvedDegrees: number;
+    try {
+      resolvedDegrees = currentValue(degrees, this.session.paramTable);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
       throw new KernelError(
         'feature.invalid-args',
-        `Rotate degrees must be a finite number or ParamRef; got ${formatScalarForError(degrees)}.`,
+        `Rotate degrees could not be resolved from ${formatScalarForError(degrees)}: ${reason}.`,
         this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
     }
-    if (pivot !== undefined && !isValidEditableVec3(pivot)) {
+    if (!Number.isFinite(resolvedDegrees)) {
       throw new KernelError(
         'feature.invalid-args',
-        `Rotate pivot (when provided) must be a finite Vec3; got ${formatScalarForError(pivot)}.`,
+        `Rotate degrees must resolve to a finite number; got ${isParamRef(degrees) ? `ParamRef(${degrees.$param}) resolves to ${formatScalarForError(resolvedDegrees)}` : formatScalarForError(resolvedDegrees)}.`,
         this.id,
-        'Pass a finite Vec3 as the pivot, or omit it.',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
+    }
+    if (pivot !== undefined) {
+      const pivotIssues = invalidEditableVec3Components(pivot, this.session.paramTable);
+      if (!isValidEditableVec3(pivot) || pivotIssues.length > 0) {
+        throw invalidTransformVec3Error('rotate-pivot', 'Rotate pivot', pivot, this.id, this.session.paramTable);
+      }
     }
     const transform: ShapeTransform = pivot === undefined
       ? { op: 'rotateAxis', axis: toVec3Param(axis, 'unitless'), degrees: toParam(degrees, 'deg') }
