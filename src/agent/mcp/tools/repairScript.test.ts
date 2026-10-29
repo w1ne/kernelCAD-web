@@ -129,12 +129,6 @@ const CASES: RepairCase[] = [
     expectInNewCode: '.draft(8, { face: \'front\' })',
   },
   {
-    name: 'shell thicker than half the solid',
-    code: "return box(10, 10, 10).shell(8, { face: 'top' });",
-    code_expected: 'feature.kernel-failed',
-    expectInNewCode: '.shell(4, { face: \'top\' })',
-  },
-  {
     name: 'fillet radius the kernel rejects (probed max-feasible radius)',
     code: 'return box(40, 30, 10).fillet(5);',
     code_expected: 'feature.kernel-failed',
@@ -195,6 +189,22 @@ describe('repair_script — bounds and honesty', () => {
     expect(repaired.candidates).toEqual([]);
     expect(repaired.new_code).toBeUndefined();
     // The region is still the useful part of the answer.
+    expect(repaired.repairRegion?.ranges.length).toBeGreaterThan(0);
+    expect(repaired.diagnostics?.map(d => d.code)).toContain('tool.repair.no-candidate');
+  }, 120000);
+
+  it('steers a shell thicker than half the solid to explicit hollowing (no automatic candidate)', async () => {
+    const code = "return box(10, 10, 10).shell(8, { face: 'top' });";
+    const before = await evaluateScriptTool({ code, skipMechanismCheck: true });
+    expect(before.ok).toBe(false);
+    expect(before.diagnostics.map(d => d.code)).toContain('feature.kernel-failed');
+
+    const repaired = await repairScriptTool({ code, strategy: 'try-all' });
+    expect(repaired.ok).toBe(false);
+    expect(repaired.target?.code).toBe('feature.kernel-failed');
+    expect(repaired.candidateStatus).toBe('no-automatic-candidate');
+    expect(repaired.candidates).toEqual([]);
+    expect(repaired.new_code).toBeUndefined();
     expect(repaired.repairRegion?.ranges.length).toBeGreaterThan(0);
     expect(repaired.diagnostics?.map(d => d.code)).toContain('tool.repair.no-candidate');
   }, 120000);

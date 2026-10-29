@@ -155,14 +155,13 @@ describe('FIX-10 shell after fillet-all', () => {
     expect(bb.max[2] - bb.min[2]).toBeCloseTo(outer.boundingBox().max[2] - outer.boundingBox().min[2], 2);
   }, 180_000);
 
-  it('a failing shell only suggests a thinner wall that was verified to build', () => {
-    const verified = shellFailureDiagnostic('s1', 'boom', 6, (t) => t <= 3);
-    expect(verified.hint).toMatch(/A 3 mm wall builds on this body, verified/);
-    expect(verified.details?.verifiedThickness).toBe(3);
-    const none = shellFailureDiagnostic('s1', 'boom', 1.5, () => false);
-    expect(none.hint).toMatch(/0\.75 mm and 0\.375 mm also fail, verified/);
-    expect(none.hint).not.toMatch(/thinner wall of/);
-    expect(none.nextAction?.kind).toBe('rewrite-feature');
-    expect(none.hint).toMatch(/outer\.subtract\(inner\)/);
+  it('a failing shell steers to explicit hollowing without retrying shell on the same body', () => {
+    const diagnostic = shellFailureDiagnostic('s1', 'boom', 1.5);
+    expect(diagnostic.hint).toMatch(/Do not retry \.shell\(\) on this body/);
+    expect(diagnostic.hint).toMatch(/thinnest local feature/);
+    expect(diagnostic.hint).toMatch(/outer\.subtract\(inner\.translate\(wall, wall, wall\)\)/);
+    expect(diagnostic.hint).toMatch(/enclosure.*cutouts/i);
+    expect(diagnostic.nextAction).toMatchObject({ kind: 'rewrite-feature' });
+    expect(diagnostic.nextAction?.kind === 'rewrite-feature' ? diagnostic.nextAction.guidance : '').toMatch(/do not retry shell/i);
   });
 });
