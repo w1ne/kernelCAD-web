@@ -23,11 +23,14 @@
 // shapes held in the OCCT WASM heap; evicted masters are disposed.
 
 import * as replicad from 'replicad';
+import { getOC } from 'replicad';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct, registerOcctResetHook } from '../../kernel/backends/occt/occtBackend';
 import { describeOcctThrow, isOcctOutOfMemory } from '../../kernel/backends/occt/occtException';
 import { approxOcctBytes } from '../../kernel/backends/occt/shapeWeight';
 import { healImportedStep } from './healStep';
+import { rebuildImportedPCurves } from './healStepPCurves';
+import { isValidShape } from '../../kernel/backends/occt/booleanRecovery';
 
 /** Backends whose STEP import was normalized by `healImportedStep`. Weak so a
  *  disposed backend is collectable; read by `fromSTEP` to stamp metadata. */
@@ -153,8 +156,28 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
   // them without moving surfaces. A failed/invalid unification returns the
   // original import untouched.
   const healed = healImportedStep(imported as replicad.Shape3D);
-  const master = new OcctBackend(healed.shape);
-  if (healed.unified || healed.repaired) healedStepBackends.add(master);
+  // Still invalid after topology repair: the remaining defect can be a pcurve
+  // that only the writing system could read. Rebuild the 2D curves with a
+  // pcurve-free STEP round-trip (see healStepPCurves.ts); the result is kept
+  // only when it is valid and topologically identical.
+  let finalShape = healed.shape;
+  let pcurvesRebuilt = false;
+  let stillInvalid = false;
+  try {
+    stillInvalid = !isValidShape(getOC(), (finalShape as unknown as { wrapped: unknown }).wrapped);
+  } catch {
+    // OCCT is not loaded in this host (unit fakes / browser shims): there is
+    // no validity verdict to act on, so keep the import exactly as parsed.
+  }
+  if (stillInvalid) {
+    const rebuilt = await rebuildImportedPCurves(finalShape);
+    if (rebuilt !== undefined) {
+      finalShape = rebuilt;
+      pcurvesRebuilt = true;
+    }
+  }
+  const master = new OcctBackend(finalShape);
+  if (healed.unified || healed.repaired || pcurvesRebuilt) healedStepBackends.add(master);
   misses++;
   const weight = approxOcctBytes(master);
   // A single master over the budget is handed to the caller and not pinned.
