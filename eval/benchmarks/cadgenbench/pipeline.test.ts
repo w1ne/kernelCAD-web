@@ -9,7 +9,8 @@ import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { MockAgentClient } from '../../agent';
-import type { EvaluateResult } from '../../types';
+import { TransportFailure } from '../../agentOpenAICompat';
+import type { AgentClient, AgentResponse, EvaluateResult } from '../../types';
 import type { CadGenBenchTask } from './dataset';
 import { passthroughScript, runAll, runTask, type PipelineConfig } from './pipeline';
 import type { EditPromotionResult } from './editPromotion';
@@ -438,5 +439,50 @@ describe('runAll resume', () => {
       ['valid', 'scripts-from', false],
     ]);
     expect(counter.exports).toBe(3);
+  });
+
+  it('records a transport failure as infra_error with the calls and tokens it paid for', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = {
+      calls: 0,
+      async generate(): Promise<AgentResponse> {
+        this.calls += 1;
+        throw new TransportFailure('transport: fetch failed');
+      },
+    } as unknown as AgentClient;
+    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, maxAttempts: 2 }));
+    expect(s.status).toBe('infra_error');
+    expect(s.error).toContain('transport: fetch failed');
+    expect(s.attempts).toBe(1);
+    expect(s.tokensIn).toBe(0);
+    // Nothing was submitted: an environment failure is not a candidate verdict.
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(false);
+  });
+
+  it('retries an infra_error task once and records the recovered candidate', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = {
+      calls: 0,
+      async generate(): Promise<AgentResponse> {
+        this.calls += 1;
+        if (this.calls === 1) throw new TransportFailure('transport: fetch failed');
+        return { text: '```ts\nreturn box(1, 1, 1);\n```', tokens_in: 5, tokens_out: 2 };
+      },
+    } as unknown as AgentClient;
+    const task = tasks(root).gen;
+    const states = await runAll([task], cfg(runDir, { agent, maxAttempts: 1 }), {
+      workers: 1,
+      retryFailed: false,
+      retryInfra: true,
+      infraRetryBackoffMs: 1,
+    });
+    expect(agent.calls).toBe(2);
+    expect(states[0].status).toBe('valid');
+    expect(states[0].resumed).toBe(false);
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(true);
+    // The retry's terminal state is what resume sees next time.
+    expect(readTaskState(runDir, '101')?.status).toBe('valid');
   });
 });

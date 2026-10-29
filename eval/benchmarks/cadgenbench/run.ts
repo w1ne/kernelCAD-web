@@ -166,6 +166,16 @@ function makeAgent(opts: CliOptions, env: NodeJS.ProcessEnv): AgentClient | null
         ...(env.OPENCODE_ORG_ID ?? env.CADGENBENCH_ORG_ID
           ? { orgId: (env.OPENCODE_ORG_ID ?? env.CADGENBENCH_ORG_ID)! }
           : {}),
+        // Transport failures say nothing about the model; back off and retry
+        // instead of losing the task. The run still records a final failure as
+        // infra_error (and reruns it on resume).
+        retryBaseMs: env.CADGENBENCH_RETRY_BASE_MS ? Number(env.CADGENBENCH_RETRY_BASE_MS) : 2000,
+        retryMaxMs: env.CADGENBENCH_RETRY_MAX_MS ? Number(env.CADGENBENCH_RETRY_MAX_MS) : 60000,
+        maxRetries: env.CADGENBENCH_MAX_RETRIES ? Number(env.CADGENBENCH_MAX_RETRIES) : 7,
+        onRetry: (info) =>
+          console.error(
+            `[transport] retry ${info.attempt} in ${Math.round(info.delayMs)} ms — ${info.reason.slice(0, 160)}`,
+          ),
       })
     : new AnthropicAgentClient(key);
 }

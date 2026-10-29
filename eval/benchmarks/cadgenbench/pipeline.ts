@@ -34,6 +34,7 @@ import { inspectNormalizedStepFile } from '../../../src/agent/inspect/inspectSte
 import type { StepInspectReport } from '../../../src/kernel/import/inspectStep';
 import { exportStep } from '../../oracle/kernelcad-client';
 import { extractScript } from '../../lib';
+import { isTransportFailure } from '../../agentOpenAICompat';
 import type { AgentClient, AgentImage, EvaluateResult } from '../../types';
 import type { CadGenBenchTask } from './dataset';
 import { EDIT_INPUT_NAME, editingPrompt, generationPrompt, loadImages } from './prompts';
@@ -403,6 +404,8 @@ interface LoopOutcome {
   tokensIn: number;
   tokensOut: number;
   transcript: string[];
+  /** Set when the model call never produced a reply (transport/tool failure). */
+  transportError?: string;
 }
 
 async function runLlmLoop(
@@ -414,34 +417,53 @@ async function runLlmLoop(
   scriptPath: string,
 ): Promise<LoopOutcome> {
   const transcript: string[] = [`# prompt\n\n${prompt}\n\n(${images.length} image(s) attached)`];
-  const result = await runClosedLoop({
-    prompt,
-    gateRunner: gate,
-    extractScript: text => /```(?:ts|typescript|javascript|js)?[ \t]*\r?\n[\s\S]*?```/i.test(text) ? extractScript(text.replace(/\r\n/g, '\n')) : null,
-    buildRepairPrompt,
-    maxAttempts: cfg.maxAttempts,
-    candidates: 1,
-    writeScript: async (code) => {
-      writeFileSync(scriptPath, code);
-      return scriptPath;
-    },
-    generate: async (messages: LoopMessage[]) => {
-      // The drawing / renders ride on the first user turn only.
-      const withImages = messages.map((m, i) => (i === 0 ? { ...m, images } : m));
-      const resp = await agent.generate({
-        system: cfg.skillMd,
-        messages: withImages,
-        model: cfg.model,
-        max_tokens: cfg.maxTokens,
-        ...(cfg.temperature !== undefined ? { temperature: cfg.temperature } : {}),
-      });
-      transcript.push(`# assistant\n\n${resp.text}`);
-      return { text: resp.text, tokensIn: resp.tokens_in, tokensOut: resp.tokens_out };
-    },
-    onEvent: (e) => {
-      if (e.type === 'repair') transcript.push(`# repair prompt\n\n${e.prompt}`);
-    },
-  });
+  // Track calls made before a throw so a transport failure keeps the attempt
+  // and token counts it already paid for (the loop's own totals are lost when
+  // generate() throws).
+  let calls = 0;
+  let tokensIn = 0;
+  let tokensOut = 0;
+  let result: Awaited<ReturnType<typeof runClosedLoop>>;
+  try {
+    result = await runClosedLoop({
+      prompt,
+      gateRunner: gate,
+      extractScript: text => /```(?:ts|typescript|javascript|js)?[ \t]*\r?\n[\s\S]*?```/i.test(text) ? extractScript(text.replace(/\r\n/g, '\n')) : null,
+      buildRepairPrompt,
+      maxAttempts: cfg.maxAttempts,
+      candidates: 1,
+      writeScript: async (code) => {
+        writeFileSync(scriptPath, code);
+        return scriptPath;
+      },
+      generate: async (messages: LoopMessage[]) => {
+        // The drawing / renders ride on the first user turn only.
+        const withImages = messages.map((m, i) => (i === 0 ? { ...m, images } : m));
+        calls += 1;
+        const resp = await agent.generate({
+          system: cfg.skillMd,
+          messages: withImages,
+          model: cfg.model,
+          max_tokens: cfg.maxTokens,
+          ...(cfg.temperature !== undefined ? { temperature: cfg.temperature } : {}),
+        });
+        tokensIn += resp.tokens_in;
+        tokensOut += resp.tokens_out;
+        transcript.push(`# assistant\n\n${resp.text}`);
+        return { text: resp.text, tokensIn: resp.tokens_in, tokensOut: resp.tokens_out };
+      },
+      onEvent: (e) => {
+        if (e.type === 'repair') transcript.push(`# repair prompt\n\n${e.prompt}`);
+      },
+    });
+  } catch (e) {
+    if (isTransportFailure(e)) {
+      const message = e instanceof Error ? e.message : String(e);
+      cfg.log?.(`transport failure after ${calls} model call(s): ${message.slice(0, 200)}`);
+      return { passed: false, attempts: calls, tokensIn, tokensOut, transcript, transportError: message };
+    }
+    throw e;
+  }
   return {
     passed: result.status === 'passed',
     scriptPath: result.status === 'no_script' ? undefined : result.scriptPath,
@@ -562,6 +584,13 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
       state.attempts = loop.attempts;
       state.tokensIn = loop.tokensIn;
       state.tokensOut = loop.tokensOut;
+      if (loop.transportError) {
+        // A network failure is not a verdict on the model: record it as an
+        // infra error (so a resume reruns the task) and keep the calls/tokens
+        // it already paid for.
+        state.mode = 'llm';
+        return finish({ status: 'infra_error', error: loop.transportError });
+      }
       produced = loop.scriptPath !== undefined;
       passed = loop.passed;
       if (passed && cfg.visualReview && task.type === 'generation') {
@@ -671,7 +700,11 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
         : 'no script extracted',
     });
   } catch (e) {
-    return finish({ status: 'infra_error', error: e instanceof Error ? e.message : String(e) });
+    const message = e instanceof Error ? e.message : String(e);
+    return finish({
+      status: 'infra_error',
+      error: isTransportFailure(e) ? `transport: ${message}` : message,
+    });
   }
 }
 
@@ -679,6 +712,10 @@ export interface RunAllOptions {
   workers: number;
   /** Rerun tasks that ended `invalid` or `failed`. */
   retryFailed: boolean;
+  /** Retry `infra_error` tasks once after the main pass (default true). */
+  retryInfra?: boolean;
+  /** Backoff before the infra retry round. Default 15000 ms. */
+  infraRetryBackoffMs?: number;
 }
 
 function candidateDigest(path: string): string | undefined {
@@ -701,7 +738,7 @@ export async function runAll(
 ): Promise<Array<TaskState & { resumed: boolean }>> {
   const log = cfg.log ?? (() => {});
   const producer: TaskState['mode'] = cfg.scriptsFrom ? 'scripts-from' : cfg.agent ? 'llm' : 'passthrough';
-  return mapPool(tasks, opts.workers, async (task, i) => {
+  const runOne = async (task: CadGenBenchTask, i: number): Promise<TaskState & { resumed: boolean }> => {
     const prev = readTaskState(cfg.runDir, task.id);
     const candidate = candidatePath(cfg.runDir, task.id);
     const invalidResumeCandidate = prev?.status === 'valid' && (!prev.candidateSha256 || candidateDigest(candidate) !== prev.candidateSha256);
@@ -722,5 +759,34 @@ export async function runAll(
         `${(state.wallMs / 1000).toFixed(1)}s${state.error ? ` — ${state.error}` : ''}`,
     );
     return { ...state, resumed: false };
-  });
+  };
+
+  const states = await mapPool(tasks, opts.workers, runOne);
+  // An infra error is an environment verdict, not a candidate verdict. Retry
+  // those tasks once with a backoff so a transient transport failure (the
+  // 64k-token endpoint drops connections occasionally) does not leave a hole
+  // in an otherwise complete run.
+  const infra = states.filter((s) => s.status === 'infra_error');
+  if (infra.length > 0 && opts.retryInfra !== false) {
+    const backoffMs = opts.infraRetryBackoffMs ?? 15_000;
+    const taskById = new Map(tasks.map((task) => [task.id, task]));
+    const infraTasks = infra.map((s) => taskById.get(s.id)).filter((task): task is CadGenBenchTask => task !== undefined);
+    log(`${infraTasks.length} task(s) ended infra_error; retrying once in ${Math.round(backoffMs / 1000)}s`);
+    await new Promise((resolve) => setTimeout(resolve, backoffMs));
+    const byId = new Map(states.map((s, i) => [s.id, i]));
+    await mapPool(infraTasks, opts.workers, async (task, i) => {
+      log(`[infra retry ${i + 1}/${infraTasks.length}] ${task.id}`);
+      const state = await runTask(task, cfg);
+      if (state.status === 'valid') {
+        const digest = candidateDigest(candidatePath(cfg.runDir, task.id));
+        if (digest) state.candidateSha256 = digest;
+        else { state.status = 'infra_error'; state.error = 'valid candidate is missing or unreadable'; }
+      }
+      writeTaskState(cfg.runDir, state);
+      log(`[infra retry ${i + 1}/${infraTasks.length}] ${task.id} ${state.status}${state.error ? ` — ${state.error}` : ''}`);
+      const index = byId.get(task.id);
+      if (index !== undefined) states[index] = { ...state, resumed: false };
+    });
+  }
+  return states;
 }

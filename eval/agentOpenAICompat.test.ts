@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
-import { OpenAICompatAgentClient } from './agentOpenAICompat';
+import { isTransportFailure, OpenAICompatAgentClient, TransportFailure } from './agentOpenAICompat';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -134,6 +134,31 @@ describe('OpenAICompatAgentClient', () => {
     });
     await expect(client.generate(REQ)).rejects.toThrow('ECONNRESET');
     expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
+
+  it('marks an exhausted network failure as a transport failure, with the retry schedule', async () => {
+    const fetchImpl = vi.fn(async () => {
+      throw new TypeError('fetch failed');
+    });
+    const retries: Array<{ attempt: number; delayMs: number; reason: string }> = [];
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://api.example.com/v1',
+      apiKey: 'k',
+      maxRetries: 2,
+      retryBaseMs: 1,
+      retryMaxMs: 4,
+      onRetry: (info) => retries.push(info),
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const error = await client.generate(REQ).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(TransportFailure);
+    expect(isTransportFailure(error)).toBe(true);
+    expect((error as Error).message).toContain('transport: fetch failed');
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    expect(retries.map((r) => r.attempt)).toEqual([1, 2]);
+    expect(retries.every((r) => r.delayMs > 0)).toBe(true);
+    // A normal HTTP 4xx is a request verdict, not a transport failure.
+    expect(isTransportFailure(new Error('OpenAI-compat request failed: HTTP 400 bad request'))).toBe(false);
   });
 
   it('retries a bad JSON body then succeeds', async () => {

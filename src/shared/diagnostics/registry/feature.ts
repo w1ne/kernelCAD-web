@@ -377,6 +377,14 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'moveFaces or offsetFaces refused the request instead of returning a body that is not the one asked for.',
   },
+  'feature.face-edit.skipped': {
+    hintTemplate:
+      'A multi-face edit moved the faces it could and left this one unchanged. Select the refused face on its own, or build that part of the change as a boolean.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'move the refused face on its own or build it as a boolean' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'moveFaces or offsetFaces selected several faces; one could not slide and was left unchanged.',
+  },
   'feature.draft.failed': {
     hintTemplate:
       'Draft failed on the selected face(s). Drafts need a planar neutral plane and a consistent pull direction; check that the face is planar and the angle is < 90°.',

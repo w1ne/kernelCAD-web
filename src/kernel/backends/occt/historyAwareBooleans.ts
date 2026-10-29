@@ -23,6 +23,7 @@ import type { FaceHash, EdgeHash, HistoryMap } from '../../naming/evolutionRecor
 import {
   combinedDiagonal,
   isValidShape,
+  isTopologicallyValid,
   plausibleBooleanVolume,
   recoveryPlans,
   rematchSubshapes,
@@ -309,6 +310,17 @@ function judgeExact(
   result: BooleanHistoryResult,
 ): AttemptOutcome {
   const warned = typeof builder.HasWarnings === 'function' && builder.HasWarnings();
+  // A coincident/tangent-face boolean can return an unorientable face with no
+  // builder warning. Catch that cheaply (topology only) so the recovery ladder
+  // gets a chance to repair it; the full geometry check still gates recovered
+  // candidates and warned exact results.
+  if (!isTopologicallyValid(oc, result.shape)) {
+    return {
+      ok: false,
+      error: `historyAwareBooleans: ${op} exact boolean produced an invalid solid (topology check).`,
+      fallback: result,
+    };
+  }
   if (!warned || isValidShape(oc, result.shape)) return { ok: true, result };
   return {
     ok: false,

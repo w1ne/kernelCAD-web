@@ -372,6 +372,8 @@ const holeWall = kc.q.face(kc.q.derivedFrom(cutter.id));
 
 `@kcq[face(newSince("box_1"))]` and `@kcq[edge(derivedFrom("fillet_1"))]` are the string form. `moveFaces` / `offsetFaces` accept these selectors.
 
+A plain FaceQuery handed to `moveFaces` / `offsetFaces` is a **set** selector: `{ byNormal: 'X' }` moves every +X-facing face, not just the first match (`near` is the one exception — it means the closest face). In a multi-face selection a face that cannot slide is left unchanged and reported as `feature.face-edit.skipped`; select it on its own or build that part as a boolean.
+
 ### Authoring sugar — `q` and `kc.q` inside a `.kcad.ts` script
 
 The constructor namespace is reachable from any `.kcad.ts` source without an explicit `import`. Both forms work:
