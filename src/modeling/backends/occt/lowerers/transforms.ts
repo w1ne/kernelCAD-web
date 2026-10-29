@@ -5,10 +5,15 @@ import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { MeshBackend } from '../../../../kernel/backends/meshBackend';
 import { propagateEdgeTransformHistory, propagateTransformHistory } from '../../../../kernel/naming/evolutionRecord';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
+import type { Param } from '../../../../shared/intent/types';
 import { isValidPlaneSpec } from '../../../../shared/intent/types';
 import type { Vec3 } from '../../../../shared/intent/types';
 import type { LowerContext, LowerOutcome } from './context';
 import { absurdGeometryDiagnostic } from '../featureSanity';
+
+function resolvedScaleFactor(value: number | Param): number {
+  return typeof value === 'number' ? value : value.evaluated;
+}
 
 /**
  * Apply the record's post-hoc `transforms` in declared order, propagating the
@@ -21,7 +26,7 @@ function applyMeshTransform(shape: MeshBackend, t: FeatureRecord['transforms'][n
   switch (t.op) {
     case 'translate': return shape.translate(t.vec.x.evaluated, t.vec.y.evaluated, t.vec.z.evaluated);
     case 'rotateAxis': return shape.rotate([t.axis.x.evaluated, t.axis.y.evaluated, t.axis.z.evaluated], t.degrees.evaluated, t.pivot ? [t.pivot.x.evaluated, t.pivot.y.evaluated, t.pivot.z.evaluated] : undefined);
-    case 'scale': return shape.scale([t.sx, t.sy, t.sz]);
+    case 'scale': return shape.scale([resolvedScaleFactor(t.sx), resolvedScaleFactor(t.sy), resolvedScaleFactor(t.sz)]);
     case 'reflect': throw new Error('Display mesh bodies do not support reflect; convert to BRep explicitly when solid operations are needed.');
   }
   return shape;
@@ -56,7 +61,7 @@ export function applyTransforms(
         break;
       }
       case 'scale':
-        shape = shape.scale([t.sx, t.sy, t.sz]);
+        shape = shape.scale([resolvedScaleFactor(t.sx), resolvedScaleFactor(t.sy), resolvedScaleFactor(t.sz)]);
         break;
       case 'reflect':
         if (!isValidPlaneSpec(t.plane)) {

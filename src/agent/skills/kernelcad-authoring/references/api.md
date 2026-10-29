@@ -350,11 +350,14 @@ Check world-frame spacing after reuse changes. The authoring `Shape` API has no
 .rotateX(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([1, 0, 0], ...)
 .rotateY(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([0, 1, 0], ...)
 .rotateZ(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([0, 0, 1], ...)
-// Uniform (single positive finite number) or per-axis Vec3 (non-uniform sx/sy/sz).
+// Uniform or per-axis Vec3 (non-uniform sx/sy/sz); each factor can be a number
+// or a numeric ParamRef and resolves when the shape is built.
 // Non-uniform lowers via gp_GTrsf + BRepBuilderAPI_GTransform so face refs survive
 // (topology preserved under any affine transform). All factors must be positive
 // and finite; otherwise feature.invalid-args.
-.scale(factor: number | [number, number, number]): Shape
+.scale(factor: Editable<number> | [Editable<number>, Editable<number>, Editable<number>]): Shape
+.scale(sx: Editable<number>, sy: Editable<number>, sz: Editable<number>): Shape
+// Example: box(10, 10, 4).scale(param('hexSize', 2))
 
 // Orient this shape so its current +Z axis aligns with `axis`. Sugar over .rotate() —
 // preferred for cross-axis cylinders/axles. Identity [0, 0, 1] is a no-op; antipodal

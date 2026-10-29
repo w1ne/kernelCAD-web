@@ -210,13 +210,16 @@ export type FeatureKind =
   // S2: capture-only named requirement declaration, measured by the ledger.
   | 'require';
 
-/**
- * Runtime guard for PlaneSpec. Returns true for cardinal strings
- * ('xy' | 'xz' | 'yz') and for offset-plane objects
- * `{ plane: CardinalPlane; offset: number }` where offset is finite.
- * Rejects everything else.
- */
-export type ScaleSpec = number | [number, number, number];
+/** Uniform scale factor or a per-axis tuple; every component may be a number
+ *  or a numeric ParamRef. Positivity of ParamRefs is checked against the live
+ *  ParamTable at capture time. */
+export type ScaleSpec =
+  | import('../runtime/paramRef').Editable<number>
+  | [
+      import('../runtime/paramRef').Editable<number>,
+      import('../runtime/paramRef').Editable<number>,
+      import('../runtime/paramRef').Editable<number>,
+    ];
 
 export function isValidVec3(v: unknown): v is Vec3 {
   return Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n));
@@ -266,9 +269,9 @@ function isParamShape(p: unknown): boolean {
 }
 
 export function isValidScaleSpec(v: unknown): v is ScaleSpec {
-  if (typeof v === 'number') return Number.isFinite(v) && v > 0;
+  if (isValidEditableNumber(v)) return typeof v !== 'number' || v > 0;
   if (Array.isArray(v) && v.length === 3) {
-    return v.every((n) => typeof n === 'number' && Number.isFinite(n) && n > 0);
+    return v.every((n) => isValidEditableNumber(n) && (typeof n !== 'number' || n > 0));
   }
   return false;
 }

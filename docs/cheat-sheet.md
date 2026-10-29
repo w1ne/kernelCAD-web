@@ -168,7 +168,7 @@ Move a body into position, mirror it, or repeat it.
 | `Shape.rotateZ(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]) => Shape` | Rotate `degrees` around the world Z axis. |
 | `Shape.transform(t: Transform) => Shape` | Apply an SE(3) Transform. |
 | `Shape.alongAxis(axis: [number, number, number]) => Shape` | Orient this shape so its current +Z axis aligns with the given direction. |
-| `Shape.scale(factor: number \| [number, number, number]) => Shape` | Scale this shape uniformly (single positive finite number) or per-axis (Vec3 — sx/sy/sz). |
+| `Shape.scale(factor: Editable<number> \| [Editable<number>, Editable<number>, Editable<number>]) => Shape; (sx: Editable<number>, sy: Editable<number>, sz: Editable<number>) => Shape` | Scale this shape uniformly or per-axis. |
 | `Shape.reflect(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Reflect (pure rigid-body transformation) across a cardinal plane or an offset parallel plane. |
 | `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: Editable<number> }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
 | `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: number }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |

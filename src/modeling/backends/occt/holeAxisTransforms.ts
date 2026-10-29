@@ -7,7 +7,7 @@
 // Part `at` is not one of these transforms.
 
 import type { FeatureRecord, ShapeTransform } from '../../../shared/intent/featureRecord';
-import type { PlaneSpec, Vec3 } from '../../../shared/intent/types';
+import type { Param, PlaneSpec, Vec3 } from '../../../shared/intent/types';
 import { isValidPlaneSpec } from '../../../shared/intent/types';
 import type { ParamTable } from '../../../shared/runtime/paramTable';
 import { resolveParams } from '../../../shared/runtime/resolveParams';
@@ -19,6 +19,10 @@ type Mat3 = readonly [
 ];
 
 const IDENTITY: Mat3 = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+
+function resolvedScaleFactor(value: number | Param): number {
+  return typeof value === 'number' ? value : value.evaluated;
+}
 
 /** Hole feature first, then each feature that carried it up to `consumerId`. */
 export function transformsAfterCut(
@@ -62,7 +66,7 @@ function applyInverseLinear(vector: Vec3, transform: ShapeTransform): Vec3 {
     case 'reflect':
       return mul(transpose(linearOf(transform)), vector);
     case 'scale':
-      return [vector[0] / transform.sx, vector[1] / transform.sy, vector[2] / transform.sz];
+      return [vector[0] / resolvedScaleFactor(transform.sx), vector[1] / resolvedScaleFactor(transform.sy), vector[2] / resolvedScaleFactor(transform.sz)];
     default:
       return vector;
   }
@@ -135,7 +139,7 @@ function applyPoint(point: Vec3, transform: ShapeTransform): Vec3 {
     case 'rotateAxis':
       return rotateAround(point, readVec(transform.axis), transform.degrees.evaluated, pivotOf(transform));
     case 'scale':
-      return [point[0] * transform.sx, point[1] * transform.sy, point[2] * transform.sz];
+      return [point[0] * resolvedScaleFactor(transform.sx), point[1] * resolvedScaleFactor(transform.sy), point[2] * resolvedScaleFactor(transform.sz)];
     case 'reflect':
       return reflectPoint(point, transform.plane);
     default:
@@ -151,9 +155,9 @@ function applyPointInverse(point: Vec3, transform: ShapeTransform): Vec3 {
       return rotateAround(point, readVec(transform.axis), -transform.degrees.evaluated, pivotOf(transform));
     case 'scale':
       return [
-        point[0] / transform.sx,
-        point[1] / transform.sy,
-        point[2] / transform.sz,
+        point[0] / resolvedScaleFactor(transform.sx),
+        point[1] / resolvedScaleFactor(transform.sy),
+        point[2] / resolvedScaleFactor(transform.sz),
       ];
     case 'reflect':
       return reflectPoint(point, transform.plane);
@@ -169,7 +173,7 @@ function linearOf(transform: ShapeTransform): Mat3 {
     case 'rotateAxis':
       return rotationMatrix(readVec(transform.axis), transform.degrees.evaluated);
     case 'scale':
-      return [transform.sx, 0, 0, 0, transform.sy, 0, 0, 0, transform.sz];
+      return [resolvedScaleFactor(transform.sx), 0, 0, 0, resolvedScaleFactor(transform.sy), 0, 0, 0, resolvedScaleFactor(transform.sz)];
     case 'reflect':
       return reflectLinear(transform.plane);
     default:
