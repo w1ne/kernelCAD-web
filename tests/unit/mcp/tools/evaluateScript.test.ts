@@ -137,13 +137,14 @@ describe('evaluateScriptTool', () => {
     expect(result.parts).toEqual({ count: 2, names: ['base', 'lid'] });
   });
 
-  it('dryRun emits the unstructured-bodies discipline diagnostic', async () => {
+  it('dryRun reports the named Scene parts for an array return without the retired diagnostic', async () => {
     const result = await evaluateScriptTool({
-      code: `return [box(10, 10, 10), box(5, 5, 5).translate(20, 0, 0)];`,
+      code: `const body = box(10, 10, 10); const cover = box(5, 5, 5).translate(20, 0, 0); return [body, cover];`,
       dryRun: true,
     });
-    expect(result.ok).toBe(true); // info severity — not fatal
-    expect(result.diagnostics.some(d => d.code === 'assembly.structure.unstructured-bodies')).toBe(true);
+    expect(result.ok).toBe(true);
+    expect(result.parts).toEqual({ count: 2, names: ['body', 'cover'] });
+    expect(result.diagnostics.some(d => d.code === 'assembly.structure.unstructured-bodies')).toBe(false);
   });
 
   it('dryRun passes a script that only fails at lowering (documented contract)', async () => {

@@ -42,9 +42,16 @@ it('forwards step evidence through modeling edit tools', async () => {
   expect(out.step?.validity.status).toBe('valid');
 });
 
-it('does not certify a tail shape as an entire array return', async () => {
-  const out = await evaluateScriptTool({ code: 'const body = box(10, 10, 10); const cover = box(50, 50, 50); return [body, cover];' });
-  expect(out.step?.validity.status).toBe('unverified');
-  expect(out.step?.validity.volume).toBeUndefined();
-  expect(out.step?.snapshots.status).toBe('unavailable');
+it('certifies the whole Scene created from a multi-Shape array return', async () => {
+  const out = await evaluateScriptTool({ code: `
+    const body = box(10, 10, 10);
+    const cover = box(5, 5, 5).translate(30, 0, 0);
+    return [body, cover];
+  ` });
+  expect(out.ok).toBe(true);
+  expect(out.parts).toEqual({ count: 2, names: ['body', 'cover'] });
+  expect(out.step?.validity.status).toBe('valid');
+  expect(out.step?.validity.volume).toBeCloseTo(1125);
+  expect(out.step?.snapshots.status).toBeDefined();
+  expect(out.sceneSummary.size).toEqual([35, 10, 10]);
 });

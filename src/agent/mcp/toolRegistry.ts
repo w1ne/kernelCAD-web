@@ -33,6 +33,7 @@ import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 import { blockoutToolEntries } from './registry/blockoutTools';
+import { assetManifestToolEntries } from './registry/assetManifestTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
@@ -109,6 +110,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...surfaceBlendToolEntries,
   // Appended at the tail: generic parts-list -> placeholder assembly script.
   ...blockoutToolEntries,
+  ...assetManifestToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

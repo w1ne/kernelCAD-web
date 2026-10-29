@@ -38,6 +38,7 @@ describe('Shape.finish()', () => {
     expect(materialOf(session, s.id)).toEqual({
       baseColor: '#c8a24a',
       metalness: 1.0,
+      name: 'brass',
       roughness: 0.35,
     });
   });
@@ -49,6 +50,7 @@ describe('Shape.finish()', () => {
     expect(materialOf(session, s.id)).toEqual({
       baseColor: '#c0392b', // overridden
       metalness: 0.0,
+      name: 'abs',
       roughness: 0.55, // ABS surface, unchanged
     });
   });
@@ -60,7 +62,7 @@ describe('Shape.finish()', () => {
     s.finish('brass', { face: 'ring' });
     const record = session.getRecords().find((r) => r.id === s.id)!;
     const byLabel = record.metadata?.materialByLabel as Record<string, unknown>;
-    expect(byLabel.ring).toEqual({ baseColor: '#c8a24a', metalness: 1.0, roughness: 0.35 });
+    expect(byLabel.ring).toEqual({ baseColor: '#c8a24a', metalness: 1.0, name: 'brass', roughness: 0.35 });
     // Whole-shape default is untouched by a per-face call.
     expect(record.metadata?.material).toBeUndefined();
   });

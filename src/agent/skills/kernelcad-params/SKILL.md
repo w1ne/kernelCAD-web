@@ -23,6 +23,12 @@ params({ width: 60, addCablePort: true }): {
   width: ParamRef<number>;
   addCablePort: ParamRef<boolean>;
 };
+
+// Typed batch entries — put the default and param() metadata together.
+params({
+  width: { default: 60, min: 20, max: 120, unit: 'mm', label: 'Width' },
+  finish: { default: 'matte', choices: ['matte', 'gloss'] },
+});
 ```
 
 ### ParamRef arithmetic
@@ -119,8 +125,39 @@ way for typed params as for numeric ones — a value outside the declared
 on re-evaluation. Booleans set via `set_param` take a literal `true`/`false`,
 not a string.
 
-The batched `params({...})` shorthand still only accepts `number | boolean`
-defaults — declare choice/string params individually via `param()`.
+The batched `params({...})` shorthand still accepts `number | boolean`
+defaults unchanged. Typed entries use `{ default, ...metadata }` and support
+number, boolean, choice, string and colour defaults using the same inference and
+validation rules as `param()`. This is the compact option for asset knob blocks;
+string values are eager `TypedParamRef`s and never numeric expression nodes.
+
+### Asset metadata and presets
+
+Declare asset-level information and named parameter overrides next to the knob
+declarations. The content licence is independent from the kernelCAD package
+licence and defaults to `CC-BY-4.0`; only the SPDX identifiers in the runtime
+allowlist are accepted. Preset keys must name declared params, and values go
+through the same type/range/choice validation as `ParamTable.set()`.
+
+```typescript
+meta({
+  name: 'Mounting plate',
+  description: 'A configurable, two-hole mounting plate.',
+  // license omitted -> CC-BY-4.0
+});
+const plate = params({
+  width: { default: 80, min: 40, max: 140, unit: 'mm', label: 'Plate width' },
+  depth: { default: 40, min: 20, max: 80, unit: 'mm' },
+});
+presets({ Compact: { width: 60, depth: 30 }, Wide: { width: 120, depth: 50 } });
+```
+
+After `evaluate_script`, call the read-only `asset_manifest` MCP tool to receive
+`{ meta, params, presets }`. `params` is deterministic JSON derived from the
+evaluated entries (with each declared default used when no current value is
+available); preset names and knob keys are emitted in stable sorted order.
+Without a prior evaluation the tool returns an empty manifest with the default
+content licence.
 
 ### Customizer metadata: label / unit / step / group
 

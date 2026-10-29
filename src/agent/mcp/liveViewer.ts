@@ -44,6 +44,7 @@ async function meshModel(model: BuiltModel): Promise<unknown> {
     features: meshing.features.map(serializeForBridge),
     featureRecords: model.records,
     bounds: meshing.bounds,
+    ...(meshing.solidCount !== undefined ? { solidCount: meshing.solidCount } : {}),
     params: model.session.paramTable.serialize(),
     rootFeatureIds: model.rootId ? [model.rootId] : [],
     dimensions: viewerDimensionsForRoot(model).dimensions,
