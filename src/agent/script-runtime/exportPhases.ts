@@ -7,6 +7,7 @@ import { exportSceneDxf, exportShapeDxfProfile } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import { exportMeshObj, exportMeshUsd, type NamedMesh } from '../../kernel/export/meshFormats';
+import { buildRigMetadata } from '../../kernel/export/rigHierarchy';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
 import { releaseWorldFrameParts, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
@@ -505,8 +506,26 @@ export async function exportSceneGlb(
   try {
     const worldParts = sceneToWorldFrameParts(scene);
     try {
-      const bytes = await exportGlbAsync(worldParts, optsGlb);
-      return { bytes, featureCount, diagnostics };
+      const bytes = await exportGlbAsync(worldParts, optsGlb, scene.rig);
+      const warnings = optsGlb.hierarchy !== 'flat' && scene.rig !== undefined
+        ? buildRigMetadata(scene.rig).warnings
+        : [];
+      return {
+        bytes,
+        featureCount,
+        diagnostics: [
+          ...diagnostics,
+          ...warnings.map((message): CompilerDiagnostic => ({
+            target: 'export-occt',
+            code: 'export.glb.rig-warning',
+            featureId: targetId,
+            severity: 'warn',
+            message,
+            hint: 'Inspect asset.extras.kernelcad.rigWarnings. Loop-closing mates remain separate from the strict glTF node tree; ball and planar mates are held fixed.',
+            nextAction: NEXT_ACTIONS['export.glb.rig-warning'],
+          })),
+        ],
+      };
     } finally {
       releaseWorldFrameParts(worldParts);
     }

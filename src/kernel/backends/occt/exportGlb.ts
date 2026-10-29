@@ -52,6 +52,13 @@ import { computeProjectedUVs } from '../../../shared/intent/textureProjection';
 import { resolveAndLoadTextureBytes } from '../../../shared/textures';
 import { attributionGenerator } from '../../../shared/links/attribution';
 import { createMaterialNameRegistry } from '../../export/materialNaming';
+import {
+  buildRigTree,
+  invertRigidMatrix,
+  rigMetadataFromTree,
+  type RigNode,
+  type SolvedRigAssembly,
+} from '../../export/rigHierarchy';
 
 const requireFromHere = createRequire(import.meta.url);
 // At source: src/kernel/backends/occt/exportGlb.ts → ../../../../package.json (4 up).
@@ -70,6 +77,8 @@ const KERNELCAD_VERSION = loadPkg().version;
 
 export interface ExportGlbOptions {
   format: 'glb';
+  /** Preserve solved mate pivots, or retain the historical flat node list. */
+  hierarchy?: 'rig' | 'flat';
   /** Axis convention. `y-up` (default, glTF convention) applies a -PI/2
    *  rotation about X at the scene root so viewers render the CAD body
    *  upright. `z-up` preserves kernelCAD's native orientation. */
@@ -102,6 +111,7 @@ export interface MeshedGlbPart extends WorldFramePart {
 export async function exportGlbAsync(
   parts: ReadonlyArray<WorldFramePart | MeshedGlbPart>,
   options: ExportGlbOptions,
+  solvedAssembly?: SolvedRigAssembly,
 ): Promise<Uint8Array> {
   // Runtime gate: `draco` is type-narrowed to `false`, but the gate catches
   // the case where a caller widens the type via `as unknown as ...` or a
@@ -124,12 +134,16 @@ export async function exportGlbAsync(
   );
 
   const axis = options.axis ?? 'y-up';
+  const rigTree = options.hierarchy !== 'flat' && solvedAssembly !== undefined && solvedAssembly.mates.length > 0
+    ? buildRigTree(solvedAssembly)
+    : undefined;
   const root = new THREE.Group();
   if (axis === 'y-up') {
     // kernelCAD world is Z-up; glTF default is Y-up. Rotate the scene root
     // -PI/2 about X so +Z becomes +Y in viewer space.
     root.rotateX(-Math.PI / 2);
   }
+  const rigPartNodes = rigTree === undefined ? undefined : createRigGroups(rigTree, root);
 
   // Parts that wrapped a texture (`material.textureProjection`) — UVs go
   // onto the three.js geometry now (so GLTFExporter serializes a real
@@ -170,7 +184,19 @@ export async function exportGlbAsync(
     }
     const mesh = new THREE.Mesh(geom, mat);
     mesh.name = p.name;
-    root.add(mesh);
+    if (rigTree === undefined || rigPartNodes === undefined) {
+      root.add(mesh);
+    } else {
+      const partNode = rigPartNodes.get(p.name);
+      const worldTransform = p.worldTransform
+        ?? solvedAssembly?.parts.find((part) => part.name === p.name)?.worldTransform;
+      if (partNode === undefined || worldTransform === undefined) {
+        throw new Error(`exportGlbAsync: rig hierarchy has no solved part transform for '${p.name}'.`);
+      }
+      mesh.matrixAutoUpdate = false;
+      mesh.matrix.fromArray(invertRigidMatrix(worldTransform) as number[]);
+      partNode.add(mesh);
+    }
   }
 
   const scene = new THREE.Scene();
@@ -213,13 +239,32 @@ export async function exportGlbAsync(
     out = await embedWrappedTextures(out, meshed, wrappedParts, options.scriptDir);
   }
 
-  return injectAssetExtras(out, {
-    kernelcad: {
-      version: KERNELCAD_VERSION,
-      isoDate,
-      axisConvention: axis,
-    },
-  }, attributionGenerator(KERNELCAD_VERSION));
+  const kernelcadExtras: Record<string, unknown> = {
+    version: KERNELCAD_VERSION,
+    isoDate,
+    axisConvention: axis,
+  };
+  if (rigTree !== undefined) {
+    const metadata = rigMetadataFromTree(rigTree);
+    kernelcadExtras.rig = metadata.rig;
+    kernelcadExtras.rigWarnings = metadata.warnings;
+  }
+  return injectAssetExtras(out, { kernelcad: kernelcadExtras }, attributionGenerator(KERNELCAD_VERSION));
+}
+
+function createRigGroups(nodes: readonly RigNode[], root: THREE.Group): Map<string, THREE.Group> {
+  const partNodes = new Map<string, THREE.Group>();
+  const add = (node: RigNode, parent: THREE.Group): void => {
+    const group = new THREE.Group();
+    group.name = node.kind === 'part' ? `part:${node.name}` : node.name;
+    group.matrixAutoUpdate = false;
+    group.matrix.fromArray(node.matrix as number[]);
+    parent.add(group);
+    if (node.kind === 'part') partNodes.set(node.name, group);
+    node.children.forEach((child) => add(child, group));
+  };
+  nodes.forEach((node) => add(node, root));
+  return partNodes;
 }
 
 /**

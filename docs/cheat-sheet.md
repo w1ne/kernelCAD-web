@@ -287,6 +287,29 @@ Bring in vendor geometry, and write models back out.
 | `lib : { fromSTEP(path: string, opts?: { solid?: number }): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; meshFromSTL(path: string): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; part(request: { family: string; thread?: string; lengthMm?: number; detail?: "full" \| "envelope" }): Promise<Shape>; stack(request: { thread: string; gripMm: number; mode?: "screw" \| "bolt"; detail?: "full" \| "envelope"; protrusionPitches?: number }): Promise<{ lengthMm: number; protrusionMm?: number; screw: Shape }>; insert(shape: Shape, request: { diameterMm?: number; near?: Vec3; family: "socket-head-cap-screw" \| "button-head-cap-screw" \| "flat-head-countersunk"; mode?: "screw" \| "bolt"; gripMm?: number; seat?: "auto" \| "none" \| "counterbore"; headAt?: Vec3; detail?: "full" \| "envelope"; protrusionPitches?: number }): Promise<{ shape: Shape; holes: Array<{ centerMm: Vec3; direction: Vec3; diameterMm: number; depthMm: number; thread: string; fit: "close" \| "normal" \| "loose"; lengthMm: number; protrusionMm?: number; screw: Shape; headWasher?: Shape; tailWasher?: Shape; nut?: Shape }> }>; fixture: FixtureParts; standard: StandardParts }` | Parts library namespace. |
 | `Scene.toCompound() => Shape` | Groups bodies without booleaning. |
 
+### GLB assembly rigs
+
+When a returned assembly scene has mates, GLB export defaults to a strict node
+hierarchy. Revolute, prismatic, and cylindrical mates create `pivot:<mateName>`
+nodes at the resolved connector frame; moving part meshes are offset beneath
+those pivots so the solved default pose is unchanged. Fastened parts remain
+grouped under their parent. A pivot's local `+Z` axis follows the mate axis.
+
+The asset-level `extras.kernelcad.rig` map records `type`, local `axis`,
+`range`, and pivot `node`. Rotational limits are degrees; prismatic limits are
+converted from kernel millimetres to metres. Cylindrical entries identify both
+degrees of freedom (`degreesOfFreedom: ['rotate', 'slide']`) while `type` and
+`range` describe the rotational coordinate; the axial range is in `slideRange`.
+Loop-closing mates have `closed: true`, are not nested, and generate a warning.
+Ball, planar, and pin-slot mates are held fixed with a warning; GLB animation
+clips and IK are not emitted. When a solved assembly is active,
+`asset_manifest` includes the same `rig` map and `rigWarnings`; the params JSON
+helper can emit a `{ params, rig }` envelope when given that map (without it,
+the legacy flat knob JSON remains unchanged).
+
+Set the GLB export option `hierarchy: 'flat'` to keep the historical flat node
+list. See the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).
+
 ## Annotate & present
 
 Present a model and declare drawing intent without changing its geometry: text, color, lighting, camera, motion, drawing GD&T, and review requirements.

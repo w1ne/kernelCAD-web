@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { runAndExport, type ExportOptions } from '../../../src/agent/script-runtime/export';
 import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+
+function parseGlbJson(bytes: Uint8Array): { nodes?: Array<{ name?: string }>; asset?: { extras?: { kernelcad?: Record<string, unknown> } } } {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const length = view.getUint32(12, true);
+  return JSON.parse(new TextDecoder().decode(bytes.subarray(20, 20 + length)));
+}
 
 describe('runAndExport', () => {
   beforeAll(async () => { await initOcct(); });
@@ -108,6 +115,34 @@ describe('runAndExport', () => {
     expect(result.bytes[1]).toBe(0x6C);
     expect(result.bytes[2]).toBe(0x54);
     expect(result.bytes[3]).toBe(0x46);
+  });
+
+  it('exports the resolved assembly mate as a pivot using the documented hinge example', async () => {
+    const code = readFileSync('examples/assemblies/glb-rig-hinge.kcad.ts', 'utf8');
+    const result = await runAndExport({ code, fileName: 'glb-rig.kcad.ts', format: 'glb' });
+    const json = parseGlbJson(result.bytes);
+    expect(json.nodes?.some((node) => node.name === 'pivot:lid')).toBe(true);
+    expect(json.asset?.extras?.kernelcad?.rig).toMatchObject({
+      lid: { type: 'rotate', axis: 'z', range: [0, 110], node: 'pivot:lid' },
+    });
+    expect(result.diagnostics.filter((diagnostic) => diagnostic.severity === 'error')).toHaveLength(0);
+  });
+
+  it('surfaces a structured warning when a ball mate is exported as fastened', async () => {
+    const code = `
+      const arm = assembly('glb unsupported mate test');
+      const base = arm.part('base', box(20, 20, 5));
+      const lid = arm.part('lid', box(20, 30, 5));
+      base.connector('ball', { type: 'ball', origin: { kind: 'vec3', value: [10, 0, 5] } });
+      lid.connector('ball', { type: 'ball', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      arm.mate('ball-link', 'base.ball', 'lid.ball', 'ball');
+      return arm.model();
+    `;
+    const result = await runAndExport({ code, fileName: 'glb-rig-warning.kcad.ts', format: 'glb' });
+    expect(result.diagnostics.find((diagnostic) => diagnostic.code === 'export.glb.rig-warning')?.message)
+      .toMatch(/ball-link.*exported as fastened/i);
+    expect(parseGlbJson(result.bytes).asset?.extras?.kernelcad?.rigWarnings)
+      .toEqual(expect.arrayContaining([expect.stringMatching(/ball-link.*exported as fastened/i)]));
   });
 
   it('rejects GLB export with options.draco === true via export.glb.draco-glass-conflict', async () => {

@@ -9,6 +9,9 @@ import {
   AssetPresetsSchema,
 } from '../../../src/shared/assets/assetSchema';
 import { emitParamsJson } from '../../../src/shared/assets/emitParamsJson';
+import type { ShapeBackend } from '../../../src/kernel/backends/backend';
+import type { SolvedRigAssembly } from '../../../src/kernel/export/rigHierarchy';
+import { Transform } from '../../../src/shared/runtime/se3';
 
 afterEach(() => clearActiveMcpSession());
 
@@ -35,6 +38,17 @@ describe('versioned asset schemas', () => {
     expect(manifest.presets[0].params).toEqual({ width: 30 });
   });
 
+  it('validates the optional mate-derived rig metadata in an asset manifest', () => {
+    const manifest = AssetManifestSchema.parse({
+      meta: { schemaVersion: 1, name: 'Hinged box', license: 'CC-BY-4.0' },
+      params: {},
+      presets: [],
+      rig: { lid: { type: 'rotate', axis: 'z', range: [0, 110], node: 'pivot:lid' } },
+      rigWarnings: [],
+    });
+    expect(manifest.rig?.lid).toMatchObject({ type: 'rotate', range: [0, 110] });
+  });
+
   it('rejects a preset whose values are not JSON primitives', () => {
     expect(() => AssetPresetsSchema.parse({ broken: { width: { nested: true } } })).toThrow();
   });
@@ -47,6 +61,15 @@ describe('versioned asset schemas', () => {
   "changed": 7,
   "fallback": 3
 }\n`);
+  });
+
+  it('emits a version-compatible params document envelope when rig metadata is supplied', () => {
+    expect(JSON.parse(emitParamsJson([
+      { name: 'width', value: 40, defaultValue: 40 },
+    ], { rig: { lid: { type: 'rotate', axis: 'z', range: [0, 90], node: 'pivot:lid' } } }))).toEqual({
+      params: { width: 40 },
+      rig: { lid: { type: 'rotate', axis: 'z', range: [0, 90], node: 'pivot:lid' } },
+    });
   });
 });
 
@@ -96,6 +119,39 @@ describe('asset declarations and manifest tool', () => {
     expect(manifest.params).toEqual({ label: 'KCAD', width: 40 });
     expect(manifest.presets.map(preset => preset.name)).toEqual(['Compact', 'Wide']);
     expect(manifest.presets[0].params).toEqual({ width: 25 });
+    expect(AssetManifestSchema.safeParse(manifest).success).toBe(true);
+  });
+
+  it('mirrors solved assembly rig metadata into the asset manifest and params JSON helper', async () => {
+    const rig: SolvedRigAssembly = {
+      groundedPart: 'base',
+      parts: [
+        { name: 'base', worldTransform: Transform.identity().toMat4() },
+        { name: 'lid', worldTransform: Transform.translation(10, 0, 0).toMat4() },
+      ],
+      mates: [{ name: 'lid', type: 'revolute', a: 'base.hinge', b: 'lid.hinge', limitsDeg: [0, 90] }],
+      connectorsByPartName: {
+        base: [{ name: 'hinge', type: 'axis', origin: [10, 0, 0], axis: [0, 0, 1] }],
+        lid: [{ name: 'hinge', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] }],
+      },
+    };
+    const sceneBackend = {
+      target: 'export-occt',
+      assemblyName: 'manifest rig',
+      parts: [],
+      rig,
+      _kind: 'scene',
+    } as const;
+    setActiveMcpSession({ session: new CaptureSession(), rootShape: sceneBackend as unknown as ShapeBackend });
+
+    const manifest = await callMcpTool('asset_manifest', {}) as {
+      rig?: Record<string, unknown>;
+      rigWarnings?: string[];
+    };
+    expect(manifest.rig?.lid).toMatchObject({
+      type: 'rotate', axis: 'z', range: [0, 90], node: 'pivot:lid',
+    });
+    expect(manifest.rigWarnings).toEqual([]);
     expect(AssetManifestSchema.safeParse(manifest).success).toBe(true);
   });
 

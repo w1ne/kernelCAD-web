@@ -5,6 +5,7 @@ import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { lookupSourceColor, lookupSourceMaterial } from '../../../../kernel/backends/occt/lookupSourceColor';
 import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../../../../kernel/backends/sceneBackend';
+import type { RigConnector, RigMate, SolvedRigAssembly } from '../../../../kernel/export/rigHierarchy';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { KernelError } from '../../../../shared/intent/kernelError';
 import type { FeatureId, Param, Vec3, Vec3Param } from '../../../../shared/intent/types';
@@ -103,6 +104,8 @@ type EncodedMate = {
   b: string;
   type: MateType;
   pose?: EncodedPose;
+  limitsDeg?: readonly [number, number];
+  limitsMm?: readonly [number, number];
 };
 
 /** `[inputKey, backend]` pairs for the `part_*` inputs, in numeric key order. */
@@ -214,6 +217,41 @@ function resolveMateParts(
   return resolvedParts;
 }
 
+/** Preserve the exact connector frames and rest transforms used by mate FK. */
+function buildSceneRig(
+  sceneParts: readonly SceneBackendPart[],
+  resolvedParts: readonly ResolvedMatePart[],
+  mates: readonly MateRecord[],
+): SolvedRigAssembly {
+  const connectorsByPartName: Record<string, RigConnector[]> = Object.create(null) as Record<string, RigConnector[]>;
+  for (const part of resolvedParts) {
+    connectorsByPartName[part.name] = part.connectors.flatMap((connector) => {
+      if (connector.origin.kind !== 'vec3') return [];
+      return [{
+        name: connector.name,
+        type: connector.type,
+        origin: connector.origin.value,
+        ...(connector.axis !== undefined ? { axis: connector.axis } : {}),
+        ...(connector.normal !== undefined ? { normal: connector.normal } : {}),
+      }];
+    });
+  }
+  const rigMates: RigMate[] = mates.map((mate) => ({
+    name: mate.name,
+    type: mate.type,
+    a: mate.a,
+    b: mate.b,
+    ...(mate.limitsDeg !== undefined ? { limitsDeg: mate.limitsDeg } : {}),
+    ...(mate.limitsMm !== undefined ? { limitsMm: mate.limitsMm } : {}),
+  }));
+  return {
+    groundedPart: resolvedParts[0]?.name ?? sceneParts[0]!.name,
+    parts: sceneParts.map((part) => ({ name: part.name, worldTransform: part.worldTransform.toMat4() })),
+    mates: rigMates,
+    connectorsByPartName,
+  };
+}
+
 /** Connectors in the placed part's frame. Vec3 origins gain `at`. Topology
  *  is read on the placed solid. Point-placed holes also receive `at` inside
  *  the hole-axis resolver (`bakedTranslation`); face-sampled mouths already
@@ -300,6 +338,8 @@ interface AssemblyModelInputs {
   connectorsByPartId: Record<FeatureId, readonly Connector[]>;
   records: readonly FeatureRecord[];
   assemblyName: string;
+  resolvedMateParts?: readonly ResolvedMatePart[];
+  resolvedMates?: readonly MateRecord[];
 }
 
 /** `assemblyModel` — SceneBackend counterpart of `solvedAssembly`. */
@@ -320,6 +360,9 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
     target: ctx.target,
     assemblyName: inputs.assemblyName,
     parts: sceneParts,
+    ...(inputs.resolvedMateParts !== undefined && inputs.resolvedMates !== undefined
+      ? { rig: buildSceneRig(sceneParts, inputs.resolvedMateParts, inputs.resolvedMates) }
+      : {}),
     _kind: 'scene',
   };
   // Early-return: SceneBackend is not a ShapeBackend, so the post-hoc
@@ -392,6 +435,10 @@ function applyAssemblyModelFk(
   if (encodedMates.length > 0) {
     const applied = applyModelMateFk(ctx, r, {
       partIds, partEntries, encodedMates, mateCouplings, connectorsByPartId, records, worldT,
+      onResolved: (resolvedParts, mates) => {
+        inputs.resolvedMateParts = resolvedParts;
+        inputs.resolvedMates = mates;
+      },
     });
     if (!applied) return undefined;
   }
@@ -441,6 +488,7 @@ function applyModelMateFk(
     connectorsByPartId: Record<FeatureId, readonly Connector[]>;
     records: readonly FeatureRecord[];
     worldT: Map<FeatureId, Transform>;
+    onResolved?: (parts: readonly ResolvedMatePart[], mates: readonly MateRecord[]) => void;
   },
 ): boolean {
   const { partIds, partEntries, encodedMates, mateCouplings, connectorsByPartId, records, worldT } = args;
@@ -474,7 +522,10 @@ function applyModelMateFk(
     a: m.a,
     b: m.b,
     type: m.type,
+    ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
+    ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
   }));
+  args.onResolved?.(resolvedParts, mates);
   const expandedMatePoses = expandCoupledPoses(mates, mateCouplings, matePoses);
   const mateWorldT = mateFk(resolvedParts, mates, expandedMatePoses, { loopModes: readLoopModes(r) });
   for (const [partId, mT] of mateWorldT) {
@@ -570,10 +621,16 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
   //     output (compound, STL, STEP) would sit at the local origin
   //     even though the capture-time Scene's `worldTransform` (T16) is
   //     correct.
+  let solvedRigParts: readonly ResolvedMatePart[] | undefined;
+  let solvedRigMates: readonly MateRecord[] | undefined;
   if (encodedMates.length > 0 && partEntries.length === partIds.length) {
     const applied = applySolvedMateFk(ctx, r, {
       partIds, partEntries, encodedMates, mateCouplings, connectorsByPartId, records,
       numericPoses, worldT,
+      onResolved: (resolvedParts, mates) => {
+        solvedRigParts = resolvedParts;
+        solvedRigMates = mates;
+      },
     });
     if (!applied) return noShape();
   }
@@ -627,6 +684,9 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     target: ctx.target,
     assemblyName,
     parts: sceneParts,
+    ...(solvedRigParts !== undefined && solvedRigMates !== undefined
+      ? { rig: buildSceneRig(sceneParts, solvedRigParts, solvedRigMates) }
+      : {}),
     _kind: 'scene',
   };
   // Early-return: SceneBackend is not a ShapeBackend, so the post-hoc
@@ -775,6 +835,7 @@ function applySolvedMateFk(
     records: readonly FeatureRecord[];
     numericPoses: NumericPoses;
     worldT: Map<FeatureId, Transform>;
+    onResolved?: (parts: readonly ResolvedMatePart[], mates: readonly MateRecord[]) => void;
   },
 ): boolean {
   const {
@@ -821,7 +882,10 @@ function applySolvedMateFk(
     a: m.a,
     b: m.b,
     type: m.type,
+    ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
+    ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
   }));
+  args.onResolved?.(resolvedParts, mates);
   const expandedMatePoses = expandCoupledPoses(mates, mateCouplings, matePoses);
   // Closed loops: the solvedModel poses drive; capture-time poses are the
   // as-built seed the loop solve continues from.

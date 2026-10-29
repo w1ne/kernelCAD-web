@@ -52,11 +52,27 @@ export const AssetPresetSchema = z.object({
 /** Input form: preset name -> parameter overrides. */
 export const AssetPresetsSchema = z.record(z.string().trim().min(1).max(128), AssetParamsSchema);
 
+const RigRangeSchema = z.tuple([z.number().finite(), z.number().finite()]);
+
+export const AssetRigEntrySchema = z.object({
+  type: z.enum(['rotate', 'slide']),
+  axis: z.enum(['x', 'y', 'z']),
+  range: RigRangeSchema,
+  node: z.string().trim().min(1),
+  closed: z.literal(true).optional(),
+  degreesOfFreedom: z.tuple([z.literal('rotate'), z.literal('slide')]).optional(),
+  slideRange: RigRangeSchema.optional(),
+}).strict();
+
+export const AssetRigSchema = z.record(z.string().trim().min(1), AssetRigEntrySchema);
+
 /** Public read-only asset payload; nested records carry their schema versions. */
 export const AssetManifestSchema = z.object({
   meta: AssetMetadataSchema,
   params: AssetParamsSchema,
   presets: z.array(AssetPresetSchema),
+  rig: AssetRigSchema.optional(),
+  rigWarnings: z.array(z.string()).optional(),
 }).strict();
 
 export type AssetMetadataInput = z.input<typeof AssetMetadataInputSchema>;
@@ -64,4 +80,6 @@ export type AssetMetadata = z.output<typeof AssetMetadataSchema>;
 export type AssetParamValue = z.output<typeof AssetParamValueSchema>;
 export type AssetPreset = z.output<typeof AssetPresetSchema>;
 export type AssetPresets = z.output<typeof AssetPresetsSchema>;
+export type AssetRig = z.output<typeof AssetRigSchema>;
+export type AssetRigEntry = z.output<typeof AssetRigEntrySchema>;
 export type AssetManifest = z.output<typeof AssetManifestSchema>;
