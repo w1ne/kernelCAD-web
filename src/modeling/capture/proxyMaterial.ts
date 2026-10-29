@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { formatScalarForError } from '../../shared/intent/types';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { SoftWarning } from '../../shared/runtime/softWarning';
@@ -55,6 +56,20 @@ export function resolveMaterialFaceLabel(opts: MaterialCallOpts, id: string): st
 
 export function cleanMaterialScalars(opts: MaterialCallOpts, id: string): CleanedMaterial {
   const cleaned: PBRMaterial = { baseColor: opts.baseColor };
+  if (opts.name !== undefined) {
+    if (typeof opts.name !== 'string' || opts.name.trim().length === 0) {
+      invalidArgs({
+        api: 'Shape.material(opts)',
+        path: 'opts.name',
+        got: opts.name,
+        showType: true,
+        requires: 'a non-empty string',
+        example: "shape.material({ baseColor: '#c8a24a', name: 'brass' })",
+        featureId: id,
+      });
+    }
+    cleaned.name = opts.name.trim();
+  }
   let anyClamped = false;
   const maybeAssign = (
     key: keyof PBRMaterial,

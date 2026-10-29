@@ -71,9 +71,14 @@ textures. The fields are three.js `MeshPhysicalMaterial` floats; a finish token
 expands to exactly this record, so anything a finish does, `.material()` can do
 by hand. Prefer the named finish unless you need one of the fields below.
 
+GLB export writes the chosen material name into `materials[].name`: `.finish()`
+uses its finish token (for example `brass`), while `.material({ name, ... })`
+preserves the explicit name. Unnamed materials fall back to the part name.
+
 ```typescript
 // Bespoke glossy acetate — clearcoat + ior a finish token does not name exactly
 part.material({
+  name: 'glossy acetate',
   baseColor: '#0a0a0a',
   metalness: 0.0,
   roughness: 0.15,
