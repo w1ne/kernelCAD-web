@@ -1,9 +1,9 @@
 {
-  "checkedAt": "2026-10-29T18:18:51.179Z",
+  "checkedAt": "2026-10-29T18:45:10.920Z",
   "source": "examples/assemblies/glb-rig-hinge.kcad.ts",
   "exporter": "runAndExport(format=\"glb\")",
-  "glbBytes": 3024,
-  "glbSha256": "066b8bd678fc9821f64b34e17f49387b64fa8b894a927ec8e32321bac7e5e96c",
+  "glbBytes": 3284,
+  "glbSha256": "c27936b3209511acad46331481506bc715b878ec20f15e775a618a30f5f40e28",
   "nodes": [
     {
       "name": "lid",
@@ -43,8 +43,8 @@
       "type": "rotate",
       "axis": "z",
       "range": [
-        0,
-        110
+        -35,
+        75
       ],
       "node": "pivot:lid"
     }

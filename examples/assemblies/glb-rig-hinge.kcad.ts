@@ -23,7 +23,7 @@ arm.mate(
   'base.hinge-axis',
   'lid.hinge-axis',
   'revolute',
-  { limitsDeg: [0, 110] },
+  { pose: 35, limitsDeg: [0, 110] },
 );
 
 return arm.model();

@@ -3,6 +3,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -10,10 +11,7 @@ import sharp from 'sharp';
 const here = dirname(fileURLToPath(import.meta.url));
 const output = join(here, 'demo.mp4');
 const evidence = JSON.parse(readFileSync(join(here, 'verification.json'), 'utf8'));
-const tempRoot = process.env.TMPDIR;
-if (!tempRoot?.startsWith('/Volumes/LabWired/tmp')) {
-  throw new Error('Set TMPDIR under /Volumes/LabWired/tmp before creating demo frames.');
-}
+const tempRoot = process.env.TMPDIR ?? tmpdir();
 const frameDir = mkdtempSync(join(tempRoot, 'kcad-glb-rig-'));
 
 const W = 1280;
@@ -52,12 +50,13 @@ function panel(title, subtitle, body, badge = 'EXPORT MATH PREVIEW · NOT A THRE
 }
 
 function diagram(angle) {
+  const poseAngle = 35 + angle;
   const lidVertices = [
     [-15, -2], [15, -2], [15, 2], [-15, 2],
   ].map(([y, z]) => {
     const worldY = y + 5;
     const worldZ = z + 6;
-    const rad = angle * Math.PI / 180;
+    const rad = poseAngle * Math.PI / 180;
     const relativeY = worldY - hingeY;
     const relativeZ = worldZ - hingeZ;
     // Local +Z is aligned to the assembly's -X hinge connector.
@@ -76,9 +75,9 @@ function diagram(angle) {
     <text x="155" y="362" font-family="monospace" font-size="19" fill="#34445d">part:lid → mesh lid</text>
     <rect x="96" y="397" width="425" height="98" rx="14" fill="#f4f7fb"/>
     <text x="118" y="436" font-family="Arial,sans-serif" font-size="16" fill="#556781">asset.extras.kernelcad.rig.lid</text>
-    <text x="118" y="470" font-family="monospace" font-size="18" fill="#17243a">rotate · z · [0, 110]°</text>
-    <rect x="592" y="182" width="616" height="350" rx="22" fill="#fff" stroke="#d8e1ee"/>
-    <text x="622" y="224" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#415573">HINGE SIDE VIEW · ${angle.toFixed(0)}°</text>
+    <text x="118" y="470" font-family="monospace" font-size="18" fill="#17243a">rotate · z · [-35, 75]° from rest</text>
+    <rect x="592" y="182" width="616" height="400" rx="22" fill="#fff" stroke="#d8e1ee"/>
+    <text x="622" y="224" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#415573">POSE ${poseAngle.toFixed(0)}° · Δ${angle.toFixed(0)}° FROM REST</text>
     <line x1="625" y1="470" x2="1165" y2="470" stroke="#dbe2eb" stroke-width="2"/>
     ${poly(base, '#b9c7da')}
     ${poly(lidVertices, '#5b91e8')}
@@ -101,8 +100,8 @@ try {
       <rect x="90" y="190" width="1090" height="360" rx="24" fill="#fff" stroke="#d8e1ee"/>
       <text x="140" y="270" font-family="monospace" font-size="25" fill="#23354d">examples/assemblies/glb-rig-hinge.kcad.ts</text>
       <text x="140" y="335" font-family="Arial,sans-serif" font-size="22" fill="#53657f">Native box geometry · named axis connectors · one revolute mate</text>
-      <text x="140" y="399" font-family="monospace" font-size="19" fill="#2866d5">TMPDIR=/Volumes/LabWired/tmp</text>
-      <text x="140" y="432" font-family="monospace" font-size="19" fill="#2866d5">npx vitest run tests/integration/kernel/export/glbRigDemoCapture.test.ts</text>
+      <text x="140" y="399" font-family="monospace" font-size="19" fill="#2866d5">Opt-in capture: UPDATE_GLB_RIG_DEMO=1 · GLB rig Vitest</text>
+      <text x="140" y="432" font-family="Arial,sans-serif" font-size="19" fill="#2866d5">Rest pose: 35° · rig ranges are offsets from exported pose</text>
       <text x="140" y="482" font-family="Arial,sans-serif" font-size="22" fill="#17243a">GLB bytes and asset extras verified from the emitted file.</text>`;
     await saveFrame(index++, panel('From assembly mates to GLB rig', 'One original kernelCAD model; no external meshes or downloads', body));
   }
@@ -110,7 +109,7 @@ try {
     await saveFrame(index++, diagram(0));
   }
   for (let i = 0; i < 50; i++) {
-    await saveFrame(index++, diagram((90 * i) / 49));
+    await saveFrame(index++, diagram((40 * i) / 49));
   }
   for (let i = 0; i < 10; i++) {
     await saveFrame(index++, diagram(90));

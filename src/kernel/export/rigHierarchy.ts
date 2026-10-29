@@ -29,6 +29,8 @@ export interface RigMate {
   readonly type: 'fastened' | 'revolute' | 'prismatic' | 'cylindrical' | 'planar' | 'ball' | 'pin_slot';
   readonly a: string;
   readonly b: string;
+  /** Current scalar articulation in degrees (rotate) or mm (slide). */
+  readonly pose?: number;
   readonly limitsDeg?: readonly [number, number];
   readonly limitsMm?: readonly [number, number];
 }
@@ -37,12 +39,13 @@ export interface RigEntry {
   readonly type: 'rotate' | 'slide';
   /** Axis expressed in the pivot node's local coordinate system. */
   readonly axis: 'x' | 'y' | 'z';
-  /** Degrees for rotate; metres for slide. */
+  /** Degrees for rotate; millimetres for slide. Values are relative to rest. */
   readonly range: readonly [number, number];
   readonly node: string;
   readonly closed?: true;
   /** Cylindrical mates expose their second, axial degree of freedom too. */
   readonly degreesOfFreedom?: readonly ['rotate', 'slide'];
+  /** Cylindrical axial limits in millimetres, relative to its zero axial pose. */
   readonly slideRange?: readonly [number, number];
 }
 
@@ -70,89 +73,155 @@ const IDENTITY = [
  * node without pretending that a closed loop is tree structure.
  */
 export function buildRigTree(solvedAssembly: SolvedRigAssembly): RigNode[] {
-  const partByName = new Map(solvedAssembly.parts.map((part) => [part.name, part]));
-  if (partByName.size !== solvedAssembly.parts.length) {
-    throw new Error('buildRigTree: part names must be unique.');
-  }
+  const partByName = indexParts(solvedAssembly.parts);
   const rootPart = partByName.get(solvedAssembly.groundedPart) ?? solvedAssembly.parts[0];
   if (rootPart === undefined) return [];
 
-  const nodes = new Map<string, RigNode>();
-  for (const part of solvedAssembly.parts) {
-    nodes.set(part.name, {
-      name: part.name,
-      kind: 'part',
-      matrix: [...IDENTITY],
-      children: [],
-      warnings: [],
-    });
-  }
-  const adjacency = new Map<string, Array<{ mate: RigMate; other: string; thisConnector: string; otherConnector: string }>>();
-  for (const part of solvedAssembly.parts) adjacency.set(part.name, []);
-  for (const mate of solvedAssembly.mates) {
-    const a = splitConnectorRef(mate.a);
-    const b = splitConnectorRef(mate.b);
-    if (!adjacency.has(a.part) || !adjacency.has(b.part)) {
-      throw new Error(`buildRigTree: mate '${mate.name}' references an unknown part.`);
-    }
-    adjacency.get(a.part)!.push({ mate, other: b.part, thisConnector: a.connector, otherConnector: b.connector });
-    adjacency.get(b.part)!.push({ mate, other: a.part, thisConnector: b.connector, otherConnector: a.connector });
-  }
-
+  const nodes = createPartNodes(solvedAssembly.parts);
+  const adjacency = buildRigAdjacency(solvedAssembly);
   const roots: RigNode[] = [];
   const visited = new Set<string>();
   const seenMate = new Set<string>();
   const componentRoots = [rootPart, ...solvedAssembly.parts.filter((part) => part.name !== rootPart.name)];
   for (const componentRoot of componentRoots) {
-    if (visited.has(componentRoot.name)) continue;
-    const rootNode = nodes.get(componentRoot.name)!;
-    rootNode.matrix = [...componentRoot.worldTransform];
-    roots.push(rootNode);
-    visited.add(componentRoot.name);
-    const queue = [componentRoot.name];
-    while (queue.length > 0) {
-      const parentName = queue.shift()!;
-      const parentNode = nodes.get(parentName)!;
-      const parentPart = partByName.get(parentName)!;
-      for (const edge of adjacency.get(parentName) ?? []) {
-        if (seenMate.has(edge.mate.name)) continue;
-        seenMate.add(edge.mate.name);
-        if (visited.has(edge.other)) {
-          const loopNode = makeClosedLoopNode(solvedAssembly, edge.mate, parentName, edge.thisConnector);
-          if (loopNode !== undefined) roots.push(loopNode);
-          else if (edge.mate.type === 'ball' || edge.mate.type === 'planar' || edge.mate.type === 'pin_slot') {
-            parentNode.warnings.push(
-              `Mate '${edge.mate.name}' (${edge.mate.type}) closes a loop and is exported as fastened; it is not nested in the rig tree.`,
-            );
-          }
-          continue;
-        }
-        const childNode = nodes.get(edge.other)!;
-        const childPart = partByName.get(edge.other)!;
-        const childWorld = childPart.worldTransform;
-        const parentWorld = parentPart.worldTransform;
-        if (isMovingMate(edge.mate.type)) {
-          const connector = findConnector(solvedAssembly, parentName, edge.thisConnector, edge.mate.name);
-          const pivotWorld = connectorWorldFrame(parentWorld, connector);
-          const pivotNode = makePivotNode(edge.mate, false, multiplyMatrices(invertRigidMatrix(parentWorld), pivotWorld));
-          childNode.matrix = multiplyMatrices(invertRigidMatrix(pivotWorld), childWorld);
-          pivotNode.children.push(childNode);
-          parentNode.children.push(pivotNode);
-        } else {
-          childNode.matrix = multiplyMatrices(invertRigidMatrix(parentWorld), childWorld);
-          parentNode.children.push(childNode);
-          if (edge.mate.type === 'ball' || edge.mate.type === 'planar' || edge.mate.type === 'pin_slot') {
-            childNode.warnings.push(
-              `Mate '${edge.mate.name}' (${edge.mate.type}) is exported as fastened; this mate type is not represented as a GLB pivot.`,
-            );
-          }
-        }
-        visited.add(edge.other);
+    if (!visited.has(componentRoot.name)) {
+      walkRigComponent(solvedAssembly, componentRoot, nodes, partByName, adjacency, roots, visited, seenMate);
+    }
+  }
+  return roots;
+}
+
+type RigEdge = { mate: RigMate; other: string; thisConnector: string; otherConnector: string };
+type RigAdjacency = Map<string, RigEdge[]>;
+
+function indexParts(parts: readonly SolvedRigPart[]): Map<string, SolvedRigPart> {
+  const partByName = new Map(parts.map((part) => [part.name, part]));
+  if (partByName.size !== parts.length) throw new Error('buildRigTree: part names must be unique.');
+  return partByName;
+}
+
+function createPartNodes(parts: readonly SolvedRigPart[]): Map<string, RigNode> {
+  return new Map(parts.map((part) => [part.name, {
+    name: part.name,
+    kind: 'part' as const,
+    matrix: [...IDENTITY],
+    children: [],
+    warnings: [],
+  }]));
+}
+
+function buildRigAdjacency(assembly: SolvedRigAssembly): RigAdjacency {
+  const adjacency: RigAdjacency = new Map(assembly.parts.map((part) => [part.name, []]));
+  for (const mate of assembly.mates) {
+    const a = splitConnectorRef(mate.a);
+    const b = splitConnectorRef(mate.b);
+    const aEdges = adjacency.get(a.part);
+    const bEdges = adjacency.get(b.part);
+    if (aEdges === undefined || bEdges === undefined) {
+      throw new Error(`buildRigTree: mate '${mate.name}' references an unknown part.`);
+    }
+    aEdges.push({ mate, other: b.part, thisConnector: a.connector, otherConnector: b.connector });
+    bEdges.push({ mate, other: a.part, thisConnector: b.connector, otherConnector: a.connector });
+  }
+  return adjacency;
+}
+
+function walkRigComponent(
+  assembly: SolvedRigAssembly,
+  componentRoot: SolvedRigPart,
+  nodes: Map<string, RigNode>,
+  parts: Map<string, SolvedRigPart>,
+  adjacency: RigAdjacency,
+  roots: RigNode[],
+  visited: Set<string>,
+  seenMate: Set<string>,
+): void {
+  const rootNode = nodes.get(componentRoot.name)!;
+  rootNode.matrix = [...componentRoot.worldTransform];
+  roots.push(rootNode);
+  visited.add(componentRoot.name);
+  const queue = [componentRoot.name];
+  while (queue.length > 0) {
+    const parentName = queue.shift()!;
+    const parentNode = nodes.get(parentName)!;
+    const parentPart = parts.get(parentName)!;
+    for (const edge of adjacency.get(parentName) ?? []) {
+      if (attachRigEdge(assembly, edge, parentNode, parentPart, nodes, parts, roots, visited, seenMate)) {
         queue.push(edge.other);
       }
     }
   }
-  return roots;
+}
+
+function attachRigEdge(
+  assembly: SolvedRigAssembly,
+  edge: RigEdge,
+  parentNode: RigNode,
+  parentPart: SolvedRigPart,
+  nodes: Map<string, RigNode>,
+  parts: Map<string, SolvedRigPart>,
+  roots: RigNode[],
+  visited: Set<string>,
+  seenMate: Set<string>,
+): boolean {
+  if (seenMate.has(edge.mate.name)) return false;
+  seenMate.add(edge.mate.name);
+  if (visited.has(edge.other)) {
+    handleLoopEdge(assembly, edge, parentNode, parentPart, roots);
+    return false;
+  }
+  const childNode = nodes.get(edge.other)!;
+  const childPart = parts.get(edge.other)!;
+  attachPartUnderMate(assembly, edge, parentNode, parentPart, childNode, childPart);
+  visited.add(edge.other);
+  return true;
+}
+
+function handleLoopEdge(
+  assembly: SolvedRigAssembly,
+  edge: RigEdge,
+  parentNode: RigNode,
+  parentPart: SolvedRigPart,
+  roots: RigNode[],
+): void {
+  const loopNode = makeClosedLoopNode(assembly, edge.mate, parentPart.name, edge.thisConnector);
+  if (loopNode !== undefined) {
+    roots.push(loopNode);
+  } else if (isUnsupportedMate(edge.mate.type)) {
+    parentNode.warnings.push(
+      `Mate '${edge.mate.name}' (${edge.mate.type}) closes a loop and is exported as fastened; it is not nested in the rig tree.`,
+    );
+  }
+}
+
+function attachPartUnderMate(
+  assembly: SolvedRigAssembly,
+  edge: RigEdge,
+  parentNode: RigNode,
+  parentPart: SolvedRigPart,
+  childNode: RigNode,
+  childPart: SolvedRigPart,
+): void {
+  if (isMovingMate(edge.mate.type)) {
+    const connector = findConnector(assembly, parentPart.name, edge.thisConnector, edge.mate.name);
+    const pivotWorld = connectorWorldFrame(parentPart.worldTransform, connector);
+    const pivotNode = makePivotNode(edge.mate, false, multiplyMatrices(invertRigidMatrix(parentPart.worldTransform), pivotWorld));
+    childNode.matrix = multiplyMatrices(invertRigidMatrix(pivotWorld), childPart.worldTransform);
+    pivotNode.children.push(childNode);
+    parentNode.children.push(pivotNode);
+    return;
+  }
+  childNode.matrix = multiplyMatrices(invertRigidMatrix(parentPart.worldTransform), childPart.worldTransform);
+  parentNode.children.push(childNode);
+  if (isUnsupportedMate(edge.mate.type)) {
+    childNode.warnings.push(
+      `Mate '${edge.mate.name}' (${edge.mate.type}) is exported as fastened; this mate type is not represented as a GLB pivot.`,
+    );
+  }
+}
+
+function isUnsupportedMate(type: RigMate['type']): boolean {
+  return type === 'ball' || type === 'planar' || type === 'pin_slot';
 }
 
 export function flattenRigNodes(nodes: readonly RigNode[]): RigNode[] {
@@ -209,8 +278,8 @@ function makeClosedLoopNode(
 function makePivotNode(mate: RigMate, closed: boolean, matrix: readonly number[]): RigNode {
   const name = `pivot:${mate.name}`;
   const range = mate.type === 'prismatic'
-    ? toMetres(mate.limitsMm ?? [-1000, 1000])
-    : (mate.limitsDeg ?? [-180, 180]);
+    ? relativeRange(mate.limitsMm, mate.pose, [-1000, 1000])
+    : relativeRange(mate.limitsDeg, mate.pose, [-180, 180]);
   const rig: RigEntry = {
     type: mate.type === 'prismatic' ? 'slide' : 'rotate',
     axis: 'z',
@@ -219,7 +288,7 @@ function makePivotNode(mate: RigMate, closed: boolean, matrix: readonly number[]
     ...(closed ? { closed: true as const } : {}),
     ...(mate.type === 'cylindrical' ? {
       degreesOfFreedom: ['rotate', 'slide'] as const,
-      slideRange: toMetres(mate.limitsMm ?? [-1000, 1000]),
+      slideRange: mate.limitsMm ?? [-1000, 1000],
     } : {}),
   };
   return { name, kind: 'pivot', matrix: [...matrix], children: [], rig, warnings: [] };
@@ -229,8 +298,14 @@ function isMovingMate(type: RigMate['type']): boolean {
   return type === 'revolute' || type === 'prismatic' || type === 'cylindrical';
 }
 
-function toMetres(range: readonly [number, number]): readonly [number, number] {
-  return [range[0] / 1000, range[1] / 1000];
+function relativeRange(
+  limits: readonly [number, number] | undefined,
+  pose: number | undefined,
+  fallback: readonly [number, number],
+): readonly [number, number] {
+  if (limits === undefined) return fallback;
+  const rest = pose ?? 0;
+  return [limits[0] - rest, limits[1] - rest];
 }
 
 function splitConnectorRef(ref: string): { part: string; connector: string } {

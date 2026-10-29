@@ -3,13 +3,11 @@
 import type { FeatureKind } from '../../../../shared/intent/types';
 import type { KindLowerer } from './context';
 import {
-  lowerAssemblyConnect,
-  lowerAssemblyExport,
-  lowerAssemblyJoint,
   lowerAssemblyModel,
-  lowerAssemblyPart,
   lowerSolvedAssembly,
 } from './assembly';
+import { lowerAssemblyConnect, lowerAssemblyJoint, lowerAssemblyPart } from './assemblyParts';
+import { lowerAssemblyExport } from './assemblyExport';
 import { lowerBoolean } from './boolean';
 import { lowerCurve3d, lowerEmbossText, lowerProjectCurve, lowerVariableSweep } from './curves';
 import { lowerChamfer, lowerFillet } from './edgeFeatures';

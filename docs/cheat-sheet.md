@@ -292,23 +292,26 @@ Bring in vendor geometry, and write models back out.
 When a returned assembly scene has mates, GLB export defaults to a strict node
 hierarchy. Revolute, prismatic, and cylindrical mates create `pivot:<mateName>`
 nodes at the resolved connector frame; moving part meshes are offset beneath
-those pivots so the solved default pose is unchanged. Fastened parts remain
-grouped under their parent. A pivot's local `+Z` axis follows the mate axis.
+those pivots so the solved pose remains unchanged. Fastened parts remain
+grouped under their parent. A pivot’s local `+Z` axis follows the mate axis.
 
 The asset-level `extras.kernelcad.rig` map records `type`, local `axis`,
-`range`, and pivot `node`. Rotational limits are degrees; prismatic limits are
-converted from kernel millimetres to metres. Cylindrical entries identify both
-degrees of freedom (`degreesOfFreedom: ['rotate', 'slide']`) while `type` and
-`range` describe the rotational coordinate; the axial range is in `slideRange`.
-Loop-closing mates have `closed: true`, are not nested, and generate a warning.
-Ball, planar, and pin-slot mates are held fixed with a warning; GLB animation
-clips and IK are not emitted. When a solved assembly is active,
-`asset_manifest` includes the same `rig` map and `rigWarnings`; the params JSON
-helper can emit a `{ params, rig }` envelope when given that map (without it,
-the legacy flat knob JSON remains unchanged).
+`range`, and pivot `node`. Rotational `range` values are degrees; slide `range`
+and cylindrical `slideRange` values are millimetres. Explicit absolute mate
+limits are offset by the captured pose, so ranges are relative to the exported
+rest pose (for example, limits `[0, 110]` at pose `35` become `[-35, 75]`).
+Cylindrical entries identify both degrees of freedom with
+`degreesOfFreedom: ['rotate', 'slide']`; the current solver poses its
+secondary axial degree of freedom at zero. Loop-closing mates have
+`closed: true`, are not nested, and generate a warning. Ball, planar, and
+pin-slot mates are held fixed with a warning; GLB animation clips and IK are
+not emitted. When a solved assembly is active, `asset_manifest` includes the
+same `rig` map and `rigWarnings`; the params JSON helper can emit a
+`{ params, rig }` envelope when given that map (without it, the legacy flat
+knob JSON remains unchanged).
 
-Set the GLB export option `hierarchy: 'flat'` to keep the historical flat node
-list. See the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).
+Set the GLB export option `hierarchy: 'flat'` to keep the historical flat
+node list. See the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).
 
 ## Annotate & present
 

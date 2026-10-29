@@ -11,7 +11,7 @@ import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 describe('GLB rig demo evidence capture', () => {
   beforeAll(async () => { await initOcct(); });
 
-  it('exports and records the original hinge example hierarchy', async () => {
+  it('exports and verifies the original hinge example hierarchy', async () => {
     const repository = resolve(import.meta.dirname, '../../../..');
     const sourcePath = join(repository, 'examples/assemblies/glb-rig-hinge.kcad.ts');
     const code = readFileSync(sourcePath, 'utf8');
@@ -30,29 +30,32 @@ describe('GLB rig demo evidence capture', () => {
     expect(names.has('part:lid')).toBe(true);
     expect(names.has('lid')).toBe(true);
     expect(gltf.asset?.extras?.kernelcad?.rig?.lid).toMatchObject({
-      type: 'rotate', axis: 'z', range: [0, 110], node: 'pivot:lid',
+      type: 'rotate', axis: 'z', range: [-35, 75], node: 'pivot:lid',
     });
 
-    const outputDir = join(repository, 'docs/demos/glb-rig');
-    writeFileSync(join(outputDir, 'demo.glb'), result.bytes);
-    writeFileSync(join(outputDir, 'verification.json'), `${JSON.stringify({
-      checkedAt: new Date().toISOString(),
-      source: 'examples/assemblies/glb-rig-hinge.kcad.ts',
-      exporter: 'runAndExport(format="glb")',
-      glbBytes: result.bytes.byteLength,
-      glbSha256: createHash('sha256').update(result.bytes).digest('hex'),
-      nodes: gltf.nodes?.map((node) => ({ name: node.name, children: node.children, mesh: node.mesh })),
-      rig: gltf.asset?.extras?.kernelcad?.rig,
-      rigWarnings: gltf.asset?.extras?.kernelcad?.rigWarnings ?? [],
-      exportWarnings: result.diagnostics.filter((diagnostic) => diagnostic.severity === 'warn').map((d) => d.message),
-      claims: {
-        nativeGlbHierarchy: true,
-        threeJsRendered: false,
-        simulationAcceptance: false,
-        deployedBehavior: false,
-        hardwareAcceptance: false,
-      },
-    }, null, 2)}\n`);
     expect(result.bytes.byteLength).toBeGreaterThan(20);
+
+    if (process.env.UPDATE_GLB_RIG_DEMO === '1') {
+      const outputDir = join(repository, 'docs/demos/glb-rig');
+      writeFileSync(join(outputDir, 'demo.glb'), result.bytes);
+      writeFileSync(join(outputDir, 'verification.json'), `${JSON.stringify({
+        checkedAt: new Date().toISOString(),
+        source: 'examples/assemblies/glb-rig-hinge.kcad.ts',
+        exporter: 'runAndExport(format="glb")',
+        glbBytes: result.bytes.byteLength,
+        glbSha256: createHash('sha256').update(result.bytes).digest('hex'),
+        nodes: gltf.nodes?.map((node) => ({ name: node.name, children: node.children, mesh: node.mesh })),
+        rig: gltf.asset?.extras?.kernelcad?.rig,
+        rigWarnings: gltf.asset?.extras?.kernelcad?.rigWarnings ?? [],
+        exportWarnings: result.diagnostics.filter((diagnostic) => diagnostic.severity === 'warn').map((d) => d.message),
+        claims: {
+          nativeGlbHierarchy: true,
+          threeJsRendered: false,
+          simulationAcceptance: false,
+          deployedBehavior: false,
+          hardwareAcceptance: false,
+        },
+      }, null, 2)}\n`);
+    }
   });
 });

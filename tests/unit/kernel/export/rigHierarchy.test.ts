@@ -67,7 +67,7 @@ describe('buildRigTree', () => {
     expect(movedCorner[2]).toBeCloseTo(10);
   });
 
-  it('records prismatic limits in metres and aligns the local slide axis to z', () => {
+  it('records prismatic limits in millimetres and aligns the local slide axis to z', () => {
     const tree = buildRigTree(rigAssembly({
       mates: [{ name: 'drawer-slide', type: 'prismatic', a: 'base.rail', b: 'lid.rail', limitsMm: [-20, 35] }],
       connectorsByPartName: {
@@ -76,7 +76,7 @@ describe('buildRigTree', () => {
       },
     }));
     expect(findNode(tree, 'pivot:drawer-slide')?.rig).toMatchObject({
-      type: 'slide', axis: 'z', range: [-0.02, 0.035],
+      type: 'slide', axis: 'z', range: [-20, 35],
     });
     const pivot = findNode(tree, 'pivot:drawer-slide')!;
     expect(pivot.matrix[8]).toBeCloseTo(0);
@@ -97,7 +97,36 @@ describe('buildRigTree', () => {
     }));
     expect(findNode(tree, 'pivot:sleeve')?.rig).toMatchObject({
       type: 'rotate', axis: 'z', range: [-90, 90],
-      degreesOfFreedom: ['rotate', 'slide'], slideRange: [0, 0.025],
+      degreesOfFreedom: ['rotate', 'slide'], slideRange: [0, 25],
+    });
+  });
+
+  it('expresses explicit limits relative to a non-zero posed joint zero', () => {
+    const tree = buildRigTree(rigAssembly({
+      mates: [
+        { name: 'lid', type: 'revolute', a: 'base.hinge', b: 'lid.hinge', limitsDeg: [0, 110], pose: 35 },
+        { name: 'drawer-slide', type: 'prismatic', a: 'base.rail', b: 'lid.rail', limitsMm: [-20, 35], pose: 5 },
+        { name: 'sleeve', type: 'cylindrical', a: 'base.axis', b: 'lid.axis', limitsDeg: [-90, 90], limitsMm: [0, 25], pose: 30 },
+      ],
+      connectorsByPartName: {
+        base: [
+          { name: 'hinge', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
+          { name: 'rail', type: 'axis', origin: [0, 0, 0], axis: [0, 1, 0] },
+          { name: 'axis', type: 'axis', origin: [0, 0, 0], axis: [0, 1, 0] },
+        ],
+        lid: [
+          { name: 'hinge', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
+          { name: 'rail', type: 'axis', origin: [0, 0, 0], axis: [0, 1, 0] },
+          { name: 'axis', type: 'axis', origin: [0, 0, 0], axis: [0, 1, 0] },
+        ],
+      },
+    }));
+
+    expect(findNode(tree, 'pivot:lid')?.rig?.range).toEqual([-35, 75]);
+    expect(findNode(tree, 'pivot:drawer-slide')?.rig?.range).toEqual([-25, 30]);
+    expect(findNode(tree, 'pivot:sleeve')?.rig).toMatchObject({
+      range: [-120, 60],
+      slideRange: [0, 25],
     });
   });
 

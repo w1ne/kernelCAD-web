@@ -55,6 +55,7 @@
     "export.mesh.not-watertight",
     "export.part.not-found",
     "export.glb.draco-glass-conflict",
+    "export.glb.rig-warning",
     "export.urdf.cylindrical-lossy",
     "export.urdf.pin-slot-lossy",
     "export.urdf.ball-decomposed",
@@ -679,6 +680,12 @@
       "nextAction": {
         "kind": "fix-arg",
         "field": "options.draco"
+      }
+    },
+    "export.glb.rig-warning": {
+      "template": "Inspect asset.extras.kernelcad.rigWarnings. Loop-closing mates remain outside the strict glTF node tree; unsupported ball, planar, and pin-slot mates are held fixed.",
+      "nextAction": {
+        "kind": "inspect-message"
       }
     },
     "export.urdf.cylindrical-lossy": {
@@ -2574,6 +2581,9 @@
     "export.glb.draco-glass-conflict": {
       "kind": "fix-arg",
       "field": "options.draco"
+    },
+    "export.glb.rig-warning": {
+      "kind": "inspect-message"
     },
     "export.urdf.cylindrical-lossy": {
       "kind": "fix-arg",

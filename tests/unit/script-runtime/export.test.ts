@@ -123,7 +123,7 @@ describe('runAndExport', () => {
     const json = parseGlbJson(result.bytes);
     expect(json.nodes?.some((node) => node.name === 'pivot:lid')).toBe(true);
     expect(json.asset?.extras?.kernelcad?.rig).toMatchObject({
-      lid: { type: 'rotate', axis: 'z', range: [0, 110], node: 'pivot:lid' },
+      lid: { type: 'rotate', axis: 'z', range: [-35, 75], node: 'pivot:lid' },
     });
     expect(result.diagnostics.filter((diagnostic) => diagnostic.severity === 'error')).toHaveLength(0);
   });
