@@ -50,6 +50,15 @@ const MAX_NAMED_PIECES = 6;
 export interface BooleanIntegrityInput {
   records: readonly FeatureRecord[];
   shapes: ReadonlyMap<FeatureId, ShapeBackend>;
+  /**
+   * Severity of a detached-material finding. Default 'error' (the export
+   * seam: a scored STEP that carries loose material is not the requested
+   * part). The evaluate seam passes 'warn': a subtract that separates
+   * material is sometimes a deliberate stock-removal or split cut whose
+   * leftover the author still has to remove, so it is reported for the
+   * author and the repair loop without failing an otherwise sound design.
+   */
+  severity?: 'error' | 'warn';
 }
 
 type Box = { min: Vec3; max: Vec3 };
@@ -197,12 +206,17 @@ export function detectDetachedMaterial(input: BooleanIntegrityInput): CompilerDi
     const baseCount = Math.max(1, piecesOf(base).length);
     if (pieces.length <= baseCount) continue;
 
-    out.push(detached(r, pieces, baseCount));
+    out.push(detached(r, pieces, baseCount, input.severity ?? 'error'));
   }
   return out;
 }
 
-function detached(r: FeatureRecord, pieces: Piece[], baseCount: number): CompilerDiagnostic {
+function detached(
+  r: FeatureRecord,
+  pieces: Piece[],
+  baseCount: number,
+  severity: 'error' | 'warn',
+): CompilerDiagnostic {
   // Largest piece is the body; every other piece is material the cut severed.
   const ordered = [...pieces].sort((a, b) => b.volume - a.volume);
   const [main, ...floating] = ordered;
@@ -215,7 +229,7 @@ function detached(r: FeatureRecord, pieces: Piece[], baseCount: number): Compile
   return {
     target: 'export-occt',
     code: 'feature.boolean.detached-material',
-    severity: 'error',
+    severity,
     featureId: r.id,
     ...(r.scriptLocation !== undefined ? { scriptLocation: r.scriptLocation } : {}),
     message:

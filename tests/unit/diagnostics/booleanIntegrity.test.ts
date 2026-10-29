@@ -27,10 +27,12 @@ describe('detached-material guard', () => {
         return bar.subtract(box(30, 30, 5).translate(0, 0, 17.5));
       `,
     });
-    expect(r.ok).toBe(false);
+    // Evaluate warns (the author still has to remove the leftover); the
+    // export seam is what turns it into a refusal.
+    expect(r.ok).toBe(true);
     const d = detached(r.diagnostics);
     expect(d).toHaveLength(1);
-    expect(d[0].severity).toBe('error');
+    expect(d[0].severity).toBe('warn');
     expect(d[0].message).toMatch(/2 separate solids/);
     expect(d[0].message).toMatch(/1 detached piece/);
     // The repair needs the piece located: bounding box and gap are named.

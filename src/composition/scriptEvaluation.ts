@@ -338,7 +338,7 @@ export async function evaluateAndBuildScript(
       // a band cut across three bosses left the upper stubs in the cavity).
       // The result is watertight and every solid is valid, so only a count
       // against the body that was cut catches it.
-      ...detectDetachedMaterial({ records: model.records, shapes: model.shapes }),
+      ...detectDetachedMaterial({ records: model.records, shapes: model.shapes, severity: 'warn' }),
     );
   }
 
