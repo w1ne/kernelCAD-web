@@ -1,0 +1,61 @@
+{
+  "checkedAt": "2026-10-29T18:45:10.920Z",
+  "source": "examples/assemblies/glb-rig-hinge.kcad.ts",
+  "exporter": "runAndExport(format=\"glb\")",
+  "glbBytes": 3284,
+  "glbSha256": "c27936b3209511acad46331481506bc715b878ec20f15e775a618a30f5f40e28",
+  "nodes": [
+    {
+      "name": "lid",
+      "mesh": 0
+    },
+    {
+      "name": "part:lid",
+      "children": [
+        0
+      ]
+    },
+    {
+      "name": "pivot:lid",
+      "children": [
+        1
+      ]
+    },
+    {
+      "name": "base",
+      "mesh": 1
+    },
+    {
+      "name": "part:base",
+      "children": [
+        2,
+        3
+      ]
+    },
+    {
+      "children": [
+        4
+      ]
+    }
+  ],
+  "rig": {
+    "lid": {
+      "type": "rotate",
+      "axis": "z",
+      "range": [
+        -35,
+        75
+      ],
+      "node": "pivot:lid"
+    }
+  },
+  "rigWarnings": [],
+  "exportWarnings": [],
+  "claims": {
+    "nativeGlbHierarchy": true,
+    "threeJsRendered": false,
+    "simulationAcceptance": false,
+    "deployedBehavior": false,
+    "hardwareAcceptance": false
+  }
+}

@@ -15,6 +15,7 @@ import {
 } from '../../../../../src/kernel/backends/occt/occtBackend';
 import { sceneToWorldFrameParts } from '../../../../../src/kernel/backends/occt/sceneToWorldFrame';
 import { exportGlbAsync } from '../../../../../src/kernel/backends/occt/exportGlb';
+import type { SolvedRigAssembly } from '../../../../../src/kernel/export/rigHierarchy';
 import { expandFinish } from '../../../../../src/shared/render/finishes';
 import { Transform } from '../../../../../src/shared/runtime/se3';
 import type { SceneBackend, SceneBackendPart } from '../../../../../src/kernel/backends/sceneBackend';
@@ -35,7 +36,7 @@ function parseGlbJson(bytes: Uint8Array): {
   }>;
   extensionsUsed?: string[];
   asset?: { extras?: Record<string, unknown> };
-  nodes?: Array<{ name?: string; mesh?: number }>;
+  nodes?: Array<{ name?: string; mesh?: number; children?: number[]; matrix?: number[] }>;
 } {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   expect(view.getUint32(0, true)).toBe(0x46546c67); // 'glTF'
@@ -45,7 +46,7 @@ function parseGlbJson(bytes: Uint8Array): {
   return JSON.parse(new TextDecoder().decode(bytes.subarray(20, 20 + jsonLength)));
 }
 
-function makeScene(parts: { name: string; shape: OcctBackend; material?: PBRMaterial; color?: string }[]): SceneBackend {
+function makeScene(parts: { name: string; shape: OcctBackend; material?: PBRMaterial; color?: string; worldTransform?: Transform }[]): SceneBackend {
   return {
     target: 'export-occt',
     assemblyName: 'demo',
@@ -54,7 +55,7 @@ function makeScene(parts: { name: string; shape: OcctBackend; material?: PBRMate
       const entry: SceneBackendPart = {
         name: p.name,
         shape: p.shape,
-        worldTransform: Transform.identity(),
+        worldTransform: p.worldTransform ?? Transform.identity(),
         ...(p.color !== undefined ? { color: p.color } : {}),
         ...(p.material !== undefined ? { material: p.material } : {}),
       };
@@ -258,5 +259,58 @@ describe('exportGlbAsync', () => {
 
   it('throws on an empty parts array', async () => {
     await expect(exportGlbAsync([], { format: 'glb' })).rejects.toThrow(/no parts/i);
+  });
+
+  it('exports a pivot hierarchy and asset-level rig extras by default when solved mates are supplied', async () => {
+    const scene = makeScene([
+      { name: 'base', shape: OcctBackend.box(20, 20, 5) },
+      { name: 'lid', shape: OcctBackend.box(20, 30, 5), worldTransform: Transform.translation(10, 0, 5) },
+    ]);
+    const solved: SolvedRigAssembly = {
+      groundedPart: 'base',
+      parts: [
+        { name: 'base', worldTransform: Transform.identity().toMat4() },
+        { name: 'lid', worldTransform: Transform.translation(10, 0, 5).toMat4() },
+      ],
+      mates: [{ name: 'lid', type: 'revolute', a: 'base.hinge', b: 'lid.hinge', limitsDeg: [0, 110] }],
+      connectorsByPartName: {
+        base: [{ name: 'hinge', type: 'axis', origin: [10, 0, 5], axis: [0, 0, 1] }],
+        lid: [{ name: 'hinge', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] }],
+      },
+    };
+    const bytes = await exportGlbAsync(meshAllParts(scene), { format: 'glb' }, solved);
+    const json = parseGlbJson(bytes);
+    const pivot = json.nodes?.find((node) => node.name === 'pivot:lid');
+    const partNode = json.nodes?.find((node) => node.name === 'part:lid');
+    const lid = json.nodes?.find((node) => node.name === 'lid');
+    expect(pivot).toBeDefined();
+    expect(pivot?.children).toContain(json.nodes?.indexOf(partNode!));
+    expect(partNode?.children).toContain(json.nodes?.indexOf(lid!));
+    expect(lid?.matrix).toBeDefined();
+    expect(json.asset?.extras?.kernelcad).toMatchObject({
+      rig: { lid: { type: 'rotate', axis: 'z', range: [0, 110], node: 'pivot:lid' } },
+    });
+  });
+
+  it('keeps flat GLB output when hierarchy is explicitly flat', async () => {
+    const scene = makeScene([
+      { name: 'base', shape: OcctBackend.box(20, 20, 5) },
+      { name: 'lid', shape: OcctBackend.box(20, 30, 5), worldTransform: Transform.translation(10, 0, 5) },
+    ]);
+    const solved: SolvedRigAssembly = {
+      groundedPart: 'base',
+      parts: [
+        { name: 'base', worldTransform: Transform.identity().toMat4() },
+        { name: 'lid', worldTransform: Transform.translation(10, 0, 5).toMat4() },
+      ],
+      mates: [{ name: 'lid', type: 'revolute', a: 'base.hinge', b: 'lid.hinge' }],
+      connectorsByPartName: {
+        base: [{ name: 'hinge', type: 'axis', origin: [10, 0, 5], axis: [0, 0, 1] }],
+        lid: [{ name: 'hinge', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] }],
+      },
+    };
+    const json = parseGlbJson(await exportGlbAsync(meshAllParts(scene), { format: 'glb', hierarchy: 'flat' }, solved));
+    expect(json.nodes?.some((node) => node.name === 'pivot:lid')).toBe(false);
+    expect(json.asset?.extras?.kernelcad).not.toHaveProperty('rig');
   });
 });

@@ -108,6 +108,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A GLB export requested Draco compression; the encoder is not yet implemented (reserved for a follow-up slice to avoid silently stripping KHR_materials_transmission on glass parts).',
   },
+  'export.glb.rig-warning': {
+    hintTemplate:
+      'Inspect asset.extras.kernelcad.rigWarnings. Loop-closing mates remain outside the strict glTF node tree; unsupported ball, planar, and pin-slot mates are held fixed.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A GLB rig contains a closed-loop mate or a mate type exported as fixed.',
+  },
   'export.urdf.cylindrical-lossy': {
     hintTemplate:
       'URDF lacks a 2-DOF cylindrical joint; the mate was emitted as a single revolute and the prismatic DOF was dropped. Switch to format: \'sdf-gazebo\' if both DOFs are needed.',

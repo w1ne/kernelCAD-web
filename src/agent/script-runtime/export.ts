@@ -114,7 +114,7 @@ export type ExportOptions =
        *  `slicer: 'prusa'` (fill_density). */
       infill?: StressInfillExportOptions;
     }
-  | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
+  | { format: 'glb'; axis?: 'y-up' | 'z-up'; hierarchy?: 'rig' | 'flat'; draco?: false }
   | { format: 'obj' }
   | { format: 'usd' }
   | (DrawingReviewOptions & {

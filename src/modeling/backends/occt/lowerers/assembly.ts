@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import * as replicad from 'replicad';
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { lookupSourceColor, lookupSourceMaterial } from '../../../../kernel/backends/occt/lookupSourceColor';
-import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../../../../kernel/backends/sceneBackend';
+import type { SceneBackend, SceneBackendPart } from '../../../../kernel/backends/sceneBackend';
+import type { RigConnector, RigMate, SolvedRigAssembly } from '../../../../kernel/export/rigHierarchy';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { KernelError } from '../../../../shared/intent/kernelError';
 import type { FeatureId, Param, Vec3, Vec3Param } from '../../../../shared/intent/types';
@@ -20,77 +20,7 @@ import { mateFk, mateFkWithPlacedParts, type ResolvedMatePart } from '../../../m
 import { drivenMateNames } from '../../../mates/loopAdapter';
 import type { LoopPin } from '../../../../shared/kinematics/loopClosure';
 import { resolveTopologyFrameOnBackend } from '../connectorTopology';
-import { built, finished, noShape, type LowerContext, type LowerOutcome } from './context';
-import { normalizeAxis, readVec3Param } from './helpers';
-import { translatePreservingLineage } from './transforms';
-
-/** `assemblyPart` — clones the wrapped source shape and applies its `at:`. */
-export function lowerAssemblyPart(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
-  let shape: ShapeBackend;
-  const base = ctx.inputs.byKey.shape as OcctBackend | undefined;
-  if (!base) {
-    ctx.diagnostics.push({
-      target: ctx.target,
-      code: 'recompute.input.missing',
-      featureId: r.id,
-      severity: 'error',
-      message: `assembly part shape input is missing or failed.`,
-      hint: 'Assembly parts must wrap a successfully lowered source shape.',
-    });
-    return noShape();
-  }
-  shape = base instanceof OcctBackend ? base.clone() : (base as import('../../../../kernel/backends/meshBackend').MeshBackend).clone();
-  const at = (r.metadata as { at?: Vec3Param } | undefined)?.at;
-  if (at !== undefined) {
-    const [tx, ty, tz] = readVec3Param(at);
-    shape = translatePreservingLineage(shape, tx, ty, tz);
-  }
-  return built(shape);
-}
-
-/** `assemblyJoint` — validates the joint axis; the shape is part A unchanged. */
-export function lowerAssemblyJoint(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
-  const partA = ctx.inputs.byKey.a as OcctBackend | undefined;
-  if (!partA) {
-    ctx.diagnostics.push({
-      target: ctx.target,
-      code: 'recompute.input.missing',
-      featureId: r.id,
-      severity: 'error',
-      message: `assembly joint input 'a' is missing or failed.`,
-      hint: 'Assembly joints must reference successfully lowered assembly parts.',
-    });
-    return noShape();
-  }
-  // Read joint metadata Vec3 values. Joint frames are now pure numeric
-  // tuples (v1 spec deferred joint reactivity). `normalizeAxis`
-  // validates that the axis is non-zero; the throw surfaces as a
-  // structured diagnostic via the dispatcher's exception path.
-  const jointMeta = r.metadata as { origin?: [number, number, number]; axis?: [number, number, number] } | undefined;
-  if (jointMeta?.axis !== undefined) {
-    normalizeAxis(jointMeta.axis);
-  }
-  const shape: ShapeBackend = partA instanceof OcctBackend ? partA.clone() : (partA as import('../../../../kernel/backends/meshBackend').MeshBackend).clone();
-  return built(shape);
-}
-
-/** `assemblyConnect` — placement is resolved at capture time; hand back part A. */
-export function lowerAssemblyConnect(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
-  const partA = ctx.inputs.byKey.a as OcctBackend | undefined;
-  if (!partA) {
-    ctx.diagnostics.push({
-      target: ctx.target,
-      code: 'recompute.input.missing',
-      featureId: r.id,
-      severity: 'error',
-      message: `assembly connect input 'a' is missing or failed.`,
-      hint: 'Assembly connect records must reference successfully lowered assembly parts.',
-    });
-    return noShape();
-  }
-  const shape: ShapeBackend = partA instanceof OcctBackend ? partA.clone() : (partA as import('../../../../kernel/backends/meshBackend').MeshBackend).clone();
-  return built(shape);
-}
+import { finished, noShape, type LowerContext, type LowerOutcome } from './context';
 
 /** Pose value as captured: a single Param, or three for a ball joint. */
 type EncodedPose =
@@ -103,6 +33,8 @@ type EncodedMate = {
   b: string;
   type: MateType;
   pose?: EncodedPose;
+  limitsDeg?: readonly [number, number];
+  limitsMm?: readonly [number, number];
 };
 
 /** `[inputKey, backend]` pairs for the `part_*` inputs, in numeric key order. */
@@ -214,6 +146,43 @@ function resolveMateParts(
   return resolvedParts;
 }
 
+/** Preserve the exact connector frames and rest transforms used by mate FK. */
+function buildSceneRig(
+  sceneParts: readonly SceneBackendPart[],
+  resolvedParts: readonly ResolvedMatePart[],
+  mates: readonly MateRecord[],
+  poses: NumericPoses,
+): SolvedRigAssembly {
+  const connectorsByPartName: Record<string, RigConnector[]> = Object.create(null) as Record<string, RigConnector[]>;
+  for (const part of resolvedParts) {
+    connectorsByPartName[part.name] = part.connectors.flatMap((connector) => {
+      if (connector.origin.kind !== 'vec3') return [];
+      return [{
+        name: connector.name,
+        type: connector.type,
+        origin: connector.origin.value,
+        ...(connector.axis !== undefined ? { axis: connector.axis } : {}),
+        ...(connector.normal !== undefined ? { normal: connector.normal } : {}),
+      }];
+    });
+  }
+  const rigMates: RigMate[] = mates.map((mate) => ({
+    name: mate.name,
+    type: mate.type,
+    a: mate.a,
+    b: mate.b,
+    ...(typeof poses[mate.name] === 'number' ? { pose: poses[mate.name] as number } : {}),
+    ...(mate.limitsDeg !== undefined ? { limitsDeg: mate.limitsDeg } : {}),
+    ...(mate.limitsMm !== undefined ? { limitsMm: mate.limitsMm } : {}),
+  }));
+  return {
+    groundedPart: resolvedParts[0]?.name ?? sceneParts[0]!.name,
+    parts: sceneParts.map((part) => ({ name: part.name, worldTransform: part.worldTransform.toMat4() })),
+    mates: rigMates,
+    connectorsByPartName,
+  };
+}
+
 /** Connectors in the placed part's frame. Vec3 origins gain `at`. Topology
  *  is read on the placed solid. Point-placed holes also receive `at` inside
  *  the hole-axis resolver (`bakedTranslation`); face-sampled mouths already
@@ -300,6 +269,9 @@ interface AssemblyModelInputs {
   connectorsByPartId: Record<FeatureId, readonly Connector[]>;
   records: readonly FeatureRecord[];
   assemblyName: string;
+  resolvedMateParts?: readonly ResolvedMatePart[];
+  resolvedMates?: readonly MateRecord[];
+  resolvedMatePoses?: NumericPoses;
 }
 
 /** `assemblyModel` — SceneBackend counterpart of `solvedAssembly`. */
@@ -320,6 +292,9 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
     target: ctx.target,
     assemblyName: inputs.assemblyName,
     parts: sceneParts,
+    ...(inputs.resolvedMateParts !== undefined && inputs.resolvedMates !== undefined
+      ? { rig: buildSceneRig(sceneParts, inputs.resolvedMateParts, inputs.resolvedMates, inputs.resolvedMatePoses ?? {}) }
+      : {}),
     _kind: 'scene',
   };
   // Early-return: SceneBackend is not a ShapeBackend, so the post-hoc
@@ -392,6 +367,11 @@ function applyAssemblyModelFk(
   if (encodedMates.length > 0) {
     const applied = applyModelMateFk(ctx, r, {
       partIds, partEntries, encodedMates, mateCouplings, connectorsByPartId, records, worldT,
+      onResolved: (resolvedParts, mates, poses) => {
+        inputs.resolvedMateParts = resolvedParts;
+        inputs.resolvedMates = mates;
+        inputs.resolvedMatePoses = poses;
+      },
     });
     if (!applied) return undefined;
   }
@@ -441,6 +421,7 @@ function applyModelMateFk(
     connectorsByPartId: Record<FeatureId, readonly Connector[]>;
     records: readonly FeatureRecord[];
     worldT: Map<FeatureId, Transform>;
+    onResolved?: (parts: readonly ResolvedMatePart[], mates: readonly MateRecord[], poses: NumericPoses) => void;
   },
 ): boolean {
   const { partIds, partEntries, encodedMates, mateCouplings, connectorsByPartId, records, worldT } = args;
@@ -474,8 +455,11 @@ function applyModelMateFk(
     a: m.a,
     b: m.b,
     type: m.type,
+    ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
+    ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
   }));
   const expandedMatePoses = expandCoupledPoses(mates, mateCouplings, matePoses);
+  args.onResolved?.(resolvedParts, mates, expandedMatePoses);
   const mateWorldT = mateFk(resolvedParts, mates, expandedMatePoses, { loopModes: readLoopModes(r) });
   for (const [partId, mT] of mateWorldT) {
     if (partId in connectorsByPartId) worldT.set(partId, mT);
@@ -570,10 +554,18 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
   //     output (compound, STL, STEP) would sit at the local origin
   //     even though the capture-time Scene's `worldTransform` (T16) is
   //     correct.
+  let solvedRigParts: readonly ResolvedMatePart[] | undefined;
+  let solvedRigMates: readonly MateRecord[] | undefined;
+  let solvedRigPoses: NumericPoses | undefined;
   if (encodedMates.length > 0 && partEntries.length === partIds.length) {
     const applied = applySolvedMateFk(ctx, r, {
       partIds, partEntries, encodedMates, mateCouplings, connectorsByPartId, records,
       numericPoses, worldT,
+      onResolved: (resolvedParts, mates, poses) => {
+        solvedRigParts = resolvedParts;
+        solvedRigMates = mates;
+        solvedRigPoses = poses;
+      },
     });
     if (!applied) return noShape();
   }
@@ -627,6 +619,9 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     target: ctx.target,
     assemblyName,
     parts: sceneParts,
+    ...(solvedRigParts !== undefined && solvedRigMates !== undefined
+      ? { rig: buildSceneRig(sceneParts, solvedRigParts, solvedRigMates, solvedRigPoses ?? {}) }
+      : {}),
     _kind: 'scene',
   };
   // Early-return: SceneBackend is not a ShapeBackend, so the post-hoc
@@ -775,6 +770,7 @@ function applySolvedMateFk(
     records: readonly FeatureRecord[];
     numericPoses: NumericPoses;
     worldT: Map<FeatureId, Transform>;
+    onResolved?: (parts: readonly ResolvedMatePart[], mates: readonly MateRecord[], poses: NumericPoses) => void;
   },
 ): boolean {
   const {
@@ -821,8 +817,11 @@ function applySolvedMateFk(
     a: m.a,
     b: m.b,
     type: m.type,
+    ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
+    ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
   }));
   const expandedMatePoses = expandCoupledPoses(mates, mateCouplings, matePoses);
+  args.onResolved?.(resolvedParts, mates, expandedMatePoses);
   // Closed loops: the solvedModel poses drive; capture-time poses are the
   // as-built seed the loop solve continues from.
   const capturePoses: NumericPoses = {};
@@ -918,92 +917,4 @@ function warnPlacementIgnoredByMateFk(
   if (partRec && atIsNonTrivial && !placedByConnect) {
     emitPlacementIgnoredByMateFk(ctx, partRec, partMeta, partId, ax, ay, az);
   }
-}
-
-/** `assemblyExport` — Scene.toCompound() / Scene.toUnion(). */
-export function lowerAssemblyExport(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
-  let shape: ShapeBackend;
-  // Backs `Scene.toCompound()` and `Scene.toUnion()`. Reads the upstream
-  // SceneBackend (produced by `solvedAssembly` / `assemblyModel`),
-  // applies each part's worldTransform to its local-frame shape, then
-  // either:
-  //   - 'compound': groups the transformed parts into a TopoDS_Compound
-  //     via replicad.makeCompound (lossless on per-part identity).
-  //   - 'union'   : boolean-fuses them into a single solid (lossy on
-  //     color, name, metadata — documented antipattern).
-  const sceneInput = ctx.inputs.byKey.scene as unknown;
-  if (!isSceneBackend(sceneInput)) {
-    ctx.diagnostics.push({
-      target: ctx.target,
-      code: 'feature.invalid-args',
-      featureId: r.id,
-      severity: 'error',
-      message: `assemblyExport: input 'scene' is not a SceneBackend (upstream solvedAssembly / assemblyModel must lower to a SceneBackend).`,
-      hint: 'Construct via Scene.toCompound() / Scene.toUnion() on a Scene returned by Assembly.model() / Assembly.solvedModel().',
-    });
-    return noShape();
-  }
-  const meta = r.metadata as { op?: 'compound' | 'union' } | undefined;
-  const op = meta?.op;
-  if (op !== 'compound' && op !== 'union') {
-    ctx.diagnostics.push({
-      target: ctx.target,
-      code: 'feature.invalid-args',
-      featureId: r.id,
-      severity: 'error',
-      message: `assemblyExport: metadata.op must be 'compound' or 'union'; got ${JSON.stringify(op)}.`,
-      hint: 'Use Scene.toCompound() or Scene.toUnion() rather than constructing the feature directly.',
-    });
-    return noShape();
-  }
-  const sceneBackend = sceneInput as SceneBackend;
-  if (sceneBackend.parts.length === 0) {
-    ctx.diagnostics.push({
-      target: ctx.target,
-      code: 'recompute.input.missing',
-      featureId: r.id,
-      severity: 'error',
-      message: `assemblyExport: scene has no parts.`,
-      hint: 'Call assembly.part(...) at least once before exporting the scene.',
-    });
-    return noShape();
-  }
-  // Apply each part's worldTransform to its local-frame shape. Parts are
-  // visited in scene-declaration order so both compound and union are
-  // deterministic.
-  //
-  // We clone before applyTransform because replicad's translate()/rotate()
-  // mutate-and-destroy the source OCCT handle. The recompute engine caches
-  // the SceneBackend across `params.update` runs, so without a fresh clone
-  // the second recompute hits "This object has been deleted." on any part
-  // with a non-identity worldTransform. Identity transforms early-return
-  // `this` from applyTransform, which is why the yaw=0 path historically
-  // worked but ball-joint poses broke.
-  const transformed: ShapeBackend[] = sceneBackend.parts.map((p: SceneBackendPart) =>
-    p.shape instanceof OcctBackend
-      ? p.shape.clone().applyTransform(p.worldTransform)
-      : (p.shape as import('../../../../kernel/backends/meshBackend').MeshBackend).transform(p.worldTransform),
-  );
-  if (op === 'compound') {
-    if (transformed.some((b) => !(b instanceof OcctBackend))) {
-      throw new Error('Scene.toCompound() cannot combine display mesh bodies into a BRep compound; keep the scene as a render mesh.');
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const replicadShapes = transformed.map((b) => (b as OcctBackend).getReplicadShape() as any);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const compound = replicad.makeCompound(replicadShapes) as any;
-    shape = new OcctBackend(compound);
-    return built(shape);
-  }
-  // op === 'union': fold-fuse from the first part. Mirrors the
-  // pre-Task-4 union loop, just consumed from a SceneBackend instead.
-  if (transformed.some((b) => !(b instanceof OcctBackend))) {
-    throw new Error('Scene.toUnion() does not support display mesh bodies; convert to BRep explicitly when solid operations are needed.');
-  }
-  let fused: OcctBackend = transformed[0] as OcctBackend;
-  for (let i = 1; i < transformed.length; i++) {
-    fused = fused.union(transformed[i]) as OcctBackend;
-  }
-  shape = fused;
-  return built(shape);
 }

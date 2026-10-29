@@ -39,6 +39,8 @@ export interface WorldFramePart {
    *  `source.shape` object and `source.transformKey` are the same geometry,
    *  so per-part results (viewer dimensions) can be reused. */
   readonly source?: { readonly shape: object; readonly transformKey: string };
+  /** Part-local to assembly-world rigid transform, retained for rig parenting. */
+  readonly worldTransform?: readonly number[];
 }
 
 /**
@@ -63,6 +65,7 @@ export function sceneToWorldFrameParts(scene: SceneBackend): WorldFramePart[] {
       name: p.name,
       shape: transformed,
       source: { shape: p.shape, transformKey: JSON.stringify(p.worldTransform) },
+      worldTransform: p.worldTransform.toMat4(),
     };
     if (p.color !== undefined) {
       (entry as { color?: string }).color = p.color;
