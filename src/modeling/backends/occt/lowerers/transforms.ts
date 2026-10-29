@@ -32,6 +32,55 @@ function applyMeshTransform(shape: MeshBackend, t: FeatureRecord['transforms'][n
   return shape;
 }
 
+function resolvePositiveScaleFactors(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  t: Extract<FeatureRecord['transforms'][number], { op: 'scale' }>,
+): [number, number, number] | null {
+  const sx = resolvedScaleFactor(t.sx);
+  const sy = resolvedScaleFactor(t.sy);
+  const sz = resolvedScaleFactor(t.sz);
+  if (!Number.isFinite(sx) || !Number.isFinite(sy) || !Number.isFinite(sz) || sx <= 0 || sy <= 0 || sz <= 0) {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: r.id,
+      severity: 'error',
+      message: `scale transform has non-positive or non-finite factors: ${JSON.stringify([sx, sy, sz])}.`,
+      hint: 'Scale factors must be positive finite numbers; check the param values and their declared min/max bounds.',
+    });
+    return null;
+  }
+  return [sx, sy, sz];
+}
+
+function carryTransformHistory(
+  shape: ShapeBackend,
+  inputBackend: OcctBackend,
+  inputHashes: number[],
+  inputMap: NonNullable<OcctBackend['historyMap']>,
+  inputEdgeHashes: number[],
+  inputEdgeMap: OcctBackend['edgeHistoryMap'],
+): ShapeBackend {
+  const outputBackend = shape as OcctBackend;
+  const outputHashes = outputBackend.faceHashes();
+  if (outputHashes.length !== inputHashes.length) {
+    // defensive path — face count mismatch (unexpected for these ops).
+    // Leave shape without historyMap; resolver returns face-ref-not-resolvable.
+    return shape;
+  }
+  const newMap = propagateTransformHistory(inputMap, inputHashes, outputHashes);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const wrapped = (outputBackend.getReplicadShape() as any);
+  const carried = new OcctBackend(wrapped, undefined, newMap);
+  if (outputBackend.analysisBody !== undefined) carried.analysisBody = outputBackend.analysisBody;
+  const outputEdgeHashes = carried.edgeHashes();
+  if (inputEdgeMap && outputEdgeHashes.length === inputEdgeHashes.length) {
+    carried.edgeHistoryMap = propagateEdgeTransformHistory(inputEdgeMap, inputEdgeHashes, outputEdgeHashes);
+  }
+  return carried;
+}
+
 export function applyTransforms(
   ctx: LowerContext,
   input: ShapeBackend,
@@ -40,21 +89,8 @@ export function applyTransforms(
   let shape = input;
   for (const t of r.transforms) {
     if (shape instanceof MeshBackend) {
-      if (t.op === 'scale') {
-        const sx = resolvedScaleFactor(t.sx);
-        const sy = resolvedScaleFactor(t.sy);
-        const sz = resolvedScaleFactor(t.sz);
-        if (!Number.isFinite(sx) || !Number.isFinite(sy) || !Number.isFinite(sz) || sx <= 0 || sy <= 0 || sz <= 0) {
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.invalid-args',
-            featureId: r.id,
-            severity: 'error',
-            message: `scale transform has non-positive or non-finite factors: ${JSON.stringify([sx, sy, sz])}.`,
-            hint: 'Scale factors must be positive finite numbers; check the param values and their declared min/max bounds.',
-          });
-          continue;
-        }
+      if (t.op === 'scale' && resolvePositiveScaleFactors(ctx, r, t) === null) {
+        continue;
       }
       shape = applyMeshTransform(shape, t);
       continue;
@@ -77,21 +113,9 @@ export function applyTransforms(
         break;
       }
       case 'scale': {
-        const sx = resolvedScaleFactor(t.sx);
-        const sy = resolvedScaleFactor(t.sy);
-        const sz = resolvedScaleFactor(t.sz);
-        if (!Number.isFinite(sx) || !Number.isFinite(sy) || !Number.isFinite(sz) || sx <= 0 || sy <= 0 || sz <= 0) {
-          ctx.diagnostics.push({
-            target: 'export-occt',
-            code: 'feature.invalid-args',
-            featureId: r.id,
-            severity: 'error',
-            message: `scale transform has non-positive or non-finite factors: ${JSON.stringify([sx, sy, sz])}.`,
-            hint: 'Scale factors must be positive finite numbers; check the param values and their declared min/max bounds.',
-          });
-          break; // skip applying the transform; preserve the prior shape
-        }
-        shape = shape.scale([sx, sy, sz]);
+        const factors = resolvePositiveScaleFactors(ctx, r, t);
+        if (factors === null) break; // skip applying the transform; preserve the prior shape
+        shape = shape.scale(factors);
         break;
       }
       case 'reflect':
@@ -112,22 +136,7 @@ export function applyTransforms(
     // Propagate historyMap if input had one. All four transform ops (translate,
     // rotateAxis, scale, reflect) preserve topology (face count invariant).
     if (inputMap !== undefined) {
-      const outputBackend = shape as OcctBackend;
-      const outputHashes = outputBackend.faceHashes();
-      if (outputHashes.length === inputHashes.length) {
-        const newMap = propagateTransformHistory(inputMap, inputHashes, outputHashes);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const wrapped = (outputBackend.getReplicadShape() as any);
-        const carried = new OcctBackend(wrapped, undefined, newMap);
-        if (outputBackend.analysisBody !== undefined) carried.analysisBody = outputBackend.analysisBody;
-        const outputEdgeHashes = carried.edgeHashes();
-        if (inputEdgeMap && outputEdgeHashes.length === inputEdgeHashes.length) {
-          carried.edgeHistoryMap = propagateEdgeTransformHistory(inputEdgeMap, inputEdgeHashes, outputEdgeHashes);
-        }
-        shape = carried;
-      }
-      // else: defensive path — face count mismatch (unexpected for these ops).
-      // Leave shape without historyMap; resolver returns face-ref-not-resolvable.
+      shape = carryTransformHistory(shape, inputBackend, inputHashes, inputMap, inputEdgeHashes, inputEdgeMap);
     }
   }
   return shape;
