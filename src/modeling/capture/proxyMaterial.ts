@@ -55,6 +55,7 @@ export function resolveMaterialFaceLabel(opts: MaterialCallOpts, id: string): st
 
 export function cleanMaterialScalars(opts: MaterialCallOpts, id: string): CleanedMaterial {
   const cleaned: PBRMaterial = { baseColor: opts.baseColor };
+  if (opts.name !== undefined) cleaned.name = opts.name;
   let anyClamped = false;
   const maybeAssign = (
     key: keyof PBRMaterial,

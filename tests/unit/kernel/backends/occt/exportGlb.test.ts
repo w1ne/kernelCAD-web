@@ -15,6 +15,7 @@ import {
 } from '../../../../../src/kernel/backends/occt/occtBackend';
 import { sceneToWorldFrameParts } from '../../../../../src/kernel/backends/occt/sceneToWorldFrame';
 import { exportGlbAsync } from '../../../../../src/kernel/backends/occt/exportGlb';
+import { expandFinish } from '../../../../../src/shared/render/finishes';
 import { Transform } from '../../../../../src/shared/runtime/se3';
 import type { SceneBackend, SceneBackendPart } from '../../../../../src/kernel/backends/sceneBackend';
 import type { PBRMaterial } from '../../../../../src/shared/intent/material';
@@ -28,6 +29,7 @@ import type { PBRMaterial } from '../../../../../src/shared/intent/material';
  */
 function parseGlbJson(bytes: Uint8Array): {
   materials?: Array<{
+    name?: string;
     pbrMetallicRoughness?: { baseColorFactor?: number[] };
     extensions?: Record<string, Record<string, unknown>>;
   }>;
@@ -163,6 +165,39 @@ describe('exportGlbAsync', () => {
         (c) => c && c[0] > 0.9 && c[1] > 0.6 && c[2] < 0.05,
       ),
     ).toBe(true);
+  });
+
+  it('writes finish and colour-parameter material names as unique non-empty GLB names', async () => {
+    const scene = makeScene([
+      { name: 'fastener', shape: OcctBackend.box(10, 10, 10), material: expandFinish('brass') },
+      {
+        name: 'body',
+        shape: OcctBackend.box(8, 8, 8),
+        material: { baseColor: '#477a91', metalness: 0.1, roughness: 0.6 },
+      },
+    ]);
+    const meshed = meshAllParts(scene).map((part, index) => ({
+      ...part,
+      ...(index === 1 ? { colorParamName: 'hull' } : {}),
+    }));
+    const bytes = await exportGlbAsync(meshed, { format: 'glb' });
+    const names = (parseGlbJson(bytes).materials ?? []).map((material) => material.name);
+
+    expect(names).toEqual(expect.arrayContaining(['brass', 'hull']));
+    expect(names.every((name) => typeof name === 'string' && name.trim().length > 0)).toBe(true);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it('deduplicates identical PBR materials that share an explicit name', async () => {
+    const shared = { name: 'coating', baseColor: '#56789a', metalness: 0.2, roughness: 0.4 };
+    const scene = makeScene([
+      { name: 'left', shape: OcctBackend.box(10, 10, 10), material: shared },
+      { name: 'right', shape: OcctBackend.box(8, 8, 8), material: { ...shared } },
+    ]);
+    const bytes = await exportGlbAsync(meshAllParts(scene), { format: 'glb' });
+    const names = (parseGlbJson(bytes).materials ?? []).map((material) => material.name);
+
+    expect(names).toEqual(['coating']);
   });
 
   it('embeds asset.extras.kernelcad with version + isoDate + axisConvention', async () => {

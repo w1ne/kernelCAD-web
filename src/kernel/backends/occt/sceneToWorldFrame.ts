@@ -29,6 +29,9 @@ export interface WorldFramePart {
   readonly color?: string;
   /** Full PBR material attribution (from `.material({...})`). */
   readonly material?: PBRMaterial;
+  /** Optional name of a colour parameter for exporters. Parameter provenance
+   *  is not captured yet; callers may supply it directly at export time. */
+  readonly colorParamName?: string;
   /** Engineering-material name (e.g. `pla`) from `arm.part(..., { material })`. */
   readonly materialName?: string;
   /** Identity of the world-frame geometry: the untransformed source shape

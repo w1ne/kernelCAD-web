@@ -20,6 +20,26 @@ describe('Shape.material()', () => {
     });
   });
 
+  it('preserves an explicit material name', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const s = kcad.box(10, 10, 10);
+    s.material({ baseColor: '#c8a24a', name: 'custom brass' });
+
+    const record = session.getRecords().find(r => r.id === s.id)!;
+    expect(record.metadata?.material).toEqual({ baseColor: '#c8a24a', name: 'custom brass' });
+  });
+
+  it('names expanded finish materials after their finish token', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const s = kcad.box(10, 10, 10);
+    s.finish('brass');
+
+    const record = session.getRecords().find(r => r.id === s.id)!;
+    expect((record.metadata?.material as { name?: string } | undefined)?.name).toBe('brass');
+  });
+
   it('throws on missing baseColor', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });

@@ -51,6 +51,7 @@ import type { WorldFramePart } from './sceneToWorldFrame';
 import { computeProjectedUVs } from '../../../shared/intent/textureProjection';
 import { resolveAndLoadTextureBytes } from '../../../shared/textures';
 import { attributionGenerator } from '../../../shared/links/attribution';
+import { createMaterialNameRegistry } from '../../export/materialNaming';
 
 const requireFromHere = createRequire(import.meta.url);
 // At source: src/kernel/backends/occt/exportGlb.ts → ../../../../package.json (4 up).
@@ -136,8 +137,10 @@ export async function exportGlbAsync(
   // gltf-transform post-process (see below) because Node has no Canvas for
   // GLTFExporter's own image-encoding path.
   const wrappedParts: Array<{ name: string; projection: NonNullable<PBRMaterial['textureProjection']> }> = [];
+  const materialNames = createMaterialNameRegistry();
+  const materialsByKey = new Map<string, THREE.MeshPhysicalMaterial>();
 
-  for (const p of meshed) {
+  for (const [index, p] of meshed.entries()) {
     const geom = new THREE.BufferGeometry();
     geom.setAttribute(
       'position',
@@ -153,7 +156,18 @@ export async function exportGlbAsync(
       wrappedParts.push({ name: p.name, projection });
     }
 
-    const mat = buildMaterial(p.material, p.color);
+    const resolved = materialNames.resolve({
+      pbr: p.material,
+      colorParamName: p.colorParamName,
+      partName: p.name,
+      materialIndex: index,
+      color: p.color,
+    });
+    let mat = materialsByKey.get(resolved.key);
+    if (mat === undefined) {
+      mat = buildMaterial(p.material, p.color, resolved.name);
+      materialsByKey.set(resolved.key, mat);
+    }
     const mesh = new THREE.Mesh(geom, mat);
     mesh.name = p.name;
     root.add(mesh);
@@ -341,8 +355,10 @@ function hasMesh(p: WorldFramePart | MeshedGlbPart): p is MeshedGlbPart {
 function buildMaterial(
   pbr: PBRMaterial | undefined,
   color: string | undefined,
+  name: string,
 ): THREE.MeshPhysicalMaterial {
   const mat = new THREE.MeshPhysicalMaterial();
+  mat.name = name;
   applyBaseColor(mat, pbr, color);
   if (pbr === undefined) return mat;
 

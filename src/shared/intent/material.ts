@@ -13,6 +13,8 @@ import type { TextureSet } from './textureRef';
 import type { TextureProjection } from './textureProjection';
 
 export interface PBRMaterial {
+  /** Optional material name. GLB exports write this as the glTF material name. */
+  name?: string;
   baseColor: string;              // CSS color or role token
   metalness?: number;             // 0..1, default 0
   roughness?: number;             // 0..1, default 0.5
