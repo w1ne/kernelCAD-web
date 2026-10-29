@@ -65,7 +65,9 @@ function nonEmpty(value: string | undefined): string | undefined {
 
 function materialFields(input: MaterialNamingInput): unknown {
   if (input.pbr === undefined) return { baseColor: input.color ?? '#cccccc' };
-  const { name: _name, ...fields } = input.pbr;
+  const fields = Object.fromEntries(
+    Object.entries(input.pbr).filter(([key]) => key !== 'name'),
+  ) as Omit<PBRMaterial, 'name'>;
   return input.pbr.baseColor === undefined && input.color !== undefined
     ? { ...fields, baseColor: input.color }
     : fields;
