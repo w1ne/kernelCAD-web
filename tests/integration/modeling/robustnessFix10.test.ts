@@ -158,7 +158,7 @@ describe('FIX-10 shell after fillet-all', () => {
   it('a failing shell steers to explicit hollowing without retrying shell on the same body', () => {
     const diagnostic = shellFailureDiagnostic('s1', 'boom', 1.5);
     expect(diagnostic.hint).toMatch(/Do not retry \.shell\(\) on this body/);
-    expect(diagnostic.hint).toMatch(/thinnest feature/);
+    expect(diagnostic.hint).toMatch(/thinnest local feature/);
     expect(diagnostic.hint).toMatch(/outer\.subtract\(inner\.translate\(wall, wall, wall\)\)/);
     expect(diagnostic.hint).toMatch(/enclosure.*cutouts/i);
     expect(diagnostic.nextAction).toMatchObject({ kind: 'rewrite-feature' });
