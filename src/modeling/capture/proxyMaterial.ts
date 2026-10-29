@@ -55,7 +55,17 @@ export function resolveMaterialFaceLabel(opts: MaterialCallOpts, id: string): st
 
 export function cleanMaterialScalars(opts: MaterialCallOpts, id: string): CleanedMaterial {
   const cleaned: PBRMaterial = { baseColor: opts.baseColor };
-  if (opts.name !== undefined) cleaned.name = opts.name;
+  if (opts.name !== undefined) {
+    if (typeof opts.name !== 'string' || opts.name.trim().length === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.material: field 'name' must be a non-empty string; got ${formatScalarForError(opts.name)}.`,
+        id,
+        'Pass a non-empty material name string, or omit the name field.',
+      );
+    }
+    cleaned.name = opts.name.trim();
+  }
   let anyClamped = false;
   const maybeAssign = (
     key: keyof PBRMaterial,

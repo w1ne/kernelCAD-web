@@ -1,4 +1,6 @@
 import { writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { Transform } from '../../../src/shared/runtime/se3';
 import { expandFinish } from '../../../src/shared/render/finishes';
@@ -11,8 +13,7 @@ import {
 import { exportGlbAsync } from '../../../src/kernel/backends/occt/exportGlb';
 import { sceneToWorldFrameParts } from '../../../src/kernel/backends/occt/sceneToWorldFrame';
 
-export async function createDemoArtifacts(): Promise<string[]> {
-  const output = 'docs/demos/pr1-named-gltf-materials';
+export async function createDemoArtifacts(options: { write?: boolean } = {}): Promise<string[]> {
   await initOcct();
   const scene: SceneBackend = {
     target: 'export-occt',
@@ -40,7 +41,6 @@ export async function createDemoArtifacts(): Promise<string[]> {
     mesh: meshShapeForExport(part.shape.getReplicadShape()),
   }));
   const glb = await exportGlbAsync(parts, { format: 'glb' });
-  await writeFile(`${output}/named-materials.glb`, glb);
 
   const view = new DataView(glb.buffer, glb.byteOffset, glb.byteLength);
   const jsonLength = view.getUint32(12, true);
@@ -57,11 +57,15 @@ export async function createDemoArtifacts(): Promise<string[]> {
     throw new Error(`Unexpected GLB material names: ${JSON.stringify(names)}`);
   }
 
-  const nameRows = names.map((name, index) => {
-    const y = 484 + index * 58;
-    return `<rect x="812" y="${y - 27}" width="390" height="42" rx="10" fill="#182b39"/><text x="836" y="${y}" fill="#f4f7fa" font-size="25" font-family="Menlo, monospace">materials[].name = "${escapeXml(name)}"</text>`;
-  }).join('\n');
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  if (options.write) {
+    const output = fileURLToPath(new URL('./', import.meta.url));
+    await writeFile(resolve(output, 'named-materials.glb'), glb);
+
+    const nameRows = names.map((name, index) => {
+      const y = 484 + index * 58;
+      return `<rect x="812" y="${y - 27}" width="390" height="42" rx="10" fill="#182b39"/><text x="836" y="${y}" fill="#f4f7fa" font-size="25" font-family="Menlo, monospace">materials[].name = "${escapeXml(name)}"</text>`;
+    }).join('\n');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
   <rect width="1280" height="720" fill="#0b1721"/>
   <text x="78" y="86" fill="#f4f7fa" font-size="38" font-family="Arial, sans-serif" font-weight="700">kernelCAD · named GLB materials</text>
   <text x="80" y="130" fill="#a9bdca" font-size="22" font-family="Arial, sans-serif">Local export replay · two original parts · names read back from the emitted GLB</text>
@@ -79,9 +83,14 @@ export async function createDemoArtifacts(): Promise<string[]> {
   ${nameRows}
   <text x="80" y="686" fill="#668091" font-size="15" font-family="Arial, sans-serif">Tested export data · no deployment, Blender import, or hardware acceptance implied</text>
   </svg>`;
-  await sharp(Buffer.from(svg)).png().toFile(`${output}/preview.png`);
-  console.log(`GLB materials[].name: ${names.join(', ')}`);
+    await sharp(Buffer.from(svg)).png().toFile(resolve(output, 'preview.png'));
+    console.log(`GLB materials[].name: ${names.join(', ')}`);
+  }
   return names;
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  void createDemoArtifacts({ write: process.argv.includes('--write') });
 }
 
 function escapeXml(value: string): string {
