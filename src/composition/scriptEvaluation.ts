@@ -40,6 +40,7 @@ import { portReportOnModel, type PortReportEntry } from '../modeling/runtime/tub
 import { detectMissingReturn } from '../modeling/validation/missingReturn';
 import { detectUnstructuredBodies } from '../modeling/validation/unstructuredBodies';
 import { detectUnionDefects } from '../modeling/validation/unionIntegrity';
+import { detectDetachedMaterial } from '../modeling/validation/booleanIntegrity';
 import type { SweepEvaluator } from '../kinematic/sweepTolerance';
 import { createScriptApi } from './scriptApi';
 import { viewerDimensionsForModel } from './viewerDimensionsForModel';
@@ -332,6 +333,12 @@ export async function evaluateAndBuildScript(
     // Studio's per-keystroke recompute does not call it.
     model.diagnostics.push(
       ...detectUnionDefects({ records: model.records, shapes: model.shapes, code: model.code }),
+      // Detached-material guard: a `subtract()` that severs the only
+      // connection to a piece leaves that piece floating (CADGenBench 207:
+      // a band cut across three bosses left the upper stubs in the cavity).
+      // The result is watertight and every solid is valid, so only a count
+      // against the body that was cut catches it.
+      ...detectDetachedMaterial({ records: model.records, shapes: model.shapes }),
     );
   }
 
