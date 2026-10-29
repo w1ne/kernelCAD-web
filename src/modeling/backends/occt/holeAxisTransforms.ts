@@ -7,7 +7,7 @@
 // Part `at` is not one of these transforms.
 
 import type { FeatureRecord, ShapeTransform } from '../../../shared/intent/featureRecord';
-import type { Param, PlaneSpec, Vec3 } from '../../../shared/intent/types';
+import type { PlaneSpec, Vec3 } from '../../../shared/intent/types';
 import { isValidPlaneSpec } from '../../../shared/intent/types';
 import type { ParamTable } from '../../../shared/runtime/paramTable';
 import { resolveParams } from '../../../shared/runtime/resolveParams';
