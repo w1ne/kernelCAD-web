@@ -49,7 +49,7 @@
   "src/modeling/capture/captureSession.ts": 4,
   "src/modeling/capture/faceLabels.ts": 4,
   "src/modeling/capture/forwardKinematics.ts": 2,
-  "src/modeling/capture/proxy.ts": 13,
+  "src/modeling/capture/proxy.ts": 11,
   "src/modeling/capture/proxyDerivedSketch.ts": 3,
   "src/modeling/capture/proxyMaterial.ts": 8,
   "src/modeling/capture/sketch.ts": 21,

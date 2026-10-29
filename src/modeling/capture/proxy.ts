@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { DrawingReviewPlan } from '../../shared/intent/drawingReview';
-import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3, Param } from '../../shared/intent/types';
+import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
@@ -26,7 +26,7 @@ import {
   type EditableCutoutOpts,
 } from '../validation/cutoutValidation';
 import { isParamRef, isTypedParamRef, type Editable, type TypedParamRef } from '../../shared/runtime/paramRef';
-import { currentValue, paramValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
+import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
@@ -50,75 +50,7 @@ import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
 
-const NONFINITE_TRANSFORM_GUIDANCE =
-  'Recompute the expression that produced NaN/undefined; common causes: Math.sqrt of a negative, dividing by zero, reading an undeclared variable, or using a param before it exists. Replace with finite numbers or ParamRefs whose expressions resolve to finite numbers.';
-
-function invalidEditableVec3Components(value: unknown, table: CaptureSession['paramTable']): string[] {
-  const labels = ['x', 'y', 'z'] as const;
-  const components: unknown[] | undefined = Array.isArray(value)
-    ? [value[0], value[1], value[2]]
-    : typeof value === 'object' && value !== null
-      ? [(value as Record<string, unknown>).x, (value as Record<string, unknown>).y, (value as Record<string, unknown>).z]
-      : undefined;
-  if (!components) return [`vector=${formatScalarForError(value)}`];
-
-  const issues: string[] = [];
-  components.forEach((component, index) => {
-    const label = labels[index]!;
-    if (isParamRef(component) && !isTypedParamRef(component)) {
-      try {
-        const resolved = currentValue(component as Editable<number>, table);
-        if (!Number.isFinite(resolved)) issues.push(`${label}=ParamRef(${component.$param}) resolves to ${formatScalarForError(resolved)}`);
-      } catch (error) {
-        const reason = error instanceof Error ? error.message : String(error);
-        issues.push(`${label}=ParamRef(${component.$param}) could not resolve (${reason})`);
-      }
-      return;
-    }
-
-    if (typeof component === 'object' && component !== null
-        && typeof (component as Param).unit === 'string'
-        && typeof (component as Param).evaluated === 'number') {
-      const param = component as Param;
-      try {
-        const resolved = paramValue(param, table);
-        if (!Number.isFinite(resolved) || !Number.isFinite(param.evaluated)) {
-          const ref = param.paramRef === undefined ? '' : `ParamRef(${typeof param.paramRef === 'string' ? param.paramRef : formatScalarForError(param.paramRef)}) `;
-          const detail = Number.isFinite(resolved)
-            ? `stores ${formatScalarForError(param.evaluated)} but resolves to ${formatScalarForError(resolved)}`
-            : `resolves to ${formatScalarForError(resolved)}`;
-          issues.push(`${label}=${ref}${detail}`);
-        }
-      } catch (error) {
-        const reason = error instanceof Error ? error.message : String(error);
-        issues.push(`${label}=ParamRef could not resolve (${reason})`);
-      }
-      return;
-    }
-
-    if (typeof component !== 'number' || !Number.isFinite(component)) {
-      issues.push(`${label}=${formatScalarForError(component)}`);
-    }
-  });
-  return issues;
-}
-
-function invalidTransformVec3Error(
-  operation: 'translate' | 'rotate-axis' | 'rotate-pivot',
-  label: string,
-  value: unknown,
-  featureId: FeatureId,
-  table: CaptureSession['paramTable'],
-): KernelError {
-  const issues = invalidEditableVec3Components(value, table);
-  const detail = issues.length > 0 ? issues.join(', ') : formatScalarForError(value);
-  return new KernelError(
-    'feature.invalid-args',
-    `${label} must contain three finite numbers (or ParamRefs resolving to finite numbers); invalid component(s): ${detail}.`,
-    featureId,
-    `invalid-args.${operation}.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
-  );
-}
+import { NONFINITE_TRANSFORM_GUIDANCE, invalidEditableVec3Components, invalidTransformVec3Error } from './transformGuards';
 
 export type EdgeSelector =
   | EdgeQuery
