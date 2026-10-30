@@ -20,6 +20,8 @@ import { createModelingApi } from '../../../src/modeling/api';
 import type { ShapeTransform } from '../../../src/shared/intent/featureRecord';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
+import { KernelError } from '../../../src/shared/intent/kernelError';
+import { ParamRef } from '../../../src/shared/runtime/paramRef';
 
 beforeAll(async () => { await initOcct(); });
 
@@ -59,6 +61,59 @@ describe('Shape.translate accepts Editable<number> — per-coord capture', () =>
     const t = ts[0] as Extract<ShapeTransform, { op: 'translate' }>;
     expect(t.vec.y.paramRef).toBe('y');
     expect(t.vec.z.paramRef).toBe('z');
+  });
+
+  it('translate reports NaN and undefined coordinates with an actionable diagnostic', () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const shape = api.box(10, 10, 10);
+    let caught: unknown;
+    try {
+      shape.translate(0, Number.NaN, undefined as never);
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(KernelError);
+    expect(caught).toMatchObject({ code: 'feature.invalid-args' });
+    expect((caught as Error).message).toContain('y=NaN');
+    expect((caught as Error).message).toContain('z=undefined');
+    expect((caught as KernelError).hint).toContain('invalid-args.translate.nonfinite');
+    expect((caught as KernelError).hint).toContain('Math.sqrt of a negative');
+    expect((caught as KernelError).hint).toContain('dividing by zero');
+  });
+
+  it('translate reports a ParamRef expression that cannot be resolved', () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const invalid = api.param('distance', 5).divide(0);
+    let caught: unknown;
+    try {
+      api.box(10, 10, 10).translate(invalid, 0, 0);
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(KernelError);
+    expect((caught as Error).message).toContain('x=ParamRef((distance / 0)) could not resolve');
+    expect((caught as Error).message).toContain('division by zero');
+    expect((caught as KernelError).hint).toContain('invalid-args.translate.nonfinite');
+  });
+
+  it('translate reports a ParamRef that resolves to a non-finite value', () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const invalid = new ParamRef<number>({ kind: 'lit', value: Number.NaN }, 'number');
+    let caught: unknown;
+    try {
+      api.box(10, 10, 10).translate(invalid, 0, 0);
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(KernelError);
+    expect((caught as Error).message).toContain('x=ParamRef(NaN) resolves to NaN');
+    expect((caught as KernelError).hint).toContain('invalid-args.translate.nonfinite');
   });
 });
 

@@ -1,6 +1,6 @@
 # Trace-guided repair
 
-Eight models in this directory are **deliberately broken**. The walkthrough
+Seven models in this directory are **deliberately broken**. The walkthrough
 script runs the same MCP calls an agent makes after a failed evaluation, through
 the same dispatcher (`callMcpTool`), and repairs each one:
 
@@ -22,7 +22,6 @@ The broken files are never rewritten, so you can run it as many times as you lik
 | `revolve-crosses-axis.kcad.ts` | washer profile with x = −1 mm | `feature.revolve.crosses-axis` | clamp every numeric path x-coordinate to 0 |
 | `tangency-radius-too-small.kcad.ts` | tangent circle r=1 between circles r=10 and r=4, 30 mm apart | `sketch.tangency.no-solution` | (centre-distance − r1 − r2) / 2 = 8 mm |
 | `draft-angle-degenerate.kcad.ts` | 90° draft on a box face | `feature.draft.failed` | mould-release ladder 8° / 5° / 3° |
-| `shell-too-thick.kcad.ts` | 8 mm wall on a 10 mm cube | `feature.kernel-failed` | half the thinnest bbox dim (5 mm ceiling; 4 mm first) |
 | `emboss-over-hole.kcad.ts` | engrave parked over a centred through-hole | `feature.emboss-text.boolean-noop` | slide UV anchor to (0.2, 0.2) |
 
 ## Run it
@@ -186,7 +185,6 @@ summary
   REPAIRED  examples/repair/revolve-crosses-axis.kcad.ts
   REPAIRED  examples/repair/tangency-radius-too-small.kcad.ts
   REPAIRED  examples/repair/draft-angle-degenerate.kcad.ts
-  REPAIRED  examples/repair/shell-too-thick.kcad.ts
   REPAIRED  examples/repair/emboss-over-hole.kcad.ts
 ```
 
@@ -229,17 +227,6 @@ examples/repair/draft-angle-degenerate.kcad.ts
   applied: draft_1:shrink-draft:8
   -return box(10, 10, 10).draft(90, { face: 'front' });
   +return box(10, 10, 10).draft(8, { face: 'front' });
-
-==============================================================================
-examples/repair/shell-too-thick.kcad.ts
-==============================================================================
---- 2. why_did_this_fail
-    - shell_1:shrink-thickness:4: Reduce shell thickness from 8 mm to 4 mm.
-      evidence {"thinnestDimensionMm":10,"maxFeasibleThicknessMm":5,"currentThicknessMm":8}
---- 4. apply-first
-  applied: shell_1:shrink-thickness:4
-  -return box(10, 10, 10).shell(8, { face: 'top' });
-  +return box(10, 10, 10).shell(4, { face: 'top' });
 
 ==============================================================================
 examples/repair/emboss-over-hole.kcad.ts

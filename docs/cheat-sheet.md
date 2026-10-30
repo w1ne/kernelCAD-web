@@ -168,7 +168,7 @@ Move a body into position, mirror it, or repeat it.
 | `Shape.rotateZ(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]) => Shape` | Rotate `degrees` around the world Z axis. |
 | `Shape.transform(t: Transform) => Shape` | Apply an SE(3) Transform. |
 | `Shape.alongAxis(axis: [number, number, number]) => Shape` | Orient this shape so its current +Z axis aligns with the given direction. |
-| `Shape.scale(factor: number \| [number, number, number]) => Shape` | Scale this shape uniformly (single positive finite number) or per-axis (Vec3 — sx/sy/sz). |
+| `Shape.scale(factor: Editable<number> \| [Editable<number>, Editable<number>, Editable<number>]) => Shape; (sx: Editable<number>, sy: Editable<number>, sz: Editable<number>) => Shape` | Scale this shape uniformly or per-axis. |
 | `Shape.reflect(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Reflect (pure rigid-body transformation) across a cardinal plane or an offset parallel plane. |
 | `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: Editable<number> }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
 | `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: number }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
@@ -286,6 +286,32 @@ Bring in vendor geometry, and write models back out.
 |---|---|
 | `lib : { fromSTEP(path: string, opts?: { solid?: number }): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; meshFromSTL(path: string): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; part(request: { family: string; thread?: string; lengthMm?: number; detail?: "full" \| "envelope" }): Promise<Shape>; stack(request: { thread: string; gripMm: number; mode?: "screw" \| "bolt"; detail?: "full" \| "envelope"; protrusionPitches?: number }): Promise<{ lengthMm: number; protrusionMm?: number; screw: Shape }>; insert(shape: Shape, request: { diameterMm?: number; near?: Vec3; family: "socket-head-cap-screw" \| "button-head-cap-screw" \| "flat-head-countersunk"; mode?: "screw" \| "bolt"; gripMm?: number; seat?: "auto" \| "none" \| "counterbore"; headAt?: Vec3; detail?: "full" \| "envelope"; protrusionPitches?: number }): Promise<{ shape: Shape; holes: Array<{ centerMm: Vec3; direction: Vec3; diameterMm: number; depthMm: number; thread: string; fit: "close" \| "normal" \| "loose"; lengthMm: number; protrusionMm?: number; screw: Shape; headWasher?: Shape; tailWasher?: Shape; nut?: Shape }> }>; fixture: FixtureParts; standard: StandardParts }` | Parts library namespace. |
 | `Scene.toCompound() => Shape` | Groups bodies without booleaning. |
+
+### GLB assembly rigs
+
+When a returned assembly scene has mates, GLB export defaults to a strict node
+hierarchy. Revolute, prismatic, and cylindrical mates create `pivot:<mateName>`
+nodes at the resolved connector frame; moving part meshes are offset beneath
+those pivots so the solved pose remains unchanged. Fastened parts remain
+grouped under their parent. A pivot’s local `+Z` axis follows the mate axis.
+
+The asset-level `extras.kernelcad.rig` map records `type`, local `axis`,
+`range`, and pivot `node`. Rotational `range` values are degrees; slide `range`
+and cylindrical `slideRange` values are millimetres. Explicit absolute mate
+limits are offset by the captured pose, so ranges are relative to the exported
+rest pose (for example, limits `[0, 110]` at pose `35` become `[-35, 75]`).
+Cylindrical entries identify both degrees of freedom with
+`degreesOfFreedom: ['rotate', 'slide']`; the current solver poses its
+secondary axial degree of freedom at zero. Loop-closing mates have
+`closed: true`, are not nested, and generate a warning. Ball, planar, and
+pin-slot mates are held fixed with a warning; GLB animation clips and IK are
+not emitted. When a solved assembly is active, `asset_manifest` includes the
+same `rig` map and `rigWarnings`; the params JSON helper can emit a
+`{ params, rig }` envelope when given that map (without it, the legacy flat
+knob JSON remains unchanged).
+
+Set the GLB export option `hierarchy: 'flat'` to keep the historical flat
+node list. See the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).
 
 ## Annotate & present
 

@@ -69,8 +69,8 @@ describe('shell on multi-station bodies', () => {
     const d = ev.diagnostics.find((x) => x.code === 'feature.kernel-failed');
     expect(d, JSON.stringify(ev.diagnostics)).toBeDefined();
     expect(d!.message).toMatch(/arc join, arc join with intersection, and intersection join all failed/);
-    expect(d!.message).toMatch(/sharp \(non-tangent\) edges/);
-    expect(d!.hint).toMatch(/outer\.subtract\(inner\)/);
-    expect(d!.hint).toMatch(/twisted-tapered-thin-wall-vase/);
+    expect(d!.message).toMatch(/thinnest local feature/);
+    expect(d!.hint).toMatch(/outer\.subtract\(inner/);
+    expect(d!.hint).toMatch(/inner\.translate\(wall, wall, wall\)/);
   }, 120_000);
 });

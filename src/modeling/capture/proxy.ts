@@ -26,7 +26,7 @@ import {
   type EditableCutoutOpts,
 } from '../validation/cutoutValidation';
 import { isParamRef, isTypedParamRef, type Editable, type TypedParamRef } from '../../shared/runtime/paramRef';
-import { toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
+import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
@@ -49,6 +49,8 @@ import type {
 import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
+
+import { NONFINITE_TRANSFORM_GUIDANCE, invalidEditableVec3Components, invalidTransformVec3Error } from './transformGuards';
 
 export type EdgeSelector =
   | EdgeQuery
@@ -123,15 +125,12 @@ export class Shape {
   }
 
   translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape {
-    if (!isValidEditableVec3([x, y, z])) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Translate vector must be three finite numbers (or ParamRef<number>); got [${formatScalarForError(x)}, ${formatScalarForError(y)}, ${formatScalarForError(z)}].`,
-        this.id,
-        'Pass three finite numbers (x, y, z) to .translate().',
-      );
+    const vector: EditableVec3 = [x, y, z];
+    const issues = invalidEditableVec3Components(vector, this.session.paramTable);
+    if (!isValidEditableVec3(vector) || issues.length > 0) {
+      throw invalidTransformVec3Error('translate', 'Translate vector', vector, this.id, this.session.paramTable);
     }
-    this.session.appendTransform(this.id, { op: 'translate', vec: toVec3Param([x, y, z], 'mm') });
+    this.session.appendTransform(this.id, { op: 'translate', vec: toVec3Param(vector, 'mm') });
     return this;
   }
 
@@ -140,37 +139,43 @@ export class Shape {
     degrees: Editable<number>,
     pivot?: EditableVec3,
   ): Shape {
-    if (!isValidEditableVec3(axis)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Rotate axis must be a finite Vec3 (numbers or ParamRef<number>); got ${formatScalarForError(axis)}.`,
-        this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
-      );
+    const axisIssues = invalidEditableVec3Components(axis, this.session.paramTable);
+    if (!isValidEditableVec3(axis) || axisIssues.length > 0) {
+      throw invalidTransformVec3Error('rotate-axis', 'Rotate axis', axis, this.id, this.session.paramTable);
     }
     if (typeof degrees !== 'number' && !isParamRef(degrees)) {
       throw new KernelError(
         'feature.invalid-args',
         `Rotate degrees must be a finite number or ParamRef; got ${formatScalarForError(degrees)}.`,
         this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
     }
-    if (typeof degrees === 'number' && !Number.isFinite(degrees)) {
+    let resolvedDegrees: number;
+    try {
+      resolvedDegrees = currentValue(degrees, this.session.paramTable);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
       throw new KernelError(
         'feature.invalid-args',
-        `Rotate degrees must be a finite number or ParamRef; got ${formatScalarForError(degrees)}.`,
+        `Rotate degrees could not be resolved from ${formatScalarForError(degrees)}: ${reason}.`,
         this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
     }
-    if (pivot !== undefined && !isValidEditableVec3(pivot)) {
+    if (!Number.isFinite(resolvedDegrees)) {
       throw new KernelError(
         'feature.invalid-args',
-        `Rotate pivot (when provided) must be a finite Vec3; got ${formatScalarForError(pivot)}.`,
+        `Rotate degrees must resolve to a finite number; got ${isParamRef(degrees) ? `ParamRef(${degrees.$param}) resolves to ${formatScalarForError(resolvedDegrees)}` : formatScalarForError(resolvedDegrees)}.`,
         this.id,
-        'Pass a finite Vec3 as the pivot, or omit it.',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
+    }
+    if (pivot !== undefined) {
+      const pivotIssues = invalidEditableVec3Components(pivot, this.session.paramTable);
+      if (!isValidEditableVec3(pivot) || pivotIssues.length > 0) {
+        throw invalidTransformVec3Error('rotate-pivot', 'Rotate pivot', pivot, this.id, this.session.paramTable);
+      }
     }
     const transform: ShapeTransform = pivot === undefined
       ? { op: 'rotateAxis', axis: toVec3Param(axis, 'unitless'), degrees: toParam(degrees, 'deg') }
@@ -637,13 +642,14 @@ export class Shape {
   }
 
   /**
-   * Scale this shape uniformly (single positive number) or per-axis
-   * (Vec3 — sx/sy/sz). All factors must be positive and finite.
+   * Scale this shape uniformly (single positive number or numeric ParamRef) or
+   * per-axis (Vec3 — sx/sy/sz). All resolved factors must be positive and finite.
    *
    * Two call shapes are accepted:
    *   - `.scale(2)`           — uniform
-   *   - `.scale([2, 1, 1])`   — per-axis Vec3 form
-   *   - `.scale(2, 2, 2)`     — legacy multi-arg form (must be uniform; see below)
+   *   - `.scale(hexSize)`     — uniform, editable ParamRef
+   *   - `.scale([2, 1, 1])`   — per-axis Vec3 form (each factor may be editable)
+   *   - `.scale(2, 2, 2)`     — legacy multi-arg form
    *
    * The Vec3 form is the canonical agent-facing way to request non-uniform
    * scale. Capture stores per-axis components in the FeatureRecord's
@@ -657,18 +663,18 @@ export class Shape {
    * but lowering will emit a `feature.kernel-failed` diagnostic. Track via
    * the TODO in `src/backends/occt/occtLowerer.ts` near the scale dispatch.
    */
-  scale(factor: number | [number, number, number]): Shape;
-  scale(sx: number, sy: number, sz: number): Shape;
+  scale(factor: Editable<number> | [Editable<number>, Editable<number>, Editable<number>]): Shape;
+  scale(sx: Editable<number>, sy: Editable<number>, sz: Editable<number>): Shape;
   scale(
-    factorOrSx: number | [number, number, number],
-    sy?: number,
-    sz?: number,
+    factorOrSx: Editable<number> | [Editable<number>, Editable<number>, Editable<number>],
+    sy?: Editable<number>,
+    sz?: Editable<number>,
   ): Shape {
     // Normalize the three call shapes into a single ScaleSpec.
-    const scaleSpec: number | [number, number, number] = Array.isArray(factorOrSx)
+    const scaleSpec = Array.isArray(factorOrSx)
       ? factorOrSx
       : (sy !== undefined || sz !== undefined)
-        ? [factorOrSx, sy ?? factorOrSx, sz ?? factorOrSx] as [number, number, number]
+        ? [factorOrSx, sy ?? factorOrSx, sz ?? factorOrSx] as [Editable<number>, Editable<number>, Editable<number>]
         : factorOrSx;
 
     if (!isValidScaleSpec(scaleSpec)) {
@@ -680,9 +686,21 @@ export class Shape {
       );
     }
 
-    const [sx, syOut, szOut]: [number, number, number] = Array.isArray(scaleSpec)
+    const factors: [Editable<number>, Editable<number>, Editable<number>] = Array.isArray(scaleSpec)
       ? [scaleSpec[0], scaleSpec[1], scaleSpec[2]]
       : [scaleSpec, scaleSpec, scaleSpec];
+    if (factors.some((factor) => {
+      const value = currentValue(factor, this.session.paramTable);
+      return !Number.isFinite(value) || value <= 0;
+    })) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Scale factors must resolve to positive finite numbers; got ${formatScalarForError(scaleSpec)}.`,
+        this.id,
+        'invalid-args.scale.zero — provide positive finite scale factors; numeric ParamRefs are resolved when the shape is built.',
+      );
+    }
+    const [sx, syOut, szOut] = factors.map((factor) => isParamRef(factor) ? toParam(factor, 'unitless') : factor);
 
     this.session.appendTransform(this.id, {
       op: 'scale',

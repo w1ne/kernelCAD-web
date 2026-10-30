@@ -3,10 +3,10 @@
 // src/shared/diagnostics/kernelErrorToDiagnostic.ts
 //
 // Converts a script-runtime exception into a `CompilerDiagnostic`. KernelError
-// carries its own diagnostic code (and optional hint override); everything else
-// falls through to a caller-supplied `defaultCode` (e.g. `cli.script-exception`
-// for evaluate, `cli.export-exception` for export — preserves the existing
-// per-command fallback semantics).
+// carries its own diagnostic code (and optional hint override). ParamRef-method
+// mistakes receive a repairable argument diagnostic; other errors fall through
+// to a caller-supplied `defaultCode` (e.g. `cli.script-exception` for evaluate,
+// `cli.export-exception` for export — preserving per-command fallback semantics).
 //
 // `hint` is mandatory on every diagnostic. If KernelError doesn't supply one,
 // we look up the catalogue template; for `defaultCode` we always use the template.
@@ -37,6 +37,17 @@ export function kernelErrorToDiagnostic(
     });
   }
   const msg = e instanceof Error ? e.message : String(e);
+  const paramMethodMisuse = /^(?:TypeError:\s*)?([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\.(add|subtract|multiply|divide|negate) is not a function$/.exec(msg);
+  if (paramMethodMisuse !== null) {
+    const [, receiver, method] = paramMethodMisuse;
+    return withNextAction({
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      severity: 'error',
+      message: `${msg}; ${receiver} is not a numeric ParamRef (often it is a plain number).`,
+      hint: `If ${receiver} is a plain number, use / * + - on numbers. Call .${method}() only on a numeric value returned by param()/params(). To keep a derived dimension editable, define const width = param('width', 18); width.divide(2).`,
+    });
+  }
   return withNextAction({
     target: 'export-occt',
     code: defaultCode,

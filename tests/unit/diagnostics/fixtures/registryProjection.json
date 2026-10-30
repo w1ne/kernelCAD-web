@@ -55,6 +55,7 @@
     "export.mesh.not-watertight",
     "export.part.not-found",
     "export.glb.draco-glass-conflict",
+    "export.glb.rig-warning",
     "export.urdf.cylindrical-lossy",
     "export.urdf.pin-slot-lossy",
     "export.urdf.ball-decomposed",
@@ -328,7 +329,7 @@
       }
     },
     "feature.kernel-failed": {
-      "template": "OCCT rejected the operation. Retry with different params: smaller fillet/chamfer radius, thinner shell wall, translated mirror source, smaller sweep profile, etc.",
+      "template": "OCCT rejected the operation. Retry with different params: smaller fillet/chamfer radius, translated mirror source, smaller sweep profile, etc. For shell(), do not just retry a thinner wall: compare the requested wall with the thinnest local feature, and author an explicit hollow (outer.subtract(inner)) if the offset cannot close.",
       "nextAction": {
         "kind": "retry-with-smaller-param",
         "param": "op-radius-or-thickness",
@@ -679,6 +680,12 @@
       "nextAction": {
         "kind": "fix-arg",
         "field": "options.draco"
+      }
+    },
+    "export.glb.rig-warning": {
+      "template": "Inspect asset.extras.kernelcad.rigWarnings. Loop-closing mates remain outside the strict glTF node tree; unsupported ball, planar, and pin-slot mates are held fixed.",
+      "nextAction": {
+        "kind": "inspect-message"
       }
     },
     "export.urdf.cylindrical-lossy": {
@@ -2574,6 +2581,9 @@
     "export.glb.draco-glass-conflict": {
       "kind": "fix-arg",
       "field": "options.draco"
+    },
+    "export.glb.rig-warning": {
+      "kind": "inspect-message"
     },
     "export.urdf.cylindrical-lossy": {
       "kind": "fix-arg",

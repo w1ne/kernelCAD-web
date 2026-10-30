@@ -11,6 +11,7 @@ import { ScriptSpanIndex } from './scriptSpans';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ScriptLocation } from '../../shared/intent/types';
+import type { ShapeBackend } from '../../kernel/backends/backend';
 
 const WITH_ANCHORS = [
   "return box(40, 40, 6).hole('top', { u: 0, v: 0, diameter: 20, depth: 'through' })",
@@ -183,5 +184,41 @@ describe('recentreEmbossAnchor', () => {
       shapes: new Map(),
     });
     expect(noCallSite).toEqual([]);
+  });
+});
+
+describe('failed shell repair candidates', () => {
+  it('does not retry shell on the same body with guessed thinner walls', () => {
+    const code = "return box(10, 10, 10).shell(9, { face: 'top' });";
+    const record: FeatureRecord = {
+      id: 'shell_1',
+      kind: 'shell',
+      inputs: { base: { kind: 'feature', id: 'box_1' } },
+      params: { thickness: { expression: '9', unit: 'mm', evaluated: 9 } },
+      transforms: [],
+      scriptLocation: locationOf(code, 1, 'shell'),
+      suppressed: false,
+    };
+    const base = {
+      boundingBox: () => ({ min: [0, 0, 0], max: [10, 10, 10] }),
+    } as unknown as ShapeBackend;
+    const candidates = deriveCandidates({
+      diagnostic: {
+        target: 'export-occt',
+        code: 'feature.kernel-failed',
+        featureId: record.id,
+        severity: 'error',
+        message: 'shell failed',
+        hint: 'author an explicit hollow',
+        details: { requestedThickness: 9 },
+      },
+      diagnosticId: 'shell-failed',
+      record,
+      recordsById: new Map([[record.id, record]]),
+      spans: ScriptSpanIndex.parse(code),
+      shapes: new Map([['box_1', base]]),
+    });
+
+    expect(candidates.some((candidate) => candidate.featureId === record.id)).toBe(false);
   });
 });
