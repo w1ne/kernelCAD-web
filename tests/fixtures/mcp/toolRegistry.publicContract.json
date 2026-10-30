@@ -47,16 +47,61 @@
         }
       }
     },
+    "title": "Evaluate CAD Script",
     "annotations": {
-      "readOnlyHint": true,
+      "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Evaluate CAD Script"
     },
     "outputSchema": {
       "type": "object",
       "properties": {
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "ok": {
           "type": "boolean",
@@ -494,10 +539,13 @@
         }
       }
     },
+    "title": "Diff CAD Scripts",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Diff CAD Scripts"
     },
     "outputSchema": {
       "type": "object",
@@ -746,10 +794,13 @@
         "of"
       ]
     },
+    "title": "Inspect Model",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": true,
+      "title": "Inspect Model"
     },
     "outputSchema": {
       "type": "object",
@@ -1228,10 +1279,13 @@
         "check"
       ]
     },
+    "title": "Verify Design",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Verify Design"
     },
     "outputSchema": {
       "type": "object",
@@ -1794,10 +1848,13 @@
         }
       }
     },
+    "title": "Explain Failure",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Explain Failure"
     },
     "outputSchema": {
       "type": "object",
@@ -1899,10 +1956,13 @@
         "new_value"
       ]
     },
+    "title": "Set Parameter",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Set Parameter"
     },
     "outputSchema": {
       "type": "object",
@@ -1936,7 +1996,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -2017,10 +2119,13 @@
         "feature_code"
       ]
     },
+    "title": "Add Feature",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Feature"
     },
     "outputSchema": {
       "type": "object",
@@ -2054,7 +2159,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -2291,10 +2438,13 @@
         "code"
       ]
     },
+    "title": "Add Surface",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Surface"
     },
     "outputSchema": {
       "type": "object",
@@ -2328,7 +2478,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -2522,10 +2714,13 @@
         }
       ]
     },
+    "title": "Add Curve",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Curve"
     },
     "outputSchema": {
       "type": "object",
@@ -2559,7 +2754,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -2801,10 +3038,13 @@
         }
       ]
     },
+    "title": "Add Path Segment",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Path Segment"
     },
     "outputSchema": {
       "type": "object",
@@ -2838,7 +3078,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -3002,10 +3284,13 @@
         "imageUrl"
       ]
     },
+    "title": "Trace Outline from Image",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": true,
+      "title": "Trace Outline from Image"
     },
     "outputSchema": {
       "type": "object",
@@ -3133,10 +3418,13 @@
         "sections"
       ]
     },
+    "title": "Add Variable Sweep",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Variable Sweep"
     },
     "outputSchema": {
       "type": "object",
@@ -3170,7 +3458,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -3298,10 +3628,13 @@
         "code"
       ]
     },
+    "title": "Add Text",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Text"
     },
     "outputSchema": {
       "type": "object",
@@ -3335,7 +3668,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -3433,10 +3808,13 @@
         "face"
       ]
     },
+    "title": "Project Curve",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Project Curve"
     },
     "outputSchema": {
       "type": "object",
@@ -3470,7 +3848,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -3690,10 +4110,13 @@
         }
       ]
     },
+    "title": "Add Pattern Feature",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Pattern Feature"
     },
     "outputSchema": {
       "type": "object",
@@ -3727,7 +4150,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -3776,10 +4241,13 @@
         "match"
       ]
     },
+    "title": "Remove Feature",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": false,
+      "title": "Remove Feature"
     },
     "outputSchema": {
       "type": "object",
@@ -3813,7 +4281,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -3890,10 +4400,13 @@
         }
       }
     },
+    "title": "Query Geometry",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Query Geometry"
     },
     "outputSchema": {
       "type": "object",
@@ -3966,10 +4479,13 @@
       "type": "object",
       "properties": {}
     },
+    "title": "Look Up API",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Look Up API"
     },
     "outputSchema": {
       "type": "object",
@@ -4091,10 +4607,13 @@
       "type": "object",
       "properties": {}
     },
+    "title": "Look Up Diagnostics",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Look Up Diagnostics"
     },
     "outputSchema": {
       "type": "object",
@@ -4193,16 +4712,61 @@
         "target"
       ]
     },
+    "title": "Export",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Export"
     },
     "outputSchema": {
       "type": "object",
       "properties": {
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "ok": {
           "type": "boolean"
@@ -4333,10 +4897,13 @@
         }
       }
     },
+    "title": "Look Up Cookbook",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Look Up Cookbook"
     },
     "outputSchema": {
       "type": "object",
@@ -4400,10 +4967,13 @@
         }
       }
     },
+    "title": "Find Part",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": true,
+      "title": "Find Part"
     },
     "outputSchema": {
       "type": "object",
@@ -4516,10 +5086,13 @@
         }
       }
     },
+    "title": "Fetch Part",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": true,
+      "title": "Fetch Part"
     },
     "outputSchema": {
       "type": "object",
@@ -4772,10 +5345,13 @@
         "constraints"
       ]
     },
+    "title": "Solve Sketch",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Solve Sketch"
     },
     "outputSchema": {
       "type": "object",
@@ -4920,10 +5496,13 @@
         "constraint"
       ]
     },
+    "title": "Add Constraint",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Constraint"
     },
     "outputSchema": {
       "type": "object",
@@ -4996,10 +5575,13 @@
         "shape_expression"
       ]
     },
+    "title": "Add Part",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Part"
     },
     "outputSchema": {
       "type": "object",
@@ -5033,7 +5615,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -5188,10 +5812,13 @@
         "origin"
       ]
     },
+    "title": "Add Connector",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Connector"
     },
     "outputSchema": {
       "type": "object",
@@ -5225,7 +5852,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -5454,10 +6123,13 @@
         }
       ]
     },
+    "title": "Add Mate",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Mate"
     },
     "outputSchema": {
       "type": "object",
@@ -5491,7 +6163,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -5562,10 +6276,13 @@
         "reachable"
       ]
     },
+    "title": "Add Workspace Target",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Add Workspace Target"
     },
     "outputSchema": {
       "type": "object",
@@ -5599,7 +6316,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -5664,10 +6423,13 @@
         "mode"
       ]
     },
+    "title": "Set Scene Return",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Set Scene Return"
     },
     "outputSchema": {
       "type": "object",
@@ -5701,7 +6463,49 @@
           "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -5745,10 +6549,13 @@
         }
       }
     },
+    "title": "Solve Mates",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Solve Mates"
     },
     "outputSchema": {
       "type": "object",
@@ -5866,10 +6673,13 @@
         }
       }
     },
+    "title": "Review CAD Model",
     "annotations": {
-      "readOnlyHint": true,
+      "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Review CAD Model"
     },
     "outputSchema": {
       "type": "object",
@@ -6402,10 +7212,13 @@
         "attempts"
       ]
     },
+    "title": "Run Design Loop",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Run Design Loop"
     },
     "outputSchema": {
       "type": "object",
@@ -6478,10 +7291,13 @@
         }
       }
     },
+    "title": "Flatten Sheet-Metal Pattern",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Flatten Sheet-Metal Pattern"
     },
     "outputSchema": {
       "type": "object",
@@ -6542,10 +7358,13 @@
         "point"
       ]
     },
+    "title": "Evaluate SDF",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Evaluate SDF"
     },
     "outputSchema": {
       "type": "object",
@@ -6686,10 +7505,13 @@
         "file"
       ]
     },
+    "title": "Capture Animation",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Capture Animation"
     },
     "outputSchema": {
       "type": "object",
@@ -6927,16 +7749,61 @@
         }
       }
     },
+    "title": "Render Preview",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Render Preview"
     },
     "outputSchema": {
       "type": "object",
       "properties": {
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "ok": {
           "type": "boolean",
@@ -7049,10 +7916,13 @@
         "resolutions"
       ]
     },
+    "title": "Resolve Image Assumptions",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Resolve Image Assumptions"
     },
     "outputSchema": {
       "type": "object",
@@ -7164,10 +8034,13 @@
         }
       }
     },
+    "title": "Run Structural FEA",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Run Structural FEA"
     },
     "outputSchema": {
       "type": "object",
@@ -7243,10 +8116,13 @@
         }
       }
     },
+    "title": "Get FEA Summary",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Get FEA Summary"
     },
     "outputSchema": {
       "type": "object",
@@ -7382,10 +8258,13 @@
         "host"
       ]
     },
+    "title": "Send G-code to Printer",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Send G-code to Printer"
     },
     "outputSchema": {
       "type": "object",
@@ -7453,10 +8332,13 @@
         }
       }
     },
+    "title": "Repair CAD Script",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Repair CAD Script"
     },
     "outputSchema": {
       "type": "object",
@@ -7524,7 +8406,49 @@
           "type": "object",
           "properties": {
             "sceneSummary": {
-              "$ref": "./sceneSummary.schema.json"
+              "type": "object",
+              "properties": {
+                "valid": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ],
+                  "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+                },
+                "volume": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "Volume in mm³; assembly parts summed, including overlaps."
+                },
+                "faceCount": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "BREP faces, summed per assembly part; not mesh triangles."
+                },
+                "size": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "description": "Conservative world AABB size [x,y,z] in mm."
+                }
+              },
+              "required": [
+                "valid",
+                "volume",
+                "faceCount",
+                "size"
+              ],
+              "additionalProperties": false
             }
           },
           "additionalProperties": true,
@@ -7534,7 +8458,49 @@
           "type": "object",
           "properties": {
             "sceneSummary": {
-              "$ref": "./sceneSummary.schema.json"
+              "type": "object",
+              "properties": {
+                "valid": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ],
+                  "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+                },
+                "volume": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "Volume in mm³; assembly parts summed, including overlaps."
+                },
+                "faceCount": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "BREP faces, summed per assembly part; not mesh triangles."
+                },
+                "size": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "description": "Conservative world AABB size [x,y,z] in mm."
+                }
+              },
+              "required": [
+                "valid",
+                "volume",
+                "faceCount",
+                "size"
+              ],
+              "additionalProperties": false
             }
           },
           "additionalProperties": true,
@@ -7646,10 +8612,13 @@
         "params"
       ]
     },
+    "title": "Sweep Tolerance Range",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Sweep Tolerance Range"
     },
     "outputSchema": {
       "type": "object",
@@ -7767,10 +8736,13 @@
         }
       }
     },
+    "title": "Diff Model Geometry",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Diff Model Geometry"
     },
     "outputSchema": {
       "type": "object",
@@ -7953,10 +8925,13 @@
         }
       }
     },
+    "title": "Convert Drawing to CAD",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Convert Drawing to CAD"
     },
     "outputSchema": {
       "type": "object",
@@ -8085,10 +9060,13 @@
         }
       }
     },
+    "title": "Fit Features to Mesh",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Fit Features to Mesh"
     },
     "outputSchema": {
       "type": "object",
@@ -8248,10 +9226,13 @@
         }
       }
     },
+    "title": "Execute Cookbook",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": false,
+      "title": "Execute Cookbook"
     },
     "outputSchema": {
       "type": "object",
@@ -8324,10 +9305,13 @@
         "session"
       ]
     },
+    "title": "Get Selection",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": true,
+      "title": "Get Selection"
     },
     "outputSchema": {
       "type": "object",
@@ -8430,10 +9414,13 @@
         "selection"
       ]
     },
+    "title": "Set Selection",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": true,
+      "title": "Set Selection"
     },
     "outputSchema": {
       "type": "object",
@@ -8536,10 +9523,13 @@
         "upload"
       ]
     },
+    "title": "Import STEP",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": true
+      "openWorldHint": true,
+      "idempotentHint": true,
+      "title": "Import STEP"
     },
     "outputSchema": {
       "type": "object",
@@ -8695,10 +9685,13 @@
         }
       }
     },
+    "title": "Review Manufacturability",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Review Manufacturability"
     },
     "outputSchema": {
       "type": "object",
@@ -8840,10 +9833,13 @@
         }
       ]
     },
+    "title": "Pick Point by Ray",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Pick Point by Ray"
     },
     "outputSchema": {
       "type": "object",
@@ -8910,10 +9906,13 @@
         }
       }
     },
+    "title": "Inspect NURBS Curve",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": true,
+      "idempotentHint": true,
+      "title": "Inspect NURBS Curve"
     },
     "outputSchema": {
       "type": "object",
@@ -9031,10 +10030,13 @@
         "points"
       ]
     },
+    "title": "Fit Plane to Points",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Fit Plane to Points"
     },
     "outputSchema": {
       "type": "object",
@@ -9120,10 +10122,13 @@
         "b"
       ]
     },
+    "title": "Combine Meshes (Boolean)",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Combine Meshes (Boolean)"
     },
     "outputSchema": {
       "type": "object",
@@ -9239,10 +10244,13 @@
         }
       }
     },
+    "title": "Plan Exploded View",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Plan Exploded View"
     },
     "outputSchema": {
       "type": "object",
@@ -9396,10 +10404,13 @@
         "shape_binding"
       ]
     },
+    "title": "Apply Fillet or Chamfer Blend",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Apply Fillet or Chamfer Blend"
     },
     "outputSchema": {
       "type": "object",
@@ -9425,7 +10436,49 @@
           "additionalProperties": true
         },
         "sceneSummary": {
-          "$ref": "./sceneSummary.schema.json"
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "diagnostics": {
           "type": "array",
@@ -9557,10 +10610,13 @@
         "parts"
       ]
     },
+    "title": "Block Out Assembly from Parts List",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Block Out Assembly from Parts List"
     },
     "outputSchema": {
       "type": "object",
@@ -9602,10 +10658,13 @@
       "type": "object",
       "properties": {}
     },
+    "title": "List Asset Manifest",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "List Asset Manifest"
     },
     "outputSchema": {
       "type": "object",
