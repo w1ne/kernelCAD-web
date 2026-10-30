@@ -4,7 +4,7 @@
 import { beforeAll, describe, it, expect } from 'vitest';
 import { getOC, makeCompound } from 'replicad';
 import { OcctBackend, initOcct } from './occtBackend';
-import { assertBooleanSucceeded, fuseLeftUnmerged } from './historyAwareBooleans';
+import { assertBooleanSucceeded, fuseLeftUnmerged, fuseLostMaterial } from './historyAwareBooleans';
 
 // A degenerate OCCT boolean (coplanar/tangent tool faces, a tool that misses
 // the body) can leave the builder with IsDone()==false / HasErrors()==true
@@ -85,5 +85,54 @@ describe('fuseLeftUnmerged', () => {
     const body = OcctBackend.box(10, 10, 10, true);
     const bodyW = wrapped(body);
     expect(fuseLeftUnmerged(getOC(), [bodyW], bodyW)).toBe(false);
+  });
+});
+
+// OCCT's exact fuse of a healed STEP import with a filleted tool whose R4.95
+// corners sat 0.05 mm inside the import's R5 corners returned an EMPTY shape,
+// with no builder warning (CADGenBench 248). It exported as an empty STEP while
+// evaluate reported OK. A union always contains each operand, so a result
+// smaller than the largest operand solid is sent to recovery, then refused.
+describe('fuseLostMaterial', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  const wrapped = (shape: OcctBackend): unknown => (shape.getReplicadShape() as { wrapped: unknown }).wrapped;
+
+  it('accepts a real fuse', () => {
+    const body = OcctBackend.box(20, 12, 8, true);
+    const tool = OcctBackend.box(10, 12, 8, true).translate(14, 0, 0);
+    const inputs = [wrapped(body), wrapped(tool)];
+    expect(fuseLostMaterial(getOC(), inputs, wrapped(body.union(tool)))).toBeUndefined();
+  });
+
+  it('accepts a tool buried inside the body (no volume change)', () => {
+    const body = OcctBackend.box(20, 20, 20, true);
+    const tool = OcctBackend.box(5, 5, 5, true);
+    expect(fuseLostMaterial(getOC(), [wrapped(body), wrapped(tool)], wrapped(body.union(tool)))).toBeUndefined();
+  });
+
+  it('flags an empty result', () => {
+    const body = OcctBackend.box(20, 12, 8, true);
+    const tool = OcctBackend.box(10, 12, 8, true).translate(14, 0, 0);
+    const empty = new OcctBackend(makeCompound([]) as never);
+    const lost = fuseLostMaterial(getOC(), [wrapped(body), wrapped(tool)], wrapped(empty));
+    expect(lost).toEqual({ resultVolume: 0, largestSolid: expect.closeTo(20 * 12 * 8, 3) });
+  });
+
+  it('flags a result that kept only the smaller operand', () => {
+    const body = OcctBackend.box(20, 12, 8, true);
+    const tool = OcctBackend.box(10, 12, 8, true).translate(14, 0, 0);
+    const lost = fuseLostMaterial(getOC(), [wrapped(body), wrapped(tool)], wrapped(tool.clone()));
+    expect(lost?.largestSolid).toBeCloseTo(20 * 12 * 8, 3);
+  });
+
+  it('measures operand solids one by one, so an overlapping compound operand is not double-counted', () => {
+    const a = OcctBackend.box(10, 10, 10, true);
+    const b = OcctBackend.box(10, 10, 10, true).translate(5, 0, 0);
+    const overlapping = new OcctBackend(makeCompound([a.clone().getReplicadShape(), b.clone().getReplicadShape()]) as never);
+    // The compound "volume" is 2000 mm³; the true union is 1500 mm³ and is correct.
+    expect(fuseLostMaterial(getOC(), [wrapped(overlapping)], wrapped(a.union(b)))).toBeUndefined();
   });
 });
