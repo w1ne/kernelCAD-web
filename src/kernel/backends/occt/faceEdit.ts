@@ -143,6 +143,8 @@ interface FaceInfo {
   normal: Vec3;
   center: Vec3;
   area: number;
+  /** Set on cylindrical faces: a point on the axis, its direction, the radius. */
+  cylinder?: { loc: Vec3; dir: Vec3; radius: number };
 }
 
 interface EdgeInfo {
@@ -161,9 +163,53 @@ function faceInfos(oc: OC, shape: unknown): FaceInfo[] {
     } catch {
       // A face with no centre normal cannot be the image of a planar edit.
     }
-    out.push({ hash: hashOf(face), normal, center: surfaceCenter(oc, face), area: surfaceArea(oc, face) });
+    const cylinder = cylinderOf(oc, face);
+    out.push({
+      hash: hashOf(face),
+      normal,
+      center: surfaceCenter(oc, face),
+      area: surfaceArea(oc, face),
+      ...(cylinder ? { cylinder } : {}),
+    });
   });
   return out;
+}
+
+function cylinderOf(oc: OC, face: unknown): FaceInfo['cylinder'] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const o = oc as any;
+  const surface = new o.BRepAdaptor_Surface_2(o.TopoDS.Face_1(face), true);
+  try {
+    if (surface.GetType() !== o.GeomAbs_SurfaceType.GeomAbs_Cylinder) return undefined;
+    const cyl = surface.Cylinder();
+    const axis = cyl.Axis();
+    const loc = axis.Location();
+    const dir = axis.Direction();
+    try {
+      return { loc: [loc.X(), loc.Y(), loc.Z()], dir: [dir.X(), dir.Y(), dir.Z()], radius: cyl.Radius() };
+    } finally {
+      for (const h of [loc, dir, axis, cyl]) h.delete();
+    }
+  } catch {
+    return undefined;
+  } finally {
+    surface.delete();
+  }
+}
+
+/** Both faces lie on one cylinder: parallel axes on the same line, same radius.
+ *  A slid boss face extends the boss wall with a new face on that cylinder; on
+ *  a large import (no coplanar sew) the new face stays separate, and its
+ *  centre and mid-normal need not match the old wall's, so the plane test
+ *  alone called it foreign (CADGenBench 250). Exported for the unit test. */
+export function sameCylinder(a: Pick<FaceInfo, 'cylinder'>, b: Pick<FaceInfo, 'cylinder'>): boolean {
+  if (!a.cylinder || !b.cylinder) return false;
+  if (Math.abs(a.cylinder.radius - b.cylinder.radius) > 1e-4) return false;
+  if (Math.abs(Math.abs(dot(a.cylinder.dir, b.cylinder.dir)) - 1) > 1e-6) return false;
+  const rel = sub(b.cylinder.loc, a.cylinder.loc);
+  const along = dot(rel, a.cylinder.dir);
+  const d = a.cylinder.dir;
+  return Math.hypot(rel[0] - d[0] * along, rel[1] - d[1] * along, rel[2] - d[2] * along) <= 1e-4;
 }
 
 function edgeInfos(oc: OC, shape: unknown): EdgeInfo[] {
@@ -594,7 +640,9 @@ function certifyPlanarOffset(
     const baselineInfos = faceInfos(oc, baseline.shape);
     const foreign = faceInfos(oc, result.shape).filter(
       (face) =>
-        !baselineInfos.some((known) => known.hash === face.hash || onSupport(face, known.normal, known.center)) &&
+        !baselineInfos.some(
+          (known) => known.hash === face.hash || sameCylinder(face, known) || onSupport(face, known.normal, known.center),
+        ) &&
         !onSupport(face, normal, [origin[0] + normal[0] * distance, origin[1] + normal[1] * distance, origin[2] + normal[2] * distance]),
     );
     // A face that sits in a pocket has only concave/tangent boundary edges.
@@ -614,7 +662,7 @@ function certifyPlanarOffset(
         `moving this face by ${distance} mm left ${faceHashes.length} faces; the sewn solid had ${beforeFaces}. ` +
           `The face count changed against the sewn solid and ${moved.size} new face(s) lie in planes the solid did not have ` +
           `(${[...moved].slice(0, 3).join('; ')}${moved.size > 3 ? '; …' : ''}). ` +
-          `A face slide may re-trim existing planes, but a new plane on an outer face means a step was glued on.${glued} ` +
+          `A face slide may re-trim existing planes and cylinders, but a new plane on an outer face means a step was glued on.${glued} ` +
           `Pick a face whose boundary can move with it, or build the change as a boolean.${sewNote}`,
       );
     }
