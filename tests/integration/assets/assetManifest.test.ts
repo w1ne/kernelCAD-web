@@ -173,10 +173,12 @@ describe('asset declarations and manifest tool', () => {
   });
 
   it('marks asset_manifest as a read-only MCP tool', () => {
-    expect(getToolDefinition('asset_manifest')?.annotations).toEqual({
+    expect(getToolDefinition('asset_manifest')?.annotations).toMatchObject({
+      title: 'List Asset Manifest',
       readOnlyHint: true,
       destructiveHint: false,
       openWorldHint: false,
+      idempotentHint: true,
     });
   });
 });
