@@ -5,6 +5,8 @@ import type { JSONSchemaObject } from '../toolOutputSchemas';
 
 export interface McpToolDefinition {
   name: string;
+  /** Human-readable title (MCP ToolAnnotations.title / tools/list title). */
+  title?: string;
   description: string;
   inputSchema: {
     type: 'object';
@@ -14,8 +16,9 @@ export interface McpToolDefinition {
      *  required-by-discriminator fields. */
     allOf?: unknown[];
   };
-  /** MCP behavioral hints (readOnly/destructive/openWorld). Required for ChatGPT
-   *  app-directory submission; merged from TOOL_ANNOTATIONS at build time. */
+  /** MCP behavioral hints (title/readOnly/destructive/openWorld/idempotent).
+   *  Required for ChatGPT/Anthropic directory submission; merged from
+   *  TOOL_ANNOTATIONS + TOOL_TITLES at build time. */
   annotations?: ToolAnnotations;
   /** MCP structured-output schema (JSON Schema for the tool's return value).
    *  Merged from TOOL_OUTPUT_SCHEMAS at build time. */

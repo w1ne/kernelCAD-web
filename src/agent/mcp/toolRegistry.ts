@@ -4,6 +4,7 @@ import { getMcpViewerResult } from './liveViewer';
 import { selectionToolEntries } from './registry/selectionTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
+import { toolTitle } from './toolTitles';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
 import { feaToolEntries } from './registry/feaTools';
@@ -114,14 +115,17 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
- *  (TOOL_ANNOTATIONS) and the structured-output schema (TOOL_OUTPUT_SCHEMAS).
- *  Both live in one central map each so the surface is classified in a single
- *  place and the consistency gate can enforce coverage. */
+ *  (TOOL_ANNOTATIONS), human titles (TOOL_TITLES), and the structured-output
+ *  schema (TOOL_OUTPUT_SCHEMAS). Each lives in one central map so the surface
+ *  is classified in a single place and the consistency gate can enforce coverage. */
 function withMetadata(def: McpToolDefinition): McpToolDefinition {
-  const annotations = TOOL_ANNOTATIONS[def.name];
+  const base = TOOL_ANNOTATIONS[def.name];
+  const title = toolTitle(def.name);
+  const annotations = base ? { ...base, title } : undefined;
   const outputSchema = TOOL_OUTPUT_SCHEMAS[def.name];
   return {
     ...def,
+    title,
     ...(annotations ? { annotations } : {}),
     ...(outputSchema ? { outputSchema } : {}),
   };
