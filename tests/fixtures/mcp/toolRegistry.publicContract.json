@@ -10887,5 +10887,609 @@
       ],
       "additionalProperties": false
     }
+  },
+  {
+    "name": "search_assets",
+    "description": "Use this when a game, three.js scene or 3D page needs a ready low-poly model (tree, bench, lamp, crate, building piece) instead of modelling it from scratch. Searches the kernelCAD asset catalog: original parametric .kcad.ts programs that export as flat-shaded GLB at real-world scale with one shared material. Filter by kit, category or a triangle budget for mobile. Rows: id, title, kit, category, triangles (low-poly GLB at default knobs), size_m [x, y, z] in metres (Y up), origin (base = bottom centre on y 0), tags, remixable, knobs, palette (hex colours), has_rig. When q or a filter is given, coverage says how far to trust the answer: none (nothing answers: say so, do not substitute something unrelated), poor (unmatched_terms lists the words nothing answers), filtered_out (the catalog has it; relax a filter), ok.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string",
+          "description": "Plain words, e.g. \"pine tree\", \"park bench\"."
+        },
+        "kit": {
+          "type": "string",
+          "description": "Kit id from list_kits."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "prop",
+            "furniture",
+            "building",
+            "structure",
+            "vehicle",
+            "nature",
+            "terrain",
+            "item",
+            "attachment",
+            "character",
+            "animal"
+          ]
+        },
+        "max_triangles": {
+          "type": "number",
+          "description": "Only assets at or under this triangle count."
+        },
+        "min_triangles": {
+          "type": "number"
+        },
+        "sort": {
+          "type": "string",
+          "enum": [
+            "relevance",
+            "triangles"
+          ],
+          "default": "relevance"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Rows per page, 1-100 (default 20)."
+        },
+        "page": {
+          "type": "number",
+          "description": "1-based page (default 1)."
+        }
+      }
+    },
+    "title": "Search Assets",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Search Assets"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer"
+        },
+        "page": {
+          "type": "integer"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "kit": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "triangles": {
+                "type": "integer"
+              },
+              "size_m": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "origin": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "remixable": {
+                "type": "boolean"
+              },
+              "knobs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "palette": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "has_rig": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "kit",
+              "category",
+              "triangles",
+              "size_m"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "coverage": {
+          "type": "string",
+          "enum": [
+            "none",
+            "poor",
+            "ok",
+            "filtered_out"
+          ]
+        },
+        "unmatched_terms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "matches_before_filters": {
+          "type": "integer"
+        },
+        "next": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "total",
+        "rows",
+        "unmatched_terms",
+        "matches_before_filters"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "get_asset",
+    "description": "Use this when you have picked a catalog asset and need everything to use or change it: knobs (type, default, range or choices, label), presets, rig, measured triangles and size in metres, palette zones named after their colour knob, licence, and the full .kcad.ts source (`code`) to export or edit.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Asset id from search_assets."
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "title": "Get Asset",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Get Asset"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kit": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "presets": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "stats": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "palette": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "code": {
+          "type": "string"
+        },
+        "how_to_build": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kit",
+        "params",
+        "stats",
+        "code"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "find_matching",
+    "description": "Use this when one picked asset should become a scene: returns assets that belong with it, same kit first, then shared compat tags (e.g. outdoor), a shared palette colour and compatible real-world scale, spread across categories so a tree brings a rock and a bench rather than more trees. Each row adds score and reasons. Rows: id, title, kit, category, triangles (low-poly GLB at default knobs), size_m [x, y, z] in metres (Y up), origin (base = bottom centre on y 0), tags, remixable, knobs, palette (hex colours), has_rig.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Anchor asset id."
+        },
+        "limit": {
+          "type": "number",
+          "description": "1-50 (default 12)."
+        },
+        "max_triangles": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "title": "Find Matching Assets",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Find Matching Assets"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "kit": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "triangles": {
+                "type": "integer"
+              },
+              "size_m": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "origin": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "remixable": {
+                "type": "boolean"
+              },
+              "knobs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "palette": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "has_rig": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "kit",
+              "category",
+              "triangles",
+              "size_m"
+            ],
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "id",
+        "rows"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "get_variant",
+    "description": "Use this when the user describes a variant in plain words (\"taller, red foliage, five tiers\", \"autumn\", \"bark #333333\", \"with snow\"). Matches the words against this asset's knob names, option values, presets, #hex or basic colour words before a colour knob, with/without for toggles, and taller/shorter/more/fewer for size and count knobs. Returns the knob values, what matched, the words that did not (never guessed), and the variant .kcad.ts source (`code`) with those values written in, ready to export.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Asset id."
+        },
+        "want": {
+          "type": "string",
+          "description": "Plain words describing the variant."
+        }
+      },
+      "required": [
+        "id",
+        "want"
+      ]
+    },
+    "title": "Get Asset Variant",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Get Asset Variant"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "want": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        },
+        "matched": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "unmatched": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "preset": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "how_to_build": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "params",
+        "matched",
+        "unmatched",
+        "code"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "list_kits",
+    "description": "Use this when the user is building a whole environment rather than looking for one object: lists the asset kits (themed sets built to one palette and real-world scale) with their asset counts.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "title": "List Asset Kits",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "List Asset Kits"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "kits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "assets": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "assets"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "kits"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "get_kit",
+    "description": "Use this when you have chosen a kit and want every asset in it as shortlisting rows in one call. Rows: id, title, kit, category, triangles (low-poly GLB at default knobs), size_m [x, y, z] in metres (Y up), origin (base = bottom centre on y 0), tags, remixable, knobs, palette (hex colours), has_rig.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Kit id from list_kits."
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "title": "Get Asset Kit",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Get Asset Kit"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "kit": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "triangles": {
+                "type": "integer"
+              },
+              "size_m": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "origin": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "remixable": {
+                "type": "boolean"
+              },
+              "knobs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "palette": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "has_rig": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "kit",
+              "category",
+              "triangles",
+              "size_m"
+            ],
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "assets",
+        "rows"
+      ],
+      "additionalProperties": false
+    }
   }
 ]

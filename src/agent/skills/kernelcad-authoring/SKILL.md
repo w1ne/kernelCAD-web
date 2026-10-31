@@ -90,6 +90,7 @@ A clean evaluate proves the script ran, not that it is the part the user asked f
 3. **Route** each feature through the table above; `lookup_cookbook` the recipe.
 4. **Write** the `.kcad.ts`, evaluate, repair one diagnostic at a time.
 5. **Verify** with measurements and renders, then run **Before you finish**.
+6. **Prebuilt art** (games, three.js): browse the shipped low-poly kits with `search_assets`, `get_asset`, `find_matching`, `get_variant`, `list_kits`, `get_kit` instead of modelling from scratch.
 
 Full loop and artifact policy: `agent-authoring-loop` (`references/workflow.md`).
 
