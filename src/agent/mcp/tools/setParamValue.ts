@@ -10,11 +10,18 @@ import { isKernelError } from '../../../shared/intent/kernelError';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { normalizeColor } from '../../../shared/runtime/paramColor';
 import { previewCodeEdit, type EditPreviewResult } from './editPreview';
+import { planFeatureParamEdit, type FeatureParamChange, type FeatureParamEdit } from '../edits/featureParamEdit';
 
 export interface SetParamValueInput {
   code: string;
-  param_name: string;
-  new_value: number | string | boolean;
+  /** param() mode: the param to change. */
+  param_name?: string;
+  /** param() mode: its new default. */
+  new_value?: number | string | boolean;
+  /** Feature mode: the feature id to edit in place (inspect({ of: 'features' })). */
+  feature?: string;
+  /** Feature mode: the feature's parameters to change, e.g. { r: 3.3 }. */
+  changes?: Record<string, number>;
   /** S6: build the edit in a scratch session and return the diff_geometry
    *  summary plus the requirements-ledger and S1 binding diffs. Nothing is
    *  written: the active session, source and caches are untouched. */
@@ -23,6 +30,14 @@ export interface SetParamValueInput {
 
 export interface SetParamValueOutput extends Partial<Omit<EditPreviewResult, 'ok'>> {
   ok: boolean;
+  /** Feature mode: the edited feature, each rewritten argument and every
+   *  captured parameter that changed. */
+  feature?: string;
+  kind?: string;
+  edits?: FeatureParamEdit[];
+  changedParams?: FeatureParamChange[];
+  errorCode?: string;
+  hint?: string;
   new_code?: string;
   step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
@@ -32,6 +47,45 @@ export interface SetParamValueOutput extends Partial<Omit<EditPreviewResult, 'ok
 
 export async function setParamValueTool(
   input: SetParamValueInput,
+): Promise<SetParamValueOutput> {
+  if (input.feature !== undefined) return setFeatureParamsTool(input);
+  if (typeof input.param_name !== 'string' || input.new_value === undefined) {
+    return {
+      ok: false,
+      error: 'set_param needs either { param_name, new_value } (a param() default) or { feature, changes } (a feature\'s own parameters).',
+    };
+  }
+  return setDeclaredParamTool({ ...input, param_name: input.param_name, new_value: input.new_value });
+}
+
+/**
+ * Feature mode: rewrite the feature's own arguments, rebuild the model before
+ * and after, and return the revised source with the geometry, requirements
+ * and selector diffs (the same payload as `preview: true`). Writes nothing and
+ * leaves the active session alone; the caller persists `new_code`.
+ */
+async function setFeatureParamsTool(input: SetParamValueInput): Promise<SetParamValueOutput> {
+  const plan = await planFeatureParamEdit({
+    code: input.code,
+    feature: input.feature ?? '',
+    changes: (input.changes ?? {}) as Record<string, unknown>,
+  });
+  if (!plan.ok) {
+    return { ok: false, error: plan.error, errorCode: plan.errorCode, ...(plan.hint !== undefined ? { hint: plan.hint } : {}) };
+  }
+  const preview = await previewCodeEdit({ baselineCode: input.code, revisedCode: plan.new_code });
+  return {
+    ...preview,
+    feature: plan.feature,
+    kind: plan.kind,
+    edits: plan.edits,
+    changedParams: plan.changedParams,
+    ...(preview.ok ? { new_code: plan.new_code } : {}),
+  };
+}
+
+async function setDeclaredParamTool(
+  input: SetParamValueInput & { param_name: string; new_value: number | string | boolean },
 ): Promise<SetParamValueOutput> {
   // Gate 1 — SOURCE-TEXT validation, always runs, independent of whether the
   // script can evaluate at all. See `validateAgainstDeclaration` below for
