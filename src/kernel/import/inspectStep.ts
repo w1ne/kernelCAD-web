@@ -126,6 +126,19 @@ export async function inspectStepBuffer(
     );
   }
 
+  return inspectShapeReport(imported as replicad.Shape3D, label, buf.toString('utf8'));
+}
+
+/**
+ * Measure a shape that has already been imported. `stepText` is only used to
+ * recover MANIFOLD_SOLID_BREP names; pass the original file text even when
+ * `shape` was normalized after import.
+ */
+export function inspectShapeReport(
+  shape: replicad.Shape3D,
+  label: string,
+  stepText: string,
+): StepInspectReport {
   // Best-effort solid names: replicad's importer drops STEP entity names,
   // so parse them from the file text in entity order and pair them with
   // explorer index. This pairing is heuristic — TopExp_Explorer traversal
@@ -134,14 +147,14 @@ export async function inspectStepBuffer(
   // STEP escapes a literal apostrophe as '' inside string tokens, so the
   // name pattern must consume '' pairs and unescape them afterwards.
   const entityNames: string[] = [];
-  for (const m of buf.toString('utf8').matchAll(/MANIFOLD_SOLID_BREP\('((?:[^']|'')*)'/g)) {
+  for (const m of stepText.matchAll(/MANIFOLD_SOLID_BREP\('((?:[^']|'')*)'/g)) {
     entityNames.push(m[1].replace(/''/g, "'"));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const wrapped = (imported as any).wrapped;
+  const wrapped = (shape as any).wrapped;
 
   // Explode into solids. A single-solid import yields one TopAbs_SOLID;
   // a compound yields one per child.

@@ -174,6 +174,36 @@ describe('parseEditIntent', () => {
     expect(parseEditIntent('Increase the boss diameter to 40 mm.').direction).toBe('increase');
   });
 
+  it('reads the resized feature from the object, not a bore named in its description', () => {
+    expect(
+      parseEditIntent('Increase the length of the square boss with rounded corners and a central bore by 10mm.')
+        .direction,
+    ).toBe('increase');
+    expect(
+      parseEditIntent(
+        'Increase the length of the only boss in the model with no fillet on its mounting face such that it is flush with the next nearest mounting hole.',
+      ).direction,
+    ).toBe('increase');
+    expect(parseEditIntent("Increase the boss's bore diameter to 12 mm.").direction).toBe('decrease');
+    expect(parseEditIntent('Shorten the slot next to the rib by 5 mm.').direction).toBe('increase');
+    expect(parseEditIntent('Reduce the rib height near the slot by 2 mm.').direction).toBe('decrease');
+  });
+
+  it('leaves the direction open when walls are moved inward or outward', () => {
+    expect(
+      parseEditIntent(
+        'For each of the four non-circular pockets on the +X side of the central bore, bring their walls (faces with long axis along Y) inward by 6mm.',
+      ).direction,
+    ).toBe('any');
+  });
+
+  it('leaves the direction open when a fillet is removed from a named feature', () => {
+    expect(
+      parseEditIntent('Remove the fillet from the outer diameter of the central boss on the +Z side of the part.')
+        .direction,
+    ).toBe('any');
+  });
+
   it('reads a fill request as material addition and fewer holes', () => {
     expect(parseEditIntent('Fill the three holes on the front face.')).toMatchObject({
       direction: 'increase',

@@ -33,6 +33,18 @@ export interface StepAssemblyPart {
   color?: string;
 }
 
+export interface StepWriteOptions {
+  /**
+   * Write surface 2D curves (pcurves) alongside the 3D curves. Default true,
+   * the interchange-friendly form. `false` is the recovery form: some STEP
+   * sources carry a pcurve that OCCT's reader accepts only on the native
+   * side, so a re-export that keeps it writes a face other readers reject as
+   * unorientable. The 3D curves and surfaces already define the geometry;
+   * every STEP reader rebuilds pcurves from them.
+   */
+  surfaceCurves?: boolean;
+}
+
 /** Embind object with an explicit destructor. */
 interface Deletable {
   delete(): void;
@@ -80,7 +92,7 @@ function addParts(oc: any, docHandle: any, parts: readonly StepAssemblyPart[]): 
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function writeDocument(oc: any, docHandle: any, filename: string): boolean {
+function writeDocument(oc: any, docHandle: any, filename: string, surfaceCurves: boolean): boolean {
   return withScope((track) => {
     // Order matters on teardown (reverse): writer, then the session handle
     // that frees the session. The raw session is never deleted directly.
@@ -89,13 +101,22 @@ function writeDocument(oc: any, docHandle: any, filename: string): boolean {
     writer.SetColorMode(true);
     writer.SetLayerMode(true);
     writer.SetNameMode(true);
-    oc.Interface_Static.SetIVal('write.surfacecurve.mode', true);
+    // The STEP writer statics are process-global, and replicad's single-shape
+    // `blobSTEP()` inherits whatever is set here (it only pins the schema).
+    // Restore the pcurve mode so a pcurve-free heal/repair write cannot
+    // silently change the next export.
+    const previousSurfaceCurves = oc.Interface_Static.IVal('write.surfacecurve.mode');
+    oc.Interface_Static.SetIVal('write.surfacecurve.mode', surfaceCurves ? true : 0);
     oc.Interface_Static.SetIVal('write.precision.mode', 0);
     oc.Interface_Static.SetIVal('write.step.assembly', 2);
     oc.Interface_Static.SetIVal('write.step.schema', 5);
     const progress = track(new oc.Message_ProgressRange_1());
-    writer.Transfer_1(docHandle, oc.STEPControl_StepModelType.STEPControl_AsIs, null, progress);
-    return writer.Write(filename) === oc.IFSelect_ReturnStatus.IFSelect_RetDone;
+    try {
+      writer.Transfer_1(docHandle, oc.STEPControl_StepModelType.STEPControl_AsIs, null, progress);
+      return writer.Write(filename) === oc.IFSelect_ReturnStatus.IFSelect_RetDone;
+    } finally {
+      oc.Interface_Static.SetIVal('write.surfacecurve.mode', previousSurfaceCurves);
+    }
   });
 }
 
@@ -103,7 +124,10 @@ function writeDocument(oc: any, docHandle: any, filename: string): boolean {
  * Write `parts` as one STEP file with a named, coloured body per part.
  * Output matches `replicad.exportSTEP(shapes)` without unit overrides.
  */
-export function writeStepAssembly(parts: readonly StepAssemblyPart[]): Uint8Array {
+export function writeStepAssembly(
+  parts: readonly StepAssemblyPart[],
+  opts: StepWriteOptions = {},
+): Uint8Array {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   const filename = 'kernelcad-assembly.step';
@@ -112,7 +136,7 @@ export function writeStepAssembly(parts: readonly StepAssemblyPart[]): Uint8Arra
     const docHandle = track(new oc.Handle_TDocStd_Document_2(new oc.TDocStd_Document(format)));
     oc.XCAFDoc_ShapeTool.SetAutoNaming(false);
     addParts(oc, docHandle, parts);
-    if (!writeDocument(oc, docHandle, filename)) throw new Error('WRITE STEP FILE FAILED.');
+    if (!writeDocument(oc, docHandle, filename, opts.surfaceCurves !== false)) throw new Error('WRITE STEP FILE FAILED.');
     const bytes = oc.FS.readFile('/' + filename) as Uint8Array;
     oc.FS.unlink('/' + filename);
     return bytes;

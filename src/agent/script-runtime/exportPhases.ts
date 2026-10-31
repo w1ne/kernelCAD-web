@@ -752,6 +752,23 @@ export async function exportSingleShape(
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
+  // An empty result (a boolean that lost every face) would otherwise write a
+  // header-only STEP/STL and report success.
+  if (shape.isEmpty()) {
+    return {
+      bytes: new Uint8Array(),
+      featureCount,
+      diagnostics: [...diagnostics, {
+        target: 'export-occt',
+        code: 'export.no-shape',
+        severity: 'error',
+        featureId: targetId,
+        message: `The returned shape (${targetId}) is empty: it has no faces, so there is nothing to export.`,
+        hint: 'An upstream boolean or edit removed all material. Evaluate the script and check which feature first has zero volume.',
+        nextAction: NEXT_ACTIONS['export.no-shape'],
+      }],
+    };
+  }
   switch (format) {
     case 'stl':
       return exportSingleStl(input, shape, targetId, diagnostics, featureCount);

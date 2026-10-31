@@ -5,8 +5,8 @@
 // Per-task resume state: `<runDir>/tasks/<id>/state.json`, written atomically
 // (tmp file + rename) so a killed run never leaves a half-written record.
 //
-// A task is finished when it reached a terminal status. `valid` is always
-// skipped on resume; `invalid` and `failed` are skipped unless the caller
+// A task is finished when it reached a terminal status. `valid` is eligible
+// for resume when its candidate digest also matches; `invalid` and `failed` are skipped unless the caller
 // asks to retry them; `needs_key` and `infra_error` always rerun, because
 // they say nothing about the model, only about the environment. A task
 // finished by a different producer (passthrough vs LLM) also reruns.
@@ -34,6 +34,8 @@ export interface TaskState {
   /** How the candidate was produced. */
   mode: 'llm' | 'scripts-from' | 'passthrough' | 'none';
   model?: string;
+  /** SHA-256 of the accepted submission STEP, for safe resume. */
+  candidateSha256?: string;
   /** Set when an editing task submitted its unchanged input because no edit passed the gate. */
   fallback?: 'passthrough';
   attempts: number;

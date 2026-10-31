@@ -3,7 +3,7 @@
 #   curl -fsSL https://kernelcad.com/install.sh | sh
 #
 # Env:
-#   KERNELCAD_VERSION=v0.17.2     pin a release (default: latest)
+#   KERNELCAD_VERSION=v0.17.4     pin a release (default: latest)
 #   KERNELCAD_INSTALL_DIR=...     directory for the `kernelcad` symlink
 #   KERNELCAD_HOME=...            versioned install root
 #   KERNELCAD_NO_MODIFY_PATH=1    never touch shell rc files
@@ -64,11 +64,11 @@ if [ "$VERSION" = "latest" ]; then
   TAG="$(fetch_text "https://api.github.com/repos/${REPO}/releases/latest" | awk -F '"' '/"tag_name"[[:space:]]*:/ { print $4; exit }')"
   case "$TAG" in
     v[0-9]*.[0-9]*.[0-9]*) VERSION="$TAG" ;;
-    *) die "could not resolve the latest release; pin one with KERNELCAD_VERSION=v0.17.2" ;;
+    *) die "could not resolve the latest release; pin one with KERNELCAD_VERSION=v0.17.4" ;;
   esac
 fi
 printf '%s\n' "$VERSION" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$' \
-  || die "KERNELCAD_VERSION must look like v0.17.2"
+  || die "KERNELCAD_VERSION must look like v0.17.4"
 
 ARCHIVE="kernelcad-${VERSION#v}-${PLATFORM}.tar.gz"
 BASE_URL="https://github.com/${REPO}/releases/download/${VERSION}"

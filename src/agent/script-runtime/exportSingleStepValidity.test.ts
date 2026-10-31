@@ -53,3 +53,22 @@ describe('single-shape STEP validity', () => {
     expect(result.diagnostics.map(d => d.code)).not.toContain('export.brep.invalid');
   });
 });
+
+// A boolean that removes every face used to export as a header-only STEP with
+// no diagnostic, so `kernelcad export` printed success for an empty file.
+describe('single-shape export of an empty result', () => {
+  for (const format of ['step', 'stl'] as const) {
+    it(`refuses an empty ${format} instead of writing a header-only file`, async () => {
+      const result = await runAndExport({
+        fileName: `empty-${format}.kcad.ts`,
+        format,
+        code: 'return box(10, 10, 10).subtract(box(20, 20, 20).translate(-5, -5, -5));',
+      });
+
+      expect(result.bytes.byteLength).toBe(0);
+      const empty = result.diagnostics.find(d => d.code === 'export.no-shape');
+      expect(empty?.severity).toBe('error');
+      expect(empty?.message).toMatch(/empty/);
+    });
+  }
+});

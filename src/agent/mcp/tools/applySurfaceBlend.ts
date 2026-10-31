@@ -11,7 +11,7 @@ export interface ApplySurfaceBlendInput {
   operation?: 'fillet' | 'chamfer';
   radius?: number;
   distance?: number;
-  selector?: string | { face: string };
+  selector?: string | string[] | { face: string };
   continuity?: 'G1' | 'G2';
 }
 
@@ -39,7 +39,7 @@ function validateSurfaceBlendInput(input: ApplySurfaceBlendInput):
     return { ok: false, error: "continuity must be 'G1' or 'G2'." };
   }
   if (surfaceBlendSelectorInvalid(input.selector)) {
-    return { ok: false, error: 'selector must be an edge selector string or { face: nameOrQuery }.' };
+    return { ok: false, error: 'selector must be an edge selector string, an array of edge selector strings, or { face: nameOrQuery }.' };
   }
   return { ok: true, operation, amount: operation === 'fillet' ? input.radius! : input.distance! };
 }
@@ -52,6 +52,7 @@ function surfaceBlendAmountError(operation: 'fillet' | 'chamfer', input: ApplySu
 
 function surfaceBlendSelectorInvalid(selector: ApplySurfaceBlendInput['selector']): boolean {
   if (selector === undefined || typeof selector === 'string') return false;
+  if (Array.isArray(selector)) return selector.length === 0 || selector.some(value => typeof value !== 'string');
   return !(selector && typeof selector === 'object' && typeof selector.face === 'string');
 }
 
@@ -64,6 +65,18 @@ function nextSurfaceBlendBinding(code: string): string {
   return `_surface_blend_${i}`;
 }
 
+function returnBlendResult(code: string, blendBinding: string, shapeBinding: string): string | null {
+  const lines = code.split('\n');
+  const operationLine = lines.findIndex(line => new RegExp(`^\\s*const\\s+${blendBinding}\\s*=`).test(line));
+  const returnIndex = operationLine + 1;
+  const returned = lines[returnIndex];
+  if (operationLine < 0 || returned === undefined) return null;
+  const match = returned.match(/^(\s*)return\s+([A-Za-z_$][\w$]*)\s*;?\s*(?:\/\/.*)?$/);
+  if (!match || match[2] !== shapeBinding) return null;
+  lines[returnIndex] = `${match[1]}return ${blendBinding};`;
+  return lines.join('\n');
+}
+
 export async function applySurfaceBlendTool(input: ApplySurfaceBlendInput): Promise<ApplySurfaceBlendOutput> {
   const validated = validateSurfaceBlendInput(input);
   if (!validated.ok) return validated;
@@ -74,10 +87,12 @@ export async function applySurfaceBlendTool(input: ApplySurfaceBlendInput): Prom
   const featureCode = `const ${blendBinding} = ${input.shape_binding}.${operation}(${amount}${selectorCode}${optsCode});`;
   const edit = addFeature(input.code, featureCode);
   if (!edit.ok || !edit.new_code) return { ok: false, error: edit.error };
-  const evaluated = await evaluateScriptTool({ code: edit.new_code });
+  const updatedCode = returnBlendResult(edit.new_code, blendBinding, input.shape_binding);
+  if (!updatedCode) return { ok: false, error: `The top-level script return must directly return '${input.shape_binding}' so the ${operation} result can become the model output.` };
+  const evaluated = await evaluateScriptTool({ code: updatedCode });
   return {
     ok: evaluated.ok,
-    new_code: edit.new_code,
+    new_code: updatedCode,
     operation,
     ...(input.selector === undefined ? {} : { selector: input.selector }),
     step: evaluated.step,

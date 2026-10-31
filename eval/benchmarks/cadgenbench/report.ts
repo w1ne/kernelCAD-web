@@ -29,8 +29,11 @@ export interface RunSummary {
 const LOCAL_SCORE_NOTE =
   'CAD Score is not computable locally: the ground truth is private and scored only by the leaderboard grader.';
 
-/** Valid for the summary = official verdict when present, else the pre-check. */
+/** Valid for the summary = official verdict when present, else the pre-check.
+ *  A `failed` task submits no candidate, so an official pass recorded for a
+ *  rejected attempt (for example one edit promotion turned down) is not valid. */
 export function isValidCandidate(s: TaskState): boolean {
+  if (s.status !== 'valid' && s.status !== 'invalid') return false;
   if (s.official) return s.official.valid;
   return s.status === 'valid';
 }

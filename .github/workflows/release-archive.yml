@@ -2,10 +2,19 @@ name: Release archive
 
 # Builds portable native CLI archives, attaches them to the GitHub Release,
 # then publishes the same stable tag to npm through Trusted Publishing.
+# A pull request that touches the archive inputs builds every platform archive
+# but does not publish anything.
 on:
   push:
     tags:
       - 'v*'
+  pull_request:
+    paths:
+      - '.github/workflows/release-archive.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/build-release-archive.mjs'
+      - 'scripts/install-platform-bindings.mjs'
 
 permissions:
   actions: read
@@ -36,7 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
 
       - uses: actions/setup-node@v4
         with:
@@ -44,6 +53,7 @@ jobs:
           cache: npm
 
       - name: Verify tag matches package version
+        if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: |
           tag_version="${GITHUB_REF_NAME#v}"
@@ -52,6 +62,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Install native build bindings for this runner
+        run: node scripts/install-platform-bindings.mjs
 
       - name: Build CLI and player
         run: npm run build
@@ -75,6 +88,7 @@ jobs:
   publish-release:
     name: Attach archives and attestations
     needs: build
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -134,7 +148,7 @@ jobs:
   publish-npm:
     name: Publish npm package
     needs: publish-release
-    if: ${{ !contains(github.ref_name, '-') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-') }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read

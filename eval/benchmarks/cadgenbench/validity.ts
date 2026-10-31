@@ -24,7 +24,7 @@ import { readFile } from 'node:fs/promises';
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { meshShapeForExport, type ExportMeshDeflection } from '../../../src/kernel/backends/occt/backendMesh';
+import { meshShapeForExport } from '../../../src/kernel/backends/occt/backendMesh';
 import { verifyWatertight, type EditableMesh } from '../../../src/kernel/backends/occt/meshHeal';
 import { describeOcctThrow } from '../../../src/kernel/backends/occt/occtException';
 
@@ -40,6 +40,12 @@ export interface StepValidity {
   /** Export tessellation is a closed, orientation-consistent 2-manifold. */
   meshManifold: boolean;
   triangleCount: number;
+  /** Deflection of the ladder rung whose tessellation closed, when it passed. */
+  meshDeflectionMm?: number;
+  /** Axis-aligned bounding sizes in millimetres, when the STEP imported as a shape. */
+  extentsMm?: [number, number, number];
+  /** Solid volume in mm³, when the STEP imported as a shape. */
+  volumeMm3?: number;
   /** Human-readable reasons, empty when valid. Fed verbatim into repair prompts. */
   errors: string[];
 }
@@ -149,12 +155,26 @@ export function deflectionForDiagonal(diagonalMm: number): number {
   return Math.min(0.5, Math.max(0.005, 0.001 * diagonalMm));
 }
 
-function gateDeflection(shape: replicad.Shape3D): ExportMeshDeflection {
-  const [[x0, y0, z0], [x1, y1, z1]] = shape.boundingBox.bounds;
-  const diagonal = Math.hypot(x1 - x0, y1 - y0, z1 - z0);
-  return { linear: deflectionForDiagonal(diagonal), relative: false, angularRad: 0.5 };
+/**
+ * Deflection ladder tried by the pre-check, mirroring the benchmark gate's
+ * `robust_tessellate_shape` (requested, /4, /16, /32). A coarse tessellation
+ * can leave T-junction cracks or an untriangulated sliver that a finer one
+ * resolves; the official gate accepts the first rung whose welded mesh is a
+ * closed orientable manifold, so the local mirror must do the same or it
+ * rejects candidates the grader accepts (fixture 202).
+ */
+export const GATE_MESH_LADDER = [1, 4, 16, 32] as const;
+
+export function gateMeshDeflections(diagonalMm: number): number[] {
+  const d = deflectionForDiagonal(diagonalMm);
+  return GATE_MESH_LADDER.map((divisor) => d / divisor);
 }
 
+function gateDeflections(shape: replicad.Shape3D): number[] {
+  const [[x0, y0, z0], [x1, y1, z1]] = shape.boundingBox.bounds;
+  const diagonal = Math.hypot(x1 - x0, y1 - y0, z1 - z0);
+  return gateMeshDeflections(diagonal);
+}
 // OCCT runs in one wasm instance per process; checks run one at a time so a
 // concurrent task pool cannot interleave two imports on the shared heap.
 let queue: Promise<unknown> = Promise.resolve();
@@ -185,6 +205,15 @@ export function checkStepValidity(path: string): Promise<StepValidity> {
       shape = await replicad.importSTEP(new Blob([new Uint8Array(bytes)]));
       const oc = getOC() as any;
       const wrapped = (shape as any).wrapped;
+      if (typeof (shape as { boundingBox?: { bounds: number[][] } }).boundingBox?.bounds !== 'undefined') {
+        const [[x0, y0, z0], [x1, y1, z1]] = (shape as replicad.Shape3D).boundingBox.bounds;
+        result.extentsMm = [Math.abs(x1 - x0), Math.abs(y1 - y0), Math.abs(z1 - z0)];
+        try {
+          result.volumeMm3 = Math.abs(replicad.measureVolume(shape as replicad.Shape3D));
+        } catch {
+          // A non-solid import still reports extents; volume is optional.
+        }
+      }
 
       result.solidCount = countSubShapes(oc, wrapped, 'TopAbs_SOLID');
       result.faceCount = countSubShapes(oc, wrapped, 'TopAbs_FACE');
@@ -209,11 +238,23 @@ export function checkStepValidity(path: string): Promise<StepValidity> {
         // Already rejected; the tessellation is the expensive stage (minutes
         // on a 2000-face part) and cannot change the verdict.
       } else if (typeof (shape as { meshShape?: unknown }).meshShape === 'function') {
-        const mesh = meshShapeForExport(shape as replicad.Shape3D, gateDeflection(shape as replicad.Shape3D));
-        result.triangleCount = mesh.triangles.length / 3;
-        const meshErrors = result.triangleCount === 0 ? ['tessellation produced no triangles'] : meshManifoldErrors(mesh);
-        result.meshManifold = meshErrors.length === 0;
-        result.errors.push(...meshErrors);
+        let finestErrors: string[] = [];
+        let meshDeflectionMm: number | undefined;
+        let triangleCount = 0;
+        for (const linear of gateDeflections(shape as replicad.Shape3D)) {
+          const mesh = meshShapeForExport(shape as replicad.Shape3D, { linear, relative: false, angularRad: 0.5 });
+          triangleCount = mesh.triangles.length / 3;
+          const errors = triangleCount === 0 ? ['tessellation produced no triangles'] : meshManifoldErrors(mesh);
+          if (errors.length === 0) {
+            meshDeflectionMm = linear;
+            result.meshManifold = true;
+            break;
+          }
+          finestErrors = errors;
+        }
+        result.triangleCount = triangleCount;
+        if (meshDeflectionMm === undefined) result.errors.push(...finestErrors);
+        else result.meshDeflectionMm = meshDeflectionMm;
       } else {
         result.errors.push('STEP did not import as a 3D shape');
       }

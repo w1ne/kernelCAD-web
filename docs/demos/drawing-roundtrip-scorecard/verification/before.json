@@ -1,0 +1,216 @@
+[
+  {
+    "id": "rectangular-block",
+    "name": "Rectangular block",
+    "status": "WRONG",
+    "volumeError": -0.7625520833333334,
+    "extentErrorMm": 15.300000190734863,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "centered-block",
+    "name": "Centered block",
+    "status": "WRONG",
+    "volumeError": -0.4683834876543211,
+    "extentErrorMm": 7,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "cylinder",
+    "name": "Cylinder",
+    "status": "WRONG",
+    "volumeError": -0.4943711119947722,
+    "extentErrorMm": 23,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "sphere",
+    "name": "Sphere",
+    "status": "WRONG",
+    "volumeError": -0.8684484923506053,
+    "extentErrorMm": 21.700000047683716,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "torus-revolve",
+    "name": "Revolved torus",
+    "status": "WRONG",
+    "volumeError": 2.1096211722499203,
+    "extentErrorMm": 4.806704044342041,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "cone-frustum-revolve",
+    "name": "Revolved cone frustum",
+    "status": "WRONG",
+    "volumeError": -0.760892434424869,
+    "extentErrorMm": 17.130000114440918,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "plate-through-hole",
+    "name": "Plate with through-hole",
+    "status": "WRONG",
+    "volumeError": -0.3466338399868733,
+    "extentErrorMm": 5,
+    "build": "extrude (2 holes)"
+  },
+  {
+    "id": "plate-blind-hole",
+    "name": "Plate with blind hole",
+    "status": "WRONG",
+    "volumeError": -0.6305020818426547,
+    "extentErrorMm": 7.5,
+    "build": "extrude (2 holes)"
+  },
+  {
+    "id": "plate-counterbore",
+    "name": "Plate with counterbored through-hole",
+    "status": "WRONG",
+    "volumeError": -0.5569004392934387,
+    "extentErrorMm": 5.5,
+    "build": "extrude (1 holes)"
+  },
+  {
+    "id": "plate-through-slot",
+    "name": "Plate with through-slot",
+    "status": "WRONG",
+    "volumeError": -0.35662313432835846,
+    "extentErrorMm": 7,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "annular-cylinder",
+    "name": "Annular cylinder boolean cut",
+    "status": "WRONG",
+    "volumeError": -0.8515084380952617,
+    "extentErrorMm": 17,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "open-top-shell",
+    "name": "Open-top shell",
+    "status": "WRONG",
+    "volumeError": -0.4149709302325582,
+    "extentErrorMm": 24.300000190734863,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "l-bracket-union",
+    "name": "L-bracket boolean union",
+    "status": "WRONG",
+    "volumeError": -0.7617578125,
+    "extentErrorMm": 15.5,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "boolean-intersection",
+    "name": "Boolean intersection",
+    "status": "WRONG",
+    "volumeError": -0.7215625,
+    "extentErrorMm": 7.299999952316284,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "rounded-box",
+    "name": "All-edge filleted box",
+    "status": "WRONG",
+    "volumeError": -0.7574334746375373,
+    "extentErrorMm": 15.300000190734863,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "top-edge-chamfer",
+    "name": "Top-edge chamfer",
+    "status": "WRONG",
+    "volumeError": -0.7598571468704348,
+    "extentErrorMm": 15.300000190734863,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "plate-four-holes",
+    "name": "Plate with four patterned holes",
+    "status": "WRONG",
+    "volumeError": -0.8172323669193999,
+    "extentErrorMm": 22.5,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "circular-pattern-pins",
+    "name": "Circular pattern of pins",
+    "status": "WRONG",
+    "volumeError": -0.8333333333333334,
+    "extentErrorMm": 38,
+    "build": "revolve (0 holes)"
+  },
+  {
+    "id": "linear-pattern-pins",
+    "name": "Linear pattern of pins",
+    "status": "WRONG",
+    "volumeError": -0.6816901138162094,
+    "extentErrorMm": 28,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "grid-pattern-pins",
+    "name": "Grid pattern of pins",
+    "status": "WRONG",
+    "volumeError": -0.7877934092108062,
+    "extentErrorMm": 18,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "mirrored-blocks",
+    "name": "Mirrored block pair",
+    "status": "ERROR",
+    "detail": "drawing export: union.disconnected: union() result is 2 separate solids, not one connected body. Main body: 'block' (box_1), 'block.mirror('yz')' (mirror_1) [solid 1 of 2]. Floating: 'block.mirror('yz')' (mirror_1) [solid 2 of 2] (bbox [-20, 0, 0] → [-10, 10, 10] mm, gap 20 mm to the main body). Floating parts are not held by anything."
+  },
+  {
+    "id": "sweep-square-prism",
+    "name": "Square profile sweep",
+    "status": "WRONG",
+    "volumeError": 0.14276041666666686,
+    "extentErrorMm": 9.300000190734863,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "sweep-round-prism",
+    "name": "Circular profile sweep",
+    "status": "WRONG",
+    "volumeError": -0.5548117931833504,
+    "extentErrorMm": 11.5,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "loft-circular-frustum",
+    "name": "Circular-section loft",
+    "status": "WRONG",
+    "volumeError": -0.7402045654649667,
+    "extentErrorMm": 17.700000047683716,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "loft-square-frustum",
+    "name": "Square-section loft",
+    "status": "WRONG",
+    "volumeError": 0.2514285714285712,
+    "extentErrorMm": 3.5,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "stepped-shaft-revolve",
+    "name": "Stepped shaft revolve",
+    "status": "WRONG",
+    "volumeError": -0.7393837806870214,
+    "extentErrorMm": 13.5,
+    "build": "extrude (0 holes)"
+  },
+  {
+    "id": "rotated-box",
+    "name": "Rotated box",
+    "status": "WRONG",
+    "volumeError": -0.726602,
+    "extentErrorMm": 23.57050807568877,
+    "build": "extrude (0 holes)"
+  }
+]
