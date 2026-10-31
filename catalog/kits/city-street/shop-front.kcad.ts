@@ -1,6 +1,7 @@
 // Original kernelCAD low-poly corner shop: a one-storey building with a shop
-// window, a glazed door, a sign band, a parapet and a striped awning. The front is built from full-depth vertical pieces (no decals), so
-// the flat-shaded faces stay clean. Millimetres, Z up, base on z = 0, shop
+// window, a glazed door, a sign band, a parapet and a striped awning. The
+// front is built from full-depth vertical pieces (no decals), so the
+// flat-shaded faces stay clean. Millimetres, Z up, base on z = 0, shop
 // front facing -Y.
 
 meta({
@@ -12,7 +13,7 @@ meta({
   category: 'building',
   origin: 'base',
   compat: ['outdoor', 'street', 'grid-4m'],
-  triangleBudget: 900,
+  triangleBudget: 500,
 });
 
 const widthMm = param('widthMm', '4000', { choices: ['4000', '6000', '8000'], label: 'Width (mm)' });
@@ -73,7 +74,7 @@ block(xDoor0, xDoor1, zHead, zFascia, wall);
 block(xDoor1, W / 2, 0, zFascia, wall); // right pilaster
 panel(xa, W / 2, zFascia, zSign, trim); // sign band
 block(xa, W / 2, zSign, zTop, wall); // parapet
-sh.part('cornice', box(W + 100, 160, 120, true).translate(0, y0 - 30, zTop - 60).color(trim));
+sh.part('cornice', box(W + 100, 160, 160, true).translate(0, y0 - 30, zTop - 60).color(trim));
 
 // Awning over the window and door: a sloped slab profile in (y, z).
 const ax0 = xWin0 - 100;

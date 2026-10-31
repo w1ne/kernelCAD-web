@@ -11,7 +11,7 @@ meta({
   category: 'structure',
   origin: 'base',
   compat: ['outdoor', 'street'],
-  triangleBudget: 600,
+  triangleBudget: 320,
 });
 
 const pickets = param('pickets', '10', { choices: ['6', '8', '10', '12'], label: 'Pickets' });
@@ -38,14 +38,9 @@ for (const [i, xc] of [[1, -L / 2 + post / 2], [2, L / 2 - post / 2]] as [number
   const cap: [number, number][] = [[-post / 2 - 10, 0], [post / 2 + 10, 0], [0, 60]];
   fence.part(`cap-${i}`, extrudePolygon(cap, post + 20).rotateX(90).translate(xc, (post + 20) / 2, h + 50).color(postColor));
 }
-// Rails behind the pickets, split into one short piece per gap so each piece
-// is a small flat-shaded block (also keeps preview depth sorting clean).
+// Two rails behind the pickets.
 for (const [r, z] of [[1, h * 0.22], [2, h * 0.72]] as [number, number][]) {
-  for (let g = 0; g <= n; g++) {
-    const w = g === 0 || g === n ? gap + 10 : gap;
-    const xc = g === 0 ? -span / 2 + w / 2 : g === n ? span / 2 - w / 2 : -span / 2 + gap + g * (pw + gap) - gap / 2;
-    fence.part(`rail-${r}-${g + 1}`, box(w, 30, 80, true).translate(xc, 25, z).color(postColor));
-  }
+  fence.part(`rail-${r}`, box(span, 30, 80, true).translate(0, 25, z).color(postColor));
 }
 // Pointed pickets: pentagon profile in XZ, 20 mm thick, in front of the rails.
 const tip = pw * 0.6;
