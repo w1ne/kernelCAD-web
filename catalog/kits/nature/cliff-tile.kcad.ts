@@ -5,6 +5,7 @@
 
 meta({
   name: 'cliff-tile',
+  license: 'CC0-1.0',
   title: 'Cliff tile',
   description: 'Square 2 m terrain tile with a stepped faceted rock cliff rising to a grassy ledge at the back. Knobs: cliff height, step count, rock, grass and dirt colours.',
   tags: ['tile', 'cliff', 'rock face', 'ledge', 'mountain', 'terrain', 'grid', 'nature'],

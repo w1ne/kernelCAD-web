@@ -3,6 +3,7 @@
 
 meta({
   name: 'dining-table',
+  license: 'CC0-1.0',
   title: 'Dining table',
   description: 'Four-legged rectangular dining table with an apron, seating four to eight. Knobs: length, leg style, top and leg colours.',
   tags: ['dining table', 'table', 'kitchen table', 'dining room', 'meeting table'],

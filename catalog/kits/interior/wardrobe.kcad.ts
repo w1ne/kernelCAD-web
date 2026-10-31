@@ -4,6 +4,7 @@
 
 meta({
   name: 'wardrobe',
+  license: 'CC0-1.0',
   title: 'Wardrobe',
   description: 'Tall hinged-door wardrobe with two to four doors, plinth and top trim. Knobs: door count, body, door and handle colours.',
   tags: ['wardrobe', 'closet', 'armoire', 'cupboard', 'cabinet', 'bedroom', 'storage'],

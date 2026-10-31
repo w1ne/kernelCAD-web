@@ -3,6 +3,7 @@
 
 meta({
   name: 'nightstand',
+  license: 'CC0-1.0',
   title: 'Nightstand',
   description: 'Bedside table with one to three drawers on short legs. Knobs: drawer count, body, drawer front and handle colours.',
   tags: ['nightstand', 'bedside table', 'night table', 'drawers', 'bedroom', 'cabinet'],

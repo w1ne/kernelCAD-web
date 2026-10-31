@@ -106,9 +106,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/bike-rack.kcad.ts",
-      "sourceSha256": "dbd594b8a239662805e6fc8966015dc139ba145ec3f7772ddec5249eb8f9f94e",
+      "sourceSha256": "ff4a54cdf656bf4a4d8584815d305973aec415004e62435a07c77b912f11ff9f",
       "triangleBudget": 300,
       "params": [
         {
@@ -210,9 +210,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/bollard.kcad.ts",
-      "sourceSha256": "807cc41cefcda0dcf6c035a4b0a652653136d14ef268628cd19ef9e4e52d2b7b",
+      "sourceSha256": "260c0f6797bd7b684a18ca88387ed109b2240c4de821ee010f3a5749e4b3c63e",
       "triangleBudget": 160,
       "params": [
         {
@@ -326,9 +326,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/bus-stop-shelter.kcad.ts",
-      "sourceSha256": "dbd9af11303c3db8974dbd6231d73dff68208069512ef8f647d494255aad0c5a",
+      "sourceSha256": "c41a3207dbc587727742efb25995f0e80ed754c9dd32e14485bf8359eb3d853b",
       "triangleBudget": 400,
       "params": [
         {
@@ -466,9 +466,9 @@
         "street",
         "grid-4m"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/crosswalk-tile.kcad.ts",
-      "sourceSha256": "0ea1fad075110fdbe59d0222233be9a07e31b177778d58c1ee611a4641ac30d3",
+      "sourceSha256": "554e6b59fbf7ef9955e4d08aa30798e6ae1cb71cf7bf98a5f34bf8e5471464ed",
       "triangleBudget": 400,
       "params": [
         {
@@ -583,9 +583,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/fire-hydrant.kcad.ts",
-      "sourceSha256": "454f48241857efda3a628792cb333679ca322641a11e65b8fcab93fc53555d51",
+      "sourceSha256": "4b30145b4207191ccd7c670353831dd7a96f63ee6b4a56701b51520117d26170",
       "triangleBudget": 300,
       "params": [
         {
@@ -686,9 +686,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/mailbox.kcad.ts",
-      "sourceSha256": "0a511b08cc1f99e557d3d3f1912d1fb67aa9e058f40f9b973032c7a36149fd42",
+      "sourceSha256": "7a8dea8a0330b6d15100c08c5075c7ae16f7ff06f31692b462047ec1ab2cc55d",
       "triangleBudget": 220,
       "params": [
         {
@@ -792,9 +792,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/newspaper-box.kcad.ts",
-      "sourceSha256": "654aeaa6a35d76bf2636e37ac4cd867a3529a541ed77d6a1cd24029b3006cc7d",
+      "sourceSha256": "d6736ea0cc7495349faac9955a6095ba445408c2024938171256a25817694d7f",
       "triangleBudget": 200,
       "params": [
         {
@@ -901,9 +901,9 @@
         "street",
         "park"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/park-bench.kcad.ts",
-      "sourceSha256": "538676f4eae886167a722157c11d175087c85ce883622446a012f8dad80c3b3d",
+      "sourceSha256": "5980ff6def6fbd9147db254caf0db3e59d51f4bd8a402d17ab1f26685b8a0656",
       "triangleBudget": 400,
       "params": [
         {
@@ -1025,9 +1025,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/parking-meter.kcad.ts",
-      "sourceSha256": "b7e0ea8b569421b2dd419c4f533cf115a0a986bef3080907f9b1f7456574c1f8",
+      "sourceSha256": "edb6202edad76b11247dd6f23c98f7c470c6cfaa3db2662e31587b5b82db54eb",
       "triangleBudget": 220,
       "params": [
         {
@@ -1130,9 +1130,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/picket-fence-section.kcad.ts",
-      "sourceSha256": "dffa9fc703a060e3eb230a8aa86801bb301cd263146ac03abb9f3a03de13597c",
+      "sourceSha256": "33a36512ecfec71affdfe27acbc7e316bbfc92ec95ff48f12fd99a329692dca1",
       "triangleBudget": 320,
       "params": [
         {
@@ -1244,9 +1244,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/planter-box.kcad.ts",
-      "sourceSha256": "56e267d3f689bd7f9e13668e4ed63bfdd5195a15c7827ebaad8617feefb9e916",
+      "sourceSha256": "452b5971c5c97a1078201abd2c072c32fbe0aa8755a0c7814f0f0b8825612319",
       "triangleBudget": 300,
       "params": [
         {
@@ -1373,9 +1373,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/road-barrier.kcad.ts",
-      "sourceSha256": "dd0985b60ce519deed0d80313f1500b66d7a277ac49247acfbf670551749b534",
+      "sourceSha256": "5f116acea6d0a433ba1b42e1cd5160a7f5a7232ef0505e23be0513bf98e0b840",
       "triangleBudget": 300,
       "params": [
         {
@@ -1496,9 +1496,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/road-sign.kcad.ts",
-      "sourceSha256": "bd516df902f9b4184d55db0b67ecfa31080d0ac5ccf51678699b908f888377a4",
+      "sourceSha256": "b10bdc496f06ff685dde6694f5aa56417b47896754af1c48bed0e34105488459",
       "triangleBudget": 200,
       "params": [
         {
@@ -1615,9 +1615,9 @@
         "street",
         "grid-4m"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/road-tile.kcad.ts",
-      "sourceSha256": "f88af9858d12c1a6fefb2d90aa47d0860b58f186017bf86dbf00c9e4084aaec0",
+      "sourceSha256": "9166dfbc22e5e7ec1d767106a0c17b202bd182b6135d4c9f97c4987ae571fe70",
       "triangleBudget": 300,
       "params": [
         {
@@ -1726,9 +1726,9 @@
         "street",
         "grid-4m"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/shop-front.kcad.ts",
-      "sourceSha256": "fc137e629d1ae81cbf2a875ee9657a3fdebe193e888af4231aaab0e34898af3c",
+      "sourceSha256": "785bc761c5af3c0a4d0cbc515492b4e839c42c14577c36ee9dbb536703b5ac38",
       "triangleBudget": 500,
       "params": [
         {
@@ -1886,9 +1886,9 @@
         "street",
         "grid-4m"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/sidewalk-tile.kcad.ts",
-      "sourceSha256": "e59f3a1b729461c06e2f854ec98ce0b5b71ab73fbd88c9e5e16fe54a6b7d071b",
+      "sourceSha256": "4f229f7c7065aaaceaf0850f35709b5129ba320a413d7c1c6144ab1a217c0637",
       "triangleBudget": 400,
       "params": [
         {
@@ -2008,9 +2008,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/street-lamp.kcad.ts",
-      "sourceSha256": "cae192eee8541130816ced64b9fe7eaa512eb17fe42dcb586057f240a344e1a9",
+      "sourceSha256": "ed9a5e407d9aca03d03dd4fa1a5d712a0e0b91388c09b0220895327b8c172c92",
       "triangleBudget": 300,
       "params": [
         {
@@ -2124,9 +2124,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/traffic-cone.kcad.ts",
-      "sourceSha256": "bc4ed5c5aeeae66f6fee7dca374872457edf74e84fc1395a0135d81f87e51e46",
+      "sourceSha256": "5013c0e9c1aef02b31d3b078c676844bb371c2c12ca4310ed0afc2d719195e88",
       "triangleBudget": 160,
       "params": [
         {
@@ -2237,9 +2237,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/traffic-light.kcad.ts",
-      "sourceSha256": "050e3bbaf63cc512c1b83aa21bd3ee659a8d5a597cbef3a23ee70194bed700d8",
+      "sourceSha256": "6213b524f33bed38fb02550893f8fb8ab09708d30bdf99608500cd1c27fec1d8",
       "triangleBudget": 500,
       "params": [
         {
@@ -2375,9 +2375,9 @@
         "outdoor",
         "street"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/city-street/trash-bin.kcad.ts",
-      "sourceSha256": "7690b2357f74ae1c43efe0d1e072ecfb66771543692dd20510e7a27aeeeacb59",
+      "sourceSha256": "8239ab1a373b454ea4d25b1ff3400757dabb1e7cede8b31efa5f0c6506865e41",
       "triangleBudget": 220,
       "params": [
         {
@@ -2493,9 +2493,9 @@
         "bedroom",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/armchair.kcad.ts",
-      "sourceSha256": "12676e0240f30a39697348e97afafdd314e2ee9d22adadc37a4e3bc1f7551c6d",
+      "sourceSha256": "508da1ecaae80056949cc4c88116c84b5305c5be708e48734b865e4adb63606e",
       "triangleBudget": 200,
       "params": [
         {
@@ -2602,9 +2602,9 @@
         "indoor",
         "bedroom"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/bed.kcad.ts",
-      "sourceSha256": "17552c396c56cff392d55506e6b03640cf5b69ce0dea70f33d7b85bc16033556",
+      "sourceSha256": "bcc0cafb94c05c6d5b15a025e4d75b7f3c08c109a242cf4c4fbe76be11b40983",
       "triangleBudget": 250,
       "params": [
         {
@@ -2718,9 +2718,9 @@
         "office",
         "bedroom"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/bookshelf.kcad.ts",
-      "sourceSha256": "c3f81dfe1e20e2b77e5b26b65e17a9eb1b137b51f9e92823e711da1bf3713796",
+      "sourceSha256": "c90fcecd0c7b0658d5d5bd1ca63dda9452d427556c1dfebde6de96247261aaf5",
       "triangleBudget": 600,
       "params": [
         {
@@ -2859,9 +2859,9 @@
         "living-room",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/coffee-table.kcad.ts",
-      "sourceSha256": "42abff17cc561149a48821d0894fdb42f888296f6ed8891b0d7320a42df9cb35",
+      "sourceSha256": "c5f9817b5f491e5ff5acc90c0908f30e68aecd75787a7cc60459df40365e66d3",
       "triangleBudget": 200,
       "params": [
         {
@@ -2964,9 +2964,9 @@
         "office",
         "bedroom"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/desk.kcad.ts",
-      "sourceSha256": "f9dbf37f0769d084abc776b295cf8e002ec3e5b884a6ff44ba2d2b86c6dadf32",
+      "sourceSha256": "7eb672dd417884a374dccb234b1f7663d4668831fd508915701ff04ace3e7792",
       "triangleBudget": 250,
       "params": [
         {
@@ -3088,9 +3088,9 @@
         "dining-room",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/dining-chair.kcad.ts",
-      "sourceSha256": "da41f19ab4e6fdae4bde5bbdd1a90db8235674edba8a1102bef5206b1e34d979",
+      "sourceSha256": "587d6d2ba9e0ee8d02153221ef72e3ed2b955758dfc37bc42b6f8ef2084ca001",
       "triangleBudget": 250,
       "params": [
         {
@@ -3199,9 +3199,9 @@
         "dining-room",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/dining-table.kcad.ts",
-      "sourceSha256": "7da6c38680e628dd9984c3b5490bf951f5f0dcb67f86232046b170125de92df8",
+      "sourceSha256": "9541399de25ba8df64bbaffc38afc2a661e6cc291ffd71719e9c11838ef14356",
       "triangleBudget": 200,
       "params": [
         {
@@ -3309,9 +3309,9 @@
         "bedroom",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/floor-lamp.kcad.ts",
-      "sourceSha256": "b38a19be06b0f1cf92c2d2541d5e0e3856bafc10c632b9f374ee9adb6ea05486",
+      "sourceSha256": "204050e3070ee12eaa2a4471bbb828ecbab5c59ca834d20b2076d0732b50fa2f",
       "triangleBudget": 150,
       "params": [
         {
@@ -3407,9 +3407,9 @@
         "indoor",
         "kitchen"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/fridge.kcad.ts",
-      "sourceSha256": "a8d02f687e56306180fa511e8051c198749706222cab036bbef625bb3634696f",
+      "sourceSha256": "cc0d3512b7504589b340556b26724ae94b228cc8ac5930718e732f4b2d0b8375",
       "triangleBudget": 150,
       "params": [
         {
@@ -3525,9 +3525,9 @@
         "kitchen",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/interior-door.kcad.ts",
-      "sourceSha256": "8ab56f54d12afc4bcfdb549287855699529a83b5a530ffb1cd0d3f954d3e3edd",
+      "sourceSha256": "b2ae7e9b18a9638afb1035f655901ff5e3982760bce762f55de7b0090fcb691c",
       "triangleBudget": 400,
       "params": [
         {
@@ -3667,9 +3667,9 @@
         "indoor",
         "kitchen"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/kitchen-counter.kcad.ts",
-      "sourceSha256": "f067c887ea348d64fd08f7c0a9a01617448dfd977f45238a2bc65b88d3c40a5f",
+      "sourceSha256": "b7cded0548a68934ba816860de042313d0f4e7da7a1c6006289b7944b55396b9",
       "triangleBudget": 400,
       "params": [
         {
@@ -3814,9 +3814,9 @@
         "bedroom",
         "living-room"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/nightstand.kcad.ts",
-      "sourceSha256": "65197bef6d711f951ce4e668b924623e2d30e98d195085269efd905ab37899bc",
+      "sourceSha256": "399fab7c79006c7f2787b9d56abf10cdb1f12a5099835f45715283562f7462f0",
       "triangleBudget": 200,
       "params": [
         {
@@ -3929,9 +3929,9 @@
         "office",
         "bedroom"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/office-chair.kcad.ts",
-      "sourceSha256": "4452250360067806be684af997644f944517acef2de44ef62a6b24fab63caa29",
+      "sourceSha256": "f8965aa4360d4884c7c51cb77fe499316f857f7e1383fe61f6184cd495b4c48e",
       "triangleBudget": 450,
       "params": [
         {
@@ -4071,9 +4071,9 @@
         "office",
         "kitchen"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/picture-frame.kcad.ts",
-      "sourceSha256": "cc2adf9dcbafdbb1f0658d4c19e33078332829bc6ee714125aca27e6c0ae8a6f",
+      "sourceSha256": "a6fe5f19e4a5f176879e7098cafb232d05d4a1e4482dfed249ed846651dac332",
       "triangleBudget": 150,
       "params": [
         {
@@ -4207,9 +4207,9 @@
         "bedroom",
         "kitchen"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/potted-plant.kcad.ts",
-      "sourceSha256": "0bdf2be7ade4f89c98a5eb219c1bf103de7574454eb618079a2b14e998003c9c",
+      "sourceSha256": "c3113ff6b3e08495decb91e841fd53eee166814390acf727e981abf6feb7b606",
       "triangleBudget": 300,
       "params": [
         {
@@ -4327,9 +4327,9 @@
         "bedroom",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/rug.kcad.ts",
-      "sourceSha256": "00df042f9b17ca8bbb686dc6647b1ab6fd983fa1c89c7713b525d2ad8427a110",
+      "sourceSha256": "cae6b1e0ae572a395adf6aa98aeacc4225d5f0d33dd252cd384d3175153a860b",
       "triangleBudget": 200,
       "params": [
         {
@@ -4428,9 +4428,9 @@
         "living-room",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/sofa.kcad.ts",
-      "sourceSha256": "186da8d9bc44f9a9300f1055df84d2bf236e264e2aef046908f38fd27503928e",
+      "sourceSha256": "ba01b40b75802c33f10fcaae0e7298826049fa7fc3f40378d888263623892ac3",
       "triangleBudget": 300,
       "params": [
         {
@@ -4548,9 +4548,9 @@
         "living-room",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/table-lamp.kcad.ts",
-      "sourceSha256": "5581757aba19f07004e8f830415c69f7d5837180c3a84f7f04f1b83c7c21759f",
+      "sourceSha256": "327fe9ed5580e76c68edabd44ed1fe917d6b61d9e30016c79d04101c13c21b53",
       "triangleBudget": 150,
       "params": [
         {
@@ -4639,9 +4639,9 @@
         "bedroom",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/tv-stand-with-tv.kcad.ts",
-      "sourceSha256": "dbcf069fa887cc6ff5e1cde5fd5155b2d925f2e1434c24c4bf4f82c1f2dffa6f",
+      "sourceSha256": "879d127807dd214cfbe2529499c465351d17cd8214be0a6f7969f2a2d71299ee",
       "triangleBudget": 250,
       "params": [
         {
@@ -4770,9 +4770,9 @@
         "kitchen",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/wall-segment.kcad.ts",
-      "sourceSha256": "85994920e11b54cb44657b03a24352d89845117efcc3b7c62d422f4202c3ed63",
+      "sourceSha256": "9ed022cde80d3fb5f60f208c213c0ea818b6a46f09f1362321ad20761e972dca",
       "triangleBudget": 500,
       "params": [
         {
@@ -4895,9 +4895,9 @@
         "bedroom",
         "office"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/interior/wardrobe.kcad.ts",
-      "sourceSha256": "9391081344a944532feb627039eb552577de9519d8043dfc9852e0aaa8acde20",
+      "sourceSha256": "89092c8467ec42a7763a4a2f0367a68840bcb9fa55cb5058594c1ed9190c27f7",
       "triangleBudget": 250,
       "params": [
         {
@@ -5012,9 +5012,9 @@
         "meadow",
         "park"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/birch-tree.kcad.ts",
-      "sourceSha256": "3ec472f23320bc0e2c9836869a38adc21c6051190303865c4237c9727c7f2b4d",
+      "sourceSha256": "6e28fa19478959504b42198b5558320e87427fe9e4358053b4611610e1867d89",
       "triangleBudget": 300,
       "params": [
         {
@@ -5132,9 +5132,9 @@
         "desert",
         "mountain"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/boulder-cluster.kcad.ts",
-      "sourceSha256": "0bba116588988791553e3ecaab9720660a9c8355207e24e6905cab26a8457e1c",
+      "sourceSha256": "8c47619f5b403b7de529285fac6488772cd50e3e3e671df1b1d5a7791c6b1bf6",
       "triangleBudget": 300,
       "params": [
         {
@@ -5250,9 +5250,9 @@
         "park",
         "garden"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/bush.kcad.ts",
-      "sourceSha256": "dd4df6de4d21302219f4820250bc40691643182fbfb5bbffbc37b73b3b778131",
+      "sourceSha256": "bd9a04404d5d5514db5481613e22e1ff3d6018fe95b206f9c4077dfd65b4a575",
       "triangleBudget": 300,
       "params": [
         {
@@ -5355,9 +5355,9 @@
         "outdoor",
         "desert"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/cactus.kcad.ts",
-      "sourceSha256": "f00551646be27059d56128aa43f6f3a95aff08148c61e44b75f7d0554f32c0f2",
+      "sourceSha256": "8fec7fb5842339cbac7380ecbc49ee8ed4600c9ec4f3da8b3778ba995dfc3a51",
       "triangleBudget": 300,
       "params": [
         {
@@ -5471,9 +5471,9 @@
         "forest",
         "desert"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/cliff-tile.kcad.ts",
-      "sourceSha256": "1b70944bc930a0a6ff6b612e909e6edc36f80dc0281919c49dd1e436c805fdd6",
+      "sourceSha256": "abbeefd9d1d79995e99bfe71a63436e3db1de97e7d08abb6103f11520318e133",
       "triangleBudget": 200,
       "params": [
         {
@@ -5591,9 +5591,9 @@
         "desert",
         "swamp"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/dead-tree.kcad.ts",
-      "sourceSha256": "297859ecad70650e089c82efb053e178761a9eea4c501d6f4fed7018af67e6c4",
+      "sourceSha256": "b85e5f2747e2df3e8eed236b834fd58e5ea64a821bd906344afe32e7d79fd5d1",
       "triangleBudget": 400,
       "params": [
         {
@@ -5700,9 +5700,9 @@
         "forest",
         "swamp"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/fern.kcad.ts",
-      "sourceSha256": "61e43e370b81550f2abd9a0a724545bdb53c2c32f59a448a352c09873dfcd56e",
+      "sourceSha256": "45004cc8fc437703f9c093739ca490e1497a9df6039157820082eb6ff8dd747d",
       "triangleBudget": 300,
       "params": [
         {
@@ -5822,9 +5822,9 @@
         "garden",
         "park"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/flower-patch.kcad.ts",
-      "sourceSha256": "fabb44c0a62c734040bbb1a77e05492016f369f562160eb458749476b2f067e7",
+      "sourceSha256": "784e9c0e3a41b2e5116236e10c04afd33296cbc21f6a8f9217dd963666dabc5a",
       "triangleBudget": 300,
       "params": [
         {
@@ -5954,9 +5954,9 @@
         "forest",
         "grid-2m"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/grass-tuft.kcad.ts",
-      "sourceSha256": "9e8e933bfeab07a7b2b9a65cfb17b9b62a2840fdb12b12a8aa20677c916d563b",
+      "sourceSha256": "bd2c1be72e9fbc4d48588d3af7eb2d85be9ff867fd5427fa7b8311fc70e963c3",
       "triangleBudget": 260,
       "params": [
         {
@@ -6074,9 +6074,9 @@
         "meadow",
         "forest"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/ground-tile.kcad.ts",
-      "sourceSha256": "feea61bc520619cee51c621b8284db26bfdd4775bf47b5fe110a541cedc1f53c",
+      "sourceSha256": "1bcdaa0e2f061e66a0bf787facc68d477b993828e42b4fab5623acb1ba9afbf7",
       "triangleBudget": 80,
       "params": [
         {
@@ -6179,9 +6179,9 @@
         "meadow",
         "forest"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/hill-tile.kcad.ts",
-      "sourceSha256": "b115a8f5ba1f1ccfba5ed4f7b6da66ef4b3279c707d821f71a03328a4c909b16",
+      "sourceSha256": "7fdc2f269d71002c1f83e754160d02e2128c5b891e3b44ea02819a9886233fda",
       "triangleBudget": 160,
       "params": [
         {
@@ -6293,9 +6293,9 @@
         "forest",
         "meadow"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/log.kcad.ts",
-      "sourceSha256": "62673b7a34b0c1305f55ef66c35bbf3e497b9103bbd7c1053c0c28e3478f18d0",
+      "sourceSha256": "1c97e153f9f0e700716e306ea353de0595edfcb0af7df9e959379260951aaa8d",
       "triangleBudget": 160,
       "params": [
         {
@@ -6418,9 +6418,9 @@
         "forest",
         "swamp"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/mushroom.kcad.ts",
-      "sourceSha256": "59b0b24d49e682d27de4e0dd7bde26e4008b5575bdeec25a69d3c3a277b8381a",
+      "sourceSha256": "d0b0cfde237cd8630f91d61a1f5b454416a66ec3a28dc28c3f9734eadbf718d1",
       "triangleBudget": 300,
       "params": [
         {
@@ -6555,9 +6555,9 @@
         "meadow",
         "park"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/oak-tree.kcad.ts",
-      "sourceSha256": "009d7826c89236d57accc5f763811c68bdd913744694e773fb72f50902c06ec7",
+      "sourceSha256": "11d1b534d7ab43da2da81a8112ae2b9eaab1470fb9d292ff077390854f6a5b4d",
       "triangleBudget": 400,
       "params": [
         {
@@ -6677,9 +6677,9 @@
         "desert",
         "water"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/palm-tree.kcad.ts",
-      "sourceSha256": "b1005350e788ad6892b505cb58f951c11bac95ef5935dfab8f964cfa425a10f1",
+      "sourceSha256": "ceb43b8059e785d6f04eea9421c695ec7a57b9a88984547d05903e1f00bd2c9c",
       "triangleBudget": 420,
       "params": [
         {
@@ -6821,9 +6821,9 @@
         "meadow",
         "forest"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/path-tile.kcad.ts",
-      "sourceSha256": "866fed542998176498cd9ac1e975f01954f65f6705190160654810bbc0b11e1b",
+      "sourceSha256": "03f61a63773a27f632f0ca5cfff9244f3bfae8a707e2a754a892a123e858deeb",
       "triangleBudget": 160,
       "params": [
         {
@@ -6936,9 +6936,9 @@
         "outdoor",
         "forest"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/pine-tree.kcad.ts",
-      "sourceSha256": "67377af36f6ae7c9365e1fcd235943a9164a421a37d89af00575eae5240cf9ac",
+      "sourceSha256": "a321f4af2a43c8f612d0b8af642a0cbeb329ba2bc3ac5e27e075480188aad697",
       "triangleBudget": 400,
       "params": [
         {
@@ -7055,9 +7055,9 @@
         "swamp",
         "meadow"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/reeds.kcad.ts",
-      "sourceSha256": "d4966c6abb3419d2416cf257c430a47d388bccbdd538db5b0dbfe39556cd5b30",
+      "sourceSha256": "6c3510ea7b96f989368e6ad94607224880dce84385fd7480568cb6a5edc38989",
       "triangleBudget": 200,
       "params": [
         {
@@ -7173,9 +7173,9 @@
         "meadow",
         "desert"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/rock.kcad.ts",
-      "sourceSha256": "61a8ee02aef7d29fc6993d681d457b91fa9542652de231f09473b6c536e136fc",
+      "sourceSha256": "1e225c5c8f6663fb58b65bf9e5116443b88043dc471e01c1a9a18b34356b62a7",
       "triangleBudget": 120,
       "params": [
         {
@@ -7288,9 +7288,9 @@
         "forest",
         "meadow"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/tree-stump.kcad.ts",
-      "sourceSha256": "2ba2ac45e4384fdde93b0605296b4a35c3c791b4a53edf3f4a128d91ba023845",
+      "sourceSha256": "62ee524936d564171e77de7f47f4d6652fb06ece0e7a33209eff2c3c005f7e3c",
       "triangleBudget": 220,
       "params": [
         {
@@ -7421,9 +7421,9 @@
         "meadow",
         "forest"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/water-tile.kcad.ts",
-      "sourceSha256": "8370a02b6c963be889de970b9983062f2154e225e18b4d17fb44f04bbbd397cc",
+      "sourceSha256": "772b608f5f1daf81e0d0a9eab1080c2c8203cc7ab5714a5ba0a8fb7eec5a77f7",
       "triangleBudget": 220,
       "params": [
         {

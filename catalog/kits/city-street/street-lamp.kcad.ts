@@ -3,6 +3,7 @@
 
 meta({
   name: 'street-lamp',
+  license: 'CC0-1.0',
   title: 'Street lamp',
   description: 'Tapered street light pole with a single or double outreach arm and flat lamp heads. Knobs: height, arms, pole, head and light colours.',
   tags: ['lamp', 'light', 'streetlight', 'lamppost', 'pole', 'street', 'road'],

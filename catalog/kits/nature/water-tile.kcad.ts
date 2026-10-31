@@ -4,6 +4,7 @@
 
 meta({
   name: 'water-tile',
+  license: 'CC0-1.0',
   title: 'Water tile (pond)',
   description: 'Square 2 m grass tile with a sunken faceted pond or stream, sandy bank and flat water surface. Knobs: pond shape, pond size, grass, bank, water and dirt colours.',
   tags: ['tile', 'water', 'pond', 'pool', 'lake', 'terrain', 'grid', 'nature'],

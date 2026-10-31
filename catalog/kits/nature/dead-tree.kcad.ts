@@ -3,6 +3,7 @@
 
 meta({
   name: 'dead-tree',
+  license: 'CC0-1.0',
   title: 'Dead tree',
   description: 'Bare leafless dead tree with a forked trunk, angular branches and twigs. Knobs: height, branch count, twigs on or off, bark colour.',
   tags: ['tree', 'dead', 'bare', 'leafless', 'spooky', 'swamp', 'winter', 'nature'],

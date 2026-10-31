@@ -5,6 +5,7 @@
 
 meta({
   name: 'road-tile',
+  license: 'CC0-1.0',
   title: 'Road tile',
   description: '4 m two-lane asphalt road tile with edge lines and a dashed, solid or stop-line end marking. Knobs: style, asphalt, line and centre-line colours.',
   tags: ['road', 'tile', 'asphalt', 'lane', 'street', 'modular', 'ground'],

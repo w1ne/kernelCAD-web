@@ -5,6 +5,7 @@
 
 meta({
   name: 'sidewalk-tile',
+  license: 'CC0-1.0',
   title: 'Sidewalk tile',
   description: '4 m raised sidewalk tile with a kerb on the road side and a two-tone paving grid. Knobs: paving grid, kerb, paving and accent colours.',
   tags: ['sidewalk', 'pavement', 'kerb', 'curb', 'paving', 'tile', 'street'],

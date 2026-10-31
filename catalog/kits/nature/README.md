@@ -26,6 +26,10 @@ Low-poly trees, plants, rocks, wood and 2 m terrain tiles at real-world scale. E
 | water-tile | 2 m tile with a sunken pond or stream, sandy bank and water | shape, sizeM, grass, bank, water, dirt | 204 |
 | cliff-tile | 2 m tile with a stepped rock cliff up to a grassy ledge | heightM, steps, rock, grass, dirt | 120 |
 
+## Licence
+
+Every asset in this kit — the `.kcad.ts` source and any GLB or ES module exported from it — is dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Use, modify and ship it in commercial games without attribution. The catalog metadata carries `license: "CC0-1.0"` per asset.
+
 ## Provenance
 
 Geometry is original kernelCAD `.kcad.ts` source written for this catalog. No Polyfork downloads or meshes, no external meshes, textures or palettes, and no mesh decimation are involved.

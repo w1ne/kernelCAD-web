@@ -4,6 +4,7 @@
 
 meta({
   name: 'ground-tile',
+  license: 'CC0-1.0',
   title: 'Ground tile (grass)',
   description: 'Square 2 m grass ground tile with a dirt edge and an optional faceted bumpy top. Knobs: thickness, top relief, grass and dirt colours.',
   tags: ['tile', 'ground', 'grass', 'terrain', 'floor', 'lawn', 'grid', 'nature'],

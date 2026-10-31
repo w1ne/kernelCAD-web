@@ -5,6 +5,7 @@
 
 meta({
   name: 'crosswalk-tile',
+  license: 'CC0-1.0',
   title: 'Crosswalk tile',
   description: '4 m road tile with a zebra crosswalk and edge lines that matches road-tile. Knobs: bar count, asphalt, bar and edge-line colours.',
   tags: ['crosswalk', 'zebra', 'crossing', 'pedestrian', 'road', 'tile', 'street'],

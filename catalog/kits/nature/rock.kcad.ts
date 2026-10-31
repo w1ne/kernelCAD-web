@@ -3,6 +3,7 @@
 
 meta({
   name: 'rock',
+  license: 'CC0-1.0',
   title: 'Rock',
   description: 'Squashed faceted field rock with irregular facets. Knobs: size, shape, facet count, stone and moss colours.',
   tags: ['rock', 'stone', 'boulder', 'pebble', 'nature'],

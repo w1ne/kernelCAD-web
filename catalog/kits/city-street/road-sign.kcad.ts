@@ -4,6 +4,7 @@
 
 meta({
   name: 'road-sign',
+  license: 'CC0-1.0',
   title: 'Road sign',
   description: 'Traffic sign on a post with an octagon, triangle, circle or square bordered plate. Knobs: shape, post height, face, border and post colours.',
   tags: ['sign', 'road sign', 'stop sign', 'traffic sign', 'warning', 'post', 'street'],

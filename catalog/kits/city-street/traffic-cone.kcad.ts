@@ -3,6 +3,7 @@
 
 meta({
   name: 'traffic-cone',
+  license: 'CC0-1.0',
   title: 'Traffic cone',
   description: 'Faceted traffic cone on a square rubber base with a reflective band. Knobs: height, facets, cone, band and base colours.',
   tags: ['cone', 'traffic', 'road', 'roadworks', 'safety', 'pylon'],

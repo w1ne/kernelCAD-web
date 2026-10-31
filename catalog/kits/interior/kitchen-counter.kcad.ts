@@ -4,6 +4,7 @@
 
 meta({
   name: 'kitchen-counter',
+  license: 'CC0-1.0',
   title: 'Kitchen counter',
   description: 'Run of kitchen base cabinets with a worktop and an optional sink with tap. Knobs: length, sink, cabinet, worktop and handle colours.',
   tags: ['kitchen counter', 'kitchen cabinet', 'worktop', 'countertop', 'sink', 'kitchen', 'base unit'],

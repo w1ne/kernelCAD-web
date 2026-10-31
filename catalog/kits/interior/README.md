@@ -32,6 +32,10 @@ wood, fabric and metal zones, and a few presets (walnut, white, dark and similar
 | `wall-segment` | 2 m interior wall panel with skirting | opening (none/window/doorway), height, wall, skirting, glass | 140 |
 | `picture-frame` | Wall-hung frame with mat and abstract picture | size, orientation, frame, mat, picture, accent | 128 |
 
+## Licence
+
+Every asset in this kit — the `.kcad.ts` source and any GLB or ES module exported from it — is dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Use, modify and ship it in commercial games without attribution. The catalog metadata carries `license: "CC0-1.0"` per asset.
+
 ## Provenance
 
 Geometry is original kernelCAD `.kcad.ts` source written for this catalog. No Polyfork downloads or meshes, no external meshes, textures or palettes, and no mesh decimation are involved.

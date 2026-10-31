@@ -4,6 +4,7 @@
 
 meta({
   name: 'bus-stop-shelter',
+  license: 'CC0-1.0',
   title: 'Bus stop shelter',
   description: 'Glazed bus stop shelter with a sloped roof, back wall, optional side screens and a bench. Knobs: length, side screens, frame, glass and roof colours.',
   tags: ['bus stop', 'shelter', 'transit', 'bus', 'waiting', 'canopy', 'street'],

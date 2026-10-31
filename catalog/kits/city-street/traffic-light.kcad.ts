@@ -5,6 +5,7 @@
 
 meta({
   name: 'traffic-light',
+  license: 'CC0-1.0',
   title: 'Traffic light',
   description: 'Three-aspect traffic signal on a post or a mast arm, with visors. Knobs: mount style, red, amber and green lens colours, housing and pole colours.',
   tags: ['traffic light', 'signal', 'stoplight', 'intersection', 'junction', 'road', 'street'],

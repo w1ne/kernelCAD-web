@@ -3,6 +3,7 @@
 
 meta({
   name: 'rug',
+  license: 'CC0-1.0',
   title: 'Rug',
   description: 'Flat two-tone area rug with a border, in three room sizes, plain-field or striped. Knobs: size, pattern, border and field colours.',
   tags: ['rug', 'carpet', 'mat', 'area rug', 'floor', 'living room'],

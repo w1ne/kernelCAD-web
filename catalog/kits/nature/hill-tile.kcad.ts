@@ -4,6 +4,7 @@
 
 meta({
   name: 'hill-tile',
+  license: 'CC0-1.0',
   title: 'Hill tile',
   description: 'Square 2 m terrain tile with a faceted grassy mound rising from flat edges, optional rock outcrop on top. Knobs: hill height, outcrop, grass, dirt and rock colours.',
   tags: ['tile', 'hill', 'mound', 'terrain', 'grass', 'slope', 'grid', 'nature'],

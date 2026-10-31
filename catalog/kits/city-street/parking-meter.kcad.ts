@@ -3,6 +3,7 @@
 
 meta({
   name: 'parking-meter',
+  license: 'CC0-1.0',
   title: 'Parking meter',
   description: 'Kerbside parking meter on a post with a single or twin head and display windows. Knobs: heads, post, head and display colours.',
   tags: ['parking', 'meter', 'parking meter', 'kerb', 'curb', 'sidewalk', 'street'],

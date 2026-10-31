@@ -3,6 +3,7 @@
 
 meta({
   name: 'palm-tree',
+  license: 'CC0-1.0',
   title: 'Palm tree',
   description: 'Coconut palm with a curved segmented trunk, drooping fronds and a coconut cluster. Knobs: height, frond count, trunk lean, trunk, frond and coconut colours.',
   tags: ['tree', 'palm', 'coconut', 'tropical', 'beach', 'island', 'nature'],

@@ -3,6 +3,7 @@
 
 meta({
   name: 'sofa',
+  license: 'CC0-1.0',
   title: 'Sofa',
   description: 'Boxy upholstered sofa with seat and back cushions on wooden feet. Knobs: seat count, frame fabric, cushion and leg colours.',
   tags: ['sofa', 'couch', 'settee', 'seat', 'living room', 'lounge'],

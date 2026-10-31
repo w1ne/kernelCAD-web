@@ -3,6 +3,7 @@
 
 meta({
   name: 'log',
+  license: 'CC0-1.0',
   title: 'Fallen log',
   description: 'Fallen tree log lying on the ground with faceted bark, cut end rings and a branch stub. Knobs: length, diameter, branch stub, bark, end-grain and heartwood colours.',
   tags: ['log', 'wood', 'timber', 'fallen tree', 'firewood', 'forest', 'nature'],

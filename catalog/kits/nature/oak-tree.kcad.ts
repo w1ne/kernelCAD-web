@@ -3,6 +3,7 @@
 
 meta({
   name: 'oak-tree',
+  license: 'CC0-1.0',
   title: 'Oak tree',
   description: 'Broad deciduous oak with a stout faceted trunk and a lumpy clustered crown. Knobs: height, crown lumps, crown shape, bark and leaf colours.',
   tags: ['tree', 'oak', 'deciduous', 'broadleaf', 'forest', 'park', 'nature'],

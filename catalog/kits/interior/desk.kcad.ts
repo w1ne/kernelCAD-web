@@ -4,6 +4,7 @@
 
 meta({
   name: 'desk',
+  license: 'CC0-1.0',
   title: 'Desk',
   description: 'Office or home desk with a modesty panel, on panel legs or with a three-drawer pedestal. Knobs: width, style, top, frame and handle colours.',
   tags: ['desk', 'writing desk', 'office desk', 'workstation', 'table', 'study'],

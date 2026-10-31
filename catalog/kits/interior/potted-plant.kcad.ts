@@ -3,6 +3,7 @@
 
 meta({
   name: 'potted-plant',
+  license: 'CC0-1.0',
   title: 'Potted plant',
   description: 'Indoor houseplant in a tapered pot with a rosette of faceted leaves. Knobs: size, leaf count, pot and leaf colours.',
   tags: ['plant', 'potted plant', 'houseplant', 'pot', 'greenery', 'decor'],

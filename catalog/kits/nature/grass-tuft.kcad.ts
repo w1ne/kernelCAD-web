@@ -3,6 +3,7 @@
 
 meta({
   name: 'grass-tuft',
+  license: 'CC0-1.0',
   title: 'Grass tuft',
   description: 'Clump of tall grass made of thin pointed blades leaning outward. Knobs: blade count, height, blade and tip colours.',
   tags: ['grass', 'tuft', 'clump', 'meadow', 'field', 'plant', 'nature'],

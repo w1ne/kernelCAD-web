@@ -4,6 +4,7 @@
 
 meta({
   name: 'boulder-cluster',
+  license: 'CC0-1.0',
   title: 'Boulder cluster',
   description: 'Group of faceted boulders, one large rock surrounded by smaller ones. Knobs: rock count, cluster size, shape, main and secondary stone colours.',
   tags: ['boulder', 'rocks', 'stones', 'cluster', 'outcrop', 'mountain', 'nature'],

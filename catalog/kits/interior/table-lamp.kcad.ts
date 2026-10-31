@@ -3,6 +3,7 @@
 
 meta({
   name: 'table-lamp',
+  license: 'CC0-1.0',
   title: 'Table lamp',
   description: 'Bedside or desk table lamp with a faceted jar or column base and a tapered shade. Knobs: base style, base and shade colours.',
   tags: ['table lamp', 'bedside lamp', 'desk lamp', 'lamp', 'light', 'lighting'],

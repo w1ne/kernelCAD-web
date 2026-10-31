@@ -4,6 +4,7 @@
 
 meta({
   name: 'mailbox',
+  license: 'CC0-1.0',
   title: 'Street mailbox',
   description: 'Public mail collection box, box style with an arched top on legs or a round pillar box. Knobs: style, body, trim and slot colours.',
   tags: ['mailbox', 'postbox', 'mail', 'post', 'letter', 'pillar box', 'street'],

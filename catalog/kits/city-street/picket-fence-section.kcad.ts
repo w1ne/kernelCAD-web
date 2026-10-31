@@ -4,6 +4,7 @@
 
 meta({
   name: 'picket-fence-section',
+  license: 'CC0-1.0',
   title: 'Picket fence section',
   description: 'Tileable picket fence section with pointed pickets, two rails and capped end posts. Knobs: picket count, height, picket and post colours.',
   tags: ['fence', 'picket', 'garden', 'yard', 'boundary', 'street', 'suburb'],
