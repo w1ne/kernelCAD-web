@@ -105,6 +105,21 @@ These are not available today; do not generate code that uses them. Anything not
 
 <!-- OUT-OF-SCOPE:END -->
 
+## Asset catalog
+
+kernelCAD ships an original low-poly catalog (kits of parametric `.kcad.ts` assets
+in metres, for games and three.js scenes). Browse and use it with these tools:
+
+- `search_assets` — find catalog assets by text, kit, category, tags or triangle budget.
+- `get_asset` — one asset's metadata, knobs, presets and rig.
+- `find_matching` — assets that pair with a given asset (compatible scale and style).
+- `get_variant` — turn a plain request ("taller", "blue") into concrete parameter values.
+- `list_kits` — the available kits and what they are for.
+- `get_kit` — one kit's contents, layout and composition.
+
+Catalog assets are ordinary kernelCAD sources, so the export and verification rules
+above apply unchanged.
+
 ## Reference index
 
 Read the file, or pull a section id with `lookup_authoring_skill({ section: '<id>' })`.
