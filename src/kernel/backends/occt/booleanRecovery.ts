@@ -105,6 +105,23 @@ export function isValidShape(oc: ReturnType<typeof getOC>, shape: unknown): bool
   }
 }
 
+/** Topology-only BRepCheck. A coincident/tangent-face boolean can leave an
+ *  unorientable face without any builder warning; the topology pass catches
+ *  that cheaply on the exact (happy-path) result, and the full check above
+ *  still guards recovered candidates. */
+export function isTopologicallyValid(oc: ReturnType<typeof getOC>, shape: unknown): boolean {
+  const o = oc as OC;
+  let analyzer: OC;
+  try {
+    analyzer = new o.BRepCheck_Analyzer(shape, false, false);
+    return Boolean(analyzer.IsValid_2());
+  } catch {
+    return false;
+  } finally {
+    analyzer?.delete();
+  }
+}
+
 /**
  * Volume bounds a correct boolean result must respect. A fuzzy/glue result
  * outside them is the wrong answer even if BRepCheck accepts it (glue on a

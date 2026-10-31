@@ -485,7 +485,11 @@ export function resolveFaceQuery(base: OcctBackend, rawQuery: FaceQuery): Face[]
   }
   if (query.near) {
     const p = query.near;
-    faces.sort((a, b) => distance(vec(a.center), p) - distance(vec(b.center), p));
+    // `center` integrates the face on every read. Inside the comparator that
+    // was O(n log n) integrations: 110 s of a 125 s offsetFaces call on a
+    // 283-face B-spline import (CADGenBench 249). Measure each face once.
+    const d = new Map(faces.map((f) => [f, distance(vec(f.center), p)]));
+    faces.sort((a, b) => d.get(a)! - d.get(b)!);
   }
 
   // v0.2-finish additions ------------------------------------------------

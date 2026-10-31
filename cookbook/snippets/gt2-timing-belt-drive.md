@@ -49,11 +49,14 @@ const pulleyB = gt2Pulley(z2, pd2).translate(C, 0, 0);
 // cord ends; a gap there leaves the belt as four loose pieces
 // (union.disconnected).
 const cordR = 0.7;
-const wrapA = torus(pd1 / 2, cordR)
-  .subtract(box(pd1 * 2, pd1 * 2, 4).translate(0, -pd1, -2));
-const wrapB = torus(pd2 / 2, cordR)
-  .translate(C, 0, 0)
-  .subtract(box(pd2 * 2, pd2 * 2, 4).translate(C - pd2 * 2, -pd2, -2));
+// Each wrap is an exact round cord (two arcs) revolved 180°, so its end
+// circles match the tangent cords and the union is cheap (a torus() minus a
+// box cut took seconds of booleans).
+const halfWrap = (r: number) => path().moveTo(r + cordR, 0)
+  .threePointsArc(r - cordR, 0, r, cordR).threePointsArc(r + cordR, 0, r, -cordR)
+  .close().revolve({ angleDeg: 180 });
+const wrapA = halfWrap(pd1 / 2).rotateZ(90);
+const wrapB = halfWrap(pd2 / 2).rotateZ(-90).translate(C, 0, 0);
 const tanTop = cylinder(C, cordR).alongAxis([1, 0, 0]).translate(0, pd1 / 2, 0);
 const tanBot = cylinder(C, cordR).alongAxis([1, 0, 0]).translate(0, -pd1 / 2, 0);
 const belt = wrapA.union(wrapB, tanTop, tanBot);

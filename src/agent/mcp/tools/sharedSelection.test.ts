@@ -17,6 +17,25 @@ describe('selection MCP transport', () => {
       expect.objectContaining({ method: 'POST', body: JSON.stringify({ selection, model_generation: 0, face_signature: null }), redirect: 'error', signal: expect.any(AbortSignal) }),
     ]);
   });
+  it('round-trips a primary edge and the complete stable edge multi-selection', async () => {
+    const first = { shapeIndex: 0, kind: 'edge' as const, id: 2, featureId: 'box_1', stableId: 's1111111111111111', ref: '@kc[body/edge/s1111111111111111]' };
+    const second = { shapeIndex: 0, kind: 'edge' as const, id: 5, featureId: 'box_1', stableId: 's2222222222222222', ref: '@kc[body/edge/s2222222222222222]' };
+    const fetcher = vi.fn(async (_input, init?: RequestInit) => {
+      const payload = init?.method === 'POST'
+        ? JSON.parse(init.body as string)
+        : { selection: second, selections: [first, second] };
+      return new Response(JSON.stringify({ ok: true, ...payload, revision: 2, modelGeneration: 0 }));
+    });
+    vi.stubGlobal('fetch', fetcher);
+    const target = { studio_url: 'http://localhost:5173', session: 'token', model_generation: 0 };
+    await sharedSelectionTool('POST', { ...target, selection: second, selections: [first, second] });
+    expect(JSON.parse((fetcher.mock.calls[0]![1] as RequestInit).body as string)).toMatchObject({
+      selection: second,
+      selections: [first, second],
+      model_generation: 0,
+    });
+    expect(await sharedSelectionTool('GET', target)).toMatchObject({ selection: second, selections: [first, second] });
+  });
   it('lets the locked selection endpoint capture an agent-set face signature', async () => {
     const face = { shapeIndex: 0, kind: 'face' as const, id: 4, featureId: 'extrude_1' };
     const mesh = { features: [{ featureId: 'extrude_1', faces: [{ faceId: 4,

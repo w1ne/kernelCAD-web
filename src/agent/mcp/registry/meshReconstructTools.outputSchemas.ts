@@ -47,6 +47,11 @@ export const MESH_RECONSTRUCT_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> =
       passes: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Per-pass tolerances and measured fidelity.' },
       notRepresented: { type: 'array', items: { type: 'string' } },
       written: { type: 'object', additionalProperties: true, description: '{ script, ledger } paths when out was given.' },
+      source: {
+        type: 'object',
+        additionalProperties: true,
+        description: 'STEP input only: { format: step, solidCount, solid, mmPerFileUnit, tessellation: { linearMm, angularRad, triangles } }.',
+      },
       error: { type: 'string', description: 'Failure message (failure).' },
       errorCode: { type: 'string' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },

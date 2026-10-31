@@ -89,6 +89,9 @@ export const GeometryResultSchema = z.object({
     mesh: z.object({ positions: Float32ArraySchema, normals: Float32ArraySchema, indices: Uint32ArraySchema }).optional(),
     volume: z.number().optional(),
     edges: Float32ArraySchema.optional(),
+    edgeRanges: z.array(z.number()).optional(),
+    edgeOwners: z.array(z.string()).optional(),
+    edgeStableIds: z.array(z.string()).optional(),
     color: z.string().optional(),
     transform: z.array(z.number()).length(16).optional(),
     assemblyFeatureId: z.string().optional(),
@@ -179,6 +182,8 @@ export interface GeometryResult {
     /** Owning feature id per `edgeRanges` pair. Absent when every edge
      *  belongs to `featureId`. */
     edgeOwners?: string[];
+    /** Persistent geometry-derived ID aligned with each `edgeRanges` pair. */
+    edgeStableIds?: string[];
 }
 
 export interface SketchGeometry {
