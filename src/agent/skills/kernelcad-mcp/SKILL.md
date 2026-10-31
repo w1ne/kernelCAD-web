@@ -9,6 +9,21 @@ description: kernelCAD MCP server (kernelcad mcp) — introspect a running model
 
 Load when `kernelcad mcp` is available and you need to inspect or edit a live model without re-running the full CLI on every change. The MCP server exposes dynamic introspection tools that operate on evaluated in-memory state.
 
+### Sandbox mode
+
+If the server's `initialize` instructions start with `kernelCAD SANDBOX MODE is ON`
+(the server was started with `kernelcad mcp --sandbox` or `KERNELCAD_SANDBOX=1`),
+three rules apply. Every path you pass, and every path a script reads, must
+resolve inside the named workspace: use workspace-relative paths. All outbound
+network is refused. Network modes return `cli.sandbox-network-denied`:
+`import_step` url/upload, `fetch_part`/`find_part` `partsBaseUrl` or
+`model.url`, `trace_from_image` with an http(s) image, `render_preview`
+`base_url`, a URL `environment`, and the Studio selection tools.
+`send_to_printer` returns `cli.sandbox-command-refused`. Switch to the offline
+input (`content_base64`, a workspace file, a bundled HDRI preset) and do not
+retry the same call. Paths that escape return `cli.sandbox-path-denied` and
+name the argument.
+
 ## MCP tool surface
 
 When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes the current tool registry, including:

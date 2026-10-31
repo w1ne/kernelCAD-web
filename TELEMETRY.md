@@ -31,6 +31,9 @@ Any one of these turns telemetry off:
 - `KERNELCAD_TELEMETRY=0` or `KERNELCAD_TELEMETRY_DISABLED=1`
 - `DO_NOT_TRACK=1`
 - running in CI (`CI=true`) — off by default
+- sandbox mode (`--sandbox` / `KERNELCAD_SANDBOX=1`): telemetry is forced off,
+  no first-run notice is shown, no install id is written, and outbound network
+  is refused anyway ([docs/sandbox.md](docs/sandbox.md))
 
 Check the current state with `kernelcad telemetry status`. Inspect exactly what
 would be sent without sending anything with `KERNELCAD_TELEMETRY_DEBUG=1`
