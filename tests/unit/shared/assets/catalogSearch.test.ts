@@ -103,6 +103,14 @@ describe('resolveVariant', () => {
     expect(resolveVariant(pine, 'height 7.5').params).toEqual({ heightM: '8' }); // nearest numeric choice
   });
 
+  it('reads "<value> <knob>" and number words', () => {
+    expect(resolveVariant(pine, 'five tiers').params).toEqual({ tiers: '5' });
+    expect(resolveVariant(pine, '3 tiers, 8 height').params).toEqual({ tiers: '3', heightM: '8' });
+    expect(resolveVariant(pine, 'taller, autumn, five tiers')).toMatchObject({
+      preset: 'autumn', params: { heightM: '6', tiers: '5' }, unmatched: [],
+    });
+  });
+
   it('steps size knobs with comparatives', () => {
     expect(resolveVariant(pine, 'taller').params).toEqual({ heightM: '6' });
     expect(resolveVariant(pine, 'shorter, more tiers').params).toEqual({ heightM: '3', tiers: '4' });
