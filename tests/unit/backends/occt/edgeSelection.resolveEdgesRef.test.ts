@@ -70,6 +70,22 @@ describe('resolveEdgesRef characterisation', () => {
     expect(result.length).toBe(1);
   });
 
+  it('a missing stable edge ID reports the rejected value and a usable example', () => {
+    const box = OcctBackend.box(20, 20, 20);
+    const stableId = 's0000000000000000';
+    const result = pickEdges(edgesRecord({ kind: 'segment', segmentId: stableId }), box, undefined);
+    if (!('error' in result)) throw new Error('expected a missing stable edge ID to fail');
+    expect(result.error).toMatchObject({
+      code: 'feature.invalid-args',
+      featureId: 'fillet_e1',
+      severity: 'error',
+    });
+    expect(result.error.message).toContain(stableId);
+    expect(result.error.message).toContain('current shape');
+    expect(result.error.message).toContain('Example:');
+    expect(result.error.hint).toBeTruthy();
+  });
+
   it('out-of-range segment id surfaces the stable-only-within-one-lowering message', () => {
     const box = OcctBackend.box(20, 20, 20);
     const result = pickEdges(edgesRecord({ kind: 'segment', segmentId: 'e99' }), box, undefined);

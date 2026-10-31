@@ -23,11 +23,15 @@
 // shapes held in the OCCT WASM heap; evicted masters are disposed.
 
 import * as replicad from 'replicad';
+import { getOC } from 'replicad';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct, registerOcctResetHook } from '../../kernel/backends/occt/occtBackend';
 import { describeOcctThrow, isOcctOutOfMemory } from '../../kernel/backends/occt/occtException';
 import { approxOcctBytes } from '../../kernel/backends/occt/shapeWeight';
 import { healImportedStep } from './healStep';
+import { rebuildImportedPCurves } from './healStepPCurves';
+import { removeSliverFaces } from './healStepSliver';
+import { isValidShape } from '../../kernel/backends/occt/booleanRecovery';
 
 /** Backends whose STEP import was normalized by `healImportedStep`. Weak so a
  *  disposed backend is collectable; read by `fromSTEP` to stamp metadata. */
@@ -152,9 +156,9 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
   // `BRepCheck` but tessellate into non-manifold edges; unification collapses
   // them without moving surfaces. A failed/invalid unification returns the
   // original import untouched.
-  const healed = healImportedStep(imported as replicad.Shape3D);
+  const healed = await healImport(imported as replicad.Shape3D);
   const master = new OcctBackend(healed.shape);
-  if (healed.unified || healed.repaired) healedStepBackends.add(master);
+  if (healed.changed) healedStepBackends.add(master);
   misses++;
   const weight = approxOcctBytes(master);
   // A single master over the budget is handed to the caller and not pinned.
@@ -184,6 +188,41 @@ function evictMasters(protectKey?: string): void {
     evicted?.master.dispose();
     if (cache.size === 0) break;
   }
+}
+
+/**
+ * Run every import heal on a freshly parsed STEP solid. `changed` is true when
+ * any stage replaced the import.
+ */
+async function healImport(imported: replicad.Shape3D): Promise<{ shape: replicad.Shape3D; changed: boolean }> {
+  const healed = healImportedStep(imported);
+  let shape = healed.shape;
+  let changed = healed.unified || healed.repaired === true;
+  // A face far below any meshing deflection (a two-edge fillet run-out a few
+  // hundredths of a millimetre long) is BRepCheck-valid but meshes into an
+  // edge shared by four triangles. Drop it and sew the gap (healStepSliver.ts);
+  // the result is kept only when it is a valid, volume-identical solid.
+  const desliver = removeSliverFaces(shape);
+  if (desliver !== undefined) {
+    shape = desliver;
+    changed = true;
+  }
+  // Still invalid after topology repair: the remaining defect can be a pcurve
+  // that only the writing system could read. Rebuild the 2D curves with a
+  // pcurve-free STEP round-trip (see healStepPCurves.ts); the result is kept
+  // only when it is valid and topologically identical.
+  let stillInvalid = false;
+  try {
+    stillInvalid = !isValidShape(getOC(), (shape as unknown as { wrapped: unknown }).wrapped);
+  } catch {
+    // OCCT is not loaded in this host (unit fakes / browser shims): there is
+    // no validity verdict to act on, so keep the import exactly as parsed.
+  }
+  if (stillInvalid) {
+    const rebuilt = await rebuildImportedPCurves(shape);
+    if (rebuilt !== undefined) return { shape: rebuilt, changed: true };
+  }
+  return { shape, changed };
 }
 
 /** Clone a cached master, carrying its healed-import mark to the clone. */

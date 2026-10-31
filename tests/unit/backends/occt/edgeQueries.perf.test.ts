@@ -43,3 +43,35 @@ describe('dihedral edge queries scale with edge count', () => {
     expect(ms).toBeLessThan(5_000);
   }, 60_000);
 });
+
+// `near` sorted faces with a comparator that read `face.center` (a surface
+// integration) twice per comparison: on a 283-face B-spline import that was
+// 110 s of a 125 s offsetFaces call (CADGenBench 249).
+describe('face query { near } measures each face once', () => {
+  it('reads each face centre once while sorting a 290-face plate', async () => {
+    const { Face } = await import('replicad');
+    const { resolveFaceQuery } = await import('../../../../src/kernel/backends/occt/edgeQueries');
+    let proto: object | null = Face.prototype;
+    let owner: object | undefined;
+    while (proto && !owner) {
+      if (Object.getOwnPropertyDescriptor(proto, 'center')) owner = proto;
+      proto = Object.getPrototypeOf(proto);
+    }
+    const descriptor = Object.getOwnPropertyDescriptor(owner!, 'center')!;
+    let reads = 0;
+    Object.defineProperty(owner!, 'center', {
+      ...descriptor,
+      get() {
+        reads++;
+        return descriptor.get!.call(this);
+      },
+    });
+    try {
+      const faces = resolveFaceQuery(plate, { near: [50, 50, 5] });
+      expect(faces.length).toBe(150);
+      expect(reads).toBeLessThanOrEqual(faces.length);
+    } finally {
+      Object.defineProperty(owner!, 'center', descriptor);
+    }
+  }, 60_000);
+});

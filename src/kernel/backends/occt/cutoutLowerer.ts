@@ -25,7 +25,6 @@ import type { Face } from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { pickFace } from './edgeSelection';
 import { cutWithHistory, mergeBooleanHistory } from './historyAwareBooleans';
-import { resolveFaceQuery } from './edgeQueries';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../../shared/intent/types';
@@ -121,39 +120,8 @@ function deriveThroughDepth(
   entry: ResolvedEntry,
   featureId: string,
 ): number | { error: CompilerDiagnostic } {
-  const n = entry.normalOutward;
-  const X = Math.abs(n[0]), Y = Math.abs(n[1]), Z = Math.abs(n[2]);
-  let antiAxis: 'X' | '-X' | 'Y' | '-Y' | 'Z' | '-Z' | null = null;
-  if (Z > 0.99) antiAxis = n[2] > 0 ? '-Z' : 'Z';
-  else if (X > 0.99) antiAxis = n[0] > 0 ? '-X' : 'X';
-  else if (Y > 0.99) antiAxis = n[1] > 0 ? '-Y' : 'Y';
-
-  if (antiAxis !== null) {
-    const candidates = resolveFaceQuery(target, { byNormal: antiAxis });
-    if (candidates.length === 0) {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.kernel-failed',
-          featureId,
-          severity: 'error',
-          message: `'through' requested but no anti-parallel back face found.`,
-          hint: "'through' requested but the body has no back face anti-parallel to the entry face. Pass an explicit upToFace or use a numeric depth.",
-        },
-      };
-    }
-    candidates.sort((a, b) => {
-      const da = dot([a.center.x - entry.centroid[0], a.center.y - entry.centroid[1], a.center.z - entry.centroid[2]], entry.axisIntoBody);
-      const db = dot([b.center.x - entry.centroid[0], b.center.y - entry.centroid[1], b.center.z - entry.centroid[2]], entry.axisIntoBody);
-      return da - db;
-    });
-    const back = candidates[0];
-    return dot(
-      [back.center.x - entry.centroid[0], back.center.y - entry.centroid[1], back.center.z - entry.centroid[2]],
-      entry.axisIntoBody,
-    );
-  }
-
+  // A nearer opposite-facing pocket floor may not intersect the profile.
+  // Extend through the body's projected bounds so 'through' clears all material.
   const bb = target.boundingBox();
   const corners: Vec3[] = [
     [bb.min[0], bb.min[1], bb.min[2]], [bb.max[0], bb.min[1], bb.min[2]],

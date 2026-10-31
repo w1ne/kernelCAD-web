@@ -108,6 +108,13 @@ describe('summary', () => {
       state('202', { type: 'editing', mode: 'passthrough', official: { valid: true, detail: 'pass' } }),
     ];
     expect(isValidCandidate(states[2])).toBe(false);
+    // No submitted candidate: an official pass on a rejected attempt does not count.
+    expect(
+      isValidCandidate(state('203', { type: 'editing', status: 'failed', official: { valid: true, detail: 'pass' } })),
+    ).toBe(false);
+    expect(
+      isValidCandidate(state('204', { type: 'editing', status: 'invalid', official: { valid: true, detail: 'pass' } })),
+    ).toBe(true);
     const sum = summarize(states);
     expect(sum.byType).toEqual({ generation: { tasks: 2, valid: 1 }, editing: { tasks: 2, valid: 1 } });
     expect(sum.precheckValid).toBe(3);

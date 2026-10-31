@@ -18,7 +18,12 @@ interface SolidReport {
 }
 
 async function solidOf(code: string, kernel?: 'occt' | 'smlib'): Promise<SolidReport> {
-  const model = await buildModel({ code: `export default ${code};`, fileName: 'face-edit.kcad.ts', kernel });
+  return solidOfScript(`export default ${code};`, kernel);
+}
+
+/** Like {@link solidOf}, for a script body with statements. */
+async function solidOfScript(code: string, kernel?: 'occt' | 'smlib'): Promise<SolidReport> {
+  const model = await buildModel({ code, fileName: 'face-edit.kcad.ts', kernel });
   const shape = model.rootShape ?? [...model.shapes.values()].at(-1);
   const volume = shape?.volume();
   const faces = shape instanceof OcctBackend ? shape.faceHashes().length : undefined;
@@ -95,6 +100,61 @@ describe('offsetFaces and moveFaces', () => {
     expect(edited.volume).toBeCloseTo(2200, 3);
     expect(edited.faces).toBe(6);
     expectBounds(edited, [22, 10, 10]);
+  });
+
+  it('moves every face a set query matches, including coplanar faces onto one plane', async () => {
+    // Two separate bosses share the z = 10 top plane. Under the old first-match
+    // rule only one boss grew; a set query must move both, and both land on the
+    // same offset plane (the landing check may not assume a unique face there).
+    const edited = await solidOfScript(`
+      const plate = box(20, 20, 5);
+      const a = box(5, 5, 5).translate(2, 2, 5);
+      const b = box(5, 5, 5).translate(13, 13, 5);
+      return plate.union(a).union(b).offsetFaces({ byNormal: 'Z', atZ: 10 }, 1);
+    `);
+    expect(edited.codes).toEqual([]);
+    expect(edited.volume).toBeCloseTo(2300, 3);
+    expect(edited.faces).toBe(16);
+    expectBounds(edited, [20, 20, 11]);
+  });
+
+  it('runs a wall in a filleted pocket inward and keeps the fillet strips', async () => {
+    // The slot wall's boundary is concave/tangent (the pocket floor, rim and
+    // corner fillets). Sliding it into the void fills 2 mm of the slot; the
+    // fillets stay and expose tangent strips, so the face count grows.
+    const edited = await solidOfScript(`
+      const plate = box(60, 40, 10);
+      const slot = box(20, 20, 10).translate(20, 10, 0);
+      return plate.subtract(slot).fillet(2, { convex: true }).offsetFaces({ near: [20, 20, 5] }, 2);
+    `);
+    expect(edited.codes).toEqual([]);
+    expect(Math.abs(edited.volume! - 19729.53)).toBeLessThan(1);
+    expect(edited.faces).toBe(40);
+    expectBounds(edited, [60, 40, 10]);
+  });
+
+  it('keeps the faces a multi-face query can move and reports the refused one', async () => {
+    // { byNormal: 'Z' } matches the triangular top and both halves of the block
+    // top. The triangle's top is an outer face with convex boundary edges, so
+    // growing it would glue a slab; that face is refused and reported, and the
+    // faces that can slide still move.
+    const model = await buildModel({
+      code: `
+        const tri = extrudePolygon([[0, 0], [30, 0], [0, 40]], 10);
+        const block = box(10, 10, 10).translate(22, 0, 0);
+        return tri.union(block).offsetFaces({ byNormal: 'Z' }, 1);
+      `,
+      fileName: 'face-edit-skip.kcad.ts',
+    });
+    try {
+      expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+      const skipped = model.diagnostics.filter((d) => d.code === 'feature.face-edit.skipped');
+      expect(skipped.length).toBeGreaterThan(0);
+      expect(Math.abs(model.rootShape!.volume() - 6632.5)).toBeLessThan(2);
+      expect(model.rootShape!.boundingBox().max[2]).toBeCloseTo(11, 3);
+    } finally {
+      model.rootShape?.dispose?.();
+    }
   });
 
   it('rejects a hypotenuse offset that would glue a slab', async () => {

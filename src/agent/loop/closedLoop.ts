@@ -33,12 +33,22 @@ export const MAX_REPAIR_ATTEMPTS_CEILING = 10;
  * Invariant: never returns status:'passed' unless the gate suite reported ok for the
  * selected candidate. A broken artifact returns 'gate_failed' (or 'no_script').
  */
+/** A script the gate rejected. A later prose reply must not erase it. */
+interface FailedScript {
+  code: string;
+  scriptPath: string;
+  finalText: string;
+  verdicts: GateVerdict[];
+}
+
 /** Per-attempt outcome: token spend plus a terminal result when the loop ends. */
 interface AttemptOutcome {
   tokensIn: number;
   tokensOut: number;
   /** Set when the attempt produced a terminal loop result; absent means iterate again. */
   result?: ClosedLoopResult;
+  /** Gate rejection the loop is about to repair. */
+  failed?: FailedScript;
 }
 
 /** Execute one candidate's geometry for consensus selection. */
@@ -144,12 +154,13 @@ async function runBestOfNAttempt(
   if (winner.report.ok) {
     return { tokensIn, tokensOut, result: { status: 'passed', scriptPath: winnerPath, finalText: winner.text, attempts: attempt, tokensIn, tokensOut } };
   }
+  const failed: FailedScript = { code: winnerCode ?? '', scriptPath: winnerPath, finalText: winner.text, verdicts: winner.report.verdicts };
   if (attempt < maxAttempts) {
     const repairPrompt = buildRepairPrompt(winner.report.verdicts);
     input.onEvent?.({ type: 'repair', prompt: repairPrompt });
     messages.push({ role: 'assistant', content: winner.text });
     messages.push({ role: 'user', content: repairPrompt });
-    return { tokensIn, tokensOut };
+    return { tokensIn, tokensOut, failed };
   }
   return { tokensIn, tokensOut, result: { status: 'gate_failed', scriptPath: winnerPath, finalText: winner.text, attempts: attempt, verdicts: winner.report.verdicts, tokensIn, tokensOut } };
 }
@@ -191,12 +202,13 @@ async function runSingleAttempt(
     return { tokensIn, tokensOut, result: { status: 'passed', scriptPath: lastScriptPath, finalText: lastText, attempts: attempt, tokensIn, tokensOut } };
   }
 
+  const failed: FailedScript = { code, scriptPath: lastScriptPath, finalText: lastText, verdicts: report.verdicts };
   if (attempt < maxAttempts) {
     const repairPrompt = buildRepairPrompt(report.verdicts);
     input.onEvent?.({ type: 'repair', prompt: repairPrompt });
     messages.push({ role: 'assistant', content: gen.text });
     messages.push({ role: 'user', content: repairPrompt });
-    return { tokensIn, tokensOut };
+    return { tokensIn, tokensOut, failed };
   }
 
   return { tokensIn, tokensOut, result: { status: 'gate_failed', scriptPath: lastScriptPath, finalText: lastText, attempts: attempt, verdicts: report.verdicts, tokensIn, tokensOut } };
@@ -210,6 +222,7 @@ export async function runClosedLoop(input: ClosedLoopInput): Promise<ClosedLoopR
   const messages: LoopMessage[] = [{ role: 'user', content: input.prompt }];
   let tokensIn = 0;
   let tokensOut = 0;
+  let lastFailed: FailedScript | undefined;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     input.onEvent?.({ type: 'attempt', n: attempt });
@@ -221,6 +234,22 @@ export async function runClosedLoop(input: ClosedLoopInput): Promise<ClosedLoopR
 
     tokensIn += outcome.tokensIn;
     tokensOut += outcome.tokensOut;
+    if (outcome.failed) lastFailed = outcome.failed;
+    if (outcome.result?.status === 'no_script' && lastFailed) {
+      // Fixture 202/203: the model sends a script, the gate rejects it, then
+      // the last turn is prose. Keep the script so the host can repair it
+      // and report the gate failure instead of "no script extracted".
+      const scriptPath = lastFailed.code ? await input.writeScript(lastFailed.code) : lastFailed.scriptPath;
+      return {
+        status: 'gate_failed',
+        scriptPath,
+        finalText: lastFailed.finalText,
+        attempts: outcome.result.attempts,
+        verdicts: lastFailed.verdicts,
+        tokensIn,
+        tokensOut,
+      };
+    }
     if (outcome.result) return { ...outcome.result, tokensIn, tokensOut };
   }
 

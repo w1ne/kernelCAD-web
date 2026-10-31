@@ -1,5 +1,35 @@
 # Unreleased
 
+- Drawing round-trip scorecard: `npm run drawing-roundtrip:scorecard` draws
+  the 27 reference parts with the `pdf-drawing` exporter, reads each sheet
+  back with `drawing_to_cad`, and checks the rebuilt volume (±0.1 %) and
+  extents (0.05 mm); report in `docs/drawing-roundtrip-scorecard.md`.
+  It found that `drawing_to_cad` misread kernelCAD's own native sheets
+  (0/27). Fixes: thin annotation (datum boxes, tolerance frames, leaders)
+  no longer joins views; circles flattened to line segments are not read as
+  pictorial views; a captioned view with slanted sides stays orthographic;
+  blind holes read from hidden lines are no longer cut 1 mm too deep. Now
+  15/27. Demo bundle: `docs/demos/drawing-roundtrip-scorecard/`.
+
+- STEP to editable feature tree: `mesh_to_features` and `kernelcad reconstruct`
+  accept `.step`/`.stp` (or an ISO-10303-21 header in inline `data`). One
+  solid is read with the OCCT STEP reader (new `solid` / `--solid` picks a body
+  of a multi-solid file, which is otherwise refused), its exact B-rep is
+  tessellated at 0.02 % of the bbox diagonal (0.002–0.05 mm), and the existing
+  fit/verify loop returns an editable `.kcad.ts` with a measured verdict. The
+  result carries `source` { solidCount, solid, mmPerFileUnit, tessellation }.
+  Local demo bundle: `docs/demos/step-to-features/`.
+
+# v0.17.4 — 2026-10-31
+
+- Release archives: each build runner installs its own native build bindings
+  (rollup, esbuild, lightningcss, Tailwind oxide) at the lockfile versions
+  after `npm ci`. The lockfile records them only for linux-x64, so the v0.17.3
+  tag built only the linux-x86_64 archive and published nothing. A pull request
+  that changes the archive inputs now builds all five platform archives.
+
+# v0.17.3 — 2026-10-31
+
 - Asset catalog: parametric low-poly assets live in
   `catalog/kits/<kit>/<asset>.kcad.ts` with a `kit.json` per kit.
   `npm run catalog:build` evaluates each one, exports it with the low-poly GLB
