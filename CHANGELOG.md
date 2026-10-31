@@ -30,6 +30,14 @@
 
 # v0.17.3 — 2026-10-31
 
+- Characters kit (`catalog/kits/characters`, 5 assets): mechanical low-poly
+  characters rigged through mates — humanoid robot, robot dog, rover robot,
+  desktop robot arm and posable mannequin. Every revolute/prismatic mate is a
+  GLB pivot node listed in `asset.extras.kernelcad.rig` (6–14 pivots each), so
+  they pose and animate in three.js, Godot or Unity without a skinned
+  skeleton. Catalog kits are CC0-1.0. `scripts/checkCatalogAsset.ts` now
+  prints the rig.
+
 - Catalog assets as three.js ES modules: `npx tsx scripts/exportAssetModule.ts
   <id>` writes a self-contained `.mjs` (`emitAssetModule` in
   `src/agent/catalog/assetModule.ts`) exporting `createAsset` (default),

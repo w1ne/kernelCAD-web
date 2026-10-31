@@ -2,6 +2,18 @@
   "schemaVersion": 1,
   "kits": [
     {
+      "id": "characters",
+      "title": "Characters",
+      "description": "Mechanical low-poly characters built from rigid parts and rigged through mates: every joint is a GLB pivot node, ready to pose or animate in three.js, Godot or Unity.",
+      "assets": [
+        "mannequin",
+        "robot-arm",
+        "robot-dog",
+        "robot-humanoid",
+        "rover-robot"
+      ]
+    },
+    {
       "id": "city-street",
       "title": "City street",
       "description": "Low-poly street furniture, traffic pieces and road tiles for town and city scenes at real-world scale, flat-shaded on one palette material.",
@@ -86,6 +98,1064 @@
     }
   ],
   "assets": [
+    {
+      "id": "mannequin",
+      "kit": "characters",
+      "title": "Posable mannequin",
+      "description": "Life-size jointed wooden mannequin with neck, waist, shoulder, elbow, wrist, hip, knee and ankle pivots rigged as GLB nodes, ready to pose. Knobs: height, wood and joint colours.",
+      "category": "character",
+      "origin": "base",
+      "tags": [
+        "mannequin",
+        "figure",
+        "posable",
+        "artist",
+        "dummy",
+        "humanoid",
+        "character",
+        "npc",
+        "placeholder",
+        "rigged"
+      ],
+      "compat": [
+        "character",
+        "interior",
+        "placeholder"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/characters/mannequin.kcad.ts",
+      "sourceSha256": "ea638824eb0c4bdb162b599a95da46c47332f4c79c26ed64b134f84bfac41d7b",
+      "triangleBudget": 900,
+      "params": [
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "1.75m",
+          "label": "Height",
+          "choices": [
+            "1.55m",
+            "1.75m",
+            "1.95m"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#d9b483",
+          "label": "Wood"
+        },
+        {
+          "name": "joint",
+          "type": "color",
+          "default": "#a7814f",
+          "label": "Joints"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "wood": "#6b4a2e",
+          "joint": "#3e2a1a"
+        },
+        "white": {
+          "wood": "#eceae4",
+          "joint": "#b9b6ae"
+        }
+      },
+      "rig": {
+        "waist": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -30,
+            60
+          ],
+          "node": "pivot:waist"
+        },
+        "neck": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -80,
+            80
+          ],
+          "node": "pivot:neck"
+        },
+        "left-shoulder": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            60
+          ],
+          "node": "pivot:left-shoulder"
+        },
+        "left-elbow": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -145,
+            0
+          ],
+          "node": "pivot:left-elbow"
+        },
+        "left-wrist": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -70,
+            70
+          ],
+          "node": "pivot:left-wrist"
+        },
+        "right-shoulder": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            60
+          ],
+          "node": "pivot:right-shoulder"
+        },
+        "right-elbow": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -145,
+            0
+          ],
+          "node": "pivot:right-elbow"
+        },
+        "right-wrist": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -70,
+            70
+          ],
+          "node": "pivot:right-wrist"
+        },
+        "left-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -110,
+            45
+          ],
+          "node": "pivot:left-hip"
+        },
+        "left-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            140
+          ],
+          "node": "pivot:left-knee"
+        },
+        "left-ankle": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -40,
+            40
+          ],
+          "node": "pivot:left-ankle"
+        },
+        "right-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -110,
+            45
+          ],
+          "node": "pivot:right-hip"
+        },
+        "right-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            140
+          ],
+          "node": "pivot:right-knee"
+        },
+        "right-ankle": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -40,
+            40
+          ],
+          "node": "pivot:right-ankle"
+        }
+      },
+      "stats": {
+        "triangles": 548,
+        "sizeM": [
+          0.488692,
+          1.73,
+          0.287551
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wood",
+          "color": "#d9b483",
+          "parts": [
+            "pelvis",
+            "chest",
+            "head",
+            "left-upper-arm",
+            "left-hand",
+            "left-thigh",
+            "left-foot",
+            "right-upper-arm",
+            "right-hand",
+            "right-thigh",
+            "right-foot"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "joint",
+          "color": "#a7814f",
+          "parts": [
+            "left-forearm",
+            "left-shin",
+            "right-forearm",
+            "right-shin"
+          ],
+          "param": "joint"
+        }
+      ]
+    },
+    {
+      "id": "robot-arm",
+      "kit": "characters",
+      "title": "Robot arm",
+      "description": "Desktop articulated robot arm with base yaw, shoulder, elbow and wrist pivots and a sliding two-finger gripper, rigged as GLB nodes. Knobs: reach, body, accent, joint and gripper colours.",
+      "category": "character",
+      "origin": "base",
+      "tags": [
+        "robot arm",
+        "robotic arm",
+        "manipulator",
+        "industrial robot",
+        "gripper",
+        "factory",
+        "lab",
+        "mech",
+        "rigged"
+      ],
+      "compat": [
+        "robot",
+        "sci-fi",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/characters/robot-arm.kcad.ts",
+      "sourceSha256": "b98e8b267d5369bdb7420af214edc2aa31e433439900663223e38646f5b5e060",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "reach",
+          "type": "choice",
+          "default": "standard",
+          "label": "Reach",
+          "choices": [
+            "compact",
+            "standard",
+            "long"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f28c28",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#2b2f33",
+          "label": "Accent"
+        },
+        {
+          "name": "joint",
+          "type": "color",
+          "default": "#9aa3ab",
+          "label": "Joints"
+        },
+        {
+          "name": "gripper",
+          "type": "color",
+          "default": "#4a4f55",
+          "label": "Gripper"
+        }
+      ],
+      "presets": {
+        "lab": {
+          "body": "#eef0f2",
+          "accent": "#3b7dd8"
+        },
+        "heavy": {
+          "body": "#f2c21b",
+          "accent": "#1b1d20",
+          "reach": "long"
+        }
+      },
+      "rig": {
+        "yaw": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            170
+          ],
+          "node": "pivot:yaw"
+        },
+        "shoulder": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -90,
+            90
+          ],
+          "node": "pivot:shoulder"
+        },
+        "elbow": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -135,
+            135
+          ],
+          "node": "pivot:elbow"
+        },
+        "wrist-pitch": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -100,
+            100
+          ],
+          "node": "pivot:wrist-pitch"
+        },
+        "finger-l-slide": {
+          "type": "slide",
+          "axis": "z",
+          "range": [
+            0,
+            28
+          ],
+          "node": "pivot:finger-l-slide"
+        },
+        "finger-r-slide": {
+          "type": "slide",
+          "axis": "z",
+          "range": [
+            0,
+            28
+          ],
+          "node": "pivot:finger-r-slide"
+        }
+      },
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          0.25,
+          0.456,
+          0.485
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#2b2f33",
+          "parts": [
+            "base"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#f28c28",
+          "parts": [
+            "turret",
+            "upper-arm",
+            "forearm",
+            "base-ring"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "joint",
+          "color": "#9aa3ab",
+          "parts": [
+            "wrist"
+          ],
+          "param": "joint"
+        },
+        {
+          "name": "gripper",
+          "color": "#4a4f55",
+          "parts": [
+            "finger-l",
+            "finger-r"
+          ],
+          "param": "gripper"
+        }
+      ]
+    },
+    {
+      "id": "robot-dog",
+      "kit": "characters",
+      "title": "Robot dog",
+      "description": "Four-legged robot dog with hip, knee, neck and tail pivots rigged as GLB nodes. Knobs: size, ears, body, panel, eye and joint colours.",
+      "category": "animal",
+      "origin": "base",
+      "tags": [
+        "robot",
+        "dog",
+        "quadruped",
+        "pet",
+        "animal",
+        "mech",
+        "rigged",
+        "toy"
+      ],
+      "compat": [
+        "robot",
+        "sci-fi",
+        "character"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/characters/robot-dog.kcad.ts",
+      "sourceSha256": "02980f54869ead723ae15ff95fedb76a8c9dd95f48ee3d7ce8d0175cace8cf08",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "ears",
+          "type": "choice",
+          "default": "pointed",
+          "label": "Ears",
+          "choices": [
+            "pointed",
+            "none"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Body"
+        },
+        {
+          "name": "panel",
+          "type": "color",
+          "default": "#2b2f33",
+          "label": "Panels"
+        },
+        {
+          "name": "eyes",
+          "type": "color",
+          "default": "#46e0ff",
+          "label": "Eyes"
+        },
+        {
+          "name": "joint",
+          "type": "color",
+          "default": "#55595e",
+          "label": "Joints"
+        }
+      ],
+      "presets": {
+        "stealth": {
+          "body": "#3a3f45",
+          "panel": "#1b1d20",
+          "eyes": "#ff3b30"
+        },
+        "white": {
+          "body": "#eef0f2",
+          "panel": "#9aa3ab",
+          "eyes": "#2fbf5a"
+        }
+      },
+      "rig": {
+        "neck": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -35,
+            45
+          ],
+          "node": "pivot:neck"
+        },
+        "tail-wag": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -40,
+            40
+          ],
+          "node": "pivot:tail-wag"
+        },
+        "front-left-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -60,
+            60
+          ],
+          "node": "pivot:front-left-hip"
+        },
+        "front-left-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -110,
+            0
+          ],
+          "node": "pivot:front-left-knee"
+        },
+        "front-right-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -60,
+            60
+          ],
+          "node": "pivot:front-right-hip"
+        },
+        "front-right-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -110,
+            0
+          ],
+          "node": "pivot:front-right-knee"
+        },
+        "back-left-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -60,
+            60
+          ],
+          "node": "pivot:back-left-hip"
+        },
+        "back-left-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            110
+          ],
+          "node": "pivot:back-left-knee"
+        },
+        "back-right-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -60,
+            60
+          ],
+          "node": "pivot:back-right-hip"
+        },
+        "back-right-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            110
+          ],
+          "node": "pivot:back-right-knee"
+        }
+      },
+      "stats": {
+        "triangles": 336,
+        "sizeM": [
+          0.33,
+          0.64,
+          0.924781
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#f0c419",
+          "parts": [
+            "body",
+            "head",
+            "front-left-shin",
+            "front-right-shin",
+            "back-left-shin",
+            "back-right-shin"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "panel",
+          "color": "#2b2f33",
+          "parts": [
+            "back-panel",
+            "tail"
+          ],
+          "param": "panel"
+        },
+        {
+          "name": "eyes",
+          "color": "#46e0ff",
+          "parts": [
+            "visor"
+          ],
+          "param": "eyes"
+        },
+        {
+          "name": "joint",
+          "color": "#55595e",
+          "parts": [
+            "front-left-thigh",
+            "front-right-thigh",
+            "back-left-thigh",
+            "back-right-thigh"
+          ],
+          "param": "joint"
+        }
+      ]
+    },
+    {
+      "id": "robot-humanoid",
+      "kit": "characters",
+      "title": "Humanoid robot",
+      "description": "Boxy two-legged service robot with a jointed neck, shoulders, elbows, hips and knees rigged as GLB pivots. Knobs: build, antenna, body, trim, visor and joint colours.",
+      "category": "character",
+      "origin": "base",
+      "tags": [
+        "robot",
+        "humanoid",
+        "android",
+        "mech",
+        "character",
+        "npc",
+        "rigged",
+        "toy"
+      ],
+      "compat": [
+        "robot",
+        "sci-fi",
+        "character"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/characters/robot-humanoid.kcad.ts",
+      "sourceSha256": "540b9898f2608505465d473ac35930a7479f85cf9ce2f8b7b34c175dbddfedd6",
+      "triangleBudget": 700,
+      "params": [
+        {
+          "name": "build",
+          "type": "choice",
+          "default": "standard",
+          "label": "Build",
+          "choices": [
+            "slim",
+            "standard",
+            "bulky"
+          ]
+        },
+        {
+          "name": "antenna",
+          "type": "choice",
+          "default": "yes",
+          "label": "Antenna",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#d9dde2",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#e2702a",
+          "label": "Trim"
+        },
+        {
+          "name": "visor",
+          "type": "color",
+          "default": "#2ec7e6",
+          "label": "Visor"
+        },
+        {
+          "name": "joint",
+          "type": "color",
+          "default": "#3a3f45",
+          "label": "Joints"
+        }
+      ],
+      "presets": {
+        "security": {
+          "body": "#2b3036",
+          "trim": "#c9302c",
+          "visor": "#ff4a3d"
+        },
+        "retro": {
+          "body": "#b8a27a",
+          "trim": "#7a5230",
+          "visor": "#f2d04b",
+          "antenna": "yes"
+        }
+      },
+      "rig": {
+        "neck": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -80,
+            80
+          ],
+          "node": "pivot:neck"
+        },
+        "left-shoulder": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            60
+          ],
+          "node": "pivot:left-shoulder"
+        },
+        "left-elbow": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -140,
+            0
+          ],
+          "node": "pivot:left-elbow"
+        },
+        "right-shoulder": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            60
+          ],
+          "node": "pivot:right-shoulder"
+        },
+        "right-elbow": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -140,
+            0
+          ],
+          "node": "pivot:right-elbow"
+        },
+        "left-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -100,
+            45
+          ],
+          "node": "pivot:left-hip"
+        },
+        "left-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            130
+          ],
+          "node": "pivot:left-knee"
+        },
+        "right-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -100,
+            45
+          ],
+          "node": "pivot:right-hip"
+        },
+        "right-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            130
+          ],
+          "node": "pivot:right-knee"
+        }
+      },
+      "stats": {
+        "triangles": 400,
+        "sizeM": [
+          0.57,
+          1.46,
+          0.23
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#d9dde2",
+          "parts": [
+            "torso",
+            "head",
+            "left-forearm",
+            "right-forearm",
+            "left-shin",
+            "right-shin"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#e2702a",
+          "parts": [
+            "chest-plate",
+            "left-upper-arm",
+            "right-upper-arm"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "visor",
+          "color": "#2ec7e6",
+          "parts": [
+            "visor"
+          ],
+          "param": "visor"
+        },
+        {
+          "name": "joint",
+          "color": "#3a3f45",
+          "parts": [
+            "left-thigh",
+            "right-thigh"
+          ],
+          "param": "joint"
+        }
+      ]
+    },
+    {
+      "id": "rover-robot",
+      "kit": "characters",
+      "title": "Rover robot",
+      "description": "Wheeled scout robot with spinning wheels and a pan-tilt camera head on a mast, rigged as GLB pivots. Knobs: wheel count, mast height, body, trim, tyre and lens colours.",
+      "category": "character",
+      "origin": "base",
+      "tags": [
+        "robot",
+        "rover",
+        "wheeled robot",
+        "drone",
+        "scout",
+        "vehicle",
+        "mech",
+        "rigged",
+        "toy"
+      ],
+      "compat": [
+        "robot",
+        "sci-fi",
+        "character",
+        "vehicle"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/characters/rover-robot.kcad.ts",
+      "sourceSha256": "9622bb4fee9296f41b9f00078657d17b543bd30ddb34d89b4e0ce260a3e41d73",
+      "triangleBudget": 950,
+      "params": [
+        {
+          "name": "wheels",
+          "type": "choice",
+          "default": "4",
+          "label": "Wheels",
+          "choices": [
+            "4",
+            "6"
+          ]
+        },
+        {
+          "name": "mast",
+          "type": "choice",
+          "default": "tall",
+          "label": "Mast",
+          "choices": [
+            "short",
+            "tall"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#e8e2d4",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#3b7dd8",
+          "label": "Trim"
+        },
+        {
+          "name": "tyre",
+          "type": "color",
+          "default": "#26282b",
+          "label": "Tyres"
+        },
+        {
+          "name": "lens",
+          "type": "color",
+          "default": "#ff5a36",
+          "label": "Lens"
+        }
+      ],
+      "presets": {
+        "mars": {
+          "body": "#c9a27a",
+          "trim": "#7a4b2a",
+          "lens": "#46e0ff"
+        },
+        "police": {
+          "body": "#1d2b44",
+          "trim": "#eef0f2",
+          "lens": "#ff3b30"
+        }
+      },
+      "rig": {
+        "wheel-l1-spin": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -180,
+            180
+          ],
+          "node": "pivot:wheel-l1-spin"
+        },
+        "wheel-r1-spin": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -180,
+            180
+          ],
+          "node": "pivot:wheel-r1-spin"
+        },
+        "wheel-l2-spin": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -180,
+            180
+          ],
+          "node": "pivot:wheel-l2-spin"
+        },
+        "wheel-r2-spin": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -180,
+            180
+          ],
+          "node": "pivot:wheel-r2-spin"
+        },
+        "pan": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            170
+          ],
+          "node": "pivot:pan"
+        },
+        "tilt": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -40,
+            40
+          ],
+          "node": "pivot:tilt"
+        }
+      },
+      "stats": {
+        "triangles": 730,
+        "sizeM": [
+          0.504,
+          0.74,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#e8e2d4",
+          "parts": [
+            "chassis",
+            "head"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#3b7dd8",
+          "parts": [
+            "bumper",
+            "mast"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "tyre",
+          "color": "#26282b",
+          "parts": [
+            "wheel-l1",
+            "wheel-r1",
+            "wheel-l2",
+            "wheel-r2"
+          ],
+          "param": "tyre"
+        },
+        {
+          "name": "lens",
+          "color": "#ff5a36",
+          "parts": [
+            "lenses"
+          ],
+          "param": "lens"
+        }
+      ]
+    },
     {
       "id": "bike-rack",
       "kit": "city-street",
