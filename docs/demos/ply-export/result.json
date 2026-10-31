@@ -1,0 +1,43 @@
+{
+  "invocation": "kernelcad export ply docs/demos/ply-export/mount.kcad.ts -o docs/demos/ply-export/mount.ply",
+  "format": "binary_little_endian",
+  "bytes": 1233449,
+  "parts": [
+    "part 0 plate",
+    "part 1 shaft",
+    "part 2 collar"
+  ],
+  "vertexProperties": [
+    "x",
+    "y",
+    "z",
+    "nx",
+    "ny",
+    "nz",
+    "red",
+    "green",
+    "blue"
+  ],
+  "faceProperties": [
+    "list uchar int vertex_indices"
+  ],
+  "vertices": 25240,
+  "faces": 42428,
+  "bboxMm": {
+    "min": [
+      -4.440892098500626e-16,
+      -4.440892098500626e-16,
+      -12
+    ],
+    "max": [
+      60,
+      60,
+      38
+    ]
+  },
+  "colours": [
+    "26,28,30",
+    "138,141,144",
+    "232,116,42"
+  ]
+}
