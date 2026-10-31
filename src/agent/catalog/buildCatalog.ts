@@ -57,6 +57,14 @@ export async function buildCatalogIndex(repoRoot: string): Promise<CatalogIndex>
 
 /** Evaluate and export one catalog source (path relative to the repo root). */
 export async function buildCatalogAsset(repoRoot: string, source: string): Promise<CatalogAsset> {
+  return (await buildCatalogAssetWithGlb(repoRoot, source)).asset;
+}
+
+/** As {@link buildCatalogAsset}, also returning the low-poly GLB bytes. */
+export async function buildCatalogAssetWithGlb(
+  repoRoot: string,
+  source: string,
+): Promise<{ asset: CatalogAsset; glb: Uint8Array }> {
   const absolute = join(repoRoot, source);
   const code = readFileSync(absolute, 'utf8');
   const fileName = basename(source);
@@ -69,7 +77,7 @@ export async function buildCatalogAsset(repoRoot: string, source: string): Promi
   const params = run.paramTable.list().map(catalogParam);
   const glb = await exportLowPoly(source, { code, fileName, scriptDir }, meta.triangleBudget);
 
-  return CatalogAssetSchema.parse({
+  const asset = CatalogAssetSchema.parse({
     id,
     kit,
     title: meta.title ?? id,
@@ -88,6 +96,7 @@ export async function buildCatalogAsset(repoRoot: string, source: string): Promi
     stats: { ...glb.extras.stats, materials: glb.materials },
     palette: (glb.extras.palette ?? []).map((zone) => paletteZone(zone, params)),
   });
+  return { asset, glb: glb.bytes };
 }
 
 type CatalogMeta = AssetMetadata & { category: NonNullable<AssetMetadata['category']>; triangleBudget: number };
@@ -109,7 +118,7 @@ async function exportLowPoly(
   source: string,
   script: { code: string; fileName: string; scriptDir: string },
   maxTriangles: number,
-): Promise<{ extras: GlbKernelcadExtras; materials: number }> {
+): Promise<{ extras: GlbKernelcadExtras; materials: number; bytes: Uint8Array }> {
   const exported = await runAndExport({
     ...script,
     format: 'glb',
@@ -123,7 +132,7 @@ async function exportLowPoly(
   const gltf = readGlbJson(exported.bytes);
   const extras = gltf.asset?.extras?.kernelcad as GlbKernelcadExtras | undefined;
   if (extras === undefined) throw new CatalogBuildError(`${source}: GLB has no asset.extras.kernelcad block.`);
-  return { extras, materials: gltf.materials?.length ?? 1 };
+  return { extras, materials: gltf.materials?.length ?? 1, bytes: exported.bytes };
 }
 
 function catalogParam(entry: ParamEntry): CatalogParam {

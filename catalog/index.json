@@ -2,15 +2,7992 @@
   "schemaVersion": 1,
   "kits": [
     {
+      "id": "characters",
+      "title": "Characters",
+      "description": "Mechanical low-poly characters built from rigid parts and rigged through mates: every joint is a GLB pivot node, ready to pose or animate in three.js, Godot or Unity.",
+      "assets": [
+        "mannequin",
+        "robot-arm",
+        "robot-dog",
+        "robot-humanoid",
+        "rover-robot"
+      ]
+    },
+    {
+      "id": "city-street",
+      "title": "City street",
+      "description": "Low-poly street furniture, traffic pieces and road tiles for town and city scenes at real-world scale, flat-shaded on one palette material.",
+      "assets": [
+        "bike-rack",
+        "bollard",
+        "bus-stop-shelter",
+        "crosswalk-tile",
+        "fire-hydrant",
+        "mailbox",
+        "newspaper-box",
+        "park-bench",
+        "parking-meter",
+        "picket-fence-section",
+        "planter-box",
+        "road-barrier",
+        "road-sign",
+        "road-tile",
+        "shop-front",
+        "sidewalk-tile",
+        "street-lamp",
+        "traffic-cone",
+        "traffic-light",
+        "trash-bin"
+      ]
+    },
+    {
+      "id": "interior",
+      "title": "Interior",
+      "description": "Low-poly furniture and room pieces for homes and offices at real-world scale, flat-shaded on one palette material.",
+      "assets": [
+        "armchair",
+        "bed",
+        "bookshelf",
+        "coffee-table",
+        "desk",
+        "dining-chair",
+        "dining-table",
+        "floor-lamp",
+        "fridge",
+        "interior-door",
+        "kitchen-counter",
+        "nightstand",
+        "office-chair",
+        "picture-frame",
+        "potted-plant",
+        "rug",
+        "sofa",
+        "table-lamp",
+        "tv-stand-with-tv",
+        "wall-segment",
+        "wardrobe"
+      ]
+    },
+    {
       "id": "nature",
       "title": "Nature",
       "description": "Low-poly trees, rocks, plants and ground pieces at real-world scale, flat-shaded on one palette material.",
       "assets": [
-        "pine-tree"
+        "birch-tree",
+        "boulder-cluster",
+        "bush",
+        "cactus",
+        "cliff-tile",
+        "dead-tree",
+        "fern",
+        "flower-patch",
+        "grass-tuft",
+        "ground-tile",
+        "hill-tile",
+        "log",
+        "mushroom",
+        "oak-tree",
+        "palm-tree",
+        "path-tile",
+        "pine-tree",
+        "reeds",
+        "rock",
+        "tree-stump",
+        "water-tile"
       ]
     }
   ],
   "assets": [
+    {
+      "id": "mannequin",
+      "kit": "characters",
+      "title": "Posable mannequin",
+      "description": "Life-size jointed wooden mannequin with neck, waist, shoulder, elbow, wrist, hip, knee and ankle pivots rigged as GLB nodes, ready to pose. Knobs: height, wood and joint colours.",
+      "category": "character",
+      "origin": "base",
+      "tags": [
+        "mannequin",
+        "figure",
+        "posable",
+        "artist",
+        "dummy",
+        "humanoid",
+        "character",
+        "npc",
+        "placeholder",
+        "rigged"
+      ],
+      "compat": [
+        "character",
+        "interior",
+        "placeholder"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/characters/mannequin.kcad.ts",
+      "sourceSha256": "ea638824eb0c4bdb162b599a95da46c47332f4c79c26ed64b134f84bfac41d7b",
+      "triangleBudget": 900,
+      "params": [
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "1.75m",
+          "label": "Height",
+          "choices": [
+            "1.55m",
+            "1.75m",
+            "1.95m"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#d9b483",
+          "label": "Wood"
+        },
+        {
+          "name": "joint",
+          "type": "color",
+          "default": "#a7814f",
+          "label": "Joints"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "wood": "#6b4a2e",
+          "joint": "#3e2a1a"
+        },
+        "white": {
+          "wood": "#eceae4",
+          "joint": "#b9b6ae"
+        }
+      },
+      "rig": {
+        "waist": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -30,
+            60
+          ],
+          "node": "pivot:waist"
+        },
+        "neck": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -80,
+            80
+          ],
+          "node": "pivot:neck"
+        },
+        "left-shoulder": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            60
+          ],
+          "node": "pivot:left-shoulder"
+        },
+        "left-elbow": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -145,
+            0
+          ],
+          "node": "pivot:left-elbow"
+        },
+        "left-wrist": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -70,
+            70
+          ],
+          "node": "pivot:left-wrist"
+        },
+        "right-shoulder": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            60
+          ],
+          "node": "pivot:right-shoulder"
+        },
+        "right-elbow": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -145,
+            0
+          ],
+          "node": "pivot:right-elbow"
+        },
+        "right-wrist": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -70,
+            70
+          ],
+          "node": "pivot:right-wrist"
+        },
+        "left-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -110,
+            45
+          ],
+          "node": "pivot:left-hip"
+        },
+        "left-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            140
+          ],
+          "node": "pivot:left-knee"
+        },
+        "left-ankle": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -40,
+            40
+          ],
+          "node": "pivot:left-ankle"
+        },
+        "right-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -110,
+            45
+          ],
+          "node": "pivot:right-hip"
+        },
+        "right-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            140
+          ],
+          "node": "pivot:right-knee"
+        },
+        "right-ankle": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -40,
+            40
+          ],
+          "node": "pivot:right-ankle"
+        }
+      },
+      "stats": {
+        "triangles": 548,
+        "sizeM": [
+          0.488692,
+          1.73,
+          0.287551
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wood",
+          "color": "#d9b483",
+          "parts": [
+            "pelvis",
+            "chest",
+            "head",
+            "left-upper-arm",
+            "left-hand",
+            "left-thigh",
+            "left-foot",
+            "right-upper-arm",
+            "right-hand",
+            "right-thigh",
+            "right-foot"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "joint",
+          "color": "#a7814f",
+          "parts": [
+            "left-forearm",
+            "left-shin",
+            "right-forearm",
+            "right-shin"
+          ],
+          "param": "joint"
+        }
+      ]
+    },
+    {
+      "id": "robot-arm",
+      "kit": "characters",
+      "title": "Robot arm",
+      "description": "Desktop articulated robot arm with base yaw, shoulder, elbow and wrist pivots and a sliding two-finger gripper, rigged as GLB nodes. Knobs: reach, body, accent, joint and gripper colours.",
+      "category": "character",
+      "origin": "base",
+      "tags": [
+        "robot arm",
+        "robotic arm",
+        "manipulator",
+        "industrial robot",
+        "gripper",
+        "factory",
+        "lab",
+        "mech",
+        "rigged"
+      ],
+      "compat": [
+        "robot",
+        "sci-fi",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/characters/robot-arm.kcad.ts",
+      "sourceSha256": "b98e8b267d5369bdb7420af214edc2aa31e433439900663223e38646f5b5e060",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "reach",
+          "type": "choice",
+          "default": "standard",
+          "label": "Reach",
+          "choices": [
+            "compact",
+            "standard",
+            "long"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f28c28",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#2b2f33",
+          "label": "Accent"
+        },
+        {
+          "name": "joint",
+          "type": "color",
+          "default": "#9aa3ab",
+          "label": "Joints"
+        },
+        {
+          "name": "gripper",
+          "type": "color",
+          "default": "#4a4f55",
+          "label": "Gripper"
+        }
+      ],
+      "presets": {
+        "lab": {
+          "body": "#eef0f2",
+          "accent": "#3b7dd8"
+        },
+        "heavy": {
+          "body": "#f2c21b",
+          "accent": "#1b1d20",
+          "reach": "long"
+        }
+      },
+      "rig": {
+        "yaw": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            170
+          ],
+          "node": "pivot:yaw"
+        },
+        "shoulder": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -90,
+            90
+          ],
+          "node": "pivot:shoulder"
+        },
+        "elbow": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -135,
+            135
+          ],
+          "node": "pivot:elbow"
+        },
+        "wrist-pitch": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -100,
+            100
+          ],
+          "node": "pivot:wrist-pitch"
+        },
+        "finger-l-slide": {
+          "type": "slide",
+          "axis": "z",
+          "range": [
+            0,
+            28
+          ],
+          "node": "pivot:finger-l-slide"
+        },
+        "finger-r-slide": {
+          "type": "slide",
+          "axis": "z",
+          "range": [
+            0,
+            28
+          ],
+          "node": "pivot:finger-r-slide"
+        }
+      },
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          0.25,
+          0.456,
+          0.485
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#2b2f33",
+          "parts": [
+            "base"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#f28c28",
+          "parts": [
+            "turret",
+            "upper-arm",
+            "forearm",
+            "base-ring"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "joint",
+          "color": "#9aa3ab",
+          "parts": [
+            "wrist"
+          ],
+          "param": "joint"
+        },
+        {
+          "name": "gripper",
+          "color": "#4a4f55",
+          "parts": [
+            "finger-l",
+            "finger-r"
+          ],
+          "param": "gripper"
+        }
+      ]
+    },
+    {
+      "id": "robot-dog",
+      "kit": "characters",
+      "title": "Robot dog",
+      "description": "Four-legged robot dog with hip, knee, neck and tail pivots rigged as GLB nodes. Knobs: size, ears, body, panel, eye and joint colours.",
+      "category": "animal",
+      "origin": "base",
+      "tags": [
+        "robot",
+        "dog",
+        "quadruped",
+        "pet",
+        "animal",
+        "mech",
+        "rigged",
+        "toy"
+      ],
+      "compat": [
+        "robot",
+        "sci-fi",
+        "character"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/characters/robot-dog.kcad.ts",
+      "sourceSha256": "02980f54869ead723ae15ff95fedb76a8c9dd95f48ee3d7ce8d0175cace8cf08",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "ears",
+          "type": "choice",
+          "default": "pointed",
+          "label": "Ears",
+          "choices": [
+            "pointed",
+            "none"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Body"
+        },
+        {
+          "name": "panel",
+          "type": "color",
+          "default": "#2b2f33",
+          "label": "Panels"
+        },
+        {
+          "name": "eyes",
+          "type": "color",
+          "default": "#46e0ff",
+          "label": "Eyes"
+        },
+        {
+          "name": "joint",
+          "type": "color",
+          "default": "#55595e",
+          "label": "Joints"
+        }
+      ],
+      "presets": {
+        "stealth": {
+          "body": "#3a3f45",
+          "panel": "#1b1d20",
+          "eyes": "#ff3b30"
+        },
+        "white": {
+          "body": "#eef0f2",
+          "panel": "#9aa3ab",
+          "eyes": "#2fbf5a"
+        }
+      },
+      "rig": {
+        "neck": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -35,
+            45
+          ],
+          "node": "pivot:neck"
+        },
+        "tail-wag": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -40,
+            40
+          ],
+          "node": "pivot:tail-wag"
+        },
+        "front-left-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -60,
+            60
+          ],
+          "node": "pivot:front-left-hip"
+        },
+        "front-left-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -110,
+            0
+          ],
+          "node": "pivot:front-left-knee"
+        },
+        "front-right-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -60,
+            60
+          ],
+          "node": "pivot:front-right-hip"
+        },
+        "front-right-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -110,
+            0
+          ],
+          "node": "pivot:front-right-knee"
+        },
+        "back-left-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -60,
+            60
+          ],
+          "node": "pivot:back-left-hip"
+        },
+        "back-left-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            110
+          ],
+          "node": "pivot:back-left-knee"
+        },
+        "back-right-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -60,
+            60
+          ],
+          "node": "pivot:back-right-hip"
+        },
+        "back-right-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            110
+          ],
+          "node": "pivot:back-right-knee"
+        }
+      },
+      "stats": {
+        "triangles": 336,
+        "sizeM": [
+          0.33,
+          0.64,
+          0.924781
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#f0c419",
+          "parts": [
+            "body",
+            "head",
+            "front-left-shin",
+            "front-right-shin",
+            "back-left-shin",
+            "back-right-shin"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "panel",
+          "color": "#2b2f33",
+          "parts": [
+            "back-panel",
+            "tail"
+          ],
+          "param": "panel"
+        },
+        {
+          "name": "eyes",
+          "color": "#46e0ff",
+          "parts": [
+            "visor"
+          ],
+          "param": "eyes"
+        },
+        {
+          "name": "joint",
+          "color": "#55595e",
+          "parts": [
+            "front-left-thigh",
+            "front-right-thigh",
+            "back-left-thigh",
+            "back-right-thigh"
+          ],
+          "param": "joint"
+        }
+      ]
+    },
+    {
+      "id": "robot-humanoid",
+      "kit": "characters",
+      "title": "Humanoid robot",
+      "description": "Boxy two-legged service robot with a jointed neck, shoulders, elbows, hips and knees rigged as GLB pivots. Knobs: build, antenna, body, trim, visor and joint colours.",
+      "category": "character",
+      "origin": "base",
+      "tags": [
+        "robot",
+        "humanoid",
+        "android",
+        "mech",
+        "character",
+        "npc",
+        "rigged",
+        "toy"
+      ],
+      "compat": [
+        "robot",
+        "sci-fi",
+        "character"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/characters/robot-humanoid.kcad.ts",
+      "sourceSha256": "540b9898f2608505465d473ac35930a7479f85cf9ce2f8b7b34c175dbddfedd6",
+      "triangleBudget": 700,
+      "params": [
+        {
+          "name": "build",
+          "type": "choice",
+          "default": "standard",
+          "label": "Build",
+          "choices": [
+            "slim",
+            "standard",
+            "bulky"
+          ]
+        },
+        {
+          "name": "antenna",
+          "type": "choice",
+          "default": "yes",
+          "label": "Antenna",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#d9dde2",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#e2702a",
+          "label": "Trim"
+        },
+        {
+          "name": "visor",
+          "type": "color",
+          "default": "#2ec7e6",
+          "label": "Visor"
+        },
+        {
+          "name": "joint",
+          "type": "color",
+          "default": "#3a3f45",
+          "label": "Joints"
+        }
+      ],
+      "presets": {
+        "security": {
+          "body": "#2b3036",
+          "trim": "#c9302c",
+          "visor": "#ff4a3d"
+        },
+        "retro": {
+          "body": "#b8a27a",
+          "trim": "#7a5230",
+          "visor": "#f2d04b",
+          "antenna": "yes"
+        }
+      },
+      "rig": {
+        "neck": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -80,
+            80
+          ],
+          "node": "pivot:neck"
+        },
+        "left-shoulder": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            60
+          ],
+          "node": "pivot:left-shoulder"
+        },
+        "left-elbow": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -140,
+            0
+          ],
+          "node": "pivot:left-elbow"
+        },
+        "right-shoulder": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            60
+          ],
+          "node": "pivot:right-shoulder"
+        },
+        "right-elbow": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -140,
+            0
+          ],
+          "node": "pivot:right-elbow"
+        },
+        "left-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -100,
+            45
+          ],
+          "node": "pivot:left-hip"
+        },
+        "left-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            130
+          ],
+          "node": "pivot:left-knee"
+        },
+        "right-hip": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -100,
+            45
+          ],
+          "node": "pivot:right-hip"
+        },
+        "right-knee": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            0,
+            130
+          ],
+          "node": "pivot:right-knee"
+        }
+      },
+      "stats": {
+        "triangles": 400,
+        "sizeM": [
+          0.57,
+          1.46,
+          0.23
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#d9dde2",
+          "parts": [
+            "torso",
+            "head",
+            "left-forearm",
+            "right-forearm",
+            "left-shin",
+            "right-shin"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#e2702a",
+          "parts": [
+            "chest-plate",
+            "left-upper-arm",
+            "right-upper-arm"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "visor",
+          "color": "#2ec7e6",
+          "parts": [
+            "visor"
+          ],
+          "param": "visor"
+        },
+        {
+          "name": "joint",
+          "color": "#3a3f45",
+          "parts": [
+            "left-thigh",
+            "right-thigh"
+          ],
+          "param": "joint"
+        }
+      ]
+    },
+    {
+      "id": "rover-robot",
+      "kit": "characters",
+      "title": "Rover robot",
+      "description": "Wheeled scout robot with spinning wheels and a pan-tilt camera head on a mast, rigged as GLB pivots. Knobs: wheel count, mast height, body, trim, tyre and lens colours.",
+      "category": "character",
+      "origin": "base",
+      "tags": [
+        "robot",
+        "rover",
+        "wheeled robot",
+        "drone",
+        "scout",
+        "vehicle",
+        "mech",
+        "rigged",
+        "toy"
+      ],
+      "compat": [
+        "robot",
+        "sci-fi",
+        "character",
+        "vehicle"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/characters/rover-robot.kcad.ts",
+      "sourceSha256": "9622bb4fee9296f41b9f00078657d17b543bd30ddb34d89b4e0ce260a3e41d73",
+      "triangleBudget": 950,
+      "params": [
+        {
+          "name": "wheels",
+          "type": "choice",
+          "default": "4",
+          "label": "Wheels",
+          "choices": [
+            "4",
+            "6"
+          ]
+        },
+        {
+          "name": "mast",
+          "type": "choice",
+          "default": "tall",
+          "label": "Mast",
+          "choices": [
+            "short",
+            "tall"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#e8e2d4",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#3b7dd8",
+          "label": "Trim"
+        },
+        {
+          "name": "tyre",
+          "type": "color",
+          "default": "#26282b",
+          "label": "Tyres"
+        },
+        {
+          "name": "lens",
+          "type": "color",
+          "default": "#ff5a36",
+          "label": "Lens"
+        }
+      ],
+      "presets": {
+        "mars": {
+          "body": "#c9a27a",
+          "trim": "#7a4b2a",
+          "lens": "#46e0ff"
+        },
+        "police": {
+          "body": "#1d2b44",
+          "trim": "#eef0f2",
+          "lens": "#ff3b30"
+        }
+      },
+      "rig": {
+        "wheel-l1-spin": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -180,
+            180
+          ],
+          "node": "pivot:wheel-l1-spin"
+        },
+        "wheel-r1-spin": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -180,
+            180
+          ],
+          "node": "pivot:wheel-r1-spin"
+        },
+        "wheel-l2-spin": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -180,
+            180
+          ],
+          "node": "pivot:wheel-l2-spin"
+        },
+        "wheel-r2-spin": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -180,
+            180
+          ],
+          "node": "pivot:wheel-r2-spin"
+        },
+        "pan": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -170,
+            170
+          ],
+          "node": "pivot:pan"
+        },
+        "tilt": {
+          "type": "rotate",
+          "axis": "z",
+          "range": [
+            -40,
+            40
+          ],
+          "node": "pivot:tilt"
+        }
+      },
+      "stats": {
+        "triangles": 730,
+        "sizeM": [
+          0.504,
+          0.74,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#e8e2d4",
+          "parts": [
+            "chassis",
+            "head"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#3b7dd8",
+          "parts": [
+            "bumper",
+            "mast"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "tyre",
+          "color": "#26282b",
+          "parts": [
+            "wheel-l1",
+            "wheel-r1",
+            "wheel-l2",
+            "wheel-r2"
+          ],
+          "param": "tyre"
+        },
+        {
+          "name": "lens",
+          "color": "#ff5a36",
+          "parts": [
+            "lenses"
+          ],
+          "param": "lens"
+        }
+      ]
+    },
+    {
+      "id": "bike-rack",
+      "kit": "city-street",
+      "title": "Bike rack",
+      "description": "Row of inverted-U bicycle stands on two base rails. Knobs: loop count, loop shape, stand and rail colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "bike rack",
+        "bicycle",
+        "cycle stand",
+        "parking",
+        "sheffield",
+        "sidewalk",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/bike-rack.kcad.ts",
+      "sourceSha256": "ff4a54cdf656bf4a4d8584815d305973aec415004e62435a07c77b912f11ff9f",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "loops",
+          "type": "choice",
+          "default": "3",
+          "label": "Loops",
+          "choices": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "round",
+          "label": "Loop shape",
+          "choices": [
+            "round",
+            "square"
+          ]
+        },
+        {
+          "name": "stand",
+          "type": "color",
+          "default": "#8d949b",
+          "label": "Stands"
+        },
+        {
+          "name": "rail",
+          "type": "color",
+          "default": "#3a3d40",
+          "label": "Base rails"
+        }
+      ],
+      "presets": {
+        "black": {
+          "stand": "#2a2c2e",
+          "rail": "#2a2c2e"
+        },
+        "yellow": {
+          "stand": "#f2c418"
+        },
+        "blue": {
+          "stand": "#2a5ea8"
+        }
+      },
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          2,
+          0.83,
+          0.75
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "rail",
+          "color": "#3a3d40",
+          "parts": [
+            "rail-front",
+            "rail-back"
+          ],
+          "param": "rail"
+        },
+        {
+          "name": "stand",
+          "color": "#8d949b",
+          "parts": [
+            "loop-1",
+            "loop-2",
+            "loop-3"
+          ],
+          "param": "stand"
+        }
+      ]
+    },
+    {
+      "id": "bollard",
+      "kit": "city-street",
+      "title": "Bollard",
+      "description": "Street bollard post with a reflective band and cap, round-faceted or square. Knobs: height, style, post, band and cap colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "bollard",
+        "post",
+        "barrier",
+        "pedestrian",
+        "sidewalk",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/bollard.kcad.ts",
+      "sourceSha256": "260c0f6797bd7b684a18ca88387ed109b2240c4de821ee010f3a5749e4b3c63e",
+      "triangleBudget": 160,
+      "params": [
+        {
+          "name": "heightMm",
+          "type": "choice",
+          "default": "1000",
+          "label": "Height (mm)",
+          "choices": [
+            "800",
+            "1000",
+            "1200"
+          ]
+        },
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "round",
+          "label": "Style",
+          "choices": [
+            "round",
+            "square"
+          ]
+        },
+        {
+          "name": "post",
+          "type": "color",
+          "default": "#2b2d30",
+          "label": "Post"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#f2f2ee",
+          "label": "Reflective band"
+        },
+        {
+          "name": "cap",
+          "type": "color",
+          "default": "#9aa0a6",
+          "label": "Cap"
+        }
+      ],
+      "presets": {
+        "safety": {
+          "post": "#f2c418",
+          "band": "#1e1e1e",
+          "cap": "#f2c418"
+        },
+        "heritage": {
+          "post": "#1f3d2b",
+          "band": "#c9a64a",
+          "cap": "#c9a64a"
+        }
+      },
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.2242,
+          1,
+          0.2242
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "post",
+          "color": "#2b2d30",
+          "parts": [
+            "foot",
+            "post-low",
+            "post-high"
+          ],
+          "param": "post"
+        },
+        {
+          "name": "band",
+          "color": "#f2f2ee",
+          "parts": [
+            "band"
+          ],
+          "param": "band"
+        },
+        {
+          "name": "cap",
+          "color": "#9aa0a6",
+          "parts": [
+            "cap"
+          ],
+          "param": "cap"
+        }
+      ]
+    },
+    {
+      "id": "bus-stop-shelter",
+      "kit": "city-street",
+      "title": "Bus stop shelter",
+      "description": "Glazed bus stop shelter with a sloped roof, back wall, optional side screens and a bench. Knobs: length, side screens, frame, glass and roof colours.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "bus stop",
+        "shelter",
+        "transit",
+        "bus",
+        "waiting",
+        "canopy",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/bus-stop-shelter.kcad.ts",
+      "sourceSha256": "c41a3207dbc587727742efb25995f0e80ed754c9dd32e14485bf8359eb3d853b",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "lengthMm",
+          "type": "choice",
+          "default": "3600",
+          "label": "Length (mm)",
+          "choices": [
+            "2400",
+            "3600",
+            "4800"
+          ]
+        },
+        {
+          "name": "sides",
+          "type": "choice",
+          "default": "both",
+          "label": "Side screens",
+          "choices": [
+            "none",
+            "one",
+            "both"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#3a3f45",
+          "label": "Frame"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#a9cfe0",
+          "label": "Glass"
+        },
+        {
+          "name": "roof",
+          "type": "color",
+          "default": "#5d646b",
+          "label": "Roof"
+        },
+        {
+          "name": "seat",
+          "type": "color",
+          "default": "#b37a45",
+          "label": "Bench"
+        }
+      ],
+      "presets": {
+        "red": {
+          "frame": "#a8262b",
+          "roof": "#a8262b"
+        },
+        "green": {
+          "frame": "#1f4a30",
+          "roof": "#1f4a30",
+          "glass": "#bfe0d0"
+        }
+      },
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          3.9,
+          2.54,
+          1.8
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#3a3f45",
+          "parts": [
+            "post-1",
+            "post-2",
+            "post-3",
+            "post-4",
+            "back-rail",
+            "back-head",
+            "side-head-1",
+            "side-head-2",
+            "bench-leg-1",
+            "bench-leg-2"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "roof",
+          "color": "#5d646b",
+          "parts": [
+            "roof"
+          ],
+          "param": "roof"
+        },
+        {
+          "name": "glass",
+          "color": "#a9cfe0",
+          "parts": [
+            "back-glass",
+            "side-glass-1",
+            "side-glass-2"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "seat",
+          "color": "#b37a45",
+          "parts": [
+            "bench"
+          ],
+          "param": "seat"
+        }
+      ]
+    },
+    {
+      "id": "crosswalk-tile",
+      "kit": "city-street",
+      "title": "Crosswalk tile",
+      "description": "4 m road tile with a zebra crosswalk and edge lines that matches road-tile. Knobs: bar count, asphalt, bar and edge-line colours.",
+      "category": "terrain",
+      "origin": "base",
+      "tags": [
+        "crosswalk",
+        "zebra",
+        "crossing",
+        "pedestrian",
+        "road",
+        "tile",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street",
+        "grid-4m"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/crosswalk-tile.kcad.ts",
+      "sourceSha256": "554e6b59fbf7ef9955e4d08aa30798e6ae1cb71cf7bf98a5f34bf8e5471464ed",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "bars",
+          "type": "choice",
+          "default": "6",
+          "label": "Zebra bars",
+          "choices": [
+            "5",
+            "6",
+            "7"
+          ]
+        },
+        {
+          "name": "asphalt",
+          "type": "color",
+          "default": "#45484c",
+          "label": "Asphalt"
+        },
+        {
+          "name": "bar",
+          "type": "color",
+          "default": "#f2f1ea",
+          "label": "Zebra bars"
+        },
+        {
+          "name": "line",
+          "type": "color",
+          "default": "#dcdbd2",
+          "label": "Edge lines"
+        }
+      ],
+      "presets": {
+        "worn": {
+          "asphalt": "#5a5c5f",
+          "bar": "#cfcdc4",
+          "line": "#c4c2ba"
+        },
+        "painted": {
+          "asphalt": "#8a3a32",
+          "bar": "#f2f1ea"
+        }
+      },
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          4,
+          0.02,
+          4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "asphalt",
+          "color": "#45484c",
+          "parts": [
+            "slab-1",
+            "slab-2",
+            "slab-5",
+            "slab-6",
+            "slab-7",
+            "slab-9",
+            "slab-11",
+            "slab-13",
+            "slab-15",
+            "slab-17",
+            "slab-19"
+          ],
+          "param": "asphalt"
+        },
+        {
+          "name": "line",
+          "color": "#dcdbd2",
+          "parts": [
+            "slab-3",
+            "slab-4"
+          ],
+          "param": "line"
+        },
+        {
+          "name": "bar",
+          "color": "#f2f1ea",
+          "parts": [
+            "slab-8",
+            "slab-10",
+            "slab-12",
+            "slab-14",
+            "slab-16",
+            "slab-18"
+          ],
+          "param": "bar"
+        }
+      ]
+    },
+    {
+      "id": "fire-hydrant",
+      "kit": "city-street",
+      "title": "Fire hydrant",
+      "description": "Faceted pillar fire hydrant with flanges, domed bonnet and side outlets. Knobs: outlet count, facets, body and cap colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "hydrant",
+        "fire",
+        "water",
+        "sidewalk",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/fire-hydrant.kcad.ts",
+      "sourceSha256": "4b30145b4207191ccd7c670353831dd7a96f63ee6b4a56701b51520117d26170",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "outlets",
+          "type": "choice",
+          "default": "3",
+          "label": "Outlets",
+          "choices": [
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "sides",
+          "type": "choice",
+          "default": "8",
+          "label": "Facets",
+          "choices": [
+            "6",
+            "8"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c8261e",
+          "label": "Body"
+        },
+        {
+          "name": "caps",
+          "type": "color",
+          "default": "#e8c33a",
+          "label": "Caps and nozzles"
+        }
+      ],
+      "presets": {
+        "yellow": {
+          "body": "#e8b81c",
+          "caps": "#2f5fa8"
+        },
+        "silver": {
+          "body": "#a9adb0",
+          "caps": "#c8261e"
+        }
+      },
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.37,
+          0.76,
+          0.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c8261e",
+          "parts": [
+            "base-flange",
+            "barrel",
+            "top-flange"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "caps",
+          "color": "#e8c33a",
+          "parts": [
+            "bonnet",
+            "nut",
+            "outlet-right",
+            "outlet-left",
+            "pumper"
+          ],
+          "param": "caps"
+        }
+      ]
+    },
+    {
+      "id": "mailbox",
+      "kit": "city-street",
+      "title": "Street mailbox",
+      "description": "Public mail collection box, box style with an arched top on legs or a round pillar box. Knobs: style, body, trim and slot colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "mailbox",
+        "postbox",
+        "mail",
+        "post",
+        "letter",
+        "pillar box",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/mailbox.kcad.ts",
+      "sourceSha256": "7a8dea8a0330b6d15100c08c5075c7ae16f7ff06f31692b462047ec1ab2cc55d",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "box",
+          "label": "Style",
+          "choices": [
+            "box",
+            "pillar"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#1f4f9c",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#d8dde2",
+          "label": "Trim"
+        },
+        {
+          "name": "slot",
+          "type": "color",
+          "default": "#1a1c1f",
+          "label": "Slot and feet"
+        }
+      ],
+      "presets": {
+        "red": {
+          "body": "#c0221c",
+          "trim": "#1a1c1f"
+        },
+        "yellow": {
+          "body": "#f0c419",
+          "trim": "#1a1c1f"
+        }
+      },
+      "stats": {
+        "triangles": 100,
+        "sizeM": [
+          0.46,
+          1.09,
+          0.558
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "slot",
+          "color": "#1a1c1f",
+          "parts": [
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "leg-4",
+            "slot"
+          ],
+          "param": "slot"
+        },
+        {
+          "name": "body",
+          "color": "#1f4f9c",
+          "parts": [
+            "body",
+            "roof"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#d8dde2",
+          "parts": [
+            "flap"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "newspaper-box",
+      "kit": "city-street",
+      "title": "Newspaper box",
+      "description": "Street newspaper vending box with a window door and coin unit, on a pedestal or legs. Knobs: stand, body, window and stand colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "newspaper",
+        "news",
+        "vending",
+        "box",
+        "kiosk",
+        "sidewalk",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/newspaper-box.kcad.ts",
+      "sourceSha256": "d6736ea0cc7495349faac9955a6095ba445408c2024938171256a25817694d7f",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "stand",
+          "type": "choice",
+          "default": "pedestal",
+          "label": "Stand",
+          "choices": [
+            "pedestal",
+            "legs"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#d23a2c",
+          "label": "Body"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#a9c8d8",
+          "label": "Window"
+        },
+        {
+          "name": "base",
+          "type": "color",
+          "default": "#2a2c2e",
+          "label": "Stand and coin unit"
+        }
+      ],
+      "presets": {
+        "blue": {
+          "body": "#2a5ea8"
+        },
+        "yellow": {
+          "body": "#efc12a"
+        },
+        "green": {
+          "body": "#2f7d4a"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.5,
+          1.07,
+          0.47
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "base",
+          "color": "#2a2c2e",
+          "parts": [
+            "foot",
+            "column",
+            "handle",
+            "coin-unit"
+          ],
+          "param": "base"
+        },
+        {
+          "name": "body",
+          "color": "#d23a2c",
+          "parts": [
+            "cabinet",
+            "stile-left",
+            "stile-right",
+            "core",
+            "top"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "glass",
+          "color": "#a9c8d8",
+          "parts": [
+            "window"
+          ],
+          "param": "glass"
+        }
+      ]
+    },
+    {
+      "id": "park-bench",
+      "kit": "city-street",
+      "title": "Park bench",
+      "description": "Slatted park bench with metal side frames and an optional backrest. Knobs: length, slat count, backrest, slat and frame colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "bench",
+        "seat",
+        "park",
+        "street",
+        "furniture",
+        "sitting"
+      ],
+      "compat": [
+        "outdoor",
+        "street",
+        "park"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/park-bench.kcad.ts",
+      "sourceSha256": "5980ff6def6fbd9147db254caf0db3e59d51f4bd8a402d17ab1f26685b8a0656",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "lengthMm",
+          "type": "choice",
+          "default": "1800",
+          "label": "Length (mm)",
+          "choices": [
+            "1200",
+            "1500",
+            "1800",
+            "2100"
+          ]
+        },
+        {
+          "name": "slats",
+          "type": "choice",
+          "default": "4",
+          "label": "Seat slats",
+          "choices": [
+            "3",
+            "4",
+            "5",
+            "6"
+          ]
+        },
+        {
+          "name": "backrest",
+          "type": "choice",
+          "default": "yes",
+          "label": "Backrest",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#a8703f",
+          "label": "Slats"
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#2a2c2e",
+          "label": "Frame"
+        }
+      ],
+      "presets": {
+        "green": {
+          "wood": "#a8703f",
+          "frame": "#1f4a30"
+        },
+        "painted": {
+          "wood": "#2f6b4a",
+          "frame": "#202020"
+        },
+        "red": {
+          "wood": "#9c2f27",
+          "frame": "#2a2c2e"
+        }
+      },
+      "stats": {
+        "triangles": 164,
+        "sizeM": [
+          1.8,
+          0.86,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#2a2c2e",
+          "parts": [
+            "frame-1",
+            "upright-1",
+            "frame-2",
+            "upright-2"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "wood",
+          "color": "#a8703f",
+          "parts": [
+            "seat-slat-1",
+            "seat-slat-2",
+            "seat-slat-3",
+            "seat-slat-4",
+            "back-slat-1",
+            "back-slat-2",
+            "back-slat-3"
+          ],
+          "param": "wood"
+        }
+      ]
+    },
+    {
+      "id": "parking-meter",
+      "kit": "city-street",
+      "title": "Parking meter",
+      "description": "Kerbside parking meter on a post with a single or twin head and display windows. Knobs: heads, post, head and display colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "parking",
+        "meter",
+        "parking meter",
+        "kerb",
+        "curb",
+        "sidewalk",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/parking-meter.kcad.ts",
+      "sourceSha256": "edb6202edad76b11247dd6f23c98f7c470c6cfaa3db2662e31587b5b82db54eb",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "heads",
+          "type": "choice",
+          "default": "single",
+          "label": "Heads",
+          "choices": [
+            "single",
+            "twin"
+          ]
+        },
+        {
+          "name": "post",
+          "type": "color",
+          "default": "#3c4046",
+          "label": "Post"
+        },
+        {
+          "name": "head",
+          "type": "color",
+          "default": "#9aa3ab",
+          "label": "Meter head"
+        },
+        {
+          "name": "display",
+          "type": "color",
+          "default": "#cfe6a8",
+          "label": "Display"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "post": "#2a2c2e",
+          "head": "#3a5f8a"
+        },
+        "green": {
+          "post": "#1f3d2b",
+          "head": "#c9a64a"
+        }
+      },
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.21,
+          1.425,
+          0.173
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "post",
+          "color": "#3c4046",
+          "parts": [
+            "foot",
+            "post",
+            "coin-1"
+          ],
+          "param": "post"
+        },
+        {
+          "name": "head",
+          "color": "#9aa3ab",
+          "parts": [
+            "head-1",
+            "head-top-1",
+            "hood-1"
+          ],
+          "param": "head"
+        },
+        {
+          "name": "display",
+          "color": "#cfe6a8",
+          "parts": [
+            "display-1"
+          ],
+          "param": "display"
+        }
+      ]
+    },
+    {
+      "id": "picket-fence-section",
+      "kit": "city-street",
+      "title": "Picket fence section",
+      "description": "Tileable picket fence section with pointed pickets, two rails and capped end posts. Knobs: picket count, height, picket and post colours.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "fence",
+        "picket",
+        "garden",
+        "yard",
+        "boundary",
+        "street",
+        "suburb"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/picket-fence-section.kcad.ts",
+      "sourceSha256": "33a36512ecfec71affdfe27acbc7e316bbfc92ec95ff48f12fd99a329692dca1",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "pickets",
+          "type": "choice",
+          "default": "10",
+          "label": "Pickets",
+          "choices": [
+            "6",
+            "8",
+            "10",
+            "12"
+          ]
+        },
+        {
+          "name": "heightMm",
+          "type": "choice",
+          "default": "1000",
+          "label": "Height (mm)",
+          "choices": [
+            "800",
+            "1000",
+            "1200"
+          ]
+        },
+        {
+          "name": "picketColor",
+          "type": "color",
+          "default": "#f2f0e8",
+          "label": "Pickets"
+        },
+        {
+          "name": "posts",
+          "type": "color",
+          "default": "#e2ded2",
+          "label": "Posts and rails"
+        }
+      ],
+      "presets": {
+        "natural": {
+          "picketColor": "#b98a56",
+          "posts": "#8e6a42"
+        },
+        "green": {
+          "picketColor": "#2f5d3a",
+          "posts": "#244a2e"
+        }
+      },
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          1.66,
+          1.11,
+          0.11
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "posts",
+          "color": "#e2ded2",
+          "parts": [
+            "post-1",
+            "cap-1",
+            "post-2",
+            "cap-2",
+            "rail-1",
+            "rail-2"
+          ],
+          "param": "posts"
+        },
+        {
+          "name": "picketColor",
+          "color": "#f2f0e8",
+          "parts": [
+            "picket-1",
+            "picket-2",
+            "picket-3",
+            "picket-4",
+            "picket-5",
+            "picket-6",
+            "picket-7",
+            "picket-8",
+            "picket-9",
+            "picket-10"
+          ],
+          "param": "picketColor"
+        }
+      ]
+    },
+    {
+      "id": "planter-box",
+      "kit": "city-street",
+      "title": "Planter box",
+      "description": "Street planter with a rim, soil and a faceted bush, square or round. Knobs: shape, size, planter, rim, foliage and soil colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "planter",
+        "plant",
+        "bush",
+        "pot",
+        "flower box",
+        "greenery",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/planter-box.kcad.ts",
+      "sourceSha256": "452b5971c5c97a1078201abd2c072c32fbe0aa8755a0c7814f0f0b8825612319",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "square",
+          "label": "Shape",
+          "choices": [
+            "square",
+            "round"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "planter",
+          "type": "color",
+          "default": "#9a9690",
+          "label": "Planter"
+        },
+        {
+          "name": "rim",
+          "type": "color",
+          "default": "#c4c0b8",
+          "label": "Rim"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#3f8a3e",
+          "label": "Foliage"
+        },
+        {
+          "name": "soil",
+          "type": "color",
+          "default": "#4a3626",
+          "label": "Soil"
+        }
+      ],
+      "presets": {
+        "timber": {
+          "planter": "#8e6a42",
+          "rim": "#6e5032"
+        },
+        "terracotta": {
+          "planter": "#b5643c",
+          "rim": "#c9805a",
+          "foliage": "#4f9a3a"
+        }
+      },
+      "stats": {
+        "triangles": 150,
+        "sizeM": [
+          0.81,
+          0.88988,
+          0.81
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "planter",
+          "color": "#9a9690",
+          "parts": [
+            "body"
+          ],
+          "param": "planter"
+        },
+        {
+          "name": "rim",
+          "color": "#c4c0b8",
+          "parts": [
+            "rim"
+          ],
+          "param": "rim"
+        },
+        {
+          "name": "soil",
+          "color": "#4a3626",
+          "parts": [
+            "soil"
+          ],
+          "param": "soil"
+        },
+        {
+          "name": "foliage",
+          "color": "#3f8a3e",
+          "parts": [
+            "bush-1",
+            "bush-2",
+            "bush-3"
+          ],
+          "param": "foliage"
+        }
+      ]
+    },
+    {
+      "id": "road-barrier",
+      "kit": "city-street",
+      "title": "Road barrier",
+      "description": "Striped roadworks barrier board on two A-frame legs. Knobs: length, stripe count, two stripe colours and leg colour.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "barrier",
+        "roadworks",
+        "construction",
+        "traffic",
+        "road",
+        "stripes",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/road-barrier.kcad.ts",
+      "sourceSha256": "5f116acea6d0a433ba1b42e1cd5160a7f5a7232ef0505e23be0513bf98e0b840",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "lengthMm",
+          "type": "choice",
+          "default": "1500",
+          "label": "Length (mm)",
+          "choices": [
+            "1000",
+            "1500",
+            "2000"
+          ]
+        },
+        {
+          "name": "stripes",
+          "type": "choice",
+          "default": "6",
+          "label": "Stripes",
+          "choices": [
+            "4",
+            "6",
+            "8"
+          ]
+        },
+        {
+          "name": "stripeA",
+          "type": "color",
+          "default": "#d42a20",
+          "label": "Stripe A"
+        },
+        {
+          "name": "stripeB",
+          "type": "color",
+          "default": "#f2f2ee",
+          "label": "Stripe B"
+        },
+        {
+          "name": "legs",
+          "type": "color",
+          "default": "#3a3d40",
+          "label": "Legs"
+        }
+      ],
+      "presets": {
+        "yellow": {
+          "stripeA": "#1e1e1e",
+          "stripeB": "#f2c418"
+        },
+        "orange": {
+          "stripeA": "#f26a1b",
+          "stripeB": "#f2f2ee",
+          "legs": "#f2f2ee"
+        }
+      },
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          1.5,
+          1.02,
+          0.86
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stripeA",
+          "color": "#d42a20",
+          "parts": [
+            "stripe-1",
+            "stripe-3",
+            "stripe-5"
+          ],
+          "param": "stripeA"
+        },
+        {
+          "name": "stripeB",
+          "color": "#f2f2ee",
+          "parts": [
+            "stripe-2",
+            "stripe-4",
+            "stripe-6"
+          ],
+          "param": "stripeB"
+        },
+        {
+          "name": "legs",
+          "color": "#3a3d40",
+          "parts": [
+            "frame-1",
+            "foot-1-a",
+            "foot-1-b",
+            "frame-2",
+            "foot-2-a",
+            "foot-2-b"
+          ],
+          "param": "legs"
+        }
+      ]
+    },
+    {
+      "id": "road-sign",
+      "kit": "city-street",
+      "title": "Road sign",
+      "description": "Traffic sign on a post with an octagon, triangle, circle or square bordered plate. Knobs: shape, post height, face, border and post colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "sign",
+        "road sign",
+        "stop sign",
+        "traffic sign",
+        "warning",
+        "post",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/road-sign.kcad.ts",
+      "sourceSha256": "b10bdc496f06ff685dde6694f5aa56417b47896754af1c48bed0e34105488459",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "octagon",
+          "label": "Shape",
+          "choices": [
+            "octagon",
+            "triangle",
+            "circle",
+            "square"
+          ]
+        },
+        {
+          "name": "heightMm",
+          "type": "choice",
+          "default": "2400",
+          "label": "Height (mm)",
+          "choices": [
+            "2100",
+            "2400",
+            "2800"
+          ]
+        },
+        {
+          "name": "face",
+          "type": "color",
+          "default": "#c8261e",
+          "label": "Sign face"
+        },
+        {
+          "name": "border",
+          "type": "color",
+          "default": "#f2f2ee",
+          "label": "Border"
+        },
+        {
+          "name": "post",
+          "type": "color",
+          "default": "#9aa0a6",
+          "label": "Post"
+        }
+      ],
+      "presets": {
+        "warning": {
+          "face": "#f2c418",
+          "border": "#1e1e1e"
+        },
+        "info": {
+          "face": "#2a5ea8",
+          "border": "#f2f2ee"
+        },
+        "green": {
+          "face": "#2f7d4a",
+          "border": "#f2f2ee"
+        }
+      },
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.702148,
+          2.371074,
+          0.074
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "post",
+          "color": "#9aa0a6",
+          "parts": [
+            "post"
+          ],
+          "param": "post"
+        },
+        {
+          "name": "border",
+          "color": "#f2f2ee",
+          "parts": [
+            "border"
+          ],
+          "param": "border"
+        },
+        {
+          "name": "face",
+          "color": "#c8261e",
+          "parts": [
+            "face"
+          ],
+          "param": "face"
+        }
+      ]
+    },
+    {
+      "id": "road-tile",
+      "kit": "city-street",
+      "title": "Road tile",
+      "description": "4 m two-lane asphalt road tile with edge lines and a dashed, solid or stop-line end marking. Knobs: style, asphalt, line and centre-line colours.",
+      "category": "terrain",
+      "origin": "base",
+      "tags": [
+        "road",
+        "tile",
+        "asphalt",
+        "lane",
+        "street",
+        "modular",
+        "ground"
+      ],
+      "compat": [
+        "outdoor",
+        "street",
+        "grid-4m"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/road-tile.kcad.ts",
+      "sourceSha256": "9166dfbc22e5e7ec1d767106a0c17b202bd182b6135d4c9f97c4987ae571fe70",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "straight",
+          "label": "Style",
+          "choices": [
+            "straight",
+            "end",
+            "plain"
+          ]
+        },
+        {
+          "name": "asphalt",
+          "type": "color",
+          "default": "#45484c",
+          "label": "Asphalt"
+        },
+        {
+          "name": "line",
+          "type": "color",
+          "default": "#ecebe4",
+          "label": "Edge lines"
+        },
+        {
+          "name": "centre",
+          "type": "color",
+          "default": "#f4f0dc",
+          "label": "Centre line"
+        }
+      ],
+      "presets": {
+        "american": {
+          "centre": "#f0c419"
+        },
+        "worn": {
+          "asphalt": "#5a5c5f",
+          "line": "#c9c8c0",
+          "centre": "#c9c8c0"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          4,
+          0.02,
+          4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "asphalt",
+          "color": "#45484c",
+          "parts": [
+            "slab-1",
+            "slab-2",
+            "slab-5",
+            "slab-6",
+            "slab-7",
+            "slab-9",
+            "slab-11"
+          ],
+          "param": "asphalt"
+        },
+        {
+          "name": "line",
+          "color": "#ecebe4",
+          "parts": [
+            "slab-3",
+            "slab-4"
+          ],
+          "param": "line"
+        },
+        {
+          "name": "centre",
+          "color": "#f4f0dc",
+          "parts": [
+            "slab-8",
+            "slab-10"
+          ],
+          "param": "centre"
+        }
+      ]
+    },
+    {
+      "id": "shop-front",
+      "kit": "city-street",
+      "title": "Shop front",
+      "description": "Small one-storey shop with a display window, glazed door, sign band and striped awning. Knobs: width, wall, awning, awning stripe, door/sign and glass colours.",
+      "category": "building",
+      "origin": "base",
+      "tags": [
+        "shop",
+        "store",
+        "storefront",
+        "building",
+        "cafe",
+        "awning",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street",
+        "grid-4m"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/shop-front.kcad.ts",
+      "sourceSha256": "785bc761c5af3c0a4d0cbc515492b4e839c42c14577c36ee9dbb536703b5ac38",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "widthMm",
+          "type": "choice",
+          "default": "4000",
+          "label": "Width (mm)",
+          "choices": [
+            "4000",
+            "6000",
+            "8000"
+          ]
+        },
+        {
+          "name": "wall",
+          "type": "color",
+          "default": "#d9c7a8",
+          "label": "Wall"
+        },
+        {
+          "name": "awning",
+          "type": "color",
+          "default": "#2f7d4a",
+          "label": "Awning"
+        },
+        {
+          "name": "stripe",
+          "type": "color",
+          "default": "#f2efe6",
+          "label": "Awning stripe"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#2b4a6b",
+          "label": "Door and sign"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#9cc4d6",
+          "label": "Glass"
+        }
+      ],
+      "presets": {
+        "cafe": {
+          "wall": "#f0e6d6",
+          "awning": "#a8262b",
+          "stripe": "#f2efe6",
+          "trim": "#3a2a20"
+        },
+        "bakery": {
+          "wall": "#e8d2b0",
+          "awning": "#e08a2a",
+          "stripe": "#f7e8c8",
+          "trim": "#6b3f22"
+        },
+        "modern": {
+          "wall": "#5b6066",
+          "awning": "#2a2c2e",
+          "stripe": "#2a2c2e",
+          "trim": "#1e1e1e",
+          "glass": "#b8d8e6"
+        }
+      },
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          4.1,
+          3.82,
+          4.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wall",
+          "color": "#d9c7a8",
+          "parts": [
+            "b-1",
+            "b-2",
+            "p-3-back",
+            "b-4",
+            "b-5",
+            "p-6-back",
+            "p-7-back",
+            "b-8",
+            "b-9",
+            "p-10-back",
+            "b-11"
+          ],
+          "param": "wall"
+        },
+        {
+          "name": "glass",
+          "color": "#9cc4d6",
+          "parts": [
+            "p-3",
+            "p-7"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "trim",
+          "color": "#2b4a6b",
+          "parts": [
+            "p-6",
+            "p-10",
+            "cornice"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "awning",
+          "color": "#2f7d4a",
+          "parts": [
+            "awning-1",
+            "awning-3",
+            "awning-5",
+            "awning-7"
+          ],
+          "param": "awning"
+        },
+        {
+          "name": "stripe",
+          "color": "#f2efe6",
+          "parts": [
+            "awning-2",
+            "awning-4",
+            "awning-6"
+          ],
+          "param": "stripe"
+        }
+      ]
+    },
+    {
+      "id": "sidewalk-tile",
+      "kit": "city-street",
+      "title": "Sidewalk tile",
+      "description": "4 m raised sidewalk tile with a kerb on the road side and a two-tone paving grid. Knobs: paving grid, kerb, paving and accent colours.",
+      "category": "terrain",
+      "origin": "base",
+      "tags": [
+        "sidewalk",
+        "pavement",
+        "kerb",
+        "curb",
+        "paving",
+        "tile",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street",
+        "grid-4m"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/sidewalk-tile.kcad.ts",
+      "sourceSha256": "4f229f7c7065aaaceaf0850f35709b5129ba320a413d7c1c6144ab1a217c0637",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "grid",
+          "type": "choice",
+          "default": "4",
+          "label": "Paving grid",
+          "choices": [
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "kerb",
+          "type": "color",
+          "default": "#8f8d88",
+          "label": "Kerb"
+        },
+        {
+          "name": "paving",
+          "type": "color",
+          "default": "#cfcac0",
+          "label": "Paving"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#bdb7ab",
+          "label": "Accent paving"
+        }
+      ],
+      "presets": {
+        "brick": {
+          "paving": "#b0644a",
+          "accent": "#9a553e",
+          "kerb": "#a8a6a0"
+        },
+        "dark": {
+          "paving": "#8d8f91",
+          "accent": "#7c7e80",
+          "kerb": "#c4c2bc"
+        }
+      },
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          4,
+          0.17,
+          4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "kerb",
+          "color": "#8f8d88",
+          "parts": [
+            "kerb-1",
+            "kerb-2",
+            "kerb-3",
+            "kerb-4"
+          ],
+          "param": "kerb"
+        },
+        {
+          "name": "paving",
+          "color": "#cfcac0",
+          "parts": [
+            "slab-1-1",
+            "slab-1-3",
+            "slab-2-2",
+            "slab-2-4",
+            "slab-3-1",
+            "slab-3-3",
+            "slab-4-2",
+            "slab-4-4"
+          ],
+          "param": "paving"
+        },
+        {
+          "name": "accent",
+          "color": "#bdb7ab",
+          "parts": [
+            "slab-1-2",
+            "slab-1-4",
+            "slab-2-1",
+            "slab-2-3",
+            "slab-3-2",
+            "slab-3-4",
+            "slab-4-1",
+            "slab-4-3"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "street-lamp",
+      "kit": "city-street",
+      "title": "Street lamp",
+      "description": "Tapered street light pole with a single or double outreach arm and flat lamp heads. Knobs: height, arms, pole, head and light colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "lamp",
+        "light",
+        "streetlight",
+        "lamppost",
+        "pole",
+        "street",
+        "road"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/street-lamp.kcad.ts",
+      "sourceSha256": "ed9a5e407d9aca03d03dd4fa1a5d712a0e0b91388c09b0220895327b8c172c92",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "5",
+          "label": "Height (m)",
+          "choices": [
+            "4",
+            "5",
+            "6"
+          ]
+        },
+        {
+          "name": "arms",
+          "type": "choice",
+          "default": "single",
+          "label": "Arms",
+          "choices": [
+            "single",
+            "double"
+          ]
+        },
+        {
+          "name": "pole",
+          "type": "color",
+          "default": "#4a5056",
+          "label": "Pole"
+        },
+        {
+          "name": "head",
+          "type": "color",
+          "default": "#2c3034",
+          "label": "Lamp head"
+        },
+        {
+          "name": "light",
+          "type": "color",
+          "default": "#fff2b8",
+          "label": "Light"
+        }
+      ],
+      "presets": {
+        "heritage": {
+          "pole": "#1f3d2b",
+          "head": "#1f3d2b",
+          "light": "#ffd27a"
+        },
+        "modern": {
+          "pole": "#b8bdc2",
+          "head": "#d8dcdf",
+          "light": "#f4f8ff"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.71,
+          5.14,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "pole",
+          "color": "#4a5056",
+          "parts": [
+            "plinth",
+            "pole",
+            "arm-a"
+          ],
+          "param": "pole"
+        },
+        {
+          "name": "head",
+          "color": "#2c3034",
+          "parts": [
+            "head-a",
+            "finial"
+          ],
+          "param": "head"
+        },
+        {
+          "name": "light",
+          "color": "#fff2b8",
+          "parts": [
+            "light-a"
+          ],
+          "param": "light"
+        }
+      ]
+    },
+    {
+      "id": "traffic-cone",
+      "kit": "city-street",
+      "title": "Traffic cone",
+      "description": "Faceted traffic cone on a square rubber base with a reflective band. Knobs: height, facets, cone, band and base colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cone",
+        "traffic",
+        "road",
+        "roadworks",
+        "safety",
+        "pylon"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/traffic-cone.kcad.ts",
+      "sourceSha256": "5013c0e9c1aef02b31d3b078c676844bb371c2c12ca4310ed0afc2d719195e88",
+      "triangleBudget": 160,
+      "params": [
+        {
+          "name": "heightMm",
+          "type": "choice",
+          "default": "700",
+          "label": "Height (mm)",
+          "choices": [
+            "450",
+            "700",
+            "900"
+          ]
+        },
+        {
+          "name": "sides",
+          "type": "choice",
+          "default": "8",
+          "label": "Facets",
+          "choices": [
+            "6",
+            "8",
+            "10"
+          ]
+        },
+        {
+          "name": "cone",
+          "type": "color",
+          "default": "#f26a1b",
+          "label": "Cone"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#f2f2ee",
+          "label": "Reflective band"
+        },
+        {
+          "name": "base",
+          "type": "color",
+          "default": "#262626",
+          "label": "Base"
+        }
+      ],
+      "presets": {
+        "yellow": {
+          "cone": "#f2c418"
+        },
+        "lime": {
+          "cone": "#b8e01e",
+          "band": "#f2f2ee"
+        }
+      },
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.385,
+          0.7,
+          0.385
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "base",
+          "color": "#262626",
+          "parts": [
+            "base"
+          ],
+          "param": "base"
+        },
+        {
+          "name": "cone",
+          "color": "#f26a1b",
+          "parts": [
+            "lower",
+            "upper"
+          ],
+          "param": "cone"
+        },
+        {
+          "name": "band",
+          "color": "#f2f2ee",
+          "parts": [
+            "band"
+          ],
+          "param": "band"
+        }
+      ]
+    },
+    {
+      "id": "traffic-light",
+      "kit": "city-street",
+      "title": "Traffic light",
+      "description": "Three-aspect traffic signal on a post or a mast arm, with visors. Knobs: mount style, red, amber and green lens colours, housing and pole colours.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "traffic light",
+        "signal",
+        "stoplight",
+        "intersection",
+        "junction",
+        "road",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/traffic-light.kcad.ts",
+      "sourceSha256": "6213b524f33bed38fb02550893f8fb8ab09708d30bdf99608500cd1c27fec1d8",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "mount",
+          "type": "choice",
+          "default": "post",
+          "label": "Mount",
+          "choices": [
+            "post",
+            "mast"
+          ]
+        },
+        {
+          "name": "red",
+          "type": "color",
+          "default": "#e0322a",
+          "label": "Red lens"
+        },
+        {
+          "name": "amber",
+          "type": "color",
+          "default": "#f2a81d",
+          "label": "Amber lens"
+        },
+        {
+          "name": "green",
+          "type": "color",
+          "default": "#2fbf5a",
+          "label": "Green lens"
+        },
+        {
+          "name": "housing",
+          "type": "color",
+          "default": "#2a2c2e",
+          "label": "Housing"
+        },
+        {
+          "name": "pole",
+          "type": "color",
+          "default": "#6e757c",
+          "label": "Pole"
+        }
+      ],
+      "presets": {
+        "all-off": {
+          "red": "#5a2422",
+          "amber": "#5a4a22",
+          "green": "#22402c"
+        },
+        "yellow": {
+          "housing": "#e8b81c",
+          "pole": "#2a2c2e"
+        }
+      },
+      "stats": {
+        "triangles": 344,
+        "sizeM": [
+          0.34,
+          3.23,
+          0.568582
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "housing",
+          "color": "#2a2c2e",
+          "parts": [
+            "cell-green",
+            "visor-green",
+            "cell-amber",
+            "visor-amber",
+            "cell-red",
+            "visor-red",
+            "head-cap"
+          ],
+          "param": "housing"
+        },
+        {
+          "name": "green",
+          "color": "#2fbf5a",
+          "parts": [
+            "lens-green"
+          ],
+          "param": "green"
+        },
+        {
+          "name": "amber",
+          "color": "#f2a81d",
+          "parts": [
+            "lens-amber"
+          ],
+          "param": "amber"
+        },
+        {
+          "name": "red",
+          "color": "#e0322a",
+          "parts": [
+            "lens-red"
+          ],
+          "param": "red"
+        },
+        {
+          "name": "pole",
+          "color": "#6e757c",
+          "parts": [
+            "pole",
+            "bracket",
+            "base"
+          ],
+          "param": "pole"
+        }
+      ]
+    },
+    {
+      "id": "trash-bin",
+      "kit": "city-street",
+      "title": "Street litter bin",
+      "description": "Faceted public litter bin on a plinth with a rim band and a hooded or flat lid. Knobs: lid style, facets, body, band and lid colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "trash",
+        "bin",
+        "litter",
+        "garbage",
+        "waste",
+        "rubbish",
+        "street"
+      ],
+      "compat": [
+        "outdoor",
+        "street"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/city-street/trash-bin.kcad.ts",
+      "sourceSha256": "8239ab1a373b454ea4d25b1ff3400757dabb1e7cede8b31efa5f0c6506865e41",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "lid",
+          "type": "choice",
+          "default": "hood",
+          "label": "Lid style",
+          "choices": [
+            "hood",
+            "flat"
+          ]
+        },
+        {
+          "name": "sides",
+          "type": "choice",
+          "default": "8",
+          "label": "Facets",
+          "choices": [
+            "6",
+            "8",
+            "10"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#2f5d3a",
+          "label": "Body"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#c9a64a",
+          "label": "Band"
+        },
+        {
+          "name": "top",
+          "type": "color",
+          "default": "#26292c",
+          "label": "Lid"
+        }
+      ],
+      "presets": {
+        "black": {
+          "body": "#232528",
+          "band": "#c9a64a",
+          "top": "#232528"
+        },
+        "red": {
+          "body": "#a8262b",
+          "band": "#e6e6e0",
+          "top": "#2a2a2a"
+        }
+      },
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.62,
+          1,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "top",
+          "color": "#26292c",
+          "parts": [
+            "plinth",
+            "lid-skirt",
+            "lid"
+          ],
+          "param": "top"
+        },
+        {
+          "name": "body",
+          "color": "#2f5d3a",
+          "parts": [
+            "body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "band",
+          "color": "#c9a64a",
+          "parts": [
+            "band",
+            "knob"
+          ],
+          "param": "band"
+        }
+      ]
+    },
+    {
+      "id": "armchair",
+      "kit": "interior",
+      "title": "Armchair",
+      "description": "Single upholstered lounge armchair with seat and back cushions on short wooden feet. Knobs: arm style, fabric, cushion and leg colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "armchair",
+        "chair",
+        "lounge chair",
+        "seat",
+        "living room",
+        "club chair"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/armchair.kcad.ts",
+      "sourceSha256": "508da1ecaae80056949cc4c88116c84b5305c5be708e48734b865e4adb63606e",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "arms",
+          "type": "choice",
+          "default": "wide",
+          "label": "Arm style",
+          "choices": [
+            "wide",
+            "slim"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#8a4b3a",
+          "label": "Frame fabric"
+        },
+        {
+          "name": "cushion",
+          "type": "color",
+          "default": "#a5604c",
+          "label": "Cushions"
+        },
+        {
+          "name": "legs",
+          "type": "color",
+          "default": "#4a3324",
+          "label": "Legs"
+        }
+      ],
+      "presets": {
+        "sage": {
+          "fabric": "#6f8468",
+          "cushion": "#879c80",
+          "legs": "#5a4030"
+        },
+        "leather": {
+          "fabric": "#5b3a24",
+          "cushion": "#6e4730",
+          "legs": "#1f1f1f"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1,
+          0.86,
+          0.86
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "legs",
+          "color": "#4a3324",
+          "parts": [
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "leg-4"
+          ],
+          "param": "legs"
+        },
+        {
+          "name": "fabric",
+          "color": "#8a4b3a",
+          "parts": [
+            "base",
+            "back",
+            "arm-left",
+            "arm-right"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "cushion",
+          "color": "#a5604c",
+          "parts": [
+            "seat",
+            "back-cushion"
+          ],
+          "param": "cushion"
+        }
+      ]
+    },
+    {
+      "id": "bed",
+      "kit": "interior",
+      "title": "Bed",
+      "description": "Single or double bed with a wooden frame and headboard, mattress, blanket and pillows. Knobs: size, frame, sheet and blanket colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "bed",
+        "double bed",
+        "single bed",
+        "mattress",
+        "bedroom",
+        "sleep"
+      ],
+      "compat": [
+        "indoor",
+        "bedroom"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/bed.kcad.ts",
+      "sourceSha256": "bcc0cafb94c05c6d5b15a025e4d75b7f3c08c109a242cf4c4fbe76be11b40983",
+      "triangleBudget": 250,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "double",
+          "label": "Size",
+          "choices": [
+            "single",
+            "double"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#a07548",
+          "label": "Frame"
+        },
+        {
+          "name": "sheets",
+          "type": "color",
+          "default": "#eeeae2",
+          "label": "Sheets and pillows"
+        },
+        {
+          "name": "blanket",
+          "type": "color",
+          "default": "#4f6f8f",
+          "label": "Blanket"
+        }
+      ],
+      "presets": {
+        "walnut": {
+          "frame": "#5a3a27",
+          "blanket": "#b9704a"
+        },
+        "white": {
+          "frame": "#ecebe6",
+          "blanket": "#8fa58a"
+        },
+        "dark": {
+          "frame": "#2b2927",
+          "sheets": "#c9c6c0",
+          "blanket": "#7a2f35"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.68,
+          1.05,
+          2.08
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#a07548",
+          "parts": [
+            "leg-left",
+            "leg-right",
+            "headboard",
+            "side-left",
+            "side-right",
+            "foot-rail"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "sheets",
+          "color": "#eeeae2",
+          "parts": [
+            "mattress",
+            "blanket-fold",
+            "pillow-1",
+            "pillow-2"
+          ],
+          "param": "sheets"
+        },
+        {
+          "name": "blanket",
+          "color": "#4f6f8f",
+          "parts": [
+            "blanket"
+          ],
+          "param": "blanket"
+        }
+      ]
+    },
+    {
+      "id": "bookshelf",
+      "kit": "interior",
+      "title": "Bookshelf",
+      "description": "Open wooden bookcase with three to six shelves, optionally filled with books in two colours. Knobs: shelf count, books, wood and book colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "bookshelf",
+        "bookcase",
+        "shelf",
+        "shelving",
+        "books",
+        "storage",
+        "library"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "office",
+        "bedroom"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/bookshelf.kcad.ts",
+      "sourceSha256": "c90fcecd0c7b0658d5d5bd1ca63dda9452d427556c1dfebde6de96247261aaf5",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "shelves",
+          "type": "choice",
+          "default": "5",
+          "label": "Shelf levels",
+          "choices": [
+            "3",
+            "4",
+            "5",
+            "6"
+          ]
+        },
+        {
+          "name": "books",
+          "type": "choice",
+          "default": "some",
+          "label": "Books",
+          "choices": [
+            "none",
+            "some",
+            "full"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#b98a5a",
+          "label": "Wood"
+        },
+        {
+          "name": "bookA",
+          "type": "color",
+          "default": "#8d3b32",
+          "label": "Books A"
+        },
+        {
+          "name": "bookB",
+          "type": "color",
+          "default": "#3c5a78",
+          "label": "Books B"
+        }
+      ],
+      "presets": {
+        "walnut": {
+          "wood": "#5f3f2a",
+          "bookA": "#c9a24a",
+          "bookB": "#2f5a46"
+        },
+        "white": {
+          "wood": "#efeee9",
+          "bookA": "#d06b45",
+          "bookB": "#4a6c8c"
+        }
+      },
+      "stats": {
+        "triangles": 348,
+        "sizeM": [
+          0.8,
+          1.968,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wood",
+          "color": "#b98a5a",
+          "parts": [
+            "side-left",
+            "side-right",
+            "top",
+            "plinth",
+            "back",
+            "shelf-1",
+            "shelf-2",
+            "shelf-3",
+            "shelf-4",
+            "shelf-5"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "bookA",
+          "color": "#8d3b32",
+          "parts": [
+            "books-1-1",
+            "books-1-3",
+            "books-2-1",
+            "books-2-3",
+            "books-3-1",
+            "books-3-3",
+            "books-4-1",
+            "books-4-3",
+            "books-5-1",
+            "books-5-3"
+          ],
+          "param": "bookA"
+        },
+        {
+          "name": "bookB",
+          "color": "#3c5a78",
+          "parts": [
+            "books-1-2",
+            "books-1-4",
+            "books-2-2",
+            "books-2-4",
+            "books-3-2",
+            "books-3-4",
+            "books-4-2",
+            "books-4-4",
+            "books-5-2"
+          ],
+          "param": "bookB"
+        }
+      ]
+    },
+    {
+      "id": "coffee-table",
+      "kit": "interior",
+      "title": "Coffee table",
+      "description": "Low living-room coffee table, rectangular or round, with an optional lower shelf. Knobs: shape, shelf, top and leg colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "coffee table",
+        "table",
+        "low table",
+        "living room",
+        "lounge"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/coffee-table.kcad.ts",
+      "sourceSha256": "c5f9817b5f491e5ff5acc90c0908f30e68aecd75787a7cc60459df40365e66d3",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "rectangle",
+          "label": "Shape",
+          "choices": [
+            "rectangle",
+            "round"
+          ]
+        },
+        {
+          "name": "shelf",
+          "type": "choice",
+          "default": "yes",
+          "label": "Lower shelf",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "top",
+          "type": "color",
+          "default": "#b98a5a",
+          "label": "Top"
+        },
+        {
+          "name": "legs",
+          "type": "color",
+          "default": "#8a633f",
+          "label": "Legs"
+        }
+      ],
+      "presets": {
+        "walnut": {
+          "top": "#6b4630",
+          "legs": "#4f3322"
+        },
+        "white": {
+          "top": "#ecebe6",
+          "legs": "#c9c6bd"
+        },
+        "dark": {
+          "top": "#2e2b29",
+          "legs": "#1b1a19"
+        }
+      },
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.1,
+          0.42,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "top",
+          "color": "#b98a5a",
+          "parts": [
+            "top",
+            "shelf"
+          ],
+          "param": "top"
+        },
+        {
+          "name": "legs",
+          "color": "#8a633f",
+          "parts": [
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "leg-4"
+          ],
+          "param": "legs"
+        }
+      ]
+    },
+    {
+      "id": "desk",
+      "kit": "interior",
+      "title": "Desk",
+      "description": "Office or home desk with a modesty panel, on panel legs or with a three-drawer pedestal. Knobs: width, style, top, frame and handle colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "desk",
+        "writing desk",
+        "office desk",
+        "workstation",
+        "table",
+        "study"
+      ],
+      "compat": [
+        "indoor",
+        "office",
+        "bedroom"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/desk.kcad.ts",
+      "sourceSha256": "7eb672dd417884a374dccb234b1f7663d4668831fd508915701ff04ace3e7792",
+      "triangleBudget": 250,
+      "params": [
+        {
+          "name": "widthM",
+          "type": "choice",
+          "default": "1.4",
+          "label": "Width (m)",
+          "choices": [
+            "1.2",
+            "1.4",
+            "1.6"
+          ]
+        },
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "pedestal",
+          "label": "Style",
+          "choices": [
+            "legs",
+            "pedestal"
+          ]
+        },
+        {
+          "name": "top",
+          "type": "color",
+          "default": "#c49a6c",
+          "label": "Top"
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#e8e7e2",
+          "label": "Frame"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#3a3a3a",
+          "label": "Handles"
+        }
+      ],
+      "presets": {
+        "walnut": {
+          "top": "#6b4630",
+          "frame": "#2b2927",
+          "handle": "#b0b0aa"
+        },
+        "white": {
+          "top": "#f3f2ee",
+          "frame": "#d7d5cf",
+          "handle": "#8f8f8b"
+        }
+      },
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.4,
+          0.74,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "top",
+          "color": "#c49a6c",
+          "parts": [
+            "top",
+            "drawer-1",
+            "drawer-2",
+            "drawer-3"
+          ],
+          "param": "top"
+        },
+        {
+          "name": "frame",
+          "color": "#e8e7e2",
+          "parts": [
+            "leg-left",
+            "modesty",
+            "pedestal-left",
+            "pedestal-right",
+            "pedestal-back",
+            "pedestal-kick"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "handle",
+          "color": "#3a3a3a",
+          "parts": [
+            "handle-1",
+            "handle-2",
+            "handle-3"
+          ],
+          "param": "handle"
+        }
+      ]
+    },
+    {
+      "id": "dining-chair",
+      "kit": "interior",
+      "title": "Dining chair",
+      "description": "Wooden dining chair with a padded seat and a slatted or solid back. Knobs: back style, slat count, wood and seat pad colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "chair",
+        "dining chair",
+        "kitchen chair",
+        "seat",
+        "wooden chair"
+      ],
+      "compat": [
+        "indoor",
+        "kitchen",
+        "dining-room",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/dining-chair.kcad.ts",
+      "sourceSha256": "587d6d2ba9e0ee8d02153221ef72e3ed2b955758dfc37bc42b6f8ef2084ca001",
+      "triangleBudget": 250,
+      "params": [
+        {
+          "name": "back",
+          "type": "choice",
+          "default": "slats",
+          "label": "Back style",
+          "choices": [
+            "slats",
+            "solid"
+          ]
+        },
+        {
+          "name": "slats",
+          "type": "choice",
+          "default": "3",
+          "label": "Back slats",
+          "choices": [
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#a07548",
+          "label": "Wood"
+        },
+        {
+          "name": "pad",
+          "type": "color",
+          "default": "#8d3b32",
+          "label": "Seat pad"
+        }
+      ],
+      "presets": {
+        "walnut": {
+          "wood": "#5a3a27",
+          "pad": "#c8b89a"
+        },
+        "white": {
+          "wood": "#efeee9",
+          "pad": "#7d8fa3"
+        },
+        "black": {
+          "wood": "#262422",
+          "pad": "#8a8a86"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.44,
+          0.9,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wood",
+          "color": "#a07548",
+          "parts": [
+            "leg-front-left",
+            "leg-front-right",
+            "post-left",
+            "post-right",
+            "seat-frame",
+            "rail-top",
+            "slat-1",
+            "slat-2",
+            "slat-3"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "pad",
+          "color": "#8d3b32",
+          "parts": [
+            "seat-pad"
+          ],
+          "param": "pad"
+        }
+      ]
+    },
+    {
+      "id": "dining-table",
+      "kit": "interior",
+      "title": "Dining table",
+      "description": "Four-legged rectangular dining table with an apron, seating four to eight. Knobs: length, leg style, top and leg colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "dining table",
+        "table",
+        "kitchen table",
+        "dining room",
+        "meeting table"
+      ],
+      "compat": [
+        "indoor",
+        "kitchen",
+        "dining-room",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/dining-table.kcad.ts",
+      "sourceSha256": "9541399de25ba8df64bbaffc38afc2a661e6cc291ffd71719e9c11838ef14356",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "lengthM",
+          "type": "choice",
+          "default": "1.8",
+          "label": "Length (m)",
+          "choices": [
+            "1.4",
+            "1.8",
+            "2.2"
+          ]
+        },
+        {
+          "name": "legStyle",
+          "type": "choice",
+          "default": "square",
+          "label": "Leg style",
+          "choices": [
+            "square",
+            "tapered"
+          ]
+        },
+        {
+          "name": "top",
+          "type": "color",
+          "default": "#b98a5a",
+          "label": "Top"
+        },
+        {
+          "name": "legs",
+          "type": "color",
+          "default": "#a07548",
+          "label": "Legs and apron"
+        }
+      ],
+      "presets": {
+        "walnut": {
+          "top": "#6b4630",
+          "legs": "#5a3a27"
+        },
+        "white": {
+          "top": "#f0efea",
+          "legs": "#d8d5cc"
+        },
+        "farmhouse": {
+          "top": "#9c7a55",
+          "legs": "#e9e4d8"
+        }
+      },
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.8,
+          0.75,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "top",
+          "color": "#b98a5a",
+          "parts": [
+            "top"
+          ],
+          "param": "top"
+        },
+        {
+          "name": "legs",
+          "color": "#a07548",
+          "parts": [
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "leg-4",
+            "apron-front",
+            "apron-back",
+            "apron-left",
+            "apron-right"
+          ],
+          "param": "legs"
+        }
+      ]
+    },
+    {
+      "id": "floor-lamp",
+      "kit": "interior",
+      "title": "Floor lamp",
+      "description": "Standing floor lamp with a round base, slim pole and a faceted drum or cone shade. Knobs: shade style, height, shade and metal colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "floor lamp",
+        "standard lamp",
+        "lamp",
+        "light",
+        "lighting",
+        "living room"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/floor-lamp.kcad.ts",
+      "sourceSha256": "204050e3070ee12eaa2a4471bbb828ecbab5c59ca834d20b2076d0732b50fa2f",
+      "triangleBudget": 150,
+      "params": [
+        {
+          "name": "shadeStyle",
+          "type": "choice",
+          "default": "drum",
+          "label": "Shade style",
+          "choices": [
+            "drum",
+            "cone"
+          ]
+        },
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "1.6",
+          "label": "Height (m)",
+          "choices": [
+            "1.4",
+            "1.6",
+            "1.8"
+          ]
+        },
+        {
+          "name": "shade",
+          "type": "color",
+          "default": "#eadfc8",
+          "label": "Shade"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#2b2b2b",
+          "label": "Base and pole"
+        }
+      ],
+      "presets": {
+        "brass": {
+          "metal": "#b8913f",
+          "shade": "#f2ead8"
+        },
+        "modern": {
+          "metal": "#e8e8e6",
+          "shade": "#3c5a78"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.44,
+          1.6,
+          0.44
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "metal",
+          "color": "#2b2b2b",
+          "parts": [
+            "base",
+            "pole"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "shade",
+          "color": "#eadfc8",
+          "parts": [
+            "shade"
+          ],
+          "param": "shade"
+        }
+      ]
+    },
+    {
+      "id": "fridge",
+      "kit": "interior",
+      "title": "Fridge",
+      "description": "Upright kitchen refrigerator, fridge-over-freezer or wide side-by-side, with bar handles. Knobs: style, body and handle colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "fridge",
+        "refrigerator",
+        "freezer",
+        "kitchen appliance",
+        "appliance",
+        "kitchen"
+      ],
+      "compat": [
+        "indoor",
+        "kitchen"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/fridge.kcad.ts",
+      "sourceSha256": "cc0d3512b7504589b340556b26724ae94b228cc8ac5930718e732f4b2d0b8375",
+      "triangleBudget": 150,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "combi",
+          "label": "Style",
+          "choices": [
+            "combi",
+            "side-by-side"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#e9eaeb",
+          "label": "Body"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#7f8489",
+          "label": "Handles"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#3a3d40",
+          "label": "Base grille"
+        }
+      ],
+      "presets": {
+        "steel": {
+          "body": "#b9bdc1",
+          "handle": "#e0e2e4",
+          "trim": "#2a2c2e"
+        },
+        "retro": {
+          "body": "#9fcfc4",
+          "handle": "#d8d8d4",
+          "trim": "#d8d8d4"
+        },
+        "black": {
+          "body": "#2a2b2d",
+          "handle": "#8f9396",
+          "trim": "#151515"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.6,
+          1.85,
+          0.685
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#e9eaeb",
+          "parts": [
+            "cabinet-left",
+            "cabinet-right",
+            "cabinet-back",
+            "cabinet-top",
+            "freezer-a",
+            "freezer-b",
+            "fridge-a",
+            "fridge-b"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#3a3d40",
+          "parts": [
+            "grille"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "handle",
+          "color": "#7f8489",
+          "parts": [
+            "handle-freezer",
+            "handle-fridge"
+          ],
+          "param": "handle"
+        }
+      ]
+    },
+    {
+      "id": "interior-door",
+      "kit": "interior",
+      "title": "Interior door",
+      "description": "Hinged interior door with frame and architraves, flat or four-panel, in standard leaf widths. Knobs: width, panel style, leaf, frame and handle colours.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "door",
+        "interior door",
+        "doorway",
+        "door frame",
+        "room",
+        "entrance"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "kitchen",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/interior-door.kcad.ts",
+      "sourceSha256": "b2ae7e9b18a9638afb1035f655901ff5e3982760bce762f55de7b0090fcb691c",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "widthMm",
+          "type": "choice",
+          "default": "820",
+          "label": "Leaf width (mm)",
+          "choices": [
+            "720",
+            "820",
+            "920"
+          ]
+        },
+        {
+          "name": "panels",
+          "type": "choice",
+          "default": "four-panel",
+          "label": "Panel style",
+          "choices": [
+            "flat",
+            "four-panel"
+          ]
+        },
+        {
+          "name": "leaf",
+          "type": "color",
+          "default": "#c9a77c",
+          "label": "Door leaf"
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#e6e4dd",
+          "label": "Frame"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#3a3a3a",
+          "label": "Handle"
+        }
+      ],
+      "presets": {
+        "white": {
+          "leaf": "#f2f1ec",
+          "frame": "#e6e4dd",
+          "handle": "#b8bcc0"
+        },
+        "walnut": {
+          "leaf": "#6b4630",
+          "frame": "#5a3a27",
+          "handle": "#c9a24a"
+        },
+        "grey": {
+          "leaf": "#7d8288",
+          "frame": "#e6e4dd",
+          "handle": "#2b2b2b"
+        }
+      },
+      "stats": {
+        "triangles": 312,
+        "sizeM": [
+          0.966,
+          2.113,
+          0.15
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#e6e4dd",
+          "parts": [
+            "jamb-left",
+            "jamb-right",
+            "head",
+            "arch-left-front",
+            "arch-right-front",
+            "arch-head-front",
+            "arch-left-back",
+            "arch-right-back",
+            "arch-head-back"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "leaf",
+          "color": "#c9a77c",
+          "parts": [
+            "rail-1",
+            "rail-2",
+            "rail-3",
+            "stile-left",
+            "stile-right",
+            "muntin-1",
+            "panel-1-1",
+            "panel-1-2",
+            "muntin-2",
+            "panel-2-1",
+            "panel-2-2"
+          ],
+          "param": "leaf"
+        },
+        {
+          "name": "handle",
+          "color": "#3a3a3a",
+          "parts": [
+            "rose-front",
+            "lever-front",
+            "neck-front",
+            "rose-back",
+            "lever-back",
+            "neck-back"
+          ],
+          "param": "handle"
+        }
+      ]
+    },
+    {
+      "id": "kitchen-counter",
+      "kit": "interior",
+      "title": "Kitchen counter",
+      "description": "Run of kitchen base cabinets with a worktop and an optional sink with tap. Knobs: length, sink, cabinet, worktop and handle colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "kitchen counter",
+        "kitchen cabinet",
+        "worktop",
+        "countertop",
+        "sink",
+        "kitchen",
+        "base unit"
+      ],
+      "compat": [
+        "indoor",
+        "kitchen"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/kitchen-counter.kcad.ts",
+      "sourceSha256": "b7cded0548a68934ba816860de042313d0f4e7da7a1c6006289b7944b55396b9",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "modules",
+          "type": "choice",
+          "default": "3",
+          "label": "Cabinets (600 mm)",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "sink",
+          "type": "choice",
+          "default": "yes",
+          "label": "Sink",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "cabinet",
+          "type": "color",
+          "default": "#e8e7e2",
+          "label": "Cabinets"
+        },
+        {
+          "name": "worktop",
+          "type": "color",
+          "default": "#a07548",
+          "label": "Worktop"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#3a3a3a",
+          "label": "Handles"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#b8bcc0",
+          "label": "Sink and tap"
+        }
+      ],
+      "presets": {
+        "sage": {
+          "cabinet": "#7d9478",
+          "worktop": "#e6e2d8",
+          "handle": "#c9a24a"
+        },
+        "navy": {
+          "cabinet": "#2c3e57",
+          "worktop": "#e9e7e1",
+          "handle": "#c9c9c4"
+        },
+        "dark": {
+          "cabinet": "#2b2927",
+          "worktop": "#8a8a86",
+          "handle": "#b0b0aa"
+        }
+      },
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1.8,
+          1.16,
+          0.628
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "handle",
+          "color": "#3a3a3a",
+          "parts": [
+            "plinth",
+            "handle-1",
+            "handle-2",
+            "handle-3-1",
+            "handle-3-2",
+            "handle-3-3"
+          ],
+          "param": "handle"
+        },
+        {
+          "name": "cabinet",
+          "color": "#e8e7e2",
+          "parts": [
+            "carcass-left",
+            "carcass-right",
+            "carcass-back",
+            "door-1",
+            "door-2",
+            "drawer-3-1",
+            "drawer-3-2",
+            "drawer-3-3"
+          ],
+          "param": "cabinet"
+        },
+        {
+          "name": "worktop",
+          "color": "#a07548",
+          "parts": [
+            "worktop"
+          ],
+          "param": "worktop"
+        },
+        {
+          "name": "steel",
+          "color": "#b8bcc0",
+          "parts": [
+            "basin",
+            "tap-post",
+            "tap-spout"
+          ],
+          "param": "steel"
+        }
+      ]
+    },
+    {
+      "id": "nightstand",
+      "kit": "interior",
+      "title": "Nightstand",
+      "description": "Bedside table with one to three drawers on short legs. Knobs: drawer count, body, drawer front and handle colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "nightstand",
+        "bedside table",
+        "night table",
+        "drawers",
+        "bedroom",
+        "cabinet"
+      ],
+      "compat": [
+        "indoor",
+        "bedroom",
+        "living-room"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/nightstand.kcad.ts",
+      "sourceSha256": "399fab7c79006c7f2787b9d56abf10cdb1f12a5099835f45715283562f7462f0",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "drawers",
+          "type": "choice",
+          "default": "2",
+          "label": "Drawers",
+          "choices": [
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#b98a5a",
+          "label": "Body"
+        },
+        {
+          "name": "front",
+          "type": "color",
+          "default": "#c99c6c",
+          "label": "Drawer fronts"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#2b2b2b",
+          "label": "Handles"
+        }
+      ],
+      "presets": {
+        "walnut": {
+          "body": "#5a3a27",
+          "front": "#6b4630",
+          "handle": "#c9a24a"
+        },
+        "white": {
+          "body": "#ecebe6",
+          "front": "#f6f5f1",
+          "handle": "#9a9a96"
+        }
+      },
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.47,
+          0.58,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#b98a5a",
+          "parts": [
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "leg-4",
+            "carcass-left",
+            "carcass-right",
+            "carcass-back",
+            "carcass-bottom",
+            "top"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "front",
+          "color": "#c99c6c",
+          "parts": [
+            "drawer-1",
+            "drawer-2"
+          ],
+          "param": "front"
+        },
+        {
+          "name": "handle",
+          "color": "#2b2b2b",
+          "parts": [
+            "handle-1",
+            "handle-2"
+          ],
+          "param": "handle"
+        }
+      ]
+    },
+    {
+      "id": "office-chair",
+      "kit": "interior",
+      "title": "Office chair",
+      "description": "Swivel office chair on a five-star caster base with armrests and a mid or high backrest. Knobs: back height, arms, upholstery and frame colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "office chair",
+        "desk chair",
+        "swivel chair",
+        "task chair",
+        "chair",
+        "seat",
+        "computer chair"
+      ],
+      "compat": [
+        "indoor",
+        "office",
+        "bedroom"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/office-chair.kcad.ts",
+      "sourceSha256": "f8965aa4360d4884c7c51cb77fe499316f857f7e1383fe61f6184cd495b4c48e",
+      "triangleBudget": 450,
+      "params": [
+        {
+          "name": "backH",
+          "type": "choice",
+          "default": "mid",
+          "label": "Back height",
+          "choices": [
+            "mid",
+            "high"
+          ]
+        },
+        {
+          "name": "arms",
+          "type": "choice",
+          "default": "yes",
+          "label": "Armrests",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#2f3640",
+          "label": "Upholstery"
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#1c1c1e",
+          "label": "Frame"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9adb2",
+          "label": "Column"
+        }
+      ],
+      "presets": {
+        "blue": {
+          "fabric": "#2f5a8a"
+        },
+        "red": {
+          "fabric": "#9b2f2f",
+          "frame": "#222222"
+        },
+        "white": {
+          "fabric": "#d9d9d6",
+          "frame": "#e8e8e6",
+          "metal": "#c8ccd0"
+        }
+      },
+      "stats": {
+        "triangles": 388,
+        "sizeM": [
+          0.641294,
+          0.99,
+          0.609907
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#1c1c1e",
+          "parts": [
+            "spoke-1",
+            "caster-1",
+            "caster-stem-1",
+            "spoke-2",
+            "caster-2",
+            "caster-stem-2",
+            "spoke-3",
+            "caster-3",
+            "caster-stem-3",
+            "spoke-4",
+            "caster-4",
+            "caster-stem-4",
+            "spoke-5",
+            "caster-5",
+            "caster-stem-5",
+            "hub",
+            "mechanism",
+            "spine",
+            "arm-post-left",
+            "arm-pad-left",
+            "arm-bracket-left",
+            "arm-post-right",
+            "arm-pad-right",
+            "arm-bracket-right"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "metal",
+          "color": "#a9adb2",
+          "parts": [
+            "column"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "fabric",
+          "color": "#2f3640",
+          "parts": [
+            "seat",
+            "back"
+          ],
+          "param": "fabric"
+        }
+      ]
+    },
+    {
+      "id": "picture-frame",
+      "kit": "interior",
+      "title": "Picture frame",
+      "description": "Wall-hung picture frame with a mat and a simple abstract picture, in portrait or landscape. Knobs: size, orientation, frame, mat and picture colours.",
+      "category": "attachment",
+      "origin": "wall",
+      "tags": [
+        "picture frame",
+        "frame",
+        "painting",
+        "art",
+        "wall art",
+        "poster",
+        "decor"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "office",
+        "kitchen"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/picture-frame.kcad.ts",
+      "sourceSha256": "a6fe5f19e4a5f176879e7098cafb232d05d4a1e4482dfed249ed846651dac332",
+      "triangleBudget": 150,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "orientation",
+          "type": "choice",
+          "default": "landscape",
+          "label": "Orientation",
+          "choices": [
+            "landscape",
+            "portrait"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#2b2927",
+          "label": "Frame"
+        },
+        {
+          "name": "mat",
+          "type": "color",
+          "default": "#f3f0e8",
+          "label": "Mat"
+        },
+        {
+          "name": "art",
+          "type": "color",
+          "default": "#3c6e8f",
+          "label": "Picture"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d9a441",
+          "label": "Picture accent"
+        }
+      ],
+      "presets": {
+        "oak": {
+          "frame": "#b98a5a",
+          "art": "#5c8f6a",
+          "accent": "#e0c27a"
+        },
+        "gold": {
+          "frame": "#b8913f",
+          "art": "#7a2f35",
+          "accent": "#2c3e57"
+        }
+      },
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.5,
+          0.375,
+          0.03
+        ],
+        "minUpM": -0.1875,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#2b2927",
+          "parts": [
+            "frame-top",
+            "frame-bottom",
+            "frame-left",
+            "frame-right"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "mat",
+          "color": "#f3f0e8",
+          "parts": [
+            "mat-top",
+            "mat-bottom",
+            "mat-left",
+            "mat-right"
+          ],
+          "param": "mat"
+        },
+        {
+          "name": "art",
+          "color": "#3c6e8f",
+          "parts": [
+            "picture-sky"
+          ],
+          "param": "art"
+        },
+        {
+          "name": "accent",
+          "color": "#d9a441",
+          "parts": [
+            "picture-hill"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "potted-plant",
+      "kit": "interior",
+      "title": "Potted plant",
+      "description": "Indoor houseplant in a tapered pot with a rosette of faceted leaves. Knobs: size, leaf count, pot and leaf colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "plant",
+        "potted plant",
+        "houseplant",
+        "pot",
+        "greenery",
+        "decor"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "office",
+        "bedroom",
+        "kitchen"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/potted-plant.kcad.ts",
+      "sourceSha256": "c3113ff6b3e08495decb91e841fd53eee166814390acf727e981abf6feb7b606",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "leafCount",
+          "type": "choice",
+          "default": "7",
+          "label": "Leaves",
+          "choices": [
+            "5",
+            "7",
+            "9"
+          ]
+        },
+        {
+          "name": "pot",
+          "type": "color",
+          "default": "#c96f45",
+          "label": "Pot"
+        },
+        {
+          "name": "leaves",
+          "type": "color",
+          "default": "#3f8a4a",
+          "label": "Leaves"
+        },
+        {
+          "name": "soil",
+          "type": "color",
+          "default": "#4a3424",
+          "label": "Soil"
+        }
+      ],
+      "presets": {
+        "white": {
+          "pot": "#eeede8"
+        },
+        "concrete": {
+          "pot": "#8f8f8a",
+          "leaves": "#5c8f3a"
+        }
+      },
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.413794,
+          0.714549,
+          0.739558
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "pot",
+          "color": "#c96f45",
+          "parts": [
+            "pot",
+            "rim"
+          ],
+          "param": "pot"
+        },
+        {
+          "name": "soil",
+          "color": "#4a3424",
+          "parts": [
+            "soil"
+          ],
+          "param": "soil"
+        },
+        {
+          "name": "leaves",
+          "color": "#3f8a4a",
+          "parts": [
+            "leaf-1",
+            "leaf-2",
+            "leaf-3",
+            "leaf-4",
+            "leaf-5",
+            "leaf-6",
+            "leaf-7"
+          ],
+          "param": "leaves"
+        }
+      ]
+    },
+    {
+      "id": "rug",
+      "kit": "interior",
+      "title": "Rug",
+      "description": "Flat two-tone area rug with a border, in three room sizes, plain-field or striped. Knobs: size, pattern, border and field colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "rug",
+        "carpet",
+        "mat",
+        "area rug",
+        "floor",
+        "living room"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/rug.kcad.ts",
+      "sourceSha256": "cae6b1e0ae572a395adf6aa98aeacc4225d5f0d33dd252cd384d3175153a860b",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "2x3",
+          "label": "Size (m)",
+          "choices": [
+            "1.6x2.3",
+            "2x3",
+            "2.5x3.5"
+          ]
+        },
+        {
+          "name": "pattern",
+          "type": "choice",
+          "default": "border",
+          "label": "Pattern",
+          "choices": [
+            "border",
+            "stripes"
+          ]
+        },
+        {
+          "name": "border",
+          "type": "color",
+          "default": "#7a2f35",
+          "label": "Border"
+        },
+        {
+          "name": "field",
+          "type": "color",
+          "default": "#d8c6a3",
+          "label": "Field"
+        }
+      ],
+      "presets": {
+        "navy": {
+          "border": "#24344d",
+          "field": "#c9cfd6"
+        },
+        "forest": {
+          "border": "#2f5a46",
+          "field": "#e6dcc4"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          3,
+          0.01,
+          2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "border",
+          "color": "#7a2f35",
+          "parts": [
+            "border-front",
+            "border-back",
+            "border-left",
+            "border-right"
+          ],
+          "param": "border"
+        },
+        {
+          "name": "field",
+          "color": "#d8c6a3",
+          "parts": [
+            "field"
+          ],
+          "param": "field"
+        }
+      ]
+    },
+    {
+      "id": "sofa",
+      "kit": "interior",
+      "title": "Sofa",
+      "description": "Boxy upholstered sofa with seat and back cushions on wooden feet. Knobs: seat count, frame fabric, cushion and leg colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "sofa",
+        "couch",
+        "settee",
+        "seat",
+        "living room",
+        "lounge"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/sofa.kcad.ts",
+      "sourceSha256": "ba01b40b75802c33f10fcaae0e7298826049fa7fc3f40378d888263623892ac3",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "seats",
+          "type": "choice",
+          "default": "3",
+          "label": "Seats",
+          "choices": [
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#5a6b7d",
+          "label": "Frame fabric"
+        },
+        {
+          "name": "cushion",
+          "type": "color",
+          "default": "#7d8fa3",
+          "label": "Cushions"
+        },
+        {
+          "name": "legs",
+          "type": "color",
+          "default": "#4a3324",
+          "label": "Legs"
+        }
+      ],
+      "presets": {
+        "charcoal": {
+          "fabric": "#3b3d42",
+          "cushion": "#55585f",
+          "legs": "#1f1f1f"
+        },
+        "mustard": {
+          "fabric": "#b8892c",
+          "cushion": "#d0a548",
+          "legs": "#6b4a2e"
+        },
+        "cream": {
+          "fabric": "#d9cfbd",
+          "cushion": "#e8e0d0",
+          "legs": "#8a6a48"
+        }
+      },
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          2.22,
+          0.82,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "legs",
+          "color": "#4a3324",
+          "parts": [
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "leg-4"
+          ],
+          "param": "legs"
+        },
+        {
+          "name": "fabric",
+          "color": "#5a6b7d",
+          "parts": [
+            "base",
+            "back",
+            "arm-left",
+            "arm-right"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "cushion",
+          "color": "#7d8fa3",
+          "parts": [
+            "seat-1",
+            "back-cushion-1",
+            "seat-2",
+            "back-cushion-2",
+            "seat-3",
+            "back-cushion-3"
+          ],
+          "param": "cushion"
+        }
+      ]
+    },
+    {
+      "id": "table-lamp",
+      "kit": "interior",
+      "title": "Table lamp",
+      "description": "Bedside or desk table lamp with a faceted jar or column base and a tapered shade. Knobs: base style, base and shade colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "table lamp",
+        "bedside lamp",
+        "desk lamp",
+        "lamp",
+        "light",
+        "lighting"
+      ],
+      "compat": [
+        "indoor",
+        "bedroom",
+        "living-room",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/table-lamp.kcad.ts",
+      "sourceSha256": "327fe9ed5580e76c68edabd44ed1fe917d6b61d9e30016c79d04101c13c21b53",
+      "triangleBudget": 150,
+      "params": [
+        {
+          "name": "baseStyle",
+          "type": "choice",
+          "default": "jar",
+          "label": "Base style",
+          "choices": [
+            "jar",
+            "column"
+          ]
+        },
+        {
+          "name": "base",
+          "type": "color",
+          "default": "#3f6f7a",
+          "label": "Base"
+        },
+        {
+          "name": "shade",
+          "type": "color",
+          "default": "#f2ead8",
+          "label": "Shade"
+        }
+      ],
+      "presets": {
+        "terracotta": {
+          "base": "#b9653f",
+          "shade": "#efe6d2"
+        },
+        "black": {
+          "base": "#232323",
+          "shade": "#d9d4c7"
+        }
+      },
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.285145,
+          0.47,
+          0.292478
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "base",
+          "color": "#3f6f7a",
+          "parts": [
+            "base-lower",
+            "base-upper",
+            "stem"
+          ],
+          "param": "base"
+        },
+        {
+          "name": "shade",
+          "color": "#f2ead8",
+          "parts": [
+            "shade"
+          ],
+          "param": "shade"
+        }
+      ]
+    },
+    {
+      "id": "tv-stand-with-tv",
+      "kit": "interior",
+      "title": "TV stand with TV",
+      "description": "Low media cabinet with doors and a drawer, carrying a flat-screen television. Knobs: screen size, cabinet, door and TV colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "tv",
+        "television",
+        "tv stand",
+        "media console",
+        "entertainment unit",
+        "living room",
+        "screen"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/tv-stand-with-tv.kcad.ts",
+      "sourceSha256": "879d127807dd214cfbe2529499c465351d17cd8214be0a6f7969f2a2d71299ee",
+      "triangleBudget": 250,
+      "params": [
+        {
+          "name": "screenIn",
+          "type": "choice",
+          "default": "55",
+          "label": "Screen (in)",
+          "choices": [
+            "43",
+            "55",
+            "65"
+          ]
+        },
+        {
+          "name": "cabinet",
+          "type": "color",
+          "default": "#6b4630",
+          "label": "Cabinet"
+        },
+        {
+          "name": "doors",
+          "type": "color",
+          "default": "#e3ddd0",
+          "label": "Doors"
+        },
+        {
+          "name": "tv",
+          "type": "color",
+          "default": "#1a1a1c",
+          "label": "TV frame"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#26303a",
+          "label": "Screen"
+        }
+      ],
+      "presets": {
+        "oak": {
+          "cabinet": "#b98a5a",
+          "doors": "#3a3735"
+        },
+        "white": {
+          "cabinet": "#ecebe6",
+          "doors": "#d7d5cf",
+          "tv": "#2a2a2c"
+        }
+      },
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          1.6,
+          1.244895,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "doors",
+          "color": "#e3ddd0",
+          "parts": [
+            "plinth",
+            "door-left",
+            "door-right",
+            "drawer"
+          ],
+          "param": "doors"
+        },
+        {
+          "name": "cabinet",
+          "color": "#6b4630",
+          "parts": [
+            "side-left",
+            "side-right",
+            "top",
+            "bottom",
+            "back",
+            "divider-left",
+            "divider-right"
+          ],
+          "param": "cabinet"
+        },
+        {
+          "name": "tv",
+          "color": "#1a1a1c",
+          "parts": [
+            "tv-foot",
+            "tv-neck",
+            "tv-panel"
+          ],
+          "param": "tv"
+        },
+        {
+          "name": "glass",
+          "color": "#26303a",
+          "parts": [
+            "tv-screen"
+          ],
+          "param": "glass"
+        }
+      ]
+    },
+    {
+      "id": "wall-segment",
+      "kit": "interior",
+      "title": "Wall segment",
+      "description": "Modular 2 m interior wall panel with skirting boards and an optional framed window or open doorway. Knobs: height, opening, wall, skirting and frame colours.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "wall",
+        "wall panel",
+        "partition",
+        "window",
+        "room",
+        "modular",
+        "building"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "kitchen",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/wall-segment.kcad.ts",
+      "sourceSha256": "9ed022cde80d3fb5f60f208c213c0ea818b6a46f09f1362321ad20761e972dca",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "opening",
+          "type": "choice",
+          "default": "window",
+          "label": "Opening",
+          "choices": [
+            "none",
+            "window",
+            "doorway"
+          ]
+        },
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "2.5",
+          "label": "Height (m)",
+          "choices": [
+            "2.4",
+            "2.5",
+            "2.7",
+            "3"
+          ]
+        },
+        {
+          "name": "wallColor",
+          "type": "color",
+          "default": "#e9e4d8",
+          "label": "Wall"
+        },
+        {
+          "name": "skirting",
+          "type": "color",
+          "default": "#f6f5f1",
+          "label": "Skirting and trim"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#9cc3d9",
+          "label": "Glass"
+        }
+      ],
+      "presets": {
+        "sage": {
+          "wallColor": "#a8b8a0"
+        },
+        "terracotta": {
+          "wallColor": "#d39b7c",
+          "skirting": "#efe9de"
+        },
+        "grey": {
+          "wallColor": "#8f9399",
+          "skirting": "#e6e6e3"
+        }
+      },
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          2,
+          2.5,
+          0.185
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wallColor",
+          "color": "#e9e4d8",
+          "parts": [
+            "wall"
+          ],
+          "param": "wallColor"
+        },
+        {
+          "name": "skirting",
+          "color": "#f6f5f1",
+          "parts": [
+            "skirting-front",
+            "skirting-back",
+            "frame-left",
+            "frame-right",
+            "frame-top",
+            "frame-bottom",
+            "mullion",
+            "sill"
+          ],
+          "param": "skirting"
+        },
+        {
+          "name": "glass",
+          "color": "#9cc3d9",
+          "parts": [
+            "glass"
+          ],
+          "param": "glass"
+        }
+      ]
+    },
+    {
+      "id": "wardrobe",
+      "kit": "interior",
+      "title": "Wardrobe",
+      "description": "Tall hinged-door wardrobe with two to four doors, plinth and top trim. Knobs: door count, body, door and handle colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "wardrobe",
+        "closet",
+        "armoire",
+        "cupboard",
+        "cabinet",
+        "bedroom",
+        "storage"
+      ],
+      "compat": [
+        "indoor",
+        "bedroom",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/wardrobe.kcad.ts",
+      "sourceSha256": "89092c8467ec42a7763a4a2f0367a68840bcb9fa55cb5058594c1ed9190c27f7",
+      "triangleBudget": 250,
+      "params": [
+        {
+          "name": "doors",
+          "type": "choice",
+          "default": "2",
+          "label": "Doors",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#b98a5a",
+          "label": "Body"
+        },
+        {
+          "name": "door",
+          "type": "color",
+          "default": "#c99c6c",
+          "label": "Doors"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#3a3a3a",
+          "label": "Handles"
+        }
+      ],
+      "presets": {
+        "walnut": {
+          "body": "#5a3a27",
+          "door": "#6b4630",
+          "handle": "#c9a24a"
+        },
+        "white": {
+          "body": "#e8e7e2",
+          "door": "#f6f5f1",
+          "handle": "#8f8f8b"
+        },
+        "dark": {
+          "body": "#2b2927",
+          "door": "#3a3735",
+          "handle": "#b0b0aa"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.07,
+          2.1,
+          0.63
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#b98a5a",
+          "parts": [
+            "plinth",
+            "carcass-left",
+            "carcass-right",
+            "carcass-back",
+            "carcass-bottom",
+            "cornice"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "door",
+          "color": "#c99c6c",
+          "parts": [
+            "door-1",
+            "door-2"
+          ],
+          "param": "door"
+        },
+        {
+          "name": "handle",
+          "color": "#3a3a3a",
+          "parts": [
+            "handle-1",
+            "handle-2"
+          ],
+          "param": "handle"
+        }
+      ]
+    },
+    {
+      "id": "birch-tree",
+      "kit": "nature",
+      "title": "Birch tree",
+      "description": "Slender birch with a thin white trunk, dark bark bands and a narrow airy crown. Knobs: height, crown blobs, bark, band and leaf colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "tree",
+        "birch",
+        "deciduous",
+        "white bark",
+        "forest",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "meadow",
+        "park"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/birch-tree.kcad.ts",
+      "sourceSha256": "6e28fa19478959504b42198b5558320e87427fe9e4358053b4611610e1867d89",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "9",
+          "label": "Height (m)",
+          "choices": [
+            "6",
+            "9",
+            "12",
+            "15"
+          ]
+        },
+        {
+          "name": "blobs",
+          "type": "choice",
+          "default": "3",
+          "label": "Crown blobs",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "bark",
+          "type": "color",
+          "default": "#e8e4da",
+          "label": "Bark"
+        },
+        {
+          "name": "bands",
+          "type": "color",
+          "default": "#3a3532",
+          "label": "Bark bands"
+        },
+        {
+          "name": "leaves",
+          "type": "color",
+          "default": "#7fb04a",
+          "label": "Leaves"
+        }
+      ],
+      "presets": {
+        "autumn": {
+          "leaves": "#e2b93b"
+        },
+        "spring": {
+          "leaves": "#9ccc5a"
+        }
+      },
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          2.127616,
+          9,
+          2.21706
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bark",
+          "color": "#e8e4da",
+          "parts": [
+            "trunk"
+          ],
+          "param": "bark"
+        },
+        {
+          "name": "bands",
+          "color": "#3a3532",
+          "parts": [
+            "band-1",
+            "band-2",
+            "band-3",
+            "band-4"
+          ],
+          "param": "bands"
+        },
+        {
+          "name": "leaves",
+          "color": "#7fb04a",
+          "parts": [
+            "crown-1",
+            "crown-2",
+            "crown-3"
+          ],
+          "param": "leaves"
+        }
+      ]
+    },
+    {
+      "id": "boulder-cluster",
+      "kit": "nature",
+      "title": "Boulder cluster",
+      "description": "Group of faceted boulders, one large rock surrounded by smaller ones. Knobs: rock count, cluster size, shape, main and secondary stone colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "boulder",
+        "rocks",
+        "stones",
+        "cluster",
+        "outcrop",
+        "mountain",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "meadow",
+        "desert",
+        "mountain"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/boulder-cluster.kcad.ts",
+      "sourceSha256": "8c47619f5b403b7de529285fac6488772cd50e3e3e671df1b1d5a7791c6b1bf6",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "count",
+          "type": "choice",
+          "default": "4",
+          "label": "Rocks",
+          "choices": [
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "2",
+          "label": "Cluster width (m)",
+          "choices": [
+            "1",
+            "2",
+            "3.5"
+          ]
+        },
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "round",
+          "label": "Shape",
+          "choices": [
+            "flat",
+            "round",
+            "jagged"
+          ]
+        },
+        {
+          "name": "stone",
+          "type": "color",
+          "default": "#8b8e93",
+          "label": "Main stone"
+        },
+        {
+          "name": "stone2",
+          "type": "color",
+          "default": "#a39d92",
+          "label": "Small rocks"
+        }
+      ],
+      "presets": {
+        "desert": {
+          "stone": "#b9774a",
+          "stone2": "#cf9a66"
+        },
+        "granite": {
+          "stone": "#9a8f8a",
+          "stone2": "#6e6a6a"
+        },
+        "snowy": {
+          "stone": "#7a8088",
+          "stone2": "#e9eff3"
+        }
+      },
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          1.796656,
+          0.784,
+          1.494252
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stone",
+          "color": "#8b8e93",
+          "parts": [
+            "boulder"
+          ],
+          "param": "stone"
+        },
+        {
+          "name": "stone2",
+          "color": "#a39d92",
+          "parts": [
+            "rock-1",
+            "rock-2",
+            "rock-3"
+          ],
+          "param": "stone2"
+        }
+      ]
+    },
+    {
+      "id": "bush",
+      "kit": "nature",
+      "title": "Bush",
+      "description": "Rounded leafy shrub made of clustered faceted lumps, with optional berries. Knobs: size, lump count, berries, leaf and berry colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "bush",
+        "shrub",
+        "hedge",
+        "plant",
+        "garden",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "meadow",
+        "park",
+        "garden"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/bush.kcad.ts",
+      "sourceSha256": "bd9a04404d5d5514db5481613e22e1ff3d6018fe95b206f9c4077dfd65b4a575",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1.2",
+          "label": "Width (m)",
+          "choices": [
+            "0.6",
+            "1.2",
+            "1.8"
+          ]
+        },
+        {
+          "name": "lumps",
+          "type": "choice",
+          "default": "4",
+          "label": "Lumps",
+          "choices": [
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "berries",
+          "type": "choice",
+          "default": "no",
+          "label": "Berries",
+          "choices": [
+            "no",
+            "yes"
+          ]
+        },
+        {
+          "name": "leaves",
+          "type": "color",
+          "default": "#4c8c3c",
+          "label": "Leaves"
+        },
+        {
+          "name": "berry",
+          "type": "color",
+          "default": "#c8323a",
+          "label": "Berries"
+        }
+      ],
+      "presets": {
+        "autumn": {
+          "leaves": "#b5652b"
+        },
+        "berry": {
+          "berries": "yes"
+        },
+        "snowy": {
+          "leaves": "#e3eaee"
+        }
+      },
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          1.052745,
+          0.744,
+          1.114136
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "leaves",
+          "color": "#4c8c3c",
+          "parts": [
+            "core",
+            "lump-1",
+            "lump-2",
+            "lump-3"
+          ],
+          "param": "leaves"
+        }
+      ]
+    },
+    {
+      "id": "cactus",
+      "kit": "nature",
+      "title": "Saguaro cactus",
+      "description": "Desert saguaro cactus with a faceted column and upturned arms. Knobs: height, arm count, bloom, body and flower colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "cactus",
+        "saguaro",
+        "succulent",
+        "desert",
+        "western",
+        "plant",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "desert"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/cactus.kcad.ts",
+      "sourceSha256": "8fec7fb5842339cbac7380ecbc49ee8ed4600c9ec4f3da8b3778ba995dfc3a51",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "4",
+          "label": "Height (m)",
+          "choices": [
+            "2",
+            "4",
+            "6"
+          ]
+        },
+        {
+          "name": "arms",
+          "type": "choice",
+          "default": "2",
+          "label": "Arms",
+          "choices": [
+            "0",
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "bloom",
+          "type": "choice",
+          "default": "yes",
+          "label": "Bloom",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#4f8a4a",
+          "label": "Body"
+        },
+        {
+          "name": "flower",
+          "type": "color",
+          "default": "#f2e6b8",
+          "label": "Bloom"
+        }
+      ],
+      "presets": {
+        "dusty": {
+          "body": "#7a9a5e"
+        },
+        "pinkBloom": {
+          "flower": "#e86a9a"
+        }
+      },
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          1.7576,
+          4.078,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#4f8a4a",
+          "parts": [
+            "trunk",
+            "arm-1",
+            "arm-1-up",
+            "arm-2",
+            "arm-2-up"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "flower",
+          "color": "#f2e6b8",
+          "parts": [
+            "bloom"
+          ],
+          "param": "flower"
+        }
+      ]
+    },
+    {
+      "id": "cliff-tile",
+      "kit": "nature",
+      "title": "Cliff tile",
+      "description": "Square 2 m terrain tile with a stepped faceted rock cliff rising to a grassy ledge at the back. Knobs: cliff height, step count, rock, grass and dirt colours.",
+      "category": "terrain",
+      "origin": "base",
+      "tags": [
+        "tile",
+        "cliff",
+        "rock face",
+        "ledge",
+        "mountain",
+        "terrain",
+        "grid",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "grid-2m",
+        "mountain",
+        "forest",
+        "desert"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/cliff-tile.kcad.ts",
+      "sourceSha256": "abbeefd9d1d79995e99bfe71a63436e3db1de97e7d08abb6103f11520318e133",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "2",
+          "label": "Cliff height (m)",
+          "choices": [
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "steps",
+          "type": "choice",
+          "default": "3",
+          "label": "Rock steps",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "rock",
+          "type": "color",
+          "default": "#8a8580",
+          "label": "Rock"
+        },
+        {
+          "name": "grass",
+          "type": "color",
+          "default": "#6aa443",
+          "label": "Grass"
+        },
+        {
+          "name": "dirt",
+          "type": "color",
+          "default": "#7a5636",
+          "label": "Dirt edge"
+        }
+      ],
+      "presets": {
+        "desert": {
+          "rock": "#b8724a",
+          "grass": "#d8b77a",
+          "dirt": "#9a6a44"
+        },
+        "snowy": {
+          "rock": "#6f747a",
+          "grass": "#eef3f6"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          2,
+          2,
+          2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "dirt",
+          "color": "#7a5636",
+          "parts": [
+            "dirt"
+          ],
+          "param": "dirt"
+        },
+        {
+          "name": "grass",
+          "color": "#6aa443",
+          "parts": [
+            "grass",
+            "ledge"
+          ],
+          "param": "grass"
+        },
+        {
+          "name": "rock",
+          "color": "#8a8580",
+          "parts": [
+            "rock-1",
+            "rock-2",
+            "rock-3"
+          ],
+          "param": "rock"
+        }
+      ]
+    },
+    {
+      "id": "dead-tree",
+      "kit": "nature",
+      "title": "Dead tree",
+      "description": "Bare leafless dead tree with a forked trunk, angular branches and twigs. Knobs: height, branch count, twigs on or off, bark colour.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "tree",
+        "dead",
+        "bare",
+        "leafless",
+        "spooky",
+        "swamp",
+        "winter",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "desert",
+        "swamp"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/dead-tree.kcad.ts",
+      "sourceSha256": "b85e5f2747e2df3e8eed236b834fd58e5ea64a821bd906344afe32e7d79fd5d1",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "5",
+          "label": "Height (m)",
+          "choices": [
+            "3",
+            "5",
+            "7"
+          ]
+        },
+        {
+          "name": "branches",
+          "type": "choice",
+          "default": "4",
+          "label": "Branches",
+          "choices": [
+            "3",
+            "4",
+            "5",
+            "6"
+          ]
+        },
+        {
+          "name": "twigs",
+          "type": "choice",
+          "default": "yes",
+          "label": "Twigs",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "bark",
+          "type": "color",
+          "default": "#6e6259",
+          "label": "Bark"
+        }
+      ],
+      "presets": {
+        "charred": {
+          "bark": "#2f2a27"
+        },
+        "bleached": {
+          "bark": "#b9b1a3"
+        }
+      },
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          3.286286,
+          4.728285,
+          2.622011
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bark",
+          "color": "#6e6259",
+          "parts": [
+            "limb-1",
+            "roots",
+            "limb-3",
+            "limb-4",
+            "limb-5",
+            "limb-6",
+            "limb-7",
+            "limb-8",
+            "limb-9",
+            "limb-10",
+            "limb-11",
+            "limb-12",
+            "limb-13",
+            "limb-14",
+            "limb-15",
+            "limb-16"
+          ],
+          "param": "bark"
+        }
+      ]
+    },
+    {
+      "id": "fern",
+      "kit": "nature",
+      "title": "Fern",
+      "description": "Forest-floor fern rosette with arching tapered fronds. Knobs: size, frond count, frond and stalk colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "fern",
+        "plant",
+        "undergrowth",
+        "forest floor",
+        "jungle",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "swamp"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/fern.kcad.ts",
+      "sourceSha256": "45004cc8fc437703f9c093739ca490e1497a9df6039157820082eb6ff8dd747d",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "0.8",
+          "label": "Frond length (m)",
+          "choices": [
+            "0.5",
+            "0.8",
+            "1.2"
+          ]
+        },
+        {
+          "name": "fronds",
+          "type": "choice",
+          "default": "7",
+          "label": "Fronds",
+          "choices": [
+            "5",
+            "6",
+            "7",
+            "8"
+          ]
+        },
+        {
+          "name": "frond",
+          "type": "color",
+          "default": "#3e8f3a",
+          "label": "Fronds"
+        },
+        {
+          "name": "stalk",
+          "type": "color",
+          "default": "#5d6e2c",
+          "label": "Base"
+        }
+      ],
+      "presets": {
+        "autumn": {
+          "frond": "#b8742c",
+          "stalk": "#7a5a2e"
+        },
+        "dry": {
+          "frond": "#9a9a48"
+        }
+      },
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          1.448168,
+          0.50141,
+          1.274399
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stalk",
+          "color": "#5d6e2c",
+          "parts": [
+            "base"
+          ],
+          "param": "stalk"
+        },
+        {
+          "name": "frond",
+          "color": "#3e8f3a",
+          "parts": [
+            "frond-1-1",
+            "frond-1-2",
+            "frond-1-3",
+            "frond-2-1",
+            "frond-2-2",
+            "frond-2-3",
+            "frond-3-1",
+            "frond-3-2",
+            "frond-3-3",
+            "frond-4-1",
+            "frond-4-2",
+            "frond-4-3",
+            "frond-5-1",
+            "frond-5-2",
+            "frond-5-3",
+            "frond-6-1",
+            "frond-6-2",
+            "frond-6-3",
+            "frond-7-1",
+            "frond-7-2",
+            "frond-7-3"
+          ],
+          "param": "frond"
+        }
+      ]
+    },
+    {
+      "id": "flower-patch",
+      "kit": "nature",
+      "title": "Flower patch",
+      "description": "Small clump of wildflowers with thin stems and star-shaped petals over a leafy base. Knobs: flower count, height, petal, centre and leaf colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "flower",
+        "flowers",
+        "wildflower",
+        "daisy",
+        "meadow",
+        "garden",
+        "plant",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "meadow",
+        "garden",
+        "park"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/flower-patch.kcad.ts",
+      "sourceSha256": "784e9c0e3a41b2e5116236e10c04afd33296cbc21f6a8f9217dd963666dabc5a",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "count",
+          "type": "choice",
+          "default": "5",
+          "label": "Flowers",
+          "choices": [
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "0.35",
+          "label": "Height (m)",
+          "choices": [
+            "0.25",
+            "0.35",
+            "0.5"
+          ]
+        },
+        {
+          "name": "petals",
+          "type": "color",
+          "default": "#f2f0e8",
+          "label": "Petals"
+        },
+        {
+          "name": "centre",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Flower centre"
+        },
+        {
+          "name": "leaves",
+          "type": "color",
+          "default": "#4f8f3a",
+          "label": "Leaves and stems"
+        }
+      ],
+      "presets": {
+        "poppies": {
+          "petals": "#d8342c",
+          "centre": "#2a2422"
+        },
+        "bluebells": {
+          "petals": "#6d7fd8",
+          "centre": "#f4f0d0"
+        },
+        "sunny": {
+          "petals": "#f5c42a",
+          "centre": "#7a4a1e"
+        }
+      },
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          0.23407,
+          0.34202,
+          0.26387
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "leaves",
+          "color": "#4f8f3a",
+          "parts": [
+            "leaves",
+            "stem-1",
+            "stem-2",
+            "stem-3",
+            "stem-4",
+            "stem-5"
+          ],
+          "param": "leaves"
+        },
+        {
+          "name": "petals",
+          "color": "#f2f0e8",
+          "parts": [
+            "petals-1",
+            "petals-2",
+            "petals-3",
+            "petals-4",
+            "petals-5"
+          ],
+          "param": "petals"
+        },
+        {
+          "name": "centre",
+          "color": "#f0c419",
+          "parts": [
+            "centre-1",
+            "centre-2",
+            "centre-3",
+            "centre-4",
+            "centre-5"
+          ],
+          "param": "centre"
+        }
+      ]
+    },
+    {
+      "id": "grass-tuft",
+      "kit": "nature",
+      "title": "Grass tuft",
+      "description": "Clump of tall grass made of thin pointed blades leaning outward. Knobs: blade count, height, blade and tip colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "grass",
+        "tuft",
+        "clump",
+        "meadow",
+        "field",
+        "plant",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "meadow",
+        "forest",
+        "grid-2m"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/grass-tuft.kcad.ts",
+      "sourceSha256": "45563cd9f0052dc1e09e7d935a19fdec71771aea2ce9e0535e74337bcc46d2f6",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "blades",
+          "type": "choice",
+          "default": "9",
+          "label": "Blades",
+          "choices": [
+            "5",
+            "7",
+            "9",
+            "12"
+          ]
+        },
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "0.4",
+          "label": "Height (m)",
+          "choices": [
+            "0.2",
+            "0.4",
+            "0.7"
+          ]
+        },
+        {
+          "name": "grass",
+          "type": "color",
+          "default": "#5c9a3a",
+          "label": "Grass"
+        },
+        {
+          "name": "tips",
+          "type": "color",
+          "default": "#9cc55a",
+          "label": "Blade tips"
+        }
+      ],
+      "presets": {
+        "dry": {
+          "grass": "#a89a52",
+          "tips": "#d8c98a"
+        },
+        "autumn": {
+          "grass": "#8a8a3a",
+          "tips": "#c79a3c"
+        }
+      },
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          0.295528,
+          0.380039,
+          0.311977
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "grass",
+          "color": "#5c9a3a",
+          "parts": [
+            "clump",
+            "blade-1",
+            "blade-2",
+            "blade-3",
+            "blade-4",
+            "blade-5",
+            "blade-6",
+            "blade-7",
+            "blade-8",
+            "blade-9"
+          ],
+          "param": "grass"
+        },
+        {
+          "name": "tips",
+          "color": "#9cc55a",
+          "parts": [
+            "tip-1",
+            "tip-2",
+            "tip-3",
+            "tip-4",
+            "tip-5",
+            "tip-6",
+            "tip-7",
+            "tip-8",
+            "tip-9"
+          ],
+          "param": "tips"
+        }
+      ]
+    },
+    {
+      "id": "ground-tile",
+      "kit": "nature",
+      "title": "Ground tile (grass)",
+      "description": "Square 2 m grass ground tile with a dirt edge and an optional faceted bumpy top. Knobs: thickness, top relief, grass and dirt colours.",
+      "category": "terrain",
+      "origin": "base",
+      "tags": [
+        "tile",
+        "ground",
+        "grass",
+        "terrain",
+        "floor",
+        "lawn",
+        "grid",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "grid-2m",
+        "meadow",
+        "forest"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/ground-tile.kcad.ts",
+      "sourceSha256": "c9ea9f87d80d346820c30c9518cc4f0638853ac4a26fdb0da5a8c2d7475a804f",
+      "triangleBudget": 80,
+      "params": [
+        {
+          "name": "thickness",
+          "type": "choice",
+          "default": "0.2",
+          "label": "Thickness (m)",
+          "choices": [
+            "0.1",
+            "0.2",
+            "0.4"
+          ]
+        },
+        {
+          "name": "relief",
+          "type": "choice",
+          "default": "bumpy",
+          "label": "Top relief",
+          "choices": [
+            "flat",
+            "bumpy"
+          ]
+        },
+        {
+          "name": "grass",
+          "type": "color",
+          "default": "#6aa443",
+          "label": "Grass"
+        },
+        {
+          "name": "dirt",
+          "type": "color",
+          "default": "#7a5636",
+          "label": "Dirt edge"
+        }
+      ],
+      "presets": {
+        "dry": {
+          "grass": "#b3a456",
+          "dirt": "#8f6a43"
+        },
+        "snowy": {
+          "grass": "#eef3f6",
+          "dirt": "#6f5a48"
+        },
+        "sand": {
+          "grass": "#e2c98f",
+          "dirt": "#b8915c"
+        }
+      },
+      "stats": {
+        "triangles": 56,
+        "sizeM": [
+          2,
+          0.26,
+          2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "grass",
+          "color": "#6aa443",
+          "parts": [
+            "grass"
+          ],
+          "param": "grass"
+        },
+        {
+          "name": "dirt",
+          "color": "#7a5636",
+          "parts": [
+            "dirt"
+          ],
+          "param": "dirt"
+        }
+      ]
+    },
+    {
+      "id": "hill-tile",
+      "kit": "nature",
+      "title": "Hill tile",
+      "description": "Square 2 m terrain tile with a faceted grassy mound rising from flat edges, optional rock outcrop on top. Knobs: hill height, outcrop, grass, dirt and rock colours.",
+      "category": "terrain",
+      "origin": "base",
+      "tags": [
+        "tile",
+        "hill",
+        "mound",
+        "terrain",
+        "grass",
+        "slope",
+        "grid",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "grid-2m",
+        "meadow",
+        "forest"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/hill-tile.kcad.ts",
+      "sourceSha256": "7fdc2f269d71002c1f83e754160d02e2128c5b891e3b44ea02819a9886233fda",
+      "triangleBudget": 160,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "0.8",
+          "label": "Hill height (m)",
+          "choices": [
+            "0.4",
+            "0.8",
+            "1.2"
+          ]
+        },
+        {
+          "name": "outcrop",
+          "type": "choice",
+          "default": "yes",
+          "label": "Rock outcrop",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "grass",
+          "type": "color",
+          "default": "#6aa443",
+          "label": "Grass"
+        },
+        {
+          "name": "dirt",
+          "type": "color",
+          "default": "#7a5636",
+          "label": "Dirt edge"
+        },
+        {
+          "name": "rock",
+          "type": "color",
+          "default": "#8d8f94",
+          "label": "Rock"
+        }
+      ],
+      "presets": {
+        "dry": {
+          "grass": "#b3a456",
+          "dirt": "#8f6a43"
+        },
+        "snowy": {
+          "grass": "#eef3f6",
+          "dirt": "#6f5a48",
+          "rock": "#6f757c"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          2,
+          1,
+          2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "dirt",
+          "color": "#7a5636",
+          "parts": [
+            "dirt"
+          ],
+          "param": "dirt"
+        },
+        {
+          "name": "grass",
+          "color": "#6aa443",
+          "parts": [
+            "grass"
+          ],
+          "param": "grass"
+        },
+        {
+          "name": "rock",
+          "color": "#8d8f94",
+          "parts": [
+            "outcrop"
+          ],
+          "param": "rock"
+        }
+      ]
+    },
+    {
+      "id": "log",
+      "kit": "nature",
+      "title": "Fallen log",
+      "description": "Fallen tree log lying on the ground with faceted bark, cut end rings and a branch stub. Knobs: length, diameter, branch stub, bark, end-grain and heartwood colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "log",
+        "wood",
+        "timber",
+        "fallen tree",
+        "firewood",
+        "forest",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "meadow"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/log.kcad.ts",
+      "sourceSha256": "5f8a7fb76e8a5c94f4f72ae2c94daf82ad66f5fed1576fce52788cfd0e6ae95c",
+      "triangleBudget": 160,
+      "params": [
+        {
+          "name": "lengthM",
+          "type": "choice",
+          "default": "2",
+          "label": "Length (m)",
+          "choices": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "diameter",
+          "type": "choice",
+          "default": "0.4",
+          "label": "Diameter (m)",
+          "choices": [
+            "0.25",
+            "0.4",
+            "0.6"
+          ]
+        },
+        {
+          "name": "stub",
+          "type": "choice",
+          "default": "yes",
+          "label": "Branch stub",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "bark",
+          "type": "color",
+          "default": "#6b4a30",
+          "label": "Bark"
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#d9b27a",
+          "label": "End grain"
+        },
+        {
+          "name": "heart",
+          "type": "color",
+          "default": "#a8743f",
+          "label": "Heartwood ring"
+        }
+      ],
+      "presets": {
+        "birch": {
+          "bark": "#e2ddd2"
+        },
+        "mossy": {
+          "bark": "#4f6a34"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          2.008,
+          0.538946,
+          0.464108
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bark",
+          "color": "#6b4a30",
+          "parts": [
+            "bark",
+            "stub"
+          ],
+          "param": "bark"
+        },
+        {
+          "name": "wood",
+          "color": "#d9b27a",
+          "parts": [
+            "end-a",
+            "end-b"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "heart",
+          "color": "#a8743f",
+          "parts": [
+            "heart-a",
+            "heart-b"
+          ],
+          "param": "heart"
+        }
+      ]
+    },
+    {
+      "id": "mushroom",
+      "kit": "nature",
+      "title": "Mushroom",
+      "description": "Cluster of forest mushrooms with faceted stems and dome, flat or conical caps, optional spots. Knobs: count, size, cap shape, spots, cap and stem colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "mushroom",
+        "toadstool",
+        "fungus",
+        "fly agaric",
+        "forest floor",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "swamp"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/mushroom.kcad.ts",
+      "sourceSha256": "d0b0cfde237cd8630f91d61a1f5b454416a66ec3a28dc28c3f9734eadbf718d1",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "count",
+          "type": "choice",
+          "default": "3",
+          "label": "Mushrooms",
+          "choices": [
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "0.2",
+          "label": "Height (m)",
+          "choices": [
+            "0.1",
+            "0.2",
+            "0.5",
+            "1"
+          ]
+        },
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "dome",
+          "label": "Cap shape",
+          "choices": [
+            "dome",
+            "flat",
+            "cone"
+          ]
+        },
+        {
+          "name": "spots",
+          "type": "choice",
+          "default": "yes",
+          "label": "Spots",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "cap",
+          "type": "color",
+          "default": "#d0362c",
+          "label": "Cap"
+        },
+        {
+          "name": "stem",
+          "type": "color",
+          "default": "#f2ead6",
+          "label": "Stem and spots"
+        }
+      ],
+      "presets": {
+        "porcini": {
+          "cap": "#8a5a32",
+          "spots": "no",
+          "stem": "#e2d3ae"
+        },
+        "glowing": {
+          "cap": "#4fb0d8",
+          "stem": "#d8f4ff"
+        }
+      },
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          0.194607,
+          0.20408,
+          0.25441
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stem",
+          "color": "#f2ead6",
+          "parts": [
+            "stem-1",
+            "spot-1-1",
+            "spot-1-2",
+            "spot-1-3",
+            "stem-2",
+            "spot-2-1",
+            "spot-2-2",
+            "spot-2-3",
+            "stem-3",
+            "spot-3-1",
+            "spot-3-2",
+            "spot-3-3"
+          ],
+          "param": "stem"
+        },
+        {
+          "name": "cap",
+          "color": "#d0362c",
+          "parts": [
+            "cap-1",
+            "cap-2",
+            "cap-3"
+          ],
+          "param": "cap"
+        }
+      ]
+    },
+    {
+      "id": "oak-tree",
+      "kit": "nature",
+      "title": "Oak tree",
+      "description": "Broad deciduous oak with a stout faceted trunk and a lumpy clustered crown. Knobs: height, crown lumps, crown shape, bark and leaf colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "tree",
+        "oak",
+        "deciduous",
+        "broadleaf",
+        "forest",
+        "park",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "meadow",
+        "park"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/oak-tree.kcad.ts",
+      "sourceSha256": "11d1b534d7ab43da2da81a8112ae2b9eaab1470fb9d292ff077390854f6a5b4d",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "7",
+          "label": "Height (m)",
+          "choices": [
+            "5",
+            "7",
+            "9",
+            "12"
+          ]
+        },
+        {
+          "name": "lumps",
+          "type": "choice",
+          "default": "5",
+          "label": "Crown lumps",
+          "choices": [
+            "3",
+            "4",
+            "5",
+            "6"
+          ]
+        },
+        {
+          "name": "crown",
+          "type": "choice",
+          "default": "round",
+          "label": "Crown shape",
+          "choices": [
+            "round",
+            "wide",
+            "tall"
+          ]
+        },
+        {
+          "name": "bark",
+          "type": "color",
+          "default": "#6b4a2f",
+          "label": "Bark"
+        },
+        {
+          "name": "leaves",
+          "type": "color",
+          "default": "#4f8a3a",
+          "label": "Leaves"
+        }
+      ],
+      "presets": {
+        "autumn": {
+          "leaves": "#d0832e"
+        },
+        "summer": {
+          "leaves": "#3d7a2f"
+        },
+        "snowy": {
+          "leaves": "#e6edf1",
+          "bark": "#4f3d2e"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          5.442649,
+          7,
+          5.535
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bark",
+          "color": "#6b4a2f",
+          "parts": [
+            "trunk",
+            "limb-1",
+            "limb-2"
+          ],
+          "param": "bark"
+        },
+        {
+          "name": "leaves",
+          "color": "#4f8a3a",
+          "parts": [
+            "crown-top",
+            "crown-core",
+            "crown-1",
+            "crown-2",
+            "crown-3"
+          ],
+          "param": "leaves"
+        }
+      ]
+    },
+    {
+      "id": "palm-tree",
+      "kit": "nature",
+      "title": "Palm tree",
+      "description": "Coconut palm with a curved segmented trunk, drooping fronds and a coconut cluster. Knobs: height, frond count, trunk lean, trunk, frond and coconut colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "tree",
+        "palm",
+        "coconut",
+        "tropical",
+        "beach",
+        "island",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "beach",
+        "desert",
+        "water"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/palm-tree.kcad.ts",
+      "sourceSha256": "ceb43b8059e785d6f04eea9421c695ec7a57b9a88984547d05903e1f00bd2c9c",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "7",
+          "label": "Height (m)",
+          "choices": [
+            "4",
+            "7",
+            "10"
+          ]
+        },
+        {
+          "name": "fronds",
+          "type": "choice",
+          "default": "7",
+          "label": "Fronds",
+          "choices": [
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ]
+        },
+        {
+          "name": "lean",
+          "type": "choice",
+          "default": "curved",
+          "label": "Trunk lean",
+          "choices": [
+            "straight",
+            "curved",
+            "leaning"
+          ]
+        },
+        {
+          "name": "trunk",
+          "type": "color",
+          "default": "#9a7650",
+          "label": "Trunk"
+        },
+        {
+          "name": "frond",
+          "type": "color",
+          "default": "#3f9a3c",
+          "label": "Fronds"
+        },
+        {
+          "name": "coconut",
+          "type": "color",
+          "default": "#5a4128",
+          "label": "Coconuts"
+        }
+      ],
+      "presets": {
+        "dry": {
+          "frond": "#a6a24a",
+          "trunk": "#8a7458"
+        },
+        "lush": {
+          "frond": "#2f8a44"
+        }
+      },
+      "stats": {
+        "triangles": 338,
+        "sizeM": [
+          5.181635,
+          7.263879,
+          4.755786
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "trunk",
+          "color": "#9a7650",
+          "parts": [
+            "trunk"
+          ],
+          "param": "trunk"
+        },
+        {
+          "name": "frond",
+          "color": "#3f9a3c",
+          "parts": [
+            "frond-1a",
+            "frond-1b",
+            "frond-2a",
+            "frond-2b",
+            "frond-3a",
+            "frond-3b",
+            "frond-4a",
+            "frond-4b",
+            "frond-5a",
+            "frond-5b",
+            "frond-6a",
+            "frond-6b",
+            "frond-7a",
+            "frond-7b"
+          ],
+          "param": "frond"
+        },
+        {
+          "name": "coconut",
+          "color": "#5a4128",
+          "parts": [
+            "coconut-1",
+            "coconut-2",
+            "coconut-3"
+          ],
+          "param": "coconut"
+        }
+      ]
+    },
+    {
+      "id": "path-tile",
+      "kit": "nature",
+      "title": "Path tile",
+      "description": "Square 2 m grass tile with a sunken dirt footpath running straight, round a corner, as a T or a crossing. Knobs: layout, path width, grass, path and dirt colours.",
+      "category": "terrain",
+      "origin": "base",
+      "tags": [
+        "tile",
+        "path",
+        "trail",
+        "road",
+        "footpath",
+        "dirt",
+        "terrain",
+        "grid",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "grid-2m",
+        "meadow",
+        "forest"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/path-tile.kcad.ts",
+      "sourceSha256": "30b3997169b66583d44ae34fadefd3ae82f01b2fc3ccea68370ecfccdc61dce4",
+      "triangleBudget": 160,
+      "params": [
+        {
+          "name": "layout",
+          "type": "choice",
+          "default": "straight",
+          "label": "Layout",
+          "choices": [
+            "straight",
+            "corner",
+            "tee",
+            "cross"
+          ]
+        },
+        {
+          "name": "widthM",
+          "type": "choice",
+          "default": "0.8",
+          "label": "Path width (m)",
+          "choices": [
+            "0.6",
+            "0.8",
+            "1.2"
+          ]
+        },
+        {
+          "name": "grass",
+          "type": "color",
+          "default": "#6aa443",
+          "label": "Grass"
+        },
+        {
+          "name": "path",
+          "type": "color",
+          "default": "#b48a5a",
+          "label": "Path"
+        },
+        {
+          "name": "dirt",
+          "type": "color",
+          "default": "#7a5636",
+          "label": "Dirt edge"
+        }
+      ],
+      "presets": {
+        "cobble": {
+          "path": "#9a9a96"
+        },
+        "dry": {
+          "grass": "#b3a456",
+          "path": "#d2b07a"
+        },
+        "snowy": {
+          "grass": "#eef3f6",
+          "path": "#b9a58e"
+        }
+      },
+      "stats": {
+        "triangles": 68,
+        "sizeM": [
+          2,
+          0.2,
+          2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "dirt",
+          "color": "#7a5636",
+          "parts": [
+            "dirt"
+          ],
+          "param": "dirt"
+        },
+        {
+          "name": "path",
+          "color": "#b48a5a",
+          "parts": [
+            "path"
+          ],
+          "param": "path"
+        },
+        {
+          "name": "grass",
+          "color": "#6aa443",
+          "parts": [
+            "grass"
+          ],
+          "param": "grass"
+        }
+      ]
+    },
     {
       "id": "pine-tree",
       "kit": "nature",
@@ -29,9 +8006,9 @@
         "outdoor",
         "forest"
       ],
-      "license": "CC-BY-4.0",
+      "license": "CC0-1.0",
       "source": "catalog/kits/nature/pine-tree.kcad.ts",
-      "sourceSha256": "67377af36f6ae7c9365e1fcd235943a9164a421a37d89af00575eae5240cf9ac",
+      "sourceSha256": "a321f4af2a43c8f612d0b8af642a0cbeb329ba2bc3ac5e27e075480188aad697",
       "triangleBudget": 400,
       "params": [
         {
@@ -121,6 +8098,505 @@
             "foliage-3"
           ],
           "param": "leaves"
+        }
+      ]
+    },
+    {
+      "id": "reeds",
+      "kit": "nature",
+      "title": "Reeds",
+      "description": "Clump of waterside reeds and cattails with tall leaning stalks and brown seed heads. Knobs: stalk count, height, stalk, seed head and mud colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "reeds",
+        "cattail",
+        "bulrush",
+        "marsh",
+        "pond",
+        "water",
+        "swamp",
+        "plant",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "water",
+        "swamp",
+        "meadow"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/reeds.kcad.ts",
+      "sourceSha256": "efc23f825c2ed2148c35ba64a84ef99de7067bd1d82e70397ef0194fbe326191",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "stalks",
+          "type": "choice",
+          "default": "7",
+          "label": "Stalks",
+          "choices": [
+            "5",
+            "7",
+            "9"
+          ]
+        },
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "1.6",
+          "label": "Height (m)",
+          "choices": [
+            "1",
+            "1.6",
+            "2.2"
+          ]
+        },
+        {
+          "name": "stalk",
+          "type": "color",
+          "default": "#6f9a3e",
+          "label": "Stalks"
+        },
+        {
+          "name": "heads",
+          "type": "color",
+          "default": "#6a4527",
+          "label": "Seed heads"
+        },
+        {
+          "name": "mud",
+          "type": "color",
+          "default": "#5a4a36",
+          "label": "Root mound"
+        }
+      ],
+      "presets": {
+        "autumn": {
+          "stalk": "#b39a4e",
+          "heads": "#4e3420"
+        }
+      },
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.489982,
+          1.594404,
+          0.826872
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "mud",
+          "color": "#5a4a36",
+          "parts": [
+            "mound"
+          ],
+          "param": "mud"
+        },
+        {
+          "name": "stalk",
+          "color": "#6f9a3e",
+          "parts": [
+            "stalk-1",
+            "stalk-2",
+            "stalk-3",
+            "stalk-4",
+            "stalk-5",
+            "stalk-6",
+            "stalk-7"
+          ],
+          "param": "stalk"
+        },
+        {
+          "name": "heads",
+          "color": "#6a4527",
+          "parts": [
+            "head-1",
+            "head-3",
+            "head-5",
+            "head-7"
+          ],
+          "param": "heads"
+        }
+      ]
+    },
+    {
+      "id": "rock",
+      "kit": "nature",
+      "title": "Rock",
+      "description": "Squashed faceted field rock with irregular facets. Knobs: size, shape, facet count, stone and moss colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "rock",
+        "stone",
+        "boulder",
+        "pebble",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "meadow",
+        "desert"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/rock.kcad.ts",
+      "sourceSha256": "1e225c5c8f6663fb58b65bf9e5116443b88043dc471e01c1a9a18b34356b62a7",
+      "triangleBudget": 120,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "0.8",
+          "label": "Width (m)",
+          "choices": [
+            "0.3",
+            "0.5",
+            "0.8",
+            "1.2",
+            "2"
+          ]
+        },
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "round",
+          "label": "Shape",
+          "choices": [
+            "flat",
+            "round",
+            "tall"
+          ]
+        },
+        {
+          "name": "sides",
+          "type": "choice",
+          "default": "7",
+          "label": "Facets",
+          "choices": [
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ]
+        },
+        {
+          "name": "stone",
+          "type": "color",
+          "default": "#8a8d91",
+          "label": "Stone"
+        },
+        {
+          "name": "moss",
+          "type": "color",
+          "default": "#5f7f3a",
+          "label": "Moss cap"
+        }
+      ],
+      "presets": {
+        "desert": {
+          "stone": "#c08a5a",
+          "moss": "#a8744a"
+        },
+        "snowy": {
+          "stone": "#7d8288",
+          "moss": "#eef3f6"
+        }
+      },
+      "stats": {
+        "triangles": 62,
+        "sizeM": [
+          0.82487,
+          0.52,
+          0.683271
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stone",
+          "color": "#8a8d91",
+          "parts": [
+            "stone"
+          ],
+          "param": "stone"
+        },
+        {
+          "name": "moss",
+          "color": "#5f7f3a",
+          "parts": [
+            "moss"
+          ],
+          "param": "moss"
+        }
+      ]
+    },
+    {
+      "id": "tree-stump",
+      "kit": "nature",
+      "title": "Tree stump",
+      "description": "Sawn-off tree stump with flared roots and a pale cut top showing a heartwood ring. Knobs: diameter, height, root count, bark, cut wood and heartwood colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "stump",
+        "tree stump",
+        "wood",
+        "chopped",
+        "forest",
+        "lumber",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "meadow"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/tree-stump.kcad.ts",
+      "sourceSha256": "62ee524936d564171e77de7f47f4d6652fb06ece0e7a33209eff2c3c005f7e3c",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "diameter",
+          "type": "choice",
+          "default": "0.6",
+          "label": "Diameter (m)",
+          "choices": [
+            "0.4",
+            "0.6",
+            "0.9"
+          ]
+        },
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "medium",
+          "label": "Height",
+          "choices": [
+            "low",
+            "medium",
+            "tall"
+          ]
+        },
+        {
+          "name": "roots",
+          "type": "choice",
+          "default": "4",
+          "label": "Roots",
+          "choices": [
+            "3",
+            "4",
+            "5",
+            "6"
+          ]
+        },
+        {
+          "name": "bark",
+          "type": "color",
+          "default": "#6a4a2e",
+          "label": "Bark"
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#dcb67e",
+          "label": "Cut wood"
+        },
+        {
+          "name": "heart",
+          "type": "color",
+          "default": "#a9763f",
+          "label": "Heartwood ring"
+        }
+      ],
+      "presets": {
+        "weathered": {
+          "wood": "#b8a88e",
+          "heart": "#8f7f66",
+          "bark": "#5d5148"
+        },
+        "mossy": {
+          "bark": "#4d6a33"
+        }
+      },
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.933999,
+          0.33,
+          1.057446
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bark",
+          "color": "#6a4a2e",
+          "parts": [
+            "trunk",
+            "root-1",
+            "root-2",
+            "root-3",
+            "root-4"
+          ],
+          "param": "bark"
+        },
+        {
+          "name": "wood",
+          "color": "#dcb67e",
+          "parts": [
+            "cut"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "heart",
+          "color": "#a9763f",
+          "parts": [
+            "heart"
+          ],
+          "param": "heart"
+        }
+      ]
+    },
+    {
+      "id": "water-tile",
+      "kit": "nature",
+      "title": "Water tile (pond)",
+      "description": "Square 2 m grass tile with a sunken faceted pond or stream, sandy bank and flat water surface. Knobs: pond shape, pond size, grass, bank, water and dirt colours.",
+      "category": "terrain",
+      "origin": "base",
+      "tags": [
+        "tile",
+        "water",
+        "pond",
+        "pool",
+        "lake",
+        "terrain",
+        "grid",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "grid-2m",
+        "water",
+        "meadow",
+        "forest"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/water-tile.kcad.ts",
+      "sourceSha256": "772b608f5f1daf81e0d0a9eab1080c2c8203cc7ab5714a5ba0a8fb7eec5a77f7",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "round",
+          "label": "Pond shape",
+          "choices": [
+            "round",
+            "square",
+            "stream"
+          ]
+        },
+        {
+          "name": "sizeM",
+          "type": "choice",
+          "default": "1.4",
+          "label": "Pond width (m)",
+          "choices": [
+            "1",
+            "1.4",
+            "1.7"
+          ]
+        },
+        {
+          "name": "grass",
+          "type": "color",
+          "default": "#6aa443",
+          "label": "Grass"
+        },
+        {
+          "name": "bank",
+          "type": "color",
+          "default": "#d8c08a",
+          "label": "Bank"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#3f8fc4",
+          "label": "Water"
+        },
+        {
+          "name": "dirt",
+          "type": "color",
+          "default": "#7a5636",
+          "label": "Dirt edge"
+        }
+      ],
+      "presets": {
+        "swamp": {
+          "water": "#4f6b3a",
+          "bank": "#6b5a3a",
+          "grass": "#5c7d3a"
+        },
+        "icy": {
+          "water": "#cfe6f2",
+          "grass": "#eef3f6",
+          "bank": "#b9c4cc"
+        }
+      },
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          2,
+          0.2,
+          2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "dirt",
+          "color": "#7a5636",
+          "parts": [
+            "dirt"
+          ],
+          "param": "dirt"
+        },
+        {
+          "name": "grass",
+          "color": "#6aa443",
+          "parts": [
+            "grass"
+          ],
+          "param": "grass"
+        },
+        {
+          "name": "bank",
+          "color": "#d8c08a",
+          "parts": [
+            "bank"
+          ],
+          "param": "bank"
+        },
+        {
+          "name": "water",
+          "color": "#3f8fc4",
+          "parts": [
+            "water"
+          ],
+          "param": "water"
         }
       ]
     }
