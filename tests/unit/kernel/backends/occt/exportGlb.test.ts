@@ -355,8 +355,9 @@ describe('exportGlbAsync style: lowpoly', () => {
     expect(extras.stats.sizeM[1]).toBeCloseTo(0.7, 6); // Y-up height
     expect(extras.stats.sizeM[0]).toBeCloseTo(0.3, 6);
     expect(extras.stats.minUpM).toBeCloseTo(0, 6);
-    // 30 degree facets: ~12 side segments -> a cylinder stays well under 100 triangles.
-    expect(extras.stats.triangles).toBeLessThan(100 + 12);
+    // Default 30 degree facets: a 12-segment cylinder (24 side + 2 x 10 cap
+    // triangles) plus a 12-triangle box.
+    expect(extras.stats.triangles).toBeLessThanOrEqual(44 + 12);
     expect(extras.palette.map((z) => [z.color, z.parts])).toEqual([
       ['#8b5a2b', ['trunk']],
       ['#3f8f3f', ['crown']],

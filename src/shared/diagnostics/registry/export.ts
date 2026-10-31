@@ -117,7 +117,7 @@ export const EXPORT_CODES = {
     description: 'A style: lowpoly GLB export exceeded its triangle budget; no file was written.',
   },
   'export.glb.lowpoly-angle': {
-    hintTemplate: 'options.lowpoly.angularDeg must be between 5 and 90 degrees (default 30, about 12 segments per circle).',
+    hintTemplate: 'options.lowpoly.angularDeg must be between 5 and 60 degrees (default 30, about 12 segments per circle).',
     nextAction: { kind: 'fix-arg', field: 'options.lowpoly.angularDeg' },
     defaultSeverity: 'error',
     group: 'export',

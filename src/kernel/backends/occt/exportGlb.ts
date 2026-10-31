@@ -59,6 +59,7 @@ import {
   measureMeshes,
   needsOwnMaterial,
   paletteMaterial,
+  type GlbStats,
   type LowPolyGlbOptions,
 } from '../../export/lowPolyGlb';
 import {
@@ -146,27 +147,11 @@ export async function exportGlbAsync(
     throw new Error('exportGlbAsync: no parts to write.');
   }
 
-  const style = options.style ?? 'pbr';
-  const deflection = style === 'lowpoly' ? lowPolyDeflection(options.lowpoly) : undefined;
-  const meshed: ReadonlyArray<MeshedGlbPart> = parts.map((p) =>
-    hasMesh(p)
-      ? p
-      : { ...p, mesh: meshShapeForExport(p.shape.getReplicadShape(), deflection) },
-  );
-
-  const axis = options.axis ?? 'y-up';
-  const units = options.units ?? (style === 'lowpoly' ? 'm' : 'mm');
-  const stats = measureMeshes(meshed.map((p) => p.mesh), axis);
-  const maxTriangles = options.lowpoly?.maxTriangles;
-  if (maxTriangles !== undefined && stats.triangles > maxTriangles) {
-    throw new Error(
-      `export.glb.triangle-budget: ${stats.triangles} triangles exceeds lowpoly.maxTriangles ${maxTriangles}.`,
-    );
-  }
+  const { meshed, layout, stats } = meshPartsForGlb(parts, options);
   const rigTree = options.hierarchy !== 'flat' && solvedAssembly !== undefined && solvedAssembly.mates.length > 0
     ? buildRigTree(solvedAssembly)
     : undefined;
-  const { scene, wrappedParts, palette } = createExportScene(meshed, { axis, units, style }, rigTree, solvedAssembly);
+  const { scene, wrappedParts, palette } = createExportScene(meshed, layout, rigTree, solvedAssembly);
 
   const exporter = new GLTFExporter();
   const isoDate = new Date().toISOString().slice(0, 10);
@@ -208,9 +193,9 @@ export async function exportGlbAsync(
   const kernelcadExtras: Record<string, unknown> = {
     version: KERNELCAD_VERSION,
     isoDate,
-    axisConvention: axis,
-    units,
-    style,
+    axisConvention: layout.axis,
+    units: layout.units,
+    style: layout.style,
     stats,
   };
   if (palette !== undefined) kernelcadExtras.palette = palette;
@@ -220,6 +205,34 @@ export async function exportGlbAsync(
     kernelcadExtras.rigWarnings = metadata.warnings;
   }
   return injectAssetExtras(out, { kernelcad: kernelcadExtras }, attributionGenerator(KERNELCAD_VERSION));
+}
+
+/** Mesh every part (coarse for `lowpoly`), resolve the file layout, measure
+ *  it, and enforce the low-poly triangle budget before anything is written. */
+function meshPartsForGlb(
+  parts: ReadonlyArray<WorldFramePart | MeshedGlbPart>,
+  options: ExportGlbOptions,
+): { meshed: MeshedGlbPart[]; layout: ExportSceneLayout; stats: GlbStats } {
+  const style = options.style ?? 'pbr';
+  const deflection = style === 'lowpoly' ? lowPolyDeflection(options.lowpoly) : undefined;
+  const meshed = parts.map((p): MeshedGlbPart =>
+    hasMesh(p)
+      ? p
+      : { ...p, mesh: meshShapeForExport(p.shape.getReplicadShape(), deflection) },
+  );
+  const layout: ExportSceneLayout = {
+    axis: options.axis ?? 'y-up',
+    units: options.units ?? (style === 'lowpoly' ? 'm' : 'mm'),
+    style,
+  };
+  const stats = measureMeshes(meshed.map((p) => p.mesh), layout.axis);
+  const maxTriangles = options.lowpoly?.maxTriangles;
+  if (maxTriangles !== undefined && stats.triangles > maxTriangles) {
+    throw new Error(
+      `export.glb.triangle-budget: ${stats.triangles} triangles exceeds lowpoly.maxTriangles ${maxTriangles}.`,
+    );
+  }
+  return { meshed, layout, stats };
 }
 
 interface ExportSceneContext {

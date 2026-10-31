@@ -41,13 +41,15 @@ const DEFAULT_ANGULAR_DEG = 30;
 
 /** Coarse tessellation: angular deflection drives facet count, the relative
  *  linear deflection is loose enough not to subdivide flat or gently curved
- *  faces. */
+ *  faces. OCCT's angular deflection bounds the deviation from each vertex's
+ *  normal, which yields facets twice as fine as the value (0.5 rad gives
+ *  about 24 segments per circle, measured), so the facet angle is doubled. */
 export function lowPolyDeflection(options: LowPolyGlbOptions | undefined): ExportMeshDeflection {
   const angularDeg = options?.angularDeg ?? DEFAULT_ANGULAR_DEG;
-  if (!(angularDeg >= 5 && angularDeg <= 90)) {
-    throw new Error(`export.glb.lowpoly-angle: lowpoly.angularDeg must be between 5 and 90 (got ${angularDeg}).`);
+  if (!(angularDeg >= 5 && angularDeg <= 60)) {
+    throw new Error(`export.glb.lowpoly-angle: lowpoly.angularDeg must be between 5 and 60 (got ${angularDeg}).`);
   }
-  return { linear: 0.5, relative: true, angularRad: (angularDeg * Math.PI) / 180 };
+  return { linear: 0.5, relative: true, angularRad: (2 * angularDeg * Math.PI) / 180 };
 }
 
 /** A part is kept on its own material when the shared opaque one cannot show it. */
@@ -85,7 +87,8 @@ export function paletteMaterial(): THREE.MeshStandardMaterial {
   return material;
 }
 
-/** Collect the named colour zones of a low-poly file (one per material name + colour). */
+/** Collect the colour zones of a low-poly file: one per distinct colour,
+ *  named after the first material that used it, listing every part. */
 export function createPaletteCollector(): {
   add(name: string, color: THREE.Color, part: string): void;
   zones(): PaletteZone[];
@@ -94,10 +97,9 @@ export function createPaletteCollector(): {
   return {
     add(name, color, part) {
       const hex = `#${color.getHexString()}`;
-      const key = `${name}\u0000${hex}`;
-      const zone = byKey.get(key) ?? { name, color: hex, parts: [] };
+      const zone = byKey.get(hex) ?? { name, color: hex, parts: [] };
       zone.parts.push(part);
-      byKey.set(key, zone);
+      byKey.set(hex, zone);
     },
     zones: () => [...byKey.values()],
   };

@@ -273,7 +273,7 @@ export function glbLowPolyDiagnostic(
       message: match[2]!,
       hint: code === 'export.glb.triangle-budget'
         ? 'Raise options.lowpoly.angularDeg (fewer facets on curved faces), reduce segment/part counts in the model, or raise options.lowpoly.maxTriangles.'
-        : 'Pass options.lowpoly.angularDeg between 5 and 90 degrees (default 30).',
+        : 'Pass options.lowpoly.angularDeg between 5 and 60 degrees (default 30, about 12 segments per circle).',
       nextAction: NEXT_ACTIONS[code],
     }],
   };
