@@ -36,7 +36,7 @@ const ngon = (rr: number, n: number) => {
   return p.close();
 };
 // Lay an extrusion along +X, centred on x = 0, resting on its lowest vertex.
-const lay = (shape: any, len: number, x0: number) => shape.rotateY(90).translate(x0 - len / 2, 0, r);
+const lay = (shape: ReturnType<ReturnType<typeof ngon>['extrude']>, len: number, x0: number) => shape.rotateY(90).translate(x0 - len / 2, 0, r);
 
 const log = assembly('log');
 const body = L - 40;

@@ -38,7 +38,7 @@ const square8 = (a: number) => {
   for (let k = 1; k < 8; k++) p = p.lineTo(pts[k][0], pts[k][1]);
   return p.close();
 };
-const octa = (r: number, z: number) => {
+const octa = (r: number) => {
   let p = path().moveTo(r * Math.cos(0.1), r * Math.sin(0.1));
   for (let k = 1; k < 8; k++) {
     const a = 0.1 + (2 * Math.PI * k) / 8;
@@ -52,7 +52,7 @@ const tile = assembly('ground-tile');
 const bump = relief.value === 'bumpy' ? Math.min(60, t * 0.4) : 0;
 const grassBody =
   bump > 0
-    ? square8(half).loft([square8(half), octa(half * 0.55, 0)], {
+    ? square8(half).loft([square8(half), octa(half * 0.55)], {
         planes: [
           { plane: 'XY', origin: [0, 0, skirtH] },
           { plane: 'XY', origin: [0, 0, t] },

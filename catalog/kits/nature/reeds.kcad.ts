@@ -48,7 +48,7 @@ for (let i = 0; i < n; i++) {
   const x = d * Math.cos(rad(az));
   const y = d * Math.sin(rad(az));
   const r0 = h * 0.008;
-  const place = (s: any) => s.rotateY(lean).rotateZ(az).translate(x, y, h * 0.02);
+  const place = (s: ReturnType<typeof box>) => s.rotateY(lean).rotateZ(az).translate(x, y, h * 0.02);
   reeds.part(`stalk-${i + 1}`, place(ngon(r0, 3).loft(ngon(r0 * 0.25, 3), { spacing: len, ruled: true })).color(stalk));
   if (i % 2 === 0) {
     const hr = r0 * 2.4;
