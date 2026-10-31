@@ -13,6 +13,7 @@ import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occt
 import { fuseWithHistory, intersectWithHistory } from '../../../../src/kernel/backends/occt/historyAwareBooleans';
 import {
   booleanRecoveryDiagnostic,
+  isTopologicallyValid,
   isValidShape,
   plausibleBooleanVolume,
   scaledFuzzyValue,
@@ -28,7 +29,7 @@ const tangentCylinder = () => OcctBackend.cylinder(30, 5).rotate([1, 0, 0], 1e-5
 const EXPECTED_FUSE = 8000 + Math.PI * 25 * 10;
 
 /** The historical, exact-only boolean — the failure being fixed. */
-function exactFuse(a: OcctBackend, b: OcctBackend): { valid: boolean; warned: boolean; volume: number } {
+function exactFuse(a: OcctBackend, b: OcctBackend): { valid: boolean; topoValid: boolean; warned: boolean; volume: number } {
    
   const o = getOC() as any;
   const builder = new o.BRepAlgoAPI_Fuse_1();
@@ -44,6 +45,7 @@ function exactFuse(a: OcctBackend, b: OcctBackend): { valid: boolean; warned: bo
   builder.Build(progress);
   const out = {
     valid: isValidShape(o, builder.Shape()),
+    topoValid: isTopologicallyValid(o, builder.Shape()),
     warned: builder.HasWarnings() as boolean,
     volume: volumeOf(o, builder.Shape()),
   };
@@ -58,6 +60,10 @@ describe('boolean recovery (fuzzy retry)', () => {
     const r = exactFuse(cube(), tangentCylinder());
     expect(r.warned).toBe(true);
     expect(r.valid).toBe(false);
+    // The cheap topology-only check catches the same invalid result, so an
+    // exact boolean that leaves an unorientable face is recovered even when
+    // OCCT raised no warning flag.
+    expect(r.topoValid).toBe(false);
     // 8000 + the WHOLE cylinder (2356.2) — the overlap was never removed.
     expect(r.volume).toBeCloseTo(8000 + Math.PI * 25 * 30, 0);
   });

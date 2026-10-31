@@ -223,6 +223,12 @@ or material left on the bore axis fails the feature with
 `top`, `front` and `right`, profile y runs along hole `v`. On `bottom`, `back`
 and `left`, profile y runs the opposite way (-Y or -Z).
 
+For `cutout(..., { depth: 'through' })`, the profile is cut through all
+material in the inward direction, including material beyond an internal
+recess. This differs from a drilled `hole` with `depth: 'through'`, which
+stops at the first exit along its axis. Use a numeric cutout depth for a blind
+pocket, and inspect the result when the part has internal cavities.
+
 Created refs emitted per feature kind (resolvable via `{ face: '<name>' }`):
 
 | Ref | Emitted when |
@@ -365,6 +371,8 @@ const holeWall = kc.q.face(kc.q.derivedFrom(cutter.id));
 ```
 
 `@kcq[face(newSince("box_1"))]` and `@kcq[edge(derivedFrom("fillet_1"))]` are the string form. `moveFaces` / `offsetFaces` accept these selectors.
+
+A plain FaceQuery handed to `moveFaces` / `offsetFaces` is a **set** selector: `{ byNormal: 'X' }` moves every +X-facing face, not just the first match (`near` is the one exception — it means the closest face). In a multi-face selection a face that cannot slide is left unchanged and reported as `feature.face-edit.skipped`; select it on its own or build that part as a boolean.
 
 ### Authoring sugar — `q` and `kc.q` inside a `.kcad.ts` script
 

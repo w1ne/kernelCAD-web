@@ -14,10 +14,12 @@
 // See README.md in this directory for the options and full-run commands.
 
 import { execFile, execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { AnthropicAgentClient } from '../../agent';
 import { OpenAICompatAgentClient } from '../../agentOpenAICompat';
+import { ChatGPTPlanAgentClient } from '../../chatgptPlanAgent';
+import { chatgptTokenProvider } from './chatgptCredentials';
 import { buildSystemPrompt, SWEEP_SKILLS } from '../../lib/systemPrompt';
 import { isKernelcadAvailable } from '../../oracle/kernelcad-client';
 import { MODEL as DEFAULT_MODEL } from '../../run';
@@ -27,6 +29,7 @@ import { runAll, type PipelineConfig, type Prices } from './pipeline';
 import { renderSummaryMarkdown, summarize } from './report';
 import { writeTaskState, type TaskState } from './state';
 import { buildSubmissionZip, candidatePath, hasCandidate } from './submission';
+import { assertRunIdentity, buildRunIdentity, identifyCli } from './runIdentity';
 
 export interface CliOptions {
   selection: TaskSelection;
@@ -34,16 +37,23 @@ export interface CliOptions {
   workers: number;
   model: string;
   baseUrl?: string;
+  chatgptPlanDir?: string;
   apiKeyEnv: string;
   noLlm: boolean;
+  visualReview: boolean;
   scriptsFrom?: string;
   maxAttempts: number;
   maxTokens: number;
   temperature?: number;
+  /** Sampling seed recorded with the run and forwarded to OpenAI-compatible endpoints. */
+  seed?: number;
   editFallback: 'none' | 'passthrough';
   keepInvalid: boolean;
   retryFailed: boolean;
   officialCheck: boolean;
+  /** `auto` blocks a valid edit that does not change the requested feature;
+   *  `off` submits the best valid candidate regardless of the edit verdict. */
+  editPromotion: 'auto' | 'off';
   python?: string;
   prices?: Prices;
   revision: string;
@@ -79,6 +89,8 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     selection.editing = int('--editing', 0, 0);
   }
 
+  if (has('--chatgpt-plan-dir') && !value('--model')) throw new Error('--chatgpt-plan-dir requires an account-supported --model');
+  if (has('--chatgpt-plan-dir') && (has('--no-llm') || has('--scripts-from') || has('--temperature'))) throw new Error('--chatgpt-plan-dir cannot be combined with --no-llm, --scripts-from, or --temperature');
   const model = value('--model') ?? DEFAULT_MODEL;
   const slug = model.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+$/, '').replace('T', '-');
@@ -87,6 +99,10 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
   const editFallback = value('--edit-fallback') ?? 'none';
   if (editFallback !== 'none' && editFallback !== 'passthrough') {
     throw new Error(`--edit-fallback must be 'none' or 'passthrough', got ${editFallback}`);
+  }
+  const editPromotion = value('--edit-promotion') ?? 'auto';
+  if (editPromotion !== 'auto' && editPromotion !== 'off') {
+    throw new Error(`--edit-promotion must be 'auto' or 'off', got ${editPromotion}`);
   }
   const priceIn = num('--price-in');
   const priceOut = num('--price-out');
@@ -102,13 +118,17 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     workers: int('--workers', 2),
     model,
     baseUrl: value('--base-url'),
+    chatgptPlanDir: value('--chatgpt-plan-dir') ? resolve(value('--chatgpt-plan-dir')!) : undefined,
     apiKeyEnv: value('--api-key-env') ?? (value('--base-url') ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY'),
     noLlm: has('--no-llm'),
+    visualReview: has('--visual-review'),
     scriptsFrom: value('--scripts-from') ? resolve(value('--scripts-from')!) : undefined,
     maxAttempts: int('--max-attempts', 3),
     maxTokens: int('--max-tokens', 16000),
     temperature: num('--temperature'),
+    seed: num('--seed'),
     editFallback,
+    editPromotion,
     keepInvalid: has('--keep-invalid'),
     retryFailed: has('--retry-failed'),
     officialCheck: has('--official-check'),
@@ -129,10 +149,34 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
 
 function makeAgent(opts: CliOptions, env: NodeJS.ProcessEnv): AgentClient | null {
   if (opts.noLlm || opts.scriptsFrom) return null;
+  if (opts.chatgptPlanDir) {
+    if (opts.baseUrl) throw new Error('--chatgpt-plan-dir cannot be combined with --base-url');
+    if (!existsSync(join(opts.chatgptPlanDir, 'credentials.json'))) throw new Error('ChatGPT plan credentials not found; complete sign-in first');
+    return new ChatGPTPlanAgentClient({token:chatgptTokenProvider(opts.chatgptPlanDir)});
+  }
   const key = env[opts.apiKeyEnv];
   if (!key) return null;
   return opts.baseUrl
-    ? new OpenAICompatAgentClient({ baseUrl: opts.baseUrl, apiKey: key })
+    ? new OpenAICompatAgentClient({
+        baseUrl: opts.baseUrl,
+        apiKey: key,
+        ...(opts.seed !== undefined ? { seed: opts.seed } : {}),
+        ...(env.CADGENBENCH_SESSION_ID ? { sessionId: env.CADGENBENCH_SESSION_ID } : {}),
+        ...(env.CADGENBENCH_USER_AGENT ? { userAgent: env.CADGENBENCH_USER_AGENT } : {}),
+        ...(env.OPENCODE_ORG_ID ?? env.CADGENBENCH_ORG_ID
+          ? { orgId: (env.OPENCODE_ORG_ID ?? env.CADGENBENCH_ORG_ID)! }
+          : {}),
+        // Transport failures say nothing about the model; back off and retry
+        // instead of losing the task. The run still records a final failure as
+        // infra_error (and reruns it on resume).
+        retryBaseMs: env.CADGENBENCH_RETRY_BASE_MS ? Number(env.CADGENBENCH_RETRY_BASE_MS) : 2000,
+        retryMaxMs: env.CADGENBENCH_RETRY_MAX_MS ? Number(env.CADGENBENCH_RETRY_MAX_MS) : 60000,
+        maxRetries: env.CADGENBENCH_MAX_RETRIES ? Number(env.CADGENBENCH_MAX_RETRIES) : 7,
+        onRetry: (info) =>
+          console.error(
+            `[transport] retry ${info.attempt} in ${Math.round(info.delayMs)} ms — ${info.reason.slice(0, 160)}`,
+          ),
+      })
     : new AnthropicAgentClient(key);
 }
 
@@ -195,6 +239,7 @@ async function main(): Promise<void> {
 
   // 2. Producer.
   const agent = makeAgent(opts, env);
+  if (opts.visualReview && !agent) throw new Error('--visual-review requires an LLM connection; it cannot run in --no-llm or --scripts-from mode.');
   const mode: TaskState['mode'] = opts.scriptsFrom ? 'scripts-from' : agent ? 'llm' : 'passthrough';
   if (!agent && !opts.scriptsFrom) {
     log(
@@ -203,33 +248,82 @@ async function main(): Promise<void> {
         : `${opts.apiKeyEnv} is not set: generation tasks are recorded as needs_key; editing tasks submit the unchanged input.`,
     );
   }
+  const skillMd = agent ? buildSystemPrompt(SWEEP_SKILLS) : '';
+  const sourceRevision = gitSha();
+  const cli = identifyCli(env, process.cwd());
+  const officialCache = new Map<string, { valid: boolean; detail?: string }>();
+  /** One STEP through the benchmark's own gate, cached by content identity. */
+  const checkOfficial = async (path: string) => {
+    try {
+      const st = statSync(path);
+      const key = `${path}|${st.size}|${st.mtimeMs}`;
+      const cached = officialCache.get(key);
+      if (cached) return cached;
+      const rows = await officialGate(opts.python!, [path]);
+      const row = rows.get(path);
+      if (!row) return undefined;
+      const verdict = {
+        valid: row.valid,
+        detail: row.valid ? 'pass' : row.errors.slice(0, 3).join('; '),
+      };
+      officialCache.set(key, verdict);
+      return verdict;
+    } catch (e) {
+      log(`official gate failed for ${path}: ${e instanceof Error ? e.message : String(e)}`);
+      return undefined;
+    }
+  };
+  const identity = buildRunIdentity(tasks, {
+    revision, mode, model: agent ? opts.model : null, baseUrl: opts.chatgptPlanDir ? 'https://api.openai.com/v1/responses (ChatGPT plan)' : opts.baseUrl ?? null,
+    gitSha: sourceRevision, maxAttempts: opts.maxAttempts, maxTokens: opts.maxTokens,
+    temperature: opts.temperature ?? null, seed: opts.seed ?? null, editFallback: opts.editFallback,
+    editPromotion: opts.editPromotion, officialCheck: opts.officialCheck,
+    keepInvalid: opts.keepInvalid, visualReview: opts.visualReview, skillMd, scriptsFrom: opts.scriptsFrom ?? null, cli,
+  });
+  const runFile = join(opts.runDir, 'run.json');
+  if (existsSync(runFile)) {
+    const previous = JSON.parse(readFileSync(runFile, 'utf8')) as { identity?: unknown };
+    assertRunIdentity(previous.identity, identity);
+  } else if (existsSync(join(opts.runDir, 'tasks')) || existsSync(join(opts.runDir, 'submission'))) {
+    assertRunIdentity(undefined, identity);
+  }
   mkdirSync(opts.runDir, { recursive: true });
   const envelope = {
     benchmark: 'CADGenBench',
     dataset: { repo: 'HuggingAI4Engineering/cadgenbench-data', revision, license: 'ODC-BY-1.0', dir: dataDir },
     mode,
     model: agent ? opts.model : null,
-    baseUrl: opts.baseUrl ?? null,
-    gitSha: gitSha(),
+    baseUrl: opts.chatgptPlanDir ? 'https://api.openai.com/v1/responses (ChatGPT plan)' : opts.baseUrl ?? null,
+    gitSha: sourceRevision,
+    cli,
+    identity,
     maxAttempts: opts.maxAttempts,
     maxTokens: opts.maxTokens,
+    temperature: opts.temperature ?? null,
+    seed: opts.seed ?? null,
+    editPromotion: opts.editPromotion,
+    officialCheck: opts.officialCheck,
+    visualReview: opts.visualReview,
     editFallback: opts.editFallback,
     workers: opts.workers,
     tasks: tasks.map((t) => t.id),
     startedAt: new Date().toISOString(),
   };
-  writeFileSync(join(opts.runDir, 'run.json'), JSON.stringify(envelope, null, 2) + '\n');
+  writeFileSync(runFile, JSON.stringify(envelope, null, 2) + '\n');
 
   const cfg: PipelineConfig = {
     runDir: opts.runDir,
     agent,
     model: opts.model,
-    skillMd: agent ? buildSystemPrompt(SWEEP_SKILLS) : '',
+    skillMd,
     maxAttempts: opts.maxAttempts,
     maxTokens: opts.maxTokens,
+    visualReview: opts.visualReview,
     ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
     ...(opts.scriptsFrom ? { scriptsFrom: opts.scriptsFrom } : {}),
     editFallback: opts.editFallback,
+    editPromotion: opts.editPromotion,
+    ...(opts.officialCheck ? { official: checkOfficial } : {}),
     keepInvalid: opts.keepInvalid,
     ...(opts.prices ? { prices: opts.prices } : {}),
     log,

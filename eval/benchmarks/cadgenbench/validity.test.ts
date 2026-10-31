@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import * as replicad from 'replicad';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { checkStepValidity, deflectionForDiagonal, meshManifoldErrors } from './validity';
+import { checkStepValidity, deflectionForDiagonal, gateMeshDeflections, meshManifoldErrors } from './validity';
 
 // Closed tetrahedron, outward-consistent winding.
 const TET = {
@@ -40,6 +40,15 @@ describe('deflectionForDiagonal', () => {
   });
 });
 
+describe('gateMeshDeflections', () => {
+  it('mirrors the grader ladder: requested, /4, /16, /32', () => {
+    expect(gateMeshDeflections(100)).toEqual([0.1, 0.025, 0.00625, 0.003125]);
+    const clamped = gateMeshDeflections(10_000);
+    expect(clamped[0]).toBe(0.5);
+    expect(clamped[3]).toBeCloseTo(0.5 / 32);
+  });
+});
+
 describe('checkStepValidity', () => {
   let dir: string;
   const writeStep = async (name: string, shape: replicad.AnyShape): Promise<string> => {
@@ -60,6 +69,10 @@ describe('checkStepValidity', () => {
     expect(v.errors).toEqual([]);
     expect(v).toMatchObject({ valid: true, solidCount: 1, shellCount: 1, brepValid: true, watertight: true, meshManifold: true });
     expect(v.triangleCount).toBeGreaterThan(0);
+    expect(v.extentsMm?.[0]).toBeCloseTo(20, 1);
+    expect(v.extentsMm?.[1]).toBeCloseTo(10, 1);
+    expect(v.extentsMm?.[2]).toBeCloseTo(5, 1);
+    expect(v.volumeMm3).toBeGreaterThan(0);
   });
 
   it('fails an open shell (a box with one face missing)', async () => {

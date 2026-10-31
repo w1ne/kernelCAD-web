@@ -23,14 +23,17 @@ import type { FaceHash, EdgeHash, HistoryMap } from '../../naming/evolutionRecor
 import {
   combinedDiagonal,
   isValidShape,
+  isTopologicallyValid,
   plausibleBooleanVolume,
   recoveryPlans,
   rematchSubshapes,
+  scaledFuzzyValue,
   shapeFix,
   volumeOf,
   type BooleanAttemptPlan,
   type BooleanStrategy,
 } from './booleanRecovery';
+import { nearCoincidentGap } from './nearCoincidentFaces';
 
 export type { BooleanStrategy } from './booleanRecovery';
 
@@ -235,8 +238,12 @@ export function booleanShapesWithHistory(
 ): BooleanHistoryResult {
   const oc = getOC();
   const inputs = [bodyShape, ...toolShapes];
+  const merged = mergeNearCoincidentCylinders(oc, op, bodyShape, toolShapes, inputs);
+  if (merged) return merged;
   const exact = attemptBoolean(oc, op, inputs, EXACT_PLAN, []);
-  if (exact.ok) return exact.result;
+  const recovered = op === 'fuse' && exact.ok ? recoverLostFuseMaterial(oc, inputs, exact.result.shape) : undefined;
+  if (recovered) return recovered;
+  if (exact.ok) return (op === 'fuse' && mergeUnmergedFuse(oc, inputs, exact.result)) || exact.result;
 
   const inputVolumes = inputs.map((s) => volumeOf(oc, s));
   for (const plan of recoveryPlans(op, combinedDiagonal(oc, inputs))) {
@@ -249,6 +256,214 @@ export function booleanShapesWithHistory(
   }
   if (exact.fallback) return exact.fallback;
   throw new Error(`${exact.error} Fuzzy-boolean retries (scaled fuzzy value, coarse fuzzy${op === 'fuse' ? ', glue' : ''}) also failed.`);
+}
+
+/**
+ * A fuse of overlapping or touching operands must return ONE connected body.
+ * OCCT's exact general fuse can silently leave a partially merged compound (no
+ * warning, valid topology): the usual trigger is a tool that is
+ * coincident/tangent to a healed import's cylindrical faces. The compound
+ * still passes BRepCheck and the volume stays inside the fuse bounds, so
+ * nothing downstream notices until the edit turns out to be a no-op. Retry the
+ * fuzzy ladder and keep the first attempt that merges more of the operands;
+ * undefined keeps the exact result.
+ */
+function mergeUnmergedFuse(
+  oc: ReturnType<typeof getOC>,
+  inputs: readonly unknown[],
+  exact: BooleanHistoryResult,
+): BooleanHistoryResult | undefined {
+  if (!fuseLeftUnmerged(oc, inputs, exact.shape)) return undefined;
+  const exactSolids = solidCount(oc, exact.shape);
+  const inputVolumes = inputs.map((s) => volumeOf(oc, s));
+  for (const plan of recoveryPlans('fuse', combinedDiagonal(oc, inputs))) {
+    const retry = attemptBoolean(oc, 'fuse', inputs, plan, inputVolumes);
+    if (!retry.ok) continue;
+    const retrySolids = solidCount(oc, retry.result.shape);
+    if (retrySolids < exactSolids) {
+      freeShape(exact.shape);
+      return {
+        ...retry.result,
+        exactFailure: `fuse left ${exactSolids} separate solids; ${plan.strategy} merged them into ${retrySolids}`,
+      };
+    }
+    freeShape(retry.result.shape);
+  }
+  return undefined;
+}
+
+/**
+ * A tool cylinder microns off a body cylinder of the same radius gives an
+ * exact result that passes BRepCheck but meshes with cracks. Run the boolean
+ * with a fuzzy value covering the gap so the two are one surface. Undefined
+ * when nothing is near-coincident or that attempt is rejected (the caller
+ * then runs the exact ladder).
+ */
+function mergeNearCoincidentCylinders(
+  oc: ReturnType<typeof getOC>,
+  op: BooleanOp,
+  bodyShape: unknown,
+  toolShapes: readonly unknown[],
+  inputs: readonly unknown[],
+): BooleanHistoryResult | undefined {
+  const nearGap = nearCoincidentGap(oc, bodyShape, toolShapes);
+  if (nearGap === undefined) return undefined;
+  const inputVolumes = inputs.map((s) => volumeOf(oc, s));
+  const fuzzy = Math.max(scaledFuzzyValue(combinedDiagonal(oc, inputs)), nearGap * 2);
+  const near = attemptBoolean(oc, op, inputs, { strategy: 'fuzzy', fuzzy, glue: false }, inputVolumes);
+  if (!near.ok) return undefined;
+  if (op === 'fuse' && fuseLostMaterial(oc, inputs, near.result.shape)) {
+    freeShape(near.result.shape);
+    return undefined;
+  }
+  return {
+    ...near.result,
+    exactFailure: `a tool cylinder is ${nearGap.toPrecision(2)} mm off a body cylinder of the same radius (the same cylinder up to rounding); ` +
+      'the exact boolean leaves cracks there, so the two were merged as one surface',
+  };
+}
+
+/**
+ * A union can never be smaller than its largest operand. OCCT's exact fuse of
+ * a healed import with a near-concentric filleted tool returned an EMPTY shape
+ * with no warning, which then exported as an empty STEP (CADGenBench 248).
+ * When the exact result lost material, free it and retry the fuzzy ladder;
+ * throw if no retry is plausible instead of handing on a body that lost
+ * material. Undefined when the exact result is fine.
+ */
+function recoverLostFuseMaterial(
+  oc: ReturnType<typeof getOC>,
+  inputs: readonly unknown[],
+  exactShape: unknown,
+): BooleanHistoryResult | undefined {
+  const lost = fuseLostMaterial(oc, inputs, exactShape);
+  if (!lost) return undefined;
+  freeShape(exactShape);
+  const inputVolumes = inputs.map((s) => volumeOf(oc, s));
+  const shortfall = `the result (${lost.resultVolume.toPrecision(6)} mm³) is smaller than its largest operand (${lost.largestSolid.toPrecision(6)} mm³)`;
+  for (const plan of recoveryPlans('fuse', combinedDiagonal(oc, inputs))) {
+    const retry = attemptBoolean(oc, 'fuse', inputs, plan, inputVolumes);
+    if (retry.ok && !fuseLostMaterial(oc, inputs, retry.result.shape)) {
+      return { ...retry.result, exactFailure: `exact fuse lost material: ${shortfall}` };
+    }
+    if (retry.ok) freeShape(retry.result.shape);
+  }
+  throw new Error(
+    `historyAwareBooleans: fuse lost material — ${shortfall}, and the fuzzy retries did not produce a plausible union. ` +
+      'The usual cause is a tool face a few hundredths of a millimetre from, and concentric with, a body face: offset it by 0.1 mm or more, or let it overlap clearly.',
+  );
+}
+
+/** Solids in a shape (1 for a plain solid, N for a compound). */
+function solidCount(oc: ReturnType<typeof getOC>, shape: unknown): number {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const o = oc as any;
+  let n = 0;
+  const exp = new o.TopExp_Explorer_2(shape, o.TopAbs_ShapeEnum.TopAbs_SOLID, o.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  try {
+    while (exp.More()) {
+      n++;
+      exp.Next();
+    }
+  } finally {
+    exp.delete();
+  }
+  return n;
+}
+
+/** True when two operand boxes overlap or touch on every axis. */
+function boxesTouch(oc: ReturnType<typeof getOC>, a: unknown, b: unknown): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const o = oc as any;
+  const box = (shape: unknown) => {
+    const bnd = new o.Bnd_Box_1();
+    try {
+      o.BRepBndLib.Add(shape, bnd, false);
+      if (bnd.IsVoid()) return undefined;
+      const lo = bnd.CornerMin();
+      const hi = bnd.CornerMax();
+      const out = [
+        [lo.X(), lo.Y(), lo.Z()],
+        [hi.X(), hi.Y(), hi.Z()],
+      ] as const;
+      lo.delete();
+      hi.delete();
+      return out;
+    } finally {
+      bnd.delete();
+    }
+  };
+  const A = box(a);
+  const B = box(b);
+  if (!A || !B) return false;
+  for (let k = 0; k < 3; k++) {
+    if (Math.min(A[1][k], B[1][k]) < Math.max(A[0][k], B[0][k]) - 1e-6) return false;
+  }
+  return true;
+}
+
+/**
+ * A fuse result with no solid, or with less volume than the largest single
+ * solid among its operands, dropped material: a union contains each operand.
+ * Solids are measured one by one, so an operand compound of overlapping
+ * solids is not double-counted. Unmeasurable (NaN) volumes are not judged.
+ * Returns the measurements when material was lost, else undefined. Exported
+ * for the regression test.
+ */
+export function fuseLostMaterial(
+  oc: ReturnType<typeof getOC>,
+  inputs: readonly unknown[],
+  resultShape: unknown,
+): { resultVolume: number; largestSolid: number } | undefined {
+  let largestSolid = 0;
+  for (const input of inputs) {
+    for (const solid of solidsOf(oc, input)) {
+      const v = volumeOf(oc, solid);
+      if (!Number.isFinite(v)) return undefined;
+      largestSolid = Math.max(largestSolid, v);
+    }
+  }
+  if (!(largestSolid > 0)) return undefined;
+  const resultVolume = solidCount(oc, resultShape) === 0 ? 0 : volumeOf(oc, resultShape);
+  if (!Number.isFinite(resultVolume)) return undefined;
+  return resultVolume < largestSolid - Math.max(1e-6, largestSolid * 1e-4) ? { resultVolume, largestSolid } : undefined;
+}
+
+/** The solids of a shape (the shape itself for a plain solid). */
+function solidsOf(oc: ReturnType<typeof getOC>, shape: unknown): unknown[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const o = oc as any;
+  const out: unknown[] = [];
+  const exp = new o.TopExp_Explorer_2(shape, o.TopAbs_ShapeEnum.TopAbs_SOLID, o.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  try {
+    while (exp.More()) {
+      out.push(exp.Current());
+      exp.Next();
+    }
+  } finally {
+    exp.delete();
+  }
+  return out;
+}
+
+/**
+ * A fuse that produced several solids while its operands overlap or touch is
+ * a partial merge, not a valid union result. Disjoint operands are left alone:
+ * their union is reported by the union-integrity guard, and no fuzzy value can
+ * legitimately connect them. Exported for the regression test.
+ */
+export function fuseLeftUnmerged(
+  oc: ReturnType<typeof getOC>,
+  inputs: readonly unknown[],
+  resultShape: unknown,
+): boolean {
+  if (inputs.length < 2 || solidCount(oc, resultShape) <= 1) return false;
+  for (let i = 0; i < inputs.length; i++) {
+    for (let j = i + 1; j < inputs.length; j++) {
+      if (boxesTouch(oc, inputs[i], inputs[j])) return true;
+    }
+  }
+  return false;
 }
 
 /** Build one boolean with `plan` and judge its result. */
@@ -309,6 +524,17 @@ function judgeExact(
   result: BooleanHistoryResult,
 ): AttemptOutcome {
   const warned = typeof builder.HasWarnings === 'function' && builder.HasWarnings();
+  // A coincident/tangent-face boolean can return an unorientable face with no
+  // builder warning. Catch that cheaply (topology only) so the recovery ladder
+  // gets a chance to repair it; the full geometry check still gates recovered
+  // candidates and warned exact results.
+  if (!isTopologicallyValid(oc, result.shape)) {
+    return {
+      ok: false,
+      error: `historyAwareBooleans: ${op} exact boolean produced an invalid solid (topology check).`,
+      fallback: result,
+    };
+  }
   if (!warned || isValidShape(oc, result.shape)) return { ok: true, result };
   return {
     ok: false,

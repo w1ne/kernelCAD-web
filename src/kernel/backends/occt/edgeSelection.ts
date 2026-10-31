@@ -58,6 +58,7 @@ import {
   resolveFaceQueryRef,
   resolveFromMetadataHit,
   resolveQueryDslFace,
+  resolveQueryDslFaces,
 } from './faceSelectionPhases';
 import type { QueryDslFaceRef } from './faceSelectionPhases';
 
@@ -656,6 +657,51 @@ export function pickFace(
   const result = resolveFace(record, base, records);
   if (!('error' in result)) reportBinding(record, base, 'face', [result]);
   return result;
+}
+
+/**
+ * Every face a FaceRef names. A FaceQuery is a set selector — `{ byNormal: 'X' }`
+ * is every +X-facing face — so a face edit can move all of them instead of
+ * silently taking the first match. `near` is the one positional filter that
+ * means "the closest face", so it still resolves to exactly one; every other
+ * ref kind (canonical name, label, created, tracked) names one face.
+ */
+export function resolveFaceRefFaces(
+  record: FeatureRecord,
+  base: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+): Face[] | { error: CompilerDiagnostic } {
+  const faceRef = record.inputs.face;
+  if (faceRef?.kind === 'face') {
+    if (faceRef.ref.kind === 'queryDsl') {
+      const all = resolveQueryDslFaces(record, base, faceRef.ref, records);
+      if ('error' in all) return all;
+      reportBinding(record, base, 'face', all);
+      return all;
+    }
+    if (faceRef.ref.kind === 'query') {
+      const faces = resolveFaceQuery(base, faceRef.ref.query);
+      if (faces.length === 0) {
+        return {
+          error: {
+            target: 'export-occt',
+            code: 'feature.selection.no-match',
+            featureId: record.id,
+            severity: 'error',
+            message: `Face query matched zero faces on the input shape.`,
+            hint: 'Inspect available faces with list_faces, or relax the FaceQuery.',
+          },
+        };
+      }
+      const selected = faceRef.ref.query.near !== undefined ? [faces[0]] : faces;
+      reportBinding(record, base, 'face', selected);
+      return selected;
+    }
+  }
+  const one = resolveFace(record, base, records);
+  if ('error' in one) return one;
+  reportBinding(record, base, 'face', [one]);
+  return [one];
 }
 
 function resolveFace(
