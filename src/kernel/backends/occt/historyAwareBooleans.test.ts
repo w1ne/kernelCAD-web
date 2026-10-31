@@ -65,6 +65,28 @@ describe('fuseLeftUnmerged', () => {
     expect(fuseLeftUnmerged(getOC(), [bodyW, toolW], wrapped(unfusedCompound(body, tool)))).toBe(false);
   });
 
+  it('accepts a fuse into one solid of a multi-solid body (the other solid stays apart)', () => {
+    // A clevis parent is a fork plus a separate pin: a tool that merges with
+    // the fork leaves two solids, and that is the full merge.
+    const fork = OcctBackend.box(20, 12, 8, true);
+    const pin = OcctBackend.box(4, 4, 4, true).translate(0, 40, 0);
+    const body = unfusedCompound(fork, pin);
+    const tool = OcctBackend.box(10, 12, 8, true).translate(14, 0, 0);
+    const merged = unfusedCompound(fork.union(tool), pin);
+    expect(fuseLeftUnmerged(getOC(), [wrapped(body), wrapped(tool)], wrapped(merged))).toBe(false);
+  });
+
+  it('still flags a multi-solid body whose touching tool stayed apart', () => {
+    const fork = OcctBackend.box(20, 12, 8, true);
+    const pin = OcctBackend.box(4, 4, 4, true).translate(0, 40, 0);
+    const body = unfusedCompound(fork, pin);
+    const tool = OcctBackend.box(10, 12, 8, true).translate(14, 0, 0);
+    const partial = new OcctBackend(
+      makeCompound([fork.clone().getReplicadShape(), pin.clone().getReplicadShape(), tool.clone().getReplicadShape()]) as never,
+    );
+    expect(fuseLeftUnmerged(getOC(), [wrapped(body), wrapped(tool)], wrapped(partial))).toBe(true);
+  });
+
   it('flags a compound of overlapping operands as a partial merge', () => {
     const body = OcctBackend.box(20, 12, 8, true);
     const tool = OcctBackend.box(10, 12, 8, true).translate(14, 0, 0);

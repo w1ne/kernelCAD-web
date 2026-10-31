@@ -54,7 +54,7 @@
   "src/modeling/capture/proxy.ts": 12,
   "src/modeling/capture/proxyDerivedSketch.ts": 3,
   "src/modeling/capture/proxyMaterial.ts": 8,
-  "src/modeling/capture/sketch.ts": 21,
+  "src/modeling/capture/sketch.ts": 18,
   "src/modeling/capture/sketchTangency.ts": 8,
   "src/modeling/capture/solvedKinematics.ts": 5,
   "src/modeling/capture/surfaceProxy.ts": 2,

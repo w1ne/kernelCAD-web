@@ -27,11 +27,31 @@ describe('path().circle(cx, cy, r)', () => {
     });
     expect(m.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
     expect(m.tailShape).toBeDefined();
-    // A 48-gon approximation of r=5, h=10 — area = (n/2) r^2 sin(2π/n) ≈ 78.31
-    // for n=48, so volume ≈ 783. Allow ±2% for polygon error.
+    // The default circle is exact: π · 25 · 10 ≈ 785.40.
     const v = m.tailShape!.volume();
-    expect(v).toBeGreaterThan(770);
-    expect(v).toBeLessThan(800);
+    expect(v).toBeCloseTo(Math.PI * 25 * 10, 3);
+  });
+
+  it('revolves the default (exact) circle into a true torus with few faces', async () => {
+    const m = await buildModel({
+      fileName: 'path-circle-ring.kcad.ts',
+      code: `return path().circle(7, 0, 0.55).revolve();`,
+    });
+    expect(m.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    // 2π² R r² — a 48-gon gave 48 faces, each making later booleans slower.
+    expect(m.tailShape!.volume()).toBeCloseTo(2 * Math.PI ** 2 * 7 * 0.55 ** 2, 3);
+    expect(m.tailShape!.faceHashes().length).toBeLessThanOrEqual(2);
+  });
+
+  it('still builds a polygon when segments is given', async () => {
+    const m = await buildModel({
+      fileName: 'path-circle-48.kcad.ts',
+      code: `return path().circle(0, 0, 5, 48).extrude(10);`,
+    });
+    // 48-gon area = (n/2) r² sin(2π/n) ≈ 78.31, so volume ≈ 783.
+    const v = m.tailShape!.volume();
+    expect(v).toBeGreaterThan(780);
+    expect(v).toBeLessThan(785);
   });
 
   it('respects a higher segment count for finer approximation', async () => {
@@ -52,7 +72,7 @@ describe('path().circle(cx, cy, r)', () => {
     try { api.path().circle(0, 0, 0); }
     catch (e) {
       expect((e as KernelError).code).toBe('feature.invalid-args');
-      expect((e as KernelError).message).toMatch(/radius must be > 0/);
+      expect((e as KernelError).message).toMatch(/requires r > 0/);
     }
     expect(() => api.path().circle(0, 0, NaN)).toThrow(KernelError);
   });
@@ -64,7 +84,7 @@ describe('path().circle(cx, cy, r)', () => {
 
   it('rejects segments < 3', () => {
     const { api } = makeApi();
-    expect(() => api.path().circle(0, 0, 5, 2)).toThrow(/segments must be an integer >= 3/);
+    expect(() => api.path().circle(0, 0, 5, 2)).toThrow(/segments — got 2; requires an integer >= 3/);
   });
 });
 

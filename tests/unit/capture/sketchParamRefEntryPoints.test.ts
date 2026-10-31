@@ -98,7 +98,7 @@ describe('ParamRef in sketch entry points', () => {
 
     it('still rejects a non-positive radius, read through the param table', async () => {
       await expect(runScript({ code: `return path().circle(0, 0, param('r', -1)).extrude(1);`, fileName: 'bad.kcad.ts' }))
-        .rejects.toThrow(/radius must be > 0; got -1/);
+        .rejects.toThrow(/r — got -1; requires r > 0/);
     });
   });
 

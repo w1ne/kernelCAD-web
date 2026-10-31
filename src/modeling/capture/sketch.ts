@@ -11,18 +11,13 @@ import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { validateLoftSegmentedOptions } from './loftSegmentedOptions';
 import { helix as sampleHelix, helixOptionsFromSpec, helixRailSpecOf, type HelixRailSpec } from '../helix';
 import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
-import { type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
-import {
-  currentValue,
-  paramExpr,
-  paramFromExpr,
-  paramValue,
-  toParam,
-} from '../../shared/runtime/editableHelpers';
+import { type Editable } from '../../shared/runtime/paramRef';
+import { paramValue, toParam } from '../../shared/runtime/editableHelpers';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
 import type { Curve3D } from './curveProxy';
 import { type TangentEntity2D } from '../../shared/capture/tangency';
 import { reflectSketchCommands } from './sketchReflect';
+import { circleCommands } from './pathCircle';
 import { checkSweepSection } from './sweepSection';
 import { toNearSpec, validateTangentEntity } from './sketchTangency';
 import {
@@ -1259,14 +1254,16 @@ export class PathBuilder {
   }
 
   /**
-   * Author a closed circle at `(cx, cy)` of radius `r` as a polyline-
-   * approximated profile. Returns the resulting `Sketch` directly — there
-   * is no current pen position to reuse, and chaining further segments
-   * onto a circle would be ambiguous.
+   * Author a closed circle at `(cx, cy)` of radius `r`. Returns the
+   * resulting `Sketch` directly — there is no current pen position to reuse,
+   * and chaining further segments onto a circle would be ambiguous.
    *
-   * Implementation: emits `moveTo(cx + r, cy)` + N-1 `lineTo` segments
-   * around the circle + `close`. N=48 by default (good for revolves,
-   * extrusions, and silhouette work). Override `segments` for finer detail.
+   * Implementation: by default the circle is EXACT — `moveTo(cx + r, cy)` and
+   * two `threePointsArc` half circles — so a revolve gives one torus face and
+   * an extrude one cylinder face. Pass `segments` (an integer >= 3) to get a
+   * regular N-gon instead (N-1 `lineTo` + `close`); that was the old default
+   * of 48, which turned every revolved ring into 48 faces and made each later
+   * boolean against it many times slower.
    *
    * Surfaced 2× across Exp-B (eyebolt) and others: agents had to emit
    * trig in TS to build polyline circles because chained `sagittaArc`
@@ -1279,35 +1276,8 @@ export class PathBuilder {
    * re-evaluates when the param changes. `segments` is a plain integer — it
    * sets how many vertices exist, which cannot change after capture.
    */
-  circle(cx: Editable<number>, cy: Editable<number>, r: Editable<number>, segments: number = 48): Sketch {
-    const table = this.session.paramTable;
-    const cxv = currentValue(cx, table);
-    const cyv = currentValue(cy, table);
-    const rv = currentValue(r, table);
-    if (!Number.isFinite(cxv) || !Number.isFinite(cyv) || !Number.isFinite(rv)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `path.circle(cx, cy, r): all of cx (${cxv}), cy (${cyv}), r (${rv}) must be finite.`,
-        undefined,
-        'Pass finite numbers or numeric ParamRefs for cx, cy, r.',
-      );
-    }
-    if (rv <= 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `path.circle: radius must be > 0; got ${rv}.`,
-        undefined,
-        'Pass a positive radius.',
-      );
-    }
-    if (!Number.isInteger(segments) || segments < 3) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `path.circle: segments must be an integer >= 3; got ${segments}.`,
-        undefined,
-        'Pass a segment count >= 3. Defaults to 48; use higher for smoother revolves.',
-      );
-    }
+  circle(cx: Editable<number>, cy: Editable<number>, r: Editable<number>, segments?: number): Sketch {
+    const loop = circleCommands(cx, cy, r, segments, this.session.paramTable);
     if (this.commands.length > 0) {
       throw new KernelError(
         'feature.invalid-args',
@@ -1316,29 +1286,7 @@ export class PathBuilder {
         'Call path().circle(cx, cy, r) without prior moveTo / lineTo / etc.',
       );
     }
-    const cxE = paramExpr(toParam(cx, 'mm'));
-    const cyE = paramExpr(toParam(cy, 'mm'));
-    const rE = paramExpr(toParam(r, 'mm'));
-    // centre + r·k, with k = cos θ or sin θ a per-vertex constant. Literal-only
-    // inputs fold back to plain numbers, so a numeric circle captures exactly
-    // the record it always did.
-    const along = (c: ParamRefExpr, k: number): Param =>
-      paramFromExpr(
-        { kind: 'binop', op: '+', left: c, right: { kind: 'binop', op: '*', left: rE, right: { kind: 'lit', value: k } } },
-        'mm',
-      );
-    // Start at (cx + r, cy) and walk counterclockwise. Use lineTo for each
-    // chord; the final close() closes the loop.
-    this.commands.push({ kind: 'moveTo', x: along(cxE, 1), y: paramFromExpr(cyE, 'mm') });
-    for (let i = 1; i < segments; i++) {
-      const theta = (2 * Math.PI * i) / segments;
-      this.commands.push({
-        kind: 'lineTo',
-        x: along(cxE, Math.cos(theta)),
-        y: along(cyE, Math.sin(theta)),
-      });
-    }
-    this.commands.push({ kind: 'close' });
+    this.commands.push(...loop, { kind: 'close' });
     return this.session.createSketch({
       kind: 'sketch',
       inputs: {},
