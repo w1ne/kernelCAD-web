@@ -4,6 +4,7 @@ import type { CaptureSession } from './capture/captureSession';
 import { makePath } from './capture/sketch';
 import { helix, tagHelixRail, type HelixOptions } from './helix';
 import {
+  bindParamCoercion,
   makeParamRef,
   isParamRef,
   makeTypedParamRef,
@@ -119,5 +120,14 @@ function declareParam(
   }
   const type = typeof defaultValue === 'boolean' ? 'boolean' : 'number';
   session.paramTable.declare(name, type, defaultValue, meta);
-  return makeParamRef(name, type as 'number' | 'boolean', defaultValue) as ParamRef<number> | ParamRef<boolean>;
+  const ref = makeParamRef(name, type as 'number' | 'boolean', defaultValue) as ParamRef<number> | ParamRef<boolean>;
+  if (type === 'number') {
+    // Plain JS math on the ref (`w + 4`) reads the current value and marks
+    // the param, so edits to it re-run the script (see updateModelParams).
+    bindParamCoercion(ref, {
+      valueOf: (n) => session.paramTable.get(n).value as number,
+      noteCoerced: (n) => session.coercedParams.add(n),
+    });
+  }
+  return ref;
 }

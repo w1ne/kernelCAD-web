@@ -77,6 +77,10 @@ export interface BuiltModel {
    *  unstructured-bodies check) can read returned-variable names via the AST
    *  helpers without re-reading the file. */
   code?: string;
+  /** Rebuild this model from edited source with the same file, script dir
+   *  and API, reusing every feature the edit did not touch. A param edit to
+   *  a param the script used as a plain number goes through this. */
+  rebuildFromSource?: (code: string) => Promise<BuiltModel>;
 }
 
 export interface ParamUpdateEdit {
@@ -105,7 +109,8 @@ export async function buildModel(
   const kernel = resolveKernel(input.kernel);
   await initOcct();
   const run = await runScript(input, opts);
-  return builtModelFromRun(run, session => createLowerer(kernel, session), input.code);
+  const model = await builtModelFromRun(run, session => createLowerer(kernel, session), input.code);
+  return withRebuild(model, input, opts);
 }
 
 /**
@@ -219,7 +224,13 @@ export async function rebuildModelIncremental(
     gatedFeatureNames: session.gatedFeatureNames,
   });
 
-  return withSelectionDrift(prevModel.selections, assembleBuiltModel(session, run, result, warningsBefore, input.code));
+  const model = assembleBuiltModel(session, run, result, warningsBefore, input.code);
+  return withSelectionDrift(prevModel.selections, withRebuild(model, input, opts));
+}
+
+function withRebuild(model: BuiltModel, input: BuildModelInput, opts: RunScriptFacadeOptions | undefined): BuiltModel {
+  model.rebuildFromSource = (code) => rebuildModelIncremental(model, { ...input, code }, opts);
+  return model;
 }
 
 /** `next` with the drift of its selectors from `baseline` appended to its

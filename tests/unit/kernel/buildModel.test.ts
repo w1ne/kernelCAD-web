@@ -362,3 +362,49 @@ describe('rebuildModelIncremental', () => {
     }
   });
 });
+
+describe('updateModelParams on a param used as a plain number', () => {
+  const PLAIN_MATH = `
+    const w = param('w', 60, { min: 10, max: 200 });
+    const base = box(20, 20, 5).fillet(1);
+    const plate = box(w + 4, 30, 5).translate(0, 40, 0);
+    return base.union(plate);
+  `;
+  const extentX = (m: { rootShape?: { boundingBox: (o: { exact: boolean }) => { min: number[]; max: number[] } } }) => {
+    const b = m.rootShape!.boundingBox({ exact: true });
+    return b.max[0] - b.min[0];
+  };
+
+  it('rebuilds from the edited source, re-lowering only what reads the param', async () => {
+    const model = await buildModel({ fileName: 'plain.kcad.ts', code: PLAIN_MATH });
+    expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    expect([...model.session.coercedParams]).toEqual(['w']);
+    expect(extentX(model)).toBeCloseTo(64, 6);
+    const [baseId] = model.records.filter(r => r.kind === 'box').map(r => r.id);
+    const [filletId] = model.records.filter(r => r.kind === 'fillet').map(r => r.id);
+
+    const { loweredIds, restore } = instrumentLoweredIds();
+    try {
+      const { model: updated, result } = await updateModelParams(model, [{ name: 'w', value: 100 }]);
+      expect(updated).toBe(model);
+      expect(extentX(model)).toBeCloseTo(104, 6);
+      expect(model.session.paramTable.get('w').value).toBe(100);
+      expect(model.code).toContain("param('w', 100");
+      expect(loweredIds.has(baseId)).toBe(false);
+      expect(loweredIds.has(filletId)).toBe(false);
+      expect(result.skipped).toEqual(expect.arrayContaining([baseId, filletId]));
+      expect(result.relowered.length).toBeGreaterThan(0);
+    } finally {
+      restore();
+    }
+
+    await updateModelParams(model, [{ name: 'w', value: 30 }]);
+    expect(extentX(model)).toBeCloseTo(34, 6);
+  });
+
+  it('still validates the range before rebuilding', async () => {
+    const model = await buildModel({ fileName: 'plain.kcad.ts', code: PLAIN_MATH });
+    await expect(updateModelParams(model, [{ name: 'w', value: 500 }])).rejects.toThrow(/above max 200/);
+    expect(extentX(model)).toBeCloseTo(64, 6);
+  });
+});

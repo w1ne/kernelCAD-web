@@ -18,6 +18,7 @@ import type { BuiltModel, BuiltModelParamUpdate, ParamUpdateEdit } from './build
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { KernelError } from '../shared/intent/kernelError';
 import { affectedFeatureIds } from './paramAffect';
+import { setParamValue } from './edits/setParamValue';
 import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
 import { stampFingerprint } from '../kernel/backends/occt/analysisMemo';
 import { featureFingerprints } from './warm/featureFingerprint';
@@ -79,6 +80,9 @@ export async function updateModelParams(
 ): Promise<BuiltModelParamUpdate> {
   const session = model.session;
   validateParamEdits(session, edits);
+  if (edits.some((edit) => session.coercedParams.has(edit.name))) {
+    return updateBySourceRewrite(model, edits);
+  }
   // Shapes in the cache still match the table. Captured before the edit so a
   // later failure can put the table back and a rigid placement has a baseline.
   captureBaseline(session, model.records);
@@ -89,6 +93,56 @@ export async function updateModelParams(
     restoreParamValues(session, saved);
     throw err;
   }
+}
+
+/**
+ * A param the script used as a plain number (`w + 4`) is baked into its
+ * captured records, so re-lowering against the edited table would leave
+ * those features stale. Instead: write the new defaults into the source,
+ * re-run the script and rebuild with dependency-aware reuse, so only the
+ * features whose inputs changed are lowered again. The model object is
+ * refreshed in place (callers hold it) and left untouched on failure.
+ */
+async function updateBySourceRewrite(model: BuiltModel, edits: ParamUpdateEdit[]): Promise<BuiltModelParamUpdate> {
+  const coerced = edits.filter((edit) => model.session.coercedParams.has(edit.name)).map((edit) => edit.name);
+  if (model.code === undefined || !model.rebuildFromSource) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `params.update: param(s) ${coerced.join(', ')} are used as plain numbers in the script, so an edit needs the script source to re-run, and this model has none.`,
+      undefined,
+      'invalid-args.param.js-arithmetic — rebuild the model from source (buildModel / evaluate_script) and edit the param there, or use the ParamRef methods (.add/.multiply/…) so the param re-evaluates in place.',
+    );
+  }
+  let code = model.code;
+  for (const edit of edits) {
+    const rewritten = setParamValue(code, edit.name, edit.value);
+    if (!rewritten.ok || rewritten.new_code === undefined) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `params.update: could not set param '${edit.name}' in the source: ${rewritten.error ?? 'unknown error'}.`,
+        undefined,
+        'invalid-args.param.not-found — the param must be declared with a literal default, e.g. param(\'w\', 60).',
+      );
+    }
+    code = rewritten.new_code;
+  }
+  const previousShapes = new Map(model.shapes);
+  const next = await model.rebuildFromSource(code);
+  const failure = next.diagnostics.find((d) => d.severity === 'error');
+  if (failure) {
+    throw new KernelError(failure.code, `params.update: ${failure.message}`, undefined, failure.hint);
+  }
+  const shape = next.rootShape ?? next.tailShape;
+  if (!shape) {
+    throw new KernelError('feature.invalid-args', 'params.update: the rebuilt script returned no shape.', undefined, 'invalid-args.param.js-arithmetic — the script must return a shape or scene.');
+  }
+  const relowered: string[] = [];
+  const skipped: string[] = [];
+  for (const record of next.records) {
+    (next.shapes.get(record.id) === previousShapes.get(record.id) ? skipped : relowered).push(record.id);
+  }
+  Object.assign(model, next);
+  return { model, result: { shape, relowered, skipped, warnings: next.warnings, rigidReused: [] } };
 }
 
 async function applyParamEdits(
