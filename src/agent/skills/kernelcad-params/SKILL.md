@@ -197,6 +197,24 @@ correctly shows a broken requirement still returns `ok: true`. Nothing is
 written: the active session, source, revision and caches stay untouched, and a
 preview whose revised build fails returns `ok: false` with no diff.
 
+A feature whose value is a literal, not a `param()`, is edited in place by
+feature id instead:
+
+```typescript
+set_param({ code, feature: 'cylinder_1', changes: { r: 3.3 } })
+// → { ok: true, preview: true, new_code, feature, edits: [{ param: 'r', before: 4, after: 3.3, sourceBefore: '4', sourceAfter: '3.3', line }],
+//     changedParams, geometry, requirementsDiff, bindings, before, after }
+```
+
+The argument is located from the feature's call site (an options-object
+property with the parameter's name, else the positional argument), and each
+rewrite is kept only if re-capturing the script shows the feature at the new
+value with its other parameters unchanged. An expression argument (`t + 2`) is
+replaced by the literal for that call only; shared constants stay. A value
+driven by `param()` is refused with `feature.edit.param-driven` and a hint to
+`set_param` that param. Like `preview`, it writes nothing and leaves the active
+session alone.
+
 `inspect({ of: 'params' })` accepts the same `{ file? }` / `{ code? }` input every other `inspect({ of: ... })` reader does — pass one to evaluate that file/code fresh. With neither, it falls back to reading whatever session `evaluate_script` last left active (so a bare `inspect({ of: 'params' })` right after `evaluate_script` still works with no arguments) — it does NOT search for or reuse an unrelated session.
 
 ```typescript
