@@ -12,10 +12,14 @@ import { unzipSync } from 'fflate';
 
 export type MeshFormat = 'stl' | 'obj' | '3mf';
 
+/** Where a soup's triangles came from. `step` is an exact B-rep tessellated
+ *  by the OCCT reader (see `mcp/tools/stepSoup.ts`); this module never parses it. */
+export type SoupSourceFormat = MeshFormat | 'step';
+
 export interface TriangleSoup {
   /** 9 numbers per triangle: ax ay az bx by bz cx cy cz. */
   positions: Float64Array;
-  format: MeshFormat;
+  format: SoupSourceFormat;
   /** Unit the coordinates were declared in, converted to mm. STL/OBJ carry
    *  no unit, so they are read as millimetres and `unitDeclared` is false. */
   unitDeclared: boolean;
@@ -28,6 +32,14 @@ export class MeshParseError extends Error {
     super(message);
     this.name = 'MeshParseError';
   }
+}
+
+/** True for a `.step` / `.stp` name, or bytes that open with the ISO 10303-21 header. */
+export function isStepSource(fileName: string | undefined, bytes: Uint8Array): boolean {
+  const lower = (fileName ?? '').toLowerCase();
+  if (lower.endsWith('.step') || lower.endsWith('.stp')) return true;
+  const head = new TextDecoder().decode(bytes.subarray(0, Math.min(bytes.length, 64))).replace(/^\uFEFF/, '').trimStart();
+  return head.startsWith('ISO-10303-21');
 }
 
 /** Pick the format from the file extension, falling back to content sniffing. */

@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import { zipSync, strToU8 } from 'fflate';
-import { detectMeshFormat, MeshParseError, parseMeshBytes, parseObj, parseStl } from '../../../src/agent/reconstruct/meshIO';
+import { detectMeshFormat, isStepSource, MeshParseError, parseMeshBytes, parseObj, parseStl } from '../../../src/agent/reconstruct/meshIO';
 
 const TRI = [0, 0, 0, 1, 0, 0, 0, 1, 0];
 
@@ -17,6 +17,15 @@ function binaryStl(tris: number[][]): Uint8Array {
 }
 
 describe('meshIO', () => {
+  it('recognises STEP by extension or by the ISO 10303-21 header, and nothing else', () => {
+    const header = new TextEncoder().encode('\uFEFF  ISO-10303-21;\nHEADER;');
+    expect(isStepSource('part.STEP', new Uint8Array())).toBe(true);
+    expect(isStepSource('part.stp', new Uint8Array())).toBe(true);
+    expect(isStepSource(undefined, header)).toBe(true);
+    expect(isStepSource('part.stl', new TextEncoder().encode('solid x'))).toBe(false);
+    expect(isStepSource(undefined, new TextEncoder().encode('v 0 0 0'))).toBe(false);
+  });
+
   it('reads binary STL by its exact size even when the header says "solid"', () => {
     const bytes = binaryStl([TRI, [0, 0, 1, 1, 0, 1, 0, 1, 1]]);
     expect(detectMeshFormat(undefined, bytes)).toBe('stl');
