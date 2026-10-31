@@ -106,7 +106,12 @@ import {
 
 
 export class Shape {
-  readonly id: FeatureId;
+  /** The feature record this handle stands for. Transforms return a new
+   *  handle; reading `id` of an older handle yields a copy of the record as
+   *  that handle saw it (see `CaptureSession.applyVersionedOp`). */
+  declare readonly id: FeatureId;
+  private readonly recordId: FeatureId;
+  private readonly version: number;
   private session: CaptureSession;
 
   // Lazy lowered backend — cached per-Shape so consecutive selectEdges /
@@ -119,19 +124,27 @@ export class Shape {
   private _loweredAtTransformCount?: number;
   private _loweredAtInputsKey?: string;
 
-  constructor(id: FeatureId, session: CaptureSession) {
-    this.id = id;
+  constructor(id: FeatureId, session: CaptureSession, version?: number) {
+    this.recordId = id;
     this.session = session;
+    this.version = version ?? session.headVersion?.(id) ?? 0;
+    // An own accessor rather than a prototype getter: the list_api drift
+    // sentinel enumerates `Shape.prototype` as the public method list.
+    Object.defineProperty(this, 'id', {
+      enumerable: true,
+      get: () => this.session.resolveHandle?.(this.recordId, this.version) ?? this.recordId,
+    });
   }
 
   translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape {
     const vector: EditableVec3 = [x, y, z];
     const issues = invalidEditableVec3Components(vector, this.session.paramTable);
     if (!isValidEditableVec3(vector) || issues.length > 0) {
-      throw invalidTransformVec3Error('translate', 'Translate vector', vector, this.id, this.session.paramTable);
+      throw invalidTransformVec3Error('translate', 'Translate vector', vector, this.recordId, this.session.paramTable);
     }
-    this.session.appendTransform(this.id, { op: 'translate', vec: toVec3Param(vector, 'mm') });
-    return this;
+    return this.session.applyVersionedOp(this.recordId, this.version, {
+      kind: 'transform', t: { op: 'translate', vec: toVec3Param(vector, 'mm') },
+    });
   }
 
   rotate(
@@ -141,13 +154,13 @@ export class Shape {
   ): Shape {
     const axisIssues = invalidEditableVec3Components(axis, this.session.paramTable);
     if (!isValidEditableVec3(axis) || axisIssues.length > 0) {
-      throw invalidTransformVec3Error('rotate-axis', 'Rotate axis', axis, this.id, this.session.paramTable);
+      throw invalidTransformVec3Error('rotate-axis', 'Rotate axis', axis, this.recordId, this.session.paramTable);
     }
     if (typeof degrees !== 'number' && !isParamRef(degrees)) {
       throw new KernelError(
         'feature.invalid-args',
         `Rotate degrees must be a finite number or ParamRef; got ${formatScalarForError(degrees)}.`,
-        this.id,
+        this.recordId,
         `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
     }
@@ -159,7 +172,7 @@ export class Shape {
       throw new KernelError(
         'feature.invalid-args',
         `Rotate degrees could not be resolved from ${formatScalarForError(degrees)}: ${reason}.`,
-        this.id,
+        this.recordId,
         `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
     }
@@ -167,21 +180,20 @@ export class Shape {
       throw new KernelError(
         'feature.invalid-args',
         `Rotate degrees must resolve to a finite number; got ${isParamRef(degrees) ? `ParamRef(${degrees.$param}) resolves to ${formatScalarForError(resolvedDegrees)}` : formatScalarForError(resolvedDegrees)}.`,
-        this.id,
+        this.recordId,
         `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
     }
     if (pivot !== undefined) {
       const pivotIssues = invalidEditableVec3Components(pivot, this.session.paramTable);
       if (!isValidEditableVec3(pivot) || pivotIssues.length > 0) {
-        throw invalidTransformVec3Error('rotate-pivot', 'Rotate pivot', pivot, this.id, this.session.paramTable);
+        throw invalidTransformVec3Error('rotate-pivot', 'Rotate pivot', pivot, this.recordId, this.session.paramTable);
       }
     }
     const transform: ShapeTransform = pivot === undefined
       ? { op: 'rotateAxis', axis: toVec3Param(axis, 'unitless'), degrees: toParam(degrees, 'deg') }
       : { op: 'rotateAxis', axis: toVec3Param(axis, 'unitless'), degrees: toParam(degrees, 'deg'), pivot: toVec3Param(pivot, 'mm') };
-    this.session.appendTransform(this.id, transform);
-    return this;
+    return this.session.applyVersionedOp(this.recordId, this.version, { kind: 'transform', t: transform });
   }
 
   /** Rotate `degrees` around the world X axis. Thin alias for
@@ -217,13 +229,14 @@ export class Shape {
    */
   transform(t: Transform): Shape {
     const { translate, rotateAxis, rotateDeg } = t.decomposeToTranslateAndRotate();
+    let out: Shape = this;
     if (rotateDeg !== 0) {
-      this.rotate([rotateAxis[0], rotateAxis[1], rotateAxis[2]], rotateDeg);
+      out = out.rotate([rotateAxis[0], rotateAxis[1], rotateAxis[2]], rotateDeg);
     }
     if (translate[0] !== 0 || translate[1] !== 0 || translate[2] !== 0) {
-      this.translate(translate[0], translate[1], translate[2]);
+      out = out.translate(translate[0], translate[1], translate[2]);
     }
-    return this;
+    return out;
   }
 
   /**
@@ -354,22 +367,17 @@ export class Shape {
 
   /** A colour `param()` ref is accepted directly (its '#rrggbb' value is used). */
   color(name: ColorToken | `#${string}` | TypedParamRef<string>): Shape {
-    const records = this.session.getRecords();
-    const record = records.find(r => r.id === this.id);
-    if (record === undefined) {
+    if (!this.session.getRecords().some(r => r.id === this.recordId)) {
       throw new KernelError(
         'feature.invalid-args',
-        `Shape.color: feature record '${this.id}' not found in session.`,
-        this.id,
+        `Shape.color: feature record '${this.recordId}' not found in session.`,
+        this.recordId,
         'invalid-args.color.unknown-record — call .color() on a Shape produced by the current session.',
       );
     }
-    // Mutate metadata in place. Same pattern as other capture-time mutations.
-    if (record.metadata === undefined) {
-      (record as { metadata: Record<string, unknown> }).metadata = {};
-    }
-    (record.metadata as Record<string, unknown>).color = isTypedParamRef(name) ? name.value : name;
-    return this;
+    return this.session.applyVersionedOp(this.recordId, this.version, {
+      kind: 'color', value: isTypedParamRef(name) ? name.value : name,
+    });
   }
 
   /**
@@ -681,7 +689,7 @@ export class Shape {
       throw new KernelError(
         'feature.invalid-args',
         `Scale factor must be a positive finite number, or a Vec3 of three positive finite numbers; got ${formatScalarForError(scaleSpec)}.`,
-        this.id,
+        this.recordId,
         'invalid-args.scale.zero — provide positive finite scale factors.',
       );
     }
@@ -696,19 +704,15 @@ export class Shape {
       throw new KernelError(
         'feature.invalid-args',
         `Scale factors must resolve to positive finite numbers; got ${formatScalarForError(scaleSpec)}.`,
-        this.id,
+        this.recordId,
         'invalid-args.scale.zero — provide positive finite scale factors; numeric ParamRefs are resolved when the shape is built.',
       );
     }
     const [sx, syOut, szOut] = factors.map((factor) => isParamRef(factor) ? toParam(factor, 'unitless') : factor);
 
-    this.session.appendTransform(this.id, {
-      op: 'scale',
-      sx,
-      sy: syOut,
-      sz: szOut,
+    return this.session.applyVersionedOp(this.recordId, this.version, {
+      kind: 'transform', t: { op: 'scale', sx, sy: syOut, sz: szOut },
     });
-    return this;
   }
 
   reflect(plane: PlaneSpec): Shape {
@@ -716,12 +720,11 @@ export class Shape {
       throw new KernelError(
         'feature.invalid-args',
         `Reflect plane must be 'xy' | 'xz' | 'yz' or { plane: '<cardinal>', offset?: number }; got ${formatScalarForError(plane)}.`,
-        this.id,
+        this.recordId,
         "Pass 'xy', 'xz', 'yz', or { plane: '<cardinal>', offset?: number } to .reflect().",
       );
     }
-    this.session.appendTransform(this.id, { op: 'reflect', plane });
-    return this;
+    return this.session.applyVersionedOp(this.recordId, this.version, { kind: 'transform', t: { op: 'reflect', plane } });
   }
 
   mirror(plane: PlaneSpec): Shape {
@@ -1365,7 +1368,7 @@ export class Shape {
     const dy = (opts?.y ?? true) ? -center[1] : 0;
     const dz = (opts?.z ?? true) ? -center[2] : 0;
     if (dx !== 0 || dy !== 0 || dz !== 0) {
-      this.translate(dx, dy, dz);
+      return this.translate(dx, dy, dz);
     }
     return this;
   }
@@ -1387,7 +1390,7 @@ export class Shape {
     const dy = recenterXy ? -center[1] : 0;
     const dz = -min[2];
     if (dx !== 0 || dy !== 0 || dz !== 0) {
-      this.translate(dx, dy, dz);
+      return this.translate(dx, dy, dz);
     }
     return this;
   }

@@ -184,6 +184,11 @@ export interface FullLowerSnapshot {
   readonly shapes: ReadonlyMap<string, ShapeBackend>;
 }
 
+/** An op a Shape handle applies through `CaptureSession.applyVersionedOp`. */
+export type VersionedOp =
+  | { kind: 'transform'; t: ShapeTransform }
+  | { kind: 'color'; value: unknown };
+
 export class CaptureSession {
   private idGen: FeatureIdGenerator = createFeatureIdGenerator();
   private records: FeatureRecord[] = [];
@@ -763,6 +768,7 @@ export class CaptureSession {
     if (refs.size > 0) {
       r.metadata = { ...(r.metadata ?? {}), paramRefs: Array.from(refs) };
     }
+    this.markInputsConsumed(r);
     this.records.push(r);
     return r;
   }
@@ -812,6 +818,181 @@ export class CaptureSession {
       for (const name of newRefs) merged.add(name);
       r.metadata = { ...(r.metadata ?? {}), paramRefs: Array.from(merged) };
     }
+  }
+
+  // ── Immutable shape handles ─────────────────────────────────────────────
+  //
+  // `translate / rotate / scale / reflect / color` return a NEW Shape and
+  // leave the receiver untouched. A Shape handle is (record id, version):
+  // the number of versioned ops (transforms and colours) it has seen on that
+  // record. A chain `box(…).translate(…).rotate(…)` still lands on ONE record
+  // — each op is applied in place while the receiver is the record's head
+  // and nothing has consumed that record yet — so record ids, refs and
+  // goldens of chained scripts are unchanged. Branching off an older handle,
+  // or off a record another feature already consumed, forks a copy of the
+  // record at that handle's version instead of mutating shared state.
+  private readonly versionOps = new Map<FeatureId, VersionedOp[]>();
+  /** metadata.color of a record before its first `.color()` op. */
+  private readonly baseColors = new Map<FeatureId, unknown>();
+  /** Records that some other record consumes (or the script returned). */
+  private readonly consumedRecords = new Set<FeatureId>();
+  /** Forks made to read an older handle, keyed `${source}@${version}`. */
+  private readonly staleReads = new Map<string, { source: FeatureId; version: number; forkId: FeatureId }>();
+  /** Records dropped by `finalizeShapeVersions`, mapped to the fork that took their state. */
+  private readonly foldedInto = new Map<FeatureId, FeatureId>();
+
+  /** Number of versioned ops applied to record `id` so far. */
+  headVersion(id: FeatureId): number {
+    return this.versionOps.get(id)?.length ?? 0;
+  }
+
+  /** Apply a transform / colour through handle (`id`, `version`) and return
+   *  the handle of the result. The receiver handle is never changed. */
+  applyVersionedOp(id: FeatureId, version: number, op: VersionedOp): Shape {
+    const inPlace = version === this.headVersion(id) && !this.consumedRecords.has(id);
+    const target = inPlace ? id : this.forkRecord(id, version).id;
+    this.pushVersionedOp(target, op);
+    return new Shape(target, this, this.headVersion(target));
+  }
+
+  /** The record id a handle stands for right now. The head handle is the
+   *  record itself; an older handle reads a fork of the record at its
+   *  version (one fork per handle version, reused on every read). */
+  resolveHandle(id: FeatureId, version: number): FeatureId {
+    const folded = this.foldedInto.get(id);
+    if (folded !== undefined) return folded;
+    if (version === this.headVersion(id) || !this.records.some((r) => r.id === id)) return id;
+    const key = `${id}@${version}`;
+    const existing = this.staleReads.get(key);
+    if (existing !== undefined) return existing.forkId;
+    const fork = this.forkRecord(id, version);
+    this.staleReads.set(key, { source: id, version, forkId: fork.id });
+    return fork.id;
+  }
+
+  /** Mark a record as consumed outside the record graph (the script's
+   *  return value): later ops on its handle fork instead of mutating it. */
+  markConsumed(id: FeatureId): void {
+    this.consumedRecords.add(id);
+  }
+
+  /**
+   * End-of-capture pass for the statement form `p.translate(…); use(p)`.
+   *
+   * Under immutable transforms that call's result is discarded, so `use(p)`
+   * reads the unmoved `p`. Scripts written against the old mutating API rely
+   * on `p` having moved. When the newer versions of a record were never
+   * consumed, nothing can observe them except through that discarded handle,
+   * so the read of the older handle is given the record's full state (the
+   * old behaviour) and the orphaned record is dropped. A soft warning tells
+   * the author to assign the result instead.
+   */
+  finalizeShapeVersions(): void {
+    const latestRead = new Map<FeatureId, { version: number; forkId: FeatureId }>();
+    for (const read of this.staleReads.values()) {
+      if (!this.consumedRecords.has(read.forkId)) continue;
+      const prev = latestRead.get(read.source);
+      if (prev === undefined || read.version > prev.version) latestRead.set(read.source, read);
+    }
+    for (const [sourceId, read] of latestRead) {
+      if (this.consumedRecords.has(sourceId)) continue;
+      const sourceIndex = this.records.findIndex((r) => r.id === sourceId);
+      const fork = this.records.find((r) => r.id === read.forkId);
+      if (sourceIndex < 0 || fork === undefined) continue;
+      const source = this.records[sourceIndex];
+      const discarded = (this.versionOps.get(sourceId) ?? []).slice(read.version);
+      for (const op of discarded) this.pushVersionedOp(fork.id, op);
+      this.records.splice(sourceIndex, 1);
+      this.foldedInto.set(sourceId, fork.id);
+      this.versionOps.delete(sourceId);
+      this.importedGeometry.delete(sourceId);
+      this.autoConnectors.delete(sourceId);
+      this.catalogConnectorStore.delete(sourceId);
+      const calls = discarded.map((op) => (op.kind === 'color' ? 'color' : op.t.op)).join(', ');
+      this.warnings.push({
+        code: 'script.discarded-transform',
+        hint: `Transforms return a new Shape. Assign the result — \`const moved = part.translate(…)\` — instead of calling it as a statement.`,
+        message: `The result of ${calls} on '${source.id}' was never used; it was applied to the receiver for compatibility with the old mutating API.`,
+        recordId: fork.id,
+        phase: 'build',
+      });
+    }
+  }
+
+  private pushVersionedOp(id: FeatureId, op: VersionedOp): void {
+    if (op.kind === 'transform') {
+      this.appendTransform(id, op.t);
+    } else {
+      const r = this.records.find((x) => x.id === id);
+      if (!r) throw new Error(`Feature '${id}' not registered`);
+      const metadata = (r.metadata ?? {}) as Record<string, unknown>;
+      if (!this.baseColors.has(id)) this.baseColors.set(id, metadata.color);
+      metadata.color = op.value;
+      (r as { metadata: Record<string, unknown> }).metadata = metadata;
+    }
+    const ops = this.versionOps.get(id) ?? [];
+    ops.push(op);
+    this.versionOps.set(id, ops);
+  }
+
+  /** A copy of record `id` as handle version `version` saw it: same feature,
+   *  the transforms and colour of its first `version` ops, its side-table
+   *  entries (imported geometry, connectors). */
+  private forkRecord(id: FeatureId, version: number): FeatureRecord {
+    const source = this.records.find((r) => r.id === id);
+    if (!source) throw new Error(`Feature '${id}' not registered`);
+    const ops = this.versionOps.get(id) ?? [];
+    // Transforms that did not come through a handle op (imported sessions,
+    // direct record edits) stay in front of the replayed ones.
+    const opTransforms = ops.filter((op) => op.kind === 'transform').length;
+    const untracked = source.transforms.slice(0, source.transforms.length - opTransforms);
+    const metadata = source.metadata === undefined ? undefined : { ...source.metadata };
+    if (metadata !== undefined && this.baseColors.has(id)) {
+      const base = this.baseColors.get(id);
+      if (base === undefined) delete (metadata as Record<string, unknown>).color;
+      else (metadata as Record<string, unknown>).color = base;
+    }
+    const fork: FeatureRecord = {
+      ...source,
+      id: this.idGen.next(source.kind),
+      transforms: [...untracked],
+      metadata,
+    };
+    this.records.push(fork);
+    const imported = this.importedGeometry.get(id);
+    if (imported !== undefined) this.importedGeometry.set(fork.id, imported);
+    const connectors = this.autoConnectors.get(id);
+    if (connectors !== undefined) this.autoConnectors.set(fork.id, connectors);
+    const catalog = this.catalogConnectorStore.get(id);
+    if (catalog !== undefined) this.catalogConnectorStore.set(fork.id, catalog);
+    for (const op of ops.slice(0, version)) this.pushVersionedOp(fork.id, op);
+    return fork;
+  }
+
+  /** Record every existing record that `r` references as consumed. */
+  private markInputsConsumed(r: FeatureRecord): void {
+    const known = new Set(this.records.map((x) => x.id));
+    const visit = (value: unknown, depth: number): void => {
+      if (depth > 12 || value === null || value === undefined) return;
+      if (typeof value === 'string') {
+        if (known.has(value)) this.consumedRecords.add(value);
+        else {
+          const ref = /^@kcq?\[([^\]/]+)/.exec(value);
+          if (ref !== null && known.has(ref[1])) this.consumedRecords.add(ref[1]);
+        }
+        return;
+      }
+      if (typeof value !== 'object') return;
+      if (Array.isArray(value)) {
+        if (value.length > 0 && typeof value[0] === 'number') return;
+        for (const item of value) visit(item, depth + 1);
+        return;
+      }
+      for (const item of Object.values(value as Record<string, unknown>)) visit(item, depth + 1);
+    };
+    visit(r.inputs, 0);
+    visit(r.params, 0);
+    visit(r.metadata, 0);
   }
 
   boolean(op: 'union' | 'difference' | 'intersection', base: Shape, cutters: Shape[]): Shape {
