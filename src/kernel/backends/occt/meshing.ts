@@ -11,6 +11,7 @@
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import type { FaceGeometry, GeometryResult, SketchGeometry } from '../../../shared/worker/workerTypes';
+import { occtEdgeHash, stableEdgeIdForEdge } from './edgeIdentity';
 
 const DEBUG = false;
 
@@ -918,5 +919,19 @@ export function meshShape(
     volume,
     edges,
     ...(edgeGroups !== undefined ? { edgeRanges: edgeGroups.edgeRanges, edgeHashes: edgeGroups.edgeHashes } : {}),
+    ...(edgeGroups !== undefined ? { edgeStableIds: stableIdsForEdgeGroups(shape, edgeGroups.edgeHashes) } : {}),
   };
+}
+
+function stableIdsForEdgeGroups(shape: UnknownRecord, hashes: readonly number[]): string[] | undefined {
+  const rawEdges = shape.edges;
+  if (!Array.isArray(rawEdges)) return undefined;
+  const idsByHash = new Map<number, string>();
+  for (const edge of rawEdges) {
+    if (!isRecord(edge)) continue;
+    const hash = occtEdgeHash(edge as never);
+    if (hash !== null) idsByHash.set(hash, stableEdgeIdForEdge(edge as never));
+  }
+  const ids = hashes.map(hash => idsByHash.get(hash));
+  return ids.every((id): id is string => typeof id === 'string') ? ids : undefined;
 }
