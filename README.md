@@ -34,9 +34,19 @@ Ask your agent: **“look at kernelcad.com and install the mcp”**.
 [Agent-readable installation instructions](https://kernelcad.com/llms.txt) cover
 hosted setup, local CLI setup, and connection verification.
 
-### Local CLI: one line
+### Local MCP server: one line
 
-For Node.js users (Node.js 22.12 or newer):
+Run the MCP server over stdio with no install (Node.js 22.12 or newer):
+
+```bash
+npx -y kernelcad mcp
+```
+
+Claude Code: `claude mcp add kernelcad -- npx -y kernelcad mcp`
+
+### Local CLI
+
+To keep the `kernelcad` command on your PATH:
 
 ```bash
 npm install --global kernelcad
@@ -305,6 +315,22 @@ For opt-in kernel selection and fallback diagnostics, see the
 [experimental guarded SMLib kernel guide](docs/smlib-kernel.md) and its
 [workflow demo bundle](docs/demos/smlib-guarded/README.md).
 
+## Privacy and network
+
+kernelCAD runs locally. It has no install-time scripts and makes no network calls
+except the ones below.
+
+| Host | When | What is sent |
+|---|---|---|
+| `telemetry.kernelcad.com` | Anonymous usage stats, opt-out | Tool name, outcome, duration, counts, versions. Never prompts, code, geometry, paths or env vars. See [TELEMETRY.md](TELEMETRY.md). |
+| `api.kernelcad.com`, `app.kernelcad.com` | Only when you use the hosted gateway, Studio links, or ordering/pricing tools | The request you make |
+| `api.step.parts`, `kernelcad-parts.pages.dev`, `raw.githubusercontent.com`, vendor sites | Only when you call `find_part` / `fetch_part` | The part search query or part URL |
+
+Turn telemetry off with `kernelcad telemetry disable`, `KERNELCAD_TELEMETRY=0`
+or `DO_NOT_TRACK=1`. It is off in CI. Demo scripts under `scripts/` and
+`eval/` call subprocesses and test URLs; they are developer tools and are not
+part of the published package.
+
 ## Contributing
 
 Web app + dev workflow (clone the repo, `npm install`, `npm run dev`) for contributors who want to hack on the kernel or the visual debugger:
@@ -313,6 +339,7 @@ Web app + dev workflow (clone the repo, `npm install`, `npm run dev`) for contri
 git clone https://github.com/w1ne/kernelCAD-web.git
 cd kernelCAD-web
 npm install
+npm run setup-hooks  # optional: enable the local pre-commit hook
 npm run dev          # web visual debugger at localhost:5173
 npm run build:cli    # build the CLI bundle into dist/cli/
 npm run test         # full vitest suite
