@@ -30,6 +30,58 @@
 
 # v0.17.3 — 2026-10-31
 
+
+
+- Asset catalog MCP tools (read-only, bundled catalog): `search_assets`
+  (q, kit, category, triangle range, sort, paging; compact rows with
+  triangles, size in metres, origin, knobs and palette; a `coverage` verdict
+  with a `next` hint), `get_asset` (full row plus the `.kcad.ts` source),
+  `find_matching`, `get_variant` (plain words to knob values plus the variant
+  source, unknown words reported), `list_kits` and `get_kit`. The catalog is
+  found by walking up from the package to `catalog/index.json`
+  (`KERNELCAD_CATALOG_DIR` overrides).
+
+- Asset catalog: parametric low-poly assets live in
+  `catalog/kits/<kit>/<asset>.kcad.ts` with a `kit.json` per kit.
+  `npm run catalog:build` evaluates each one, exports it with the low-poly GLB
+  profile inside its `meta().triangleBudget`, and writes `catalog/index.json`:
+  knobs (type, default, range/choices, label), presets, rig, measured
+  triangles, size in metres, lowest point, material count and colour zones
+  named after the colour knob that drives them. A test fails when the
+  committed index is stale or any asset exceeds its budget or needs a second
+  opaque material. Pure queries in `src/shared/assets/catalogSearch.ts`:
+  `searchCatalog` (query, kit, category, triangle range, paging, with a
+  `coverage` verdict of `none | poor | ok | filtered_out` and unmatched
+  words), `findMatching` (same kit, shared compat tags, palette and scale,
+  spread across categories) and `resolveVariant` (plain words such as
+  "taller, red foliage, with snow" to knob overrides; unknown words are
+  reported, not guessed).
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/develop
+- Low-poly GLB export: `export` glb `{ style: 'lowpoly' }` writes a faceted,
+  flat-shaded game asset in metres (`units` overrides) where every opaque part
+  carries its colour in `COLOR_0` on one shared `kernelcad-palette` material,
+  so a scene of such assets merges into one draw call; glass and translucent
+  parts keep their own material. `lowpoly.angularDeg` (5–60, default 30, about
+  12 segments per circle) sets the facet size and `lowpoly.maxTriangles` fails
+  the export with `export.glb.triangle-budget` instead of writing an
+  over-budget file. Every GLB now records `stats` (triangles, size in metres,
+  lowest point) plus `units` and `style` in `asset.extras.kernelcad`; low-poly
+  files also list their colour zones. `meta()` accepts catalog fields `kit`,
+  `category`, `origin`, `compat` and `triangleBudget`. Example:
+<<<<<<< HEAD
+  `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
+=======
+<<<<<<< HEAD
+  `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
+=======
+  `examples/assets/pine-tree.kcad.ts`; local demo bundle:
+>>>>>>> origin/develop
+>>>>>>> origin/develop
+  `docs/demos/glb-lowpoly/`.
+
 - Asset manifests: `meta()` and `presets()` now capture validated asset metadata
   and named knob overrides on `CaptureSession`; asset content defaults to the
   SPDX-allowlisted `CC-BY-4.0` licence, separate from the package's MIT licence.

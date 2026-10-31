@@ -91,6 +91,12 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   solve_mates: READ,
   flatten_pattern: READ,
   asset_manifest: READ,
+  search_assets: READ,
+  get_asset: READ,
+  find_matching: READ,
+  get_variant: READ,
+  list_kits: READ,
+  get_kit: READ,
 
   // Read-only analysis that can write an OPTIONAL local artifact (render: true).
   diff_geometry: READ_MAY_WRITE_ARTIFACTS,

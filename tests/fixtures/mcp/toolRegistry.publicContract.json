@@ -4692,7 +4692,7 @@
         },
         "options": {
           "type": "object",
-          "description": "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. step: { unit?: \"mm\"|\"cm\"|\"in\", verify?: boolean } (verify defaults to true and checks B-rep validity plus mesh watertightness; false skips both). stl: { verify?: boolean } (defaults to true). dxf: { layers?, unit?: \"mm\"|\"cm\"|\"in\", tolerance?, section?: { axis: \"x\"|\"y\"|\"z\", at: mm }, layout?: \"per-part\"|\"sheet\" }. 3mf: { printUnit?: \"mm\"|\"cm\"|\"in\", embedSource?, arrange?: \"none\"|\"plate\"|\"assembled\", orient?: boolean, slicer?: \"generic\"|\"bambu\"|\"orca\"|\"prusa\", printer?: printer profile id, one of \"generic-fdm\"|\"bambu-a1-mini\"|\"bambu-a1\"|\"bambu-p1s\"|\"bambu-p1p\"|\"bambu-x1c\"|\"bambu-x1e\"|\"bambu-h2d\"|\"bambu-h2s\"|\"prusa-mini-plus\"|\"prusa-mk4s\"|\"prusa-core-one\"|\"prusa-xl\"|\"creality-ender-3-v3\"|\"creality-k1\"|\"creality-k1-max\"|\"creality-k2-plus\"|\"elegoo-neptune-4-pro\"|\"anycubic-kobra-3\"|\"voron-2.4-250\"|\"voron-2.4-300\"|\"voron-2.4-350\"|\"ultimaker-s5\" (default \"generic-fdm\"; sets the bed for arrange and the slicer default; an unknown id is refused with the valid list; CLI: kernelcad print printers) }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed, whose hint names the smallest profiles the layout fits on. gcode: { printer?: printer profile id, layerHeight?: mm, infill?: percent, supports?: boolean, material?: string }; requires a locally installed OrcaSlicer. Returns slicer predictions as gcode_stats; does not start a printer. glb: { axis?: \"y-up\"|\"z-up\", draco?: false }. obj and usd are mesh exports with no extra options; usd writes ASCII USDA (millimeter, Z-up). svg-drawing: { views?: [\"front\"], sheet?: \"a4\"|\"a3\" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. views:[\"front\"] produces a centred front-only elevation for SVG or PDF; omit views for four views. Front-only sheets require front annotations and reject isometric balloons/exploded overlays. svg-drawing annotations is an array of authored dimensions/notes, each { kind: \"linear\"|\"radius\"|\"diameter\"|\"angular\"|\"note\", view?: \"front\"|\"top\"|\"left\"|\"iso\", text?, offset? } plus kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped. svg-drawing sections is an array of { plane: \"xy\"|\"xz\"|\"yz\"|{ origin, normal }, label } (any non-zero normal). svg-drawing autoAnnotate is true or { tolerance?: \"ISO2768-f\"|\"ISO2768-m\"|\"ISO2768-c\", datums?: \"auto\"|[{ label, face: FaceQuery }], include?: [\"datums\"|\"flatness\"|\"holes\"|\"hole-positions\"|\"overall\"|\"fillets\"|\"chamfers\"|\"general-tolerance\"], dimensioningStyle?: \"baseline\"|\"chain\"|\"symmetry\" }; datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones. pdf-drawing: { sheet?: \"a4\"|\"a3\"|\"a2\"|\"a1\"|\"a0\"|\"ansi-a\"|\"ansi-b\"|\"ansi-c\"|\"ansi-d\"|\"ansi-e\"|\"auto\"|\"auto-ansi\" (default \"a3\"), projection?: \"third\"|\"first\", title?, partName?, material?, revision?, date? (default today), modelName?, views?: [\"front\"], annotations?, sections?, exploded?, balloons?, partsList?, autoAnnotate? (default true unless annotations are given) } — the svg-drawing keys mean the same. Mechanical SVG/PDF also accept draftingProfile?: \"general\"|\"machining\"|\"sheet-metal\" or { id, name, sheet, projection, dimensioningStyle, tolerance?, notes? }, with explicit options overriding profile defaults. Functional drawing review: shape.drawingReview(plan) source declarations merge with reviewPlans?: additional plans; decisionResolutions?: { [encodeURIComponent(planId)+\":\"+encodeURIComponent(decisionId)]: { note, provenance } }. drawing_report.review reports declared geometric-callout coverage and unresolved engineering decisions. requireCompleteReview?: true rejects incomplete/not-declared mechanical reviews before export; architectural style rejects review contracts. Coverage is not engineering certification. annotationOverrides?: { [drawing_report.annotations[i].id]: { suppress?, text?, view?, offset? } }; offset is extra nonnegative sheet mm. Text edits primary labels while preserving attached FCFs; datum/standalone FCF text is changed in its declaration instead. Suppressed rows remain in the report but not visible counts. Missing IDs warn after geometry edits. Authored annotations can set id for stable review identity. svg-drawing and pdf-drawing also take style?: \"mechanical\" (default, the part sheet) | \"architectural\" (a floor plan for a building or room model: section about 1 m above the floor with filled cut walls, wall / opening chain dimensions and overall sizes, room labels with net area, scale bar, north arrow; millimetres, or feet-inches when the model is in whole feet / inches) and plan?: { units?: \"metric\"|\"imperial\", cutHeight?: mm above the floor, rooms?: [{ name, at: [x, y] }], northDeg?: degrees clockwise from sheet up }. A building-sized model drawn in the default style gets a drawing.style.architectural-suggested warning."
+          "description": "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. step: { unit?: \"mm\"|\"cm\"|\"in\", verify?: boolean } (verify defaults to true and checks B-rep validity plus mesh watertightness; false skips both). stl: { verify?: boolean } (defaults to true). dxf: { layers?, unit?: \"mm\"|\"cm\"|\"in\", tolerance?, section?: { axis: \"x\"|\"y\"|\"z\", at: mm }, layout?: \"per-part\"|\"sheet\" }. 3mf: { printUnit?: \"mm\"|\"cm\"|\"in\", embedSource?, arrange?: \"none\"|\"plate\"|\"assembled\", orient?: boolean, slicer?: \"generic\"|\"bambu\"|\"orca\"|\"prusa\", printer?: printer profile id, one of \"generic-fdm\"|\"bambu-a1-mini\"|\"bambu-a1\"|\"bambu-p1s\"|\"bambu-p1p\"|\"bambu-x1c\"|\"bambu-x1e\"|\"bambu-h2d\"|\"bambu-h2s\"|\"prusa-mini-plus\"|\"prusa-mk4s\"|\"prusa-core-one\"|\"prusa-xl\"|\"creality-ender-3-v3\"|\"creality-k1\"|\"creality-k1-max\"|\"creality-k2-plus\"|\"elegoo-neptune-4-pro\"|\"anycubic-kobra-3\"|\"voron-2.4-250\"|\"voron-2.4-300\"|\"voron-2.4-350\"|\"ultimaker-s5\" (default \"generic-fdm\"; sets the bed for arrange and the slicer default; an unknown id is refused with the valid list; CLI: kernelcad print printers) }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed, whose hint names the smallest profiles the layout fits on. gcode: { printer?: printer profile id, layerHeight?: mm, infill?: percent, supports?: boolean, material?: string }; requires a locally installed OrcaSlicer. Returns slicer predictions as gcode_stats; does not start a printer. glb: { axis?: \"y-up\"|\"z-up\", draco?: false, style?: \"pbr\"|\"lowpoly\", lowpoly?: { angularDeg?: 5..60 (default 30, about 12 segments per circle), maxTriangles?: number }, units?: \"mm\"|\"m\" }. style \"lowpoly\" writes a faceted, flat-shaded game asset in metres (default) with every opaque part coloured through COLOR_0 on one shared material \"kernelcad-palette\" (merges to one draw call); asset.extras.kernelcad carries stats { triangles, sizeM, minUpM } and palette zones; exceeding maxTriangles fails with export.glb.triangle-budget. obj and usd are mesh exports with no extra options; usd writes ASCII USDA (millimeter, Z-up). svg-drawing: { views?: [\"front\"], sheet?: \"a4\"|\"a3\" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. views:[\"front\"] produces a centred front-only elevation for SVG or PDF; omit views for four views. Front-only sheets require front annotations and reject isometric balloons/exploded overlays. svg-drawing annotations is an array of authored dimensions/notes, each { kind: \"linear\"|\"radius\"|\"diameter\"|\"angular\"|\"note\", view?: \"front\"|\"top\"|\"left\"|\"iso\", text?, offset? } plus kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped. svg-drawing sections is an array of { plane: \"xy\"|\"xz\"|\"yz\"|{ origin, normal }, label } (any non-zero normal). svg-drawing autoAnnotate is true or { tolerance?: \"ISO2768-f\"|\"ISO2768-m\"|\"ISO2768-c\", datums?: \"auto\"|[{ label, face: FaceQuery }], include?: [\"datums\"|\"flatness\"|\"holes\"|\"hole-positions\"|\"overall\"|\"fillets\"|\"chamfers\"|\"general-tolerance\"], dimensioningStyle?: \"baseline\"|\"chain\"|\"symmetry\" }; datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones. pdf-drawing: { sheet?: \"a4\"|\"a3\"|\"a2\"|\"a1\"|\"a0\"|\"ansi-a\"|\"ansi-b\"|\"ansi-c\"|\"ansi-d\"|\"ansi-e\"|\"auto\"|\"auto-ansi\" (default \"a3\"), projection?: \"third\"|\"first\", title?, partName?, material?, revision?, date? (default today), modelName?, views?: [\"front\"], annotations?, sections?, exploded?, balloons?, partsList?, autoAnnotate? (default true unless annotations are given) } — the svg-drawing keys mean the same. Mechanical SVG/PDF also accept draftingProfile?: \"general\"|\"machining\"|\"sheet-metal\" or { id, name, sheet, projection, dimensioningStyle, tolerance?, notes? }, with explicit options overriding profile defaults. Functional drawing review: shape.drawingReview(plan) source declarations merge with reviewPlans?: additional plans; decisionResolutions?: { [encodeURIComponent(planId)+\":\"+encodeURIComponent(decisionId)]: { note, provenance } }. drawing_report.review reports declared geometric-callout coverage and unresolved engineering decisions. requireCompleteReview?: true rejects incomplete/not-declared mechanical reviews before export; architectural style rejects review contracts. Coverage is not engineering certification. annotationOverrides?: { [drawing_report.annotations[i].id]: { suppress?, text?, view?, offset? } }; offset is extra nonnegative sheet mm. Text edits primary labels while preserving attached FCFs; datum/standalone FCF text is changed in its declaration instead. Suppressed rows remain in the report but not visible counts. Missing IDs warn after geometry edits. Authored annotations can set id for stable review identity. svg-drawing and pdf-drawing also take style?: \"mechanical\" (default, the part sheet) | \"architectural\" (a floor plan for a building or room model: section about 1 m above the floor with filled cut walls, wall / opening chain dimensions and overall sizes, room labels with net area, scale bar, north arrow; millimetres, or feet-inches when the model is in whole feet / inches) and plan?: { units?: \"metric\"|\"imperial\", cutHeight?: mm above the floor, rooms?: [{ name, at: [x, y] }], northDeg?: degrees clockwise from sheet up }. A building-sized model drawn in the default style gets a drawing.style.architectural-suggested warning."
         },
         "part": {
           "type": "string",
@@ -10787,6 +10787,43 @@
             },
             "sourceUrl": {
               "type": "string"
+            },
+            "kit": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "prop",
+                "furniture",
+                "building",
+                "structure",
+                "vehicle",
+                "nature",
+                "terrain",
+                "item",
+                "attachment",
+                "character",
+                "animal"
+              ]
+            },
+            "origin": {
+              "type": "string",
+              "enum": [
+                "base",
+                "center",
+                "wall",
+                "ceiling"
+              ]
+            },
+            "compat": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "triangleBudget": {
+              "type": "integer"
             }
           },
           "required": [
@@ -10847,6 +10884,610 @@
         "meta",
         "params",
         "presets"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "search_assets",
+    "description": "Use this when a game, three.js scene or 3D page needs a ready low-poly model (tree, bench, lamp, crate, building piece) instead of modelling it from scratch. Searches the kernelCAD asset catalog: original parametric .kcad.ts programs that export as flat-shaded GLB at real-world scale with one shared material. Filter by kit, category or a triangle budget for mobile. Rows: id, title, kit, category, triangles (low-poly GLB at default knobs), size_m [x, y, z] in metres (Y up), origin (base = bottom centre on y 0), tags, remixable, knobs, palette (hex colours), has_rig. When q or a filter is given, coverage says how far to trust the answer: none (nothing answers: say so, do not substitute something unrelated), poor (unmatched_terms lists the words nothing answers), filtered_out (the catalog has it; relax a filter), ok.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string",
+          "description": "Plain words, e.g. \"pine tree\", \"park bench\"."
+        },
+        "kit": {
+          "type": "string",
+          "description": "Kit id from list_kits."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "prop",
+            "furniture",
+            "building",
+            "structure",
+            "vehicle",
+            "nature",
+            "terrain",
+            "item",
+            "attachment",
+            "character",
+            "animal"
+          ]
+        },
+        "max_triangles": {
+          "type": "number",
+          "description": "Only assets at or under this triangle count."
+        },
+        "min_triangles": {
+          "type": "number"
+        },
+        "sort": {
+          "type": "string",
+          "enum": [
+            "relevance",
+            "triangles"
+          ],
+          "default": "relevance"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Rows per page, 1-100 (default 20)."
+        },
+        "page": {
+          "type": "number",
+          "description": "1-based page (default 1)."
+        }
+      }
+    },
+    "title": "Search Assets",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Search Assets"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer"
+        },
+        "page": {
+          "type": "integer"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "kit": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "triangles": {
+                "type": "integer"
+              },
+              "size_m": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "origin": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "remixable": {
+                "type": "boolean"
+              },
+              "knobs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "palette": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "has_rig": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "kit",
+              "category",
+              "triangles",
+              "size_m"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "coverage": {
+          "type": "string",
+          "enum": [
+            "none",
+            "poor",
+            "ok",
+            "filtered_out"
+          ]
+        },
+        "unmatched_terms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "matches_before_filters": {
+          "type": "integer"
+        },
+        "next": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "total",
+        "rows",
+        "unmatched_terms",
+        "matches_before_filters"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "get_asset",
+    "description": "Use this when you have picked a catalog asset and need everything to use or change it: knobs (type, default, range or choices, label), presets, rig, measured triangles and size in metres, palette zones named after their colour knob, licence, and the full .kcad.ts source (`code`) to export or edit.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Asset id from search_assets."
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "title": "Get Asset",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Get Asset"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kit": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "presets": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "stats": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "palette": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "code": {
+          "type": "string"
+        },
+        "how_to_build": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kit",
+        "params",
+        "stats",
+        "code"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "find_matching",
+    "description": "Use this when one picked asset should become a scene: returns assets that belong with it, same kit first, then shared compat tags (e.g. outdoor), a shared palette colour and compatible real-world scale, spread across categories so a tree brings a rock and a bench rather than more trees. Each row adds score and reasons. Rows: id, title, kit, category, triangles (low-poly GLB at default knobs), size_m [x, y, z] in metres (Y up), origin (base = bottom centre on y 0), tags, remixable, knobs, palette (hex colours), has_rig.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Anchor asset id."
+        },
+        "limit": {
+          "type": "number",
+          "description": "1-50 (default 12)."
+        },
+        "max_triangles": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "title": "Find Matching Assets",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Find Matching Assets"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "kit": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "triangles": {
+                "type": "integer"
+              },
+              "size_m": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "origin": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "remixable": {
+                "type": "boolean"
+              },
+              "knobs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "palette": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "has_rig": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "kit",
+              "category",
+              "triangles",
+              "size_m"
+            ],
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "id",
+        "rows"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "get_variant",
+    "description": "Use this when the user describes a variant in plain words (\"taller, red foliage, five tiers\", \"autumn\", \"bark #333333\", \"with snow\"). Matches the words against this asset's knob names, option values, presets, #hex or basic colour words before a colour knob, with/without for toggles, and taller/shorter/more/fewer for size and count knobs. Returns the knob values, what matched, the words that did not (never guessed), and the variant .kcad.ts source (`code`) with those values written in, ready to export.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Asset id."
+        },
+        "want": {
+          "type": "string",
+          "description": "Plain words describing the variant."
+        }
+      },
+      "required": [
+        "id",
+        "want"
+      ]
+    },
+    "title": "Get Asset Variant",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Get Asset Variant"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "want": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        },
+        "matched": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "unmatched": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "preset": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "how_to_build": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "params",
+        "matched",
+        "unmatched",
+        "code"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "list_kits",
+    "description": "Use this when the user is building a whole environment rather than looking for one object: lists the asset kits (themed sets built to one palette and real-world scale) with their asset counts.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "title": "List Asset Kits",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "List Asset Kits"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "kits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "assets": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "assets"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "kits"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "get_kit",
+    "description": "Use this when you have chosen a kit and want every asset in it as shortlisting rows in one call. Rows: id, title, kit, category, triangles (low-poly GLB at default knobs), size_m [x, y, z] in metres (Y up), origin (base = bottom centre on y 0), tags, remixable, knobs, palette (hex colours), has_rig.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Kit id from list_kits."
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "title": "Get Asset Kit",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Get Asset Kit"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "kit": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "triangles": {
+                "type": "integer"
+              },
+              "size_m": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "origin": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "remixable": {
+                "type": "boolean"
+              },
+              "knobs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "palette": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "has_rig": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "kit",
+              "category",
+              "triangles",
+              "size_m"
+            ],
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "assets",
+        "rows"
       ],
       "additionalProperties": false
     }

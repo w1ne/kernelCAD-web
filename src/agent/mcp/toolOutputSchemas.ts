@@ -32,6 +32,7 @@ import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outp
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
 import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputSchemas';
 import { SURFACE_BLEND_OUTPUT_SCHEMAS } from './registry/surfaceBlendTools.outputSchemas';
+import { ASSET_CATALOG_OUTPUT_SCHEMAS } from './registry/assetCatalogTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { MECHANISM_SUMMARY, SELECTION, SET_PARAM, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -680,44 +681,8 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
 
-  asset_manifest: {
-    type: 'object',
-    properties: {
-      meta: {
-        type: 'object',
-        properties: {
-          schemaVersion: { type: 'integer', const: 1 },
-          name: { type: 'string' },
-          title: { type: 'string' },
-          description: { type: 'string' },
-          license: { type: 'string', enum: ['CC-BY-4.0', 'CC-BY-SA-4.0', 'CC-BY-NC-4.0', 'CC-BY-NC-SA-4.0', 'CC0-1.0', 'MIT', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', 'MPL-2.0', 'Unlicense'] },
-          authors: { type: 'array', items: { type: 'string' } },
-          tags: { type: 'array', items: { type: 'string' } },
-          sourceUrl: { type: 'string' },
-        },
-        required: ['schemaVersion', 'license'],
-        additionalProperties: false,
-      },
-      params: { type: 'object', additionalProperties: { type: ['string', 'number', 'boolean'] } },
-      presets: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            schemaVersion: { type: 'integer', const: 1 },
-            name: { type: 'string' },
-            label: { type: 'string' },
-            description: { type: 'string' },
-            params: { type: 'object', additionalProperties: { type: ['string', 'number', 'boolean'] } },
-          },
-          required: ['schemaVersion', 'name', 'params'],
-          additionalProperties: false,
-        },
-      },
-    },
-    required: ['meta', 'params', 'presets'],
-    additionalProperties: false,
-  },
+  ...ASSET_CATALOG_OUTPUT_SCHEMAS,
+
 
   evaluate_sdf: {
     type: 'object',

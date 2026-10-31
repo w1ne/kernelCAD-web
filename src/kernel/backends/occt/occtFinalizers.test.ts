@@ -6,7 +6,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { initOcct, OcctBackend } from './occtBackend';
-import { finalizedOcctObjectCount, installOcctFinalizers } from './occtFinalizers';
+import { finalizedOcctObjectCount, installOcctFinalizers, untracked } from './occtFinalizers';
 import { Transform } from '../../../shared/runtime/se3';
 
 setFlagsFromString('--expose-gc');
@@ -66,6 +66,35 @@ describe('installOcctFinalizers', () => {
       await new Promise((r) => setTimeout(r, 10));
     }
     expect(finalizedOcctObjectCount()).toBe(before);
+  });
+});
+
+describe('untracked', () => {
+  it('leaves objects made inside it to their caller', async () => {
+    const oc = getOC() as any;
+    await collectPast(finalizedOcctObjectCount());
+    const before = finalizedOcctObjectCount();
+    const kept = untracked(() => {
+      for (let i = 0; i < 200; i += 1) new oc.gp_Pnt_3(i, 0, 0).delete();
+      return new oc.gp_Pnt_3(1, 2, 3);
+    });
+    for (let i = 0; i < 10; i += 1) {
+      gc();
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    expect(finalizedOcctObjectCount()).toBe(before);
+    expect(kept.X()).toBe(1);
+    kept.delete();
+  });
+
+  it('tracks again once it returns', async () => {
+    const oc = getOC() as any;
+    untracked(() => undefined);
+    const before = finalizedOcctObjectCount();
+    (() => {
+      for (let i = 0; i < 200; i += 1) new oc.gp_Pnt_3(i, 0, 0);
+    })();
+    expect(await collectPast(before)).toBeGreaterThan(before);
   });
 });
 

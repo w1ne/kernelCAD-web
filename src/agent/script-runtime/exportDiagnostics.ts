@@ -248,6 +248,38 @@ export function threeMfBedDiagnostics(
 }
 
 /**
+ * Translate the low-poly GLB gates (`export.glb.triangle-budget`,
+ * `export.glb.lowpoly-angle`) into structured diagnostics. Returns
+ * `undefined` for any other error so callers can rethrow.
+ */
+export function glbLowPolyDiagnostic(
+  e: unknown,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+  targetId: string | undefined,
+): ExportResult | undefined {
+  const msg = e instanceof Error ? e.message : String(e);
+  const match = /^(export\.glb\.(?:triangle-budget|lowpoly-angle)): (.*)$/s.exec(msg);
+  if (match === null) return undefined;
+  const code = match[1] as 'export.glb.triangle-budget' | 'export.glb.lowpoly-angle';
+  return {
+    bytes: new Uint8Array(),
+    featureCount,
+    diagnostics: [...diagnostics, {
+      target: 'export-occt',
+      code,
+      featureId: targetId,
+      severity: 'error',
+      message: match[2]!,
+      hint: code === 'export.glb.triangle-budget'
+        ? 'Raise options.lowpoly.angularDeg (fewer facets on curved faces), reduce segment/part counts in the model, or raise options.lowpoly.maxTriangles.'
+        : 'Pass options.lowpoly.angularDeg between 5 and 60 degrees (default 30, about 12 segments per circle).',
+      nextAction: NEXT_ACTIONS[code],
+    }],
+  };
+}
+
+/**
  * Translate an `exportGlbAsync` Draco-conflict Error into the structured
  * `export.glb.draco-glass-conflict` diagnostic. Returns `undefined` when the
  * error doesn't look like a Draco gate failure so callers can rethrow.
