@@ -13,7 +13,7 @@ import { releaseWorldFrameParts, sceneToWorldFrameParts } from '../../kernel/bac
 import { exportMeshPly, plyPartRgb, type PlyPart, type PlyWriterOptions } from '../../kernel/export/plyFormat';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { invalidArgsError, type InvalidArgsSpec } from '../../shared/intent/invalidArgs';
 import type { ExportInput, ExportResult } from './export';
@@ -53,7 +53,7 @@ export function plyOptionsDiagnostic(input: ExportInput): ExportResult | undefin
       code: err.code,
       severity: 'error',
       message: err.message,
-      ...(err.hint === undefined ? {} : { hint: err.hint }),
+      hint: err.hint ?? HINT_TEMPLATES['export.ply.invalid-options'].template,
       nextAction: NEXT_ACTIONS['export.ply.invalid-options'],
     }],
   };
