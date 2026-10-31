@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-31T12:06:50.692Z",
+  "checkedAt": "2026-10-31T12:08:35.475Z",
   "kits": [
     {
       "id": "nature",
@@ -37,12 +37,11 @@
       "want": "taller, autumn, five tiers",
       "params": {
         "leaves": "#c9772b",
-        "heightM": "6"
+        "heightM": "6",
+        "tiers": "5"
       },
-      "unmatched": [
-        "five"
-      ],
-      "glbSha256": "09506dff36d369db5053c7ef93819b5d77d054fc7de05b9edf038973f34f29c7"
+      "unmatched": [],
+      "glbSha256": "f0285d4c57e8c492eba0afeedcc3100a09a91a020f2738607bbfcc372e4e3280"
     }
   ],
   "claims": {

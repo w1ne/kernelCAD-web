@@ -97,13 +97,17 @@ const exported = await runAndExport({
   code: variant.code, fileName: `${variantId}.kcad.ts`, format: 'glb',
   options: { format: 'glb', style: 'lowpoly' },
 });
-const variantPng = await renderTrianglesPng(await glbTriangles(exported.bytes), { size: 420, label: `${variantId} variant` });
-const defaultPng = await sharp(join(repoRoot, 'catalog', 'kits', anchor.kit, 'previews', `${variantId}.png`)).resize(420, 420).png().toBuffer();
+const defaultCode = (await callMcpTool('get_asset', { id: variantId }) as Json).code as string;
+const defaultGlb = (await runAndExport({ code: defaultCode, fileName: `${variantId}.kcad.ts`, format: 'glb', options: { format: 'glb', style: 'lowpoly' } })).bytes;
+const [defaultTris, variantTris] = [await glbTriangles(defaultGlb), await glbTriangles(exported.bytes)];
+const tallest = Math.max(...[...defaultTris, ...variantTris].flatMap((t) => t.v.map((p) => p[1]))) * 1.05;
+const variantPng = await renderTrianglesPng(variantTris, { size: 420, frameHeightM: tallest, label: `variant · ${variantTris.length} tris` });
+const defaultPng = await renderTrianglesPng(defaultTris, { size: 420, frameHeightM: tallest, label: `defaults · ${defaultTris.length} tris` });
 evidence.queries.push({ tool: 'get_variant', id: variantId, want, params: variant.params, unmatched: variant.unmatched, glbSha256: createHash('sha256').update(exported.bytes).digest('hex') });
 await emit(chrome('get_variant', `Plain words become knob values and a ready .kcad.ts source; exported here with style: 'lowpoly'.`, [
   textLines([`get_variant({ id: "${variantId}", want: "${want}" })`, `params: ${JSON.stringify(variant.params)}`, `unmatched: ${JSON.stringify(variant.unmatched)}`], 56, 150, 18, '#17243a'),
-  `<text x="266" y="690" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#53657f">defaults</text>`,
-  `<text x="1010" y="690" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#53657f">variant</text>`,
+  `<text x="640" y="460" text-anchor="middle" font-family="Arial,sans-serif" font-size="40" fill="#2866d5">→</text>`,
+  `<text x="640" y="500" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" fill="#53657f">same scale</text>`,
 ].join('')), [{ input: defaultPng, left: 56, top: 250 }, { input: variantPng, left: 800, top: 250 }], 6);
 
 execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', join(frameDir, 'f-%04d.png'),

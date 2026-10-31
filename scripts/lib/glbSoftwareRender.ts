@@ -60,6 +60,9 @@ export interface RenderOptions {
   pitchDeg?: number;
   background?: string;
   label?: string;
+  /** Fixed framing: this many metres of height fill the frame, ground (y = 0)
+   *  at the bottom. Use the same value for images that must compare in size. */
+  frameHeightM?: number;
 }
 
 /** PNG of the triangles from a 3/4 view, framed to fit. */
@@ -79,9 +82,14 @@ export async function renderTrianglesPng(tris: SoftTriangle[], options: RenderOp
   const [minX, maxX, minY, maxY] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
   const margin = size * 0.1;
   const labelSpace = options.label === undefined ? 0 : size * 0.09;
-  const scale = Math.min((size - 2 * margin) / Math.max(maxX - minX, 1e-6), (size - 2 * margin - labelSpace) / Math.max(maxY - minY, 1e-6));
+  const fixed = options.frameHeightM;
+  const scale = fixed !== undefined
+    ? (size - 2 * margin - labelSpace) / fixed
+    : Math.min((size - 2 * margin) / Math.max(maxX - minX, 1e-6), (size - 2 * margin - labelSpace) / Math.max(maxY - minY, 1e-6));
   const cx = size / 2 - ((minX + maxX) / 2) * scale;
-  const cy = (size - labelSpace) / 2 + ((minY + maxY) / 2) * scale;
+  const cy = fixed !== undefined
+    ? size - margin - labelSpace
+    : (size - labelSpace) / 2 + ((minY + maxY) / 2) * scale;
   const polys = viewed.map(({ pv, color }) => {
     const a = [pv[1]![0] - pv[0]![0], pv[1]![1] - pv[0]![1], pv[1]![2] - pv[0]![2]];
     const b = [pv[2]![0] - pv[0]![0], pv[2]![1] - pv[0]![1], pv[2]![2] - pv[0]![2]];
