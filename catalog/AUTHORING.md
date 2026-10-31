@@ -48,6 +48,11 @@ meta({
   `extrudePolygon`, `cylinder(h, r)` (faceted at export), and `sphere(r)`
   scaled with `.scale([sx, sy, sz])` for rocks and bushes. Avoid fillets,
   threads and text: they cost triangles and read as CAD, not as a game asset.
+- **Build a fresh shape for every copy.** `translate`, `rotate`, `scale`,
+  `reflect` and `color` modify the shape they are called on and return it, so
+  `const leaf = box(…); a = leaf.rotate(…); b = leaf.rotate(…)` gives two
+  handles to ONE shape carrying both rotations. Use a factory
+  (`const leaf = () => box(…)`) and call it per copy.
 - Budgets that keep scenes cheap: small props 40–300, furniture 100–600, trees
   and large props 80–600, building pieces up to 1500.
 

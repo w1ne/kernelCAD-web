@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Software render of a GLB's own triangles: node world matrices, POSITION and
 // COLOR_0 read with glTF-Transform, each triangle lit by its facet normal and
-// drawn back to front as an SVG polygon, rasterised with sharp. Meant for
+// rasterised with a z-buffer (2x supersampled, downsampled by sharp). Meant for
 // flat-shaded low-poly catalog previews; it is not a three.js render.
 
 import { NodeIO } from '@gltf-transform/core';
@@ -60,6 +60,9 @@ export interface RenderOptions {
   pitchDeg?: number;
   background?: string;
   label?: string;
+  /** Fixed framing: this many metres of height fill the frame, ground (y = 0)
+   *  at the bottom. Use the same value for images that must compare in size. */
+  frameHeightM?: number;
 }
 
 /** PNG of the triangles from a 3/4 view, framed to fit. */
@@ -79,21 +82,58 @@ export async function renderTrianglesPng(tris: SoftTriangle[], options: RenderOp
   const [minX, maxX, minY, maxY] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
   const margin = size * 0.1;
   const labelSpace = options.label === undefined ? 0 : size * 0.09;
-  const scale = Math.min((size - 2 * margin) / Math.max(maxX - minX, 1e-6), (size - 2 * margin - labelSpace) / Math.max(maxY - minY, 1e-6));
+  const fixed = options.frameHeightM;
+  const scale = fixed !== undefined
+    ? (size - 2 * margin - labelSpace) / fixed
+    : Math.min((size - 2 * margin) / Math.max(maxX - minX, 1e-6), (size - 2 * margin - labelSpace) / Math.max(maxY - minY, 1e-6));
   const cx = size / 2 - ((minX + maxX) / 2) * scale;
-  const cy = (size - labelSpace) / 2 + ((minY + maxY) / 2) * scale;
-  const polys = viewed.map(({ pv, color }) => {
+  const cy = fixed !== undefined
+    ? size - margin - labelSpace
+    : (size - labelSpace) / 2 + ((minY + maxY) / 2) * scale;
+  // Z-buffered scanline rasteriser at 2x, downsampled by sharp (antialiasing).
+  const ss = 2;
+  const n2 = size * ss;
+  const bg = hexRgb(options.background ?? '#eef3f8');
+  const rgb = new Uint8ClampedArray(n2 * n2 * 3);
+  for (let i = 0; i < n2 * n2; i++) rgb.set(bg, i * 3);
+  const zbuf = new Float32Array(n2 * n2).fill(-Infinity);
+  for (const { pv, color } of viewed) {
     const a = [pv[1]![0] - pv[0]![0], pv[1]![1] - pv[0]![1], pv[1]![2] - pv[0]![2]];
     const b = [pv[2]![0] - pv[0]![0], pv[2]![1] - pv[0]![1], pv[2]![2] - pv[0]![2]];
     const n = normalize([a[1]! * b[2]! - a[2]! * b[1]!, a[2]! * b[0]! - a[0]! * b[2]!, a[0]! * b[1]! - a[1]! * b[0]!]);
-    if (n[2] <= 0) return undefined;
+    if (n[2] <= 0) continue; // back face (toward the viewer is +z)
     const shade = 0.45 + 0.55 * Math.max(0, n[0] * light[0] + n[1] * light[1] + n[2] * light[2]);
-    const rgb = color.map((c) => Math.round(Math.min(1, c * shade) * 255)).join(',');
-    const pts = pv.map((p) => `${(cx + p[0] * scale).toFixed(1)},${(cy - p[1] * scale).toFixed(1)}`).join(' ');
-    return { depth: (pv[0]![2] + pv[1]![2] + pv[2]![2]) / 3, svg: `<polygon points="${pts}" fill="rgb(${rgb})" stroke="rgb(${rgb})" stroke-width="0.6" stroke-linejoin="round"/>` };
-  }).filter((p): p is { depth: number; svg: string } => p !== undefined);
-  polys.sort((p, q) => p.depth - q.depth);
-  const label = options.label === undefined ? '' : `<text x="${size / 2}" y="${size - size * 0.035}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${Math.round(size * 0.038)}" fill="#33445c">${options.label.replaceAll('&', '&amp;').replaceAll('<', '&lt;')}</text>`;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><rect width="100%" height="100%" fill="${options.background ?? '#eef3f8'}"/>${polys.map((p) => p.svg).join('')}${label}</svg>`;
-  return await sharp(Buffer.from(svg)).png().toBuffer();
+    const fill = color.map((c) => Math.round(Math.min(1, c * shade) * 255));
+    const sx = pv.map((p) => (cx + p[0] * scale) * ss);
+    const sy = pv.map((p) => (cy - p[1] * scale) * ss);
+    const sz = pv.map((p) => p[2]);
+    const area = (sx[1]! - sx[0]!) * (sy[2]! - sy[0]!) - (sx[2]! - sx[0]!) * (sy[1]! - sy[0]!);
+    if (Math.abs(area) < 1e-9) continue;
+    const x0 = Math.max(0, Math.floor(Math.min(...sx))), x1 = Math.min(n2 - 1, Math.ceil(Math.max(...sx)));
+    const y0 = Math.max(0, Math.floor(Math.min(...sy))), y1 = Math.min(n2 - 1, Math.ceil(Math.max(...sy)));
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        const px = x + 0.5, py = y + 0.5;
+        const w0 = ((sx[1]! - px) * (sy[2]! - py) - (sx[2]! - px) * (sy[1]! - py)) / area;
+        const w1 = ((sx[2]! - px) * (sy[0]! - py) - (sx[0]! - px) * (sy[2]! - py)) / area;
+        const w2 = 1 - w0 - w1;
+        if (w0 < -1e-6 || w1 < -1e-6 || w2 < -1e-6) continue;
+        const z = w0 * sz[0]! + w1 * sz[1]! + w2 * sz[2]!;
+        const k = y * n2 + x;
+        if (z <= zbuf[k]!) continue;
+        zbuf[k] = z;
+        rgb.set(fill, k * 3);
+      }
+    }
+  }
+  const body = await sharp(Buffer.from(rgb.buffer), { raw: { width: n2, height: n2, channels: 3 } })
+    .resize(size, size, { kernel: 'lanczos3' }).png().toBuffer();
+  if (options.label === undefined) return body;
+  const label = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><text x="${size / 2}" y="${size - size * 0.035}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${Math.round(size * 0.038)}" fill="#33445c">${options.label.replaceAll('&', '&amp;').replaceAll('<', '&lt;')}</text></svg>`;
+  return await sharp(body).composite([{ input: Buffer.from(label) }]).png().toBuffer();
+}
+
+function hexRgb(hex: string): [number, number, number] {
+  const n = Number.parseInt(hex.replace('#', ''), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }

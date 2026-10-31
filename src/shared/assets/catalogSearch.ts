@@ -233,6 +233,11 @@ const COLOR_WORDS: Readonly<Record<string, string>> = {
   black: '#262626', cream: '#f3ead3', olive: '#6b7a2f', maroon: '#7b2431',
 };
 
+const NUMBER_WORDS: Readonly<Record<string, string>> = {
+  one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9', ten: '10',
+  eleven: '11', twelve: '12', single: '1', double: '2', triple: '3',
+};
+
 const GROW_WORDS = new Set(['taller', 'bigger', 'larger', 'longer', 'wider', 'more', 'higher']);
 const SHRINK_WORDS = new Set(['shorter', 'smaller', 'tinier', 'fewer', 'narrower', 'less', 'lower']);
 const ON_WORDS = new Set(['on', 'with', 'yes', 'true']);
@@ -349,6 +354,17 @@ const colorRule: VariantRule = (state, i) => {
   return named === undefined ? 1 : 2;
 };
 
+/** `<value> <knob>`: "5 tiers", "8 height", "red bark" is handled by colorRule. */
+const valueBeforeKnobRule: VariantRule = (state, i) => {
+  const [word, next] = [state.words[i]!, state.words[i + 1]];
+  if (next === undefined) return 0;
+  const named = findParamByWord(state.asset.params, next);
+  const value = named === undefined ? undefined : valueForParam(named, word);
+  if (named === undefined || value === undefined || named.type === 'boolean') return 0;
+  setKnob(state, `${word} ${next}`, named, value);
+  return 2;
+};
+
 /** A bare option value of some choice knob. */
 const choiceRule: VariantRule = (state, i) => {
   const word = state.words[i]!;
@@ -371,17 +387,22 @@ const comparativeRule: VariantRule = (state, i) => {
   return named === undefined ? 1 : 2;
 };
 
-const VARIANT_RULES: readonly VariantRule[] = [presetRule, namedKnobRule, toggleRule, colorRule, choiceRule, comparativeRule];
+const VARIANT_RULES: readonly VariantRule[] = [
+  presetRule, namedKnobRule, toggleRule, colorRule, valueBeforeKnobRule, choiceRule, comparativeRule,
+];
 
 /**
  * Turn plain words into knob overrides for one asset: preset names, choice
- * option values, `<knob> <value>` pairs, `#hex` or a basic colour word before
+ * option values, `<knob> <value>` and `<value> <knob>` pairs (number words
+ * such as "five" count), `#hex` or a basic colour word before
  * a colour knob (or alone: the first colour knob), on/off/with/without before
  * a boolean knob, and taller/shorter/more/fewer stepping a size or count knob.
  * Unknown words are returned, not guessed.
  */
 export function resolveVariant(asset: CatalogAsset, want: string): VariantResolution {
-  const words = want.toLowerCase().split(/[\s,;]+/).filter((w) => w.length > 0 && !STOP_WORDS.has(w));
+  const words = want.toLowerCase().split(/[\s,;]+/)
+    .filter((w) => w.length > 0 && !STOP_WORDS.has(w))
+    .map((w) => NUMBER_WORDS[w] ?? w);
   const state: VariantState = { asset, words, out: {}, matched: [], preset: undefined };
   const unmatched: string[] = [];
   for (let i = 0; i < words.length;) {
