@@ -244,12 +244,25 @@ describe('resolveBoreExtents (pure grouping + interval union)', () => {
 
   it('keeps different radii in separate groups', () => {
     const a = face({ radiusMm: 2 });
-    const b = face({ radiusMm: 2.5 }); // Δr = 0.5 > 0.01 mm tolerance
+    const b = face({ radiusMm: 2.5 }); // Δr = 0.5 > 0.025 mm radius tolerance
     const bores = resolveBoreExtents([a, b]);
     expect(bores).toHaveLength(2);
     const radii = bores.map((bo) => bo.radiusMm).sort((x, y) => x - y);
     expect(radii[0]).toBeCloseTo(2, 9);
     expect(radii[1]).toBeCloseTo(2.5, 9);
+  });
+
+  it('counts overlapping, near-equal-radius segments as one stepped bore', () => {
+    const segments = [
+      face({ radiusMm: 2, v1: 0, v2: 10 }),
+      face({ radiusMm: 2.02, v1: 5, v2: 15 }), // Δdiameter = 0.04 mm, within feature tolerance
+    ];
+    const bores = resolveBoreExtents(segments);
+    expect(bores).toHaveLength(1);
+    expect(bores[0].radiusMm).toBeCloseTo(2, 9);
+    expect(bores[0].tMin).toBeCloseTo(0, 9);
+    expect(bores[0].tMax).toBeCloseTo(15, 9);
+    expect(bores[0].faceCount).toBe(2);
   });
 
   it('keeps non-coincident parallel axes in separate groups', () => {
