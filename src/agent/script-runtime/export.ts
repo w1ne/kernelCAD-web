@@ -46,7 +46,7 @@ import {
   exportRegionDxf,
   exportSceneBackend,
   exportSingleShape,
-  optionsFormatMismatchDiagnostic,
+  exportOptionsRefusal,
   resolveConnectorManifestScene,
   resolveExportTarget,
 } from './exportPhases';
@@ -69,13 +69,13 @@ export { stlNotWatertightDiagnostic, brepInvalidDiagnostic } from './exportDiagn
 export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 
 export type ExportFormat =
-  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'obj' | 'usd' | 'svg-drawing' | 'pdf-drawing'
+  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'obj' | 'ply' | 'usd' | 'svg-drawing' | 'pdf-drawing'
   | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode' | 'usd-isaac'
   | 'bom-csv' | 'bom-json' | 'bend-table';
 
 /** Supported export formats, checked before evaluating untyped caller input. */
 export const EXPORT_FORMATS: readonly ExportFormat[] = [
-  'stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'usd', 'svg-drawing', 'pdf-drawing',
+  'stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'ply', 'usd', 'svg-drawing', 'pdf-drawing',
   'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac', 'bom-csv', 'bom-json', 'bend-table',
 ];
 
@@ -128,6 +128,17 @@ export type ExportOptions =
       units?: 'mm' | 'm';
     }
   | { format: 'obj' }
+  | {
+      /** Stanford PLY triangle mesh (mm, Z-up); assemblies merge every part
+       *  in world space into one file. */
+      format: 'ply';
+      /** Default 'binary' (binary_little_endian 1.0). */
+      encoding?: 'binary' | 'ascii';
+      /** Per-vertex normals with crease-split vertices; default true. */
+      normals?: boolean;
+      /** Part colour from .finish()/.material()/.color(); default 'vertex'. */
+      colors?: 'vertex' | 'face' | 'none';
+    }
   | { format: 'usd' }
   | (DrawingReviewOptions & {
       format: 'svg-drawing';
@@ -428,7 +439,9 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
 
   const { code, fileName, format, feature_id, scriptDir, connectorManifest: manifestRequest } = input;
 
-  const optionMismatch = optionsFormatMismatchDiagnostic(input);
+  // options.format must match format; format-specific options are checked
+  // before the script runs (PLY), so a typo costs no rebuild.
+  const optionMismatch = exportOptionsRefusal(input);
   if (optionMismatch !== undefined) return optionMismatch;
 
   if (manifestRequest !== undefined && format !== 'step') {
