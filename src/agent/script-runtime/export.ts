@@ -114,7 +114,17 @@ export type ExportOptions =
        *  `slicer: 'prusa'` (fill_density). */
       infill?: StressInfillExportOptions;
     }
-  | { format: 'glb'; axis?: 'y-up' | 'z-up'; hierarchy?: 'rig' | 'flat'; draco?: false }
+  | {
+      format: 'glb';
+      axis?: 'y-up' | 'z-up';
+      hierarchy?: 'rig' | 'flat';
+      draco?: false;
+      /** 'lowpoly': faceted game mesh, palette in COLOR_0 on one shared material. */
+      style?: 'pbr' | 'lowpoly';
+      lowpoly?: { angularDeg?: number; maxTriangles?: number };
+      /** Default 'mm' for pbr, 'm' for lowpoly. */
+      units?: 'mm' | 'm';
+    }
   | { format: 'obj' }
   | { format: 'usd' }
   | (DrawingReviewOptions & {

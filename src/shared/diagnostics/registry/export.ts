@@ -108,6 +108,21 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A GLB export requested Draco compression; the encoder is not yet implemented (reserved for a follow-up slice to avoid silently stripping KHR_materials_transmission on glass parts).',
   },
+  'export.glb.triangle-budget': {
+    hintTemplate:
+      'The low-poly GLB has more triangles than options.lowpoly.maxTriangles. Raise options.lowpoly.angularDeg for fewer facets on curved faces, reduce segment or part counts in the model, or raise the budget.',
+    nextAction: { kind: 'fix-arg', field: 'options.lowpoly.maxTriangles' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A style: lowpoly GLB export exceeded its triangle budget; no file was written.',
+  },
+  'export.glb.lowpoly-angle': {
+    hintTemplate: 'options.lowpoly.angularDeg must be between 5 and 90 degrees (default 30, about 12 segments per circle).',
+    nextAction: { kind: 'fix-arg', field: 'options.lowpoly.angularDeg' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A style: lowpoly GLB export was given an out-of-range facet angle.',
+  },
   'export.glb.rig-warning': {
     hintTemplate:
       'Inspect asset.extras.kernelcad.rigWarnings. Loop-closing mates remain outside the strict glTF node tree; unsupported ball, planar, and pin-slot mates are held fixed.',

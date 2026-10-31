@@ -31,6 +31,7 @@ import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
 import { exportSceneStlAsShells, freeformFuseOverBudget, meshPartsAsShells } from './sceneStlFuse';
 import {
   dracoConflictDiagnostic,
+  glbLowPolyDiagnostic,
   notWatertightDiagnostic,
   sliceShapeToGcode,
   threeMfBedDiagnostics,
@@ -530,7 +531,8 @@ export async function exportSceneGlb(
       releaseWorldFrameParts(worldParts);
     }
   } catch (e) {
-    const dracoDiag = dracoConflictDiagnostic(e, diagnostics, featureCount, targetId);
+    const dracoDiag = dracoConflictDiagnostic(e, diagnostics, featureCount, targetId)
+      ?? glbLowPolyDiagnostic(e, diagnostics, featureCount, targetId);
     if (dracoDiag) return dracoDiag;
     throw e;
   }
@@ -895,7 +897,8 @@ async function exportSingleGlb(
     const bytes = await exportGlbAsync([part], optsGlb);
     return { bytes, featureCount, diagnostics };
   } catch (e) {
-    const dracoDiag = dracoConflictDiagnostic(e, diagnostics, featureCount, targetId);
+    const dracoDiag = dracoConflictDiagnostic(e, diagnostics, featureCount, targetId)
+      ?? glbLowPolyDiagnostic(e, diagnostics, featureCount, targetId);
     if (dracoDiag) return dracoDiag;
     throw e;
   }

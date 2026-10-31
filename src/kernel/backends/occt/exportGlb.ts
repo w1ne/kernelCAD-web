@@ -53,6 +53,15 @@ import { resolveAndLoadTextureBytes } from '../../../shared/textures';
 import { attributionGenerator } from '../../../shared/links/attribution';
 import { createMaterialNameRegistry } from '../../export/materialNaming';
 import {
+  createPaletteCollector,
+  flatColoredGeometry,
+  lowPolyDeflection,
+  measureMeshes,
+  needsOwnMaterial,
+  paletteMaterial,
+  type LowPolyGlbOptions,
+} from '../../export/lowPolyGlb';
+import {
   buildRigTree,
   invertRigidMatrix,
   rigMetadataFromTree,
@@ -85,6 +94,16 @@ export interface ExportGlbOptions {
   axis?: 'y-up' | 'z-up';
   /** Reserved for a future slice; runtime throws when `true` today. */
   draco?: false;
+  /** `pbr` (default): smooth export-grade mesh, one PBR material per finish.
+   *  `lowpoly`: coarse faceted mesh with flat normals; every opaque part
+   *  carries its colour in `COLOR_0` and shares one material, so assets
+   *  merge into one draw call. Glass/translucent parts keep their own. */
+  style?: 'pbr' | 'lowpoly';
+  /** Tessellation and triangle budget for `style: 'lowpoly'`. */
+  lowpoly?: LowPolyGlbOptions;
+  /** Length unit of the written file. Default `mm` for `pbr` (historical)
+   *  and `m` for `lowpoly` (glTF's unit; game engines expect metres). */
+  units?: 'mm' | 'm';
   /** Directory relative-path texture refs resolve against. Mirrors
    *  `referenceImage()` / material texture-loading convention. Only needed
    *  when a part carries `material.textureProjection` with a relative
@@ -127,17 +146,27 @@ export async function exportGlbAsync(
     throw new Error('exportGlbAsync: no parts to write.');
   }
 
+  const style = options.style ?? 'pbr';
+  const deflection = style === 'lowpoly' ? lowPolyDeflection(options.lowpoly) : undefined;
   const meshed: ReadonlyArray<MeshedGlbPart> = parts.map((p) =>
     hasMesh(p)
       ? p
-      : { ...p, mesh: meshShapeForExport(p.shape.getReplicadShape()) },
+      : { ...p, mesh: meshShapeForExport(p.shape.getReplicadShape(), deflection) },
   );
 
   const axis = options.axis ?? 'y-up';
+  const units = options.units ?? (style === 'lowpoly' ? 'm' : 'mm');
+  const stats = measureMeshes(meshed.map((p) => p.mesh), axis);
+  const maxTriangles = options.lowpoly?.maxTriangles;
+  if (maxTriangles !== undefined && stats.triangles > maxTriangles) {
+    throw new Error(
+      `export.glb.triangle-budget: ${stats.triangles} triangles exceeds lowpoly.maxTriangles ${maxTriangles}.`,
+    );
+  }
   const rigTree = options.hierarchy !== 'flat' && solvedAssembly !== undefined && solvedAssembly.mates.length > 0
     ? buildRigTree(solvedAssembly)
     : undefined;
-  const { scene, wrappedParts } = createExportScene(meshed, axis, rigTree, solvedAssembly);
+  const { scene, wrappedParts, palette } = createExportScene(meshed, { axis, units, style }, rigTree, solvedAssembly);
 
   const exporter = new GLTFExporter();
   const isoDate = new Date().toISOString().slice(0, 10);
@@ -180,7 +209,11 @@ export async function exportGlbAsync(
     version: KERNELCAD_VERSION,
     isoDate,
     axisConvention: axis,
+    units,
+    style,
+    stats,
   };
+  if (palette !== undefined) kernelcadExtras.palette = palette;
   if (rigTree !== undefined) {
     const metadata = rigMetadataFromTree(rigTree);
     kernelcadExtras.rig = metadata.rig;
@@ -196,21 +229,39 @@ interface ExportSceneContext {
   readonly solvedAssembly: SolvedRigAssembly | undefined;
   readonly wrappedParts: Array<{ name: string; projection: NonNullable<PBRMaterial['textureProjection']> }>;
   readonly materialNames: ReturnType<typeof createMaterialNameRegistry>;
-  readonly materialsByKey: Map<string, THREE.MeshPhysicalMaterial>;
+  readonly materialsByKey: Map<string, THREE.Material>;
+  /** Present for `style: 'lowpoly'`. */
+  readonly lowPoly: {
+    readonly material: THREE.MeshStandardMaterial;
+    readonly palette: ReturnType<typeof createPaletteCollector>;
+  } | undefined;
+}
+
+interface ExportSceneLayout {
+  readonly axis: 'y-up' | 'z-up';
+  readonly units: 'mm' | 'm';
+  readonly style: 'pbr' | 'lowpoly';
 }
 
 function createExportScene(
   meshed: ReadonlyArray<MeshedGlbPart>,
-  axis: 'y-up' | 'z-up',
+  layout: ExportSceneLayout,
   rigTree: RigNode[] | undefined,
   solvedAssembly: SolvedRigAssembly | undefined,
-): { scene: THREE.Scene; wrappedParts: ExportSceneContext['wrappedParts'] } {
+): {
+  scene: THREE.Scene;
+  wrappedParts: ExportSceneContext['wrappedParts'];
+  palette: ReturnType<ReturnType<typeof createPaletteCollector>['zones']> | undefined;
+} {
   const root = new THREE.Group();
-  if (axis === 'y-up') {
+  if (layout.axis === 'y-up') {
     // kernelCAD world is Z-up; glTF default is Y-up. Rotate the scene root
     // -PI/2 about X so +Z becomes +Y in viewer space.
     root.rotateX(-Math.PI / 2);
   }
+  // kernelCAD models in millimetres; a metre file scales at the root so rig
+  // pivots and part transforms below keep their authored values.
+  if (layout.units === 'm') root.scale.setScalar(0.001);
   const rigPartNodes = rigTree === undefined ? undefined : createRigGroups(rigTree, root);
   const context: ExportSceneContext = {
     root,
@@ -220,12 +271,15 @@ function createExportScene(
     wrappedParts: [],
     materialNames: createMaterialNameRegistry(),
     materialsByKey: new Map(),
+    lowPoly: layout.style === 'lowpoly'
+      ? { material: paletteMaterial(), palette: createPaletteCollector() }
+      : undefined,
   };
   meshed.forEach((part, index) => addPartToExportScene(part, index, context));
 
   const scene = new THREE.Scene();
   scene.add(root);
-  return { scene, wrappedParts: context.wrappedParts };
+  return { scene, wrappedParts: context.wrappedParts, palette: context.lowPoly?.palette.zones() };
 }
 
 function addPartToExportScene(
@@ -233,7 +287,6 @@ function addPartToExportScene(
   index: number,
   context: ExportSceneContext,
 ): void {
-  const geom = createPartGeometry(part, context.wrappedParts);
   const resolved = context.materialNames.resolve({
     pbr: part.material,
     colorParamName: part.colorParamName,
@@ -241,8 +294,20 @@ function addPartToExportScene(
     materialIndex: index,
     color: part.color,
   });
-  const material = getExportMaterial(resolved.key, resolved.name, part, context);
-  const mesh = new THREE.Mesh(geom, material);
+  const lowPoly = context.lowPoly;
+  let mesh: THREE.Mesh;
+  if (lowPoly === undefined) {
+    const geom = createPartGeometry(part, context.wrappedParts);
+    mesh = new THREE.Mesh(geom, getExportMaterial(resolved.key, resolved.name, part, context));
+  } else {
+    const color = buildMaterial(part.material, part.color, resolved.name).color;
+    lowPoly.palette.add(resolved.name, color, part.name);
+    const geom = flatColoredGeometry(part.mesh, needsOwnMaterial(part.material) ? new THREE.Color(1, 1, 1) : color);
+    const material = needsOwnMaterial(part.material)
+      ? getExportMaterial(resolved.key, resolved.name, part, context)
+      : lowPoly.material;
+    mesh = new THREE.Mesh(geom, material);
+  }
   mesh.name = part.name;
   attachPartMesh(mesh, part, context);
 }
@@ -270,7 +335,7 @@ function getExportMaterial(
   name: string,
   part: MeshedGlbPart,
   context: ExportSceneContext,
-): THREE.MeshPhysicalMaterial {
+): THREE.Material {
   let material = context.materialsByKey.get(key);
   if (material === undefined) {
     material = buildMaterial(part.material, part.color, name);

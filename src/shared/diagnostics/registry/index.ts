@@ -164,6 +164,8 @@ const LEGACY_CODE_ORDER = [
   'export.mesh.not-watertight',
   'export.part.not-found',
   'export.glb.draco-glass-conflict',
+  'export.glb.triangle-budget',
+  'export.glb.lowpoly-angle',
   'export.glb.rig-warning',
   'export.urdf.cylindrical-lossy',
   'export.urdf.pin-slot-lossy',

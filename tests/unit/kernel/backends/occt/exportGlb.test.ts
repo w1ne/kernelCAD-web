@@ -314,3 +314,85 @@ describe('exportGlbAsync', () => {
     expect(json.asset?.extras?.kernelcad).not.toHaveProperty('rig');
   });
 });
+
+describe('exportGlbAsync style: lowpoly', () => {
+  beforeAll(async () => {
+    await initOcct();
+  }, 60000);
+
+  function readColor0(bytes: Uint8Array) {
+    return new NodeIO().readBinary(bytes);
+  }
+
+  it('writes faceted, vertex-coloured parts on one shared palette material in metres', async () => {
+    const scene = makeScene([
+      { name: 'trunk', shape: OcctBackend.cylinder(400, 60), color: '#8b5a2b' },
+      { name: 'crown', shape: OcctBackend.box(300, 300, 300).translate([-150, -150, 400]), color: '#3f8f3f' },
+    ]);
+    const bytes = await exportGlbAsync(sceneToWorldFrameParts(scene), { format: 'glb', style: 'lowpoly' });
+
+    const json = parseGlbJson(bytes);
+    expect(json.materials?.map((m) => m.name)).toEqual(['kernelcad-palette']);
+
+    const doc = await readColor0(bytes);
+    const trunk = doc.getRoot().listNodes().find((n) => n.getName() === 'trunk')!;
+    const prim = trunk.getMesh()!.listPrimitives()[0]!;
+    expect(prim.getIndices()).toBeNull(); // flat: one vertex per facet corner
+    const color = prim.getAttribute('COLOR_0')!;
+    const c = color.getElement(0, []);
+    // #8b5a2b, sRGB -> linear.
+    expect(c[0]).toBeCloseTo(0.258, 2);
+    expect(c[1]).toBeCloseTo(0.102, 2);
+    expect(c[2]).toBeCloseTo(0.024, 2);
+
+    const extras = json.asset?.extras?.kernelcad as {
+      units: string; style: string;
+      stats: { triangles: number; sizeM: number[]; minUpM: number };
+      palette: Array<{ name: string; color: string; parts: string[] }>;
+    };
+    expect(extras.units).toBe('m');
+    expect(extras.style).toBe('lowpoly');
+    expect(extras.stats.sizeM[1]).toBeCloseTo(0.7, 6); // Y-up height
+    expect(extras.stats.sizeM[0]).toBeCloseTo(0.3, 6);
+    expect(extras.stats.minUpM).toBeCloseTo(0, 6);
+    // 30 degree facets: ~12 side segments -> a cylinder stays well under 100 triangles.
+    expect(extras.stats.triangles).toBeLessThan(100 + 12);
+    expect(extras.palette.map((z) => [z.color, z.parts])).toEqual([
+      ['#8b5a2b', ['trunk']],
+      ['#3f8f3f', ['crown']],
+    ]);
+    // The root carries the millimetre -> metre scale.
+    const root = doc.getRoot().listScenes()[0]!.listChildren()[0]!;
+    expect(root.getScale()[0]).toBeCloseTo(0.001, 9);
+  });
+
+  it('uses far fewer triangles than the default pbr mesh for curved parts', async () => {
+    const scene = makeScene([{ name: 'post', shape: OcctBackend.cylinder(500, 50) }]);
+    const parts = sceneToWorldFrameParts(scene);
+    const low = parseGlbJson(await exportGlbAsync(parts, { format: 'glb', style: 'lowpoly' }));
+    const pbr = parseGlbJson(await exportGlbAsync(parts, { format: 'glb' }));
+    const lowTris = (low.asset?.extras?.kernelcad as { stats: { triangles: number } }).stats.triangles;
+    const pbrTris = (pbr.asset?.extras?.kernelcad as { stats: { triangles: number } }).stats.triangles;
+    expect(lowTris * 3).toBeLessThan(pbrTris);
+    expect((pbr.asset?.extras?.kernelcad as { units: string }).units).toBe('mm');
+  });
+
+  it('keeps glass on its own material', async () => {
+    const scene = makeScene([
+      { name: 'frame', shape: OcctBackend.box(100, 10, 100), color: '#444444' },
+      { name: 'pane', shape: OcctBackend.box(90, 2, 90), material: { baseColor: '#aaddff', transmission: 0.9 } },
+    ]);
+    const json = parseGlbJson(await exportGlbAsync(sceneToWorldFrameParts(scene), { format: 'glb', style: 'lowpoly' }));
+    expect(json.materials?.map((m) => m.name).sort()).toEqual(['kernelcad-palette', 'pane']);
+  });
+
+  it('fails the triangle budget instead of writing an over-budget file', async () => {
+    const scene = makeScene([{ name: 'ball', shape: OcctBackend.sphere(100) }]);
+    await expect(exportGlbAsync(sceneToWorldFrameParts(scene), {
+      format: 'glb', style: 'lowpoly', lowpoly: { maxTriangles: 10 },
+    })).rejects.toThrow(/^export\.glb\.triangle-budget: \d+ triangles exceeds lowpoly\.maxTriangles 10\./);
+    await expect(exportGlbAsync(sceneToWorldFrameParts(scene), {
+      format: 'glb', style: 'lowpoly', lowpoly: { angularDeg: 1 },
+    })).rejects.toThrow(/^export\.glb\.lowpoly-angle/);
+  });
+});
