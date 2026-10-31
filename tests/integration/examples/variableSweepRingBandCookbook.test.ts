@@ -40,7 +40,9 @@ describe(`${ID} snippet`, () => {
     const { shape, errors } = ring;
     expect(errors).toEqual([]);
     expect(shape.solidComponents()).toHaveLength(1);
-    const bb = shape.boundingBox();
+    // Exact box: the profiles are true circles, and the quick box pads the
+    // rational sweep faces by their control polygon.
+    const bb = shape.boundingBox({ exact: true });
     // Crown section r = 2.6 sets the width along the finger axis.
     expect(bb.max[1] - bb.min[1]).toBeCloseTo(5.2, 1);
     // Spine radius 9.49: crown top at 9.49 + 2.6, palm bottom at -(9.49 + 1.4).

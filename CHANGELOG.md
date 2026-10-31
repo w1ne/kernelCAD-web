@@ -1,5 +1,13 @@
 # Unreleased
 
+- Faster builds of revolved and filleted detail: `path().circle()` and
+  `torus()` are now exact circles (two arcs) unless you pass `segments`. The old
+  48-gon default revolved every ring into 48 faces, and each later boolean
+  against it took seconds. Pass `segments` to keep a faceted polygon.
+- Booleans: the fuse "lost material" guard caches solid volumes by shape
+  identity, so a body grown by repeated unions is measured once per step
+  instead of twice.
+
 # v0.17.4 — 2026-10-31
 
 - Release archives: each build runner installs its own native build bindings
