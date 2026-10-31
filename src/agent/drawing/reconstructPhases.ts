@@ -571,13 +571,21 @@ function resolveThroughHoleExtent(args: {
   span: [number, number] | null;
   spanLo: Expr;
   spanHi: Expr;
+  /** Part extent along the hole axis: only a span end on it gets the 1 mm overcut. */
+  lo: Expr;
+  hi: Expr;
+  tolModel: number;
   toScale: number;
   facts: FactBook;
 }): { from: Expr; length: Expr; isThrough: boolean } {
-  const { name, axis, through, span, spanLo, spanHi, toScale, facts } = args;
+  const { name, axis, through, span, spanLo, spanHi, lo, hi, tolModel, toScale, facts } = args;
   const isThrough = through || !span;
-  const from = sub(spanLo, num(1));
-  const length = add(sub(spanHi, spanLo), num(2));
+  // A blind hole's floor lies inside the part; overcutting it would deepen the hole.
+  const openLo = isThrough || Math.abs(spanLo.v - lo.v) <= tolModel;
+  const openHi = isThrough || Math.abs(spanHi.v - hi.v) <= tolModel;
+  const from = openLo ? sub(spanLo, num(1)) : spanLo;
+  const overcut = (openLo ? 1 : 0) + (openHi ? 1 : 0);
+  const length = overcut > 0 ? add(sub(spanHi, spanLo), num(overcut)) : sub(spanHi, spanLo);
   if (!through) {
     facts.push(span
       ? { id: `holeDepth:${name}`, statement: `Hole ${name} runs ${round2(spanHi.v - spanLo.v)} mm along ${axis.toUpperCase()}, from its hidden lines; no depth is lettered.`, kind: 'inferred', source: 'linework', value: round2(spanHi.v - spanLo.v), confidence: toScale, open: true }
@@ -648,7 +656,7 @@ export function buildHoles(args: {
       return resolveStatedDepthHoleExtent({ c, name, statedDepth: ctx.statedDepth, viewer: ctx.viewer, spanHi: ctx.spanHi, spanLo: ctx.spanLo, params, facts });
     }
     if (ctx.through || ctx.span || kind === 'revolve') {
-      return resolveThroughHoleExtent({ name, axis, through: ctx.through, span: ctx.span, spanLo: ctx.spanLo, spanHi: ctx.spanHi, toScale, facts });
+      return resolveThroughHoleExtent({ name, axis, through: ctx.through, span: ctx.span, spanLo: ctx.spanLo, spanHi: ctx.spanHi, lo: ctx.lo, hi: ctx.hi, tolModel, toScale, facts });
     }
     return resolveDefaultThroughHoleExtent({ name, lo: ctx.lo, hi: ctx.hi, facts });
   }

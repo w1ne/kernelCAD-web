@@ -67,9 +67,18 @@ export interface Island {
   paths: ClassifiedPath[];
 }
 
+/** Classes that form a view island. On a sheet with visible linework, thin
+ *  lines are annotation (extension lines, leaders, datum and feature-control
+ *  frames, the position symbol's circle) and never join a view: a datum box
+ *  drawn beside a view would grow its box, and a tolerance frame drawn over
+ *  it would read as edges and holes. */
+const SEED_CLASSES = new Set(['visible', 'hidden']);
+
 /** Union-find clustering of geometry paths whose boxes touch or nearly touch. */
 export function clusterIslands(paths: readonly ClassifiedPath[], gap = 1.5): Island[] {
-  const geo = paths.filter(p => GEOMETRY_CLASSES.has(p.cls));
+  const seeds = paths.filter(p => SEED_CLASSES.has(p.cls));
+  // A sheet drawn in one thin weight has no seed lines: fall back to every geometry class.
+  const geo = seeds.length > 0 ? seeds : paths.filter(p => GEOMETRY_CLASSES.has(p.cls));
   const parent = geo.map((_, i) => i);
   const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i])));
   for (let i = 0; i < geo.length; i++) {
@@ -100,11 +109,35 @@ export function clusterIslands(paths: readonly ClassifiedPath[], gap = 1.5): Isl
   return islands;
 }
 
+/**
+ * True for a polyline that turns smoothly one way at every vertex — an arc or
+ * circle a writer flattened into line segments instead of Bézier curves. Its
+ * chords are not slanted edges.
+ */
+export function isFlattenedCurve(points: readonly (readonly [number, number])[]): boolean {
+  if (points.length < 7) return false;
+  let sign = 0;
+  for (let i = 1; i + 1 < points.length; i++) {
+    const a = points[i - 1], b = points[i], c = points[i + 1];
+    const t1 = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    const t2 = Math.atan2(c[1] - b[1], c[0] - b[0]);
+    let turn = t2 - t1;
+    while (turn > Math.PI) turn -= 2 * Math.PI;
+    while (turn < -Math.PI) turn += 2 * Math.PI;
+    if (Math.abs(turn) > (20 * Math.PI) / 180) return false;
+    if (Math.abs(turn) < 1e-4) continue;
+    const s = Math.sign(turn);
+    if (sign !== 0 && s !== sign) return false;
+    sign = s;
+  }
+  return sign !== 0;
+}
+
 /** Fraction of straight-line length that is neither horizontal nor vertical. */
 export function slantedFraction(island: Island): number {
   let slanted = 0, total = 0;
   for (const p of island.paths) {
-    if (p.cls === 'center') continue;
+    if (p.cls === 'center' || isFlattenedCurve(p.points)) continue;
     for (let i = 0; i + 1 < p.points.length; i++) {
       const a = p.points[i], b = p.points[i + 1];
       const len = dist(a, b);
@@ -176,7 +209,9 @@ function splitPictorials(
   const ortho: LabeledIsland[] = [];
   for (const is of islands) {
     const label = labels.get(is);
-    if (label?.name === 'pictorial' || slantedFraction(is) > 0.35) {
+    // A caption is stronger evidence than line slant: a cone's FRONT view is
+    // mostly slanted edges and still an orthographic view.
+    if (label?.name === 'pictorial' || (label === undefined && slantedFraction(is) > 0.35)) {
       pictorials.push(is.bbox);
       continue;
     }
