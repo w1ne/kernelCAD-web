@@ -29,6 +29,17 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'The exact OCCT boolean failed or produced an invalid solid; a fuzzy/glue retry (with optional ShapeFix) succeeded.',
   },
+  'feature.boolean.detached-material': {
+    hintTemplate:
+      'A subtract() cut clean through the only connection to a piece of material, so the remainder is a separate solid with nothing holding it. Extend the cutter so it removes the detached remnant (cut from the free end up to the target face, not a band across the middle), stop the cut before the pieces separate, or make the pieces assembly().part(...) parts.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'extend or stop the cut so the subtract leaves one connected body, and remove the detached remnant',
+    },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A subtract() result has more separate solids than the body it cut: the cut severed material and left a detached remnant.',
+  },
   'feature.shell.boolean-fallback': {
     hintTemplate:
       'No action needed: every shell join mode failed, so the wall was built by offsetting the solid inward and subtracting it, then opening the selected face. Check the wall reads as intended.',
@@ -376,6 +387,14 @@ export const FEATURE_CODES = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'moveFaces or offsetFaces refused the request instead of returning a body that is not the one asked for.',
+  },
+  'feature.face-edit.skipped': {
+    hintTemplate:
+      'A multi-face edit moved the faces it could and left this one unchanged. Select the refused face on its own, or build that part of the change as a boolean.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'move the refused face on its own or build it as a boolean' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'moveFaces or offsetFaces selected several faces; one could not slide and was left unchanged.',
   },
   'feature.draft.failed': {
     hintTemplate:

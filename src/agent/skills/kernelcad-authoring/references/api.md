@@ -414,11 +414,18 @@ Check world-frame spacing after reuse changes. The authoring `Shape` API has no
 .shell(thickness: number, { face: FaceSelector }): Shape  // face REQUIRED
 // Direct face edit. Positive distance / an outward vector grows the solid.
 // OCCT only slides a planar face along its normal and rejects anything else
-// by name (`feature.face-edit.rejected`). `kernel: 'smlib'` uses the guarded
-// native Part.offsetFaces / Part.moveFaces.
+// by name (`feature.face-edit.rejected`). A FaceQuery is a SET selector:
+// every face it matches moves (`{ byNormal: 'X' }` moves all +X-facing walls;
+// `near` still means the one closest face). When a multi-face selection
+// contains a face that cannot slide, the others move and the refused face is
+// reported as `feature.face-edit.skipped` (warn); a one-face selection fails
+// closed. A slide into a pocket may expose tangent fillet strips, which is a
+// valid result; a step on an outer face is refused. `kernel: 'smlib'` uses the
+// guarded native Part.offsetFaces / Part.moveFaces.
 .offsetFaces(faces: FaceSelector | string | Array<FaceSelector | string>, distance: Editable<number>): Shape
 .moveFaces(faces: FaceSelector | string | Array<FaceSelector | string>, by: [Editable<number>, Editable<number>, Editable<number>]): Shape
 //   box(40, 30, 10).offsetFaces('top', 2)
+//   plate.offsetFaces({ byNormal: 'X', ofSurfaceType: 'PLANE' }, 6)  // every +X planar wall
 //   box(40, 30, 10).moveFaces(kc.q.face(kc.q.createdBy(plateId)), [0, 0, -1])
 // Draft — taper faces for mold release (Slice E). angleDeg: 0–90.
 // neutralPlane defaults to the selected face; pullDir defaults to face normal.

@@ -2,10 +2,11 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
-import type { Face } from 'replicad';
+import type { Face, Edge } from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { booleanShapesWithHistory, mergeBooleanHistory, type BooleanHistoryResult } from './historyAwareBooleans';
 import { isValidShape, volumeOf } from './booleanRecovery';
+import { computeDihedralPublic } from './edgeQueries';
 import { stampSolid } from '../../naming/operationLineage';
 import type { EdgeHistoryMap, HistoryMap } from '../../naming/evolutionRecord';
 
@@ -142,6 +143,8 @@ interface FaceInfo {
   normal: Vec3;
   center: Vec3;
   area: number;
+  /** Set on cylindrical faces: a point on the axis, its direction, the radius. */
+  cylinder?: { loc: Vec3; dir: Vec3; radius: number };
 }
 
 interface EdgeInfo {
@@ -160,9 +163,53 @@ function faceInfos(oc: OC, shape: unknown): FaceInfo[] {
     } catch {
       // A face with no centre normal cannot be the image of a planar edit.
     }
-    out.push({ hash: hashOf(face), normal, center: surfaceCenter(oc, face), area: surfaceArea(oc, face) });
+    const cylinder = cylinderOf(oc, face);
+    out.push({
+      hash: hashOf(face),
+      normal,
+      center: surfaceCenter(oc, face),
+      area: surfaceArea(oc, face),
+      ...(cylinder ? { cylinder } : {}),
+    });
   });
   return out;
+}
+
+function cylinderOf(oc: OC, face: unknown): FaceInfo['cylinder'] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const o = oc as any;
+  const surface = new o.BRepAdaptor_Surface_2(o.TopoDS.Face_1(face), true);
+  try {
+    if (surface.GetType() !== o.GeomAbs_SurfaceType.GeomAbs_Cylinder) return undefined;
+    const cyl = surface.Cylinder();
+    const axis = cyl.Axis();
+    const loc = axis.Location();
+    const dir = axis.Direction();
+    try {
+      return { loc: [loc.X(), loc.Y(), loc.Z()], dir: [dir.X(), dir.Y(), dir.Z()], radius: cyl.Radius() };
+    } finally {
+      for (const h of [loc, dir, axis, cyl]) h.delete();
+    }
+  } catch {
+    return undefined;
+  } finally {
+    surface.delete();
+  }
+}
+
+/** Both faces lie on one cylinder: parallel axes on the same line, same radius.
+ *  A slid boss face extends the boss wall with a new face on that cylinder; on
+ *  a large import (no coplanar sew) the new face stays separate, and its
+ *  centre and mid-normal need not match the old wall's, so the plane test
+ *  alone called it foreign (CADGenBench 250). Exported for the unit test. */
+export function sameCylinder(a: Pick<FaceInfo, 'cylinder'>, b: Pick<FaceInfo, 'cylinder'>): boolean {
+  if (!a.cylinder || !b.cylinder) return false;
+  if (Math.abs(a.cylinder.radius - b.cylinder.radius) > 1e-4) return false;
+  if (Math.abs(Math.abs(dot(a.cylinder.dir, b.cylinder.dir)) - 1) > 1e-6) return false;
+  const rel = sub(b.cylinder.loc, a.cylinder.loc);
+  const along = dot(rel, a.cylinder.dir);
+  const d = a.cylinder.dir;
+  return Math.hypot(rel[0] - d[0] * along, rel[1] - d[1] * along, rel[2] - d[2] * along) <= 1e-4;
 }
 
 function edgeInfos(oc: OC, shape: unknown): EdgeInfo[] {
@@ -376,15 +423,69 @@ function keepLive<T>(map: Map<string, T>, live: readonly string[]): Map<string, 
 }
 
 /** Result faces that sit on the plane `distance` mm along `normal` from `origin`. */
-function facesOnOffsetPlane(oc: OC, shape: unknown, origin: Vec3, normal: Vec3, distance: number): string[] {
+function facesOnOffsetPlane(oc: OC, shape: unknown, origin: Vec3, normal: Vec3, distance: number): FaceInfo[] {
   const tol = Math.max(1e-4, Math.abs(distance) * 1e-6);
-  const hits: string[] = [];
+  const hits: FaceInfo[] = [];
   for (const face of faceInfos(oc, shape)) {
     if (dot(face.normal, normal) <= 1 - 1e-4) continue;
     if (Math.abs(dot(sub(face.center, origin), normal) - distance) > tol) continue;
-    hits.push(face.hash);
+    hits.push(face);
   }
   return hits;
+}
+
+/** The face the moved face became on the offset plane. Several coplanar walls
+ *  of one solid can slide onto the same plane, so the face on that plane is not
+ *  unique: take the one closest to where the moved face's centre went. */
+function imageOnOffsetPlane(
+  faces: readonly FaceInfo[],
+  origin: Vec3,
+  normal: Vec3,
+  distance: number,
+): FaceInfo | undefined {
+  const expected: Vec3 = [
+    origin[0] + normal[0] * distance,
+    origin[1] + normal[1] * distance,
+    origin[2] + normal[2] * distance,
+  ];
+  let best: FaceInfo | undefined;
+  let bestDistance = Infinity;
+  for (const face of faces) {
+    const d = Math.hypot(...sub(face.center, expected));
+    if (d < bestDistance - 1e-9 || (Math.abs(d - bestDistance) <= 1e-9 && face.area > (best?.area ?? 0))) {
+      best = face;
+      bestDistance = d;
+    }
+  }
+  return best;
+}
+
+/** A face lies in the plane through `point` with direction `normal`, allowing
+ *  either orientation (a solid can carry faces on both sides of a plane). */
+function onSupport(face: FaceInfo, normal: Vec3, point: Vec3): boolean {
+  const aligned = dot(face.normal, normal);
+  if (Math.abs(aligned) <= 1 - 1e-4) return false;
+  // The face's own outward normal may be the opposite one; its plane offset is
+  // then the negated offset along `normal`.
+  const planeOffset = dot(point, normal);
+  const expected = aligned > 0 ? planeOffset : -planeOffset;
+  return Math.abs(dot(face.center, face.normal) - expected) <= 1e-3;
+}
+
+/**
+ * True when every boundary edge of the face is concave or tangent — the face
+ * sits in a pocket/void. A positive slide then fills the void and may expose
+ * tangent strips (a legitimate move). A convex boundary edge means the face is
+ * on an outer surface: a gained face there is a step glued on, not a slide.
+ */
+function boundaryIsConcave(body: OcctBackend, face: Face): boolean {
+  const shape = body.getReplicadShape() as unknown as { faces: Face[] };
+  const edges = (face as unknown as { edges?: Edge[] }).edges ?? [];
+  for (const edge of edges) {
+    const dihedral = computeDihedralPublic(shape, edge, { convexity: true });
+    if (dihedral?.convex === true) return false;
+  }
+  return true;
 }
 
 function assertPlanar(oc: OC, face: unknown, op: string, geomType: string): Vec3 {
@@ -522,6 +623,7 @@ function certifyPlanarOffset(
   normal: Vec3,
   area: number,
   distance: number,
+  boundaryConcave: () => boolean,
 ): { faceHashes: string[]; landed: string } {
   const faceHashes = hashesOf(oc, result.shape, 'face');
   const after = volumeOf(oc, result.shape);
@@ -535,24 +637,43 @@ function certifyPlanarOffset(
   const beforeFaces = hashesOf(oc, baseline.shape, 'face').length;
   const before = volumeOf(oc, baseline.shape);
   if (faceHashes.length !== beforeFaces) {
-    const sewNotes = [resultSewError, baseline.error].filter((note): note is string => Boolean(note));
-    const sewNote = sewNotes.length ? ` Sewing coplanar faces failed: ${sewNotes.join(' ')}.` : '';
-    const glued = faceHashes.length > beforeFaces && !boundaryMoved(oc, bodyShape, result.shape, origin, normal, distance)
-      ? ' A gained face means a glued prism was added instead of the neighbouring faces extending.'
-      : '';
-    throw new FaceEditError(
-      'FACE_EDIT_INCONSISTENT',
-      `moving this face by ${distance} mm left ${faceHashes.length} faces; the sewn solid had ${beforeFaces}. ` +
-        `The face count changed against the sewn solid.${glued} ` +
-        `Pick a face whose boundary can move with it, or build the change as a boolean.${sewNote}`,
+    const baselineInfos = faceInfos(oc, baseline.shape);
+    const foreign = faceInfos(oc, result.shape).filter(
+      (face) =>
+        !baselineInfos.some(
+          (known) => known.hash === face.hash || sameCylinder(face, known) || onSupport(face, known.normal, known.center),
+        ) &&
+        !onSupport(face, normal, [origin[0] + normal[0] * distance, origin[1] + normal[1] * distance, origin[2] + normal[2] * distance]),
     );
+    // A face that sits in a pocket has only concave/tangent boundary edges.
+    // Sliding it fills the void and exposes tangent strips along the fillets
+    // (a legitimate move: the fillet stays, the flat grows). On an outer
+    // surface the same gained strips are a step the neighbouring faces did not
+    // extend to, so they are refused.
+    if (foreign.length > 0 && !boundaryConcave()) {
+      const sewNotes = [resultSewError, baseline.error].filter((note): note is string => Boolean(note));
+      const sewNote = sewNotes.length ? ` Sewing coplanar faces failed: ${sewNotes.join(' ')}.` : '';
+      const moved = new Set(foreign.map((face) => `${face.normal.map((v) => v.toFixed(2)).join(',')}@${face.center.map((v) => v.toFixed(2)).join(',')}`));
+      const glued = faceHashes.length > beforeFaces && !boundaryMoved(oc, bodyShape, result.shape, origin, normal, distance)
+        ? ' A gained face means a glued prism was added instead of the neighbouring faces extending.'
+        : '';
+      throw new FaceEditError(
+        'FACE_EDIT_INCONSISTENT',
+        `moving this face by ${distance} mm left ${faceHashes.length} faces; the sewn solid had ${beforeFaces}. ` +
+          `The face count changed against the sewn solid and ${moved.size} new face(s) lie in planes the solid did not have ` +
+          `(${[...moved].slice(0, 3).join('; ')}${moved.size > 3 ? '; …' : ''}). ` +
+          `A face slide may re-trim existing planes and cylinders, but a new plane on an outer face means a step was glued on.${glued} ` +
+          `Pick a face whose boundary can move with it, or build the change as a boolean.${sewNote}`,
+      );
+    }
   }
-  const landed = facesOnOffsetPlane(oc, result.shape, origin, normal, distance);
-  if (landed.length !== 1) {
+  const landedFaces = facesOnOffsetPlane(oc, result.shape, origin, normal, distance);
+  const landed = landedFaces.length > 0 ? imageOnOffsetPlane(landedFaces, origin, normal, distance) : undefined;
+  if (!landed) {
     throw new FaceEditError(
       'FACE_EDIT_INCONSISTENT',
-      `moving this face by ${distance} mm did not leave it on the plane ${distance} mm along its outward normal ` +
-        `(found ${landed.length} faces there). The face did not slide along its normal.`,
+      `moving this face by ${distance} mm did not leave it on the plane ${distance} mm along its outward normal. ` +
+        `The face did not slide along its normal.`,
     );
   }
   const expected = before + area * distance;
@@ -565,7 +686,7 @@ function certifyPlanarOffset(
         `The face did not slide along its normal. Pick a face whose boundary can move with it, or use a smaller distance.`,
     );
   }
-  return { faceHashes, landed: landed[0] };
+  return { faceHashes, landed: landed.hash };
 }
 
 function offsetOne(
@@ -588,6 +709,7 @@ function offsetOne(
   const { result, sewError } = booleanOffset(oc, bodyShape, tool, distance);
   const { faceHashes, landed } = certifyPlanarOffset(
     oc, bodyShape, result, sewError, origin, normal, area, distance,
+    () => boundaryIsConcave(body, face),
   );
   const faceMap = mergeBooleanHistory(body.historyMap, undefined, result);
   // The prism consumes the selected face. The face on the offset plane is that face, moved.
@@ -631,16 +753,51 @@ export interface PlanarFaceEdit {
  * Move planar faces along their outward normals. `BRepOffset_MakeOffset`
  * (per-face offset values) is not in this OCCT build, so each planar face is
  * extruded along its normal and fused or cut. Coplanar faces are then sewn.
- * The face count must match the input after the same coplanar sew, the moved
- * face must lie on the offset plane, the solid must stay non-empty, and the
- * volume change must match area × distance against that sewn solid. Anything
- * else throws `FaceEditError`.
+ * The moved face must land on the offset plane, the solid must stay non-empty,
+ * and the volume change must match area × distance against the sewn solid. A
+ * face-count change is allowed only when its new faces are re-trimmed existing
+ * planes or the face sits in a pocket (concave boundary). Anything else throws
+ * `FaceEditError`; with `onSkip`, a multi-face edit leaves a refused face
+ * unchanged and reports it instead of discarding the faces that could move.
  */
+export interface FaceEditSkip {
+  edit: PlanarFaceEdit;
+  error: FaceEditError;
+}
+
+function resolvePlanarStep(
+  oc: OC,
+  current: OcctBackend,
+  step: { hash: string; edit: PlanarFaceEdit },
+  op: 'moveFaces' | 'offsetFaces',
+): { face: Face; distance: number } | undefined {
+  const face = findFace(current, step.hash);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const topo = (face as any).wrapped as unknown;
+  const geomType = String((face as { geomType?: string }).geomType ?? '');
+  const normal = assertPlanar(oc, topo, op, geomType);
+  const distance = step.edit.by ? distanceAlongNormal(step.edit.by, normal) : step.edit.distance;
+  if (distance === undefined || !Number.isFinite(distance)) {
+    throw new FaceEditError('FACE_EDIT_FAILED', `${op}: distance must be a finite number.`);
+  }
+  return Math.abs(distance) <= 1e-9 ? undefined : { face, distance };
+}
+
+/** An edit that moved nothing still produces this feature's stamp on a copy. */
+function stampUnchanged(body: OcctBackend, featureId: string): OcctBackend {
+  const clone = body.clone();
+  const stamped = stampSolid(body.historyMap, clone.faceHashes(), body.edgeHistoryMap, clone.edgeHashes(), featureId);
+  const out = new OcctBackend(clone.getReplicadShape(), body.kind, stamped.historyMap);
+  out.edgeHistoryMap = stamped.edgeHistoryMap;
+  return out;
+}
+
 export function editPlanarFaces(
   body: OcctBackend,
   edits: readonly PlanarFaceEdit[],
   featureId: string,
   op: 'moveFaces' | 'offsetFaces',
+  onSkip?: (skip: FaceEditSkip) => void,
 ): OcctBackend {
   if (edits.length === 0) {
     throw new FaceEditError('FACE_EDIT_EMPTY', `${op}: select at least one face.`);
@@ -649,28 +806,30 @@ export function editPlanarFaces(
   const pending = edits.map((edit) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const topo = (edit.face as any).wrapped as unknown;
-    const geomType = String((edit.face as { geomType?: string }).geomType ?? '');
-    const normal = assertPlanar(oc, topo, op, geomType);
-    const distance = edit.by ? distanceAlongNormal(edit.by, normal) : edit.distance;
-    if (distance === undefined || !Number.isFinite(distance)) {
-      throw new FaceEditError('FACE_EDIT_FAILED', `${op}: distance must be a finite number.`);
-    }
-    return { hash: hashOf(topo), distance };
+    return { hash: hashOf(topo), edit };
   });
   let current = body;
+  let applied = 0;
+  let firstError: FaceEditError | undefined;
   for (const step of pending) {
-    if (Math.abs(step.distance) <= 1e-9) continue;
-    const face = findFace(current, step.hash);
-    const { backend, history } = offsetOne(current, face, step.distance, featureId);
-    for (const other of pending) other.hash = imageHash(other.hash, history);
-    current = backend;
+    try {
+      const resolved = resolvePlanarStep(oc, current, step, op);
+      if (!resolved) continue;
+      const { backend, history } = offsetOne(current, resolved.face, resolved.distance, featureId);
+      for (const other of pending) other.hash = imageHash(other.hash, history);
+      current = backend;
+      applied += 1;
+    } catch (e) {
+      if (onSkip && e instanceof FaceEditError) {
+        firstError ??= e;
+        onSkip({ edit: step.edit, error: e });
+        continue;
+      }
+      throw e;
+    }
   }
-  if (current === body) {
-    const clone = body.clone();
-    const stamped = stampSolid(body.historyMap, clone.faceHashes(), body.edgeHistoryMap, clone.edgeHashes(), featureId);
-    const out = new OcctBackend(clone.getReplicadShape(), body.kind, stamped.historyMap);
-    out.edgeHistoryMap = stamped.edgeHistoryMap;
-    return out;
-  }
-  return current;
+  // A multi-face edit where every face was refused must not return the input
+  // silently: the caller asked for a change, so surface the first refusal.
+  if (applied === 0 && firstError) throw firstError;
+  return current === body ? stampUnchanged(body, featureId) : current;
 }

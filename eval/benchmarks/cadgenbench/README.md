@@ -29,12 +29,26 @@ the leaderboard is a separate, manual decision.
   export error or a failed validity check (open shell, non-manifold mesh,
   BRepCheck error) becomes a typed verdict in the repair prompt.
   `--max-attempts` sets the number of attempts (default 3).
+- A later reply with no code block does not discard the previous script.
+  The gate failure stays, and the deterministic repair can still run.
+- Editing observations and promotion measure the healed import that
+  `lib.fromSTEP` edits. A generation script may end its comments with
+  `// ledger: extents <X> <Y> <Z>; volume <mm3>`. A valid export whose
+  bounding box or volume disagrees with that ledger is sent back for repair.
+  The last valid solid is still submitted if the ledger never agrees.
 - If no attempt produces a script that exports, one deterministic
   `repair_script` iteration runs.
 - The pre-check (`validity.ts`) mirrors the benchmark gate: BRepCheck, closed
   and consistently oriented shells, and a closed, orientation-consistent
-  tessellation at the grader's deflection. Only a candidate that passes goes to
-  `submission/<id>/output.step`. Use `--keep-invalid` to override this.
+  tessellation at the grader's deflection. It tries the grader's deflection
+  ladder (requested, /4, /16, /32) and accepts the first rung that closes.
+  Only a candidate that passes goes to `submission/<id>/output.step`. Use
+  `--keep-invalid` to override this.
+- With `--official-check`, the benchmark's own `analyze_step` is authoritative
+  for acceptance: a candidate it accepts is kept even when the local
+  pre-check's different tessellator rejected it, and one it rejects is not
+  submitted even when the local check accepted it. The local verdict is still
+  recorded in `state.json` for comparison.
 
 ## Setup
 
@@ -50,9 +64,18 @@ benchmark package installed from its repository, exported as
 OCCT Python bindings resolved to major version 8. Pin them (and the package
 that requires them) to the previous major version.
 
+For OpenCode Go, use `https://opencode.ai/inference/go/openai/v1`. A Console
+OAuth token reachable from more than one workspace also needs the active
+workspace id: export `OPENCODE_ORG_ID` (the handoff loader does this) and the
+client sends it as `x-opencode-org-id`. A personal `oc_sk_...` API key is bound
+to one workspace and does not need it.
+
 ```bash
 uv venv -p 3.12 ~/.venvs/cadgenbench
 VIRTUAL_ENV=~/.venvs/cadgenbench uv pip install "git+https://github.com/huggingface/cadgenbench"
+# build123d 0.13 requires OCCT 8, and analyze_step then fails on Bnd_Box::Limits.
+# The last OCCT 7 line is build123d 0.12.0 (cadquery-ocp-novtk 7.9.3.1.1).
+VIRTUAL_ENV=~/.venvs/cadgenbench uv pip install "build123d==0.12.0"
 export CADGENBENCH_PYTHON=~/.venvs/cadgenbench/bin/python
 ```
 
@@ -83,8 +106,12 @@ npx tsx eval/benchmarks/cadgenbench/run.ts --scripts-from path/to/scripts --task
 |---|---|
 | `--model` | default `$EVAL_MODEL` or the eval default model; it must accept images |
 | `--edit-fallback passthrough` | an editing task without a valid edit submits the unchanged input. The benchmark scores a no-op edit at no more than 0.4. An invalid candidate scores 0. |
+| `--edit-promotion off` | submit the best valid editing candidate even when promotion says the edit is a no-op, wrong direction, wrong size or wrong topology. Default `auto` keeps promotion as a blocker. |
 | `--retry-failed` | also rerun tasks that ended `invalid` or `failed` (by default, resume skips them) |
+| `--visual-review` | opt in to a model review of a valid generation candidate, with browser-free front/right/top/isometric STEP previews; requires a vision-capable LLM. A valid revision is promoted only if a second model comparison explicitly prefers it; the previous valid script and STEP are retained as a checkpoint. This self-comparison is unscored and does not prove improved similarity. |
 | `--revision <sha>` | pin a dataset revision (default `main`, resolved to a sha and recorded in `run.json`) |
+| `--seed <n>` | forwarded to OpenAI-compatible endpoints and recorded in `run.json`; some providers ignore it |
+| `--max-tokens <n>` | output budget per reply (default 16000). Reasoning models can spend it all on hidden reasoning and return no text; raise it (for example 64000) or let the OpenAI-compatible client escalate automatically |
 | `--data-dir <dir>` | use a local copy of the inputs instead of downloading them |
 | `--agree` | sets `agree_to_publish: true` in `meta.json` (default false) |
 
@@ -94,6 +121,12 @@ npx tsx eval/benchmarks/cadgenbench/run.ts --scripts-from path/to/scripts --task
 - `tasks/<id>/`: `state.json` (resume record: status, attempts, tokens, cost,
   time, pre-check and official verdicts), `prompt.md`, `transcript.md`,
   `model.kcad.ts`, `model.step`.
+- With visual review, `visual-view-*.png`, `visual-comparison-view-*.png`, `visual-revised-view-*.png`,
+  `visual-response.md`, `visual-comparison.md`, and `visual-review.json`
+  retain the views, responses, outcome and any failure when available. The
+  A/B comparison views share a camera frame; displayed mesh extents are approximate.
+  When a revision is promoted, `visual-checkpoint.kcad.ts` and
+  `visual-checkpoint.step` retain the previous valid candidate.
 - `submission/<id>/output.step` and `submission.zip`: `meta.json` plus one
   folder per task. A task without a candidate keeps an empty folder, and the
   grader scores it as `missing`.
@@ -102,3 +135,31 @@ npx tsx eval/benchmarks/cadgenbench/run.ts --scripts-from path/to/scripts --task
 Resume skips a task that is `valid`, `invalid` or `failed` for the same
 producer (LLM, scripts-from, or passthrough). The `needs_key` and
 `infra_error` states always rerun.
+If a previously valid task's submission STEP is missing, empty, or differs
+from the recorded SHA-256, the task is rerun; this may invoke the model again.
+Older task states without a candidate digest also rerun.
+
+When a task is rerun, its previous submission candidate is moved to
+`tasks/<id>/previous-candidates/` before the new attempt. A failed retry leaves
+the submission entry empty while retaining the previous STEP for inspection.
+Resume compares an identity covering the selected inputs, descriptions, model
+settings, system instructions, source revision, supplied scripts and the
+invoked CLI file's path and SHA-256. A mismatch
+or an older run without an identity is rejected; use a fresh run directory.
+The revision records whether the checkout was dirty, but does not hash every
+uncommitted source change. A CLI wrapper or JavaScript entry may depend on
+other files that its own digest does not cover. Use a clean committed checkout
+and record all runtime dependencies for comparable runs.
+
+### Local ChatGPT plan connection (experimental)
+
+For an authorized, locally hosted runner, set `CADGENBENCH_AUTH_DIR` to a private
+owner-only directory outside the repository and run `tsx
+ eval/benchmarks/cadgenbench/chatgptSignIn.ts`. Complete the OpenAI consent in the
+browser. The registration uses PKCE and validates the signed ID token; its
+credentials must never be committed or shared. Then pass `--chatgpt-plan-dir`
+with the same directory and an account-supported `--model`. This path uses the
+streaming Responses API with image inputs. It rejects temperature because that
+setting is not supported by this connection. Usage consumes the authorized
+ChatGPT plan allowance. Model availability and account limits are determined by
+OpenAI. The connection must be tested on the user's account before a run.

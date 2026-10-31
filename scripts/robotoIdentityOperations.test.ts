@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { findGeometryOperationIssues } from '../examples/gallery/roboto-01/verify-identity-operations.mjs';

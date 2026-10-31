@@ -9,10 +9,36 @@
 // `src/modeling/runtime/browserGraphNodeFree.test.ts`).
 
 import { readFile } from 'node:fs/promises';
-import { inspectStepBuffer, type StepInspectReport } from '../../kernel/import/inspectStep';
-import { KernelError } from '../../shared/intent/kernelError';
+import { inspectShapeReport, inspectStepBuffer, type StepInspectReport } from '../../kernel/import/inspectStep';
+import { importStepCached, StepParseError } from '../../modeling/parts/stepParseCache';
+import { KernelError, isKernelError } from '../../shared/intent/kernelError';
 
 export type { StepSolidReport, StepInspectReport } from '../../kernel/import/inspectStep';
+
+/**
+ * Read a STEP path. Both inspectors share these two raise sites so a second
+ * entry point does not grow the invalid-args ratchet.
+ */
+async function readStepBytes(path: string): Promise<Buffer> {
+  if (typeof path !== 'string' || path.length === 0) {
+    throw new KernelError(
+      'feature.invalid-args',
+      'inspectStepFile(path): path must be a non-empty string.',
+      undefined,
+      'invalid-args.inspect.step — pass an absolute path to a .step file.',
+    );
+  }
+  try {
+    return await readFile(path);
+  } catch {
+    throw new KernelError(
+      'feature.invalid-args',
+      `inspectStepFile: cannot read STEP file at ${path}.`,
+      undefined,
+      `invalid-args.inspect.step.path — verify the file exists and is readable at '${path}'.`,
+    );
+  }
+}
 
 /**
  * Inspect a STEP file on disk and report its solid tree.
@@ -22,26 +48,37 @@ export type { StepSolidReport, StepInspectReport } from '../../kernel/import/ins
  *   model containing at least one 3D solid.
  */
 export async function inspectStepFile(path: string): Promise<StepInspectReport> {
-  if (typeof path !== 'string' || path.length === 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'inspectStepFile(path): path must be a non-empty string.',
-      undefined,
-      'invalid-args.inspect.step — pass an absolute path to a .step file.',
-    );
-  }
+  return inspectStepBuffer(await readStepBytes(path), path);
+}
 
-  let buf: Buffer;
+/**
+ * Inspect the solid `lib.fromSTEP` will edit.
+ *
+ * The raw STEP inspector reports the file as imported. `fromSTEP` then merges
+ * same-domain faces, so a large valid file can drop from 1,026 faces to 867
+ * before the script runs. Editing observations and promotion have to measure
+ * that normalized solid, or a no-op export of the healed import looks like a
+ * geometry change and a real edit is judged against the wrong baseline.
+ */
+export async function inspectNormalizedStepFile(path: string): Promise<StepInspectReport> {
+  const buf = await readStepBytes(path);
   try {
-    buf = await readFile(path);
-  } catch {
+    const backend = await importStepCached(buf);
+    try {
+      return inspectShapeReport(backend.getReplicadShape(), path, buf.toString('utf8'));
+    } finally {
+      backend.dispose();
+    }
+  } catch (e) {
+    if (isKernelError(e)) throw e;
+    const outOfMemory = e instanceof StepParseError && e.reason === 'out-of-memory';
     throw new KernelError(
-      'feature.invalid-args',
-      `inspectStepFile: cannot read STEP file at ${path}.`,
+      'feature.kernel-failed',
+      `inspectStepFile: replicad failed to parse STEP at ${path}: ${e instanceof Error ? e.message : String(e)}`,
       undefined,
-      `invalid-args.inspect.step.path — verify the file exists and is readable at '${path}'.`,
+      outOfMemory
+        ? 'kernel-failed.inspect.step.out-of-memory — the file is NOT invalid; the geometry kernel exhausted its 2 GiB wasm heap. Restart the host process and retry.'
+        : 'kernel-failed.inspect.step.parse — file is not a valid STEP model; re-export from the source CAD as AP203/AP214 with solid bodies.',
     );
   }
-
-  return inspectStepBuffer(buf, path);
 }
