@@ -138,6 +138,8 @@ export function parseEditIntent(request: string): EditIntent {
     }
   }
 
+  const growVerb = /\b(increase|enlarge|widen|expand|grow)\b/;
+  const shrinkVerb = /\b(decrease|reduce|shrink|lower|shorten|narrow|thin)\b/;
   let direction: EditDirection = 'any';
   if (moveOnly) {
     direction = 'neutral';
@@ -145,13 +147,24 @@ export function parseEditIntent(request: string): EditIntent {
     direction = 'increase';
   } else if (/\b(remove|delete)\b/.test(text) && /\b(hole|holes|bore|bores)\b/.test(text)) {
     direction = 'increase';
-  } else if (/\b(increase|enlarge|widen|expand|grow)\b/.test(text)) {
+  } else if (/\b(remove|delete)\b/.test(text) && /\b(fillets?|rounds?|chamfers?)\b/.test(text)) {
+    // Removing a concave fillet removes material, a convex one adds it; a
+    // feature noun such as "boss" in the request does not say which.
+    direction = 'any';
+  } else if (growVerb.test(text)) {
     // Enlarging an internal void removes material; enlarging an outer
     // dimension adds it. `diameter` alone is not enough: a boss and a bore
     // both have one.
-    direction = /\b(bore|bores|hole|holes|slot|pocket|opening|cutout)\b/.test(text) ? 'decrease' : 'increase';
-  } else if (/\b(decrease|reduce|shrink|lower|shorten|narrow|thin)\b/.test(text)) {
-    direction = /\b(bore|bores|hole|holes|slot|pocket|opening|cutout)\b/.test(text) ? 'increase' : 'decrease';
+    direction = resizesVoid(text, growVerb) ? 'decrease' : 'increase';
+  } else if (shrinkVerb.test(text)) {
+    direction = resizesVoid(text, shrinkVerb) ? 'increase' : 'decrease';
+  } else if (
+    /\b(walls?|faces?|sides?)\b/.test(text) &&
+    /\b(inward|inwards|outward|outwards)\b/.test(text)
+  ) {
+    // "bring the pocket walls inward" moves faces; whether that adds or
+    // removes material depends on which side of the wall is solid.
+    direction = 'any';
   } else if (/\b(drill|bore|ream|tap|thread|cut|pocket|slot|chamfer)\b/.test(text)) {
     direction = 'decrease';
   } else if (/\b(add|create|extrude|raise|thicken|boss|rib|pad|lengthen|extend)\b/.test(text)) {
@@ -208,6 +221,27 @@ export function parseEditIntent(request: string): EditIntent {
     ...(sourceHoleDiameterMm !== undefined ? { sourceHoleDiameterMm } : {}),
     ...(targetHoleSelector !== undefined ? { targetHoleSelector } : {}),
   };
+}
+
+const VOID_NOUN = /^(bore|bores|hole|holes|slot|slots|pocket|pockets|opening|openings|cutout|cutouts|groove|grooves|recess|recesses|counterbore|counterbores)$/;
+const SOLID_NOUN = /^(boss|bosses|rib|ribs|pad|pads|flange|flanges|wall|walls|plate|plates|shaft|shafts|pin|pins|tab|tabs|block|blocks|extension|extensions|lip|lips|leg|legs|arm|arms|post|posts|stud|studs|spigot|spigots|ring|rings|disc|discs|disk|disks|body|part)$/;
+
+/**
+ * Does the resize act on a void? The edit's object is the first feature noun
+ * after the verb: "the length of the boss with a central bore" resizes the
+ * boss, "the diameter of the central bore" the bore. A possessive ("the
+ * boss's bore") is not the object. Without a recognised noun after the verb,
+ * any void noun in the request decides, as before.
+ */
+function resizesVoid(text: string, verb: RegExp): boolean {
+  const match = verb.exec(text);
+  const tail = match ? text.slice(match.index + match[0].length) : text;
+  for (const token of tail.split(/[^a-z']+/)) {
+    if (token.endsWith("'s")) continue;
+    if (VOID_NOUN.test(token)) return true;
+    if (SOLID_NOUN.test(token)) return false;
+  }
+  return /\b(bore|bores|hole|holes|slot|pocket|opening|cutout)\b/.test(text);
 }
 
 function summarize(report: StepInspectReport): ShapeSummary {

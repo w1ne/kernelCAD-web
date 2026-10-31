@@ -54,6 +54,48 @@ describe('cutoutLowerer — basic shapes', () => {
     expect(vol).toBeLessThan(expected + 1);
   });
 
+  it('cuts through the whole body when an unrelated underside pocket has a nearer floor', async () => {
+    const code = `
+      const recess = path().moveTo(-15,-15).lineTo(-5,-15).lineTo(-5,-5).lineTo(-15,-5).close();
+      const slot = path().moveTo(7,7).lineTo(13,7).lineTo(13,13).lineTo(7,13).close();
+      return box(40,40,8).cutout(recess, { face: 'bottom', depth: 3 })
+        .cutout(slot, { face: 'top', depth: 'through' });
+    `;
+    const { shape, diagnostics } = await lowerScript(code);
+    expect((diagnostics as { severity: string }[]).filter(d => d.severity === 'error')).toEqual([]);
+    const expected = 40 * 40 * 8 - 10 * 10 * 3 - 6 * 6 * 8;
+    expect(shape.volume()).toBeGreaterThan(expected - 2);
+    expect(shape.volume()).toBeLessThan(expected + 2);
+  });
+
+  it('cuts from the bottom through the body despite an unrelated top pocket', async () => {
+    const code = `
+      const recess = path().moveTo(-15,-15).lineTo(-5,-15).lineTo(-5,-5).lineTo(-15,-5).close();
+      const slot = path().moveTo(7,7).lineTo(13,7).lineTo(13,13).lineTo(7,13).close();
+      return box(40,40,8).cutout(recess, { face: 'top', depth: 3 })
+        .cutout(slot, { face: 'bottom', depth: 'through' });
+    `;
+    const { shape, diagnostics } = await lowerScript(code);
+    expect((diagnostics as { severity: string }[]).filter(d => d.severity === 'error')).toEqual([]);
+    const expected = 40 * 40 * 8 - 10 * 10 * 3 - 6 * 6 * 8;
+    expect(shape.volume()).toBeGreaterThan(expected - 2);
+    expect(shape.volume()).toBeLessThan(expected + 2);
+  });
+
+  it('cuts through a side face despite an unrelated recess on the opposing face', async () => {
+    const code = `
+      const recess = path().moveTo(-13,-2).lineTo(-7,-2).lineTo(-7,2).lineTo(-13,2).close();
+      const slot = path().moveTo(7,-2).lineTo(13,-2).lineTo(13,2).lineTo(7,2).close();
+      return box(40,40,8).cutout(recess, { face: 'left', depth: 3 })
+        .cutout(slot, { face: 'right', depth: 'through' });
+    `;
+    const { shape, diagnostics } = await lowerScript(code);
+    expect((diagnostics as { severity: string }[]).filter(d => d.severity === 'error')).toEqual([]);
+    const expected = 40 * 40 * 8 - 6 * 4 * 3 - 6 * 4 * 40;
+    expect(shape.volume()).toBeGreaterThan(expected - 2);
+    expect(shape.volume()).toBeLessThan(expected + 2);
+  });
+
   it("creates a 'wall' ref that resolves on a blind cutout (filletable)", async () => {
     const code = `
       const sk = path().moveTo(-4, -4).lineTo(4, -4).lineTo(4, 4).lineTo(-4, 4).close();
