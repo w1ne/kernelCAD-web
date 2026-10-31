@@ -3,16 +3,13 @@
 //
 // The commands behind `path().circle(cx, cy, r, segments?)`.
 import type { Param } from '../../shared/intent/types';
-import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgsError } from '../../shared/intent/invalidArgs';
 import type { Editable, ParamRefExpr } from '../../shared/runtime/paramRef';
 import { currentValue, paramExpr, paramFromExpr, toParam } from '../../shared/runtime/editableHelpers';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
 
 type ParamTable = Parameters<typeof currentValue>[1];
 
-function invalid(message: string, hint: string): never {
-  throw new KernelError('feature.invalid-args', message, undefined, hint);
-}
 
 /**
  * The open loop of a circle at `(cx, cy)` of radius `r`, starting at
@@ -37,18 +34,25 @@ export function circleCommands(
   const cxv = currentValue(cx, table);
   const cyv = currentValue(cy, table);
   const rv = currentValue(r, table);
-  if (!Number.isFinite(cxv) || !Number.isFinite(cyv) || !Number.isFinite(rv)) {
-    invalid(
-      `path.circle(cx, cy, r): all of cx (${cxv}), cy (${cyv}), r (${rv}) must be finite.`,
-      'Pass finite numbers or numeric ParamRefs for cx, cy, r.',
-    );
+  const API = 'path().circle(cx, cy, r, segments?)';
+  const EXAMPLE = 'path().circle(0, 0, 5)';
+  for (const [name, v] of [['cx', cxv], ['cy', cyv], ['r', rv]] as const) {
+    if (!Number.isFinite(v)) {
+      throw invalidArgsError({ api: API, path: name, got: v, requires: 'a finite number', unit: 'mm', example: EXAMPLE });
+    }
   }
-  if (rv <= 0) invalid(`path.circle: radius must be > 0; got ${rv}.`, 'Pass a positive radius.');
+  if (rv <= 0) {
+    throw invalidArgsError({ api: API, path: 'r', got: rv, requires: 'r > 0 (a positive radius)', unit: 'mm', example: EXAMPLE });
+  }
   if (segments !== undefined && (!Number.isInteger(segments) || segments < 3)) {
-    invalid(
-      `path.circle: segments must be an integer >= 3; got ${segments}.`,
-      'Pass a segment count >= 3 for a polygon, or omit it for an exact circle.',
-    );
+    throw invalidArgsError({
+      api: API,
+      path: 'segments',
+      got: segments,
+      requires: 'an integer >= 3, or omit it for an exact circle',
+      unit: 'count',
+      example: 'path().circle(0, 0, 5, 48)',
+    });
   }
   const cxE = paramExpr(toParam(cx, 'mm'));
   const cyE = paramExpr(toParam(cy, 'mm'));

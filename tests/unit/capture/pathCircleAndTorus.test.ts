@@ -72,7 +72,7 @@ describe('path().circle(cx, cy, r)', () => {
     try { api.path().circle(0, 0, 0); }
     catch (e) {
       expect((e as KernelError).code).toBe('feature.invalid-args');
-      expect((e as KernelError).message).toMatch(/radius must be > 0/);
+      expect((e as KernelError).message).toMatch(/requires r > 0/);
     }
     expect(() => api.path().circle(0, 0, NaN)).toThrow(KernelError);
   });
@@ -84,7 +84,7 @@ describe('path().circle(cx, cy, r)', () => {
 
   it('rejects segments < 3', () => {
     const { api } = makeApi();
-    expect(() => api.path().circle(0, 0, 5, 2)).toThrow(/segments must be an integer >= 3/);
+    expect(() => api.path().circle(0, 0, 5, 2)).toThrow(/segments — got 2; requires an integer >= 3/);
   });
 });
 
