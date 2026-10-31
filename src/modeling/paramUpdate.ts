@@ -19,6 +19,7 @@ import type { SoftWarning } from '../shared/runtime/softWarning';
 import { KernelError } from '../shared/intent/kernelError';
 import { affectedFeatureIds } from './paramAffect';
 import { setParamValue } from './edits/setParamValue';
+import { invalidArgs } from '../shared/intent/invalidArgs';
 import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
 import { stampFingerprint } from '../kernel/backends/occt/analysisMemo';
 import { featureFingerprints } from './warm/featureFingerprint';
@@ -106,23 +107,27 @@ export async function updateModelParams(
 async function updateBySourceRewrite(model: BuiltModel, edits: ParamUpdateEdit[]): Promise<BuiltModelParamUpdate> {
   const coerced = edits.filter((edit) => model.session.coercedParams.has(edit.name)).map((edit) => edit.name);
   if (model.code === undefined || !model.rebuildFromSource) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `params.update: param(s) ${coerced.join(', ')} are used as plain numbers in the script, so an edit needs the script source to re-run, and this model has none.`,
-      undefined,
-      'invalid-args.param.js-arithmetic — rebuild the model from source (buildModel / evaluate_script) and edit the param there, or use the ParamRef methods (.add/.multiply/…) so the param re-evaluates in place.',
-    );
+    invalidArgs({
+      api: 'params.update(edits)',
+      path: 'edits[].name',
+      got: coerced.join(', '),
+      requires: 'a model built from script source, because these params are used as plain numbers and an edit re-runs the script',
+      example: "const model = await buildModel({ code, fileName: 'part.kcad.ts' }); await updateModelParams(model, [{ name: 'w', value: 80 }]);",
+      hintSlug: 'invalid-args.param.js-arithmetic',
+    });
   }
   let code = model.code;
   for (const edit of edits) {
     const rewritten = setParamValue(code, edit.name, edit.value);
     if (!rewritten.ok || rewritten.new_code === undefined) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `params.update: could not set param '${edit.name}' in the source: ${rewritten.error ?? 'unknown error'}.`,
-        undefined,
-        'invalid-args.param.not-found — the param must be declared with a literal default, e.g. param(\'w\', 60).',
-      );
+      invalidArgs({
+        api: 'params.update(edits)',
+        path: 'edits[].name',
+        got: edit.name,
+        requires: `a param declared with a literal default that the source can be rewritten at (${rewritten.error ?? 'not found'})`,
+        example: "const w = param('w', 60);",
+        hintSlug: 'invalid-args.param.not-found',
+      });
     }
     code = rewritten.new_code;
   }
@@ -134,7 +139,14 @@ async function updateBySourceRewrite(model: BuiltModel, edits: ParamUpdateEdit[]
   }
   const shape = next.rootShape ?? next.tailShape;
   if (!shape) {
-    throw new KernelError('feature.invalid-args', 'params.update: the rebuilt script returned no shape.', undefined, 'invalid-args.param.js-arithmetic — the script must return a shape or scene.');
+    invalidArgs({
+      api: 'params.update(edits)',
+      path: '',
+      gotText: 'a rebuilt script with no returned shape',
+      requires: 'the script to return a shape or scene',
+      example: "return box(param('w', 60), 30, 5);",
+      hintSlug: 'invalid-args.param.js-arithmetic',
+    });
   }
   const relowered: string[] = [];
   const skipped: string[] = [];
