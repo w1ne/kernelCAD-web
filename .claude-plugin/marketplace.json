@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "CAD parts, STEP and drawings",
-    "version": "0.17.3"
+    "version": "0.17.4"
   },
   "plugins": [
     {
       "name": "kernelcad",
       "source": "./plugins/kernelcad",
       "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
-      "version": "0.17.3",
+      "version": "0.17.4",
       "author": {
         "name": "kernelCAD",
         "url": "https://kernelcad.com"
