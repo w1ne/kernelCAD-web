@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "kits": [
+    {
+      "id": "nature",
+      "title": "Nature",
+      "description": "Low-poly trees, rocks, plants and ground pieces at real-world scale, flat-shaded on one palette material.",
+      "assets": [
+        "pine-tree"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "pine-tree",
+      "kit": "nature",
+      "title": "Pine tree",
+      "description": "Stacked-cone conifer with a faceted trunk. Knobs: height, tier count, facet count, bark and foliage colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "tree",
+        "conifer",
+        "pine",
+        "forest",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest"
+      ],
+      "license": "CC-BY-4.0",
+      "source": "catalog/kits/nature/pine-tree.kcad.ts",
+      "sourceSha256": "67377af36f6ae7c9365e1fcd235943a9164a421a37d89af00575eae5240cf9ac",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "4.5",
+          "label": "Height (m)",
+          "choices": [
+            "3",
+            "4.5",
+            "6",
+            "8"
+          ]
+        },
+        {
+          "name": "tiers",
+          "type": "choice",
+          "default": "3",
+          "label": "Foliage tiers",
+          "choices": [
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "sides",
+          "type": "choice",
+          "default": "7",
+          "label": "Facets",
+          "choices": [
+            "5",
+            "6",
+            "7",
+            "8",
+            "10"
+          ]
+        },
+        {
+          "name": "bark",
+          "type": "color",
+          "default": "#7a4b2a",
+          "label": "Bark"
+        },
+        {
+          "name": "leaves",
+          "type": "color",
+          "default": "#2f7d4a",
+          "label": "Foliage"
+        }
+      ],
+      "presets": {
+        "autumn": {
+          "leaves": "#c9772b"
+        },
+        "snowy": {
+          "leaves": "#e8eef2",
+          "bark": "#5b4636"
+        }
+      },
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.881959,
+          4.5,
+          1.930357
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bark",
+          "color": "#7a4b2a",
+          "parts": [
+            "trunk"
+          ],
+          "param": "bark"
+        },
+        {
+          "name": "leaves",
+          "color": "#2f7d4a",
+          "parts": [
+            "foliage-1",
+            "foliage-2",
+            "foliage-3"
+          ],
+          "param": "leaves"
+        }
+      ]
+    }
+  ]
+}
