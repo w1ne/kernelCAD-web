@@ -24,22 +24,33 @@ describe('prepareShapeForDrawing', () => {
     }
   });
 
-  it('projects shapes past the face threshold polygonally, without touching the source', () => {
+  it('projects shapes past the face threshold on triangles, without touching the source', () => {
     const body = replicad.makeCylinder(10, 20).fillet(2);
     const exact = projectShapeForDrawing(body, makeDrawingCamera('front'));
-    const source = prepareShapeForDrawing(body, { polygonalMinFaces: 1 });
+    const source = prepareShapeForDrawing(body, { meshMinFaces: 1 });
     try {
-      expect(source.mode).toBe('polygonal');
+      expect(source.mode).toBe('mesh');
       const view = source.project(makeDrawingCamera('front'));
       expect(view.visibleSharp.length + view.visibleOutline.length).toBeGreaterThan(0);
-      expect(view.visibleSmooth).toEqual([]);
-      expect(view.hiddenSmooth).toEqual([]);
-      // The working copy carries the regularity encoding; the caller's shape
-      // projects exactly as it did before.
+      // The caller's shape still projects exactly as it did before.
       expect(projectShapeForDrawing(body, makeDrawingCamera('front'))).toEqual(exact);
     } finally {
       source.dispose();
       body.delete();
+    }
+  });
+
+  it('projects mesh-derived parts on triangles', () => {
+    const bytes = new Uint8Array(readFileSync('examples/robot-arm/so100/parts/sim/Base_Motor.stl'));
+    const imported = importStlBytes(bytes);
+    const source = prepareShapeForDrawing(imported.backend.getReplicadShape() as never);
+    try {
+      expect(source.mode).toBe('mesh');
+      const view = source.project(makeDrawingCamera('iso'), { withHidden: false });
+      expect(view.visibleSharp.length).toBeGreaterThan(0);
+      expect(view.hiddenSharp).toEqual([]);
+    } finally {
+      source.dispose();
     }
   });
 });

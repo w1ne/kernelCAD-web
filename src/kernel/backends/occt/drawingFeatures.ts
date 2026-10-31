@@ -22,6 +22,7 @@ import { measureArea, getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { detectCylindricalHoles, type CylindricalHole } from './holeDetection';
 import { isSameEdge } from './edgeQueries';
+import { MESH_FACET_MIN } from './drawingMeshProjection';
 
 export type V3 = [number, number, number];
 
@@ -131,13 +132,11 @@ export interface DrawingFeatureModel {
   meshFacetsSkipped?: number;
 }
 
-/**
- * A body with more than this many triangular planar faces came from a mesh
- * (lib.fromSTL / fromOBJ / from3MF): those faces are facets, not designed
- * features, so they are not recognised. The SO-100 arm's 65k STL facets
- * took 50 s and ~760 MB of JS heap to classify into nothing usable.
- */
-export const MESH_FACET_MIN = 2000;
+// A body with more than MESH_FACET_MIN triangular faces came from a mesh
+// (lib.fromSTL / fromOBJ / from3MF): those faces are facets, not designed
+// features, so they are not recognised. The SO-100 arm's 65k STL facets took
+// 50 s and ~760 MB of JS heap to classify into nothing usable.
+export { MESH_FACET_MIN };
 
 /** Indices of triangular faces when there are more than MESH_FACET_MIN of
  *  them, else an empty set. */
@@ -649,17 +648,17 @@ interface IndexedEdge {
 }
 
 /**
- * `neighbourAcross(faceIdx, edge)`: the lowest-index other face with an edge
- * `isSameEdge` matches, -1 if none. Same answer as testing every edge of every
- * face, but each edge's endpoints are read from OCCT once and indexed on a
+ * `neighbourAcross(faceIdx, edge)`: the lowest-index other indexed face with
+ * an edge `isSameEdge` matches, -1 if none. Same answer as testing every edge
+ * of every indexed face, but each edge's endpoints are read from OCCT once and indexed on a
  * grid of the endpoint tolerance, so only edges whose endpoints already match
  * reach `isSameEdge`. The full scan was O(faces x edges) OCCT reads per query
  * (each endpoint read builds a curve adaptor): 72 s and a WASM heap at its
  * 2 GB ceiling for the 2,556-face planetary gear stage's pdf-drawing.
  */
-/** Per-face edge lists, read lazily. */
+/** Per-face edge lists, read lazily, for the faces a query may return. */
 interface FaceEdgeLists {
-  readonly length: number;
+  readonly faces: Iterable<number>;
   at(face: number): Edge[];
 }
 
@@ -679,7 +678,7 @@ function buildEdgeGrid(
   cellKey: (x: number, y: number, z: number) => string,
 ): Map<string, IndexedEdge[]> {
   const grid = new Map<string, IndexedEdge[]>();
-  for (let face = 0; face < faceEdges.length; face += 1) {
+  for (const face of faceEdges.faces) {
     for (const edge of faceEdges.at(face)) {
       const entry: IndexedEdge = { face, edge, a: vec(edge.startPoint), b: vec(edge.endPoint) };
       const k = cellKey(cell(entry.a[0]), cell(entry.a[1]), cell(entry.a[2]));
@@ -741,7 +740,10 @@ function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceI
     }
     return edges;
   };
-  const faceEdges = { length: faces.length, at: edgesOf };
+  // Only a planar face can be a chamfer's neighbour, so only planar faces are
+  // indexed: on a mesh-derived body that skips every facet's three edges
+  // (14 s and ~500 MB of JS heap for the SO-100 arm's 65k facets).
+  const faceEdges = { faces: planarByIndex.keys(), at: edgesOf };
   const neighbourAcross = makeNeighbourAcross(faceEdges);
 
   for (const [idx, info] of planarByIndex) {

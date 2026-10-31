@@ -33,6 +33,7 @@
 
 import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
+import { untracked } from './occtFinalizers';
 
 export interface CylindricalHole {
   /** Hole-mouth center for blind holes; t_min end for through holes. */
@@ -498,6 +499,13 @@ function collectConcaveCylindricalFaces(
   backend: OcctBackend,
   want: 'concave' | 'convex' = 'concave',
 ): ConcaveCylFace[] {
+  // Every handle below is deleted here, so none is registered with the GC
+  // safety net: a mesh-derived body runs this loop over tens of thousands
+  // of facets.
+  return untracked(() => scanCylindricalFaces(backend, want));
+}
+
+function scanCylindricalFaces(backend: OcctBackend, want: 'concave' | 'convex'): ConcaveCylFace[] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -564,6 +572,8 @@ function collectConcaveCylindricalFaces(
         }
       } finally {
         adaptor.delete();
+        face.delete();
+        raw.delete();
       }
       explorer.Next();
     }
