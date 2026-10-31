@@ -39,6 +39,9 @@ console.log(JSON.stringify({
   materials: asset.stats.materials,
   knobs: asset.params.map((p) => `${p.name}:${p.type}`),
   palette: asset.palette.map((z) => `${z.name}=${z.color}`),
+  ...(asset.rig === undefined ? {} : {
+    rig: Object.entries(asset.rig).map(([name, j]) => `${name}:${j.type}/${j.axis}[${j.range.join(',')}]`),
+  }),
 }));
 const png = flag('--png');
 if (png !== undefined) {
