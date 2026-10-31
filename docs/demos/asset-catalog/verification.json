@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-31T12:28:48.398Z",
+  "checkedAt": "2026-10-31T12:30:31.108Z",
   "kits": [
     {
       "id": "city-street",
@@ -47,7 +47,7 @@
     },
     {
       "tool": "find_matching",
-      "id": "birch-tree",
+      "id": "pine-tree",
       "rows": [
         [
           "bush",
@@ -55,8 +55,27 @@
             "same-kit",
             "compat:outdoor",
             "compat:forest",
-            "compat:meadow",
-            "compat:park",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "cliff-tile",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "fern",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "palette",
             "scale"
           ]
         ],
@@ -65,31 +84,13 @@
           [
             "same-kit",
             "compat:outdoor",
-            "compat:meadow",
             "compat:forest",
             "palette",
             "scale"
           ]
         ],
         [
-          "park-bench",
-          [
-            "compat:outdoor",
-            "compat:park",
-            "palette",
-            "scale"
-          ]
-        ],
-        [
-          "bike-rack",
-          [
-            "compat:outdoor",
-            "palette",
-            "scale"
-          ]
-        ],
-        [
-          "bus-stop-shelter",
+          "planter-box",
           [
             "compat:outdoor",
             "palette",
@@ -105,20 +106,16 @@
           ]
         ],
         [
-          "picture-frame",
+          "bus-stop-shelter",
           [
-            "palette",
+            "compat:outdoor",
             "scale"
           ]
         ],
         [
-          "oak-tree",
+          "park-bench",
           [
-            "same-kit",
             "compat:outdoor",
-            "compat:forest",
-            "compat:meadow",
-            "compat:park",
             "scale"
           ]
         ]
@@ -126,17 +123,15 @@
     },
     {
       "tool": "get_variant",
-      "id": "birch-tree",
+      "id": "pine-tree",
       "want": "taller, autumn, five tiers",
       "params": {
-        "leaves": "#e2b93b",
-        "heightM": "12"
+        "leaves": "#c9772b",
+        "heightM": "6",
+        "tiers": "5"
       },
-      "unmatched": [
-        "5",
-        "tiers"
-      ],
-      "glbSha256": "b6614d3bb15dad3bdc5a77f5bfff8a01052ccb93ebb5b3072d023558956c90cf"
+      "unmatched": [],
+      "glbSha256": "f0285d4c57e8c492eba0afeedcc3100a09a91a020f2738607bbfcc372e4e3280"
     }
   ],
   "claims": {
