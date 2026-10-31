@@ -5956,7 +5956,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/nature/grass-tuft.kcad.ts",
-      "sourceSha256": "bd2c1be72e9fbc4d48588d3af7eb2d85be9ff867fd5427fa7b8311fc70e963c3",
+      "sourceSha256": "45563cd9f0052dc1e09e7d935a19fdec71771aea2ce9e0535e74337bcc46d2f6",
       "triangleBudget": 260,
       "params": [
         {
@@ -6076,7 +6076,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/nature/ground-tile.kcad.ts",
-      "sourceSha256": "1bcdaa0e2f061e66a0bf787facc68d477b993828e42b4fab5623acb1ba9afbf7",
+      "sourceSha256": "c9ea9f87d80d346820c30c9518cc4f0638853ac4a26fdb0da5a8c2d7475a804f",
       "triangleBudget": 80,
       "params": [
         {
@@ -6295,7 +6295,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/nature/log.kcad.ts",
-      "sourceSha256": "1c97e153f9f0e700716e306ea353de0595edfcb0af7df9e959379260951aaa8d",
+      "sourceSha256": "5f8a7fb76e8a5c94f4f72ae2c94daf82ad66f5fed1576fce52788cfd0e6ae95c",
       "triangleBudget": 160,
       "params": [
         {
@@ -7057,7 +7057,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/nature/reeds.kcad.ts",
-      "sourceSha256": "6c3510ea7b96f989368e6ad94607224880dce84385fd7480568cb6a5edc38989",
+      "sourceSha256": "efc23f825c2ed2148c35ba64a84ef99de7067bd1d82e70397ef0194fbe326191",
       "triangleBudget": 200,
       "params": [
         {
