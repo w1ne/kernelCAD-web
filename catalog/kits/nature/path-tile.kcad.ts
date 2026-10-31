@@ -50,8 +50,31 @@ const poly = shapes[layout.value].map(([x, y]) => [x, y] as [number, number]);
 
 const tile = assembly('path-tile');
 tile.part('dirt', box(S, S, skirtH, true).translate(0, 0, skirtH / 2).color(dirt));
-const cutter = extrudePolygon(poly, t).translate(0, 0, skirtH - 50);
-tile.part('grass', box(S, S, t - skirtH, true).translate(0, 0, (t + skirtH) / 2).subtract(cutter).color(grass));
 tile.part('path', extrudePolygon(poly, t - skirtH - sink).translate(0, 0, skirtH).color(pathC));
+
+// Grass caps the dirt around the path. `cross` cuts the tile into four corner
+// islands, so one subtract() would return four solids — which the
+// detached-material gate rejects, correctly. Emit the connected pieces as
+// separate parts instead: one for the other layouts, four corners for `cross`.
+const capBottom = skirtH;
+const capHeight = t - skirtH;
+const cap = (piece: number[][]) => extrudePolygon(
+  piece.map(([x, y]) => [x, y] as [number, number]), capHeight,
+).translate(0, 0, capBottom + capHeight / 2).color(grass);
+
+if (layout.value === 'cross') {
+  const corners: number[][][] = [
+    [[-h, -h], [-w, -h], [-w, -w - b], [-w - b, -w], [-h, -w]],
+    [[w, -h], [h, -h], [h, -w], [w + b, -w], [w, -w - b]],
+    [[h, w], [h, h], [w, h], [w, w + b], [w + b, w]],
+    [[-h, h], [-h, w], [-w - b, w], [-w, w + b], [-w, h]],
+  ];
+  corners.forEach((c, i) => { tile.part(`grass-${i + 1}`, cap(c)); });
+} else {
+  tile.part('grass', box(S, S, capHeight, true)
+    .translate(0, 0, capBottom + capHeight / 2)
+    .subtract(extrudePolygon(poly, capHeight + 2).translate(0, 0, capBottom + capHeight / 2))
+    .color(grass));
+}
 
 return tile.model();

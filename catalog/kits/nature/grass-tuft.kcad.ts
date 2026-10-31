@@ -45,7 +45,7 @@ for (let i = 0; i < n; i++) {
   const lean = 8 + 22 * Math.abs(Math.sin(i * 2.7));
   const w = h * 0.035;
   const r = h * 0.05 * Math.abs(Math.cos(i * 1.3));
-  const place = (s: any) => s.rotateX(-lean).rotateZ(az).translate(r * Math.cos((az * Math.PI) / 180), r * Math.sin((az * Math.PI) / 180), t * 0.6);
+  const place = (s: ReturnType<typeof box>) => s.rotateX(-lean).rotateZ(az).translate(r * Math.cos((az * Math.PI) / 180), r * Math.sin((az * Math.PI) / 180), t * 0.6);
   tuft.part(`blade-${i + 1}`, place(lower(w, len * 0.62)).color(grass));
   tuft.part(`tip-${i + 1}`, place(tip(w, len * 0.38, len * 0.62)).color(tips));
 }

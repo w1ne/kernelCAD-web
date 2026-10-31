@@ -29,6 +29,8 @@ import {
   type AnyShape,
 } from 'replicad';
 import type { Polyline2, Pt2, DrawingViewName } from './drawingLayout';
+import { extractDrawingMesh, projectDrawingMesh, wantsMeshProjection, type DrawingMesh } from './drawingMeshProjection';
+import { untracked } from './occtFinalizers';
 
 /** Raw OCCT shape handle (TopoDS_Shape), named via `cast`'s signature so we
  *  don't depend on the wasm package's type-export shape. */
@@ -139,24 +141,20 @@ export interface ProjectionOptions {
 }
 
 /**
- * Above this many faces a drawing source is projected with polygonal hidden-
- * line removal (HLRBRep_PolyAlgo, on a triangulation) instead of exact
+ * Above this many faces (or MESH_FACET_MIN triangle facets) a drawing source
+ * is projected on triangles (drawingMeshProjection.ts) instead of with exact
  * HLRBRep_Algo. Exact HLR on the SO-100 arm's 65k STL facets took 54 s and
  * 1.5 GB of WASM heap for one view and ran out of memory on the second; the
  * 2,556-face planetary gear stage projects exactly in ~10 s for four views.
  */
-export const POLY_HLR_MIN_FACES = 20_000;
-
-/** Facet edges whose faces meet at less than this are smooth seams, not
- *  creases (the usual mesh auto-smooth angle). Polygonal mode only. */
-const POLY_CREASE_ANGLE_RAD = (30 * Math.PI) / 180;
+export const MESH_PROJECTION_MIN_FACES = 20_000;
 
 /** A drawing source ready for repeated projection (one per view). */
 export interface PreparedDrawingSource {
-  /** 'exact' (HLRBRep_Algo) or 'polygonal' (HLRBRep_PolyAlgo). */
-  readonly mode: 'exact' | 'polygonal';
+  /** 'exact' (HLRBRep_Algo) or 'mesh' (triangles, drawingMeshProjection.ts). */
+  readonly mode: 'exact' | 'mesh';
   project(camera: ProjectionCamera, options?: ProjectionOptions): ProjectedViewEdges;
-  /** Frees the polygonal working copy; a no-op in exact mode. */
+  /** Releases what `prepareShapeForDrawing` read. */
   dispose(): void;
 }
 
@@ -181,110 +179,30 @@ export function projectShapeForDrawing(
 }
 
 /**
- * Prepare `shape` for projection. Shapes up to `POLY_HLR_MIN_FACES` faces
- * (or any shape, when the WASM build lacks HLRBRep_PolyAlgo) use exact HLR
- * on the shape itself. Larger ones get a private working copy: each
- * shape is deep-copied, its facet edges under the crease angle marked
- * regular (BRepLib::EncodeRegularity, which would otherwise change the
- * caller's model), and meshed shell by shell (whole-compound BRepMesh aborts
- * on dense imports). In that mode the smooth classes are those facet seams,
- * so they come back empty; sharp and outline lines are kept.
+ * Prepare `shape` for projection. Mesh-derived shapes (more than
+ * MESH_FACET_MIN triangle facets) and shapes over `meshMinFaces` faces are
+ * read once into a triangle mesh and projected on it; every other shape uses
+ * exact HLR on the shape itself.
  */
 export function prepareShapeForDrawing(
   shape: AnyShape,
-  options: { polygonalMinFaces?: number } = {},
+  options: { meshMinFaces?: number } = {},
 ): PreparedDrawingSource {
-  const oc = getOC();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ocAny = oc as any;
-  if (typeof ocAny.HLRBRep_PolyAlgo_1 !== 'function' || !hasMoreFacesThan(ocAny, shape.wrapped, options.polygonalMinFaces ?? POLY_HLR_MIN_FACES)) {
+  if (!untracked(() => wantsMeshProjection(shape.wrapped, options.meshMinFaces ?? MESH_PROJECTION_MIN_FACES))) {
     return { mode: 'exact', project: (camera, options) => projectExact(shape, camera, options), dispose: () => {} };
   }
-  const working = polygonalWorkingCopy(ocAny, shape.wrapped);
+  // Extraction deletes every OCCT handle it creates.
+  let mesh: DrawingMesh | undefined = untracked(() => extractDrawingMesh(shape.wrapped));
   return {
-    mode: 'polygonal',
-    project: (camera, options) => projectPolygonal(working, camera, options),
-    dispose: () => working.delete(),
+    mode: 'mesh',
+    project: (camera, options) => {
+      if (!mesh) throw new Error('prepareShapeForDrawing: source already disposed');
+      return projectDrawingMesh(mesh, camera, options);
+    },
+    dispose: () => {
+      mesh = undefined;
+    },
   };
-}
-
-function hasMoreFacesThan(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oc: any,
-  shape: unknown,
-  limit: number,
-): boolean {
-  const faces = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
-  try {
-    let n = 0;
-    for (; faces.More(); faces.Next()) if (++n > limit) return true;
-    return false;
-  } finally {
-    faces.delete();
-  }
-}
-
-/** A deep copy of `shape` with facet regularity encoded and a triangulation,
- *  for HLRBRep_PolyAlgo. */
-function polygonalWorkingCopy(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oc: any,
-  shape: unknown,
-): { delete(): void } {
-  const identity = new oc.gp_Trsf_1();
-  const transform = new oc.BRepBuilderAPI_Transform_2(shape, identity, true);
-  const copy = transform.Shape();
-  transform.delete();
-  identity.delete();
-  oc.BRepLib.EncodeRegularity_1(copy, POLY_CREASE_ANGLE_RAD);
-  // Mesh shell by shell, then any free faces: one BRepMesh over a dense
-  // multi-part compound aborts (see backendMesh.ts).
-  const { TopAbs_SHELL, TopAbs_FACE, TopAbs_SHAPE } = oc.TopAbs_ShapeEnum;
-  forEachSubShape(oc, copy, TopAbs_SHELL, TopAbs_SHAPE, (shell) => meshForDrawing(oc, shell));
-  forEachSubShape(oc, copy, TopAbs_FACE, TopAbs_SHELL, (face) => meshForDrawing(oc, face));
-  return copy;
-}
-
-function forEachSubShape(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oc: any,
-  shape: unknown,
-  type: unknown,
-  avoid: unknown,
-  fn: (sub: unknown) => void,
-): void {
-  const explorer = new oc.TopExp_Explorer_2(shape, type, avoid);
-  try {
-    for (; explorer.More(); explorer.Next()) {
-      const sub = explorer.Current();
-      try {
-        fn(sub);
-      } finally {
-        sub.delete();
-      }
-    }
-  } finally {
-    explorer.delete();
-  }
-}
-
-/** Triangulate at ~0.1% of the shape's size (under a pen width at drawing
- *  scale). A shape OCCT cannot mesh is left out of the polygonal views. */
-function meshForDrawing(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oc: any,
-  shape: unknown,
-): void {
-  const box = new oc.Bnd_Box_1();
-  try {
-    oc.BRepBndLib.Add(shape, box, false);
-    const diagonal = box.IsVoid() ? 1 : Math.sqrt(box.SquareExtent());
-    new oc.BRepMesh_IncrementalMesh_2(shape, Math.max(0.02, diagonal * 1e-3), false, 0.5, false).delete();
-  } catch {
-    // Left untriangulated: PolyAlgo skips faces without a triangulation.
-  } finally {
-    box.delete();
-  }
 }
 
 /** Discretize every edge of one HLR output compound into 2D polylines. */
@@ -314,38 +232,6 @@ function discretize(
     polylines.push(pl);
   }
   return polylines;
-}
-
-function projectPolygonal(
-  working: unknown,
-  camera: ProjectionCamera,
-  options: ProjectionOptions = {},
-): ProjectedViewEdges {
-  const withHidden = options.withHidden !== false;
-  const curveTol = options.curveTolerance ?? 0.02;
-  const angTol = options.angularTolerance ?? 0.08;
-  const oc = getOC();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ocAny = oc as any;
-  const r = GCWithScope();
-  // The handle owns the reference-counted algorithm; only the handle is freed.
-  const algo = new ocAny.HLRBRep_PolyAlgo_1();
-  const handle = r(new ocAny.Handle_HLRBRep_PolyAlgo_2(algo));
-  algo.Load(working);
-  const projector = r(new oc.HLRAlgo_Projector_2(camera.wrapped));
-  algo.Projector_2(projector);
-  algo.Update();
-  const toShape = r(new ocAny.HLRBRep_PolyHLRToShape());
-  toShape.Update(handle);
-  const grab = (compound: OcctShapeHandle): Polyline2[] => discretize(r(compound), r, curveTol, angTol);
-  return {
-    visibleSharp: grab(toShape.VCompound_1()),
-    visibleOutline: grab(toShape.OutLineVCompound_1()),
-    visibleSmooth: [],
-    hiddenSharp: withHidden ? grab(toShape.HCompound_1()) : [],
-    hiddenOutline: withHidden ? grab(toShape.OutLineHCompound_1()) : [],
-    hiddenSmooth: [],
-  };
 }
 
 function projectExact(

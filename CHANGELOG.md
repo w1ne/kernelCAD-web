@@ -49,6 +49,7 @@
   `scripts/checkCatalogAsset.ts` builds and previews one asset. New cookbook
   recipe `lowpoly-game-asset`. Demo: `docs/demos/asset-catalog/`.
 
+
 - Asset catalog MCP tools (read-only, bundled catalog): `search_assets`
   (q, kit, category, triangle range, sort, paging; compact rows with
   triangles, size in metres, origin, knobs and palette; a `coverage` verdict
@@ -74,6 +75,7 @@
   "taller, red foliage, with snow" to knob overrides; unknown words are
   reported, not guessed).
 
+
 - Low-poly GLB export: `export` glb `{ style: 'lowpoly' }` writes a faceted,
   flat-shaded game asset in metres (`units` overrides) where every opaque part
   carries its colour in `COLOR_0` on one shared `kernelcad-palette` material,
@@ -86,6 +88,9 @@
   files also list their colour zones. `meta()` accepts catalog fields `kit`,
   `category`, `origin`, `compat` and `triangleBudget`. Example:
   `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
+  `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
+  `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
+  `examples/assets/pine-tree.kcad.ts`; local demo bundle:
   `docs/demos/glb-lowpoly/`.
 
 - Asset manifests: `meta()` and `presets()` now capture validated asset metadata
@@ -1301,8 +1306,6 @@ This release contains the changes merged since v0.16.0, including the agent skil
 - Merge pull request #706 from w1ne/docs/v016-demo-shows-drawing (40f68c5e)
 - Merge pull request #705 from w1ne/chore/release-v0.16.0 (7000942b)
 - ci: stop Pages unsharded test colliding with required check; load gmsh libs (a06cdbbe)
-
-
 
 # kernelCAD v0.16.0
 
