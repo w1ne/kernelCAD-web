@@ -30,6 +30,8 @@
 
 # v0.17.3 — 2026-10-31
 
+
+
 - Asset catalog MCP tools (read-only, bundled catalog): `search_assets`
   (q, kit, category, triangle range, sort, paging; compact rows with
   triangles, size in metres, origin, knobs and palette; a `coverage` verdict
@@ -54,7 +56,10 @@
   spread across categories) and `resolveVariant` (plain words such as
   "taller, red foliage, with snow" to knob overrides; unknown words are
   reported, not guessed).
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/develop
 - Low-poly GLB export: `export` glb `{ style: 'lowpoly' }` writes a faceted,
   flat-shaded game asset in metres (`units` overrides) where every opaque part
   carries its colour in `COLOR_0` on one shared `kernelcad-palette` material,
@@ -66,7 +71,15 @@
   lowest point) plus `units` and `style` in `asset.extras.kernelcad`; low-poly
   files also list their colour zones. `meta()` accepts catalog fields `kit`,
   `category`, `origin`, `compat` and `triangleBudget`. Example:
+<<<<<<< HEAD
   `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
+=======
+<<<<<<< HEAD
+  `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
+=======
+  `examples/assets/pine-tree.kcad.ts`; local demo bundle:
+>>>>>>> origin/develop
+>>>>>>> origin/develop
   `docs/demos/glb-lowpoly/`.
 
 - Asset manifests: `meta()` and `presets()` now capture validated asset metadata
