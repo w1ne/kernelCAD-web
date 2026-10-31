@@ -37,6 +37,7 @@ import { blockoutToolEntries } from './registry/blockoutTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { explodeViewToolEntries } from './registry/explodeViewTools';
 import { assetManifestToolEntries } from './registry/assetManifestTools';
+import { assetCatalogToolEntries } from './registry/assetCatalogTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -100,6 +101,12 @@ const EXPECTED_TOOL_NAMES = [
   'apply_surface_blend',
   'blockout_assembly',
   'asset_manifest',
+  'search_assets',
+  'get_asset',
+  'find_matching',
+  'get_variant',
+  'list_kits',
+  'get_kit',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -404,8 +411,14 @@ describe('toolRegistry public contract', () => {
        'apply_surface_blend',
        'blockout_assembly',
        'asset_manifest',
+       'search_assets',
+       'get_asset',
+       'find_matching',
+       'get_variant',
+       'list_kits',
+       'get_kit',
      ]);
-    expect(TOOL_REGISTRY).toHaveLength(59);
+    expect(TOOL_REGISTRY).toHaveLength(65);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -463,14 +476,20 @@ describe('toolRegistry public contract', () => {
 
   it('appends the generic blockout assembly generator at the registry tail', () => {
     expect(blockoutToolEntries.map(entry => entry.definition.name)).toEqual(['blockout_assembly']);
-    expect(TOOL_REGISTRY.slice(-2, -1)).toEqual(blockoutToolEntries);
+    expect(TOOL_REGISTRY.slice(-8, -7)).toEqual(blockoutToolEntries);
     expect(blockoutToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
   it('appends the read-only asset manifest tool after the historical blockout tail', () => {
     expect(assetManifestToolEntries.map(entry => entry.definition.name)).toEqual(['asset_manifest']);
-    expect(TOOL_REGISTRY.slice(-assetManifestToolEntries.length)).toEqual(assetManifestToolEntries);
-    expect(TOOL_REGISTRY.at(-1)?.definition.name).toBe('asset_manifest');
+    expect(TOOL_REGISTRY.slice(-7, -6)).toEqual(assetManifestToolEntries);
+  });
+
+  it('appends the read-only asset catalog family at the registry tail', () => {
+    expect(TOOL_REGISTRY.slice(-assetCatalogToolEntries.length)).toEqual(assetCatalogToolEntries);
+    expect(assetCatalogToolEntries.map(entry => entry.definition.name)).toEqual([
+      'search_assets', 'get_asset', 'find_matching', 'get_variant', 'list_kits', 'get_kit',
+    ]);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
