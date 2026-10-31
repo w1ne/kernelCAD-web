@@ -66,6 +66,7 @@
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",
     "test": "NODE_OPTIONS='--max-old-space-size=8192' vitest run",
+    "drawing-roundtrip:scorecard": "npx tsx scripts/drawingRoundTripScorecard.ts",
     "test:reference-parts": "node --import tsx scripts/referencePartsScorecard.ts --check",
     "test:solidcraft-ledger": "node --import tsx scripts/solidcraftLedger.ts --check --tier pr",
     "test:solidcraft-ledger:all": "node --import tsx scripts/solidcraftLedger.ts --check --tier all",
