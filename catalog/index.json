@@ -6823,7 +6823,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/nature/path-tile.kcad.ts",
-      "sourceSha256": "03f61a63773a27f632f0ca5cfff9244f3bfae8a707e2a754a892a123e858deeb",
+      "sourceSha256": "30b3997169b66583d44ae34fadefd3ae82f01b2fc3ccea68370ecfccdc61dce4",
       "triangleBudget": 160,
       "params": [
         {
@@ -6882,7 +6882,7 @@
         }
       },
       "stats": {
-        "triangles": 64,
+        "triangles": 68,
         "sizeM": [
           2,
           0.2,
@@ -6901,20 +6901,20 @@
           "param": "dirt"
         },
         {
-          "name": "grass",
-          "color": "#6aa443",
-          "parts": [
-            "grass"
-          ],
-          "param": "grass"
-        },
-        {
           "name": "path",
           "color": "#b48a5a",
           "parts": [
             "path"
           ],
           "param": "path"
+        },
+        {
+          "name": "grass",
+          "color": "#6aa443",
+          "parts": [
+            "grass"
+          ],
+          "param": "grass"
         }
       ]
     },
