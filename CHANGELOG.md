@@ -1,5 +1,16 @@
 # Unreleased
 
+- PLY export: `kernelcad export ply`, MCP `export({ format: 'ply' })` and
+  `runAndExport` write a Stanford PLY triangle mesh (mm, Z up). The default is
+  binary little-endian with per-vertex `nx ny nz` normals (split at creases
+  over 30°, so flat faces stay flat) and `uchar red green blue` part colours.
+  The colour comes from `.finish()` / `.material()` / `.color()` through the
+  same lineage GLB and 3MF use. An assembly is one file with every part in
+  world space, listed as `comment part <i> <name>`. Options:
+  `encoding: 'ascii'`, `colors: 'face' | 'none'`, `normals: false`. A bad
+  option fails before the script runs with `export.ply.invalid-options`. Demo
+  bundle: `docs/demos/ply-export/`.
+
 - Catalog asset Studio link: `src/shared/assets/catalogStudioLink.ts` resolves
   `/studio?catalog=<kit>/<id>` (e.g. `nature/pine-tree`) against
   `catalog/index.json`, loads the row's `.kcad.ts` and refuses it when it no

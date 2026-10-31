@@ -18,6 +18,8 @@ kernelcad export dxf  path/to/script.kcad.ts -o /tmp/out.dxf   # flat part / cut
 kernelcad export dxf  path/to/script.kcad.ts -o /tmp/plan.dxf --options '{"section":{"axis":"z","at":25}}'  # cross-section of any part at z = 25
 kernelcad export 3mf  path/to/script.kcad.ts -o /tmp/out.3mf   # slicer mesh with per-part colors
 kernelcad export glb  path/to/script.kcad.ts -o /tmp/out.glb   # web / AR viewer; PBR materials
+kernelcad export ply  path/to/script.kcad.ts -o /tmp/out.ply   # MeshLab / Blender / trimesh mesh; normals + part colours, assemblies merged in world space
+kernelcad export ply  path/to/script.kcad.ts -o /tmp/out.ply --options '{"encoding":"ascii","colors":"face"}'
 kernelcad export stl  path/to/script.kcad.ts --part lever -o /tmp/lever.stl  # one solved-assembly part (world-frame); repeat --part with -o <dir> for a subset
 kernelcad export stl  path/to/script.kcad.ts --parts all -o /tmp/parts/      # every assembly part as <dir>/<part>.stl
 kernelcad export stl  path/to/script.kcad.ts -o /tmp/out.stl --no-verify     # skip the default-on watertight verify gate

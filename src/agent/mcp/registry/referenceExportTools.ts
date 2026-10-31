@@ -52,7 +52,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         "options.infill { fromFea: '<study>' | true, bands?, pattern? } = stress-graded FDM infill (requires the local CalculiX + gmsh toolchain; without it the export fails with fea.solver.unavailable): " +
         "solves the feaStudy and writes modifier volumes, each with its own infill density (Orca/Bambu format by default; options.slicer 'prusa' writes PrusaSlicer's format instead, since the two are not interchangeable); the result carries infill { bands, saving, images }), " +
         'gcode (installed OrcaSlicer output; preserves G-code and returns optional gcode_stats with header generator identity and slicer-predicted time/material), ' +
-        'glb (web-viewer / AR with PBR materials), obj (Wavefront indexed triangle mesh), usd (ASCII USDA triangle mesh in millimeter, Z-up coordinates; multi-part scenes emit one named mesh per part), ' +
+        'glb (web-viewer / AR with PBR materials), obj (Wavefront indexed triangle mesh), ply (Stanford PLY triangle mesh, mm, Z-up, binary little-endian by default, with per-vertex normals and the part colour from .finish()/.material()/.color(); an assembly is one file with every part in world space), usd (ASCII USDA triangle mesh in millimeter, Z-up coordinates; multi-part scenes emit one named mesh per part), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
         'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; ' +
         'pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). ' +
@@ -76,7 +76,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'STEP exports check B-rep validity and mesh watertightness by default; failures return ok: false with export.brep.invalid or export.mesh.not-watertight, while keeping the STEP file for inspection. ' +
         'Set options.verify: false or pass { no_verify: true } to skip STEP checks. ' +
         'Optional { feature_id } selects which feature to export (default: last). ' +
-        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: step unit/verify, dxf layers/tolerance/unit/section/layout, 3mf printUnit/embedSource/arrange/orient/slicer/printer/infill, glb axis/draco).\n' +
+        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: step unit/verify, dxf layers/tolerance/unit/section/layout, 3mf printUnit/embedSource/arrange/orient/slicer/printer/infill, glb axis/draco, ply encoding/normals/colors).\n' +
         "- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. " +
         'Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts ' +
         '(files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default ' +
@@ -95,7 +95,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
           output_path: { type: 'string', description: "Destination path (a directory for format 'bend-table'). target:'model' — the export file (required). target:'part' — single-part .stl path." },
           format: {
             type: 'string',
-            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'usd', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json', 'bend-table', 'gcode'],
+            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'ply', 'usd', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json', 'bend-table', 'gcode'],
             description: "target:'model' — output file format (required for that target).",
           },
           feature_id: { type: 'string', description: "target:'model' — optional FeatureId to export; defaults to last." },
@@ -111,6 +111,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               'glb: { axis?: "y-up"|"z-up", draco?: false, style?: "pbr"|"lowpoly", lowpoly?: { angularDeg?: 5..60 (default 30, about 12 segments per circle), maxTriangles?: number }, units?: "mm"|"m" }. ' +
               'style "lowpoly" writes a faceted, flat-shaded game asset in metres (default) with every opaque part coloured through COLOR_0 on one shared material "kernelcad-palette" (merges to one draw call); asset.extras.kernelcad carries stats { triangles, sizeM, minUpM } and palette zones; exceeding maxTriangles fails with export.glb.triangle-budget. ' +
               'obj and usd are mesh exports with no extra options; usd writes ASCII USDA (millimeter, Z-up). ' +
+              'ply: { encoding?: "binary"|"ascii" (default "binary" = binary_little_endian), normals?: boolean (default true; vertices split at creases over 30°), colors?: "vertex"|"face"|"none" (default "vertex": uchar red/green/blue per vertex; "face" puts them on the face element) }; any other key or value fails with export.ply.invalid-options. ' +
               'svg-drawing: { views?: ["front"], sheet?: "a4"|"a3" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
               'views:["front"] produces a centred front-only elevation for SVG or PDF; omit views for four views. Front-only sheets require front annotations and reject isometric balloons/exploded overlays. ' +
               'svg-drawing annotations is an array of authored dimensions/notes, each '

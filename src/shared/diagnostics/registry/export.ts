@@ -275,4 +275,12 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A bend-table export was requested for a script that declares no tube().',
   },
+  'export.ply.invalid-options': {
+    hintTemplate:
+      "PLY options are { format: 'ply', encoding?: 'binary'|'ascii', normals?: boolean, colors?: 'vertex'|'face'|'none' }. Fix the named key or omit options for binary little-endian PLY with per-vertex normals and colours.",
+    nextAction: { kind: 'fix-arg', field: 'options' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A PLY export received an unknown option key or an out-of-set encoding / normals / colors value; nothing was written.',
+  },
 } as const satisfies Record<`export.${string}`, DiagnosticCodeSpec>;
