@@ -57,9 +57,10 @@ function xyz(p: { X(): number; Y(): number; Z(): number }): Vec {
   return [p.X(), p.Y(), p.Z()];
 }
 
-/** Cylindrical faces of `shape`. With `within`, faces whose box misses it
- *  (padded by the near-coincidence range) are skipped before their surface is
- *  classified, so a large body pays one bounding box per face. */
+/** Cylindrical faces of `shape`. Classify the surface before building a box:
+ *  only cylinder faces need extents, so large B-spline bodies avoid an OCCT
+ *  bounding-box calculation for every unrelated face. With `within`, cylinder
+ *  faces whose box misses it are skipped before reading their axis. */
 function cylinderFaces(oc: OC, shape: unknown, within?: { min: Vec; max: Vec }): CylinderFace[] {
   const out: CylinderFace[] = [];
   const cylinderType = oc.GeomAbs_SurfaceType.GeomAbs_Cylinder;
@@ -67,19 +68,23 @@ function cylinderFaces(oc: OC, shape: unknown, within?: { min: Vec; max: Vec }):
   try {
     for (; exp.More(); exp.Next()) {
       const face = oc.TopoDS.Face_1(exp.Current());
-      const box = new oc.Bnd_Box_1();
-      let surface: OC;
+      const surface = new oc.BRepAdaptor_Surface_2(face, true);
       try {
-        oc.BRepBndLib.Add(face, box, false);
-        if (box.IsVoid()) continue;
-        const lo = box.CornerMin();
-        const hi = box.CornerMax();
-        const bounds = { min: xyz(lo), max: xyz(hi) };
-        lo.delete();
-        hi.delete();
-        if (within && !boxesOverlap(bounds, within, NEAR_COINCIDENT_MAX_MM)) continue;
-        surface = new oc.BRepAdaptor_Surface_2(face, true);
         if (surface.GetType() !== cylinderType) continue;
+        const box = new oc.Bnd_Box_1();
+        let bounds: { min: Vec; max: Vec };
+        try {
+          oc.BRepBndLib.Add(face, box, false);
+          if (box.IsVoid()) continue;
+          const lo = box.CornerMin();
+          const hi = box.CornerMax();
+          bounds = { min: xyz(lo), max: xyz(hi) };
+          lo.delete();
+          hi.delete();
+          if (within && !boxesOverlap(bounds, within, NEAR_COINCIDENT_MAX_MM)) continue;
+        } finally {
+          box.delete();
+        }
         const cylinder = surface.Cylinder();
         const axis = cylinder.Axis();
         const location = axis.Location();
@@ -87,7 +92,6 @@ function cylinderFaces(oc: OC, shape: unknown, within?: { min: Vec; max: Vec }):
         out.push({ loc: xyz(location), dir: xyz(direction), radius: cylinder.Radius(), ...bounds });
         for (const h of [location, direction, axis, cylinder]) h.delete();
       } finally {
-        box.delete();
         surface?.delete();
       }
     }

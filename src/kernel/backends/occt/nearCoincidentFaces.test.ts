@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { cast, getOC } from 'replicad';
 import { OcctBackend, initOcct } from './occtBackend';
 import { nearCoincidentGap } from './nearCoincidentFaces';
@@ -44,6 +44,23 @@ describe('nearCoincidentGap', () => {
 
   it('ignores a near-coaxial bore that is far away', () => {
     expect(nearCoincidentGap(getOC(), wrapped(bossWithBore()), [wrapped(tube(4.9e-4, 3.5e-4).translate(0, 0, 100))])).toBeUndefined();
+  });
+
+  it('builds bounding boxes only for cylindrical faces', () => {
+    const oc = getOC() as unknown as { BRepBndLib: { Add: (...args: unknown[]) => void } };
+    const addBounds = vi.spyOn(oc.BRepBndLib, 'Add');
+    const body = OcctBackend.box(20, 20, 10);
+    const tool = OcctBackend.cylinder(10, 3).translate(40, 40, 0);
+    try {
+      expect(nearCoincidentGap(getOC(), wrapped(body), [wrapped(tool)])).toBeUndefined();
+      // The tool has one cylindrical face; the box body has none. End-cap
+      // planes and the six body planes do not need a bounding box here.
+      expect(addBounds).toHaveBeenCalledTimes(1);
+    } finally {
+      addBounds.mockRestore();
+      body.dispose();
+      tool.dispose();
+    }
   });
 });
 
