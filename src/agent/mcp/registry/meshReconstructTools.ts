@@ -15,7 +15,10 @@ const meshToFeaturesToolEntry: ToolRegistryEntry = {
     description:
       'Use this when you are handed an STL, OBJ or 3MF of a mostly prismatic mechanical part (plate, ' +
       'bracket, spacer, flange, housing block) and need an EDITABLE kernelCAD model of it rather than ' +
-      'a faceted lib.fromSTL import. Deterministic, measured, self-verifying: it welds and checks the ' +
+      'a faceted lib.fromSTL import — or a STEP file whose solid you need as an editable feature tree ' +
+      'rather than a dumb lib.fromSTEP body (one solid; pass solid for a multi-solid file; the exact ' +
+      'B-rep is tessellated finely and `source` reports the deflection the fidelity is measured to). ' +
+      'Deterministic, measured, self-verifying: it welds and checks the ' +
       'mesh, segments planes and cylinders, picks the extrusion axis, slices each band and fits exact ' +
       'lines / arcs / circles, snaps near-round values (each snap recorded), then emits a readable ' +
       '.kcad.ts with named param()s — a revolve for concentric round stacks, extruded profiles ' +
@@ -37,9 +40,10 @@ const meshToFeaturesToolEntry: ToolRegistryEntry = {
     inputSchema: {
       type: 'object',
       properties: {
-        file: { type: 'string', description: 'Path to a .stl (binary or ASCII), .obj or .3mf mesh. One of file / data is required.' },
-        data: { type: 'string', description: 'Mesh bytes as base64 — use when the server cannot see your filesystem.' },
-        format: { type: 'string', enum: ['stl', 'obj', '3mf'], description: 'Format override; default from the extension or the content.' },
+        file: { type: 'string', description: 'Path to a .stl (binary or ASCII), .obj or .3mf mesh, or a .step/.stp file. One of file / data is required.' },
+        data: { type: 'string', description: 'Mesh or STEP bytes as base64 — use when the server cannot see your filesystem.' },
+        format: { type: 'string', enum: ['stl', 'obj', '3mf', 'step'], description: 'Format override; default from the extension or the content (an ISO-10303-21 header is STEP).' },
+        solid: { type: 'integer', minimum: 0, description: 'STEP only: 0-based solid to rebuild when the file holds more than one (inspect with of: "step" lists them). A multi-solid STEP without it is refused.' },
         out: {
           type: 'string',
           description: 'Write the emitted script to this .kcad.ts path and the assumption ledger to the sibling .ledger.json.',

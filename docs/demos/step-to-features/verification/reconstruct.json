@@ -1,0 +1,395 @@
+{
+  "ok": true,
+  "script": "// Reconstructed from source.step by mesh_to_features.\n// Every dimension was measured from the mesh. Values snapped to a round\n// number are listed, with the measured value, in the assumption ledger.\n// Face queries pin the measured levels: change a height param and its\n// atZ/atX/atY together.\n// Measured fidelity vs the mesh: volume IoU 1.0000, max deviation 0.000 mm,\n// RMS 0.000 mm — verdict faithful (thresholds: IoU >= 0.98, max dev <= 0.25 mm).\n\nconst length = param('length', 80, { min: 20, max: 320 }); // measured 79.9996\nconst width = param('width', 50, { min: 12.5, max: 200 }); // measured 49.9998\nconst thickness = param('thickness', 10, { min: 2.5, max: 40 });\nconst holes1Diameter = param('holes1Diameter', 6.6, { min: 1.65, max: 26.4 }); // measured 6.5997\nconst filletRadius = param('filletRadius', 5, { min: 1.25, max: 20 }); // measured 5.0008\n\n// Block 1: rectangle profile (corner rounds are the fillet below), extruded z 0 → 10.\nconst body = path()\n  .moveTo(0, 0)\n  .lineTo(length, 0)\n  .lineTo(length, width)\n  .lineTo(0, width)\n  .close()\n  .extrude(thickness);\n\nreturn body\n  // holes1: 4 axial bores at (10, 8, 10) (70, 8, 10) (10, 42, 10) (70, 42, 10); u/v are from the entry face centroid.\n  .holes({ byNormal: 'Z', atZ: 10 }, {\n    positions: [\n      { u: -30, v: -17 },\n      { u: 30, v: -17 },\n      { u: -30, v: 17 },\n      { u: 30, v: 17 },\n    ],\n    diameter: holes1Diameter,\n    depth: 'through',\n    name: 'holes1',\n  })\n  // Constant-radius edge blends measured on the mesh: 4 edge(s) in 1 radius group(s).\n  .fillet(filletRadius, { atZ: 5, convex: true, tolerance: 0.01 });\n",
+  "ledger": {
+    "facts": [
+      {
+        "id": "units",
+        "statement": "The STEP file declares its unit as 'mm'; coordinates were converted to millimetres.",
+        "kind": "visible",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": "mm",
+        "confidence": 1,
+        "resolution": "confirmed"
+      },
+      {
+        "id": "mesh.watertight",
+        "statement": "The mesh is closed and consistently oriented (5068 triangles).",
+        "kind": "visible",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": {
+          "watertight": true,
+          "openEdges": 0,
+          "nonManifoldEdges": 0
+        },
+        "confidence": 1,
+        "resolution": "confirmed"
+      },
+      {
+        "id": "frame.axis",
+        "statement": "Extrusion axis inferred as [0, 0, 1]: it explains 100.0 % of the surface as caps, walls or cross bores in 1 band(s).",
+        "kind": "inferred",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": [
+          0,
+          0,
+          1
+        ],
+        "confidence": 1,
+        "resolution": "open"
+      },
+      {
+        "id": "length",
+        "statement": "Profile size along X. Measured 80 mm, snapped to 80 mm (grid 1).",
+        "kind": "inferred",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": 80,
+        "confidence": 0.9842257310272688,
+        "resolution": "open"
+      },
+      {
+        "id": "width",
+        "statement": "Profile size along Y. Measured 50 mm, snapped to 50 mm (grid 1).",
+        "kind": "inferred",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": 50,
+        "confidence": 0.9908911680891782,
+        "resolution": "open"
+      },
+      {
+        "id": "thickness",
+        "statement": "Extrusion length of the profile. Measured 10 mm, used as measured.",
+        "kind": "visible",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": 10,
+        "confidence": 1,
+        "resolution": "confirmed"
+      },
+      {
+        "id": "holes1Diameter",
+        "statement": "Bore diameter of holes1. Measured 6.6 mm, snapped to 6.6 mm (grid 0.1).",
+        "kind": "inferred",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": 6.6,
+        "confidence": 0.9902681984551726,
+        "resolution": "open"
+      },
+      {
+        "id": "filletRadius",
+        "statement": "Constant-radius blend on 4 edge(s). Measured 5.001 mm, snapped to 5 mm (grid 1).",
+        "kind": "inferred",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": 5,
+        "confidence": 0.9683565813303376,
+        "resolution": "open"
+      },
+      {
+        "id": "profile.snaps",
+        "statement": "10 literal coordinate(s) (profile corners, arc centres, bore positions, origin) were snapped to a round grid within 0.026 mm.",
+        "kind": "inferred",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": [
+          {
+            "what": "origin.x",
+            "measured": 0.000208,
+            "value": 0
+          },
+          {
+            "what": "origin.y",
+            "measured": 0.00012,
+            "value": 0
+          },
+          {
+            "what": "band0.loop0.line1.x",
+            "measured": 0.008502,
+            "value": 0
+          },
+          {
+            "what": "band0.loop0.line3.y",
+            "measured": 0.008502,
+            "value": 0
+          },
+          {
+            "what": "band0.loop0.line5.x",
+            "measured": 79.991498,
+            "value": 80
+          },
+          {
+            "what": "band0.loop0.line7.y",
+            "measured": 49.991498,
+            "value": 50
+          },
+          {
+            "what": "band0.loop1.diameter",
+            "measured": 6.599744,
+            "value": 6.6
+          },
+          {
+            "what": "band0.loop2.diameter",
+            "measured": 6.599744,
+            "value": 6.6
+          },
+          {
+            "what": "band0.loop3.diameter",
+            "measured": 6.599744,
+            "value": 6.6
+          },
+          {
+            "what": "band0.loop4.diameter",
+            "measured": 6.599744,
+            "value": 6.6
+          }
+        ],
+        "confidence": 0.6773410544502227,
+        "resolution": "open"
+      },
+      {
+        "id": "holes1.kind",
+        "statement": "holes1: 4 through hole(s), Ø6.6 mm — classified from which bore ends open to air.",
+        "kind": "inferred",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": "through",
+        "confidence": 1,
+        "resolution": "open"
+      },
+      {
+        "id": "entry.1",
+        "statement": "hole at (10, 8): both ends are open and equal in size, so the drilling side is not recoverable from geometry; drilled from the +Z (top) face.",
+        "kind": "assumed",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": "hole at (10, 8)",
+        "confidence": 0.5,
+        "resolution": "open"
+      },
+      {
+        "id": "entry.2",
+        "statement": "hole at (70, 8): both ends are open and equal in size, so the drilling side is not recoverable from geometry; drilled from the +Z (top) face.",
+        "kind": "assumed",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": "hole at (70, 8)",
+        "confidence": 0.5,
+        "resolution": "open"
+      },
+      {
+        "id": "entry.3",
+        "statement": "hole at (10, 42): both ends are open and equal in size, so the drilling side is not recoverable from geometry; drilled from the +Z (top) face.",
+        "kind": "assumed",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": "hole at (10, 42)",
+        "confidence": 0.5,
+        "resolution": "open"
+      },
+      {
+        "id": "entry.4",
+        "statement": "hole at (70, 42): both ends are open and equal in size, so the drilling side is not recoverable from geometry; drilled from the +Z (top) face.",
+        "kind": "assumed",
+        "evidence": {
+          "source": "mesh"
+        },
+        "value": "hole at (70, 42)",
+        "confidence": 0.5,
+        "resolution": "open"
+      }
+    ],
+    "unresolvedCount": 11
+  },
+  "fidelity": {
+    "maxDeviationMm": 2.9631946911775855e-9,
+    "rmsMm": 6.650399292051354e-11,
+    "volumeIoU": 1,
+    "verdict": "faithful",
+    "thresholds": {
+      "minIoU": 0.98,
+      "maxDeviationMm": 0.25,
+      "approximateIoU": 0.85
+    },
+    "meshVolumeMm3": 38413.19444444445,
+    "reconstructedVolumeMm3": 38413.19444444445,
+    "pass": 0
+  },
+  "unmatchedRegions": [],
+  "mesh": {
+    "format": "step",
+    "inputTriangles": 5068,
+    "vertices": 2528,
+    "triangles": 5068,
+    "weldToleranceMm": 0.0001,
+    "droppedDegenerate": 0,
+    "droppedDuplicate": 0,
+    "shells": 1,
+    "watertight": true,
+    "openEdges": 0,
+    "nonManifoldEdges": 0,
+    "inconsistentEdges": 0,
+    "orientationFlipped": false,
+    "crackClusters": [],
+    "volumeMm3": 38416.98081529009,
+    "surfaceAreaMm2": 11026.906268264918,
+    "bbox": {
+      "min": [
+        -8.881784197001e-16,
+        -8.881784197001e-16,
+        0
+      ],
+      "max": [
+        80,
+        50,
+        10
+      ]
+    }
+  },
+  "features": {
+    "body": "extrude",
+    "bodyBlocks": 1,
+    "holes": [
+      {
+        "name": "holes1",
+        "axis": "Z",
+        "count": 4,
+        "diameterMm": 6.6,
+        "kind": "through"
+      }
+    ],
+    "cutouts": 0,
+    "fillets": [
+      {
+        "radiusMm": 5,
+        "edges": 4
+      }
+    ],
+    "profiles": [
+      {
+        "block": 1,
+        "outline": "rectangle",
+        "rounds": "fillet"
+      }
+    ],
+    "booleanRemainders": 0,
+    "params": [
+      {
+        "name": "length",
+        "value": 80,
+        "measured": 79.999584,
+        "snapped": true
+      },
+      {
+        "name": "width",
+        "value": 50,
+        "measured": 49.99976,
+        "snapped": true
+      },
+      {
+        "name": "thickness",
+        "value": 10,
+        "measured": 10,
+        "snapped": false
+      },
+      {
+        "name": "holes1Diameter",
+        "value": 6.6,
+        "measured": 6.599744,
+        "snapped": true
+      },
+      {
+        "name": "filletRadius",
+        "value": 5,
+        "measured": 5.000834,
+        "snapped": true
+      }
+    ],
+    "extrusionAxis": [
+      0,
+      0,
+      1
+    ]
+  },
+  "reconstructedHoles": [
+    {
+      "diameterMm": 6.6,
+      "depthMm": 10,
+      "kind": "through"
+    },
+    {
+      "diameterMm": 6.6,
+      "depthMm": 10,
+      "kind": "through"
+    },
+    {
+      "diameterMm": 6.6,
+      "depthMm": 10,
+      "kind": "through"
+    },
+    {
+      "diameterMm": 6.6,
+      "depthMm": 10,
+      "kind": "through"
+    }
+  ],
+  "passes": [
+    {
+      "pass": 0,
+      "variant": "sharp",
+      "epsMm": 0.026350189284291992,
+      "snapToleranceMm": 0.026350189284291992,
+      "ok": true,
+      "volumeIoU": 1,
+      "maxDeviationMm": 2.7099655990154956e-9,
+      "rmsMm": 5.539750504510751e-11,
+      "verdict": "faithful"
+    },
+    {
+      "pass": 0,
+      "variant": "sharpened+fillets",
+      "epsMm": 0.026350189284291992,
+      "snapToleranceMm": 0.026350189284291992,
+      "ok": true,
+      "volumeIoU": 1,
+      "maxDeviationMm": 2.9631946911775855e-9,
+      "rmsMm": 6.650399292051354e-11,
+      "verdict": "faithful"
+    }
+  ],
+  "notRepresented": [],
+  "diagnostics": [],
+  "source": {
+    "format": "step",
+    "solidCount": 1,
+    "solid": 0,
+    "mmPerFileUnit": 1,
+    "tessellation": {
+      "linearMm": 0.019,
+      "angularRad": 0.05,
+      "triangles": 5068
+    }
+  },
+  "written": {
+    "script": "docs/demos/step-to-features/rebuilt.kcad.ts",
+    "ledger": "docs/demos/step-to-features/rebuilt.ledger.json"
+  }
+}

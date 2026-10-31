@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
-import { identifyViews, sheetToModel } from './views';
+import { identifyViews, isFlattenedCurve, sheetToModel } from './views';
 import { projectionSymbol, type ClassifiedPath } from './sheet';
 import type { PositionedText, Pt } from './pdfVectors';
 
@@ -62,5 +62,37 @@ describe('projectionSymbol', () => {
   it('reads the end view beside the narrow end as third-angle, beside the wide end as first-angle', () => {
     expect(projectionSymbol([trapezoid(true), circle(17.5, 3.4), circle(17.5, 1.9)])).toBe('third');
     expect(projectionSymbol([trapezoid(false), circle(17.5, 3.4), circle(17.5, 1.9)])).toBe('first');
+  });
+});
+
+describe('native-sheet annotation and curve handling', () => {
+  const thin = (p: ClassifiedPath): ClassifiedPath => ({ ...p, cls: 'thin', widthMm: 0.18 });
+  const polyCircle = (cx: number, cy: number, r: number, n = 48): Pt[] =>
+    Array.from({ length: n + 1 }, (_, i) => [cx + r * Math.cos((2 * Math.PI * i) / n), cy + r * Math.sin((2 * Math.PI * i) / n)] as Pt);
+
+  it('keeps a datum box drawn against a view out of that view', () => {
+    const datum = thin(rect(92, 100, 6, 6));
+    const vs = identifyViews([FRONT, PLAN_ABOVE, SIDE_LEFT, datum], [], 'third');
+    const top = vs.views.find(v => v.name === 'top')!;
+    expect(top.bbox).toEqual(PLAN_ABOVE.bbox);
+    expect(vs.views).toHaveLength(3);
+  });
+
+  it('reads a circle flattened to line segments as a curve, not slanted edges', () => {
+    expect(isFlattenedCurve(polyCircle(0, 0, 8))).toBe(true);
+    expect(isFlattenedCurve(rect(0, 0, 10, 10).points)).toBe(false);
+    expect(isFlattenedCurve([[0, 0], [10, 3], [20, 0], [30, 3], [40, 0], [50, 3], [60, 0]])).toBe(false);
+  });
+
+  it('keeps a captioned view with slanted sides orthographic', () => {
+    const trapezoid = (x0: number): ClassifiedPath => {
+      const points: Pt[] = [[x0, 128], [x0 + 20, 128], [x0 + 15, 100], [x0 + 5, 100], [x0, 128]];
+      return { ...rect(x0, 100, 20, 28), points };
+    };
+    const front = trapezoid(100);
+    const left = { ...trapezoid(40), id: 999 };
+    const vs = identifyViews([front, left], [label('FRONT', 104, 134), label('LEFT', 44, 134)], 'third');
+    expect(vs.pictorials).toHaveLength(0);
+    expect(vs.views.map(v => v.name).sort()).toEqual(['front', 'left']);
   });
 });
