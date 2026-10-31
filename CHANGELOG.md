@@ -30,6 +30,8 @@
 
 # v0.17.3 — 2026-10-31
 
+
+
 - Asset catalog: parametric low-poly assets live in
   `catalog/kits/<kit>/<asset>.kcad.ts` with a `kit.json` per kit.
   `npm run catalog:build` evaluates each one, exports it with the low-poly GLB
@@ -45,7 +47,6 @@
   spread across categories) and `resolveVariant` (plain words such as
   "taller, red foliage, with snow" to knob overrides; unknown words are
   reported, not guessed).
-
 - Low-poly GLB export: `export` glb `{ style: 'lowpoly' }` writes a faceted,
   flat-shaded game asset in metres (`units` overrides) where every opaque part
   carries its colour in `COLOR_0` on one shared `kernelcad-palette` material,
@@ -57,7 +58,11 @@
   lowest point) plus `units` and `style` in `asset.extras.kernelcad`; low-poly
   files also list their colour zones. `meta()` accepts catalog fields `kit`,
   `category`, `origin`, `compat` and `triangleBudget`. Example:
+<<<<<<< HEAD
   `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
+=======
+  `examples/assets/pine-tree.kcad.ts`; local demo bundle:
+>>>>>>> origin/develop
   `docs/demos/glb-lowpoly/`.
 
 - Asset manifests: `meta()` and `presets()` now capture validated asset metadata
