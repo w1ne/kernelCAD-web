@@ -34,6 +34,7 @@ import {
   type BooleanStrategy,
 } from './booleanRecovery';
 import { nearCoincidentGap } from './nearCoincidentFaces';
+import { registerOcctResetHook } from './backendInit';
 
 export type { BooleanStrategy } from './booleanRecovery';
 
@@ -418,15 +419,56 @@ export function fuseLostMaterial(
   let largestSolid = 0;
   for (const input of inputs) {
     for (const solid of solidsOf(oc, input)) {
-      const v = volumeOf(oc, solid);
+      const v = solidVolume(oc, solid);
       if (!Number.isFinite(v)) return undefined;
       largestSolid = Math.max(largestSolid, v);
     }
   }
   if (!(largestSolid > 0)) return undefined;
-  const resultVolume = solidCount(oc, resultShape) === 0 ? 0 : volumeOf(oc, resultShape);
+  // Sum the result's solids (a fuse result's solids do not overlap) so each
+  // one lands in the cache: it is usually the body the next fuse grows.
+  let resultVolume = 0;
+  for (const solid of solidsOf(oc, resultShape)) resultVolume += solidVolume(oc, solid);
   if (!Number.isFinite(resultVolume)) return undefined;
   return resultVolume < largestSolid - Math.max(1e-6, largestSolid * 1e-4) ? { resultVolume, largestSolid } : undefined;
+}
+
+/**
+ * Volume of one solid, cached by OCCT identity. A modelling run fuses the
+ * same growing body over and over: the solid a fuse returns is the body the
+ * next fuse checks, and measuring a B-spline solid costs as much as a small
+ * boolean. Each entry holds a handle to its shape, so the shape cannot be
+ * freed and its address reused while cached, and a hit must pass IsSame
+ * (same TShape and location). Orientation does not change volume.
+ */
+const VOLUME_CACHE_CAP = 32;
+const volumeCache: Array<{ hash: number; shape: { IsSame(o: unknown): boolean; delete(): void }; volume: number }> = [];
+const HASH_UPPER = 2147483647;
+
+registerOcctResetHook(() => {
+  for (const e of volumeCache.splice(0)) e.shape.delete();
+});
+
+function solidVolume(oc: ReturnType<typeof getOC>, solid: unknown): number {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const s = solid as any;
+  if (typeof s?.HashCode !== 'function' || typeof s?.IsSame !== 'function') return volumeOf(oc, solid);
+  const hash = s.HashCode(HASH_UPPER) as number;
+  for (let i = 0; i < volumeCache.length; i++) {
+    const e = volumeCache[i];
+    if (e.hash === hash && e.shape.IsSame(solid)) {
+      if (i > 0) volumeCache.unshift(...volumeCache.splice(i, 1));
+      return e.volume;
+    }
+  }
+  const volume = volumeOf(oc, solid);
+  if (!Number.isFinite(volume)) return volume;
+  // A fresh owned wrapper on the same TShape keeps it alive while cached.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const held = (oc as any).TopoDS.Solid_1(solid);
+  volumeCache.unshift({ hash, shape: held, volume });
+  while (volumeCache.length > VOLUME_CACHE_CAP) volumeCache.pop()!.shape.delete();
+  return volume;
 }
 
 /** The solids of a shape (the shape itself for a plain solid). */
@@ -447,23 +489,34 @@ function solidsOf(oc: ReturnType<typeof getOC>, shape: unknown): unknown[] {
 }
 
 /**
- * A fuse that produced several solids while its operands overlap or touch is
- * a partial merge, not a valid union result. Disjoint operands are left alone:
- * their union is reported by the union-integrity guard, and no fuzzy value can
- * legitimately connect them. Exported for the regression test.
+ * A fuse left solids unmerged when its result has more solids than a full
+ * merge could: every tool solid whose box touches a solid of another operand
+ * must join something, so the result holds at most (all operand solids) minus
+ * (touching tool solids). An operand that is already several solids (a clevis
+ * pin next to its fork, say) legitimately keeps them apart; counting only
+ * "more than one solid" sent every such fuse down the fuzzy retry ladder for
+ * nothing. Disjoint operands are left alone: their union is reported by the
+ * union-integrity guard, and no fuzzy value can legitimately connect them.
+ * Exported for the regression test.
  */
 export function fuseLeftUnmerged(
   oc: ReturnType<typeof getOC>,
   inputs: readonly unknown[],
   resultShape: unknown,
 ): boolean {
-  if (inputs.length < 2 || solidCount(oc, resultShape) <= 1) return false;
-  for (let i = 0; i < inputs.length; i++) {
-    for (let j = i + 1; j < inputs.length; j++) {
-      if (boxesTouch(oc, inputs[i], inputs[j])) return true;
+  if (inputs.length < 2) return false;
+  const resultSolids = solidCount(oc, resultShape);
+  if (resultSolids <= 1) return false;
+  const solidsByInput = inputs.map((input) => solidsOf(oc, input));
+  const total = solidsByInput.reduce((n, solids) => n + solids.length, 0);
+  let touching = 0;
+  for (let i = 1; i < solidsByInput.length; i++) {
+    for (const tool of solidsByInput[i]) {
+      const hits = solidsByInput.some((others, j) => j !== i && others.some((other) => boxesTouch(oc, tool, other)));
+      if (hits) touching++;
     }
   }
-  return false;
+  return touching > 0 && resultSolids > total - touching;
 }
 
 /** Build one boolean with `plan` and judge its result. */

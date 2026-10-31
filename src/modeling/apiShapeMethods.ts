@@ -71,7 +71,7 @@ export function makePrimitiveMethods(
         inputs: {},
       });
     },
-    torus(majorR, minorR, segments = 48) {
+    torus(majorR, minorR, segments) {
       const badR = !Number.isFinite(majorR) || majorR <= 0
         ? (['majorR', majorR] as const)
         : !Number.isFinite(minorR) || minorR <= 0
@@ -103,8 +103,8 @@ export function makePrimitiveMethods(
           featureId: 'torus',
         });
       }
-      // Build the profile in the XY (sketch) plane as a polyline circle
-      // centered at (majorR, 0). The session's revolve op rotates about
+      // Build the profile in the XY (sketch) plane as a circle centered at
+      // (majorR, 0) — exact unless `segments` asks for a polygon. The session's revolve op rotates about
       // the Y axis of the sketch plane by default, which maps to world Z
       // after the standard XY sketch frame — producing a torus whose axis
       // is world Z.

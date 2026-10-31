@@ -28,6 +28,24 @@
   result carries `source` { solidCount, solid, mmPerFileUnit, tessellation }.
   Local demo bundle: `docs/demos/step-to-features/`.
 
+- Faster builds of revolved and filleted detail: `path().circle()` and
+  `torus()` are now exact circles (two arcs) unless you pass `segments`. The old
+  48-gon default revolved every ring into 48 faces, and each later boolean
+  against it took seconds. Pass `segments` to keep a faceted polygon.
+- Memory: recompute yields a macrotask turn every ~100 ms, so GC
+  finalizers that free dropped OCCT objects run during long builds instead of
+  only after them.
+- Evaluate no longer loads the TypeScript compiler: scripts are type-stripped
+  with Node's built-in stripper (positions unchanged; TypeScript stays the
+  fallback for enums/namespaces), and intent lint finds comments with a small
+  scanner instead of a full AST walk.
+- Booleans: the "fuse left solids unmerged" guard counts solids an operand
+  already had, so fusing into one solid of a multi-solid body (a clevis fork
+  beside its pin) no longer runs three fuzzy retries that cannot help.
+- Booleans: the fuse "lost material" guard caches solid volumes by shape
+  identity, so a body grown by repeated unions is measured once per step
+  instead of twice.
+
 # v0.17.4 — 2026-10-31
 
 - Release archives: each build runner installs its own native build bindings

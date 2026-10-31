@@ -613,8 +613,10 @@ export class RecomputeEngine {
     // Build dep graph
     const { order, predecessorsOf, idToRecord } = buildRecomputeGraph(records);
     let emittedCount = 0;
+    const yields = new MacrotaskYield();
 
     for (const id of order) {
+      await yields.tick();
       emittedCount += await this.processRecord(id, records, {
         idToRecord, predecessorsOf, shapes, diagnostics, health, selections, onEvent, opts,
       });
@@ -695,5 +697,24 @@ export class RecomputeEngine {
         );
       }
     }
+  }
+}
+
+/**
+ * Gives the event loop a macrotask turn every ~100 ms of a recompute pass.
+ * A long run is one chain of awaits with no macrotask turn, so
+ * FinalizationRegistry cleanups (which free OCCT objects whose JS handles
+ * died) would never run until the whole build ends.
+ */
+class MacrotaskYield {
+  private last = Date.now();
+
+  async tick(): Promise<void> {
+    if (Date.now() - this.last < 100) return;
+    await new Promise<void>((resolve) => {
+      if (typeof setImmediate === 'function') setImmediate(resolve);
+      else setTimeout(resolve, 0);
+    });
+    this.last = Date.now();
   }
 }
