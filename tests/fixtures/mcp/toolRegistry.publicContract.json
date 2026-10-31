@@ -10715,6 +10715,43 @@
             },
             "sourceUrl": {
               "type": "string"
+            },
+            "kit": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "prop",
+                "furniture",
+                "building",
+                "structure",
+                "vehicle",
+                "nature",
+                "terrain",
+                "item",
+                "attachment",
+                "character",
+                "animal"
+              ]
+            },
+            "origin": {
+              "type": "string",
+              "enum": [
+                "base",
+                "center",
+                "wall",
+                "ceiling"
+              ]
+            },
+            "compat": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "triangleBudget": {
+              "type": "integer"
             }
           },
           "required": [
