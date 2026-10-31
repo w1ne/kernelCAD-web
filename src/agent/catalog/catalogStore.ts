@@ -12,6 +12,7 @@ import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CatalogIndexSchema, type CatalogAsset, type CatalogIndex } from '../../shared/assets/catalogSchema';
 import { setParamValue } from '../../modeling/edits/setParamValue';
+import { runAndExport } from '../script-runtime/export';
 
 let cached: { dir: string; index: CatalogIndex } | undefined;
 
@@ -60,4 +61,14 @@ export function variantSource(code: string, params: Readonly<Record<string, stri
     source = edited.new_code;
   }
   return source;
+}
+
+/** Low-poly GLB bytes of an asset source (default knobs unless the source was edited). */
+export async function exportLowPolyAsset(code: string, fileName: string): Promise<Uint8Array> {
+  const result = await runAndExport({ code, fileName, format: 'glb', options: { format: 'glb', style: 'lowpoly' } });
+  const errors = result.diagnostics.filter((d) => d.severity === 'error');
+  if (errors.length > 0 || result.bytes.byteLength === 0) {
+    throw new Error(`${fileName}: low-poly export failed: ${errors.map((d) => `${d.code}: ${d.message}`).join('; ') || 'no bytes'}`);
+  }
+  return result.bytes;
 }
