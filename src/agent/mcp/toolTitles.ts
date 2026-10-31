@@ -67,6 +67,12 @@ export const TOOL_TITLES: Record<string, string> = {
   apply_surface_blend: 'Apply Fillet or Chamfer Blend',
   blockout_assembly: 'Block Out Assembly from Parts List',
   asset_manifest: 'List Asset Manifest',
+  search_assets: 'Search Assets',
+  get_asset: 'Get Asset',
+  find_matching: 'Find Matching Assets',
+  get_variant: 'Get Asset Variant',
+  list_kits: 'List Asset Kits',
+  get_kit: 'Get Asset Kit',
 };
 
 /** Title for a tool, falling back to its name when uncurated. */

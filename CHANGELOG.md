@@ -1,5 +1,14 @@
 # Unreleased
 
+- Asset catalog MCP tools (read-only, bundled catalog): `search_assets`
+  (q, kit, category, triangle range, sort, paging; compact rows with
+  triangles, size in metres, origin, knobs and palette; a `coverage` verdict
+  with a `next` hint), `get_asset` (full row plus the `.kcad.ts` source),
+  `find_matching`, `get_variant` (plain words to knob values plus the variant
+  source, unknown words reported), `list_kits` and `get_kit`. The catalog is
+  found by walking up from the package to `catalog/index.json`
+  (`KERNELCAD_CATALOG_DIR` overrides).
+
 - Asset catalog: parametric low-poly assets live in
   `catalog/kits/<kit>/<asset>.kcad.ts` with a `kit.json` per kit.
   `npm run catalog:build` evaluates each one, exports it with the low-poly GLB
