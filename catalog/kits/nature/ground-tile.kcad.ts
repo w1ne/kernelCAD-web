@@ -1,5 +1,5 @@
 // Original kernelCAD low-poly ground tile: a 2 m x 2 m grass slab with a
-// faceted, gently raised top, wrapped in a dirt skirt that shows on the edges.
+// faceted, gently raised top over a dirt layer that shows on the edges.
 // Edges sit at exactly the tile thickness so tiles line up on a 2 m grid.
 
 meta({
@@ -27,7 +27,6 @@ presets({
 
 const S = 2000;
 const t = Number(thickness.value) * 1000;
-const wall = 20;
 const half = S / 2;
 const skirtH = t * 0.7;
 
