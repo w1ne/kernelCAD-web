@@ -30,6 +30,24 @@
 
 # v0.17.3 — 2026-10-31
 
+- Characters kit (`catalog/kits/characters`, 5 assets): mechanical low-poly
+  characters rigged through mates — humanoid robot, robot dog, rover robot,
+  desktop robot arm and posable mannequin. Every revolute/prismatic mate is a
+  GLB pivot node listed in `asset.extras.kernelcad.rig` (6–14 pivots each), so
+  they pose and animate in three.js, Godot or Unity without a skinned
+  skeleton. Catalog kits are CC0-1.0. `scripts/checkCatalogAsset.ts` now
+  prints the rig.
+
+- Asset catalog kits: 62 original parametric low-poly assets in three kits,
+  `catalog/kits/nature` (21: trees, plants, rocks, logs, terrain tiles),
+  `catalog/kits/interior` (21: living, bedroom, kitchen and office furniture,
+  door, wall segment) and `catalog/kits/city-street` (20: street furniture,
+  traffic pieces, road and sidewalk tiles, shop front). Each has 2–6 knobs,
+  presets, real-world size, 56–388 triangles and a committed preview
+  (`npm run catalog:previews`, z-buffered software render of the low-poly GLB).
+  `catalog/AUTHORING.md` is the authoring contract;
+  `scripts/checkCatalogAsset.ts` builds and previews one asset. New cookbook
+  recipe `lowpoly-game-asset`. Demo: `docs/demos/asset-catalog/`.
 
 
 - Asset catalog MCP tools (read-only, bundled catalog): `search_assets`
@@ -56,10 +74,8 @@
   spread across categories) and `resolveVariant` (plain words such as
   "taller, red foliage, with snow" to knob overrides; unknown words are
   reported, not guessed).
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/develop
+
 - Low-poly GLB export: `export` glb `{ style: 'lowpoly' }` writes a faceted,
   flat-shaded game asset in metres (`units` overrides) where every opaque part
   carries its colour in `COLOR_0` on one shared `kernelcad-palette` material,
@@ -71,15 +87,10 @@
   lowest point) plus `units` and `style` in `asset.extras.kernelcad`; low-poly
   files also list their colour zones. `meta()` accepts catalog fields `kit`,
   `category`, `origin`, `compat` and `triangleBudget`. Example:
-<<<<<<< HEAD
   `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
-=======
-<<<<<<< HEAD
   `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
-=======
+  `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
   `examples/assets/pine-tree.kcad.ts`; local demo bundle:
->>>>>>> origin/develop
->>>>>>> origin/develop
   `docs/demos/glb-lowpoly/`.
 
 - Asset manifests: `meta()` and `presets()` now capture validated asset metadata
@@ -1295,8 +1306,6 @@ This release contains the changes merged since v0.16.0, including the agent skil
 - Merge pull request #706 from w1ne/docs/v016-demo-shows-drawing (40f68c5e)
 - Merge pull request #705 from w1ne/chore/release-v0.16.0 (7000942b)
 - ci: stop Pages unsharded test colliding with required check; load gmsh libs (a06cdbbe)
-
-
 
 # kernelCAD v0.16.0
 

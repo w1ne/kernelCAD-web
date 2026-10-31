@@ -116,5 +116,7 @@
   "merge",
   "gate",
   "requirement",
-  "cli"
+  "cli",
+  "game-asset",
+  "low-poly"
 ]

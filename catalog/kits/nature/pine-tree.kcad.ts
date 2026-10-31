@@ -5,6 +5,7 @@
 
 meta({
   name: 'pine-tree',
+  license: 'CC0-1.0',
   title: 'Pine tree',
   description: 'Stacked-cone conifer with a faceted trunk. Knobs: height, tier count, facet count, bark and foliage colours.',
   tags: ['tree', 'conifer', 'pine', 'forest', 'nature'],
