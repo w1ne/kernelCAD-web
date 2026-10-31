@@ -138,6 +138,28 @@ describe('statement-form compatibility (runScript)', () => {
     expect(session.getRecords().filter((r) => r.kind === 'box')).toHaveLength(1);
   });
 
+  it('several statements on one handle replay in call order (STEP-bundle style)', async () => {
+    const { session, returnValue } = await runScript({
+      code: [
+        'const p = box(10, 10, 10);',
+        'p.rotate([0, 0, 1], 90);',
+        'p.translate(50, 0, 0);',
+        "p.color('#2a6cbd');",
+        'return p.union(box(1, 1, 1));',
+      ].join('\n'),
+      fileName: 'statements.kcad.ts',
+    });
+    const boxes = session.getRecords().filter((r) => r.kind === 'box');
+    const moved = boxes.find((r) => r.transforms.length > 0);
+    expect(moved?.transforms.map((t) => t.op)).toEqual(['rotateAxis', 'translate']);
+    expect(moved?.metadata?.color).toBe('#2a6cbd');
+    expect(boxes).toHaveLength(2);
+    const result = returnValue as { lower(): Promise<{ boundingBox(): { min: number[]; max: number[] } }> };
+    const bb = (await result.lower()).boundingBox();
+    expect(bb.min[0]).toBeCloseTo(0, 6);
+    expect(bb.max[0]).toBeCloseTo(50, 6);
+  });
+
   it('an assigned result is not folded back', async () => {
     const { session, returnValue } = await runScript({
       code: [

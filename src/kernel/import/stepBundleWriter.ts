@@ -66,14 +66,17 @@ function emitScript(assemblyName: string, occurrences: StepImportOccurrence[], h
     const assetPath = `./parts/${assetHash}.brep`;
     const placement = decomposeStepTransform(occurrence.transform);
 
-    lines.push(`const ${variable} = await lib.fromBREP(${JSON.stringify(assetPath)});`);
+    // Transforms return a new Shape, so the placement is one assigned chain.
+    const chain = [`const ${variable} = (await lib.fromBREP(${JSON.stringify(assetPath)}))`];
     if (placement.degrees !== 0) {
-      lines.push(`${variable}.rotate([${placement.axis.map(numberLiteral).join(', ')}], ${numberLiteral(placement.degrees)});`);
+      chain.push(`  .rotate([${placement.axis.map(numberLiteral).join(', ')}], ${numberLiteral(placement.degrees)})`);
     }
     if (placement.translate.some((value) => value !== 0)) {
-      lines.push(`${variable}.translate(${placement.translate.map(numberLiteral).join(', ')});`);
+      chain.push(`  .translate(${placement.translate.map(numberLiteral).join(', ')})`);
     }
-    if (occurrence.color !== undefined) lines.push(`${variable}.color(${JSON.stringify(occurrence.color.hex)});`);
+    if (occurrence.color !== undefined) chain.push(`  .color(${JSON.stringify(occurrence.color.hex)})`);
+    if (chain.length === 1) chain[0] = `const ${variable} = await lib.fromBREP(${JSON.stringify(assetPath)})`;
+    lines.push(`${chain.join('\n')};`);
     lines.push(`imported.part(${JSON.stringify(name)}, ${variable});`);
   });
   lines.push('return imported.model();', '');
