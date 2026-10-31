@@ -221,10 +221,12 @@ describe('featureMeshSerialize', () => {
       faceOwners: ['box_1', 'hole_1'],
       edgeRanges: [0, 2, 2, 2],
       edgeOwners: ['box_1', 'hole_1'],
+      edgeStableIds: ['s1111111111111111', 's2222222222222222'],
     };
     const restored = rehydrateFromBridge(JSON.parse(JSON.stringify(serializeForBridge(original))));
     expect(restored.faceOwners).toEqual(['box_1', 'hole_1']);
     expect(restored.edgeRanges).toEqual([0, 2, 2, 2]);
     expect(restored.edgeOwners).toEqual(['box_1', 'hole_1']);
+    expect(restored.edgeStableIds).toEqual(['s1111111111111111', 's2222222222222222']);
   });
 });

@@ -278,7 +278,7 @@ function transformedIndexedMeshBounds(positions: Float32Array, transform: Transf
 }
 
 /** Selection ↔ code link data of one part mesh (see `featureOwnership.ts`). */
-type PartLinkData = FeatureOwnership & { edgeRanges?: number[] };
+type PartLinkData = FeatureOwnership & { edgeRanges?: number[]; edgeStableIds?: string[] };
 type CachedScenePartMesh = { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array; link?: PartLinkData };
 type ScenePartMeshCache = Map<string, CachedScenePartMesh>;
 
@@ -298,10 +298,13 @@ interface ResolvedScenePartMesh {
 function partLinkData(
   part: SceneBackendPart,
   rawShape: unknown,
-  meshed: { edgeRanges?: number[]; edgeHashes?: number[] },
+  meshed: { edgeRanges?: number[]; edgeHashes?: number[]; edgeStableIds?: string[] },
   ctx: SceneFanoutCtx,
 ): PartLinkData {
-  const edgeRanges = meshed.edgeRanges !== undefined ? { edgeRanges: meshed.edgeRanges } : {};
+  const edgeRanges = meshed.edgeRanges !== undefined ? {
+    edgeRanges: meshed.edgeRanges,
+    ...(meshed.edgeStableIds !== undefined ? { edgeStableIds: meshed.edgeStableIds } : {}),
+  } : {};
   const ownerId = ctx.ownerIdOfShape?.(part.shape);
   if (ownerId === undefined || ctx.recordOrder === undefined) return edgeRanges;
   return {

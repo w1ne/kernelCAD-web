@@ -110,6 +110,8 @@ export interface FeatureMesh {
   /** Owning feature id per `edgeRanges` pair. Absent when every edge belongs
    *  to `featureId`. */
   edgeOwners?: string[];
+  /** Persistent geometry-derived ID aligned with each `edgeRanges` pair. */
+  edgeStableIds?: string[];
   /** Stable human-readable mesh label for manifests and object filters. */
   displayName?: string;
   /** Deterministic names/ids that can match this mesh in inspection filters. */
@@ -983,9 +985,9 @@ function recordClosureOwnership(event: CompiledEvent, ctx: MeshFeatureEventConte
 function linkFieldsOf(
   event: CompiledEvent,
   rawShape: unknown,
-  meshed: { edgeRanges?: number[]; edgeHashes?: number[] },
+  meshed: { edgeRanges?: number[]; edgeHashes?: number[]; edgeStableIds?: string[] },
   ctx: MeshFeatureEventContext,
-): Pick<FeatureMesh, 'faceOwners' | 'edgeRanges' | 'edgeOwners'> {
+): Pick<FeatureMesh, 'faceOwners' | 'edgeRanges' | 'edgeOwners' | 'edgeStableIds'> {
   const ownership = computeFeatureOwnership({
     featureId: event.featureId,
     shape: event.shape,
@@ -997,6 +999,7 @@ function linkFieldsOf(
   });
   return {
     ...(meshed.edgeRanges !== undefined ? { edgeRanges: meshed.edgeRanges } : {}),
+    ...(meshed.edgeStableIds !== undefined ? { edgeStableIds: meshed.edgeStableIds } : {}),
     ...ownership,
   };
 }

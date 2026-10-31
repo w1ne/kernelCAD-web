@@ -55,6 +55,8 @@ export interface FeatureMeshSerialized {
   edgeRanges?: number[];
   /** Owning feature id per `edgeRanges` pair. */
   edgeOwners?: string[];
+  /** Persistent geometry-derived ID aligned with each `edgeRanges` pair. */
+  edgeStableIds?: string[];
   /** Stable human-readable mesh label for manifests and object filters. */
   displayName?: string;
   /** Deterministic names/ids that can match this mesh in inspection filters. */
@@ -77,7 +79,7 @@ export interface FeatureMeshSerialized {
   cameraTarget?: CameraTargetMetadata;
 }
 
-type LinkFields = Pick<FeatureMeshSerialized, 'faceOwners' | 'edgeRanges' | 'edgeOwners'>;
+type LinkFields = Pick<FeatureMeshSerialized, 'faceOwners' | 'edgeRanges' | 'edgeOwners' | 'edgeStableIds'>;
 
 /** Selection ↔ code link fields: plain arrays on both sides of the bridge. */
 function copyLinkFields(m: LinkFields): LinkFields {
@@ -85,6 +87,7 @@ function copyLinkFields(m: LinkFields): LinkFields {
     ...(m.faceOwners !== undefined ? { faceOwners: [...m.faceOwners] } : {}),
     ...(m.edgeRanges !== undefined ? { edgeRanges: [...m.edgeRanges] } : {}),
     ...(m.edgeOwners !== undefined ? { edgeOwners: [...m.edgeOwners] } : {}),
+    ...(m.edgeStableIds !== undefined ? { edgeStableIds: [...m.edgeStableIds] } : {}),
   };
 }
 
