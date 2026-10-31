@@ -37,16 +37,20 @@ const blk = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: num
 
 const wr = assembly('wardrobe');
 wr.part('plinth', blk(-W / 2 + 30, -D / 2 + 50, 0, W / 2 - 30, D / 2 - 10, plinth + 1).color(body));
-wr.part('carcass', blk(-W / 2, -D / 2 + 20, plinth, W / 2, D / 2, H - 40).color(body));
+// Open-front carcass (sides, back, bottom): the doors are its only front faces.
+wr.part('carcass-left', blk(-W / 2, -D / 2 + 20, plinth, -W / 2 + 20, D / 2, H - 39).color(body));
+wr.part('carcass-right', blk(W / 2 - 20, -D / 2 + 20, plinth, W / 2, D / 2, H - 39).color(body));
+wr.part('carcass-back', blk(-W / 2 + 19, D / 2 - 18, plinth, W / 2 - 19, D / 2, H - 39).color(body));
+wr.part('carcass-bottom', blk(-W / 2 + 19, -D / 2 + 20, plinth, W / 2 - 19, D / 2 - 17, plinth + 14).color(body));
 wr.part('cornice', blk(-W / 2 - 15, -D / 2, H - 40, W / 2 + 15, D / 2 + 5, H).color(body));
 const gap = 4;
 const x0 = -W / 2 + 20;
 for (let i = 0; i < n; i++) {
   const dx = x0 + i * dw;
-  wr.part(`door-${i + 1}`, blk(dx + gap / 2, -D / 2, plinth + 15, dx + dw - gap / 2, -D / 2 + 21, H - 55).color(door));
   // Handles sit next to the meeting edge of each door pair; a lone last door gets one on its left edge.
   const leftHinge = i % 2 === 0 && i !== n - 1;
   const hx = leftHinge ? dx + dw - 50 : dx + 30;
+  wr.part(`door-${i + 1}`, blk(dx + gap / 2, -D / 2, plinth + 4, dx + dw - gap / 2, -D / 2 + 21, H - 44).color(door));
   wr.part(`handle-${i + 1}`, blk(hx, -D / 2 - 25, 950, hx + 20, -D / 2 + 1, 1250).color(handle));
 }
 

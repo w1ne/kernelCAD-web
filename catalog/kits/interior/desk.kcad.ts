@@ -41,7 +41,11 @@ if (style.value === 'pedestal') {
   const pw = 420;
   const px1 = W / 2 - 20;
   const px0 = px1 - pw;
-  desk.part('pedestal', blk(px0, -D / 2 + 40, 0, px1, D / 2 - 40, H - t + 1).color(frame));
+  // Open-front pedestal (sides, back, kick plate): the drawer fronts are its only front faces.
+  desk.part('pedestal-left', blk(px0, -D / 2 + 40, 0, px0 + 18, D / 2 - 40, H - t + 1).color(frame));
+  desk.part('pedestal-right', blk(px1 - 18, -D / 2 + 40, 0, px1, D / 2 - 40, H - t + 1).color(frame));
+  desk.part('pedestal-back', blk(px0 + 17, D / 2 - 58, 0, px1 - 17, D / 2 - 40, H - t + 1).color(frame));
+  desk.part('pedestal-kick', blk(px0 + 17, -D / 2 + 40, 0, px1 - 17, D / 2 - 57, 38).color(frame));
   const fh = (H - t - 60 - 2 * 6) / 3;
   for (let i = 0; i < 3; i++) {
     const z = 40 + i * (fh + 6);

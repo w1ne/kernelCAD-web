@@ -38,7 +38,11 @@ const li = 15;
 [[-W / 2 + li, -D / 2 + li], [W / 2 - li - lw, -D / 2 + li], [-W / 2 + li, D / 2 - li - lw], [W / 2 - li - lw, D / 2 - li - lw]].forEach(([x, y], i) => {
   ns.part(`leg-${i + 1}`, blk(x, y, 0, x + lw, y + lw, legH + 1).color(body));
 });
-ns.part('carcass', blk(-W / 2, -D / 2 + 15, legH, W / 2, D / 2, H - 20).color(body));
+// Open-front carcass (sides, back, bottom rail): the drawer fronts are its only front faces.
+ns.part('carcass-left', blk(-W / 2, -D / 2 + 15, legH, -W / 2 + 18, D / 2, H - 19).color(body));
+ns.part('carcass-right', blk(W / 2 - 18, -D / 2 + 15, legH, W / 2, D / 2, H - 19).color(body));
+ns.part('carcass-back', blk(-W / 2 + 17, D / 2 - 15, legH, W / 2 - 17, D / 2, H - 19).color(body));
+ns.part('carcass-bottom', blk(-W / 2 + 17, -D / 2 + 15, legH, W / 2 - 17, D / 2 - 14, legH + 20).color(body));
 ns.part('top', blk(-W / 2 - 10, -D / 2, H - 20, W / 2 + 10, D / 2 + 5, H).color(body));
 const gap = 8;
 const fz0 = legH + 20;
