@@ -4,6 +4,7 @@
 
 meta({
   name: 'bed',
+  license: 'CC0-1.0',
   title: 'Bed',
   description: 'Single or double bed with a wooden frame and headboard, mattress, blanket and pillows. Knobs: size, frame, sheet and blanket colours.',
   tags: ['bed', 'double bed', 'single bed', 'mattress', 'bedroom', 'sleep'],

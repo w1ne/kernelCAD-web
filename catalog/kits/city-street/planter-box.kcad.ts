@@ -3,6 +3,7 @@
 
 meta({
   name: 'planter-box',
+  license: 'CC0-1.0',
   title: 'Planter box',
   description: 'Street planter with a rim, soil and a faceted bush, square or round. Knobs: shape, size, planter, rim, foliage and soil colours.',
   tags: ['planter', 'plant', 'bush', 'pot', 'flower box', 'greenery', 'street'],

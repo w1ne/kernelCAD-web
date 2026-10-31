@@ -4,6 +4,7 @@
 
 meta({
   name: 'picture-frame',
+  license: 'CC0-1.0',
   title: 'Picture frame',
   description: 'Wall-hung picture frame with a mat and a simple abstract picture, in portrait or landscape. Knobs: size, orientation, frame, mat and picture colours.',
   tags: ['picture frame', 'frame', 'painting', 'art', 'wall art', 'poster', 'decor'],

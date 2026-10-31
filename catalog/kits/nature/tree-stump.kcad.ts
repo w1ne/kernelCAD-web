@@ -3,6 +3,7 @@
 
 meta({
   name: 'tree-stump',
+  license: 'CC0-1.0',
   title: 'Tree stump',
   description: 'Sawn-off tree stump with flared roots and a pale cut top showing a heartwood ring. Knobs: diameter, height, root count, bark, cut wood and heartwood colours.',
   tags: ['stump', 'tree stump', 'wood', 'chopped', 'forest', 'lumber', 'nature'],

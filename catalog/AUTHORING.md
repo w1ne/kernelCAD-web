@@ -13,11 +13,17 @@ or decimated meshes, textures or palettes from any other asset store or
 product. Real-world references (photos of real benches, real tree species,
 standard furniture sizes) are fine. Every kit README states this.
 
+Catalog kits are dedicated to the public domain under CC0 1.0 so game
+developers can ship them without attribution: set `license: 'CC0-1.0'` in
+`meta()` (the schema default is CC-BY-4.0) and keep the kit README's Licence
+section.
+
 ## File contract
 
 ```ts
 meta({
   name: 'park-bench',            // must equal the file name
+  license: 'CC0-1.0',            // catalog kits are public domain (CC0)
   title: 'Park bench',
   description: 'One sentence a search can match: what it is and its knobs.',
   tags: ['bench', 'seat', 'park', 'street'],

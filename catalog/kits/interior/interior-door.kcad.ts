@@ -5,6 +5,7 @@
 
 meta({
   name: 'interior-door',
+  license: 'CC0-1.0',
   title: 'Interior door',
   description: 'Hinged interior door with frame and architraves, flat or four-panel, in standard leaf widths. Knobs: width, panel style, leaf, frame and handle colours.',
   tags: ['door', 'interior door', 'doorway', 'door frame', 'room', 'entrance'],

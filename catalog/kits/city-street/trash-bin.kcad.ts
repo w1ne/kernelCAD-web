@@ -3,6 +3,7 @@
 
 meta({
   name: 'trash-bin',
+  license: 'CC0-1.0',
   title: 'Street litter bin',
   description: 'Faceted public litter bin on a plinth with a rim band and a hooded or flat lid. Knobs: lid style, facets, body, band and lid colours.',
   tags: ['trash', 'bin', 'litter', 'garbage', 'waste', 'rubbish', 'street'],

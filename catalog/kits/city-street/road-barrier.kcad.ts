@@ -4,6 +4,7 @@
 
 meta({
   name: 'road-barrier',
+  license: 'CC0-1.0',
   title: 'Road barrier',
   description: 'Striped roadworks barrier board on two A-frame legs. Knobs: length, stripe count, two stripe colours and leg colour.',
   tags: ['barrier', 'roadworks', 'construction', 'traffic', 'road', 'stripes', 'street'],

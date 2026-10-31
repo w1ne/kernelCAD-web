@@ -3,6 +3,7 @@
 
 meta({
   name: 'bush',
+  license: 'CC0-1.0',
   title: 'Bush',
   description: 'Rounded leafy shrub made of clustered faceted lumps, with optional berries. Knobs: size, lump count, berries, leaf and berry colours.',
   tags: ['bush', 'shrub', 'hedge', 'plant', 'garden', 'nature'],

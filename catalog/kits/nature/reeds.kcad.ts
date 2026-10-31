@@ -3,6 +3,7 @@
 
 meta({
   name: 'reeds',
+  license: 'CC0-1.0',
   title: 'Reeds',
   description: 'Clump of waterside reeds and cattails with tall leaning stalks and brown seed heads. Knobs: stalk count, height, stalk, seed head and mud colours.',
   tags: ['reeds', 'cattail', 'bulrush', 'marsh', 'pond', 'water', 'swamp', 'plant', 'nature'],

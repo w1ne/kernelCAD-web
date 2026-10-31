@@ -3,6 +3,7 @@
 
 meta({
   name: 'flower-patch',
+  license: 'CC0-1.0',
   title: 'Flower patch',
   description: 'Small clump of wildflowers with thin stems and star-shaped petals over a leafy base. Knobs: flower count, height, petal, centre and leaf colours.',
   tags: ['flower', 'flowers', 'wildflower', 'daisy', 'meadow', 'garden', 'plant', 'nature'],

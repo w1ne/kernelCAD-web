@@ -4,6 +4,7 @@
 
 meta({
   name: 'coffee-table',
+  license: 'CC0-1.0',
   title: 'Coffee table',
   description: 'Low living-room coffee table, rectangular or round, with an optional lower shelf. Knobs: shape, shelf, top and leg colours.',
   tags: ['coffee table', 'table', 'low table', 'living room', 'lounge'],

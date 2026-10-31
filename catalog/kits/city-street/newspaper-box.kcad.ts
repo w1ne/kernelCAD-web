@@ -4,6 +4,7 @@
 
 meta({
   name: 'newspaper-box',
+  license: 'CC0-1.0',
   title: 'Newspaper box',
   description: 'Street newspaper vending box with a window door and coin unit, on a pedestal or legs. Knobs: stand, body, window and stand colours.',
   tags: ['newspaper', 'news', 'vending', 'box', 'kiosk', 'sidewalk', 'street'],

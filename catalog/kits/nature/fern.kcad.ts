@@ -3,6 +3,7 @@
 
 meta({
   name: 'fern',
+  license: 'CC0-1.0',
   title: 'Fern',
   description: 'Forest-floor fern rosette with arching tapered fronds. Knobs: size, frond count, frond and stalk colours.',
   tags: ['fern', 'plant', 'undergrowth', 'forest floor', 'jungle', 'nature'],

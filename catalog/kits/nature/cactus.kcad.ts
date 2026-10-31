@@ -3,6 +3,7 @@
 
 meta({
   name: 'cactus',
+  license: 'CC0-1.0',
   title: 'Saguaro cactus',
   description: 'Desert saguaro cactus with a faceted column and upturned arms. Knobs: height, arm count, bloom, body and flower colours.',
   tags: ['cactus', 'saguaro', 'succulent', 'desert', 'western', 'plant', 'nature'],

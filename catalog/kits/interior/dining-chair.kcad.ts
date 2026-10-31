@@ -3,6 +3,7 @@
 
 meta({
   name: 'dining-chair',
+  license: 'CC0-1.0',
   title: 'Dining chair',
   description: 'Wooden dining chair with a padded seat and a slatted or solid back. Knobs: back style, slat count, wood and seat pad colours.',
   tags: ['chair', 'dining chair', 'kitchen chair', 'seat', 'wooden chair'],

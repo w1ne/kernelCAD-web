@@ -4,6 +4,7 @@
 
 meta({
   name: 'fridge',
+  license: 'CC0-1.0',
   title: 'Fridge',
   description: 'Upright kitchen refrigerator, fridge-over-freezer or wide side-by-side, with bar handles. Knobs: style, body and handle colours.',
   tags: ['fridge', 'refrigerator', 'freezer', 'kitchen appliance', 'appliance', 'kitchen'],

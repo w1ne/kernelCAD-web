@@ -4,6 +4,7 @@
 
 meta({
   name: 'bike-rack',
+  license: 'CC0-1.0',
   title: 'Bike rack',
   description: 'Row of inverted-U bicycle stands on two base rails. Knobs: loop count, loop shape, stand and rail colours.',
   tags: ['bike rack', 'bicycle', 'cycle stand', 'parking', 'sheffield', 'sidewalk', 'street'],

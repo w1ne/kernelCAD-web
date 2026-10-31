@@ -3,6 +3,7 @@
 
 meta({
   name: 'armchair',
+  license: 'CC0-1.0',
   title: 'Armchair',
   description: 'Single upholstered lounge armchair with seat and back cushions on short wooden feet. Knobs: arm style, fabric, cushion and leg colours.',
   tags: ['armchair', 'chair', 'lounge chair', 'seat', 'living room', 'club chair'],

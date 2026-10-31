@@ -4,6 +4,7 @@
 
 meta({
   name: 'path-tile',
+  license: 'CC0-1.0',
   title: 'Path tile',
   description: 'Square 2 m grass tile with a sunken dirt footpath running straight, round a corner, as a T or a crossing. Knobs: layout, path width, grass, path and dirt colours.',
   tags: ['tile', 'path', 'trail', 'road', 'footpath', 'dirt', 'terrain', 'grid', 'nature'],

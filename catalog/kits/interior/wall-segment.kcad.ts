@@ -4,6 +4,7 @@
 
 meta({
   name: 'wall-segment',
+  license: 'CC0-1.0',
   title: 'Wall segment',
   description: 'Modular 2 m interior wall panel with skirting boards and an optional framed window or open doorway. Knobs: height, opening, wall, skirting and frame colours.',
   tags: ['wall', 'wall panel', 'partition', 'window', 'room', 'modular', 'building'],

@@ -4,6 +4,7 @@
 
 meta({
   name: 'bookshelf',
+  license: 'CC0-1.0',
   title: 'Bookshelf',
   description: 'Open wooden bookcase with three to six shelves, optionally filled with books in two colours. Knobs: shelf count, books, wood and book colours.',
   tags: ['bookshelf', 'bookcase', 'shelf', 'shelving', 'books', 'storage', 'library'],

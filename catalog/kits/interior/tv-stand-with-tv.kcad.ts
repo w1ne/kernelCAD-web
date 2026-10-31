@@ -4,6 +4,7 @@
 
 meta({
   name: 'tv-stand-with-tv',
+  license: 'CC0-1.0',
   title: 'TV stand with TV',
   description: 'Low media cabinet with doors and a drawer, carrying a flat-screen television. Knobs: screen size, cabinet, door and TV colours.',
   tags: ['tv', 'television', 'tv stand', 'media console', 'entertainment unit', 'living room', 'screen'],

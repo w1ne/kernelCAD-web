@@ -3,6 +3,7 @@
 
 meta({
   name: 'floor-lamp',
+  license: 'CC0-1.0',
   title: 'Floor lamp',
   description: 'Standing floor lamp with a round base, slim pole and a faceted drum or cone shade. Knobs: shade style, height, shade and metal colours.',
   tags: ['floor lamp', 'standard lamp', 'lamp', 'light', 'lighting', 'living room'],

@@ -4,6 +4,7 @@
 
 meta({
   name: 'park-bench',
+  license: 'CC0-1.0',
   title: 'Park bench',
   description: 'Slatted park bench with metal side frames and an optional backrest. Knobs: length, slat count, backrest, slat and frame colours.',
   tags: ['bench', 'seat', 'park', 'street', 'furniture', 'sitting'],

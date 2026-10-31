@@ -3,6 +3,7 @@
 
 meta({
   name: 'bollard',
+  license: 'CC0-1.0',
   title: 'Bollard',
   description: 'Street bollard post with a reflective band and cap, round-faceted or square. Knobs: height, style, post, band and cap colours.',
   tags: ['bollard', 'post', 'barrier', 'pedestrian', 'sidewalk', 'street'],

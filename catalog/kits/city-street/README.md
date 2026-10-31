@@ -25,6 +25,10 @@ Low-poly street furniture, traffic pieces and road tiles for town and city scene
 | bike-rack | Row of inverted-U stands on two rails | loops, loop shape, stands, rails | 180 |
 | shop-front | One-storey shop with window, door, sign band, striped awning | width, wall, awning, stripe, door/sign, glass | 276 |
 
+## Licence
+
+Every asset in this kit — the `.kcad.ts` source and any GLB or ES module exported from it — is dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Use, modify and ship it in commercial games without attribution. The catalog metadata carries `license: "CC0-1.0"` per asset.
+
 ## Provenance
 
 Geometry is original kernelCAD `.kcad.ts` source written for this catalog. No Polyfork downloads or meshes, no external meshes, textures or palettes, and no mesh decimation are involved.

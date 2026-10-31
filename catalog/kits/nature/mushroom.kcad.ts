@@ -3,6 +3,7 @@
 
 meta({
   name: 'mushroom',
+  license: 'CC0-1.0',
   title: 'Mushroom',
   description: 'Cluster of forest mushrooms with faceted stems and dome, flat or conical caps, optional spots. Knobs: count, size, cap shape, spots, cap and stem colours.',
   tags: ['mushroom', 'toadstool', 'fungus', 'fly agaric', 'forest floor', 'nature'],

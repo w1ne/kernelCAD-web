@@ -6,6 +6,7 @@
 
 meta({
   name: 'shop-front',
+  license: 'CC0-1.0',
   title: 'Shop front',
   description: 'Small one-storey shop with a display window, glazed door, sign band and striped awning. Knobs: width, wall, awning, awning stripe, door/sign and glass colours.',
   tags: ['shop', 'store', 'storefront', 'building', 'cafe', 'awning', 'street'],

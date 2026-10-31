@@ -3,6 +3,7 @@
 
 meta({
   name: 'fire-hydrant',
+  license: 'CC0-1.0',
   title: 'Fire hydrant',
   description: 'Faceted pillar fire hydrant with flanges, domed bonnet and side outlets. Knobs: outlet count, facets, body and cap colours.',
   tags: ['hydrant', 'fire', 'water', 'sidewalk', 'street'],

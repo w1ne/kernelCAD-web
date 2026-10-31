@@ -4,6 +4,7 @@
 
 meta({
   name: 'office-chair',
+  license: 'CC0-1.0',
   title: 'Office chair',
   description: 'Swivel office chair on a five-star caster base with armrests and a mid or high backrest. Knobs: back height, arms, upholstery and frame colours.',
   tags: ['office chair', 'desk chair', 'swivel chair', 'task chair', 'chair', 'seat', 'computer chair'],

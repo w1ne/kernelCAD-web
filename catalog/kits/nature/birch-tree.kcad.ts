@@ -3,6 +3,7 @@
 
 meta({
   name: 'birch-tree',
+  license: 'CC0-1.0',
   title: 'Birch tree',
   description: 'Slender birch with a thin white trunk, dark bark bands and a narrow airy crown. Knobs: height, crown blobs, bark, band and leaf colours.',
   tags: ['tree', 'birch', 'deciduous', 'white bark', 'forest', 'nature'],
