@@ -1,9 +1,9 @@
 {
-  "checkedAt": "2026-10-31T12:11:55.037Z",
+  "checkedAt": "2026-10-31T13:31:40.328Z",
   "source": "catalog/kits/nature/pine-tree.kcad.ts",
   "module": "pine-tree.mjs",
-  "moduleBytes": 9408,
-  "moduleSha256": "e5dc726fd86d5ef58731814cb74e2743982c4b2e12a765a3cca1618aca7eed38",
+  "moduleBytes": 9404,
+  "moduleSha256": "b63cbadeeacb3be8062b2114a89bae5342df632c141a05c68ca3fe16f9dea882",
   "calls": [
     "createAsset()",
     "createAsset({ leaves: '#c0392b' })",
