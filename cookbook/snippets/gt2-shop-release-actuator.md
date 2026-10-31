@@ -96,11 +96,14 @@ function sideWindow(y0: number) {
   return bar.union(cap0, cap1);
 }
 
+// Half wrap: an exact round cord (two arcs) revolved 180°. Its end circles
+// match the straight cords exactly, so the belt fuses in milliseconds; a
+// torus() minus a box cut took seconds of booleans.
 function outerWrap(ox: number, keepLeft: boolean) {
-  const span = (beltR + cordR) * 2 + 6;
-  const cutX = keepLeft ? ox + 0.25 : ox - span - 0.25;
-  return torus(beltR, cordR).translate(ox, ay, zBelt)
-    .subtract(box(span, span, 8).translate(cutX, ay - span / 2, zBelt - 4));
+  return path().moveTo(beltR + cordR, 0)
+    .threePointsArc(beltR - cordR, 0, beltR, cordR).threePointsArc(beltR + cordR, 0, beltR, -cordR)
+    .close().revolve({ angleDeg: 180 })
+    .rotateZ(keepLeft ? 90 : -90).translate(ox, ay, zBelt);
 }
 
 // 608-style open bearing: outer race, inner race, seven balls in the groove.
