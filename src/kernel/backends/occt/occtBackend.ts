@@ -9,7 +9,7 @@ import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/type
 import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
-import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
+import { buildNurbsSketchOnPlane, buildNurbsProfileOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { resolveTangency } from './tangencySolver';
 import { sweepProfileAlongHelix, type HelicalSweepSpec } from './helicalSweep';
 import { drawingFromCommands } from './sketchToDrawing';
@@ -372,7 +372,8 @@ export class OcctBackend implements ShapeBackend {
     if (sketch._hasNurbs && sketch._commands) {
       // NURBS path — build a fresh `replicad.Sketch` on XY from the captured
       // SketchCommand[], composing pen-run edges with direct-OCCT NURBS edges.
-      const built = buildNurbsSketchOnPlane(sketch._commands, 'XY');
+      // Several loops (outer + holes) extrude as one holed face.
+      const built = buildNurbsProfileOnPlane(sketch._commands, 'XY');
       return new OcctBackend(extrudeLiftedShape(built, depth, angle));
     }
     const lifted = sketch._drawing!.sketchOnPlane('XY');

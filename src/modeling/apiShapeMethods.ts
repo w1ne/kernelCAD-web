@@ -2,7 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { CaptureSession } from './capture/captureSession';
 import type { Shape } from './capture/proxy';
-import { makePath } from './capture/sketch';
+import { makePath, type PathBuilder } from './capture/sketch';
+import { makeHoledSketch } from './capture/holedSketch';
 import { validateFaceLabels } from './capture/faceLabels';
 import { helix } from './helix';
 import {
@@ -474,20 +475,20 @@ function resolveInternalSpurGearOpts(opts: InternalSpurGearOptions): {
   return { module, teeth, pressureAngle, faceWidth, backlash, rimThickness };
 }
 
-function outlineToExtrudedSolid(session: CaptureSession, outline: SpurGearOutline, faceWidth: number): Shape {
-  let path = makePath(session).moveTo(outline.start[0], outline.start[1]);
+/** Trace a gear outline on `pen` (no close). */
+function traceOutline(pen: PathBuilder, outline: SpurGearOutline): PathBuilder {
+  let path = pen.moveTo(outline.start[0], outline.start[1]);
   for (const seg of outline.segments) {
     path = seg.kind === 'spline'
       ? path.spline(seg.points)
       : path.threePointsArc(seg.to[0], seg.to[1], seg.mid[0], seg.mid[1]);
   }
-  return path.close().extrude(faceWidth);
+  return path;
 }
 
 /** Build an internal / ring gear: outer rim disk minus an inverted involute bore. */
 export function makeInternalSpurGearMethod(
   session: CaptureSession,
-  self: () => KernelCadApi,
 ): KernelCadApi['internalSpurGear'] {
   return (opts) => {
     const { module, teeth, pressureAngle, faceWidth, backlash, rimThickness } =
@@ -508,10 +509,14 @@ export function makeInternalSpurGearMethod(
     }
     // Outer radius clears the inverted root (deepest bore) by rimThickness.
     const outerR = boreOutline.radii.root + rimThickness;
-    const outer = self().cylinder(faceWidth, outerR);
-    // Bore cutter slightly taller so the subtract clears both ends cleanly.
-    const bore = outlineToExtrudedSolid(session, boreOutline, faceWidth + 2).translate(0, 0, -1);
-    return outer.subtract(bore);
+    // One annular profile (rim circle + inverted involute bore as a hole),
+    // extruded once. Same solid as `cylinder(faceWidth, outerR)` minus the
+    // extruded bore, without the boolean: on a 54-tooth ring that subtract
+    // was ~9 s of OCCT time, the extrude is milliseconds.
+    return makeHoledSketch(session, [
+      (pen) => pen.moveTo(outerR, 0).threePointsArc(-outerR, 0, 0, outerR).threePointsArc(outerR, 0, 0, -outerR),
+      (pen) => traceOutline(pen, boreOutline),
+    ]).extrude(faceWidth);
   };
 }
 
