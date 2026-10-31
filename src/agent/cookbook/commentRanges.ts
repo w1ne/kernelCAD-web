@@ -37,8 +37,11 @@ class Scanner {
   /** Whether a `/` here would start a regex (no value to its left). */
   private regexOk = true;
   private readonly out: CommentRange[] = [];
+  private readonly src: string;
 
-  constructor(private readonly src: string) {}
+  constructor(src: string) {
+    this.src = src;
+  }
 
   run(): CommentRange[] {
     while (this.i < this.src.length) this.step();
