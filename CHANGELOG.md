@@ -1,5 +1,7 @@
 # Unreleased
 
+# v0.17.3 — 2026-10-31
+
 - Asset manifests: `meta()` and `presets()` now capture validated asset metadata
   and named knob overrides on `CaptureSession`; asset content defaults to the
   SPDX-allowlisted `CC-BY-4.0` licence, separate from the package's MIT licence.

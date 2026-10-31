@@ -2,7 +2,7 @@
 #   irm https://kernelcad.com/install.ps1 | iex
 #
 # Env:
-#   $env:KERNELCAD_VERSION='v0.17.2'  pin a release (default: latest)
+#   $env:KERNELCAD_VERSION='v0.17.3'  pin a release (default: latest)
 #   $env:KERNELCAD_INSTALL_DIR=...    directory for the kernelcad.cmd launcher
 #   $env:KERNELCAD_HOME=...           versioned install root
 #   $env:KERNELCAD_NO_MODIFY_PATH=1   never update the user PATH
@@ -48,7 +48,7 @@ if ($Version -eq 'latest') {
     }
 }
 if ($Version -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+$') {
-    Stop-Install 'KERNELCAD_VERSION must look like v0.17.2'
+    Stop-Install 'KERNELCAD_VERSION must look like v0.17.3'
 }
 
 $ArchiveName = "kernelcad-$($Version.Substring(1))-$Platform.zip"

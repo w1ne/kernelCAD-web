@@ -1,6 +1,6 @@
 {
   "name": "kernelcad",
-  "version": "0.17.2",
+  "version": "0.17.3",
   "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
   "contextFileName": "plugins/kernelcad/GEMINI.md",
   "mcpServers": {
