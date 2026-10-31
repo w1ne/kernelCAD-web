@@ -100,7 +100,7 @@ describe('open a catalog asset in Studio by ?catalog=<kit>/<id>', () => {
 
   it('refuses refs that do not name a catalog row, and sources that no longer match the index', async () => {
     const fetchText = twoKitCatalog();
-    await expect(openInStudio('/studio?catalog=nature/oak-tree', fetchText)).rejects.toThrow(/asset not found: nature\/oak-tree.*pine-tree/);
+    await expect(openInStudio('/studio?catalog=nature/not-a-catalog-row', fetchText)).rejects.toThrow(/asset not found: nature\/not-a-catalog-row.*pine-tree/);
     await expect(openInStudio('/studio?catalog=characters/pine-tree', fetchText)).rejects.toThrow(/asset not found: characters\/pine-tree/);
     await expect(openInStudio('/studio?catalog=space/rocket', fetchText)).rejects.toThrow(/kit not found: space/);
     await expect(openInStudio('/studio?catalog=../../etc/passwd', fetchText)).rejects.toThrow(/Not a catalog asset reference/);
