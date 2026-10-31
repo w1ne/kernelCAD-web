@@ -1,0 +1,144 @@
+{
+  "checkedAt": "2026-10-31T12:30:31.108Z",
+  "kits": [
+    {
+      "id": "city-street",
+      "assets": 20,
+      "triangles": {
+        "min": 96,
+        "max": 344
+      }
+    },
+    {
+      "id": "interior",
+      "assets": 21,
+      "triangles": {
+        "min": 60,
+        "max": 388
+      }
+    },
+    {
+      "id": "nature",
+      "assets": 21,
+      "triangles": {
+        "min": 56,
+        "max": 338
+      }
+    }
+  ],
+  "queries": [
+    {
+      "tool": "search_assets",
+      "q": "bench",
+      "coverage": "ok",
+      "rows": [
+        "park-bench",
+        "bus-stop-shelter"
+      ]
+    },
+    {
+      "tool": "search_assets",
+      "q": "spaceship hangar",
+      "coverage": "none",
+      "unmatched": [
+        "spaceship",
+        "hangar"
+      ]
+    },
+    {
+      "tool": "find_matching",
+      "id": "pine-tree",
+      "rows": [
+        [
+          "bush",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "cliff-tile",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "fern",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "ground-tile",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "planter-box",
+          [
+            "compat:outdoor",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "shop-front",
+          [
+            "compat:outdoor",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "bus-stop-shelter",
+          [
+            "compat:outdoor",
+            "scale"
+          ]
+        ],
+        [
+          "park-bench",
+          [
+            "compat:outdoor",
+            "scale"
+          ]
+        ]
+      ]
+    },
+    {
+      "tool": "get_variant",
+      "id": "pine-tree",
+      "want": "taller, autumn, five tiers",
+      "params": {
+        "leaves": "#c9772b",
+        "heightM": "6",
+        "tiers": "5"
+      },
+      "unmatched": [],
+      "glbSha256": "f0285d4c57e8c492eba0afeedcc3100a09a91a020f2738607bbfcc372e4e3280"
+    }
+  ],
+  "claims": {
+    "originalGeometry": true,
+    "softwareRender": true,
+    "threeJsRendered": false,
+    "engineImportTested": false,
+    "deployedBehavior": false
+  }
+}
