@@ -990,7 +990,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/rover-robot.kcad.ts",
-      "sourceSha256": "70b22becd545148274d3b68b93bff1ff84a24fe0b777dac9a372ecef7686575d",
+      "sourceSha256": "9622bb4fee9296f41b9f00078657d17b543bd30ddb34d89b4e0ce260a3e41d73",
       "triangleBudget": 950,
       "params": [
         {
@@ -1107,7 +1107,7 @@
         }
       },
       "stats": {
-        "triangles": 620,
+        "triangles": 730,
         "sizeM": [
           0.504,
           0.74,

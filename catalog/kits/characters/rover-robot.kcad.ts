@@ -50,8 +50,15 @@ const deckZ = chassisZ + chassisH / 2;
 add('chassis', box(chassisW, chassisL, chassisH, true).translate(0, 0, chassisZ)
   .union(box(chassisW - 60, chassisL - 80, 40, true).translate(0, 0, deckZ + 20))
   .color(body));
-add('bumper', box(chassisW + 20, 40, 50, true).translate(0, -chassisL / 2 - 20, chassisZ - 20)
-  .union(box(chassisW + 20, 40, 50, true).translate(0, chassisL / 2 + 20, chassisZ - 20)).color(trim));
+// One bumper part, not two: a front and a rear bumper at opposite ends never
+// touch, so unioning the pair alone is a floating solid (union.disconnected).
+// A slim rail along each side joins them into a single connected piece.
+const bumperY = chassisL / 2 + 20;
+add('bumper', box(chassisW + 20, 40, 50, true).translate(0, -bumperY, chassisZ - 20)
+  .union(box(chassisW + 20, 40, 50, true).translate(0, bumperY, chassisZ - 20))
+  .union(box(30, 2 * bumperY, 50, true).translate(-(chassisW / 2 + 10), 0, chassisZ - 20))
+  .union(box(30, 2 * bumperY, 50, true).translate(chassisW / 2 + 10, 0, chassisZ - 20))
+  .color(trim));
 refs.chassis.connector('bumper', { type: 'frame', origin: at(0, 0, chassisZ - 20) });
 refs.bumper.connector('bumper', { type: 'frame', origin: at(0, 0, chassisZ - 20) });
 r.mate('bumper', 'chassis.bumper', 'bumper.bumper', 'fastened');
@@ -77,8 +84,14 @@ hinge('chassis', 'mast', 'pan', at(0, mastY, deckZ + 40), [0, 0, 1], [-170, 170]
 const headZ = deckZ + 40 + mastH;
 add('head', box(200, 110, 90, true).translate(0, mastY, headZ + 45)
   .union(box(140, 30, 20, true).translate(0, mastY, headZ + 100)).color(body));
-add('lenses', cylinder(20, 26).rotateX(90).translate(-50, mastY - 55, headZ + 50)
-  .union(cylinder(20, 26).rotateX(90).translate(50, mastY - 55, headZ + 50)).color(lens));
+// The two lenses are separate eyes on the head: they sit at x = -50 and x = +50
+// and never touch, so a union of the pair alone is two floating solids. A thin
+// brow bar across the face joins them into the one 'lenses' part the head mates
+// to.
+const lenses = cylinder(20, 26).rotateX(90).translate(-50, mastY - 55, headZ + 50)
+  .union(cylinder(20, 26).rotateX(90).translate(50, mastY - 55, headZ + 50))
+  .union(box(140, 20, 26, true).translate(0, mastY - 55, headZ + 50));
+add('lenses', lenses.color(lens));
 refs.head.connector('lenses', { type: 'frame', origin: at(0, mastY - 55, headZ + 50) });
 refs.lenses.connector('lenses', { type: 'frame', origin: at(0, mastY - 55, headZ + 50) });
 r.mate('lenses', 'head.lenses', 'lenses.lenses', 'fastened');
