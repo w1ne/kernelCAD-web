@@ -1,7 +1,8 @@
 # Asset catalog demo bundle
 
-Three original kits (nature, interior, city-street; 62 parametric `.kcad.ts`
-assets under `catalog/kits/`) and real answers of the catalog MCP tools.
+Four original kits (nature, interior, city-street and the rigged mechanical
+characters; 67 parametric `.kcad.ts` assets under `catalog/kits/`) and real
+answers of the catalog MCP tools.
 
 ## Reproduce
 

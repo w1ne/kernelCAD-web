@@ -46,17 +46,25 @@ const plankH = (size - gap * (n + 1)) / n;
 
 const crate = assembly('supply-crate');
 // Base on z = 0, centred on x = y = 0: the GLB then stands on y = 0.
-crate.part('body', box(size - 2 * post, size - 2 * post, size, true).translate(0, 0, size / 2).color(wood));
-const slats = [];
+// Slats are unioned onto the body, not into a loose group of their own: planks
+// that only cross the body never touch each other, so unioning them alone gives
+// several floating solids (union.disconnected). Union each group with the body
+// so the crate stays one connected piece.
+const body = box(size - 2 * post, size - 2 * post, size, true).translate(0, 0, size / 2);
+const slats: ReturnType<typeof box>[] = [body];
 for (let i = 0; i < n; i++) {
   const z = gap + i * (plankH + gap) + plankH / 2;
   slats.push(box(size - 2 * post, size, plankH, true).translate(0, 0, z));
   slats.push(box(size, size - 2 * post, plankH, true).translate(0, 0, z));
 }
 crate.part('planks', union(...slats).color(wood));
+// Posts bite `embed` into the body: touching face-to-face at exactly x = 240 is
+// a zero-volume contact that does not reliably fuse into one solid.
+const embed = post / 2;
 const posts = [-1, 1].flatMap((sx) => [-1, 1].map((sy) =>
-  box(post, post, size, true).translate(sx * (size - post) / 2, sy * (size - post) / 2, size / 2)));
-crate.part('posts', union(...posts).color(trim));
+  box(post, post, size, true).translate(
+    sx * (size - post - embed) / 2, sy * (size - post - embed) / 2, size / 2)));
+crate.part('posts', union(body, ...posts).color(trim));
 
 return crate.model();
 ```
