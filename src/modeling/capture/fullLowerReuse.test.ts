@@ -35,8 +35,8 @@ describe('Shape.lower() full-lower reuse', () => {
     const a = k.box(10, 10, 10);
     const b = k.box(4, 4, 4);
     await a.lower();
-    b.translate(50, 0, 0);
-    expect((await b.lower()).boundingBox().min[0]).toBeCloseTo(50, 6);
+    const moved = b.translate(50, 0, 0);
+    expect((await moved.lower()).boundingBox().min[0]).toBeCloseTo(50, 6);
   });
 
   it('a param change re-lowers', async () => {

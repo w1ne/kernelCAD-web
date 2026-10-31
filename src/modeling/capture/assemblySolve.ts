@@ -150,8 +150,8 @@ function checkPoseLimits(
  *   - Each part has at most one parent joint (no diamond / closed-chain).
  *   - Joint graph is acyclic (DFS detect).
  *
- * Side effect: applies the per-part SE(3) transform to each part's
- * `originalShape` via `Shape.transform(t)`. Calling solve() twice on the
+ * Side effect: replaces each part's `originalShape` with
+ * `originalShape.transform(t)`. Calling solve() twice on the
  * same Assembly compounds transforms; build a fresh assembly per query.
  */
 export function solveJoints(state: AssemblyState, poses: Poses): SolvedKinematics {
@@ -243,11 +243,11 @@ export function solveJoints(state: AssemblyState, poses: Poses): SolvedKinematic
   //    going through Assembly state.
   const worldT = forwardKinematics(state.parts, state.joints, numericPoses);
 
-  // 5. Apply per-part transform to the original shape (mutates the Shape's
-  //    transform stack via existing translate + rotate ShapeTransform pipes).
+  // 5. Apply per-part transform to the original shape. `Shape.transform`
+  //    returns the posed shape, so the part's handle is replaced with it.
   for (const part of state.parts) {
     const T = worldT.get(part.id)!;
-    part.originalShape.transform(T);
+    (part as { originalShape: Shape }).originalShape = part.originalShape.transform(T);
   }
 
   // 6. Issue #537 — advisory out-of-limits warnings for poses beyond a

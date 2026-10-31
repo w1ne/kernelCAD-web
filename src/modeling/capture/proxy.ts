@@ -229,14 +229,12 @@ export class Shape {
    */
   transform(t: Transform): Shape {
     const { translate, rotateAxis, rotateDeg } = t.decomposeToTranslateAndRotate();
-    let out: Shape = this;
-    if (rotateDeg !== 0) {
-      out = out.rotate([rotateAxis[0], rotateAxis[1], rotateAxis[2]], rotateDeg);
-    }
-    if (translate[0] !== 0 || translate[1] !== 0 || translate[2] !== 0) {
-      out = out.translate(translate[0], translate[1], translate[2]);
-    }
-    return out;
+    const rotated = rotateDeg !== 0
+      ? this.rotate([rotateAxis[0], rotateAxis[1], rotateAxis[2]], rotateDeg)
+      : this;
+    return translate[0] !== 0 || translate[1] !== 0 || translate[2] !== 0
+      ? rotated.translate(translate[0], translate[1], translate[2])
+      : rotated;
   }
 
   /**

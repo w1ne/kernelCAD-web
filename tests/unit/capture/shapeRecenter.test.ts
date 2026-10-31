@@ -51,8 +51,8 @@ describe('Shape.recenter', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });
     const b = kcad.box(10, 20, 30);
-    await b.recenter();
-    const bb = await b.boundingBox();
+    const moved = await b.recenter();
+    const bb = await moved.boundingBox();
     expect(bb.center[0]).toBeCloseTo(0);
     expect(bb.center[1]).toBeCloseTo(0);
     expect(bb.center[2]).toBeCloseTo(0);
@@ -66,8 +66,8 @@ describe('Shape.recenter', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });
     const b = kcad.box(10, 20, 30);
-    (await b.recenter()).translate(50, 60, 70);
-    const bb = await b.boundingBox();
+    const placed = (await b.recenter()).translate(50, 60, 70);
+    const bb = await placed.boundingBox();
     expect(bb.center[0]).toBeCloseTo(50);
     expect(bb.center[1]).toBeCloseTo(60);
     expect(bb.center[2]).toBeCloseTo(70);
@@ -77,8 +77,8 @@ describe('Shape.recenter', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });
     const b = kcad.box(10, 20, 30);
-    await b.recenter({ z: false });
-    const bb = await b.boundingBox();
+    const moved = await b.recenter({ z: false });
+    const bb = await moved.boundingBox();
     expect(bb.center[0]).toBeCloseTo(0);
     expect(bb.center[1]).toBeCloseTo(0);
     // z stays as the corner-origin box had it (center 15).
@@ -86,13 +86,14 @@ describe('Shape.recenter', () => {
     expect(bb.min[2]).toBeCloseTo(0);
   });
 
-  it('returns the same Shape for chaining and appends one translate', async () => {
+  it('returns a new Shape with one translate and leaves the receiver unmoved', async () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });
     const b = kcad.box(10, 10, 10);
     const r = await b.recenter();
-    expect(r).toBe(b);
-    expect(transformsCount(session, b.id)).toBe(1);
+    expect(r).not.toBe(b);
+    expect(transformsCount(session, r.id)).toBe(1);
+    expect((await b.boundingBox()).min[0]).toBeCloseTo(0);
   });
 });
 
@@ -102,8 +103,8 @@ describe('Shape.seatOnFloor', () => {
     const kcad = createModelingApi({ session });
     // Centered box: spans z in [-15, 15]; seatOnFloor should lift to [0, 30].
     const b = kcad.box(10, 20, 30, true);
-    await b.seatOnFloor();
-    const bb = await b.boundingBox();
+    const moved = await b.seatOnFloor();
+    const bb = await moved.boundingBox();
     expect(bb.min[2]).toBeCloseTo(0);
     expect(bb.max[2]).toBeCloseTo(30);
     expect(bb.center[0]).toBeCloseTo(0);
@@ -115,8 +116,8 @@ describe('Shape.seatOnFloor', () => {
     const kcad = createModelingApi({ session });
     // Corner-origin box already sits on z=0 with footprint at x/y in [0, w].
     const b = kcad.box(10, 20, 30).translate(0, 0, 50);
-    await b.seatOnFloor({ center: false });
-    const bb = await b.boundingBox();
+    const moved = await b.seatOnFloor({ center: false });
+    const bb = await moved.boundingBox();
     expect(bb.min[2]).toBeCloseTo(0);
     // x/y footprint preserved (not recentered).
     expect(bb.min[0]).toBeCloseTo(0);
