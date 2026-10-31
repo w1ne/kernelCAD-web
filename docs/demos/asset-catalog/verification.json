@@ -1,0 +1,55 @@
+{
+  "checkedAt": "2026-10-31T12:06:50.692Z",
+  "kits": [
+    {
+      "id": "nature",
+      "assets": 1,
+      "triangles": {
+        "min": 96,
+        "max": 96
+      }
+    }
+  ],
+  "queries": [
+    {
+      "tool": "search_assets",
+      "q": "bench",
+      "coverage": "none",
+      "rows": []
+    },
+    {
+      "tool": "search_assets",
+      "q": "spaceship hangar",
+      "coverage": "none",
+      "unmatched": [
+        "spaceship",
+        "hangar"
+      ]
+    },
+    {
+      "tool": "find_matching",
+      "id": "pine-tree",
+      "rows": []
+    },
+    {
+      "tool": "get_variant",
+      "id": "pine-tree",
+      "want": "taller, autumn, five tiers",
+      "params": {
+        "leaves": "#c9772b",
+        "heightM": "6"
+      },
+      "unmatched": [
+        "five"
+      ],
+      "glbSha256": "09506dff36d369db5053c7ef93819b5d77d054fc7de05b9edf038973f34f29c7"
+    }
+  ],
+  "claims": {
+    "originalGeometry": true,
+    "softwareRender": true,
+    "threeJsRendered": false,
+    "engineImportTested": false,
+    "deployedBehavior": false
+  }
+}
