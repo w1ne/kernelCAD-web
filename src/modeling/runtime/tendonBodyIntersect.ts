@@ -26,6 +26,7 @@ import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from '../mates/mate';
 import { wrapArcPoints, type WrapCylinderWorld } from '../capture/tendonSweepMesh';
 import { measureGapToBody } from './jointMeshContinuity';
+import { anyTriangleWithin, buildMeshPointIndex, pointInsideMesh, type MeshPointIndex } from './meshPointQuery';
 
 /** Polyline sampling pitch (mm) along each tendon segment. */
 export const TENDON_SAMPLE_MM = 5;
@@ -187,6 +188,65 @@ function collectTendonPath(
 
 // Scan every straight segment of one tendon's polyline; report the first
 // offending sample per (tendon, pierced-part) pair.
+/**
+ * Distance (mm) from the clearance threshold within which a sample is decided
+ * by the exact OCCT probe. Covers the analysis mesh's 0.05 mm chord
+ * deflection with a wide margin: farther than this from every triangle, the
+ * mesh's inside/outside answer cannot disagree with the exact solid.
+ */
+export const MESH_DECISION_MARGIN_MM = 0.25;
+
+/** Part-local analysis-mesh index, built once per lowered shape. */
+const meshIndexByShape = new WeakMap<OcctBackend, MeshPointIndex | null>();
+
+function meshIndexFor(shape: OcctBackend): MeshPointIndex | null {
+  let index = meshIndexByShape.get(shape);
+  if (index === undefined) {
+    try {
+      const mesh = shape.getMesh();
+      index = mesh.indices.length === 0
+        ? null
+        : buildMeshPointIndex(mesh.positions, mesh.indices, TENDON_BODY_CLEARANCE_MM + MESH_DECISION_MARGIN_MM);
+      if (index !== null && !index.closed) index = null;
+    } catch {
+      index = null;
+    }
+    meshIndexByShape.set(shape, index);
+  }
+  return index;
+}
+
+/** True when `t` has no scale or shear, so it preserves distances. */
+function isRigid(t: Transform): boolean {
+  const o = t.point([0, 0, 0]);
+  const axes = [t.point([1, 0, 0]), t.point([0, 1, 0]), t.point([0, 0, 1])]
+    .map((p) => [p[0] - o[0], p[1] - o[1], p[2] - o[2]] as const);
+  const dot = (a: readonly number[], b: readonly number[]): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  return axes.every((a) => Math.abs(dot(a, a) - 1) < 1e-9) &&
+    Math.abs(dot(axes[0], axes[1])) < 1e-9 && Math.abs(dot(axes[1], axes[2])) < 1e-9 && Math.abs(dot(axes[0], axes[2])) < 1e-9;
+}
+
+/**
+ * Surface gap at `pointWorld`, as `measureGapToBody` defines it (0 inside the
+ * solid), or `undefined` when the point is provably clear of the threshold.
+ * Away from the surface the part's cached mesh answers in microseconds; near
+ * it, or for an open mesh or a non-rigid placement, the exact probe decides.
+ */
+function gapIfNearOrInside(
+  shape: OcctBackend,
+  worldTransform: Transform,
+  inverse: Transform | undefined,
+  pointWorld: V3,
+): number | undefined {
+  const index = inverse === undefined ? null : meshIndexFor(shape);
+  if (index === null || inverse === undefined) return measureGapToBody(shape, worldTransform, pointWorld);
+  const local = inverse.point(pointWorld) as V3;
+  if (anyTriangleWithin(index, local, TENDON_BODY_CLEARANCE_MM + MESH_DECISION_MARGIN_MM)) {
+    return measureGapToBody(shape, worldTransform, pointWorld);
+  }
+  return pointInsideMesh(index, local) ? 0 : undefined;
+}
+
 function piercesForTendon(
   t: ReturnType<Assembly['__tendons']>[number],
   partByName: ReadonlyMap<string, ReturnType<Assembly['__parts']>[number]>,
@@ -194,6 +254,7 @@ function piercesForTendon(
   a: { partName: string; world: V3 },
   b: { partName: string; world: V3 },
   boundsByPart: ReadonlyMap<string, Aabb | undefined>,
+  inverseByPart: ReadonlyMap<string, Transform | undefined>,
 ): TendonBodyIntersectResult[] {
   const { excluded, waypoints } = collectTendonPath(t, partByName, sample, a.world, b.world);
   const fired = new Set<string>(); // one diagnostic per (tendon, part)
@@ -211,7 +272,7 @@ function piercesForTendon(
         if (!(sp.shape instanceof OcctBackend)) continue;
         const bounds = boundsByPart.get(sp.name);
         if (bounds !== undefined && !withinExpandedBounds(pt, bounds, TENDON_BODY_CLEARANCE_MM)) continue;
-        const gap = measureGapToBody(sp.shape as OcctBackend, sp.worldTransform, pt);
+        const gap = gapIfNearOrInside(sp.shape, sp.worldTransform, inverseByPart.get(sp.name), pt);
         if (gap !== undefined && gap < TENDON_BODY_CLEARANCE_MM) {
           out.push({ tendonName: t.name, partName: sp.name, pointWorld: pt, gapMm: gap });
           fired.add(sp.name);
@@ -234,9 +295,11 @@ export function checkTendonBodyIntersectAtPose(
   const out: TendonBodyIntersectResult[] = [];
   const partByName = indexPartsByName(arm);
   const boundsByPart = new Map<string, Aabb | undefined>();
+  const inverseByPart = new Map<string, Transform | undefined>();
   for (const part of sample.scene.parts) {
     if (part.shape instanceof OcctBackend) {
       boundsByPart.set(part.name, worldBounds(part.shape, part.worldTransform));
+      inverseByPart.set(part.name, isRigid(part.worldTransform) ? part.worldTransform.inverse() : undefined);
     }
   }
 
@@ -245,7 +308,7 @@ export function checkTendonBodyIntersectAtPose(
     const b = endpointWorld(t.to, partByName, sample);
     if (a === undefined || b === undefined) continue;
 
-    out.push(...piercesForTendon(t, partByName, sample, a, b, boundsByPart));
+    out.push(...piercesForTendon(t, partByName, sample, a, b, boundsByPart, inverseByPart));
   }
   return out;
 }
