@@ -1,5 +1,21 @@
 # Unreleased
 
+- Asset catalog: parametric low-poly assets live in
+  `catalog/kits/<kit>/<asset>.kcad.ts` with a `kit.json` per kit.
+  `npm run catalog:build` evaluates each one, exports it with the low-poly GLB
+  profile inside its `meta().triangleBudget`, and writes `catalog/index.json`:
+  knobs (type, default, range/choices, label), presets, rig, measured
+  triangles, size in metres, lowest point, material count and colour zones
+  named after the colour knob that drives them. A test fails when the
+  committed index is stale or any asset exceeds its budget or needs a second
+  opaque material. Pure queries in `src/shared/assets/catalogSearch.ts`:
+  `searchCatalog` (query, kit, category, triangle range, paging, with a
+  `coverage` verdict of `none | poor | ok | filtered_out` and unmatched
+  words), `findMatching` (same kit, shared compat tags, palette and scale,
+  spread across categories) and `resolveVariant` (plain words such as
+  "taller, red foliage, with snow" to knob overrides; unknown words are
+  reported, not guessed).
+
 - Low-poly GLB export: `export` glb `{ style: 'lowpoly' }` writes a faceted,
   flat-shaded game asset in metres (`units` overrides) where every opaque part
   carries its colour in `COLOR_0` on one shared `kernelcad-palette` material,
@@ -11,7 +27,7 @@
   lowest point) plus `units` and `style` in `asset.extras.kernelcad`; low-poly
   files also list their colour zones. `meta()` accepts catalog fields `kit`,
   `category`, `origin`, `compat` and `triangleBudget`. Example:
-  `examples/assets/pine-tree.kcad.ts`; local demo bundle:
+  `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
   `docs/demos/glb-lowpoly/`.
 
 - Asset manifests: `meta()` and `presets()` now capture validated asset metadata

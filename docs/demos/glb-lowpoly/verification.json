@@ -1,6 +1,6 @@
 {
   "checkedAt": "2026-10-31T11:34:53.831Z",
-  "source": "examples/assets/pine-tree.kcad.ts",
+  "source": "catalog/kits/nature/pine-tree.kcad.ts",
   "exporter": "runAndExport(format=\"glb\", options={ style: \"lowpoly\", lowpoly: { maxTriangles: 400 } })",
   "variants": [
     {
