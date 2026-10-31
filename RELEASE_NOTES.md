@@ -1,6 +1,8 @@
-# kernelCAD v0.17.3
+# kernelCAD v0.17.4
 
 ## Summary
+
+v0.17.4 is the first published build of this release train. The v0.17.3 tag built only the Linux x86_64 archive, so it was not published.
 
 Ships the CLI as self-contained platform archives with a bundled Node.js runtime, adds a warm document session that rebuilds only downstream features, and makes mates and exports follow topology through parameter edits.
 
@@ -8,6 +10,7 @@ Ships the CLI as self-contained platform archives with a bundled Node.js runtime
 
 ### Distribution
 
+- Every release runner installs its own native build bindings, so all five platform archives build from one lockfile.
 - Self-contained release archives for Linux x86_64, Linux aarch64, macOS x86_64, macOS arm64 and Windows x86_64, with `SHA256SUMS` and build-provenance attestations (#1145).
 - `install.sh` and `install.ps1` verify the archive checksum and install without a separately installed Node.js.
 - The npm package is published from the same tag through npm Trusted Publishing.
@@ -51,7 +54,7 @@ curl -fsSL https://kernelcad.com/install.sh | sh
 Pin this release:
 
 ```bash
-curl -fsSL https://kernelcad.com/install.sh | KERNELCAD_VERSION=v0.17.3 sh
+curl -fsSL https://kernelcad.com/install.sh | KERNELCAD_VERSION=v0.17.4 sh
 ```
 
 Windows:
@@ -63,11 +66,11 @@ irm https://kernelcad.com/install.ps1 | iex
 npm:
 
 ```bash
-npm install --global kernelcad@0.17.3
+npm install --global kernelcad@0.17.4
 ```
 
 ## Links
 
 - Web app: https://kernelcad.com
 - Source and issues: https://github.com/w1ne/kernelCAD-web
-- Full changelog: https://github.com/w1ne/kernelCAD-web/compare/v0.17.2...v0.17.3
+- Full changelog: https://github.com/w1ne/kernelCAD-web/compare/v0.17.2...v0.17.4

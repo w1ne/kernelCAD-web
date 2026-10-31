@@ -1,5 +1,13 @@
 # Unreleased
 
+# v0.17.4 — 2026-10-31
+
+- Release archives: each build runner installs its own native build bindings
+  (rollup, esbuild, lightningcss, Tailwind oxide) at the lockfile versions
+  after `npm ci`. The lockfile records them only for linux-x64, so the v0.17.3
+  tag built only the linux-x86_64 archive and published nothing. A pull request
+  that changes the archive inputs now builds all five platform archives.
+
 # v0.17.3 — 2026-10-31
 
 - Asset manifests: `meta()` and `presets()` now capture validated asset metadata
