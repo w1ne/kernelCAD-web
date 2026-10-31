@@ -73,8 +73,9 @@ export interface HoleDetectionResult {
  *  OCCT boolean degeneracy on a point-like primitive. */
 export const PROBE_SPHERE_RADIUS_MM = 0.05;
 
-/** Two faces belong to the same bore only if their radii agree within this. */
-const RADIUS_TOL_MM = 0.01;
+/** Reported bore diameters within 0.05 mm are one feature; compare radii at half that tolerance. */
+const HOLE_DIAMETER_TOL_MM = 0.05;
+const RADIUS_TOL_MM = HOLE_DIAMETER_TOL_MM / 2;
 /** Axis-parallelism tolerance: |dirA·dirB| must exceed 1 − this. */
 const AXIS_PARALLEL_TOL = 1e-6;
 /** Max distance (mm) from a face's axis point to the group's axis line. */
@@ -341,7 +342,7 @@ function resolveBoreCandidates(faces: ConcaveCylFace[]): BoreExtent[] {
 
 /**
  * Pure geometric core of hole detection: group concave cylindrical face
- * descriptors by axis line + radius, union their axial intervals across
+ * descriptors by axis line + near-equal radius, union their axial intervals across
  * small gaps, and keep only clusters whose length-weighted angular
  * coverage clears `MIN_ANGULAR_COVERAGE_RAD` (a seam-split full bore sums
  * to 2π; a fillet channel to ~π/2). No OCCT involvement — testable on
@@ -584,7 +585,8 @@ function scanCylindricalFaces(backend: OcctBackend, want: 'concave' | 'convex'):
 }
 
 /**
- * Group faces sharing one axis line and radius. Each face's axial extent
+ * Group faces sharing one axis line and radii within the hole-diameter
+ * feature tolerance. Disjoint axial intervals remain separate bores. Each face's axial extent
  * is canonicalized onto the group's (loc0, dir0) frame — a co-axial face
  * may carry a flipped dir, so both v endpoints are mapped through the
  * face's OWN loc/dir first, then projected onto dir0.
@@ -596,7 +598,7 @@ export function groupCoaxialFaces(faces: ConcaveCylFace[]): AxisGroup[] {
   for (const f of faces) {
     let group: AxisGroup | undefined;
     for (const g of groups) {
-      if (Math.abs(f.radiusMm - g.radiusMm) >= RADIUS_TOL_MM) continue;
+      if (Math.abs(f.radiusMm - g.radiusMm) > RADIUS_TOL_MM) continue;
       if (Math.abs(dot(f.dir, g.dir0)) <= 1 - AXIS_PARALLEL_TOL) continue;
       if (distanceToLine(f.loc, g.loc0, g.dir0) >= AXIS_DIST_TOL_MM) continue;
       group = g;
