@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Assembly, MechanicalJointIntentRecord } from '../capture/assembly';
-import { Shape } from '../capture/proxy';
 import type { Vec3 } from '../../shared/runtime/se3';
 import { parseConnectorRef, type MateRecord } from './mate';
 import { solveMates } from './solver';
@@ -271,7 +270,7 @@ async function checkRequiredSupport(
     if (supportPart === undefined) continue;
     const supportPose = poses.get(supportPart.name);
     if (supportPose === undefined) continue;
-    const localBbox = (await Shape.lowerBackendOf(supportPart.originalShape)).boundingBox();
+    const localBbox = (await supportPart.originalShape.lower()).boundingBox();
     const bbox = transformBbox(localBbox, supportPose);
     const distance = distanceOutsideExpandedBbox(worldPoint, bbox, REQUIRED_SUPPORT_TOL_MM);
     bestDistance = Math.min(bestDistance, distance);

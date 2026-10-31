@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
-import { Shape } from '../capture/proxy';
+import { partBackend } from './partBackend';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { FeatureId, Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
@@ -148,7 +148,7 @@ export async function connectorsInSolidDiagnostics(arm: Assembly): Promise<Conne
     if (part === undefined) return undefined;
     let bbox = boundsByPartName.get(part.name);
     if (bbox === undefined) {
-      bbox = (await Shape.lowerBackendOf(part.originalShape)).boundingBox();
+      bbox = (await partBackend(arm, part.originalShape)).boundingBox();
       boundsByPartName.set(part.name, bbox);
     }
     return bbox;
@@ -175,7 +175,7 @@ export async function reviewMechanicalPlausibility(
     if (part === undefined) return undefined;
     let bbox = boundsByPartName.get(part.name);
     if (bbox === undefined) {
-      bbox = (await Shape.lowerBackendOf(part.originalShape)).boundingBox();
+      bbox = (await partBackend(arm, part.originalShape)).boundingBox();
       boundsByPartName.set(part.name, bbox);
     }
     return bbox;
@@ -186,7 +186,7 @@ export async function reviewMechanicalPlausibility(
     if (part === undefined) return undefined;
     let backend = backendByPartName.get(part.name);
     if (backend === undefined) {
-      backend = await Shape.lowerBackendOf(part.originalShape);
+      backend = await partBackend(arm, part.originalShape);
       backendByPartName.set(part.name, backend);
     }
     return backend;
