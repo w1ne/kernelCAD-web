@@ -38,10 +38,9 @@ describe('agent plugin manifests', () => {
       // Negative cases may name the tool that must refuse (e.g. import_step).
       if (c.tools_triggered !== undefined) expect(typeof c.tools_triggered).toBe('string');
     }
-    // The commerce declaration is decided (chatgpt.commerceDecision): external checkout.
-    expect(ext.review.commerce).toBe(true);
-    expect(ext.review.commerce_description).toContain('external checkout');
-    expect(ext.review.commerce_description).toContain('does not charge cards');
+    // The public plugin has no purchase flow.
+    expect(ext.review.commerce).toBe(false);
+    expect(ext.review.commerce_description).toBeUndefined();
     expect(ext.publication.release_notes).toBeTruthy();
   });
 

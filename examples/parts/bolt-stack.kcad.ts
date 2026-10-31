@@ -3,8 +3,9 @@
 //
 // Two 6 mm bars in a lap joint, held by one M5 socket-head stack. lib.stack
 // places the washer under the head, the washer and hex nut on the back, and
-// picks the stocked screw length that clears the 12 mm grip. Envelope solids:
-// no helical thread. Pair: examples/parts/fastener-lineup.kcad.ts.
+// picks the stocked screw length that clears the 12 mm grip. Default 'full'
+// detail; clash checks read the nominal envelopes, so the modeled thread in
+// the nut is not a clash. Pair: examples/parts/fastener-lineup.kcad.ts.
 const gripMm = 12;
 const barT = 6;
 const barL = 44;

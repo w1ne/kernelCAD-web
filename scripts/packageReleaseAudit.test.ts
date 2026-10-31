@@ -4,6 +4,22 @@ import { describe, expect, it } from 'vitest';
 import { auditPackageJsonText, auditPackageReleaseState, formatPackageAuditReport } from './packageReleaseAudit';
 
 describe('packageReleaseAudit', () => {
+  it('follows the aggregate public build before packaging the CLI and player', () => {
+    const result = auditPackageJsonText(JSON.stringify({
+      bin: { kernelcad: 'dist/cli/index.js' }, files: ['dist/cli', 'dist/headless-player'],
+      scripts: { prepack: 'npm run build', build: 'npm run build:cli && npm run build:player' },
+    }));
+    expect(result.blockers).toEqual([]);
+  });
+
+  it('does not mistake a cyclic or incomplete aggregate build for both deliverables', () => {
+    for (const build of ['npm run build', 'npm run build:cli']) {
+      expect(auditPackageJsonText(JSON.stringify({
+        scripts: { prepack: 'npm run build', build },
+      })).blockers.some(f => f.message.endsWith('npm run build:player'))).toBe(true);
+    }
+  });
+
   it('requires prepack to build the CLI bundle before npm pack or publish', () => {
     const result = auditPackageJsonText(JSON.stringify({
       bin: { kernelcad: 'dist/cli/index.js' },

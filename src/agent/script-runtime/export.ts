@@ -4,9 +4,11 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import { resolveRootId } from '../../composition/buildModel';
 import type { DrawingReviewOptions } from '../../shared/intent/drawingReview';
 import { detectMissingReturn } from '../../modeling/validation/missingReturn';
+import { detectUnionDefects } from '../../modeling/validation/unionIntegrity';
+import { detectDetachedMaterial } from '../../modeling/validation/booleanIntegrity';
 import { runScript } from '../../composition/runScript';
-import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
-import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
+import type { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
+import { lowerScriptRun } from './lowerScriptRun';
 import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { partStlBytes } from '../../kernel/backends/occt/partFileExport';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
@@ -31,7 +33,7 @@ export type {
   DrawingReport,
   Iso2768Class,
 } from '../../kernel/backends/occt/exportSvgDrawing';
-import { sceneToWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
+import { releaseWorldFrameParts, sceneToWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
@@ -61,7 +63,6 @@ import {
 } from './stressInfillExport';
 import type { Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { resolvePrinterProfile } from '../../kernel/export/gcode/printerProfiles';
-import type { FabProcess } from '../../shared/fab';
 export type { StressInfillExportOptions, StressInfillReport } from './stressInfillExport';
 export { stlNotWatertightDiagnostic, brepInvalidDiagnostic } from './exportDiagnostics';
 
@@ -70,7 +71,13 @@ export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 export type ExportFormat =
   | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'obj' | 'usd' | 'svg-drawing' | 'pdf-drawing'
   | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode' | 'usd-isaac'
-  | 'bom-csv' | 'bom-json' | 'order-pack' | 'bend-table';
+  | 'bom-csv' | 'bom-json' | 'bend-table';
+
+/** Supported export formats, checked before evaluating untyped caller input. */
+export const EXPORT_FORMATS: readonly ExportFormat[] = [
+  'stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'usd', 'svg-drawing', 'pdf-drawing',
+  'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac', 'bom-csv', 'bom-json', 'bend-table',
+];
 
 /** Per-format option payloads. The union member is selected by `format`. */
 export type ExportOptions =
@@ -109,7 +116,7 @@ export type ExportOptions =
        *  `slicer: 'prusa'` (fill_density). */
       infill?: StressInfillExportOptions;
     }
-  | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
+  | { format: 'glb'; axis?: 'y-up' | 'z-up'; hierarchy?: 'rig' | 'flat'; draco?: false }
   | { format: 'obj' }
   | { format: 'usd' }
   | (DrawingReviewOptions & {
@@ -166,15 +173,6 @@ export type ExportOptions =
     }
   | { format: 'bom-csv' }
   | { format: 'bom-json' }
-  | {
-      format: 'order-pack';
-      /** Pack name carried by the manifest / README; default 'order'. */
-      name?: string;
-      /** Fabricated rows to pack, by declared/inferred process. Ignored when `items` is given. */
-      processes?: FabProcess[];
-      /** Fabricated rows to pack, by BOM item number; wins over `processes`. */
-      items?: number[];
-    }
   | { format: 'bend-table' };
 
 /**
@@ -413,6 +411,7 @@ function exportMissingReturn(
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
+  if (!EXPORT_FORMATS.includes(input.format)) throw new Error(`Unsupported export format: ${String(input.format)}`);
   // Text derived from the tube report, not a solid: no occt recompute needed.
   if (input.format === 'bend-table') return exportBendTable(input);
   return withOcctPoisonRecovery(async () => {
@@ -427,12 +426,25 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   }
 
   const run = await runScript({ code, fileName, scriptDir });
-  const engine = new RecomputeEngine(createOcctLowerer(run.session));
-  const r = await engine.run(run.records, { paramTable: run.paramTable });
+  const r = await lowerScriptRun(run);
 
   notifySceneBuild(input, run, r);
   const featureCount = run.records.length;
   r.diagnostics = await tubeExportDiagnostics(format, run, r);
+  // Union integrity runs at this seam too. `evaluate` already gates every
+  // union (floating operand / same-stock overlap), but export is a scored
+  // consumer (the CADGenBench harness reads these diagnostics): without the
+  // check a fuse that left its operands as separate solids exported a
+  // watertight file and was accepted, even though the edit never fused. A
+  // disjoint union is a defect whether the STEP is valid or not.
+  r.diagnostics.push(
+    ...detectUnionDefects({ records: run.records, shapes: r.shapes, code }),
+    // Mirror-image failure of a floating union: a subtract that severed the
+    // last connection to a piece leaves it detached inside the part. The
+    // STEP is watertight and every solid passes BRepCheck, so this count is
+    // the only line that stops a valid-but-wrong edit (CADGenBench 207).
+    ...detectDetachedMaterial({ records: run.records, shapes: r.shapes }),
+  );
 
   const fatal = r.diagnostics.filter(d => d.severity === 'error');
   if (fatal.length > 0) {
@@ -446,21 +458,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const regionDxf = exportRegionDxf(input, format, run.returnValue, r.diagnostics, featureCount);
   if (regionDxf !== undefined) return regionDxf;
 
-  // The order pack's per-row drawings are nested full `pdf-drawing` runs.
-  // exportOrderPack cannot import this module (it would close the
-  // export > exportPhases > orderPackExport cycle), so inject the runner.
-  const orderPackDeps = {
-    drawingBytes: (featureId: string) => runAndExport({
-      code,
-      fileName,
-      format: 'pdf-drawing' as const,
-      feature_id: featureId,
-      ...(scriptDir !== undefined ? { scriptDir } : {}),
-      options: { format: 'pdf-drawing' as const },
-    }),
-  };
-
-  const assemblyXml = await exportAssemblyFormat(input, format, run, r.diagnostics, featureCount, orderPackDeps);
+  const assemblyXml = await exportAssemblyFormat(input, format, run, r.diagnostics, featureCount);
   if (assemblyXml !== undefined) return assemblyXml;
 
   r.diagnostics.push(...exportMissingReturn(feature_id, run));
@@ -568,8 +566,7 @@ export async function resolveWorldFrameScene(
 ): Promise<WorldFrameSceneResult> {
   const { code, fileName, scriptDir } = input;
   const run = await runScript({ code, fileName, scriptDir });
-  const engine = new RecomputeEngine(createOcctLowerer(run.session));
-  const r = await engine.run(run.records, { paramTable: run.paramTable });
+  const r = await lowerScriptRun(run);
   notifySceneBuild(input, run, r);
   const featureCount = run.records.length;
   r.diagnostics = await tubeExportDiagnostics(fabricationFormat, run, r);
@@ -624,40 +621,44 @@ export async function runAndExportParts(input: ExportPartsInput): Promise<Export
     return { parts: [], featureCount, diagnostics: resolved.diagnostics };
   }
   const worldParts = resolved.parts;
-  const validNames = worldParts.map(p => p.name);
-  if (input.parts !== undefined) {
-    const unknown = input.parts.filter(n => !validNames.includes(n));
-    if (unknown.length > 0) {
-      return {
-        parts: [], featureCount,
-        diagnostics: [...resolved.diagnostics, {
-          target: 'export-occt',
-          code: 'export.part.not-found',
-          severity: 'error',
-          message: `Unknown part name(s): ${unknown.join(', ')}. Valid names: ${validNames.join(', ')}.`,
-          hint: HINT_TEMPLATES['export.part.not-found'].template,
-          nextAction: NEXT_ACTIONS['export.part.not-found'],
-        }],
-      };
+  try {
+    const validNames = worldParts.map(p => p.name);
+    if (input.parts !== undefined) {
+      const unknown = input.parts.filter(n => !validNames.includes(n));
+      if (unknown.length > 0) {
+        return {
+          parts: [], featureCount,
+          diagnostics: [...resolved.diagnostics, {
+            target: 'export-occt',
+            code: 'export.part.not-found',
+            severity: 'error',
+            message: `Unknown part name(s): ${unknown.join(', ')}. Valid names: ${validNames.join(', ')}.`,
+            hint: HINT_TEMPLATES['export.part.not-found'].template,
+            nextAction: NEXT_ACTIONS['export.part.not-found'],
+          }],
+        };
+      }
     }
-  }
-  const selected = input.parts === undefined
-    ? worldParts
-    : worldParts.filter(p => input.parts!.includes(p.name));
+    const selected = input.parts === undefined
+      ? worldParts
+      : worldParts.filter(p => input.parts!.includes(p.name));
 
-  const parts: PartStlExport[] = [];
-  for (const p of selected) {
-    const mesh = meshShapeForExport(p.shape.getReplicadShape());
-    const report = verifyWatertight(mesh);
-    parts.push({
-      name: p.name,
-      fileSafeName: fileSafePartName(p.name),
-      bytes: partStlBytes(p.shape, mesh),
-      report,
-      triangleCount: mesh.triangles.length / 3,
-    });
+    const parts: PartStlExport[] = [];
+    for (const p of selected) {
+      const mesh = meshShapeForExport(p.shape.getReplicadShape());
+      const report = verifyWatertight(mesh);
+      parts.push({
+        name: p.name,
+        fileSafeName: fileSafePartName(p.name),
+        bytes: partStlBytes(p.shape, mesh),
+        report,
+        triangleCount: mesh.triangles.length / 3,
+      });
+    }
+    return { parts, featureCount, diagnostics: resolved.diagnostics };
+  } finally {
+    releaseWorldFrameParts(worldParts);
   }
-  return { parts, featureCount, diagnostics: resolved.diagnostics };
 
   });
 }

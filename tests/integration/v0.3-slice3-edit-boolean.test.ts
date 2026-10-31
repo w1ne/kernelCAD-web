@@ -67,9 +67,11 @@ describe('v0.3 slice-3 — boolean param gating', () => {
 
     const initial = await plate.lower();
     expect(session.warnings).toEqual([]);
+    // The update releases solids it replaced. Measure the pre-edit volume first.
+    const initialVolume = initial.volume();
 
     const gated = await session.params.update([{ name: 'addCablePort', value: false }]);
-    expect(gated.shape.volume()).toBeGreaterThan(initial.volume());
+    expect(gated.shape.volume()).toBeGreaterThan(initialVolume);
     expect(gated.warnings).toHaveLength(1);
     expect(gated.warnings[0]).toMatchObject({
       code: 'feature.face-ref.not-resolvable',
@@ -81,7 +83,7 @@ describe('v0.3 slice-3 — boolean param gating', () => {
     expect(session.warnings.at(-1)).toMatchObject(gated.warnings[0]);
 
     const ungated = await session.params.update([{ name: 'addCablePort', value: true }]);
-    expect(ungated.shape.volume()).toBeCloseTo(initial.volume(), 3);
+    expect(ungated.shape.volume()).toBeCloseTo(initialVolume, 3);
     expect(ungated.warnings).toEqual([]);
   });
 

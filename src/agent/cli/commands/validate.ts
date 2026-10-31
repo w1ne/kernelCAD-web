@@ -41,6 +41,7 @@ import {
 } from '../../../modeling/mates/mechanicalPlausibility';
 import { checkFastenedMateContact, type MechanismCoverage } from '../../../modeling/runtime/mechanismTruth';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
+import { loadMujocoSession } from '../../../modeling/runtime/mujocoSession';
 import { captureMotionFailures } from '../../../modeling/runtime/motionLimits';
 import { needsMechanismVerdict, summarizeMechanism, type MechanismVerdictSummary } from '../../../modeling/runtime/mechanismVerdict';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -224,7 +225,9 @@ async function runMechanismProbe(
     const assemblies = Array.from(session.assemblies.values()) as Assembly[];
     // Verdict precedence across assemblies (broken > unverified > real)
     // lives in the shared probe, same as evaluate_script.
-    const probe = await probeAssemblies(assemblies, { physicsCheck: opts.physicsCheck });
+    const probe = await probeAssemblies(assemblies, opts.physicsCheck
+      ? { physicsCheck: true, physicsSessionFactory: loadMujocoSession }
+      : { physicsCheck: false });
     return withSummary(assemblies, { ...probe, failures: [...probe.failures] });
   } catch {
     // A probe-side throw is a separate failure mode from "the mechanism

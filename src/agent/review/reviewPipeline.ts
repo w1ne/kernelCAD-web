@@ -10,7 +10,6 @@ import {
   summarizeMechanismFitness,
   type MechanismFitnessResult,
 } from '../../modeling/mates/mechanismFitness';
-import type { GripperApertureRequest } from '../../modeling/mates/gripperAperture';
 import type { PoseEnvelopeDiagnostic, PoseEnvelopeReviewResult } from '../../modeling/mates/poseEnvelope';
 import { reviewPoseEnvelope } from '../../modeling/mates/poseEnvelope';
 import { suggestLimitFix } from '../../modeling/mates/limitFixSuggest';
@@ -19,6 +18,7 @@ import {
   type MechanicalPlausibilityDiagnostic,
 } from '../../modeling/mates/mechanicalPlausibility';
 import { checkFastenedMateContact, checkMechanismTruth, type MechanismCoverage } from '../../modeling/runtime/mechanismTruth';
+import { loadMujocoSession } from '../../modeling/runtime/mujocoSession';
 import { captureMotionFailures } from '../../modeling/runtime/motionLimits';
 import { needsMechanismVerdict, summarizeMechanism, type MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
 import { checkOrphanParts } from '../../modeling/runtime/mechanismOrphan';
@@ -32,6 +32,7 @@ import {
 } from '../../modeling/mates/mechanicalTransmission';
 import {
   reviewPhysicalUseCasesWithReachability,
+  type PhysicalUseCaseLevel,
   type PhysicalUseCaseDiagnostic,
   type PhysicalUseCaseJointStructuralCertificate,
 } from '../../modeling/mates/physicalUseCase';
@@ -57,6 +58,9 @@ import type { BuiltModel } from '../../composition/buildModel';
 import { clearActiveMcpSession, setActiveMcpSession } from '../mcp/activeSession';
 import { partOnlyReview } from './partOnlyReview';
 import { buildSuggestedRepairPrompt } from './reviewRepairPrompt';
+import type { ExternalRequirement, RequirementsLedger } from '../../shared/intent/requirementRecord';
+import { ledgerFromEntries } from '../../shared/intent/requirementRecord';
+import { mechanicalRequirementEntries } from '../../modeling/requirements/mechanicalLedger';
 
 export interface ReviewCadInput {
   file?: string;
@@ -80,15 +84,16 @@ export interface ReviewCadInput {
   includePhysics?: boolean;
   epsilonMm3?: number;
   trackConnectors?: string[];
-  gripperAperture?: GripperApertureRequest;
   samplesPerMate?: number;
   combinatorial?: boolean;
   requirePhysicalUseCase?: boolean;
-  includePhysicalUseCaseReachability?: boolean;
-  includePhysicalUseCaseStatics?: boolean;
-  includePhysicalUseCaseJointReactions?: boolean;
-  includePhysicalUseCaseJointStructure?: boolean;
-  physicalUseCaseReachabilitySamplesPerMate?: number;
+  /** Escalating physical-use-case depth; each level includes the previous:
+   *  `reachability` < `statics` < `reactions` (joint reactions, plus the
+   *  clevis structural check for joint.clevis mates). Defaults to
+   *  `reachability` when `requirePhysicalUseCase` is true. */
+  physicalUseCaseLevel?: PhysicalUseCaseLevel;
+  /** Samples per scalar-limited actuator mate for physical-use-case reachability. */
+  physicalUseCaseSamplesPerMate?: number;
   /**
    * Wall-clock budget for the whole review (ms). Heavy stages (pose envelope,
    * physical use case, mechanism sweep) are skipped once it is spent, and the
@@ -96,6 +101,9 @@ export interface ReviewCadInput {
    * Default {@link DEFAULT_REVIEW_TIME_BUDGET_MS}.
    */
   timeBudgetMs?: number;
+  /** Call-time requirements (an eval task, a customer spec). Reported in the
+   *  same ledger tagged `source: 'external'`; never persisted. */
+  requirements?: readonly ExternalRequirement[];
 }
 
 /** Default `timeBudgetMs`: well inside a 300 s MCP client timeout, since a
@@ -150,7 +158,6 @@ export type ReviewCadOutput = ReviewTimingReport & (
       };
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
-      gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       physicalUseCaseStaticCertificates?: readonly PhysicalUseCaseStaticCertificate[];
       physicalUseCaseJointReactionCertificates?: readonly PhysicalUseCaseJointReactionCertificate[];
       physicalUseCaseJointStructuralCertificates?: readonly PhysicalUseCaseJointStructuralCertificate[];
@@ -181,6 +188,8 @@ export type ReviewCadOutput = ReviewTimingReport & (
        *  the design-loop's floating-geometry gate. Undefined when the scene
        *  could not be analyzed. */
       geometry?: ContactGraphResult;
+      /** The one requirements ledger for this review. */
+      requirements: RequirementsLedger;
     }
   | {
       ok: false;
@@ -195,7 +204,6 @@ export type ReviewCadOutput = ReviewTimingReport & (
       };
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
-      gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       physicalUseCaseStaticCertificates?: readonly PhysicalUseCaseStaticCertificate[];
       physicalUseCaseJointReactionCertificates?: readonly PhysicalUseCaseJointReactionCertificate[];
       physicalUseCaseJointStructuralCertificates?: readonly PhysicalUseCaseJointStructuralCertificate[];
@@ -224,6 +232,8 @@ export type ReviewCadOutput = ReviewTimingReport & (
       /** Deterministic geometric contact graph (see the `ok: true` variant).
        *  Present whenever a scene was built, even when `ok: false`. */
       geometry?: ContactGraphResult;
+      /** The one requirements ledger for this review. */
+      requirements: RequirementsLedger;
     });
 
 export type ReviewDiagnostic =
@@ -273,6 +283,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
       diagnostics,
       repairContext: await buildRepairContext(undefined, diagnostics, undefined, input),
       suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, undefined, input),
+      requirements: evaluation.requirements ?? ledgerFromEntries([]),
     };
   }
 
@@ -296,6 +307,11 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
   const { poseEnvelope, physicalUseCases, mechanism, mechanismFailures, summary } =
     await runBudgetedStages(clock, arm, model, input, mechanicalReview.includePoseEnvelope);
   const diagnostics = collectReviewDiagnostics(evaluation, mechanicalReview, physicalUseCases, poseEnvelope);
+  const ledger = withMechanicalEntries(
+    evaluation.requirements,
+    mechanicalReview.mechanicalIntent.diagnostics,
+    arm.__mechanicalJointIntents().map(i => i.name),
+  );
 
   const { fitness, ok, repairContext } = await runFitnessAndRepairStage({
     arm,
@@ -306,6 +322,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     mechanicalReview,
     physicalUseCases,
     poseEnvelope,
+    ledger,
   });
 
   const common = {
@@ -321,7 +338,6 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     },
     ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
     ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
-    ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
     physicalUseCaseStaticCertificates: physicalUseCases.staticCertificates,
     physicalUseCaseJointReactionCertificates: physicalUseCases.jointReactionCertificates,
     physicalUseCaseJointStructuralCertificates: physicalUseCases.jointStructuralCertificates,
@@ -333,6 +349,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     mechanismFailures,
     ...summary,
     ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
+    requirements: ledger,
   };
   return ok && !unionGuardOnly
     ? { ...common, ok: true }
@@ -408,7 +425,12 @@ class StageClock {
 }
 
 async function runEvaluateSourceStage(input: ReviewCadInput) {
-  return evaluateForReview(input as EvaluateInput);
+  return evaluateForReview({
+    ...(input.file !== undefined ? { file: input.file } : {}),
+    ...(input.code !== undefined ? { code: input.code } : {}),
+    ...(input.scriptDir !== undefined ? { scriptDir: input.scriptDir } : {}),
+    ...(input.requirements !== undefined ? { requirements: input.requirements } : {}),
+  });
 }
 
 function activateReviewSession(model: BuiltModel): void {
@@ -517,7 +539,7 @@ async function runMechanicalReviewStage(
 async function runPoseEnvelopeStage(
   arm: Assembly,
   model: BuiltModel,
-  input: Pick<ReviewCadInput, 'includeInterference' | 'epsilonMm3' | 'trackConnectors' | 'gripperAperture' | 'samplesPerMate' | 'combinatorial'>,
+  input: Pick<ReviewCadInput, 'includeInterference' | 'epsilonMm3' | 'trackConnectors' | 'samplesPerMate' | 'combinatorial'>,
   includePoseEnvelope: boolean,
 ): Promise<PoseEnvelopeReviewResult | undefined> {
   const dfm = findDfmSpec(model.records);
@@ -532,7 +554,6 @@ async function runPoseEnvelopeStage(
         includeInterference: input.includeInterference ?? true,
         epsilonMm3: input.epsilonMm3,
         trackConnectors: mergeConnectorRefs(input.trackConnectors, physicalUseCaseConnectorRefs(arm)),
-        gripperAperture: input.gripperAperture,
         samplesPerMate: input.samplesPerMate,
         combinatorial: input.combinatorial,
         loweredScene,
@@ -552,24 +573,17 @@ async function runPhysicalUseCaseStage(
   input: Pick<
     ReviewCadInput,
     | 'requirePhysicalUseCase'
-    | 'includePhysicalUseCaseReachability'
-    | 'includePhysicalUseCaseStatics'
-    | 'includePhysicalUseCaseJointReactions'
-    | 'includePhysicalUseCaseJointStructure'
-    | 'physicalUseCaseReachabilitySamplesPerMate'
+    | 'physicalUseCaseLevel'
+    | 'physicalUseCaseSamplesPerMate'
   >,
   poseEnvelope: PoseEnvelopeReviewResult | undefined,
 ) {
-  const includeReachability =
-    input.includePhysicalUseCaseReachability ?? input.requirePhysicalUseCase === true;
+  const level = input.physicalUseCaseLevel ?? (input.requirePhysicalUseCase === true ? 'reachability' : undefined);
   return reviewPhysicalUseCasesWithReachability(arm, {
     requirePhysicalUseCase: input.requirePhysicalUseCase,
     poseEnvelope,
-    includeReachability,
-    includeStatics: input.includePhysicalUseCaseStatics,
-    includeJointReactions: input.includePhysicalUseCaseJointReactions,
-    includeJointStructure: input.includePhysicalUseCaseJointStructure,
-    reachabilitySamplesPerMate: input.physicalUseCaseReachabilitySamplesPerMate,
+    level,
+    reachabilitySamplesPerMate: input.physicalUseCaseSamplesPerMate,
   });
 }
 
@@ -649,7 +663,9 @@ async function runMechanismTruthStage(
     ? wantMechanism
     : input.includePhysics;
   try {
-    const verdict = await checkMechanismTruth(arm, { physicsCheck });
+    const verdict = physicsCheck
+      ? await checkMechanismTruth(arm, { physicsCheck: true, physicsSessionFactory: loadMujocoSession })
+      : await checkMechanismTruth(arm, { physicsCheck: false });
     // Preserve 'unverified' (e.g. a skipped BREP sweep, issue #348) —
     // don't collapse it to 'real'.
     return {
@@ -736,6 +752,7 @@ async function runFitnessAndRepairStage(input: {
   mechanicalReview: MechanicalReview;
   physicalUseCases: Awaited<ReturnType<typeof runPhysicalUseCaseStage>>;
   poseEnvelope: PoseEnvelopeReviewResult | undefined;
+  ledger: RequirementsLedger;
 }): Promise<{ fitness: MechanismFitnessResult; ok: boolean; repairContext: RepairContext }> {
   const fitness = summarizeMechanismFitness({
     ...staticFitnessInput(input.mechanicalReview),
@@ -758,7 +775,7 @@ async function runFitnessAndRepairStage(input: {
   // 'broken'` iff at least one failure has severity 'error', which is
   // exactly the set folded in — so this conjunction is now a redundant
   // backstop, deliberately kept.
-  const ok = fitness.functional && input.mechanism !== 'broken';
+  const ok = fitness.functional && input.mechanism !== 'broken' && input.ledger.ok;
   return {
     fitness,
     ok,
@@ -778,7 +795,7 @@ async function runFitnessAndRepairStage(input: {
  *  still review.no-assembly. */
 async function reviewWithoutAssembly(
   timing: ReviewTimingReport,
-  evaluation: { featureCount: number; diagnostics: CompilerDiagnostic[] },
+  evaluation: { featureCount: number; diagnostics: CompilerDiagnostic[]; requirements?: RequirementsLedger },
   model: BuiltModel,
   input: ReviewCadInput,
   missingAssemblyMessage: string,
@@ -791,6 +808,7 @@ async function reviewWithoutAssembly(
       diagnostics,
       repairContext: await buildRepairContext(undefined, diagnostics, undefined, input),
       geometry: safeAnalyzeContactGraph(model),
+      requirements: evaluation.requirements ?? ledgerFromEntries([]),
     });
   }
   // Defence in depth: evaluation errors (e.g. union.* on an assembly that
@@ -804,7 +822,19 @@ async function reviewWithoutAssembly(
     diagnostics: evaluationErrors,
     repairContext: await buildRepairContext(undefined, evaluationErrors, undefined, input),
     suggestedRepairPrompt: `${missingAssemblyMessage} Return arm.model() or arm.solvedModel(...) from a script that calls assembly(...).`,
+    requirements: evaluation.requirements ?? ledgerFromEntries([]),
   };
+}
+
+/** Add one entry per declared mechanical intent to the evaluation ledger. */
+function withMechanicalEntries(
+  ledger: RequirementsLedger | undefined,
+  diagnostics: readonly MechanicalIntentDiagnostic[],
+  intentNames: readonly string[],
+): RequirementsLedger {
+  const base = ledger ?? ledgerFromEntries([]);
+  const mechanical = mechanicalRequirementEntries(diagnostics, intentNames);
+  return ledgerFromEntries([...base.entries, ...mechanical]);
 }
 
 function safeAnalyzeContactGraph(model: BuiltModel): ContactGraphResult | undefined {

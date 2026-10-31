@@ -5,26 +5,28 @@ import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
+import { trackFullLower } from './fullLowerTracker';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
 import { captureFilletIntersection } from './filletIntersectionCapture';
+import { captureMoveFaces, captureOffsetFaces, type CanonicalFace, type FaceEditInput, type FaceSelector } from './faceEditCapture';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
-import type { Query, FaceMarker, EdgeMarker } from '../../kernel/naming/query';
+import type { Query, EdgeMarker } from '../../kernel/naming/query';
 import {
   validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
   resolveHoleOpts, resolveHolesOpts,
   type EditableHoleOpts, type EditableHolesOpts,
 } from '../validation/holeValidation';
-import { generateBoltHoleConnectors, type HoleCenter } from '../parts/holeAutoConnectors';
+import { attachHolesConnectors, attachSingleHoleConnectors } from './emitHoleConnectors';
 import {
   validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
   resolveCutoutOpts,
   type EditableCutoutOpts,
 } from '../validation/cutoutValidation';
 import { isParamRef, isTypedParamRef, type Editable, type TypedParamRef } from '../../shared/runtime/paramRef';
-import { toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
+import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
 import type { FinishToken } from '../../shared/render/finishes';
@@ -48,7 +50,7 @@ import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
 
-type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
+import { NONFINITE_TRANSFORM_GUIDANCE, invalidEditableVec3Components, invalidTransformVec3Error } from './transformGuards';
 
 export type EdgeSelector =
   | EdgeQuery
@@ -69,14 +71,7 @@ export type EdgeSelector =
   | Query<unknown>
   | undefined;
 
-export type FaceSelector =
-  | FaceQuery
-  | { face: CanonicalFace | string }
-  // Q8 — Query DSL value (kc.q.face(...) etc) reaches every face-feature
-  // lowerer (shell / hole / cutout) through the same {face} slot. Captured
-  // at append-time and dispatched through the Q3 evaluator at lower-time.
-  | Query<FaceMarker>
-  | Query<unknown>;
+export type { FaceSelector };
 
 /**
  * IMPORTANT — drift sentinel contract:
@@ -116,12 +111,13 @@ export class Shape {
 
   // Lazy lowered backend — cached per-Shape so consecutive selectEdges /
   // selectEdge calls don't re-run RecomputeEngine.run() against the full
-  // record list. Invalidated by record-count growth (capture is append-only,
-  // so length growth is the only signal we need today).
+  // record list. Invalidated by record-count growth, a transform appended
+  // to this shape, or a param-table change (`lowerInputsKey`).
   private _loweredBackend?: import('../../kernel/backends/occt/occtBackend').OcctBackend;
   private _loweredMeshBackend?: import('../../kernel/backends/meshBackend').MeshBackend;
   private _loweredAtRecordCount?: number;
   private _loweredAtTransformCount?: number;
+  private _loweredAtInputsKey?: string;
 
   constructor(id: FeatureId, session: CaptureSession) {
     this.id = id;
@@ -129,15 +125,12 @@ export class Shape {
   }
 
   translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape {
-    if (!isValidEditableVec3([x, y, z])) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Translate vector must be three finite numbers (or ParamRef<number>); got [${formatScalarForError(x)}, ${formatScalarForError(y)}, ${formatScalarForError(z)}].`,
-        this.id,
-        'Pass three finite numbers (x, y, z) to .translate().',
-      );
+    const vector: EditableVec3 = [x, y, z];
+    const issues = invalidEditableVec3Components(vector, this.session.paramTable);
+    if (!isValidEditableVec3(vector) || issues.length > 0) {
+      throw invalidTransformVec3Error('translate', 'Translate vector', vector, this.id, this.session.paramTable);
     }
-    this.session.appendTransform(this.id, { op: 'translate', vec: toVec3Param([x, y, z], 'mm') });
+    this.session.appendTransform(this.id, { op: 'translate', vec: toVec3Param(vector, 'mm') });
     return this;
   }
 
@@ -146,37 +139,43 @@ export class Shape {
     degrees: Editable<number>,
     pivot?: EditableVec3,
   ): Shape {
-    if (!isValidEditableVec3(axis)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Rotate axis must be a finite Vec3 (numbers or ParamRef<number>); got ${formatScalarForError(axis)}.`,
-        this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
-      );
+    const axisIssues = invalidEditableVec3Components(axis, this.session.paramTable);
+    if (!isValidEditableVec3(axis) || axisIssues.length > 0) {
+      throw invalidTransformVec3Error('rotate-axis', 'Rotate axis', axis, this.id, this.session.paramTable);
     }
     if (typeof degrees !== 'number' && !isParamRef(degrees)) {
       throw new KernelError(
         'feature.invalid-args',
         `Rotate degrees must be a finite number or ParamRef; got ${formatScalarForError(degrees)}.`,
         this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
     }
-    if (typeof degrees === 'number' && !Number.isFinite(degrees)) {
+    let resolvedDegrees: number;
+    try {
+      resolvedDegrees = currentValue(degrees, this.session.paramTable);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
       throw new KernelError(
         'feature.invalid-args',
-        `Rotate degrees must be a finite number or ParamRef; got ${formatScalarForError(degrees)}.`,
+        `Rotate degrees could not be resolved from ${formatScalarForError(degrees)}: ${reason}.`,
         this.id,
-        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
     }
-    if (pivot !== undefined && !isValidEditableVec3(pivot)) {
+    if (!Number.isFinite(resolvedDegrees)) {
       throw new KernelError(
         'feature.invalid-args',
-        `Rotate pivot (when provided) must be a finite Vec3; got ${formatScalarForError(pivot)}.`,
+        `Rotate degrees must resolve to a finite number; got ${isParamRef(degrees) ? `ParamRef(${degrees.$param}) resolves to ${formatScalarForError(resolvedDegrees)}` : formatScalarForError(resolvedDegrees)}.`,
         this.id,
-        'Pass a finite Vec3 as the pivot, or omit it.',
+        `invalid-args.rotate.degrees.nonfinite — ${NONFINITE_TRANSFORM_GUIDANCE}`,
       );
+    }
+    if (pivot !== undefined) {
+      const pivotIssues = invalidEditableVec3Components(pivot, this.session.paramTable);
+      if (!isValidEditableVec3(pivot) || pivotIssues.length > 0) {
+        throw invalidTransformVec3Error('rotate-pivot', 'Rotate pivot', pivot, this.id, this.session.paramTable);
+      }
     }
     const transform: ShapeTransform = pivot === undefined
       ? { op: 'rotateAxis', axis: toVec3Param(axis, 'unitless'), degrees: toParam(degrees, 'deg') }
@@ -262,6 +261,14 @@ export class Shape {
    * `fixed` and `loads[].faces` take the same selectors as the rest of the
    * API: a `FaceQuery` object, or a `@kc[...]` face ref from `list_faces`.
    * Forces are TOTALS in newtons over the selected faces, not per node.
+   *
+   * For a load that comes from motion, pass
+   * `loadsFrom: { motion, part }` instead of `loads`. `motion` is the result
+   * of `kinematic.motionLoad(arm, opts)`; the study takes that part's worst
+   * sampled joint wrench (a joint-moment or section-bending proxy, named in
+   * the result), applies its force and moment as a remote load at the joint
+   * origin, and records the pose in the summary and the ledger. An empty
+   * motion result or an unloaded part throws rather than reporting a pass.
    *
    * Malformed declarations throw `feature.invalid-args` at capture time; an
    * unknown material grade throws with the valid grades named. Selectors that
@@ -635,13 +642,14 @@ export class Shape {
   }
 
   /**
-   * Scale this shape uniformly (single positive number) or per-axis
-   * (Vec3 — sx/sy/sz). All factors must be positive and finite.
+   * Scale this shape uniformly (single positive number or numeric ParamRef) or
+   * per-axis (Vec3 — sx/sy/sz). All resolved factors must be positive and finite.
    *
    * Two call shapes are accepted:
    *   - `.scale(2)`           — uniform
-   *   - `.scale([2, 1, 1])`   — per-axis Vec3 form
-   *   - `.scale(2, 2, 2)`     — legacy multi-arg form (must be uniform; see below)
+   *   - `.scale(hexSize)`     — uniform, editable ParamRef
+   *   - `.scale([2, 1, 1])`   — per-axis Vec3 form (each factor may be editable)
+   *   - `.scale(2, 2, 2)`     — legacy multi-arg form
    *
    * The Vec3 form is the canonical agent-facing way to request non-uniform
    * scale. Capture stores per-axis components in the FeatureRecord's
@@ -655,18 +663,18 @@ export class Shape {
    * but lowering will emit a `feature.kernel-failed` diagnostic. Track via
    * the TODO in `src/backends/occt/occtLowerer.ts` near the scale dispatch.
    */
-  scale(factor: number | [number, number, number]): Shape;
-  scale(sx: number, sy: number, sz: number): Shape;
+  scale(factor: Editable<number> | [Editable<number>, Editable<number>, Editable<number>]): Shape;
+  scale(sx: Editable<number>, sy: Editable<number>, sz: Editable<number>): Shape;
   scale(
-    factorOrSx: number | [number, number, number],
-    sy?: number,
-    sz?: number,
+    factorOrSx: Editable<number> | [Editable<number>, Editable<number>, Editable<number>],
+    sy?: Editable<number>,
+    sz?: Editable<number>,
   ): Shape {
     // Normalize the three call shapes into a single ScaleSpec.
-    const scaleSpec: number | [number, number, number] = Array.isArray(factorOrSx)
+    const scaleSpec = Array.isArray(factorOrSx)
       ? factorOrSx
       : (sy !== undefined || sz !== undefined)
-        ? [factorOrSx, sy ?? factorOrSx, sz ?? factorOrSx] as [number, number, number]
+        ? [factorOrSx, sy ?? factorOrSx, sz ?? factorOrSx] as [Editable<number>, Editable<number>, Editable<number>]
         : factorOrSx;
 
     if (!isValidScaleSpec(scaleSpec)) {
@@ -678,9 +686,21 @@ export class Shape {
       );
     }
 
-    const [sx, syOut, szOut]: [number, number, number] = Array.isArray(scaleSpec)
+    const factors: [Editable<number>, Editable<number>, Editable<number>] = Array.isArray(scaleSpec)
       ? [scaleSpec[0], scaleSpec[1], scaleSpec[2]]
       : [scaleSpec, scaleSpec, scaleSpec];
+    if (factors.some((factor) => {
+      const value = currentValue(factor, this.session.paramTable);
+      return !Number.isFinite(value) || value <= 0;
+    })) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Scale factors must resolve to positive finite numbers; got ${formatScalarForError(scaleSpec)}.`,
+        this.id,
+        'invalid-args.scale.zero — provide positive finite scale factors; numeric ParamRefs are resolved when the shape is built.',
+      );
+    }
+    const [sx, syOut, szOut] = factors.map((factor) => isParamRef(factor) ? toParam(factor, 'unitless') : factor);
 
     this.session.appendTransform(this.id, {
       op: 'scale',
@@ -911,6 +931,24 @@ export class Shape {
   }
 
   /**
+   * Push or pull planar faces along their outward normals by `distance` mm.
+   * Positive grows the solid. A non-planar face is rejected by name.
+   */
+  offsetFaces(faces: FaceEditInput, distance: Editable<number>): Shape {
+    return captureOffsetFaces(this.session, this, faces, distance);
+  }
+
+  /**
+   * Move planar faces by `by`. The vector must be parallel to each face's
+   * outward normal; a sideways move is rejected by name.
+   */
+  moveFaces(faces: FaceEditInput, by: EditableVec3): Shape {
+    return captureMoveFaces(this.session, this, faces, by);
+  }
+
+
+
+  /**
    * W2.2: Add a sheet-metal bend along a linear edge. The Shape must trace
    * its lineage to a `sheetMetal(...)` record (validated at lowering time;
    * non-sheet-metal callers see `feature.invalid-args`).
@@ -1024,21 +1062,7 @@ export class Shape {
       params,
       metadata,
     });
-    // Auto-emit bolt-holes-1 connector at the hole's bottom face + through-axis.
-    const holeDepth =
-      resolved.depth === 'through'
-        ? 0 // through-hole: the connector sits at the back of the parent face
-        : typeof resolved.depth === 'number'
-          ? resolved.depth
-          : 0;
-    const centers: HoleCenter[] = [
-      // An `at` hole's face frame is centred on its entry point.
-      { u: resolved.at ? 0 : resolved.u, v: resolved.at ? 0 : resolved.v, depthMm: holeDepth, axis: [0, 0, -1] },
-    ];
-    const partName =
-      (metadata as { partName?: string }).partName ?? holeShape.id;
-    const conns = generateBoltHoleConnectors(centers, { partName });
-    this.session.attachAutoConnectors(holeShape.id, conns);
+    attachSingleHoleConnectors(this.session, holeShape.id, metadata, resolved);
     return holeShape;
   }
 
@@ -1085,23 +1109,7 @@ export class Shape {
       params,
       metadata,
     });
-    // Auto-emit bolt-holes-1..N connectors, one per hole position.
-    const holesDepth =
-      resolved.depth === 'through'
-        ? 0
-        : typeof resolved.depth === 'number'
-          ? resolved.depth
-          : 0;
-    const centers: HoleCenter[] = resolved.positions.map((p) => ({
-      u: p.u,
-      v: p.v,
-      depthMm: holesDepth,
-      axis: [0, 0, -1] as [number, number, number],
-    }));
-    const partName =
-      (metadata as { partName?: string }).partName ?? holesShape.id;
-    const conns = generateBoltHoleConnectors(centers, { partName });
-    this.session.attachAutoConnectors(holesShape.id, conns);
+    attachHolesConnectors(this.session, holesShape.id, metadata, resolved);
     return holesShape;
   }
 
@@ -1384,6 +1392,18 @@ export class Shape {
     return this;
   }
 
+  /** Live feature records and param table. Mate topology reads these so a
+   *  param edit re-resolves `hole-axis` against the current hole. */
+  resolutionInputs(): {
+    records: ReturnType<CaptureSession['getRecords']>;
+    paramTable: CaptureSession['paramTable'];
+  } {
+    return {
+      records: this.session.getRecords(),
+      paramTable: this.session.paramTable,
+    };
+  }
+
   /**
    * Lower this Shape eagerly — runs recompute against the records up to and
    * including this Shape, returns the resulting OcctBackend so script-runtime
@@ -1394,48 +1414,52 @@ export class Shape {
    */
   async lower(): Promise<import('../../kernel/backends/occt/occtBackend').OcctBackend> {
     const records = this.session.getRecords();
-    // C1 fix: cache invalidates on either record-count growth OR a transform
-    // appended to THIS shape. `appendTransform` mutates `record.transforms`
-    // in place — `records.length` is unchanged after Shape.translate/rotate/scale.
-    // Without the transform-count check, the cache returns the un-transformed
-    // backend after a transform, producing silent incorrect results.
+    // Cache invalidates on record-count growth, a transform appended to THIS
+    // shape (`appendTransform` mutates `record.transforms` in place, so
+    // `records.length` does not change), or a param-table change. A param
+    // edit republishes `lastFullLower`; that solid wins over this cache so a
+    // topology connector re-resolves on the new face.
     const ownRecord = records.find(r => r.id === this.id);
     const transformCount = ownRecord?.transforms.length ?? 0;
-    if (this._loweredMeshBackend && this._loweredAtRecordCount === records.length && this._loweredAtTransformCount === transformCount) {
-      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
-    }
-    if (
-      this._loweredBackend &&
-      this._loweredAtRecordCount === records.length &&
-      this._loweredAtTransformCount === transformCount
-    ) {
-      return this._loweredBackend;
-    }
+    const inputsKey = this.session.lowerInputsKey();
+    const cacheFresh = this._loweredAtRecordCount === records.length
+      && this._loweredAtTransformCount === transformCount
+      && this._loweredAtInputsKey === inputsKey;
     const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
-    // Reuse the session's last full lower when nothing it depends on changed.
+    // The session's last full lower is param-keyed. A param edit republishes
+    // it (`params.update`) with the new solids; prefer that over this Shape's
+    // private cache, which was filled on the previous lower.
     const reused = this.session.reusableLoweredShape(this.id);
     if (reused instanceof MeshBackend) {
       this._loweredMeshBackend = reused;
       this._loweredAtRecordCount = records.length;
       this._loweredAtTransformCount = transformCount;
-      throw new Error('Shape.lower(): display mesh body has no BRep backend; solid operations are unavailable.');
+      this._loweredAtInputsKey = inputsKey;
+      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
     }
     if (reused instanceof OcctBackend) {
       this._loweredBackend = reused;
       this._loweredAtRecordCount = records.length;
       this._loweredAtTransformCount = transformCount;
+      this._loweredAtInputsKey = inputsKey;
       return reused;
+    }
+    if (this._loweredMeshBackend && cacheFresh) {
+      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
+    }
+    if (this._loweredBackend && cacheFresh) {
+      return this._loweredBackend;
     }
     const { RecomputeEngine } = await import('../compute/recomputeEngine');
     const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
     if (!this.session.importedGeometry.has(this.id)) await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));
-    const pending = this.session.snapshotFullLower(new Map());
+    const track = trackFullLower(this.session, (warning) => this.session.warnings.push(warning));
     const r = await engine.run(
       records as readonly import('../../shared/intent/featureRecord').FeatureRecord[],
       {
         paramTable: this.session.paramTable,
-        warningSink: (warning) => this.session.warnings.push(warning),
+        warningSink: track.warningSink,
         warningPhase: 'build',
         gatedFeatureNames: this.session.gatedFeatureNames,
       },
@@ -1446,7 +1470,7 @@ export class Shape {
     for (const [id, sh] of r.shapes) {
       this.session.cachedShapes.set(id, sh);
     }
-    this.session.lastFullLower = { ...pending, shapes: r.shapes };
+    track.publish(r);
     const shape = r.shapes.get(this.id);
     if (!shape) {
       throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);
@@ -1455,6 +1479,7 @@ export class Shape {
     this._loweredBackend = shape;
     this._loweredAtRecordCount = records.length;
     this._loweredAtTransformCount = transformCount;
+    this._loweredAtInputsKey = inputsKey;
     return shape;
   }
 }

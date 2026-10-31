@@ -4,14 +4,16 @@
 // script text as the "STEP", and the pre-check calls a STEP valid unless it
 // contains the word OPEN. The kernel stages have their own tests
 // (validity.test.ts, the CLI export tests).
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { MockAgentClient } from '../../agent';
-import type { EvaluateResult } from '../../types';
+import { TransportFailure } from '../../agentOpenAICompat';
+import type { AgentClient, AgentResponse, EvaluateResult } from '../../types';
 import type { CadGenBenchTask } from './dataset';
 import { passthroughScript, runAll, runTask, type PipelineConfig } from './pipeline';
+import type { EditPromotionResult } from './editPromotion';
 import { readTaskState } from './state';
 import { candidatePath } from './submission';
 import type { StepValidity } from './validity';
@@ -76,6 +78,7 @@ function cfg(runDir: string, patch: Partial<PipelineConfig> = {}): PipelineConfi
     maxAttempts: 3,
     maxTokens: 1000,
     editFallback: 'none',
+    editPromotion: 'off',
     keepInvalid: false,
     ...stubs(),
     ...patch,
@@ -83,6 +86,26 @@ function cfg(runDir: string, patch: Partial<PipelineConfig> = {}): PipelineConfi
 }
 
 const reply = (code: string, tokens = 10) => ({ text: '```ts\n' + code + '\n```', tokens_in: tokens, tokens_out: tokens / 2 });
+
+function promo(
+  status: EditPromotionResult['status'],
+  classification: EditPromotionResult['classification'],
+  reason: string,
+): EditPromotionResult {
+  return {
+    status,
+    classification,
+    reason,
+    expectedDirection: 'any',
+    volumeDeltaMm3: 0,
+    volumeToleranceMm3: 2,
+    faceDelta: 0,
+    bboxDeltaMm: 0,
+    holeCountBefore: 0,
+    holeCountAfter: 0,
+    holeChangeMm: 0,
+  };
+}
 
 describe('runTask without an LLM', () => {
   it('records generation as needs_key and writes no candidate', async () => {
@@ -108,6 +131,97 @@ describe('runTask without an LLM', () => {
 });
 
 describe('runTask with an LLM', () => {
+  it('repairs the earlier script when the last reply has no code block', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-prose-keep-'));
+    const runDir = join(root, 'run');
+    const counter = { exports: 0, repairs: 0 };
+    const agent = new MockAgentClient([
+      reply('THROW'),
+      { text: 'I cannot provide a corrected script.', tokens_in: 1, tokens_out: 1 },
+    ]);
+    const s = await runTask(tasks(root).edit, cfg(runDir, { agent, maxAttempts: 2, ...stubs(counter) }));
+    expect(counter.repairs).toBe(1);
+    expect(s.status).toBe('failed');
+    expect(s.error).toMatch(/cli\.script-exception/);
+    expect(s.error).not.toMatch(/no script extracted/);
+  });
+
+  it('feeds a generation ledger mismatch back before accepting a corrected solid', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-ledger-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([
+      reply('// ledger: extents 10 10 10; volume 1000\nreturn box(1,1,1);'),
+      reply('// ledger: extents 1 1 1; volume 1\nreturn box(1,1,1);'),
+    ]);
+    const measured: StepValidity = {
+      valid: true, solidCount: 1, shellCount: 1, faceCount: 6, brepValid: true,
+      watertight: true, meshManifold: true, triangleCount: 12, errors: [],
+      extentsMm: [1, 1, 1], volumeMm3: 1,
+    };
+    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, precheck: async () => measured }));
+    expect(s).toMatchObject({ status: 'valid', attempts: 2 });
+    expect(agent.calls[1].messages.at(-1)?.content).toMatch(/cadgenbench\.ledger-mismatch/);
+    expect(agent.calls[1].messages.at(-1)?.content).toMatch(/10\.000/);
+    expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toContain('extents 1 1 1');
+  });
+
+  it('submits a valid solid when the ledger still disagrees on the last attempt', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-ledger-last-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('// ledger: extents 10 10 10; volume 1000\nreturn box(1,1,1);')]);
+    const s = await runTask(tasks(root).gen, cfg(runDir, {
+      agent,
+      maxAttempts: 1,
+      precheck: async () => ({
+        valid: true, solidCount: 1, shellCount: 1, faceCount: 6, brepValid: true,
+        watertight: true, meshManifold: true, triangleCount: 12, errors: [],
+        extentsMm: [1, 1, 1], volumeMm3: 1,
+      }),
+    }));
+    expect(s.status).toBe('valid');
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(true);
+  });
+
+  it('asks for code when the model replies with prose instead of exporting prose', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-prose-'));
+    const count = {exports:0, repairs:0};
+    const agent = new MockAgentClient([{text:'Please provide another view.', tokens_in:1, tokens_out:1}, reply('return box(1,1,1);')]);
+    const result = await runTask(tasks(root).gen, cfg(join(root,'run'), {...stubs(count), agent}));
+    expect(result.status).toBe('valid');
+    expect(count.exports).toBe(1);
+    expect(agent.calls[1].messages.at(-1)?.content).toContain('Could not extract a code block');
+  });
+
+  it('keeps the valid checkpoint if visual refinement proposes invalid geometry', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-visual-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return box(1,1,1);'), reply('OPEN')]);
+    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, visualReview: true, visualRender: async () => [{ mediaType:'image/png', data:'render' }] }));
+    expect(s.status).toBe('valid');
+    expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toBe('return box(1,1,1);');
+    expect(agent.calls).toHaveLength(2);
+    expect(readFileSync(join(runDir, 'tasks/101/visual-response.md'), 'utf8')).toContain('OPEN');
+    expect(existsSync(join(runDir, 'tasks/101/visual-view-1.png'))).toBe(true);
+  });
+
+  it('uses a visually revised candidate only after the validity gate passes', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-visual-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return box(1,1,1);'), reply('return box(2,2,2);'), {text:'B', tokens_in:1,tokens_out:1}]);
+    const paths: string[] = [];
+    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, visualReview: true, visualRender: async path => { paths.push(path); return [{ mediaType:'image/png', data:'render' }]; }, visualComparison: async (a,b) => { paths.push(a,b); return [[{mediaType:'image/png', data:'a'}],[{mediaType:'image/png', data:'b'}]]; } }));
+    expect(s.status).toBe('valid');
+    expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toBe('return box(2,2,2);');
+    expect(readFileSync(join(runDir, 'tasks/101/model.kcad.ts'), 'utf8')).toBe('return box(2,2,2);');
+    expect(readFileSync(join(runDir, 'tasks/101/model.step'), 'utf8')).toBe('return box(2,2,2);');
+    expect(readFileSync(join(runDir, 'tasks/101/visual-checkpoint.step'), 'utf8')).toBe('return box(1,1,1);');
+    expect(readFileSync(join(runDir, 'tasks/101/visual-comparison.md'), 'utf8')).toBe('B\n');
+    expect(existsSync(join(runDir, 'tasks/101/visual-revised-view-1.png'))).toBe(true);
+    expect(existsSync(join(runDir, 'tasks/101/visual-comparison-view-1.png'))).toBe(true);
+    expect(paths.map(path => basename(path))).toEqual(['model.step', 'model.step', 'visual-review.step']);
+    expect(agent.calls[2].messages[0].content).not.toContain('## Output contract');
+    expect(agent.calls[2].messages[0].content).toContain('Reproduce it.');
+  });
   it('feeds a validity failure back as a repair prompt and accepts the fixed candidate', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
     const runDir = join(root, 'run');
@@ -137,6 +251,36 @@ describe('runTask with an LLM', () => {
     }
   });
 
+  it('keeps a candidate the official gate accepts after the local pre-check rejects it', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return OPEN;')]);
+    const s = await runTask(tasks(root).gen, cfg(runDir, {
+      agent,
+      maxAttempts: 1,
+      official: async () => ({ valid: true, detail: 'pass' }),
+    }));
+    expect(s.status).toBe('valid');
+    expect(s.precheck?.valid).toBe(false);
+    expect(s.official).toMatchObject({ valid: true });
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(true);
+  });
+
+  it('drops a candidate the official gate rejects even when the local pre-check accepts it', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return box(1, 1, 1);')]);
+    const s = await runTask(tasks(root).gen, cfg(runDir, {
+      agent,
+      maxAttempts: 1,
+      official: async () => ({ valid: false, detail: 'mesh not closed: 4 open edges' }),
+    }));
+    expect(s.status).toBe('invalid');
+    expect(s.precheck?.valid).toBe(true);
+    expect(s.official).toMatchObject({ valid: false, detail: 'mesh not closed: 4 open edges' });
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(false);
+  });
+
   it('runs one deterministic repair when the script does not evaluate, then reports the diagnostic', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
     const counter = { exports: 0, repairs: 0 };
@@ -147,19 +291,123 @@ describe('runTask with an LLM', () => {
     expect(s.error).toMatch(/cli\.script-exception: ReferenceError: holeRadius/);
   });
 
-  it('falls back to the unchanged input for an editing task when asked', async () => {
+  it('never silently falls back to the unchanged input after a real edit fails', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
     const runDir = join(root, 'run');
     const agent = new MockAgentClient([reply('THROW')]);
     const s = await runTask(tasks(root).edit, cfg(runDir, { agent, maxAttempts: 1, editFallback: 'passthrough' }));
-    expect(s).toMatchObject({ status: 'valid', mode: 'llm', fallback: 'passthrough' });
+    expect(s).toMatchObject({ status: 'failed', mode: 'llm' });
+    expect(s.fallback).toBeUndefined();
+    expect(s.error).toMatch(/cli\.script-exception/);
     // The editing prompt names the import the script must use.
     expect(agent.calls[0].messages[0].content).toMatch(/lib\.fromSTEP\('\.\/input\.step'\)/);
-    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe(passthroughScript());
+    expect(existsSync(candidatePath(runDir, '201'))).toBe(false);
+  });
+
+  it('feeds a no-op promotion verdict back and accepts the repaired edit', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return base;'), reply('return edited;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 2,
+        editPromotion: async ({ scriptPath }) =>
+          readFileSync(scriptPath, 'utf8').includes('base')
+            ? promo('failed', 'no-op', 'the exported solid is unchanged')
+            : promo('accepted', 'edited', 'real edit'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'valid', mode: 'llm', attempts: 2 });
+    expect(agent.calls[1].messages[2].content).toMatch(/cadgenbench\.edit\.no-op/);
+    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return edited;');
+  });
+
+  it('rejects a wrong-direction candidate and repairs it', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return backwards;'), reply('return forwards;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 2,
+        editPromotion: async ({ scriptPath }) =>
+          readFileSync(scriptPath, 'utf8').includes('backwards')
+            ? promo('failed', 'wrong-direction', 'volume moved the wrong way')
+            : promo('accepted', 'edited', 'real edit'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'valid', attempts: 2 });
+    expect(agent.calls[1].messages[2].content).toMatch(/cadgenbench\.edit\.wrong-direction/);
+    expect(readFileSync(candidatePath(runDir, '201'), 'utf8')).toBe('return forwards;');
+  });
+
+  it('submits nothing when every attempt is a no-op', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = new MockAgentClient([reply('return base;')]);
+    const s = await runTask(
+      tasks(root).edit,
+      cfg(runDir, {
+        agent,
+        maxAttempts: 1,
+        editPromotion: async () => promo('failed', 'no-op', 'the exported solid is unchanged'),
+      }),
+    );
+    expect(s).toMatchObject({ status: 'failed', mode: 'llm' });
+    expect(s.error).toMatch(/edit promotion.*cadgenbench\.edit\.no-op/);
+    expect(existsSync(candidatePath(runDir, '201'))).toBe(false);
   });
 });
 
 describe('runAll resume', () => {
+  it('reruns rather than trusting a modified STEP from a valid prior task', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-tamper-'));
+    const runDir = join(root, 'run');
+    const { gen } = tasks(root);
+    const scripts = join(root, 'scripts');
+    mkdirSync(scripts);
+    writeFileSync(join(scripts, '101.kcad.ts'), 'return box(2, 2, 2);');
+    const config = cfg(runDir, { scriptsFrom: scripts });
+    await runAll([gen], config, { workers: 1, retryFailed: false });
+    writeFileSync(candidatePath(runDir, '101'), 'modified');
+    const result = (await runAll([gen], config, { workers: 1, retryFailed: false }))[0];
+    expect(result).toMatchObject({ status: 'valid', resumed: false });
+    expect(readFileSync(candidatePath(runDir, '101'), 'utf8')).toBe('return box(2, 2, 2);');
+  });
+  it('reruns a previously valid task when its submission STEP is missing', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-resume-'));
+    const runDir = join(root, 'run');
+    const { gen } = tasks(root);
+    const scripts = join(root, 'scripts');
+    mkdirSync(scripts);
+    writeFileSync(join(scripts, '101.kcad.ts'), 'return box(2, 2, 2);');
+    const config = cfg(runDir, { scriptsFrom: scripts });
+    expect((await runAll([gen], config, { workers: 1, retryFailed: false }))[0].status).toBe('valid');
+    rmSync(candidatePath(runDir, '101'));
+    const rerun = (await runAll([gen], config, { workers: 1, retryFailed: false }))[0];
+    expect(rerun).toMatchObject({ status: 'valid', resumed: false });
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(true);
+  });
+  it('does not submit a stale candidate when a replacement attempt fails', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const { gen } = tasks(root);
+    const scripts = join(root, 'scripts');
+    mkdirSync(scripts);
+    writeFileSync(join(scripts, '101.kcad.ts'), 'return box(2, 2, 2);');
+    const config = cfg(runDir, { scriptsFrom: scripts });
+    expect((await runTask(gen, config)).status).toBe('valid');
+    writeFileSync(join(scripts, '101.kcad.ts'), 'THROW');
+    expect((await runTask(gen, config)).status).toBe('failed');
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(false);
+    const archive = join(runDir, 'tasks/101/previous-candidates');
+    const archived = readdirSync(archive);
+    expect(archived).toHaveLength(1);
+    expect(readFileSync(join(archive, archived[0]), 'utf8')).toBe('return box(2, 2, 2);');
+  });
   it('skips finished tasks and reruns needs_key once a producer exists', async () => {
     const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
     const runDir = join(root, 'run');
@@ -191,5 +439,50 @@ describe('runAll resume', () => {
       ['valid', 'scripts-from', false],
     ]);
     expect(counter.exports).toBe(3);
+  });
+
+  it('records a transport failure as infra_error with the calls and tokens it paid for', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = {
+      calls: 0,
+      async generate(): Promise<AgentResponse> {
+        this.calls += 1;
+        throw new TransportFailure('transport: fetch failed');
+      },
+    } as unknown as AgentClient;
+    const s = await runTask(tasks(root).gen, cfg(runDir, { agent, maxAttempts: 2 }));
+    expect(s.status).toBe('infra_error');
+    expect(s.error).toContain('transport: fetch failed');
+    expect(s.attempts).toBe(1);
+    expect(s.tokensIn).toBe(0);
+    // Nothing was submitted: an environment failure is not a candidate verdict.
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(false);
+  });
+
+  it('retries an infra_error task once and records the recovered candidate', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cgb-pipe-'));
+    const runDir = join(root, 'run');
+    const agent = {
+      calls: 0,
+      async generate(): Promise<AgentResponse> {
+        this.calls += 1;
+        if (this.calls === 1) throw new TransportFailure('transport: fetch failed');
+        return { text: '```ts\nreturn box(1, 1, 1);\n```', tokens_in: 5, tokens_out: 2 };
+      },
+    } as unknown as AgentClient;
+    const task = tasks(root).gen;
+    const states = await runAll([task], cfg(runDir, { agent, maxAttempts: 1 }), {
+      workers: 1,
+      retryFailed: false,
+      retryInfra: true,
+      infraRetryBackoffMs: 1,
+    });
+    expect(agent.calls).toBe(2);
+    expect(states[0].status).toBe('valid');
+    expect(states[0].resumed).toBe(false);
+    expect(existsSync(candidatePath(runDir, '101'))).toBe(true);
+    // The retry's terminal state is what resume sees next time.
+    expect(readTaskState(runDir, '101')?.status).toBe('valid');
   });
 });

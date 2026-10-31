@@ -15,7 +15,7 @@ import type { CatalogPartMetadata } from '../parts/types';
 export type ShapeTransform =
   | { op: 'translate'; vec: Vec3Param }
   | { op: 'rotateAxis'; axis: Vec3Param; degrees: Param; pivot?: Vec3Param }
-  | { op: 'scale'; sx: number; sy: number; sz: number }
+  | { op: 'scale'; sx: number | Param; sy: number | Param; sz: number | Param }
   | { op: 'reflect'; plane: PlaneSpec };
 
 /** Map of user-chosen label → resolution target. Stored under

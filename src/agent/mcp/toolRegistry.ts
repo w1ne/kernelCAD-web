@@ -4,6 +4,7 @@ import { getMcpViewerResult } from './liveViewer';
 import { selectionToolEntries } from './registry/selectionTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
+import { toolTitle } from './toolTitles';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
 import { feaToolEntries } from './registry/feaTools';
@@ -21,22 +22,19 @@ import {
 } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
 import { importToolEntries } from './registry/importTools';
-import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
-import { wireRoutingToolEntries } from './registry/wireRoutingTools';
-import { handoffToolEntries } from './registry/handoffTools';
 import { explodeViewToolEntries } from './registry/explodeViewTools';
-import { partModelToolEntries } from './registry/partModelTools';
-import { bomToolEntries } from './registry/bomTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
+import { blockoutToolEntries } from './registry/blockoutTools';
+import { assetManifestToolEntries } from './registry/assetManifestTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
@@ -103,31 +101,31 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...selectionToolEntries,
   // Appended at the tail: import the user's own STEP/STL as a base body.
   ...importToolEntries,
-  // Appended at the tail: fabrication handoff (fab pack + quote links).
-  ...fabricationToolEntries,
   // Appended at the tail: manufacturability review (FDM + CNC).
   ...manufacturingToolEntries,
   ...rayPickToolEntries,
   ...nurbsToolEntries,
   ...pointCloudToolEntries,
-  ...wireRoutingToolEntries,
-  ...handoffToolEntries,
   ...meshBooleanToolEntries,
   ...explodeViewToolEntries,
   ...surfaceBlendToolEntries,
-  ...partModelToolEntries,
-  ...bomToolEntries,
+  // Appended at the tail: generic parts-list -> placeholder assembly script.
+  ...blockoutToolEntries,
+  ...assetManifestToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
- *  (TOOL_ANNOTATIONS) and the structured-output schema (TOOL_OUTPUT_SCHEMAS).
- *  Both live in one central map each so the surface is classified in a single
- *  place and the consistency gate can enforce coverage. */
+ *  (TOOL_ANNOTATIONS), human titles (TOOL_TITLES), and the structured-output
+ *  schema (TOOL_OUTPUT_SCHEMAS). Each lives in one central map so the surface
+ *  is classified in a single place and the consistency gate can enforce coverage. */
 function withMetadata(def: McpToolDefinition): McpToolDefinition {
-  const annotations = TOOL_ANNOTATIONS[def.name];
+  const base = TOOL_ANNOTATIONS[def.name];
+  const title = toolTitle(def.name);
+  const annotations = base ? { ...base, title } : undefined;
   const outputSchema = TOOL_OUTPUT_SCHEMAS[def.name];
   return {
     ...def,
+    title,
     ...(annotations ? { annotations } : {}),
     ...(outputSchema ? { outputSchema } : {}),
   };

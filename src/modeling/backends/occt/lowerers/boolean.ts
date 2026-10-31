@@ -16,18 +16,44 @@ import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { intersectionEmptyDiagnostic } from '../additiveNoOp';
 import { subtractiveNoOpDiagnostic } from '../subtractiveNoOp';
 import { built, type LowerContext, type LowerOutcome } from './context';
+import { stampSolid } from '../../../../kernel/naming/operationLineage';
+import type { EdgeHistoryMap, HistoryMap } from '../../../../kernel/naming/evolutionRecord';
 
 /** Wrap a history-aware boolean result back into an `OcctBackend` with the
  *  merged face/edge lineage. `replicad.cast` downcasts the raw TopoDS_Shape to
  *  the correct OCCT subtype (Solid or Compound) and wraps it in the matching
  *  Replicad class; boolean ops always yield a 3D solid or compound. */
+function mergeEdges(
+  inputMaps: readonly (EdgeHistoryMap | undefined)[],
+  result: BooleanHistoryResult,
+): EdgeHistoryMap {
+  const out: EdgeHistoryMap = new Map();
+  for (const inputMap of inputMaps) {
+    if (!inputMap) continue;
+    for (const [hash, lineage] of inputMap) {
+      if (result.deletedEdges.has(hash)) continue;
+      const children = result.edgeHistory.get(hash);
+      if (children && children.length > 0) {
+        for (const child of children) if (!out.has(child)) out.set(child, lineage);
+      } else if (!out.has(hash)) out.set(hash, lineage);
+    }
+  }
+  return out;
+}
+
 function wrapBooleanResult(
   result: BooleanHistoryResult,
-  newMap: ReturnType<typeof mergeBooleanHistoryMany>,
+  faceMap: HistoryMap,
+  edgeMap: EdgeHistoryMap,
+  featureId: string,
 ): OcctBackend {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrapped = replicad.cast(result.shape as any) as replicad.Shape3D;
-  return new OcctBackend(wrapped, undefined, newMap);
+  const probe = new OcctBackend(wrapped);
+  const stamped = stampSolid(faceMap, probe.faceHashes(), edgeMap, probe.edgeHashes(), featureId);
+  const out = new OcctBackend(wrapped, undefined, stamped.historyMap);
+  out.edgeHistoryMap = stamped.edgeHistoryMap;
+  return out;
 }
 
 /** Fold the tools one at a time, merging lineage pair by pair (intersection). */
@@ -42,7 +68,12 @@ function foldPairwise(
     const result = intersectWithHistory(acc, c);
     const recovered = booleanRecoveryDiagnostic(r.id, `boolean ${op}`, result);
     if (recovered) ctx.diagnostics.push(recovered);
-    acc = wrapBooleanResult(result, mergeBooleanHistory(acc.historyMap, c.historyMap, result));
+    acc = wrapBooleanResult(
+      result,
+      mergeBooleanHistory(acc.historyMap, c.historyMap, result),
+      mergeEdges([acc.edgeHistoryMap, c.edgeHistoryMap], result),
+      r.id,
+    );
   }
   return acc;
 }
@@ -67,7 +98,7 @@ function runManyToolBoolean(
     [acc.historyMap, ...cutters.map((c) => c.historyMap)],
     result,
   );
-  return wrapBooleanResult(result, newMap);
+  return wrapBooleanResult(result, newMap, mergeEdges([acc.edgeHistoryMap, ...cutters.map((c) => c.edgeHistoryMap)], result), r.id);
 }
 
 /** `boolean` — folds every `cutter_*` input into `base` with the history-aware
@@ -104,7 +135,9 @@ export function lowerBoolean(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     throw new Error(`Unknown boolean op: ${op}`);
   }
   const shape: ShapeBackend = acc;
-  if (volumeBeforeCut !== null) {
+  // A clearance cut (joint.clevis tongue pocket) may legitimately find no
+  // material to remove; it is declared so at capture time.
+  if (volumeBeforeCut !== null && r.metadata?.clearanceCut !== true) {
     const noop = subtractiveNoOpDiagnostic({
       featureId: r.id,
       opLabel: 'boolean difference',

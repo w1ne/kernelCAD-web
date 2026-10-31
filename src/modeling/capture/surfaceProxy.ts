@@ -13,6 +13,32 @@ import { formatScalarForError } from '../../shared/intent/types';
 /** Map a cutter to the `byRef` discriminant stored on `SurfaceTrimData`.
  *  A Surface is referenced by id; a BRep body (Shape) is referenced as a
  *  feature so the dep graph lowers it before the trim resolves. */
+function featureIdOfRef(ref: { kind: string; id?: string; featureId?: string; surfaceId?: string }): string | undefined {
+  if (ref.kind === 'feature') return ref.id;
+  if (ref.kind === 'face' || ref.kind === 'edge' || ref.kind === 'vertex') return ref.featureId;
+  return undefined;
+}
+
+/** Feature ids named by a surface record: loft sections, Coons curves, trim cutters. */
+export function namedSurfaceFeatureIds(session: CaptureSession, surfaceId: string, seen = new Set<string>()): string[] {
+  if (seen.has(surfaceId)) return [];
+  seen.add(surfaceId);
+  const rec = session.getSurfaceRecord(surfaceId);
+  if (!rec) return [];
+  const data = rec.data;
+  if (data.kind === 'surfaceFromCurves') return [...data.sectionIds];
+  if (data.kind === 'coonsPatch') return [...data.curveIds];
+  if (data.kind !== 'surfaceTrim') return [];
+  const ids = namedSurfaceFeatureIds(session, data.surfaceId, seen);
+  if ('featureRef' in data.byRef) {
+    const id = featureIdOfRef(data.byRef.featureRef);
+    if (id) ids.push(id);
+  } else {
+    ids.push(...namedSurfaceFeatureIds(session, data.byRef.surfaceId, seen));
+  }
+  return ids;
+}
+
 function refOf(by: SurfaceProxy | Shape): SurfaceTrimData['byRef'] {
   return by instanceof SurfaceProxy
     ? { surfaceId: by.id }
@@ -177,6 +203,12 @@ export class SurfaceProxy implements SurfaceRecordCarrier {
       for (let i = 0; i < surfRec.data.sectionIds.length; i++) {
         inputs[`section_${i}`] = { kind: 'feature', id: surfRec.data.sectionIds[i] };
       }
+    }
+    // Coons curves (and sections nested under a trim) live only on the
+    // surface record. Copy them so a param edit of a boundary curve
+    // re-lowers this solid.
+    for (const fid of namedSurfaceFeatureIds(this.session, this.id)) {
+      inputs[`src_${fid}`] = { kind: 'feature', id: fid };
     }
     return inputs;
   }

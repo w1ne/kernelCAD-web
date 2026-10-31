@@ -21,7 +21,7 @@
 // instead of inferring overlap visually from a render.
 
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend, analysisBodyOf } from '../../kernel/backends/occt/occtBackend';
 import type { Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { overlapThicknessMm } from './jointContactCap';
@@ -211,13 +211,16 @@ export function detectInterferences(
   // SO-100 arm and, with GC-deferred frees, fragmented the WASM heap until
   // OCCT aborted on pose 8 of 14. The originals are never touched.
   const uncheckedPairs = listDisplayMeshPairs(scene.parts);
+  // Each part is measured through its analysis body: a catalog fastener with
+  // a modeled thread is checked as its nominal envelope (analysisBodyOf).
   const transformed: PosedPart[] = scene.parts.filter((p) => p.shape instanceof OcctBackend).map((p) => {
-    const posed = (p.shape as OcctBackend).located(p.worldTransform);
+    const body = analysisBodyOf(p.shape) as OcctBackend;
+    const posed = body.located(p.worldTransform);
     return {
       name: p.name,
       shape: posed,
       bbox: posed.boundingBox(),
-      source: p.shape as object,
+      source: body as object,
       worldTransform: p.worldTransform,
       frameBounds: new Map<number, Bounds>(),
     };

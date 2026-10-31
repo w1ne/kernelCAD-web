@@ -25,6 +25,7 @@ import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 import { transformFeatureMesh } from './transformMesh';
 import { computeFeatureOwnership, type FeatureOwnership } from './featureOwnership';
 import { Transform } from '../../shared/runtime/se3';
+import { attachMaterialUVs } from './planarUv';
 import type {
   AttributeShadowingWarning,
   Bounds,
@@ -278,13 +279,14 @@ function transformedIndexedMeshBounds(positions: Float32Array, transform: Transf
 
 /** Selection ↔ code link data of one part mesh (see `featureOwnership.ts`). */
 type PartLinkData = FeatureOwnership & { edgeRanges?: number[] };
-type CachedScenePartMesh = { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array; link?: PartLinkData };
+type CachedScenePartMesh = { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; solidCount?: number; edges?: Float32Array; link?: PartLinkData };
 type ScenePartMeshCache = Map<string, CachedScenePartMesh>;
 
 interface ResolvedScenePartMesh {
   faces: FaceGeometry[];
   mesh?: { positions: Float32Array; normals: Float32Array; indices: Uint32Array };
   volume: number | undefined;
+  solidCount: number | undefined;
   edges: Float32Array | undefined;
   link: PartLinkData;
   fromCache: boolean;
@@ -316,6 +318,14 @@ function partLinkData(
   };
 }
 
+function solidCountOf(shape: ShapeBackend): number | undefined {
+  try {
+    return shape.solidComponents().length;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Resolve one assembly part's mesh, reusing (and populating) the pose cache. */
 function resolveScenePartMesh(
   featureId: FeatureId,
@@ -333,6 +343,7 @@ function resolveScenePartMesh(
     return {
       faces: cachedPart.faces,
       volume: cachedPart.volume,
+      solidCount: cachedPart.solidCount ?? solidCountOf(part.shape),
       edges: cachedPart.edges,
       link: cachedPart.link ?? {},
       fromCache: true,
@@ -341,7 +352,7 @@ function resolveScenePartMesh(
   }
   if (isDisplayMeshBackend(part.shape)) {
     const mesh = part.shape.getMesh();
-    return { faces: [], mesh, volume: undefined, edges: undefined, link: {}, fromCache: false, partCache };
+    return { faces: [], mesh, volume: undefined, solidCount: undefined, edges: undefined, link: {}, fromCache: false, partCache };
   }
   const rawShape = ctx.extractRawShape(part.shape);
   const meshed = meshShape(rawShape, ctx.previewMeshOptions);
@@ -358,6 +369,7 @@ function resolveScenePartMesh(
   }
   const faces = meshed.faces;
   const volume = meshed.volume;
+  const solidCount = solidCountOf(part.shape);
   const edges = meshed.edges;
   const link = partLinkData(part, rawShape, meshed, ctx);
   let nextCache = partCache;
@@ -368,9 +380,16 @@ function resolveScenePartMesh(
       nextCache = new Map();
       ctx.cachedAssemblyPartMeshes.set(featureId, nextCache);
     }
-    nextCache.set(part.name, { shape: part.shape, faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}), link });
+      nextCache.set(part.name, {
+        shape: part.shape,
+        faces,
+        ...(volume !== undefined ? { volume } : {}),
+        ...(solidCount !== undefined ? { solidCount } : {}),
+        ...(edges ? { edges } : {}),
+        link,
+      });
   }
-  return { faces, volume, edges, link, fromCache: false, partCache: nextCache };
+  return { faces, volume, solidCount, edges, link, fromCache: false, partCache: nextCache };
 }
 
 function isDisplayMeshBackend(
@@ -400,10 +419,14 @@ function emitScenePartMesh(
     faces: resolved.faces,
     ...(resolved.mesh ? { mesh: resolved.mesh } : {}),
     ...(resolved.volume !== undefined ? { volume: resolved.volume } : {}),
+    ...(resolved.solidCount !== undefined ? { solidCount: resolved.solidCount } : {}),
     ...(resolved.edges ? { edges: resolved.edges } : {}),
     ...resolved.link,
   };
-  if (!resolved.fromCache) ctx.attachPlanarUVs(local.faces);
+  if (!resolved.fromCache) {
+    attachMaterialUVs(local.faces, part.material);
+    ctx.attachPlanarUVs(local.faces);
+  }
   const extra = ctx.explodeOffsets?.get(part.name);
   const worldT = extra !== undefined
     ? Transform.translation(extra[0], extra[1], extra[2]).compose(part.worldTransform)
@@ -490,6 +513,7 @@ export function emitVirtualFeatureRecords(
         predecessors: [],
         faces: [],
         virtual: true,
+        solidCount: 0,
         ...meshIdentityFields({
           featureId: r.id,
           featureKind: r.kind,
@@ -682,6 +706,22 @@ export function finishMeshFeatures(
   shapes: ReadonlyMap<FeatureId, ShapeBackend>,
 ): MeshFeaturesResult {
   const bounds = buildMeshBounds(features, meshBounds);
+  const consumed = new Set(features.flatMap((feature) => feature.predecessors));
+  // Scene fan-out meshes use composite ids (`sceneId__partName`) while
+  // assemblyExport consumes the Scene feature id. When an export exists,
+  // its root mesh already represents those parts; don't count both forms.
+  const exportedScenes = new Set(
+    features
+      .filter((feature) => feature.featureKind === 'assemblyExport')
+      .flatMap((feature) => feature.predecessors),
+  );
+  const terminalFeatures = features.filter((feature) =>
+    !consumed.has(feature.featureId)
+    && !(feature.assemblyFeatureId !== undefined && exportedScenes.has(feature.assemblyFeatureId)),
+  );
+  const solidCount = terminalFeatures.every((feature) => feature.solidCount !== undefined)
+    ? terminalFeatures.reduce((count, feature) => count + (feature.solidCount ?? 0), 0)
+    : undefined;
   const { materialShadowingWarnings, colorShadowingWarnings } = collectShadowingWarnings(
     features,
     explicitMaterialByFeatureId,
@@ -696,6 +736,7 @@ export function finishMeshFeatures(
   return {
     features,
     bounds,
+    ...(solidCount !== undefined ? { solidCount } : {}),
     failedFeatureIds,
     materialShadowingWarnings,
     colorShadowingWarnings,

@@ -1,0 +1,15 @@
+{
+  "exactFileSet": true,
+  "fileSet": [
+    "Smoke Box.kcad.ts",
+    "manifest.json",
+    "parts/31c8c1919d07234327ee22f9886848b286f284bbe89a99eed352d6e6010290b3.brep"
+  ],
+  "originalName": "Smoke Box",
+  "color": {
+    "hex": "#2a6cbd",
+    "alpha": 1
+  },
+  "volumeMm3": 6000,
+  "assetHashMatches": true
+}

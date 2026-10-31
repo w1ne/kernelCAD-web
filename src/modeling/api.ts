@@ -24,19 +24,21 @@ import type {
   AnimationViewSpec,
 } from '../shared/intent/animationViewRecord';
 import type { DfmSpec, DfmSpecHandle } from '../shared/intent/dfmSpecRecord';
+import type { RequirementPredicate } from './requirements/predicates';
+import type { RequirementSelectionHandle } from './requirements/predicates';
 import type { TubeSpecMetadata } from '../shared/intent/tubeRecord';
 import type { TubeOptions, TubeSpec } from './capture/tubeRecords';
 import type { RailPoint } from './helix';
 import type { HermiteEndpoint } from '../kernel/geometry/hermiteG2';
 import type { SketchModule } from './sketch/index';
 import type { FontPath } from '../shared/fonts/fontPath';
+import type { FromStepOptions } from './parts/fromSTEP';
 import type { FromSTLOptions } from './parts/fromMeshFormats';
 import type { FetchPartOpts } from './parts/fetchPart';
 import type { FindPartOpts, FindPartResult } from './parts/findPart';
 import type { StandardParts } from './parts/standardParts';
 import type { PartRequest, StackRequest } from './parts/familyTable';
 import type { InsertRequest, InsertResult } from './parts/holeInsert';
-import type { FixtureParts } from './parts/fixtureParts';
 import type { PlacedStack } from './parts/placePart';
 import type { FromDXFOptions, FromSVGOptions } from './parts/fromVectorFormats';
 import type { ShapeList } from './selection/shapeList';
@@ -45,15 +47,12 @@ import type { SdfField } from './sdf/index';
 import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import type { ParamRef, TypedParamRef, Editable } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
+import type { AssetMetadataInput, AssetPresets } from '../shared/assets/assetSchema';
 import { q as queryNamespace } from '../kernel/naming/queryConstructors';
 import { makeJointNamespace } from './joints';
 import type {
   ClevisJoint,
   ClevisJointOptions,
-  ArticulatedDigitOptions,
-  ArticulatedDigitResult,
-  SupportedServoRevoluteOptions,
-  SupportedServoRevoluteResult,
 } from './joints';
 import {
   makePrimitiveMethods,
@@ -70,6 +69,7 @@ import { makePartsLib } from './apiPartsLib';
 import { makeNurbsSurfaceMethods, makeCurveMethods, makeSweepMethods } from './apiSurfaceMethods';
 import { makeModuleNamespaces } from './apiModuleNamespaces';
 import { makeCaptureMethods } from './apiCaptureMethods';
+import { makeRequirementMethods } from './apiRequirementMethods';
 import { makePolygonMethods, type FilletPolygonOptions, type PolygonPoint } from './apiPolygonMethods';
 import { makeThreadMethods } from './apiThreadMethods';
 import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
@@ -82,7 +82,13 @@ export interface ApiContext {
 }
 
 export interface PartsLib {
-  fromSTEP(path: string): Promise<Shape>;
+  /**
+   * Import a STEP file. Length units are normalized to millimetres.
+   * Native SolidWorks `.sldprt`/`.sldasm` files are refused — export to
+   * STEP AP214/AP242 first. Pass `opts.solid` to pick one body from a
+   * multi-body file.
+   */
+  fromSTEP(path: string, opts?: FromStepOptions): Promise<Shape>;
   /**
    * Import an OCCT native BREP file. Exact analytic surfaces + full topology
    * (no schema translation, no tessellation) — the result is a true B-rep
@@ -139,9 +145,6 @@ export interface PartsLib {
    * Returns the shape with seats applied plus one placed stack per hole.
    */
   insert(shape: Shape, request: InsertRequest): Promise<InsertResult>;
-  /** Machining-fixture hardware: T-slot nuts, clamping studs, flange nuts, strap
-   *  clamps and step blocks, keyed by the thread their clamping parts use. */
-  fixture: FixtureParts;
   standard: StandardParts;
 }
 
@@ -330,6 +333,11 @@ export interface KernelCadApi {
   param(name: string, defaultValue: `#${string}`, meta?: ParamMetadata): TypedParamRef<`#${string}`>;
   param(name: string, defaultValue: string, meta?: ParamMetadata): TypedParamRef<string>;
   params<R extends Record<string, number | boolean>>(decl: R): { [K in keyof R]: ParamRef<R[K]> };
+  params<D extends Record<string, BatchParamDeclaration>>(decl: D): { [K in keyof D]: BatchParamRef<D[K]> };
+  /** Set validated, asset-facing metadata; the content licence defaults to CC-BY-4.0. */
+  meta(metadata: AssetMetadataInput): void;
+  /** Declare named presets as maps of knob overrides. */
+  presets(presets: AssetPresets): void;
 
   path(): PathBuilder;
   /**
@@ -665,6 +673,50 @@ export interface KernelCadApi {
   dfmSpec(spec: DfmSpec): DfmSpecHandle;
 
   /**
+   * Declare a named, kernel-measured requirement. The predicate is authored
+   * with the helper globals below and reports into the same `requirements`
+   * ledger as `dfmSpec`, `feaStudy.minSafetyFactor` and mechanical intent.
+   * Example:
+   *
+   *   require('bolt-clearance', clearance(faces(bracket, { ofSurfaceType: 'CYLINDER' }), housing).gte(1.0));
+   *   require('hole-count', count(faces(plate, { ... })).eq(4));
+   *   require('wall-band', volume(body).between(1200, 1800));
+   *
+   * A requirement without a comparison THROWS (an enforcement gate must not
+   * silently disable itself). Each evaluation returns a `requirements` block
+   * with status / measured / limit / margin and the S1 fingerprints of the
+   * selections involved.
+   */
+  require(name: string, predicate: RequirementPredicate): void;
+
+  /** Minimum surface-to-surface distance between two selections, mm. */
+  clearance(a: unknown, b: unknown): RequirementPredicate;
+  /** Distance between two selections, mm. */
+  distance(a: unknown, b: unknown): RequirementPredicate;
+  /** Mass of a selection in kg (default 1000 kg/m^3). */
+  mass(selection: unknown): RequirementPredicate;
+  /** Volume of a selection in mm^3. */
+  volume(selection: unknown): RequirementPredicate;
+  /** Bounding-box size of a selection in mm; chain `.within({ x, y, z })`. */
+  bbox(selection: unknown): RequirementPredicate;
+  /** Centre of mass in mm; chain `.within(bands)` or `.between(lo, hi)`. */
+  centerOfMass(selection: unknown): RequirementPredicate;
+  /** Number of resolved faces/edges in a selection. */
+  count(selection: unknown): RequirementPredicate;
+  /** Largest inner-loop (hole) count across the selected faces. */
+  innerLoops(selection: unknown): RequirementPredicate;
+  /** Angle between two selections' directions, degrees. */
+  angle(a: unknown, b: unknown): RequirementPredicate;
+  /** Two selections share an axis. */
+  concentric(a: unknown, b: unknown): RequirementPredicate;
+  /** Two selections are coplanar. */
+  coplanar(a: unknown, b: unknown): RequirementPredicate;
+  /** Select all faces of `shape` matching `query` (default: every face). */
+  faces(shape: Shape, query?: import('../shared/intent/queryTypes').FaceQuery): RequirementSelectionHandle;
+  /** Select all edges of `shape` matching `query` (default: every edge). */
+  edges(shape: Shape, query?: EdgeQuery): RequirementSelectionHandle;
+
+  /**
    * Bent tube between two ends: straight legs joined by constant-radius
    * bends, built as one hollow solid in assembly space. `from` / `to` are
    * `part.port(name)` or `{ point, axis? }`; `via` lists the corner points in
@@ -702,36 +754,22 @@ export interface KernelCadApi {
    * `box`/`cylinder`/`union` — hand-rolled clevises are the leading cause
    * of mechanism-delivery failures (see `kernelcad-kinematic` SKILL.md
    * "Mechanism delivery — non-bypassable").
-   *
-   * `joint.supportedServoRevolute(arm, { name, mate, support, supportMount,
-   * output, axis, ... })` adds a seated servo actuator part, fastens its
-   * mount to a frame connector on the support part, and declares the
-   * `mechanicalJoint(...)` support contract for the driven revolute mate.
-   * The helper preflights names, refs, mate type, support/output presence,
-   * supportMount frame type, `axis` as the support-side axis connector of
-   * the named revolute mate, and body dimensions before mutating the
-   * assembly.
-   *
-   * `joint.articulatedDigit(arm, { name, parentMount, frame, segments,
-   * joints, clearanceMm, ... })` builds a planar chain directly in the
-   * supplied assembly. Its full 3D base frame maps canonical +X forward,
-   * +Y lift, and +Z pin axes before registration; every generated revolute
-   * package is a physical `joint.clevis(...)` with a support intent and
-   * clearance-bounded structural link. Omitted clevis dimensions use
-   * `joint.clevis`'s standard `withDefaults()` resolution unchanged. Fit options are soft reference checks
-   * only and never reduce the physical package. The root mount is an exterior
-   * plane: the generated base extends along local +X to its distal root pivot,
-   * so callers place the frame on an exterior palm surface with palm material
-   * behind that plane. Arbitrary interior mount clearance remains a candidate
-   * assembly review responsibility. This helper does not certify payload
-   * capacity or actuation.
    */
   joint: {
     clevis(opts: ClevisJointOptions): ClevisJoint;
-    supportedServoRevolute(arm: Assembly, opts: SupportedServoRevoluteOptions): SupportedServoRevoluteResult;
-    articulatedDigit(arm: Assembly, opts: ArticulatedDigitOptions): ArticulatedDigitResult;
   };
 }
+
+type BatchParamOptions = { default: number | boolean | string } & ParamMetadata;
+type BatchParamDeclaration = number | boolean | BatchParamOptions;
+type BatchParamDefault<T> = T extends { default: infer V } ? V : T;
+type BatchParamRef<T> = BatchParamDefault<T> extends number
+  ? ParamRef<BatchParamDefault<T>>
+  : BatchParamDefault<T> extends boolean
+    ? ParamRef<BatchParamDefault<T>>
+    : BatchParamDefault<T> extends string
+      ? TypedParamRef<BatchParamDefault<T>>
+      : never;
 
 export interface SpringOptions {
   length: number;
@@ -816,6 +854,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     ...makeSweepMethods(session),
     ...makeModuleNamespaces(session),
     ...makeCaptureMethods(session),
+    ...makeRequirementMethods(session),
 
     // joint.* is bound below after the api object is fully constructed, so
     // the namespace closes over the FINAL `api` (including box/cylinder/etc.).

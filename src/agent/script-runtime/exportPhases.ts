@@ -7,9 +7,10 @@ import { exportSceneDxf, exportShapeDxfProfile } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import { exportMeshObj, exportMeshUsd, type NamedMesh } from '../../kernel/export/meshFormats';
+import { buildRigMetadata } from '../../kernel/export/rigHierarchy';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
-import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
+import { releaseWorldFrameParts, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPatternWithHoles } from '../../modeling/sheetMetalFlatPattern';
 import { findRootSheetMetalRecord } from '../../modeling/sheetMetal';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
@@ -26,7 +27,6 @@ import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { sceneToConnectorManifest } from './connectorManifestExport';
-import { exportOrderPack, type OrderPackDeps } from './orderPackExport';
 import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
 import { exportSceneStlAsShells, freeformFuseOverBudget, meshPartsAsShells } from './sceneStlFuse';
 import {
@@ -41,6 +41,15 @@ import {
 } from './exportDiagnostics';
 import { getOC } from 'replicad';
 import { isValidShape } from '../../kernel/backends/occt/booleanRecovery';
+
+// STEP validity only needs a topology-preserving tessellation for the
+// downstream closed-manifold verdict. Use CADGenBench's minimum linear
+// deflection and angular tolerance so small edges on helical / threaded faces
+// do not trigger export-grade over-tessellation. The fixed minimum is
+// conservative for parts larger than 5 mm, where CADGenBench raises its
+// deflection with part scale.
+const STEP_VALIDITY_MESH_ANGULAR_DEFLECTION_RAD = 0.5;
+const STEP_VALIDITY_MESH_LINEAR_DEFLECTION_MM = 0.005;
 
 import type {
   ExportInput,
@@ -119,7 +128,6 @@ export async function exportAssemblyFormat(
   run: Awaited<ReturnType<typeof runScript>>,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
-  deps?: OrderPackDeps,
 ): Promise<ExportResult | undefined> {
   if (!isAssemblyFormat(format)) return undefined;
   const arm = resolveAssemblyArm(run);
@@ -149,16 +157,13 @@ export async function exportAssemblyFormat(
   if (format === 'bom-csv' || format === 'bom-json') {
     return exportBom(format, arm, run, diagnostics, featureCount);
   }
-  if (format === 'order-pack') {
-    return exportOrderPack(input, run, arm, diagnostics, featureCount, deps);
-  }
   return exportUsdIsaac(input, arm, diagnostics, featureCount);
 }
 
-type AssemblyFormat = 'urdf' | 'srdf' | 'sdf-gazebo' | 'usd-isaac' | 'bom-csv' | 'bom-json' | 'order-pack';
+type AssemblyFormat = 'urdf' | 'srdf' | 'sdf-gazebo' | 'usd-isaac' | 'bom-csv' | 'bom-json';
 
 function isAssemblyFormat(format: ExportInput['format']): format is AssemblyFormat {
-  return format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo' || format === 'usd-isaac' || format === 'bom-csv' || format === 'bom-json' || format === 'order-pack';
+  return format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo' || format === 'usd-isaac' || format === 'bom-csv' || format === 'bom-json';
 }
 
 /** Resolve the captured Assembly for a pure-XML export: the returned Scene's
@@ -353,12 +358,28 @@ function firstStepVerifyFailure(
 ): CompilerDiagnostic | undefined {
   for (const p of parts) {
     const partName = parts.length > 1 ? p.name : undefined;
-    if (!isValidShape(getOC(), p.shape.getReplicadShape().wrapped)) {
-      return brepInvalidDiagnostic(targetId, partName);
-    }
-    const report = verifyWatertight(meshShapeForExport(p.shape.getReplicadShape()));
-    if (!report.ok) return stlNotWatertightDiagnostic(report, targetId, partName, 'STEP mesh');
+    const failure = stepShapeVerifyFailure(p.shape, targetId, partName);
+    if (failure) return failure;
   }
+  return undefined;
+}
+
+/** Apply the STEP B-rep and downstream mesh gates to one exported shape. */
+function stepShapeVerifyFailure(
+  shape: OcctBackend,
+  targetId: string,
+  partName?: string,
+): CompilerDiagnostic | undefined {
+  const replicadShape = shape.getReplicadShape();
+  if (!isValidShape(getOC(), replicadShape.wrapped)) {
+    return brepInvalidDiagnostic(targetId, partName);
+  }
+  const report = verifyWatertight(meshShapeForExport(replicadShape, {
+    linear: STEP_VALIDITY_MESH_LINEAR_DEFLECTION_MM,
+    relative: false,
+    angularRad: STEP_VALIDITY_MESH_ANGULAR_DEFLECTION_RAD,
+  }));
+  if (!report.ok) return stlNotWatertightDiagnostic(report, targetId, partName, 'STEP mesh');
   return undefined;
 }
 
@@ -381,8 +402,13 @@ export async function exportSceneBackend(
     // defect at export time — the file is still written for inspection.
     const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
     if (verify) {
-      const failure = firstStepVerifyFailure(sceneToWorldFrameParts(scene), targetId);
-      if (failure) result.diagnostics.push(failure);
+      const parts = sceneToWorldFrameParts(scene);
+      try {
+        const failure = firstStepVerifyFailure(parts, targetId);
+        if (failure) result.diagnostics.push(failure);
+      } finally {
+        releaseWorldFrameParts(parts);
+      }
     }
     return result;
   }
@@ -396,11 +422,16 @@ export async function exportSceneBackend(
     return exportSceneGlb(input, scene, targetId, diagnostics, featureCount);
   }
   if (format === 'obj' || format === 'usd') {
-    const parts = sceneToWorldFrameParts(scene).map(part => ({
-      name: part.name,
-      mesh: meshShapeForExport(part.shape.getReplicadShape()),
-    }));
-    return { bytes: format === 'obj' ? exportMeshObj(parts) : exportMeshUsd(parts), featureCount, diagnostics };
+    const worldParts = sceneToWorldFrameParts(scene);
+    try {
+      const parts = worldParts.map(part => ({
+        name: part.name,
+        mesh: meshShapeForExport(part.shape.getReplicadShape()),
+      }));
+      return { bytes: format === 'obj' ? exportMeshObj(parts) : exportMeshUsd(parts), featureCount, diagnostics };
+    } finally {
+      releaseWorldFrameParts(worldParts);
+    }
   }
   if (format === 'stl' || format === 'gcode') {
     return exportSceneFusedMesh(input, format, scene, targetId, run, diagnostics, featureCount);
@@ -446,10 +477,14 @@ export async function exportScene3mf(
   const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
   try {
     const worldParts = sceneToWorldFrameParts(scene);
-    const { bytes, bedWarnings, meshWarnings } = await export3mfWithReportAsync(
-      worldParts, { assemblyName: scene.assemblyName, ...opts3mf },
-    );
-    return { bytes, featureCount, diagnostics: [...diagnostics, ...threeMfMeshDiagnostics(meshWarnings, targetId), ...threeMfBedDiagnostics(bedWarnings, targetId)] };
+    try {
+      const { bytes, bedWarnings, meshWarnings } = await export3mfWithReportAsync(
+        worldParts, { assemblyName: scene.assemblyName, ...opts3mf },
+      );
+      return { bytes, featureCount, diagnostics: [...diagnostics, ...threeMfMeshDiagnostics(meshWarnings, targetId), ...threeMfBedDiagnostics(bedWarnings, targetId)] };
+    } finally {
+      releaseWorldFrameParts(worldParts);
+    }
   } catch (e) {
     const notWatertight = notWatertightDiagnostic(e, diagnostics, featureCount, targetId);
     if (notWatertight) return notWatertight;
@@ -470,8 +505,30 @@ export async function exportSceneGlb(
   const optsGlb: ExportGlbOptions = { ...((input.options as ExportGlbOptions | undefined) ?? { format: 'glb' }), scriptDir: (input.options as ExportGlbOptions | undefined)?.scriptDir ?? input.scriptDir };
   try {
     const worldParts = sceneToWorldFrameParts(scene);
-    const bytes = await exportGlbAsync(worldParts, optsGlb);
-    return { bytes, featureCount, diagnostics };
+    try {
+      const bytes = await exportGlbAsync(worldParts, optsGlb, scene.rig);
+      const warnings = optsGlb.hierarchy !== 'flat' && scene.rig !== undefined
+        ? buildRigMetadata(scene.rig).warnings
+        : [];
+      return {
+        bytes,
+        featureCount,
+        diagnostics: [
+          ...diagnostics,
+          ...warnings.map((message): CompilerDiagnostic => ({
+            target: 'export-occt',
+            code: 'export.glb.rig-warning',
+            featureId: targetId,
+            severity: 'warn',
+            message,
+            hint: 'Inspect asset.extras.kernelcad.rigWarnings. Loop-closing mates remain separate from the strict glTF node tree; ball and planar mates are held fixed.',
+            nextAction: NEXT_ACTIONS['export.glb.rig-warning'],
+          })),
+        ],
+      };
+    } finally {
+      releaseWorldFrameParts(worldParts);
+    }
   } catch (e) {
     const dracoDiag = dracoConflictDiagnostic(e, diagnostics, featureCount, targetId);
     if (dracoDiag) return dracoDiag;
@@ -493,27 +550,38 @@ export async function exportSceneFusedMesh(
   featureCount: number,
 ): Promise<ExportResult> {
   const worldParts = sceneToWorldFrameParts(scene);
-  const fuseOverBudget = format === 'stl' ? freeformFuseOverBudget(worldParts) : undefined;
-  if (fuseOverBudget !== undefined) {
-    const verifyShells = (input.options as { verify?: boolean } | undefined)?.verify !== false;
-    return exportSceneStlAsShells(worldParts, fuseOverBudget, targetId, diagnostics, featureCount, verifyShells);
+  const temps: OcctBackend[] = [];
+  try {
+    const fuseOverBudget = format === 'stl' ? freeformFuseOverBudget(worldParts) : undefined;
+    if (fuseOverBudget !== undefined) {
+      const verifyShells = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+      return exportSceneStlAsShells(worldParts, fuseOverBudget, targetId, diagnostics, featureCount, verifyShells);
+    }
+    let fused: OcctBackend = worldParts[0]!.shape;
+    for (let i = 1; i < worldParts.length; i++) {
+      const next = fused.union(worldParts[i]!.shape);
+      if (fused !== worldParts[0]!.shape) temps.push(fused);
+      fused = next;
+    }
+    if (fused !== worldParts[0]!.shape) temps.push(fused);
+    if (format === 'gcode') {
+      return await sliceShapeToGcode(
+        fused, input.options as GcodeOptions | undefined, diagnostics, featureCount, targetId,
+        findDfmSpec(run.records)?.fdm?.buildDirection,
+      );
+    }
+    const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+    const { bytes, report } = await fused.exportSTLWithReportAsync();
+    if (verify && !report.ok) {
+      return fusedSeamFallback(worldParts, bytes, report, targetId, diagnostics, featureCount);
+    }
+    return { bytes, featureCount, diagnostics };
+  } finally {
+    for (const temp of temps) {
+      try { temp.dispose(); } catch { /* intermediate already freed */ }
+    }
+    releaseWorldFrameParts(worldParts);
   }
-  let fused: OcctBackend = worldParts[0]!.shape;
-  for (let i = 1; i < worldParts.length; i++) {
-    fused = fused.union(worldParts[i]!.shape);
-  }
-  if (format === 'gcode') {
-    return sliceShapeToGcode(
-      fused, input.options as GcodeOptions | undefined, diagnostics, featureCount, targetId,
-      findDfmSpec(run.records)?.fdm?.buildDirection,
-    );
-  }
-  const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
-  const { bytes, report } = await fused.exportSTLWithReportAsync();
-  if (verify && !report.ok) {
-    return fusedSeamFallback(worldParts, bytes, report, targetId, diagnostics, featureCount);
-  }
-  return { bytes, featureCount, diagnostics };
 }
 
 /**
@@ -682,13 +750,30 @@ export async function exportSingleShape(
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
+  // An empty result (a boolean that lost every face) would otherwise write a
+  // header-only STEP/STL and report success.
+  if (shape.isEmpty()) {
+    return {
+      bytes: new Uint8Array(),
+      featureCount,
+      diagnostics: [...diagnostics, {
+        target: 'export-occt',
+        code: 'export.no-shape',
+        severity: 'error',
+        featureId: targetId,
+        message: `The returned shape (${targetId}) is empty: it has no faces, so there is nothing to export.`,
+        hint: 'An upstream boolean or edit removed all material. Evaluate the script and check which feature first has zero volume.',
+        nextAction: NEXT_ACTIONS['export.no-shape'],
+      }],
+    };
+  }
   switch (format) {
     case 'stl':
       return exportSingleStl(input, shape, targetId, diagnostics, featureCount);
     case 'gcode':
       return exportSingleGcode(input, shape, targetId, run, diagnostics, featureCount);
     case 'step':
-      return exportSingleStep(shape, diagnostics, featureCount);
+      return exportSingleStep(input, shape, targetId, diagnostics, featureCount);
     case 'dxf':
       return exportShapeDxf(shape, targetId, input.options, run, diagnostics, featureCount);
     case '3mf':
@@ -752,12 +837,16 @@ async function exportSingleGcode(
 }
 
 async function exportSingleStep(
+  input: ExportInput,
   shape: OcctBackend,
+  targetId: string,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
   const bytes = stampStepOriginatingSystem(await shape.exportSTEPAsync(), attributionGenerator());
-  return { bytes, featureCount, diagnostics };
+  const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+  const failure = verify ? stepShapeVerifyFailure(shape, targetId) : undefined;
+  return { bytes, featureCount, diagnostics: failure ? [...diagnostics, failure] : diagnostics };
 }
 
 async function exportSingle3mf(

@@ -23,7 +23,7 @@ function validateMechanicalIntentName(field: string, value: string): void {
 
 function isTransmissionKind(value: unknown): value is TransmissionKind {
   return (
-    value === 'direct-horn' ||
+    value === 'direct' ||
     value === 'link-rod' ||
     value === 'four-bar' ||
     value === 'gear-pair' ||
@@ -351,7 +351,7 @@ export function recordTransmission(state: AssemblyState, name: string, opts: Tra
       'feature.invalid-args',
       `assembly.transmission.invalid-kind: '${String(opts.kind)}' is not a supported transmission kind.`,
       undefined,
-      `invalid-args.assembly.transmission-invalid-kind — use direct-horn, link-rod, four-bar, gear-pair, belt, or tendon.`,
+      `invalid-args.assembly.transmission-invalid-kind — use direct, link-rod, four-bar, gear-pair, belt, or tendon.`,
     );
   }
   validateTransmissionFields(name, opts);

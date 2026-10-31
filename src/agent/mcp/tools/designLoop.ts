@@ -3,7 +3,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { fileReadErrorMessage } from '../../../shared/diagnostics/fileReadError';
-import type { GripperApertureRequest } from '../../../modeling/mates/gripperAperture';
 import type { MechanismFitnessResult } from '../../../modeling/mates/mechanismFitness';
 import {
   runReviewPipeline,
@@ -11,12 +10,6 @@ import {
   type ReviewCadInput,
   type ReviewCadOutput,
 } from '../../review/reviewPipeline';
-import {
-  assertLikenessPublishReady,
-  type BBox,
-  type StillVerdict,
-  type WheelSpec,
-} from '../../likeness/publishGate';
 import {
   appendRevisionAssistPrompt,
   buildRevisionAssist,
@@ -31,6 +24,7 @@ import {
   scriptQualityFacts,
 } from '../../loop/designLoopQualityFacts';
 export { geometryReviewFacts } from '../../loop/designLoopQualityFacts';
+import type { ExternalRequirement, RequirementsLedger } from '../../../shared/intent/requirementRecord';
 import { consensusDecision, selectDesignLoopConsensus, type DesignLoopConsensus } from './designLoopConsensus';
 export type { DesignLoopConsensus } from './designLoopConsensus';
 
@@ -65,26 +59,12 @@ export interface DesignLoopInput {
   includeInterference?: boolean;
   epsilonMm3?: number;
   trackConnectors?: string[];
-  gripperAperture?: GripperApertureRequest;
   samplesPerMate?: number;
   combinatorial?: boolean;
   stopOnPass?: boolean;
   allowReviewWarnings?: string[];
   requireVisualReview?: boolean;
   requirePhysicalAcceptance?: boolean;
-  /**
-   * When 'automotive', accepted visualReview.checks must also cover organic-body
-   * likeness stills (side-body-over-wheels, side-cabin-aft, rear-haunch,
-   * ortho-proportions-vs-reference). Pair with verify({ check: 'body-likeness' }).
-   */
-  likenessProfile?: 'automotive';
-  /**
-   * Body-likeness inputs for the hard publish gate when likenessProfile is
-   * 'automotive'. Still verdicts may also be derived from visualReview.checks
-   * that use the automotive still codes. Missing inputs fail the attempt with
-   * reference.likeness.gate-required — do not claim success.
-   */
-  bodyLikeness?: DesignLoopBodyLikenessInput;
   /**
    * When true (default), failing attempts with repairable feature diagnostics
    * (boolean miss, oversized fillet, …) run bounded repair_script and attach
@@ -97,18 +77,9 @@ export interface DesignLoopInput {
   consensus?: boolean;
   outputRecordPath?: string;
   recordTitle?: string;
-}
-
-export interface DesignLoopBodyLikenessInput {
-  body_bbox?: BBox;
-  cabin_bbox?: BBox;
-  wheels?: WheelSpec[];
-  length_axis?: 'x' | 'y';
-  still_verdicts?: StillVerdict[];
-  require_stills?: boolean;
-  footprint_margin_mm?: number;
-  max_body_above_wheel_top_mm?: number;
-  min_overhang_mm?: number;
+  /** Call-time requirements to grade every attempt against. Reported in the
+   *  same ledger as script `require()` and never persisted. */
+  requirements?: readonly ExternalRequirement[];
 }
 
 export interface DesignLoopAttemptResult {
@@ -129,6 +100,8 @@ export interface DesignLoopAttemptResult {
   nextActionPrompt: string;
   /** Structured revision hints / patches for ChatGPT (agent still applies). */
   revisionAssist?: RevisionAssist;
+  /** One requirements ledger for this attempt. */
+  requirements?: RequirementsLedger;
 }
 
 export interface DesignLoopOutput {
@@ -278,8 +251,6 @@ async function runDesignLoopAttempt(
     review,
     allowReviewWarnings: input.allowReviewWarnings ?? [],
     requireVisualReview: input.requireVisualReview ?? true,
-    likenessProfile: input.likenessProfile,
-    bodyLikeness: input.bodyLikeness,
     visualReview: attempt.visualReview,
     source,
     goal: input.goal,
@@ -320,18 +291,15 @@ function buildReviewInput(
     includeInterference: input.includeInterference,
     epsilonMm3: input.epsilonMm3,
     trackConnectors: input.trackConnectors,
-    gripperAperture: input.gripperAperture,
     samplesPerMate: input.samplesPerMate,
     combinatorial: input.combinatorial,
     ...(requirePhysicalAcceptance
       ? {
-          includePhysicalUseCaseReachability: true,
-          includePhysicalUseCaseStatics: true,
-          includePhysicalUseCaseJointReactions: true,
-          includePhysicalUseCaseJointStructure: true,
+          physicalUseCaseLevel: 'reactions' as const,
           requirePhysicalUseCase: true,
         }
       : {}),
+    ...(input.requirements !== undefined ? { requirements: input.requirements } : {}),
   };
 }
 
@@ -385,8 +353,6 @@ function toAttemptResult(input: {
   review: ReviewCadOutput;
   allowReviewWarnings: readonly string[];
   requireVisualReview: boolean;
-  likenessProfile?: DesignLoopInput['likenessProfile'];
-  bodyLikeness?: DesignLoopBodyLikenessInput;
   visualReview?: DesignLoopVisualReview;
   source: string;
   goal: string;
@@ -411,15 +377,14 @@ function toAttemptResult(input: {
       message: diagnostic.message,
       hint: diagnostic.hint,
     })),
-    ...scriptQualityFacts(input.source, input.goal, input.allowReviewWarnings),
+    ...scriptQualityFacts(input.source, input.allowReviewWarnings),
     ...geometryReviewFacts(input.review.geometry, input.allowReviewWarnings),
     ...visualReviewFacts(
       input.requireVisualReview,
       input.visualReview,
       input.allowReviewWarnings,
-      input.likenessProfile,
     ),
-    ...bodyLikenessReviewFacts(input.likenessProfile, input.bodyLikeness, input.visualReview),
+    ...requirementFacts(input.review.requirements, input.allowReviewWarnings),
   ];
   const functional = input.review.ok;
   const qualityOk = reviewFacts.length === 0;
@@ -439,12 +404,32 @@ function toAttemptResult(input: {
     passedChecks: fitness !== undefined ? [...fitness.passedChecks] : [],
     blockingReasons,
     mechanismSummary: fitness?.mechanismSummary,
+    ...(input.review.requirements !== undefined ? { requirements: input.review.requirements } : {}),
     nextActionPrompt: functional && !qualityOk
       ? buildQualityRepairPrompt(reviewFacts)
       : input.review.ok
       ? fitness?.repairDirective ?? 'No repair needed. Preserve the current design and rerun review_cad after changes.'
       : buildFailureRepairPrompt(input.review, reviewFacts),
   };
+}
+
+/** Turn every failing / unmeasured ledger entry into a concrete repair fact.
+ *  The message already names measured, limit and selections; do not reduce it
+ *  to a free-text critique. */
+function requirementFacts(
+  ledger: RequirementsLedger | undefined,
+  allowReviewWarnings: readonly string[],
+): Array<{ code: string; severity: string; message: string; hint?: string }> {
+  if (ledger === undefined) return [];
+  return ledger.entries
+    .filter(e => e.status !== 'pass')
+    .filter(e => !allowReviewWarnings.includes(`requirement.${e.status}`))
+    .map(e => ({
+      code: e.status === 'fail' ? 'requirement.failed' : 'requirement.not-evaluated',
+      severity: e.status === 'fail' ? 'error' : 'warning',
+      message: e.message ?? `${e.name}: ${e.status}.`,
+      hint: `requirement.${e.status} — repair the selection or geometry named in the message; measured value, limit and margin are in the requirements ledger (selections carry S1 fingerprints for highlighting).`,
+    }));
 }
 
 function containsPhysicalUseCaseDeclaration(source: string): boolean {
@@ -598,74 +583,10 @@ function normalizeSeverity(severity: string): string {
   return severity;
 }
 
-const AUTOMOTIVE_LIKENESS_STILL_CODES = [
-  'side-body-over-wheels',
-  'side-cabin-aft',
-  'rear-haunch',
-  'ortho-proportions-vs-reference',
-] as const;
-
-function automotiveStillsFromVisual(
-  visualReview: DesignLoopVisualReview | undefined,
-): StillVerdict[] {
-  return (visualReview?.checks ?? [])
-    .filter((c) => AUTOMOTIVE_LIKENESS_STILL_CODES.includes(c.code as (typeof AUTOMOTIVE_LIKENESS_STILL_CODES)[number]))
-    .map((c) => ({
-      code: c.code,
-      passed: c.passed,
-      finding: c.finding,
-    }));
-}
-
-function resolveAutomotiveStillVerdicts(
-  bodyLikeness: DesignLoopBodyLikenessInput | undefined,
-  visualReview: DesignLoopVisualReview | undefined,
-): StillVerdict[] {
-  const explicit = bodyLikeness?.still_verdicts;
-  if (explicit && explicit.length > 0) return explicit;
-  return automotiveStillsFromVisual(visualReview);
-}
-
-function likenessGateDiagnosticsAsReviewFacts(
-  diagnostics: ReturnType<typeof assertLikenessPublishReady>['diagnostics'],
-): Array<{ code: string; severity: string; message: string; hint?: string }> {
-  return diagnostics.map((d) => ({
-    code: d.code,
-    severity: d.severity === 'error' ? 'warning' : d.severity,
-    message: d.message,
-    hint: d.hint,
-  }));
-}
-
-function bodyLikenessReviewFacts(
-  likenessProfile: DesignLoopInput['likenessProfile'],
-  bodyLikeness: DesignLoopBodyLikenessInput | undefined,
-  visualReview: DesignLoopVisualReview | undefined,
-): Array<{ code: string; severity: string; message: string; hint?: string }> {
-  if (likenessProfile !== 'automotive') return [];
-
-  const gate = assertLikenessPublishReady({
-    likenessProfile: 'automotive',
-    body: bodyLikeness?.body_bbox,
-    cabin: bodyLikeness?.cabin_bbox,
-    wheels: bodyLikeness?.wheels,
-    lengthAxis: bodyLikeness?.length_axis,
-    stillVerdicts: resolveAutomotiveStillVerdicts(bodyLikeness, visualReview),
-    requireStills: bodyLikeness?.require_stills,
-    footprintMarginMm: bodyLikeness?.footprint_margin_mm,
-    maxBodyAboveWheelTopMm: bodyLikeness?.max_body_above_wheel_top_mm,
-    minOverhangMm: bodyLikeness?.min_overhang_mm,
-  });
-
-  if (gate.successClaimable) return [];
-  return likenessGateDiagnosticsAsReviewFacts(gate.diagnostics);
-}
-
 function visualReviewFacts(
   requireVisualReview: boolean,
   visualReview: DesignLoopVisualReview | undefined,
   allowReviewWarnings: readonly string[],
-  likenessProfile?: DesignLoopInput['likenessProfile'],
 ): Array<{ code: string; severity: string; message: string; hint?: string }> {
   const missingCode = 'assembly.visual.review-required';
   const rejectedCode = 'assembly.visual.review-rejected';
@@ -686,7 +607,7 @@ function visualReviewFacts(
     );
   }
   if (visualReview.accepted) {
-    const { missing, checkResults } = visualReviewMissingFields(visualReview, likenessProfile);
+    const { missing, checkResults } = visualReviewMissingFields(visualReview);
     if (missing.length === 0) {
       const failedChecks = checkResults.filter((check) => !check.passed);
       const weakEvidence = checkResults.flatMap((check) => weakVisualCheckEvidence(check));
@@ -727,7 +648,6 @@ function visualReviewFacts(
 
 function visualReviewMissingFields(
   visualReview: DesignLoopVisualReview,
-  likenessProfile?: DesignLoopInput['likenessProfile'],
 ): { missing: string[]; checkResults: DesignLoopVisualReviewCheck[] } {
   const missing: string[] = [];
   if (visualReview.screenshotPath === undefined || visualReview.screenshotPath.trim() === '') {
@@ -740,7 +660,7 @@ function visualReviewMissingFields(
     missing.push('visualReview.checks');
   }
   const checkResults = visualReview.checks ?? [];
-  const missingCheckCodes = requiredVisualReviewCheckCodes(likenessProfile).filter((code) =>
+  const missingCheckCodes = requiredVisualReviewCheckCodes().filter((code) =>
     !checkResults.some((check) => check.code === code),
   );
   if (missingCheckCodes.length > 0) {
@@ -756,7 +676,6 @@ function visualReviewMissingFields(
 }
 
 function requiredVisualReviewCheckCodes(
-  likenessProfile?: DesignLoopInput['likenessProfile'],
 ): readonly string[] {
   const base = [
     'main-object-count',
@@ -765,82 +684,26 @@ function requiredVisualReviewCheckCodes(
     'no-stray-or-floating-geometry',
     'attachment-plausibility',
     'semantic-orientation-alignment',
-    'device-depth-and-construction',
     'canonical-views-physically-coherent',
   ];
-  if (likenessProfile === 'automotive') {
-    return [...base, ...AUTOMOTIVE_LIKENESS_STILL_CODES];
-  }
   return base;
 }
 
-interface WeakVisualEvidenceRule {
-  code: string;
-  patterns: readonly RegExp[];
-  format: (finding: string) => string;
-}
+const MIN_VISUAL_FINDING_CHARS = 12;
 
-const WEAK_VISUAL_EVIDENCE_RULES: readonly WeakVisualEvidenceRule[] = [
-  {
-    code: 'attachment-plausibility',
-    patterns: [
-      /\b(lugs?|spring\s*bars?|pins?|barrels?|slots?|clamps?|brackets?|mounts?|fasteners?|hinges?|strap\s*tongues?|end\s*links?|connectors?|interfaces?)\b/,
-      /\b(connects?|connected|connection|load(?:\s|-)*path|load(?:\s|-)*bearing|bridg\w*|through|between|seated|captured|passes|touches|anchored|retained)\b/,
-      /\b(seated|exposed|clearance|clearanced|not\s+buried|not\s+half(?:\s|-)*inserted|not\s+embedded|not\s+occluded|visible\s+ends?|flush|captured\s+in\s+(?:the\s+)?lugs?)\b/,
-      /\b(case(?:\s|-)*body|case(?:\s|-)*band|case|body|housing|watch\s*head|main\s*body)\b/,
-    ],
-    format: (finding) =>
-      `attachment-plausibility needs concrete interface, load path, seated/no-buried-hardware, and parent or case body anchor evidence; finding was "${finding}".`,
-  },
-  {
-    code: 'required-visible-features',
-    patterns: [
-      /\b(required|features?|dial|numerals?|numbers?|labels?|text|hands?|markers?|ticks?|crown|strap|bracelet)\b/,
-      /\b(legible|readable|visible|clear|present)\b/,
-      /\b(unobstructed|not\s+covered|not\s+occluded|not\s+hidden|not\s+cut\s*off|clearance|clearanced|outside\s+the\s+bezel|inside\s+the\s+dial|within\s+the\s+dial)\b/,
-    ],
-    format: (finding) =>
-      `required-visible-features needs evidence that required details are legible and unobstructed/not covered; finding was "${finding}".`,
-  },
-  {
-    code: 'no-stray-or-floating-geometry',
-    patterns: [
-      /\b(no\s+(?:stray|floating|disconnected|unsupported)|not\s+(?:floating|disconnected|unsupported)|nothing\s+(?:floating|disconnected|unsupported))\b/,
-      /\b(contact|touch(?:es|ing)?|fasteners?|screws?|pins?|brackets?|mounts?|clips?|hinges?|socket|seated|supported|attached|connected|continuous\s+path|load(?:\s|-)*path|parent\s+(?:body|structure)|main\s+(?:body|structure|frame)|case|housing|frame)\b/,
-      /\b(secondary|strap|bracelet|button|crown|cover|panel|bracket|handle|lug|link|arm|wire|cable|accessory|part|component|geometry)\b/,
-      /\b(no\s+(?:visible\s+)?air\s*gap|not\s+separated|touch(?:es|ing)?|in\s+contact|near(?:\s|-)*contact|flush|seated|captured|passes\s+through|mounted\s+into)\b/,
-    ],
-    format: (finding) =>
-      `no-stray-or-floating-geometry needs evidence that secondary components are supported by contact/near-contact, fasteners, brackets, or a continuous path into the parent body, with no visible air gap; finding was "${finding}".`,
-  },
-  {
-    code: 'device-depth-and-construction',
-    patterns: [
-      /\b(side|canonical|section|thickness|depth|deep|wall|shell|layer|layers|stack)\b/,
-      /\b(bezel|case(?:back)?|back|cover|housing|body|cavity|movement|crystal|gasket|recess|pocket|chamber|case\s*band)\b/,
-      /\b(non(?:\s|-)*facade|not\s+(?:a\s+)?flat|not\s+two\s+(?:flat\s+)?faces|not\s+two\s+surfaces|full\s+casing)\b/,
-    ],
-    format: (finding) =>
-      `device-depth-and-construction needs concrete construction layers and non-facade evidence; finding was "${finding}".`,
-  },
-];
-
+/** Structural only: a passed check must carry a non-trivial finding. */
 function weakVisualCheckEvidence(check: DesignLoopVisualReviewCheck): string[] {
   if (!check.passed) return [];
-  const finding = check.finding.toLowerCase();
-  const rule = WEAK_VISUAL_EVIDENCE_RULES.find((candidate) => candidate.code === check.code);
-  if (rule === undefined) return [];
-  if (rule.patterns.every((pattern) => pattern.test(finding))) return [];
-  return [rule.format(check.finding)];
+  if (check.finding.trim().length >= MIN_VISUAL_FINDING_CHARS) return [];
+  return [
+    `${check.code} needs a specific finding of at least ${MIN_VISUAL_FINDING_CHARS} characters describing what the screenshot shows; finding was "${check.finding}".`,
+  ];
 }
 
 function visualReviewEvidenceRequirements(): string[] {
   return [
-    'For attachment-plausibility, name the interface geometry and prove it is seated/clearanced, not buried, half-inserted, embedded, or visually occluded.',
-    'For attachment-plausibility, user controls such as crowns, winding wheels, buttons, handles, knobs, sliders, or levers must mount to the functional body/neck/housing they actuate, not to decorative loops, straps, hangers, or other non-actuating hardware.',
-    'For required-visible-features, prove dial details, numerals, labels, hands, markers, and other requested features are legible and unobstructed, not covered by casing, bezel, or smoky/opaque transparent-cover geometry.',
-    'For no-stray-or-floating-geometry, prove every visible secondary component is supported by contact or near-contact, fasteners, brackets, or a continuous path into the parent body, and explicitly rule out visible air gaps.',
-    'For device-depth-and-construction, name casing/body layers such as bezel, case back, wall, housing, cavity, crystal, gasket, or movement pocket, and explicitly rule out a flat two-face facade.',
+    'Each passed check must record a specific finding describing what the screenshot shows, not a placeholder.',
+    'Attach visualReview.screenshotPath and set accepted only when every required check passes.',
   ];
 }
 
@@ -879,12 +742,7 @@ function buildRecord(input: DesignLoopInput, attempts: readonly DesignLoopAttemp
 
 function summarizeAttempt(attempt: DesignLoopAttemptResult): string {
   if (attempt.ok) {
-    const summary = attempt.mechanismSummary;
-    const gripperTravel = summary?.gripperApertureTravelMm;
-    const travelText = gripperTravel !== undefined
-      ? `, gripper aperture moves ${formatMm(gripperTravel)} mm`
-      : '';
-    return `validator clean, pose envelope solved, no interferences${travelText}`;
+    return 'validator clean, pose envelope solved, no interferences';
   }
   if (attempt.functional && !attempt.qualityOk) {
     return `functional but rejected by quality gate after ${attempt.reviewFacts.length} review facts`;
@@ -893,10 +751,6 @@ function summarizeAttempt(attempt: DesignLoopAttemptResult): string {
     return `${attempt.repairMode} required after ${attempt.diagnosticCount} diagnostics`;
   }
   return `${attempt.diagnosticCount} diagnostics`;
-}
-
-function formatMm(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(2);
 }
 
 function publicRecordUrl(outputRecordPath: string): string | undefined {

@@ -15,7 +15,7 @@ export const FEATURE_CODES = {
   // Kernel op failed (1)
   'feature.kernel-failed': {
     hintTemplate:
-      'OCCT rejected the operation. Retry with different params: smaller fillet/chamfer radius, thinner shell wall, translated mirror source, smaller sweep profile, etc.',
+      'OCCT rejected the operation. Retry with different params: smaller fillet/chamfer radius, translated mirror source, smaller sweep profile, etc. For shell(), do not just retry a thinner wall: compare the requested wall with the thinnest local feature, and author an explicit hollow (outer.subtract(inner)) if the offset cannot close.',
     nextAction: { kind: 'retry-with-smaller-param', param: 'op-radius-or-thickness', factor: 0.5 },
     defaultSeverity: 'error',
     group: 'feature',
@@ -29,6 +29,17 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'The exact OCCT boolean failed or produced an invalid solid; a fuzzy/glue retry (with optional ShapeFix) succeeded.',
   },
+  'feature.boolean.detached-material': {
+    hintTemplate:
+      'A subtract() cut clean through the only connection to a piece of material, so the remainder is a separate solid with nothing holding it. Extend the cutter so it removes the detached remnant (cut from the free end up to the target face, not a band across the middle), stop the cut before the pieces separate, or make the pieces assembly().part(...) parts.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'extend or stop the cut so the subtract leaves one connected body, and remove the detached remnant',
+    },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A subtract() result has more separate solids than the body it cut: the cut severed material and left a detached remnant.',
+  },
   'feature.shell.boolean-fallback': {
     hintTemplate:
       'No action needed: every shell join mode failed, so the wall was built by offsetting the solid inward and subtracting it, then opening the selected face. Check the wall reads as intended.',
@@ -36,6 +47,14 @@ export const FEATURE_CODES = {
     defaultSeverity: 'info',
     group: 'feature',
     description: 'shell() fell back to offset-and-subtract after every BRepOffsetAPI_MakeThickSolid join mode failed.',
+  },
+  'feature.shell.unchanged': {
+    hintTemplate:
+      'A shell that leaves the volume and the face count alone did not hollow the body. The wall is thicker than the body can take, or the open face was not cut. The unshellled solid is not a successful shell.',
+    nextAction: { kind: 'retry-with-smaller-param', param: 'thickness', factor: 0.5 },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'shell() returned a solid with the same volume and the same faces as its input.',
   },
   // Specific retries (2)
   'feature.revolve.crosses-axis': {
@@ -361,6 +380,22 @@ export const FEATURE_CODES = {
     description: 'A .bend() produced several solids, an invalid solid, or lost / overlapped material.',
   },
   // Draft (1) — Slice E Task 6/7
+  'feature.face-edit.rejected': {
+    hintTemplate:
+      'moveFaces and offsetFaces on the OCCT kernel only slide a planar face along its normal. Read the message: it names the face and what to change. A sideways hole move or a cylindrical resize is a boolean, not this call.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'select a planar face and a displacement along its normal, or build the change as a boolean' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'moveFaces or offsetFaces refused the request instead of returning a body that is not the one asked for.',
+  },
+  'feature.face-edit.skipped': {
+    hintTemplate:
+      'A multi-face edit moved the faces it could and left this one unchanged. Select the refused face on its own, or build that part of the change as a boolean.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'move the refused face on its own or build it as a boolean' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'moveFaces or offsetFaces selected several faces; one could not slide and was left unchanged.',
+  },
   'feature.draft.failed': {
     hintTemplate:
       'Draft failed on the selected face(s). Drafts need a planar neutral plane and a consistent pull direction; check that the face is planar and the angle is < 90°.',
@@ -368,6 +403,14 @@ export const FEATURE_CODES = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'BRepOffsetAPI_DraftAngle could not taper the requested faces.',
+  },
+  'feature.draft.unchanged': {
+    hintTemplate:
+      'A draft that leaves the volume and the face count alone did not taper the face. Pick a side face and a pull direction that is not parallel to that face.',
+    nextAction: { kind: 'fix-arg', field: 'face' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'draft() returned a solid with the same volume and the same faces as its input.',
   },
   'feature.draft.neutral-plane-derived': {
     hintTemplate:

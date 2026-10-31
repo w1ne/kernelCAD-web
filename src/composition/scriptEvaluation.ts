@@ -40,10 +40,18 @@ import { portReportOnModel, type PortReportEntry } from '../modeling/runtime/tub
 import { detectMissingReturn } from '../modeling/validation/missingReturn';
 import { detectUnstructuredBodies } from '../modeling/validation/unstructuredBodies';
 import { detectUnionDefects } from '../modeling/validation/unionIntegrity';
+import { detectDetachedMaterial } from '../modeling/validation/booleanIntegrity';
 import type { SweepEvaluator } from '../kinematic/sweepTolerance';
 import { createScriptApi } from './scriptApi';
 import { viewerDimensionsForModel } from './viewerDimensionsForModel';
 import type { ViewerDimension } from '../shared/intent/viewerDimension';
+import type { SelectionRecord } from '../shared/intent/selectionRecord';
+import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
+import type { ExternalRequirement, RequirementsLedger } from '../shared/intent/requirementRecord';
+import { evaluateRequirementsOnModel } from '../modeling/requirements/evaluate';
+import { dfmRequirementEntries } from '../modeling/requirements/dfmLedger';
+import { feaRequirementEntries } from '../modeling/requirements/feaLedger';
+import { findDfmSpec } from '../modeling/runtime/dfm/runDfmChecks';
 
 export interface EvaluateInput {
   file?: string;
@@ -54,6 +62,14 @@ export interface EvaluateInput {
   /** Solid-modeling kernel (default 'occt'). An unavailable kernel yields a
    *  `recompute.kernel.unavailable` diagnostic instead of a build. */
   kernel?: KernelId;
+  /** Selections of a previous evaluation of the same model (the `selections`
+   *  of an earlier result). A selector that now binds to a different entity
+   *  is reported as `selector.binding-changed`; one whose entity only moved or
+   *  resized as `selector.binding-moved`. */
+  baseline?: SelectionRecord[];
+  /** Call-time requirements (an eval task, a customer spec). Reported in the
+   *  same `requirements` ledger tagged `source: 'external'`, never persisted. */
+  requirements?: readonly ExternalRequirement[];
 }
 
 export interface EvaluateOptions {
@@ -98,6 +114,15 @@ export interface EvaluateResult {
   /** Dimensions declared with `shape.dimension()`, as the viewer will label
    *  them. Present only when the script declares at least one. */
   dimensions?: DeclaredDimensionSummary[];
+  /** What each feature's selectors bound to (entity kind, surface type,
+   *  producing feature, direction, size, centroid). Pass it back as
+   *  `baseline` after an edit to learn which selectors now point elsewhere.
+   *  Absent when no feature used a selector. */
+  selections?: SelectionRecord[];
+  /** One requirements ledger per evaluation: script `require()` declarations,
+   *  `dfmSpec` gates, gated `feaStudy.minSafetyFactor`, mechanical intent and
+   *  any call-time external requirements. */
+  requirements?: RequirementsLedger;
 }
 
 export interface DeclaredDimensionSummary {
@@ -285,6 +310,7 @@ export async function evaluateAndBuildScript(
   const built = await buildModelForInput(input, apiFactory);
   if ('evaluation' in built) return { evaluation: built.evaluation };
   const model = built.model;
+  if (input.baseline !== undefined) model.diagnostics.push(...selectionDriftDiagnostics(input.baseline, model.selections));
   const fatal = model.diagnostics.some(d => d.severity === 'error');
 
   // Agent-parts-discipline: flag multi-body models authored as loose
@@ -307,6 +333,12 @@ export async function evaluateAndBuildScript(
     // Studio's per-keystroke recompute does not call it.
     model.diagnostics.push(
       ...detectUnionDefects({ records: model.records, shapes: model.shapes, code: model.code }),
+      // Detached-material guard: a `subtract()` that severs the only
+      // connection to a piece leaves that piece floating (CADGenBench 207:
+      // a band cut across three bosses left the upper stubs in the cavity).
+      // The result is watertight and every solid is valid, so only a count
+      // against the body that was cut catches it.
+      ...detectDetachedMaterial({ records: model.records, shapes: model.shapes, severity: 'warn' }),
     );
   }
 
@@ -316,6 +348,13 @@ export async function evaluateAndBuildScript(
 
   const fatalAfterGates = model.diagnostics.some(d => d.severity === 'error');
   const dimensions = fatalAfterGates ? [] : declaredDimensionSummaries(model);
+  const requirements = evaluateRequirementsOnModel(model, {
+    ...(input.requirements !== undefined ? { external: input.requirements } : {}),
+    extraEntries: [
+      ...dfmRequirementEntries(gates.dfmReport, findDfmSpec(model.records)),
+      ...feaRequirementEntries(gates.feaReport),
+    ],
+  });
   return {
     evaluation: {
       exitCode: fatalAfterGates ? 1 : 0,
@@ -323,6 +362,8 @@ export async function evaluateAndBuildScript(
       diagnostics: withNextActions(model.diagnostics),
       featureHealth: nonHealthyFeatures(model.health),
       ...(dimensions.length > 0 ? { dimensions } : {}),
+      ...(model.selections.length > 0 ? { selections: model.selections } : {}),
+      requirements,
     },
     model,
     ...gates,

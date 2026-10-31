@@ -23,6 +23,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { sweepTolerance as runSweepTolerance, SWEEP_COMBO_CAP } from '../../../src/kinematic/sweepTolerance';
 import { defaultSweepEvaluator } from '../../../src/composition/scriptEvaluation';
+import { sweepToleranceTool } from '../../../src/agent/mcp/tools/sweepTolerance';
 
 // The sweep takes its script evaluator by injection; the composition layer
 // owns the implementation. Direct callers bind it once here.
@@ -72,6 +73,28 @@ const HOLE_PARAM_CODE = `
   arm.mate('screw', 'a.h', 'b.h', 'fastened');
   return arm.solvedModel({});
 `;
+
+// S3 fixture: two unrelated ledger requirements flip at different parameter
+// values. `wall` is a bbox band [2,5] on a swept plate thickness (fails below
+// 2); `bolt-clearance` is a maximum gap of 3 mm between two blocks (fails
+// above 3). Both are ordinary S2 `require()` declarations, not mechanism gates.
+const RANGE_REQUIREMENTS_CODE = `
+  const arm = assembly('s3-range-proofs');
+  const wall = param('Wall', 3);
+  const gap = param('Gap', 2);
+  const plate = box(20, 20, wall);
+  const plateTop = wall.divide(2);
+  const a = box(20, 20, 20).translate(0, 0, plateTop.add(10));
+  const b = box(20, 20, 20).translate(0, 0, plateTop.add(30).add(gap));
+  arm.part('plate', plate);
+  arm.part('a', a);
+  arm.part('b', b);
+  require('wall', bbox(plate).within({ z: [2, 5] }));
+  require('bolt-clearance', clearance(a, b).lte(3));
+  return arm.model();
+`;
+
+const NO_GATES = { interference: false, mountingHoles: false, jointAxis: false } as const;
 
 describe('sweepTolerance', () => {
   beforeAll(async () => {
@@ -184,6 +207,141 @@ describe('sweepTolerance', () => {
     expect(r.ok).toBe(true);
     expect(r.combosEvaluated).toBe(0);
     expect(r.results).toHaveLength(0);
+    expect(r.boundaries).toHaveLength(0);
+    expect(r.coverage).toMatchObject({ points: 0, boundaries: 0, proven: false });
+  });
+
+  it('evaluates every ledger requirement and reports measured / limit / margin per combo', async () => {
+    const r = await sweepTolerance({
+      code: RANGE_REQUIREMENTS_CODE,
+      params: { Wall: { values: [1, 4] } },
+      gates: NO_GATES,
+      boundaryTolerance: 0.01,
+    });
+
+    expect(r.combosEvaluated).toBe(2);
+    expect(r.results[0]!.requirements.map((e) => e.name)).toEqual(['wall', 'bolt-clearance']);
+    const failingWall = r.results[0]!.requirements.find((e) => e.name === 'wall')!;
+    expect(failingWall).toMatchObject({ status: 'fail', limit: { z: [2, 5] } });
+    expect(failingWall.measured).toEqual(expect.any(Array));
+    expect(failingWall.margin).toBeLessThan(0);
+    expect(r.firstRequirementFailure['wall']?.combo['Wall']).toBe(1);
+    expect(r.results[1]!.verdict).toBe('pass');
+  });
+
+  it('bisects a wall-thickness pass/fail transition and names the binding requirement', async () => {
+    const r = await sweepTolerance({
+      code: RANGE_REQUIREMENTS_CODE,
+      params: { Wall: { values: [1, 4] } },
+      gates: NO_GATES,
+      boundaryTolerance: 0.01,
+    });
+
+    expect(r.ok).toBe(false);
+    expect(r.boundaries).toHaveLength(1);
+    const boundary = r.boundaries[0]!;
+    expect(boundary.parameter).toBe('Wall');
+    expect(boundary.direction).toBe('fail-to-pass');
+    expect(boundary.failureSide).toBe('below');
+    expect(boundary.value).toBeCloseTo(2, 1);
+    expect(boundary.withinTolerance).toBe(true);
+    expect(boundary.exhausted).toBe(false);
+    expect(boundary.bindingRequirements).toEqual(['wall']);
+    expect(boundary.bindingGates).toEqual([]);
+    expect(boundary.message).toMatch(/wall fails below 1\.99\d? Wall/);
+    expect(boundary.message).toMatch(/binding: wall/);
+    expect(r.coverage.statement).toMatch(/Checked at 2 points plus 1 boundary/);
+    expect(r.coverage.proven).toBe(false);
+  });
+
+  it('finds a second requirement binding at a different boundary', async () => {
+    const r = await sweepTolerance({
+      code: RANGE_REQUIREMENTS_CODE,
+      params: { Gap: { values: [0, 4] } },
+      gates: NO_GATES,
+      boundaryTolerance: 0.01,
+    });
+
+    expect(r.boundaries).toHaveLength(1);
+    const boundary = r.boundaries[0]!;
+    expect(boundary.parameter).toBe('Gap');
+    expect(boundary.direction).toBe('pass-to-fail');
+    expect(boundary.failureSide).toBe('above');
+    expect(boundary.value).toBeCloseTo(3, 1);
+    expect(boundary.bindingRequirements).toEqual(['bolt-clearance']);
+    expect(boundary.message).toMatch(/bolt-clearance fails above 3\.00\d? Gap/);
+  });
+
+  it('measures ledger requirements on a part-only script when gates are off', async () => {
+    const code = `
+      const width = param('Width', 20);
+      const part = box(width, 10, 5);
+      require('width-band', bbox(part).within({ x: [10, 30] }));
+      return part;
+    `;
+    const r = await sweepTolerance({
+      code,
+      params: { Width: { values: [15, 20] } },
+      gates: NO_GATES,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.results.map((row) => row.requirements[0]?.status)).toEqual(['pass', 'pass']);
+    expect(r.results[0]?.requirements[0]?.measured).toEqual([15, 10, 5]);
+  });
+
+  it('reports no boundaries for a fully passing sweep', async () => {
+    const r = await sweepTolerance({
+      code: RANGE_REQUIREMENTS_CODE,
+      params: { Wall: { values: [3, 4] } },
+      gates: NO_GATES,
+    });
+
+    expect(r.ok).toBe(true);
+    expect(r.boundaries).toHaveLength(0);
+    expect(r.boundaryEvaluations).toBe(0);
+    expect(r.coverage).toMatchObject({ points: 2, boundaries: 0, boundaryEvaluations: 0, proven: false });
+  });
+
+  it('reports an exhausted boundary interval when the bisection budget runs out', async () => {
+    const r = await sweepTolerance({
+      code: RANGE_REQUIREMENTS_CODE,
+      params: { Wall: { values: [1, 4] } },
+      gates: NO_GATES,
+      boundaryTolerance: 1e-9,
+      boundaryBudget: 2,
+    });
+
+    expect(r.boundaryEvaluations).toBe(2);
+    expect(r.boundaries).toHaveLength(1);
+    const boundary = r.boundaries[0]!;
+    expect(boundary.exhausted).toBe(true);
+    expect(boundary.withinTolerance).toBe(false);
+    expect(boundary.evaluations).toBe(2);
+    expect(boundary.bindingRequirements).toEqual(['wall']);
+    expect(boundary.message).toMatch(/boundary budget exhausted/);
+    expect(r.coverage.statement).toMatch(/exhausted/);
+    expect(
+      r.diagnostics.some((d) => d.code === 'kinematic.sweep-tolerance.boundary-budget-exhausted'),
+    ).toBe(true);
+  });
+
+  it('exposes the ledger and boundaries through the MCP sweep_tolerance tool', async () => {
+    const r = await sweepToleranceTool({
+      code: RANGE_REQUIREMENTS_CODE,
+      params: { Gap: { values: [0, 4] } },
+      gates: NO_GATES,
+      boundaryTolerance: 0.01,
+    });
+
+    expect(r.ok).toBe(false);
+    if (!('results' in r)) throw new Error('expected a sweep result');
+    expect(r.results[0]!.requirements.map((e) => [e.name, e.status])).toEqual([
+      ['wall', 'pass'],
+      ['bolt-clearance', 'pass'],
+    ]);
+    expect(r.results[1]!.requirements.find((e) => e.name === 'bolt-clearance')?.status).toBe('fail');
+    expect(r.boundaries[0]!.bindingRequirements).toEqual(['bolt-clearance']);
+    expect(r.firstRequirementFailure['bolt-clearance']?.combo['Gap']).toBe(4);
   });
 
   it('rejects sweeping a non-numeric (boolean) param with a clear diagnostic', async () => {
@@ -206,6 +364,6 @@ describe('sweepTolerance', () => {
     }
     expect(err).toBeInstanceOf(Error);
     expect((err as { hint?: string }).hint).toContain('invalid-args.param.type-mismatch');
-    expect((err as Error).message).toMatch(/not numeric/);
+    expect((err as Error).message).toMatch(/not sweepable/);
   });
 });

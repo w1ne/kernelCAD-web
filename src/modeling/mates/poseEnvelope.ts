@@ -16,11 +16,6 @@ import { describeOverlap, describeOverlapLocation, isActionableOverlap } from '.
 import { contactAccepts, contactMap, type PairContactTolerance } from '../runtime/pairTolerances';
 import { expandCoupledPoses } from './coupledPoses';
 import { reposedLoweredAssemblyScene } from './loweredAssemblyScene';
-import {
-  computeGripperAperture,
-  type GripperApertureRequest,
-  type GripperApertureSummary,
-} from './gripperAperture';
 import { parseConnectorRef, type MatePose, type MateRecord } from './mate';
 import { solveMates } from './solver';
 
@@ -29,7 +24,7 @@ import { solveMates } from './solver';
  * Derived from the central `DIAGNOSTIC_REGISTRY` so the envelope pipeline
  * shares a single source of truth with the rest of the assembly validators
  * — see `src/shared/diagnostics/registry/`. The four pose / envelope
- * codes plus the gripper-aperture warning live here because they are
+ * codes live here because they are
  * emitted only by this module's review pass; the validator folds them in
  * via `foldEnvelopeDiagnostics()`.
  */
@@ -41,7 +36,6 @@ export type PoseEnvelopeDiagnosticCode = Extract<
   | 'assembly.pose-envelope.clearance-violated'
   | 'assembly.pose-envelope.clearance-unresolved'
   | 'assembly.pose-envelope.connector-unresolved'
-  | 'assembly.gripper-aperture.connector-missing'
 >;
 
 export interface PoseEnvelopeDiagnostic {
@@ -94,7 +88,6 @@ export interface PoseEnvelopeReviewOptions extends PoseEnvelopeSamplingOptions {
   readonly includeInterference?: boolean;
   readonly epsilonMm3?: number;
   readonly trackConnectors?: readonly string[];
-  readonly gripperAperture?: GripperApertureRequest;
   /** Minimum BREP-to-BREP clearance required at every solved sample. */
   readonly minClearanceMm?: number;
   /** Measure articulated mate pairs too. Fastened mate pairs stay exempt. */
@@ -119,8 +112,6 @@ export interface PoseEnvelopeReviewResult {
   readonly clearancePairs: Array<ClearancePairReport & { sampleName: string }>;
   readonly connectorPoses: TrackedConnectorPose[];
   readonly connectorWorkspace: ConnectorWorkspace[];
-  readonly gripperApertureRequest?: GripperApertureRequest;
-  readonly gripperAperture?: GripperApertureSummary;
 }
 
 export interface TrackedConnectorPose {
@@ -311,12 +302,6 @@ export async function reviewPoseEnvelope(
 
   pushUnresolvedConnectorDiagnostics(unresolvedConnectorRefs, diagnostics);
 
-  const apertureSummary = resolvePoseEnvelopeAperture(
-    opts.gripperAperture,
-    connectorPoses,
-    diagnostics,
-  );
-
   return {
     samples,
     diagnostics,
@@ -324,8 +309,6 @@ export async function reviewPoseEnvelope(
     clearancePairs,
     connectorPoses,
     connectorWorkspace: buildConnectorWorkspace(connectorPoses),
-    ...(opts.gripperAperture !== undefined ? { gripperApertureRequest: opts.gripperAperture } : {}),
-    ...(apertureSummary !== undefined ? { gripperAperture: apertureSummary } : {}),
   };
 }
 
@@ -361,14 +344,10 @@ function createInterferenceReporter(
   };
 }
 
-/** Connector refs to track: the explicit list plus both gripper fingertips,
- *  or undefined when neither was requested. */
+/** Connector refs to track, or undefined when none were requested. */
 function resolveTrackedConnectors(opts: PoseEnvelopeReviewOptions): ReadonlySet<string> | undefined {
-  if (opts.trackConnectors === undefined && opts.gripperAperture === undefined) return undefined;
-  return new Set([
-    ...(opts.trackConnectors ?? []),
-    ...(opts.gripperAperture !== undefined ? [opts.gripperAperture.left, opts.gripperAperture.right] : []),
-  ]);
+  if (opts.trackConnectors === undefined) return undefined;
+  return new Set(opts.trackConnectors);
 }
 
 /** Mated pairs exempt from the clearance check, computed only when a minimum
@@ -509,26 +488,6 @@ function pushUnresolvedConnectorDiagnostics(
       hint: `invalid-args.assembly.pose-envelope-connector-unresolved — use a numeric vec3 connector origin for workspace review, or run a lowerer-backed topology resolver before requesting this connector.`,
     });
   }
-}
-
-function resolvePoseEnvelopeAperture(
-  request: GripperApertureRequest | undefined,
-  connectorPoses: readonly TrackedConnectorPose[],
-  diagnostics: PoseEnvelopeDiagnostic[],
-): GripperApertureSummary | undefined {
-  const aperture = request !== undefined
-    ? computeGripperAperture(connectorPoses, request)
-    : undefined;
-  if (request !== undefined && aperture?.summary === undefined) {
-    diagnostics.push({
-      code: 'assembly.gripper-aperture.connector-missing',
-      severity: 'warning',
-      connectorRef: aperture?.missingRefs.join(', ') ?? `${request.left}, ${request.right}`,
-      message: `Gripper aperture could not be computed because one or both fingertip connector refs were not observed.`,
-      hint: `invalid-args.assembly.gripper-aperture-connector-missing — pass gripperAperture refs that exist as numeric frame connectors and are included in pose-envelope samples.`,
-    });
-  }
-  return aperture?.summary;
 }
 
 function clearanceExemptMatedPairs(

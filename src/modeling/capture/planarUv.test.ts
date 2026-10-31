@@ -3,7 +3,7 @@
 // src/modeling/capture/planarUv.test.ts
 
 import { describe, it, expect } from 'vitest';
-import { generatePlanarUVs } from './planarUv';
+import { attachProjectedUVs, generatePlanarUVs } from './planarUv';
 import type { FaceGeometry } from '../../shared/worker/workerTypes';
 
 function makeFace(opts: {
@@ -111,5 +111,50 @@ describe('generatePlanarUVs', () => {
       expect(uvs[i]).toBeGreaterThanOrEqual(0);
       expect(uvs[i]).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+describe('attachProjectedUVs', () => {
+  it('splits triangles that straddle the cylindrical wrap seam', () => {
+    // A strip of a Z-axis cylinder across the angular seam: every triangle
+    // must span less than half a wrap in u after the split.
+    const pts: number[] = [];
+    const angles = [150, 170, 190, 210];
+    for (const a of angles) {
+      const t = (a * Math.PI) / 180;
+      pts.push(10 * Math.cos(t), 10 * Math.sin(t), 0, 10 * Math.cos(t), 10 * Math.sin(t), 10);
+    }
+    const indices: number[] = [];
+    for (let i = 0; i < angles.length - 1; i++) {
+      const a = 2 * i, b = a + 1, c = a + 2, d = a + 3;
+      indices.push(a, c, b, b, c, d);
+    }
+    const face: FaceGeometry = {
+      vertices: new Float32Array(pts),
+      normals: new Float32Array(pts.length),
+      indices: new Uint32Array(indices),
+      faceId: 0,
+    };
+    attachProjectedUVs([face], { type: 'cylinder', axis: [0, 0, 1] });
+    const uv = face.uv!;
+    expect(uv.length).toBe((face.vertices.length / 3) * 2);
+    for (let t = 0; t < face.indices.length; t += 3) {
+      const us = [0, 1, 2].map(k => uv[face.indices[t + k] * 2]);
+      expect(Math.max(...us) - Math.min(...us)).toBeLessThanOrEqual(0.5);
+    }
+  });
+
+  it('maps all faces of one body into one shared [0,1] projection', () => {
+    const quad = (z: number): FaceGeometry => ({
+      vertices: new Float32Array([0, 0, z, 10, 0, z, 10, 10, z]),
+      normals: new Float32Array(9),
+      indices: new Uint32Array([0, 1, 2]),
+      faceId: 0,
+    });
+    const a = quad(0), b = quad(20);
+    attachProjectedUVs([a, b], { type: 'flat', onto: 'xz' });
+    // v follows z over the whole body: face a at the bottom, face b at the top.
+    expect(a.uv![1]).toBeCloseTo(0);
+    expect(b.uv![1]).toBeCloseTo(1);
   });
 });

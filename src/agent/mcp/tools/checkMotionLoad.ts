@@ -21,7 +21,9 @@ export interface CheckMotionLoadInput extends EvaluateInput {
   assembly?: string;
   /** 'tracks' (default): along the animationView timeline, with inertia.
    *  'range': quasi-static grid over each driven joint's limits. */
-  motion_mode?: 'tracks' | 'range';
+  motion_mode?: 'tracks' | 'range' | 'poses';
+  /** Explicit mate poses for motion_mode 'poses' (each a joint name -> value). */
+  motion_poses?: ReadonlyArray<Readonly<Record<string, number>>>;
   sample_ms?: number;
   range_samples?: number;
   quasi_static?: boolean;
@@ -59,7 +61,7 @@ export async function checkMotionLoadTool(input: CheckMotionLoadInput): Promise<
 /** Map the snake_case tool input to the study options (unset stays unset). */
 function studyOpts(input: CheckMotionLoadInput): MotionLoadOpts {
   const pairs: Array<[keyof MotionLoadOpts, unknown]> = [
-    ['mode', input.motion_mode], ['sampleMs', input.sample_ms], ['rangeSamples', input.range_samples],
+    ['mode', input.motion_mode], ['poses', input.motion_poses], ['sampleMs', input.sample_ms], ['rangeSamples', input.range_samples],
     ['quasiStatic', input.quasi_static], ['gravity', input.gravity], ['loads', input.motion_loads], ['supports', input.supports],
   ];
   return Object.fromEntries(pairs.filter(([, v]) => v !== undefined)) as MotionLoadOpts;

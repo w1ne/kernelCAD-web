@@ -6,6 +6,12 @@ import { wrapOffsetOf } from './isolationTypes';
 /** Prologue this runner puts in front of the user's script under `wrapReturn`.
  *  `"use strict";` shares the line with the IIFE header so the user's first
  *  line lands at a position the wrap offset below describes exactly. */
+/** The Function constructor as it was when this module loaded. A host that
+ *  locks code generation down afterwards (the Studio's browser kernel worker
+ *  removes `Function` / `eval` before any model runs) still runs scripts
+ *  through this reference, which model code cannot reach. */
+const RealmFunction = Function;
+
 const WRAP_PROLOGUE = '"use strict"; return (async function() { ';
 
 /** Displacement `WRAP_PROLOGUE` applies to call-site positions. Consumed by the
@@ -61,12 +67,16 @@ export function runInRealm(
     argValues.push(host[k]);
   }
 
-  // Injected API. Reserved names are refused exactly like the vm runner.
+  // Injected API. Reserved names are refused exactly like the vm runner,
+  // except `require`: that is the kernelCAD requirement API (S2), and the
+  // injection is what keeps the host module loader out of reach.
   const shadowed = new Set<string>(SHADOWED_GLOBALS);
+  const injectedKeys = new Set<string>();
   for (const [k, v] of Object.entries(injected)) {
-    if (shadowed.has(k)) {
+    if (shadowed.has(k) && k !== 'require') {
       throw new Error(`Cannot inject reserved global: ${k}`);
     }
+    injectedKeys.add(k);
     argNames.push(k);
     argValues.push(v);
   }
@@ -74,6 +84,7 @@ export function runInRealm(
   // Shadow dangerous host globals: declare them as params bound to undefined so
   // `process`, `require`, `fetch`, … resolve to undefined inside the script.
   for (const k of SHADOWED_GLOBALS) {
+    if (injectedKeys.has(k)) continue;
     argNames.push(k);
     argValues.push(undefined);
   }
@@ -85,7 +96,7 @@ export function runInRealm(
     : `"use strict";\n${code}\n//# sourceURL=${fileName}`;
 
   // eslint-disable-next-line no-new-func -- the one sanctioned realm runner.
-  const fn = new Function(...argNames, body) as (...args: unknown[]) => unknown;
+  const fn = new RealmFunction(...argNames, body) as (...args: unknown[]) => unknown;
   const returnValue = fn(...argValues);
 
   return { returnValue: opts.wrapReturn ? returnValue : undefined };

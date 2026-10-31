@@ -82,33 +82,24 @@ export function lowerCoonsPatch(
   for (let i = 0; i < 4; i++) {
     const curveId = data.curveIds[i];
 
-    // 1. Reuse the parked edge if the main lowerer already visited the
-    //    upstream curve3d record.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let edge: any = importedGeometry.get(curveId);
-
-    // 2. Otherwise lower the curve3d metadata on demand. curve3d records are
-    //    virtual, so the recompute engine skips their lowering — we
-    //    materialise the edge here exactly the way `variableSweep` does.
-    if (!edge) {
-      const upstream = allRecords.find((r) => r.id === curveId);
-      if (!upstream || upstream.kind !== 'curve3d') {
-        throw new Error(
-          `Coons patch boundary curve '${curveId}' is not a curve3d record on the session.`,
-        );
-      }
-      const cmeta = (upstream.metadata as { curve3d?: unknown } | undefined)?.curve3d;
-      if (!cmeta) {
-        throw new Error(
-          `Coons patch boundary curve '${curveId}' is missing metadata.curve3d.`,
-        );
-      }
-      edge = lowerCurve3D(cmeta as Curve3DMetadata).edge;
-      // Park for downstream consumers (a follow-up surfaceFromBoundary
-      // referencing the same curve will reuse the cached edge).
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      importedGeometry.set(curveId, edge as any);
+    // curve3d records are virtual, so the engine does not lower them.
+    // Rebuild the edge from the record every time: a parked edge can be
+    // from a previous parameter value.
+    const upstream = allRecords.find((r) => r.id === curveId);
+    if (!upstream || upstream.kind !== 'curve3d') {
+      throw new Error(
+        `Coons patch boundary curve '${curveId}' is not a curve3d record on the session.`,
+      );
     }
+    const cmeta = (upstream.metadata as { curve3d?: unknown } | undefined)?.curve3d;
+    if (!cmeta) {
+      throw new Error(
+        `Coons patch boundary curve '${curveId}' is missing metadata.curve3d.`,
+      );
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const edge: any = lowerCurve3D(cmeta as Curve3DMetadata).edge;
+    importedGeometry.set(curveId, edge as ShapeBackend);
 
     filling.Add_1(edge, geomAbsFor(oc, data.continuity[i]), true);
   }

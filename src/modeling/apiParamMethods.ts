@@ -20,45 +20,47 @@ import {
 import { select } from './selection/shapeList';
 import { KernelError } from '../shared/intent/kernelError';
 import type { KernelCadApi } from './api';
+import type { AssetMetadataInput, AssetPresets } from '../shared/assets/assetSchema';
+
+type BatchParamDeclaration = number | boolean | ({ default: number | boolean | string } & ParamMetadata);
 
 export function makeParamMethods(
   session: CaptureSession,
-): Pick<KernelCadApi, 'param' | 'params' | 'path' | 'helix' | 'selectEdges' | 'select' | 'selectEdge'> {
+): Pick<KernelCadApi, 'param' | 'params' | 'meta' | 'presets' | 'path' | 'helix' | 'selectEdges' | 'select' | 'selectEdge'> {
   return {
     param: ((
       name: string,
       defaultValue: number | boolean | string,
       meta?: ParamMetadata,
     ): ParamRef<number> | ParamRef<boolean> | TypedParamRef<string> => {
-      // Prevent re-wrapping if the agent accidentally passes a ParamRef
-      // (would otherwise silently shadow a previously declared name).
-      if (isParamRef(defaultValue)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `param('${name}'): defaultValue cannot be a ParamRef; pass a literal number, boolean, or string.`,
-          undefined,
-          `invalid-args.param.invalid-default — param '${name}' default cannot itself be a ParamRef.`,
-        );
-      }
-      if (typeof defaultValue === 'string') {
-        // A hex default ('#rgb' / '#rrggbb') without `choices` is a colour
-        // param (see shared/runtime/paramColor.ts); its value is normalised.
-        const type = meta?.choices ? 'choice' : isColorParamDefault(defaultValue, meta) ? 'color' : 'string';
-        const entry = session.paramTable.declare(name, type, defaultValue, meta);
-        return makeTypedParamRef(name, type, entry.value as string);
-      }
-      const type = typeof defaultValue === 'boolean' ? 'boolean' : 'number';
-      session.paramTable.declare(name, type, defaultValue, meta);
-      return makeParamRef(name, type as 'number' | 'boolean', defaultValue) as ParamRef<number> | ParamRef<boolean>;
+      return declareParam(session, name, defaultValue, meta);
     }) as KernelCadApi['param'],
-    params(decl) {
-      const out: Record<string, ParamRef<number | boolean>> = {};
-      for (const [name, value] of Object.entries(decl)) {
-        const type = typeof value === 'boolean' ? 'boolean' : 'number';
-        session.paramTable.declare(name, type, value);
-        out[name] = makeParamRef(name, type as 'number' | 'boolean', value);
+    params(decl: Record<string, BatchParamDeclaration>) {
+      const out: Record<string, ParamRef<number | boolean> | TypedParamRef<string>> = {};
+      for (const [name, declaration] of Object.entries(decl)) {
+        if (typeof declaration === 'number' || typeof declaration === 'boolean') {
+          out[name] = declareParam(session, name, declaration);
+          continue;
+        }
+        if (declaration === null || typeof declaration !== 'object' || Array.isArray(declaration) || !('default' in declaration)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `params(): '${name}' must be a number/boolean shorthand or an object with a default value.`,
+          );
+        }
+        const { default: defaultValue, ...meta } = declaration;
+        if (typeof defaultValue !== 'number' && typeof defaultValue !== 'boolean' && typeof defaultValue !== 'string') {
+          throw new KernelError('feature.invalid-args', `params(): '${name}.default' must be a number, boolean, or string.`);
+        }
+        out[name] = declareParam(session, name, defaultValue, meta as ParamMetadata);
       }
-      return out as { [K in keyof typeof decl]: ParamRef<typeof decl[K]> };
+      return out as ReturnType<KernelCadApi['params']>;
+    },
+    meta(input: AssetMetadataInput) {
+      session.setAssetMetadata(input);
+    },
+    presets(input: AssetPresets) {
+      session.setAssetPresets(input);
     },
     path() {
       return makePath(session);
@@ -92,4 +94,30 @@ export function makeParamMethods(
       return selectEdgeBackend(lowered, query);
     },
   };
+}
+
+function declareParam(
+  session: CaptureSession,
+  name: string,
+  defaultValue: number | boolean | string,
+  meta?: ParamMetadata,
+): ParamRef<number> | ParamRef<boolean> | TypedParamRef<string> {
+  // Prevent re-wrapping if the agent accidentally passes a ParamRef (would
+  // otherwise silently shadow a previously declared name).
+  if (isParamRef(defaultValue)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `param('${name}'): defaultValue cannot be a ParamRef; pass a literal number, boolean, or string.`,
+      undefined,
+      `invalid-args.param.invalid-default — param '${name}' default cannot itself be a ParamRef.`,
+    );
+  }
+  if (typeof defaultValue === 'string') {
+    const type = meta?.choices ? 'choice' : isColorParamDefault(defaultValue, meta) ? 'color' : 'string';
+    const entry = session.paramTable.declare(name, type, defaultValue, meta);
+    return makeTypedParamRef(name, type, entry.value as string);
+  }
+  const type = typeof defaultValue === 'boolean' ? 'boolean' : 'number';
+  session.paramTable.declare(name, type, defaultValue, meta);
+  return makeParamRef(name, type as 'number' | 'boolean', defaultValue) as ParamRef<number> | ParamRef<boolean>;
 }

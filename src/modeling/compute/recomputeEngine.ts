@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureId } from '../../shared/intent/types';
+import type { SelectionRecord } from '../../shared/intent/selectionRecord';
 import type { BackendTarget } from '../../shared/types/backendTarget';
 import type { FeatureLowerer, ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
@@ -14,6 +15,7 @@ import { resolveParams } from '../../shared/runtime/resolveParams';
 import type { SoftWarningPhase, SoftWarningSink } from '../../shared/runtime/softWarning';
 import { isOcctWasmPoisoned, WASM_POISON_MARKER, describeOcctThrow } from '../../kernel/backends/occt/occtException';
 import { resetOcct } from '../../kernel/backends/occt/occtBackend';
+import { previewSkipsFeature } from '../previewFinish';
 
 function normalizeBooleanOp(expr: string | undefined): 'subtract' | 'union' | 'intersect' | undefined {
   if (!expr) return undefined;
@@ -68,6 +70,13 @@ function selectorRoot(label: string): string {
 
 /** Build the dependency graph and its derived lookups (topo order,
  *  predecessor lists, id → record index) for one `run()` call. */
+function inputUpstream(ref: FeatureRecord['inputs'][string]): string | undefined {
+  if (ref.kind === 'feature') return ref.id;
+  if (ref.kind === 'surface') return ref.surfaceId;
+  if (ref.kind === 'face' || ref.kind === 'edge' || ref.kind === 'vertex') return ref.featureId;
+  return undefined;
+}
+
 function buildRecomputeGraph(records: readonly FeatureRecord[]): {
   order: FeatureId[];
   predecessorsOf: Map<FeatureId, FeatureId[]>;
@@ -79,11 +88,13 @@ function buildRecomputeGraph(records: readonly FeatureRecord[]): {
   for (const r of records) {
     const preds: FeatureId[] = [];
     for (const ref of Object.values(r.inputs)) {
-      if (ref.kind === 'feature' || ref.kind === 'face' || ref.kind === 'edge' || ref.kind === 'vertex') {
-        const upstreamId = ref.kind === 'feature' ? ref.id : ref.featureId;
-        graph.addEdge(upstreamId, r.id);
-        preds.push(upstreamId);
-      }
+      const upstreamId = inputUpstream(ref);
+      if (!upstreamId) continue;
+      // Surfaces are not feature records. Register the node so the edge is
+      // legal; `processRecord` skips an id that has no record.
+      if (ref.kind === 'surface') graph.addNode(upstreamId);
+      graph.addEdge(upstreamId, r.id);
+      preds.push(upstreamId);
     }
     predecessorsOf.set(r.id, preds);
   }
@@ -236,6 +247,9 @@ export interface RecomputeResult {
   shapes: Map<FeatureId, ShapeBackend>;
   diagnostics: CompilerDiagnostic[];
   health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+  /** What each lowered feature's selectors bound to, in evaluation order.
+   *  Features reused from `seedShapes` carry over `seedSelections`. */
+  selections: SelectionRecord[];
   /**
    * Physics-grounded loop verdict (P0 of the physics-loop slice).
    *
@@ -275,6 +289,16 @@ export interface RecomputeOptions {
    *  seedShapes are skipped (cache hit) — used by `params.update` to reuse
    *  unchanged earlier records' lowered output. */
   seedShapes?: Map<FeatureId, ShapeBackend>;
+  /** Selections of the seeded features, from the build that produced the
+   *  seeds. Entries for features that are not seeded are ignored. */
+  seedSelections?: readonly SelectionRecord[];
+  /**
+   * Drag preview. Finish features that do not read `previewEdited` pass
+   * their input solid through instead of lowering. The release update
+   * omits this and rebuilds them.
+   */
+  previewFinish?: boolean;
+  previewEdited?: ReadonlySet<string>;
   /** Called for each record skipped because its shape was in `seedShapes`,
    *  at the point in topological order where the engine would have lowered
    *  it. The meshing pass uses it to mesh a reused shape in the same order a
@@ -484,12 +508,14 @@ export class RecomputeEngine {
       shapes: Map<FeatureId, ShapeBackend>;
       diagnostics: CompilerDiagnostic[];
       health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+      selections: SelectionRecord[];
       onEvent: FeatureEventSink | undefined;
       opts: RecomputeOptions | undefined;
     },
   ): Promise<number> {
-    const { idToRecord, predecessorsOf, shapes, diagnostics, health, onEvent, opts } = ctx;
-    const r = idToRecord.get(id)!;
+    const { idToRecord, predecessorsOf, shapes, diagnostics, health, selections, onEvent, opts } = ctx;
+    const r = idToRecord.get(id);
+    if (!r) return 0;
     const prepared = this.prepareRecord(id, r, opts, health);
     if (prepared === null) return 0;
 
@@ -500,13 +526,22 @@ export class RecomputeEngine {
       return this.emitInputFailure(r, diagnostics, predecessorsOf, onEvent);
     }
 
+    if (opts?.previewFinish && previewSkipsFeature(r, opts.previewEdited)) {
+      const passthrough = passthroughShape(byKey);
+      if (passthrough) {
+        shapes.set(r.id, passthrough);
+        health.set(r.id, 'healthy');
+        return 0;
+      }
+    }
+
     if (this.tryGatedPassthrough(r, prepared.recordForLower, prepared.isGatedOff, byKey, opts, shapes, health)) {
       return 0;
     }
 
     // Lower
     return this.lowerAndEmit(prepared.recordForLower, r, records, byKey, {
-      predecessorsOf, shapes, diagnostics, health, onEvent, paramTable: opts?.paramTable,
+      predecessorsOf, shapes, diagnostics, health, selections, onEvent, paramTable: opts?.paramTable,
     });
   }
 
@@ -523,11 +558,12 @@ export class RecomputeEngine {
       shapes: Map<FeatureId, ShapeBackend>;
       diagnostics: CompilerDiagnostic[];
       health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+      selections: SelectionRecord[];
       onEvent: FeatureEventSink | undefined;
       paramTable: ParamTable | undefined;
     },
   ): Promise<number> {
-    const { predecessorsOf, shapes, diagnostics, health, onEvent, paramTable } = ctx;
+    const { predecessorsOf, shapes, diagnostics, health, selections, onEvent, paramTable } = ctx;
     // `records` are unresolved; a lowerer that reads an upstream record's numbers resolves it through this.
     const resolveRecord = (rec: FeatureRecord): FeatureRecord =>
       (paramTable ? resolveParams(rec, paramTable) as FeatureRecord : rec);
@@ -536,6 +572,7 @@ export class RecomputeEngine {
         byKey, records, resolveRecord, ...(paramTable !== undefined ? { paramTable } : {}),
       });
       diagnostics.push(...res.diagnostics);
+      if (res.selections) selections.push(...res.selections);
       const featureDiags = res.diagnostics;
       if (featureDiags.some((d) => d.severity === 'error')) {
         health.set(r.id, 'error');
@@ -562,9 +599,14 @@ export class RecomputeEngine {
   }
 
   private async runPass(records: readonly FeatureRecord[], opts?: RecomputeOptions): Promise<RecomputeResult> {
+    // A parked surface from the previous parameter value must not be reused,
+    // and it must not stay pinned for the life of the session.
+    const surfaceCache = (this.lowerer as { surfaceCache?: { clear(): void } }).surfaceCache;
+    surfaceCache?.clear();
     const shapes = opts?.seedShapes ? new Map(opts.seedShapes) : new Map<FeatureId, ShapeBackend>();
     const diagnostics: CompilerDiagnostic[] = [];
     const health = new Map<FeatureId, 'healthy' | 'warning' | 'error'>();
+    const selections: SelectionRecord[] = (opts?.seedSelections ?? []).filter((s) => shapes.has(s.consumerFeatureId));
     const onEvent = opts?.onEvent;
     opts?.gatedFeatureNames?.clear();
 
@@ -574,7 +616,7 @@ export class RecomputeEngine {
 
     for (const id of order) {
       emittedCount += await this.processRecord(id, records, {
-        idToRecord, predecessorsOf, shapes, diagnostics, health, onEvent, opts,
+        idToRecord, predecessorsOf, shapes, diagnostics, health, selections, onEvent, opts,
       });
     }
 
@@ -598,6 +640,7 @@ export class RecomputeEngine {
           shapes,
           diagnostics,
           health,
+          selections,
           mechanism: verdict.mechanism,
           mechanismFailures: verdict.failures,
         };
@@ -617,6 +660,7 @@ export class RecomputeEngine {
           shapes,
           diagnostics,
           health,
+          selections,
           mechanism: 'unverified',
           mechanismFailures: [],
         };
@@ -627,6 +671,7 @@ export class RecomputeEngine {
       shapes,
       diagnostics,
       health,
+      selections,
       mechanism: 'unverified',
       mechanismFailures: [],
     };

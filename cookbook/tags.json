@@ -111,5 +111,10 @@
   "callout",
   "hole-spacing",
   "annotation",
-  "tube-routing"
+  "tube-routing",
+  "collaboration",
+  "merge",
+  "gate",
+  "requirement",
+  "cli"
 ]

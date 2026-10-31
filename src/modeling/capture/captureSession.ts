@@ -80,6 +80,7 @@ import {
 import {
   createBendFeatureCaptureSpec,
   createDraftFeatureCaptureSpec,
+  createFaceEditCaptureSpec,
   createScalarEdgeFeatureCaptureSpec,
   createVariableEdgeFeatureCaptureSpec,
 } from './shapeOperationCaptureValidation';
@@ -93,6 +94,14 @@ import {
   type ConnectorEntry,
 } from '../../shared/parts/connectorManifestSchema';
 import type { CatalogConnectorEntry } from '../../shared/parts/types';
+import {
+  AssetMetadataInputSchema,
+  AssetMetadataSchema,
+  AssetPresetsSchema,
+  type AssetMetadata,
+  type AssetMetadataInput,
+  type AssetPresets,
+} from '../../shared/assets/assetSchema';
 
 export type { EncodedMateRecord, SolvedAssemblyMateMetadata } from './assemblyFeatureRecords';
 
@@ -180,6 +189,52 @@ export class CaptureSession {
   private records: FeatureRecord[] = [];
   /** Slice-3: session-owned param table populated by `kcad.param()`/`kcad.params()`. */
   readonly paramTable: ParamTable = new ParamTable();
+  private assetMetadataStore: AssetMetadata | undefined;
+  private assetPresetsStore: AssetPresets = {};
+  private assetPresetsDeclared = false;
+
+  /** Validated metadata authored with `meta()`; callers receive detached data. */
+  get assetMetadata(): AssetMetadata | undefined {
+    return this.assetMetadataStore === undefined ? undefined : cloneJson(this.assetMetadataStore);
+  }
+
+  /** Validated preset overrides authored with `presets()`; callers receive detached data. */
+  get assetPresets(): AssetPresets {
+    return cloneJson(this.assetPresetsStore);
+  }
+
+  setAssetMetadata(input: AssetMetadataInput): AssetMetadata {
+    if (this.assetMetadataStore !== undefined) {
+      throw new KernelError('feature.invalid-args', 'meta() may be declared only once per CaptureSession.');
+    }
+    const parsedInput = AssetMetadataInputSchema.parse(input);
+    const parsed = AssetMetadataSchema.parse(parsedInput);
+    this.assetMetadataStore = parsed;
+    return cloneJson(parsed);
+  }
+
+  setAssetPresets(input: unknown): AssetPresets {
+    if (this.assetPresetsDeclared) {
+      throw new KernelError('feature.invalid-args', 'presets() may be declared only once per CaptureSession.');
+    }
+    const parsed = AssetPresetsSchema.parse(input);
+    for (const [presetName, overrides] of Object.entries(parsed)) {
+      const candidate = ParamTable.deserialize(this.paramTable.serialize());
+      for (const [name, value] of Object.entries(overrides)) {
+        if (!candidate.has(name)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `presets(): preset '${presetName}' references undeclared param '${name}'.`,
+          );
+        }
+        candidate.set(name, value);
+      }
+    }
+    this.assetPresetsStore = cloneJson(parsed);
+    this.assetPresetsDeclared = true;
+    return this.assetPresets;
+  }
+
   /** Slice-3: append-only soft-warning log. Drained via `consumeWarnings()`. */
   readonly warnings: SoftWarning[] = [];
   /** Slice-3 Phase 4: current run's gated named features.
@@ -264,6 +319,13 @@ export class CaptureSession {
       if (shape !== undefined) seed.set(r.id, shape);
     }
     return seed;
+  }
+
+  /** Identity of everything a full lower depends on besides the record list:
+   *  feature gates and the live param table. `Shape.lower()` refuses a
+   *  cached solid when this changes, so a param edit re-resolves topology. */
+  lowerInputsKey(): string {
+    return this.fullLowerInputsKey();
   }
 
   private fullLowerInputsKey(): string {
@@ -961,6 +1023,21 @@ export class CaptureSession {
    * The shape-operation record builder owns selector serialization and
    * metadata defaults; this method only enforces session ownership.
    */
+  faceEditFeature(
+    kind: 'moveFaces' | 'offsetFaces',
+    base: Shape,
+    faces: readonly (import('./proxy').FaceSelector | string)[],
+    params: Record<string, import('../../shared/intent/types').Param>,
+  ): Shape {
+    return this.createShape(createFaceEditCaptureSpec(
+      this.records,
+      kind,
+      base.id,
+      faces,
+      params,
+    ));
+  }
+
   draftFeature(
     base: Shape,
     angleDeg: Editable<number>,
@@ -1053,6 +1130,9 @@ export class CaptureSession {
     this.records = [];
     this.idGen.reset();
     this.paramTable.clear();
+    this.assetMetadataStore = undefined;
+    this.assetPresetsStore = {};
+    this.assetPresetsDeclared = false;
     this.warnings.length = 0;
     this.gatedFeatureNames.clear();
     this.engineRef = undefined;
@@ -1071,14 +1151,20 @@ export class CaptureSession {
   readonly params = {
     list: (): import('../../shared/runtime/paramTable').ParamEntry[] => this.paramTable.list(),
 
-    update: async (edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> => this.runParamUpdate(edits),
+    update: async (
+      edits: ParamUpdateEdit[],
+      options?: { preview?: boolean },
+    ): Promise<ParamUpdateResult> => this.runParamUpdate(edits, options),
   };
 
   /** Compatibility facade for `params.update`. Recompute orchestration lives
    *  in `src/modeling/paramUpdate.ts` (re-exported by `buildModel`) so CLI,
    *  MCP, and direct session updates share the same cache/warning/tail-shape
    *  policy without an edge from this file into the build pipeline. */
-  private async runParamUpdate(edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> {
+  private async runParamUpdate(
+    edits: ParamUpdateEdit[],
+    options?: { preview?: boolean },
+  ): Promise<ParamUpdateResult> {
     const { updateModelParams } = await import('../paramUpdate');
     const records = this.getRecords();
     const shapes = new Map<string, ShapeBackend>();
@@ -1090,10 +1176,11 @@ export class CaptureSession {
       shapes,
       diagnostics: [],
       health: new Map(),
+      selections: [],
       warnings: [],
       tailId,
       tailShape: tailId ? this.cachedShapes.get(tailId) : undefined,
-    }, edits);
+    }, edits, options?.preview ? { preview: true } : undefined);
     return result;
   }
 }

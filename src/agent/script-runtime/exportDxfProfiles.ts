@@ -23,7 +23,7 @@ import {
   type SectionSpec,
 } from '../../kernel/backends/occt/planarProfile';
 import type { ProjectedSegment } from '../../kernel/backends/occt/sketchFromShape';
-import { sceneToWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
+import { releaseWorldFrameParts, sceneToWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
@@ -119,9 +119,23 @@ export function exportSceneDxf(
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): ExportResult {
+  const parts = sceneToWorldFrameParts(scene);
+  try {
+    return sceneDxfFromParts(parts, targetId, exportOptions, diagnostics, featureCount);
+  } finally {
+    releaseWorldFrameParts(parts);
+  }
+}
+
+function sceneDxfFromParts(
+  parts: ReturnType<typeof sceneToWorldFrameParts>,
+  targetId: string,
+  exportOptions: ExportInput['options'],
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): ExportResult {
   const opts = (exportOptions as DxfProfileOptions | undefined) ?? { format: 'dxf' };
   const section = readSection(opts);
-  const parts = sceneToWorldFrameParts(scene);
   const profiles: Array<{ name: string; loops: ProjectedSegment[][] }> = [];
   const failed: string[] = [];
   for (const p of parts) {

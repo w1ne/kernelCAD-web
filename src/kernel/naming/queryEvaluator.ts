@@ -13,10 +13,11 @@
 // `parseTopoRef`. Both surface syntaxes bottom out on one internal Query
 // value, so a face built either way resolves through the same code path.
 //
-// Edge-branch scope. Per Finding #33, OcctBackend.edgeHistoryMap is a
-// declared type with zero population sites in develop today. Q3 ships the
-// face-branch fully and surfaces `query.unsupported-entity-type` for every
-// other kind. The wiring across the ~10 feature lowerers is a separate slice.
+// Faces always resolve from historyMap. Edges resolve when edgeHistoryMap is
+// set: boxes and cylinders seed it, and booleans, constant fillets, matching
+// transforms, and planar face edits carry it. A scene with no edge map still
+// reports query.unsupported-entity-type. Vertices and the other kinds stay
+// unsupported.
 
 import type {
   Query,
@@ -33,7 +34,8 @@ import {
   parseTopoRef,
   formatTopoRef,
 } from './topoRef';
-import type { FaceLineage, FaceHash } from './evolutionRecord';
+import type { EdgeLineage, FaceLineage, FaceHash } from './evolutionRecord';
+import { descendsFromFeature } from './operationLineage';
 import {
   throwQueryEmpty,
   throwQueryOverDetermined,
@@ -137,7 +139,9 @@ function evalAst(
     case 'everything':
       return collectAllOfKind(ast.kind, scene, originatingQuery);
     case 'createdBy':
-      return collectByCreatedBy(ast.id, ast.kind, scene, originatingQuery);
+    case 'newSince':
+    case 'derivedFrom':
+      return collectHistory(ast.op, ast.id, ast.kind ?? 'face', scene, originatingQuery);
     case 'ownedByPart':
     case 'ownerPart':
       // Part-registry resolution lands in Q6 alongside assembly.parts.
@@ -229,6 +233,13 @@ function collectAllOfKind(
   scene: QueryScene,
   originatingQuery: Query<unknown>,
 ): ResolvedEntity[] {
+  if (kind === 'edge') {
+    const map = scene.backend.edgeHistoryMap;
+    if (!map) throwQueryUnsupportedEntityType(originatingQuery, scene, kind);
+    const out: ResolvedEntity[] = [];
+    for (const [hash, lineage] of map) out.push(buildEdgeEntity(hash, lineage));
+    return sortCanonical(out);
+  }
   if (kind !== 'face') {
     throwQueryUnsupportedEntityType(originatingQuery, scene, kind);
   }
@@ -241,30 +252,44 @@ function collectAllOfKind(
   return sortCanonical(out);
 }
 
-// ---------------------------------------------------------------------------
-// `createdBy` — load-bearing per spec §1.1. Walks the lineage map.
-// ---------------------------------------------------------------------------
+type HistoryOp = 'createdBy' | 'newSince' | 'derivedFrom';
 
-function collectByCreatedBy(
+function historyMatch(lineage: FaceLineage | EdgeLineage, id: string, op: HistoryOp): boolean {
+  if (op === 'createdBy') return lineage.featureId === id || lineage.rootFeatureId === id;
+  const derived = descendsFromFeature(lineage, id);
+  return op === 'derivedFrom' ? derived : !derived;
+}
+
+/** `createdBy` is the birth stamp. `derivedFrom` walks the descent chain.
+ *  `newSince` is the complement of `derivedFrom`. */
+function collectHistory(
+  op: HistoryOp,
   id: string,
-  kind: QueryKind | undefined,
+  kind: QueryKind,
   scene: QueryScene,
   originatingQuery: Query<unknown>,
 ): ResolvedEntity[] {
-  if (kind !== undefined && kind !== 'face') {
+  if (kind !== 'face' && kind !== 'edge') {
     throwQueryUnsupportedEntityType(originatingQuery, scene, kind);
   }
   const knownIds = scene.records?.map((r) => r.id) ?? [];
   if (knownIds.length > 0 && !knownIds.includes(id)) {
     throwQueryUnknownId(originatingQuery, scene, id, knownIds);
   }
+  if (kind === 'edge') {
+    const map = scene.backend.edgeHistoryMap;
+    if (!map) throwQueryUnsupportedEntityType(originatingQuery, scene, 'edge');
+    const out: ResolvedEntity[] = [];
+    for (const [hash, lineage] of map) {
+      if (historyMatch(lineage, id, op)) out.push(buildEdgeEntity(hash, lineage));
+    }
+    return sortCanonical(out);
+  }
   const map = scene.backend.historyMap;
   if (!map) return [];
   const out: ResolvedEntity[] = [];
   for (const [hash, lineage] of map) {
-    if (lineage.featureId === id || lineage.rootFeatureId === id) {
-      out.push(buildFaceEntity(hash, lineage));
-    }
+    if (historyMatch(lineage, id, op)) out.push(buildFaceEntity(hash, lineage));
   }
   return sortCanonical(out);
 }
@@ -280,8 +305,11 @@ function filterEntityKind(
   lenient: boolean,
   originatingQuery: Query<unknown>,
 ): ResolvedEntity[] {
-  if (kind !== 'face') {
+  if (kind !== 'face' && kind !== 'edge') {
     throwQueryUnsupportedEntityType(originatingQuery, scene, kind);
+  }
+  if (subAst.op === 'createdBy' || subAst.op === 'newSince' || subAst.op === 'derivedFrom') {
+    return collectHistory(subAst.op, subAst.id, kind, scene, originatingQuery);
   }
   // Plain `q.face()` (or `q.face(...)` with no narrowing filters) lands here
   // with subAst === { op: 'everything', kind: 'face' } — short-circuit to
@@ -684,6 +712,16 @@ function topoKindToQueryKind(kind: string): QueryKind | null {
 // ---------------------------------------------------------------------------
 // Entity-construction helpers.
 // ---------------------------------------------------------------------------
+
+function buildEdgeEntity(hash: string, lineage: EdgeLineage): ResolvedEntity {
+  const owner = lineage.featureName ?? lineage.rootFeatureId;
+  const refName = lineage.labelName ?? hash.slice(0, 8);
+  return {
+    kind: 'edge',
+    ref: formatTopoRef({ owner, kind: 'edge', segments: [refName] }),
+    handle: hash,
+  };
+}
 
 function buildFaceEntity(hash: FaceHash, lineage: FaceLineage): ResolvedEntity {
   const owner = lineage.featureName ?? lineage.rootFeatureId;

@@ -1,0 +1,3 @@
+$ kernelcad collab check --file bracket.kcad.ts --base main --head main --yours hole-move
+collab check: REJECT
+  collab.gate.requirement-failed: {"code":"collab.gate.requirement-failed","name":"hole-pattern","measured":2,"limit":0.5,"closure":["hole_1"]}

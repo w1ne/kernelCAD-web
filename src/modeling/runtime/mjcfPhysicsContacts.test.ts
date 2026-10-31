@@ -58,25 +58,28 @@ describe.skipIf(!process.env.KCAD_SLOW)('P11 Slice 1 — MuJoCo sees collision c
         const kcad = createModelingApi({ session });
         const arm = kcad.assembly('three-cube-chain');
 
-        // Three 40 mm cubes. Hinges chain them along +X; the second
-        // hinge's pose folds C back toward A so the two cubes
-        // physically share a slab of geometry.
+        // Two 40 mm cubes joined by a 10 mm slab. Hinges chain them along
+        // +X; folding the second hinge 180° (set through qpos below — the
+        // MJCF is emitted at the zero pose) swings C back over A so the
+        // two cubes physically share a slab of geometry.
         const cubeA = kcad.box(40, 40, 40, true);
-        const cubeB = kcad.box(40, 40, 40, true);
+        const cubeB = kcad.box(10, 40, 40, true);
         const cubeC = kcad.box(40, 40, 40, true);
         const jAB = kcad.joint.clevis({
+            style: { knuckleR: 12 },
             parentBody: cubeA,
             childBody: cubeB,
             axis: 'Y',
             pivotParent: [20, 0, 0],
-            pivotChild: [-20, 0, 0],
+            pivotChild: [-5, 0, 0],
             limitsDeg: [-180, 180],
         });
         const jBC = kcad.joint.clevis({
+            style: { knuckleR: 12 },
             parentBody: jAB.childGeometry,
             childBody: cubeC,
             axis: 'Y',
-            pivotParent: [20, 0, 0],
+            pivotParent: [5, 0, 0],
             pivotChild: [-20, 0, 0],
             limitsDeg: [-180, 180],
         });
@@ -102,8 +105,8 @@ describe.skipIf(!process.env.KCAD_SLOW)('P11 Slice 1 — MuJoCo sees collision c
             axis: jBC.childConnector.axis,
         });
         // Pose: AB hinge straight (0°), BC hinge folded back 180°.
-        // Result in world frame: A at x≈0, B at x≈40, C folded back to
-        // x≈0 — A and C cubes overlap deeply.
+        // Result in world frame: A at x≈0, B at x≈25, C folded back to
+        // x≈10 — A and C cubes overlap deeply.
         arm.mate('hingeAB', 'a.hingeAB', 'b.hingeAB', 'revolute', {
             pose: 0,
             limitsDeg: [-180, 180],
@@ -113,7 +116,7 @@ describe.skipIf(!process.env.KCAD_SLOW)('P11 Slice 1 — MuJoCo sees collision c
             limitsDeg: [-180, 180],
         });
 
-        const { mjcf } = await assemblyToMjcf(arm);
+        const { mjcf, jointOrder } = await assemblyToMjcf(arm);
 
         // Sanity-check the MJCF carries the collision surface and the
         // canonical robotics-MJCF `<contact><exclude>` block.
@@ -139,12 +142,13 @@ describe.skipIf(!process.env.KCAD_SLOW)('P11 Slice 1 — MuJoCo sees collision c
         // Parse through MuJoCo and check contact count at rest pose.
         const mujoco = (await loadMujocoInNode()) as {
             MjModel: { from_xml_string: (s: string) => unknown };
-            MjData: new (m: unknown) => unknown;
+            MjData: new (m: unknown) => { qpos: Float64Array };
             mj_forward: (m: unknown, d: unknown) => void;
         };
         const model = mujoco.MjModel.from_xml_string(mjcf);
         const data = new mujoco.MjData(model);
         try {
+            data.qpos[jointOrder.findIndex(j => j.mateName === 'hingeBC')] = Math.PI;
             mujoco.mj_forward(model, data);
             const ncon = Number((data as { ncon: number }).ncon);
             expect(ncon).toBeGreaterThan(0);

@@ -106,10 +106,8 @@ describe('diagnostic catalogue invariants', () => {
     // + 3 direct-edit drag: feature.direct-edit.clamped,
     //   feature.direct-edit.delta-wrapper, feature.direct-edit.unresolved = 308.
     // + 1 feature.direct-edit.shared-param-conflict (one param drives multiple
-    //   translated axes with different drag deltas; drag cannot encode it) = 309 + 3 likeness = 318.
-    // + 3 body likeness (verify check body-likeness):
-    //   reference.likeness.auto-failed, reference.likeness.stills-incomplete,
-    //   reference.likeness.still-failed = 318.
+    //   translated axes with different drag deltas; drag cannot encode it) = 309.
+    // (running totals from here on predate removal of 3 reference.likeness.* codes: -3.)
     // + 2 3MF bed fit (arrange 'plate' / 'assembled'): export.3mf.plate-overflow,
     //   export.3mf.exceeds-bed = 320.
     // + 1 feature.hole.cut-missing (fail-closed per-bore hole check) = 321.
@@ -138,8 +136,11 @@ describe('diagnostic catalogue invariants', () => {
     //   tube.branch.axis-not-square, tube.branch.od-too-large = 358.
     // + 1 drafting review: drawing.annotation.override-missing = 359.
     // + 1 kernel selection: recompute.kernel.unavailable = 363.
+    // + 2 selector binding drift: selector.binding-moved, selector.binding-changed = 365.
+    // + 4 closed-loop kinematics: kinematic.loop.branch-flip,
+    //   kinematic.loop.lockup, kinematic.loop.mobility-mismatch,
+    //   kinematic.loop.branch-ambiguous = 376 (DIAGNOSTIC_CODES.length; the running total above lags codes added without a comment).
     expect(new Set(DIAGNOSTIC_CODES).size).toBe(DIAGNOSTIC_CODES.length);
-    expect(DIAGNOSTIC_CODES).toContain('tool.trace-from-image.part-detection-failed');
     expect(DIAGNOSTIC_CODES).toContain('feature.boolean.recovered');
     expect(DIAGNOSTIC_CODES).toContain('feature.shell.boolean-fallback');
     expect(DIAGNOSTIC_CODES).toContain('feature.sheetMetal.crossing-bends');
@@ -149,6 +150,8 @@ describe('diagnostic catalogue invariants', () => {
     expect(DIAGNOSTIC_CODES).toContain('assembly.connectivity.assumed-root');
     expect(DIAGNOSTIC_CODES).toContain('script.no-return');
     expect(DIAGNOSTIC_CODES).toContain('recompute.kernel.guard-fallback');
+    expect(DIAGNOSTIC_CODES).toContain('selector.binding-moved');
+    expect(DIAGNOSTIC_CODES).toContain('selector.binding-changed');
   });
 
   it('every code has a non-empty hint template', () => {

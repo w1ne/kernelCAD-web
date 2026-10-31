@@ -60,8 +60,20 @@ describe('evaluate_script live viewer', () => {
     const result = await evaluateScriptTool({ code: 'return box(10, 10, 10);' });
     expect(result.ok).toBe(true);
     expect(result.viewerUrl).toBeUndefined();
-    expect(result.viewerError).toContain('build:mcp-viewer');
+    expect(result.viewerError).toContain('KERNELCAD_VIEWER_DIST');
     vi.stubEnv('KERNELCAD_VIEWER_DIST', dist);
+  });
+  it('keeps successful geometry without an explicitly configured viewer', async () => {
+    await closeMcpViewer();
+    vi.stubEnv('KERNELCAD_VIEWER_DIST', undefined);
+    try {
+      const result = await evaluateScriptTool({ code: 'return box(10, 10, 10);' });
+      expect(result.ok).toBe(true);
+      expect(result.viewerUrl).toBeUndefined();
+      expect(result.viewerError).toContain('KERNELCAD_VIEWER_DIST');
+    } finally {
+      vi.stubEnv('KERNELCAD_VIEWER_DIST', dist);
+    }
   });
   it('uses hosted Studio instead of provisioning a loopback viewer in hosted mode', async () => {
     await closeMcpViewer();

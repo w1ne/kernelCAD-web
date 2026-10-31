@@ -15,6 +15,8 @@ import {
 } from '../../../../../src/kernel/backends/occt/occtBackend';
 import { sceneToWorldFrameParts } from '../../../../../src/kernel/backends/occt/sceneToWorldFrame';
 import { exportGlbAsync } from '../../../../../src/kernel/backends/occt/exportGlb';
+import type { SolvedRigAssembly } from '../../../../../src/kernel/export/rigHierarchy';
+import { expandFinish } from '../../../../../src/shared/render/finishes';
 import { Transform } from '../../../../../src/shared/runtime/se3';
 import type { SceneBackend, SceneBackendPart } from '../../../../../src/kernel/backends/sceneBackend';
 import type { PBRMaterial } from '../../../../../src/shared/intent/material';
@@ -28,12 +30,13 @@ import type { PBRMaterial } from '../../../../../src/shared/intent/material';
  */
 function parseGlbJson(bytes: Uint8Array): {
   materials?: Array<{
+    name?: string;
     pbrMetallicRoughness?: { baseColorFactor?: number[] };
     extensions?: Record<string, Record<string, unknown>>;
   }>;
   extensionsUsed?: string[];
   asset?: { extras?: Record<string, unknown> };
-  nodes?: Array<{ name?: string; mesh?: number }>;
+  nodes?: Array<{ name?: string; mesh?: number; children?: number[]; matrix?: number[] }>;
 } {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   expect(view.getUint32(0, true)).toBe(0x46546c67); // 'glTF'
@@ -43,7 +46,7 @@ function parseGlbJson(bytes: Uint8Array): {
   return JSON.parse(new TextDecoder().decode(bytes.subarray(20, 20 + jsonLength)));
 }
 
-function makeScene(parts: { name: string; shape: OcctBackend; material?: PBRMaterial; color?: string }[]): SceneBackend {
+function makeScene(parts: { name: string; shape: OcctBackend; material?: PBRMaterial; color?: string; worldTransform?: Transform }[]): SceneBackend {
   return {
     target: 'export-occt',
     assemblyName: 'demo',
@@ -52,7 +55,7 @@ function makeScene(parts: { name: string; shape: OcctBackend; material?: PBRMate
       const entry: SceneBackendPart = {
         name: p.name,
         shape: p.shape,
-        worldTransform: Transform.identity(),
+        worldTransform: p.worldTransform ?? Transform.identity(),
         ...(p.color !== undefined ? { color: p.color } : {}),
         ...(p.material !== undefined ? { material: p.material } : {}),
       };
@@ -165,6 +168,39 @@ describe('exportGlbAsync', () => {
     ).toBe(true);
   });
 
+  it('writes finish and colour-parameter material names as unique non-empty GLB names', async () => {
+    const scene = makeScene([
+      { name: 'fastener', shape: OcctBackend.box(10, 10, 10), material: expandFinish('brass') },
+      {
+        name: 'body',
+        shape: OcctBackend.box(8, 8, 8),
+        material: { baseColor: '#477a91', metalness: 0.1, roughness: 0.6 },
+      },
+    ]);
+    const meshed = meshAllParts(scene).map((part, index) => ({
+      ...part,
+      ...(index === 1 ? { colorParamName: 'hull' } : {}),
+    }));
+    const bytes = await exportGlbAsync(meshed, { format: 'glb' });
+    const names = (parseGlbJson(bytes).materials ?? []).map((material) => material.name);
+
+    expect(names).toEqual(expect.arrayContaining(['brass', 'hull']));
+    expect(names.every((name) => typeof name === 'string' && name.trim().length > 0)).toBe(true);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it('deduplicates identical PBR materials that share an explicit name', async () => {
+    const shared = { name: 'coating', baseColor: '#56789a', metalness: 0.2, roughness: 0.4 };
+    const scene = makeScene([
+      { name: 'left', shape: OcctBackend.box(10, 10, 10), material: shared },
+      { name: 'right', shape: OcctBackend.box(8, 8, 8), material: { ...shared } },
+    ]);
+    const bytes = await exportGlbAsync(meshAllParts(scene), { format: 'glb' });
+    const names = (parseGlbJson(bytes).materials ?? []).map((material) => material.name);
+
+    expect(names).toEqual(['coating']);
+  });
+
   it('embeds asset.extras.kernelcad with version + isoDate + axisConvention', async () => {
     const scene = makeScene([{ name: 'cube', shape: OcctBackend.box(10, 10, 10) }]);
     const meshed = meshAllParts(scene);
@@ -223,5 +259,58 @@ describe('exportGlbAsync', () => {
 
   it('throws on an empty parts array', async () => {
     await expect(exportGlbAsync([], { format: 'glb' })).rejects.toThrow(/no parts/i);
+  });
+
+  it('exports a pivot hierarchy and asset-level rig extras by default when solved mates are supplied', async () => {
+    const scene = makeScene([
+      { name: 'base', shape: OcctBackend.box(20, 20, 5) },
+      { name: 'lid', shape: OcctBackend.box(20, 30, 5), worldTransform: Transform.translation(10, 0, 5) },
+    ]);
+    const solved: SolvedRigAssembly = {
+      groundedPart: 'base',
+      parts: [
+        { name: 'base', worldTransform: Transform.identity().toMat4() },
+        { name: 'lid', worldTransform: Transform.translation(10, 0, 5).toMat4() },
+      ],
+      mates: [{ name: 'lid', type: 'revolute', a: 'base.hinge', b: 'lid.hinge', limitsDeg: [0, 110] }],
+      connectorsByPartName: {
+        base: [{ name: 'hinge', type: 'axis', origin: [10, 0, 5], axis: [0, 0, 1] }],
+        lid: [{ name: 'hinge', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] }],
+      },
+    };
+    const bytes = await exportGlbAsync(meshAllParts(scene), { format: 'glb' }, solved);
+    const json = parseGlbJson(bytes);
+    const pivot = json.nodes?.find((node) => node.name === 'pivot:lid');
+    const partNode = json.nodes?.find((node) => node.name === 'part:lid');
+    const lid = json.nodes?.find((node) => node.name === 'lid');
+    expect(pivot).toBeDefined();
+    expect(pivot?.children).toContain(json.nodes?.indexOf(partNode!));
+    expect(partNode?.children).toContain(json.nodes?.indexOf(lid!));
+    expect(lid?.matrix).toBeDefined();
+    expect(json.asset?.extras?.kernelcad).toMatchObject({
+      rig: { lid: { type: 'rotate', axis: 'z', range: [0, 110], node: 'pivot:lid' } },
+    });
+  });
+
+  it('keeps flat GLB output when hierarchy is explicitly flat', async () => {
+    const scene = makeScene([
+      { name: 'base', shape: OcctBackend.box(20, 20, 5) },
+      { name: 'lid', shape: OcctBackend.box(20, 30, 5), worldTransform: Transform.translation(10, 0, 5) },
+    ]);
+    const solved: SolvedRigAssembly = {
+      groundedPart: 'base',
+      parts: [
+        { name: 'base', worldTransform: Transform.identity().toMat4() },
+        { name: 'lid', worldTransform: Transform.translation(10, 0, 5).toMat4() },
+      ],
+      mates: [{ name: 'lid', type: 'revolute', a: 'base.hinge', b: 'lid.hinge' }],
+      connectorsByPartName: {
+        base: [{ name: 'hinge', type: 'axis', origin: [10, 0, 5], axis: [0, 0, 1] }],
+        lid: [{ name: 'hinge', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] }],
+      },
+    };
+    const json = parseGlbJson(await exportGlbAsync(meshAllParts(scene), { format: 'glb', hierarchy: 'flat' }, solved));
+    expect(json.nodes?.some((node) => node.name === 'pivot:lid')).toBe(false);
+    expect(json.asset?.extras?.kernelcad).not.toHaveProperty('rig');
   });
 });

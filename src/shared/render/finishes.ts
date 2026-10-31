@@ -131,6 +131,7 @@ export function expandFinish(
   }
   // Fresh copy so callers never mutate the shared table entry.
   const material: PBRMaterial = { ...FINISHES[name] };
+  material.name ??= name;
   if (opts?.color !== undefined) {
     // Leave baseColor validation to .material() (throws invalid-base-color on
     // a non-string / empty). One validator, one error path.

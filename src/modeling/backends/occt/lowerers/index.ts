@@ -3,13 +3,11 @@
 import type { FeatureKind } from '../../../../shared/intent/types';
 import type { KindLowerer } from './context';
 import {
-  lowerAssemblyConnect,
-  lowerAssemblyExport,
-  lowerAssemblyJoint,
   lowerAssemblyModel,
-  lowerAssemblyPart,
   lowerSolvedAssembly,
 } from './assembly';
+import { lowerAssemblyConnect, lowerAssemblyJoint, lowerAssemblyPart } from './assemblyParts';
+import { lowerAssemblyExport } from './assemblyExport';
 import { lowerBoolean } from './boolean';
 import { lowerCurve3d, lowerEmbossText, lowerProjectCurve, lowerVariableSweep } from './curves';
 import { lowerChamfer, lowerFillet } from './edgeFeatures';
@@ -22,6 +20,7 @@ import { lowerBox, lowerCylinder, lowerSphere } from './primitives';
 import { lowerRevolve } from './revolve';
 import { lowerSheetMetal, lowerSheetMetalBend } from './sheetMetal';
 import { lowerDraft, lowerShell } from './shellDraft';
+import { lowerMoveFaces, lowerOffsetFaces } from './faceEdit';
 import { lowerExtrude, lowerSketch } from './sketchExtrude';
 import { lowerShapeThicken, lowerSurfaceSew, lowerSurfaceThicken, lowerSurfaceToShape } from './surfaces';
 import { lowerSweep } from './sweep';
@@ -62,6 +61,8 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   chamfer: lowerChamfer,
   shell: lowerShell,
   draft: lowerDraft,
+  moveFaces: lowerMoveFaces,
+  offsetFaces: lowerOffsetFaces,
   hole: lowerHole,
   holes: lowerHoles,
   cutout: lowerCutout,
@@ -100,4 +101,5 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   drawingDimension: lowerVirtualRecord,
   drawingReview: lowerVirtualRecord,
   tubeSpec: lowerVirtualRecord,
+  require: lowerVirtualRecord,
 };

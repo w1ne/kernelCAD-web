@@ -291,8 +291,7 @@ describe('physical use case records', () => {
     });
 
     const result = await reviewPhysicalUseCasesWithReachability(arm, {
-      includeReachability: true,
-      includeStatics: true,
+      level: 'statics',
       reachabilitySamplesPerMate: 2,
     });
     const diagnostic = result.diagnostics.find((candidate) =>
@@ -316,8 +315,7 @@ describe('physical use case records', () => {
 
   it('maps insufficient pose-bound actuator torque into a blocking review diagnostic', async () => {
     const result = await reviewPhysicalUseCasesWithReachability(makeStaticReviewRig(25), {
-      includeReachability: true,
-      includeStatics: true,
+      level: 'statics',
       reachabilitySamplesPerMate: 1,
     });
 
@@ -336,8 +334,7 @@ describe('physical use case records', () => {
 
   it('returns a pose-bound static certificate when wrench and actuator limits pass', async () => {
     const result = await reviewPhysicalUseCasesWithReachability(makeStaticReviewRig(35), {
-      includeReachability: true,
-      includeStatics: true,
+      level: 'statics',
       reachabilitySamplesPerMate: 1,
     });
 
@@ -358,7 +355,7 @@ describe('physical use case records', () => {
   it('returns reaction and structural certificates for a rated joint.clevis load path', async () => {
     const result = await reviewPhysicalUseCasesWithReachability(
       makeStructurallyRatedClevisRig(),
-      { includeJointStructure: true, reachabilitySamplesPerMate: 3 },
+      { level: 'reactions', reachabilitySamplesPerMate: 3 },
     );
 
     expect(result.staticCertificates).toHaveLength(1);
@@ -391,15 +388,15 @@ describe('physical use case records', () => {
   it('blocks undeclared/exceeded envelopes and missing structural evidence', async () => {
     const undeclared = await reviewPhysicalUseCasesWithReachability(
       makeStructurallyRatedClevisRig({ includeEnvelope: false }),
-      { includeJointStructure: true, reachabilitySamplesPerMate: 3 },
+      { level: 'reactions', reachabilitySamplesPerMate: 3 },
     );
     const exceeded = await reviewPhysicalUseCasesWithReachability(
       makeStructurallyRatedClevisRig({ envelopeForceN: 5 }),
-      { includeJointStructure: true, reachabilitySamplesPerMate: 3 },
+      { level: 'reactions', reachabilitySamplesPerMate: 3 },
     );
     const missingStructure = await reviewPhysicalUseCasesWithReachability(
       makeStructurallyRatedClevisRig({ includeStructure: false }),
-      { includeJointStructure: true, reachabilitySamplesPerMate: 3 },
+      { level: 'reactions', reachabilitySamplesPerMate: 3 },
     );
 
     expect(undeclared.diagnostics).toEqual(expect.arrayContaining([
@@ -416,7 +413,7 @@ describe('physical use case records', () => {
   it('maps a geometry-derived safety-factor failure into a blocker with evidence', async () => {
     const result = await reviewPhysicalUseCasesWithReachability(
       makeStructurallyRatedClevisRig({ minJointSafetyFactor: 1000 }),
-      { includeJointStructure: true, reachabilitySamplesPerMate: 3 },
+      { level: 'reactions', reachabilitySamplesPerMate: 3 },
     );
 
     expect(result.diagnostics).toEqual(expect.arrayContaining([

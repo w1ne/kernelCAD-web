@@ -6,6 +6,9 @@
 
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ConnectorEntry } from '../../shared/parts/connectorManifestSchema';
+import { coarsePitchOf, screwIso, type FastenerIsoDims } from './fastenerIsoDims';
+
+export type { FastenerIsoDims };
 
 /** Stocked screw lengths per thread, the standard preferred series (a stocked
  *  subset). A 50 mm M2 is not hardware; per-size lists keep the table honest. */
@@ -122,18 +125,19 @@ export const HEX_BOLT_HEAD: Record<string, { D: number; K: number; S: number }> 
   M20: { S: 30.0, K: 12.5, D: 34.641 },
 };
 
+/** ISO 4032 style 1 hex nut: s (across flats) and m max (height). */
 export const HEX_NUT: Record<string, { S: number; m: number }> = {
   M2: { S: 4, m: 1.6 },
   M2_5: { S: 5, m: 2 },
   M3: { S: 5.5, m: 2.4 },
   M4: { S: 7, m: 3.2 },
-  M5: { S: 8, m: 4.0 },
-  M6: { S: 10, m: 5.0 },
-  M8: { S: 13, m: 6.5 },
-  M10: { S: 16, m: 8 },
-  M12: { S: 18, m: 10 },
-  M16: { S: 24, m: 13 },
-  M20: { S: 30, m: 16 },
+  M5: { S: 8, m: 4.7 },
+  M6: { S: 10, m: 5.2 },
+  M8: { S: 13, m: 6.8 },
+  M10: { S: 16, m: 8.4 },
+  M12: { S: 18, m: 10.8 },
+  M16: { S: 24, m: 14.8 },
+  M20: { S: 30, m: 18 },
 };
 
 export const LOCK_NUT: Record<string, { S: number; m: number }> = {
@@ -146,9 +150,10 @@ export const LOCK_NUT: Record<string, { S: number; m: number }> = {
   M12: { S: 18, m: 12.0 },
 };
 
+/** ISO 7089: d1 (Din), d2 (Dout), h (t). Plain edges; ISO 7090 is the chamfered form. */
 export const FLAT_WASHER: Record<string, { Dout: number; Din: number; t: number }> = {
   M2: { Dout: 5, Din: 2.2, t: 0.3 },
-  M2_5: { Dout: 5, Din: 2.7, t: 0.5 },
+  M2_5: { Dout: 6, Din: 2.7, t: 0.5 },
   M3: { Dout: 7, Din: 3.2, t: 0.5 },
   M4: { Dout: 9, Din: 4.3, t: 0.8 },
   M5: { Dout: 10, Din: 5.3, t: 1.0 },
@@ -182,10 +187,31 @@ export type PartKind =
 
 export type FixtureKind = Extract<PartKind, 't-slot-nut' | 'stud' | 'flange-nut' | 'clamp' | 'block'>;
 
+/** Geometric detail of a standard fastener: `'full'` (default) draws the
+ *  head form, hex socket, chamfers and modeled threads; `'envelope'` the
+ *  nominal solid, for big assemblies. Fit and clash checks always measure
+ *  the envelope. */
+export type FastenerDetail = 'full' | 'envelope';
+
+/** Validate a `detail` option; omitted means `'full'`. */
+export function resolveDetail(detail: unknown, api: string): FastenerDetail {
+  if (detail === undefined || detail === 'full') return 'full';
+  if (detail === 'envelope') return 'envelope';
+  invalidArgs({
+    api,
+    path: 'detail',
+    got: detail,
+    requires: "'full' (head form, socket, chamfers, modeled threads) or 'envelope' (nominal solid, fast)",
+    example: "lib.part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16, detail: 'envelope' })",
+  });
+}
+
 export interface PartRequest {
   family: string;
   thread?: string;
   lengthMm?: number;
+  /** Geometric detail; default `'full'`. */
+  detail?: FastenerDetail;
 }
 
 export interface ResolvedPart {
@@ -205,6 +231,8 @@ export interface ResolvedPart {
   innerDiameterMm: number;
   /** Family-specific envelope dimensions (slot width, clamp length, …). */
   dims?: Record<string, number>;
+  /** Standard-table detail for the 'full' geometry (threaded fasteners). */
+  iso?: FastenerIsoDims;
   tags: string[];
   connectors: ConnectorEntry[];
 }
@@ -213,6 +241,11 @@ export interface StackRequest {
   thread: string;
   gripMm: number;
   mode?: 'screw' | 'bolt';
+  /** Geometric detail of every member; default `'full'`. */
+  detail?: FastenerDetail;
+  /** Bolt mode: whole thread pitches the tip must reach past the nut's outer
+   *  face; default 2. */
+  protrusionPitches?: number;
 }
 
 export interface StackMemberPlan {
@@ -225,6 +258,8 @@ export interface StackMemberPlan {
 export interface StackPlan {
   lengthMm: number;
   members: StackMemberPlan[];
+  /** Bolt mode: tip distance past the nut's outer face, mm. */
+  protrusionMm?: number;
 }
 
 interface HeadDims { D: number; K: number; /** Across-flats width, hex heads only. */ S?: number }
@@ -358,11 +393,11 @@ export function fixtureVariants(family: string): Array<{ thread: string; lengthM
   const spec = FIXTURES[family];
   if (spec === undefined) {
     invalidArgs({
-      api: 'lib.fixture.*',
+      api: 'lib.part',
       path: 'family',
       got: family,
       requires: `a stocked fixture family: ${FIXTURE_FAMILY_NAMES.join(', ')}`,
-      example: "lib.fixture.tSlotNut({ thread: 'M10' })",
+      example: "lib.part({ family: 't-slot-nut', thread: 'M10' })",
     });
   }
   return Object.keys(spec.threads).flatMap((key) => {
@@ -533,6 +568,7 @@ function screwPart(
     headHeightMm: dims.K,
     acrossFlatsMm: dims.S ?? 0,
     innerDiameterMm: 0,
+    iso: screwIso(request.family, thread, lengthMm, nominalMm),
     tags: ['screw', 'metric', thread],
     connectors: screwConnectors(spec.headStyle, dims, lengthMm),
   };
@@ -559,6 +595,7 @@ function nutPart(
     headHeightMm: dims.m,
     acrossFlatsMm: dims.S,
     innerDiameterMm: nominalMm,
+    iso: { pitchMm: coarsePitchOf(thread) },
     tags: ['nut', 'metric', thread],
     connectors: [
       { name: 'mating-face', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
@@ -705,17 +742,38 @@ export function resolvePart(request: PartRequest): ResolvedPart {
   return washerPart(request, spec, requireRow(spec.threads, thread, request.family), thread, nominalMm);
 }
 
-function shortestAtLeast(lengths: readonly number[], needed: number, label: string): number {
+function shortestAtLeast(
+  lengths: readonly number[],
+  needed: number,
+  why: { label: string; minOut: number; gripMm: number },
+): number {
   const hit = lengths.find((length) => length + 1e-9 >= needed);
   if (hit !== undefined) return hit;
   const longest = lengths[lengths.length - 1];
+  const out = why.minOut > 0 ? ` (including ${round3(why.minOut)} mm of thread past the nut)` : '';
   invalidArgs({
-    api: 'lib.stack({ thread, gripMm, mode })',
+    api: 'lib.stack({ thread, gripMm, mode, protrusionPitches })',
     path: 'gripMm',
-    got: needed,
-    requires: `a grip that an ${label} can reach; longest stocked length is ${longest}`,
+    got: why.gripMm,
+    requires: `a grip the ${why.label} can reach: the stack needs a ${round3(needed)} mm screw${out}, the longest stocked is ${longest} mm. Use a thinner grip, a larger thread, threaded rod, or a lower protrusionPitches`,
     unit: 'mm',
     example: STACK_EXAMPLE,
+  });
+}
+
+function round3(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
+function protrusionPitchesOf(value: number | undefined): number {
+  if (value === undefined) return 2;
+  if (Number.isFinite(value) && value >= 0) return value;
+  invalidArgs({
+    api: 'lib.stack({ thread, gripMm, mode, protrusionPitches })',
+    path: 'protrusionPitches',
+    got: value,
+    requires: 'a number of thread pitches ≥ 0 the bolt tip must reach past the nut (default 2)',
+    example: "lib.stack({ thread: 'M5', gripMm: 12, mode: 'bolt', protrusionPitches: 2 })",
   });
 }
 
@@ -805,10 +863,12 @@ export function planStackFor(family: string, request: StackRequest): StackPlan {
   const gripMm = positiveGrip(request.gripMm);
   const spec = requireScrewFamily(family);
   const wear = stackWear(family, mode, request.thread);
-  const tailT = wear.tailWasher?.headHeightMm ?? 0;
-  const nutT = wear.nut?.headHeightMm ?? 0;
-  const needed = gripMm + (wear.tailWasher ? tailT + nutT : 0);
-  const lengthMm = shortestAtLeast(lengthsFor(spec, request.thread), needed, `${family} ${request.thread}`);
+  // Head washer + grip + tail washer + nut, plus the protrusion the bolt
+  // needs past the nut's outer face.
+  const reach = (wear.headWasher?.headHeightMm ?? 0) + gripMm + (wear.nut ? (wear.tailWasher?.headHeightMm ?? 0) + wear.nut.headHeightMm : 0);
+  const minOut = wear.nut ? protrusionPitchesOf(request.protrusionPitches) * coarsePitchOf(request.thread) : 0;
+  const lengthMm = shortestAtLeast(lengthsFor(spec, request.thread), reach + minOut, { label: `${family} ${request.thread}`, minOut, gripMm });
   const screw = resolvePart({ family, thread: request.thread, lengthMm });
-  return { lengthMm, members: stackMembersFor(wear, screw, gripMm) };
+  const out = wear.nut ? { protrusionMm: Math.round((lengthMm - reach) * 1000) / 1000 } : {};
+  return { lengthMm, members: stackMembersFor(wear, screw, gripMm), ...out };
 }

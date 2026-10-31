@@ -1,3 +1,5 @@
+> Source scope: this repository contains the reusable CAD runtime, CLI, MCP tools and headless renderer. Hosted product UI and commercial manufacturing services are maintained separately. Build the reusable tools with `npm run build`; use `npm run dev` for the standalone renderer.
+
 # kernelCAD - CAD runtime for agents
 
 **kernelCAD** turns mechanical intent into editable `.kcad.ts` source,
@@ -30,7 +32,34 @@ account in each client.
 
 Ask your agent: **“look at kernelcad.com and install the mcp”**.
 [Agent-readable installation instructions](https://kernelcad.com/llms.txt) cover
-hosted setup, local npm setup, and connection verification.
+hosted setup, local CLI setup, and connection verification.
+
+### Local CLI: one line
+
+For Node.js users (Node.js 22.12 or newer):
+
+```bash
+npm install --global kernelcad
+```
+
+For a self-contained install that includes Node.js, Linux and macOS users can run:
+
+```bash
+curl -fsSL https://kernelcad.com/install.sh | sh
+```
+
+On Windows PowerShell, run:
+
+```powershell
+irm https://kernelcad.com/install.ps1 | iex
+```
+
+The direct installers download a platform archive, verify its SHA-256 checksum,
+and install it under the user's home directory. Pin a release with
+`KERNELCAD_VERSION=vX.Y.Z` on Linux/macOS or `$env:KERNELCAD_VERSION='vX.Y.Z'`
+in PowerShell. Builds are available for Linux x64/ARM64, macOS Intel/Apple
+Silicon, and Windows x64. Direct installs do not require a separately installed
+Node.js.
 
 ### Coding agents: one command
 
@@ -91,6 +120,12 @@ scorecard. See the
 [reference-parts scorecard](docs/reference-parts-scorecard.md) and its
 [local validation demo](docs/demos/reference-parts-scorecard/README.md).
 
+The [SolidCraft oracle ledger](docs/solidcraft-ledger.md) vendors that project's
+public reference cases (Apache-2.0) and checks the kernelCAD parts that have
+been modelled so far. Cases without a kernelCAD source stay pending and do not
+fail CI. Pull-request CI runs the fast subset; the nightly job runs every
+implemented part.
+
 ## Agent workflow
 
 For agents and contributors, `.kcad.ts` source is the design source of truth.
@@ -108,6 +143,26 @@ kernelcad evaluate model.kcad.ts
 kernelcad export step model.kcad.ts -o model.step
 kernelcad export stl model.kcad.ts -o model.stl
 ```
+
+Translate an assembly exported from SolidWorks or another CAD application as
+STEP into a KernelCAD project:
+
+```bash
+kernelcad import-step robot.step --out robot-kcad
+kernelcad evaluate robot-kcad/robot.kcad.ts
+```
+
+The bundle contains a `.kcad.ts` root assembly, `manifest.json` with the source
+product paths, units, placements, colors, and geometry measurements, and exact
+native OCCT BREP assets content-addressed by geometry. Byte-identical product
+definitions share an asset. The original STEP assembly hierarchy is recorded
+in the manifest; the current KernelCAD scene is flattened into independently
+placeable occurrences. Local STEP `DOCUMENT_FILE` dependencies are read
+recursively, included in the import provenance hashes, and must stay inside the
+input directory. Component colors are preserved; per-face color mapping is not
+part of this import. It does not infer mates, joints, motion, feature history,
+or read native SolidWorks/Parasolid data.
+See the [retained import demo, bundle, and verification evidence](docs/demos/step-to-kernelcad/README.md).
 
 When a rendered artifact is produced, inspect the image/video itself and report
 what is visible: proportions, interfaces, floating geometry, occlusion, camera
@@ -146,8 +201,11 @@ and mechanism checks tied to physical components.
 ## Get Started
 
 ```bash
-npm install -g kernelcad
+npm install --global kernelcad
 ```
+
+The npm package requires Node.js 22.12 or newer. For a self-contained install,
+use the platform installer above.
 
 Drop this in `bracket.kcad.ts`:
 
@@ -177,7 +235,7 @@ surface and authoring guide.
 ## Use with Claude Desktop
 
 kernelCAD runs as an MCP server, so Claude Desktop can drive it locally. After
-`npm install -g kernelcad`, add an entry to your Claude Desktop config file:
+the one-line install, add an entry to your Claude Desktop config file:
 
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
@@ -187,8 +245,8 @@ kernelCAD runs as an MCP server, so Claude Desktop can drive it locally. After
 {
   "mcpServers": {
     "kernelcad": {
-      "command": "npx",
-      "args": ["-y", "kernelcad", "mcp"]
+      "command": "kernelcad",
+      "args": ["mcp"]
     }
   }
 }
@@ -221,8 +279,8 @@ use the connected server's discovery rather than assuming the local list.
 The local installer is available. Preview the config change before applying it:
 
 ```bash
-npx -y kernelcad install --claude-desktop --dry-run
-npx -y kernelcad install --claude-desktop
+kernelcad install --claude-desktop --dry-run
+kernelcad install --claude-desktop
 ```
 
 Other hosted setup guides: [ChatGPT](https://app.kernelcad.com/connect?client=chatgpt),
@@ -261,16 +319,12 @@ npm run test         # full vitest suite
 npm run qc           # quick quality gate (lint + typecheck + tests)
 ```
 
-## Attribution and referral links
+## Attribution
 
 Exported files name kernelCAD in their metadata field (STEP `FILE_NAME`, GLB
 `asset.generator`, the STL header, a DXF or XML comment), and public viewer
-pages show a small "Made with kernelCAD" link. Some tools return vendor links
-that can carry a referral tag; results with a tagged link include the
-disclosure "Some links are referral links; kernelCAD may earn a commission."
-A vendor with no tag gets the clean URL. Self-hosters and forks change
-all of it in two files, or with `KERNELCAD_REFERRAL_<VENDOR>` and
-`KERNELCAD_REFERRALS=off`. See [ATTRIBUTION.md](ATTRIBUTION.md).
+pages show a small "Made with kernelCAD" link. Self-hosters and forks change
+this in `src/shared/links/attribution.ts`. See [ATTRIBUTION.md](ATTRIBUTION.md).
 
 ## License
 

@@ -83,6 +83,18 @@ export interface ListConstraintsOutput {
   constraints: Constraint[];
 }
 
+/** Fixed points are an explicit lock. Free lines or circles with no constraint are not a finished sketch. */
+export function unconstrainedSketchError(
+  entities: readonly SketchEntity[],
+  constraints: readonly Constraint[],
+): string | undefined {
+  const hasGeometry = entities.some((entity) => entity.type === 'LINE' || entity.type === 'CIRCLE');
+  if (!hasGeometry || constraints.length > 0) return undefined;
+  const points = entities.filter((entity) => entity.type === 'POINT');
+  if (points.length > 0 && points.every((point) => point.fixed)) return undefined;
+  return 'Sketch has lines or circles and no constraints. A generated sketch is not done until a constraint relates them, or every point is fixed.';
+}
+
 export async function solveSketchTool(input: SolveSketchInput = {}): Promise<SolveSketchOutput> {
   const shapeErrors = validateListInputs(input);
   if (shapeErrors.length > 0) {
@@ -96,6 +108,11 @@ export async function solveSketchTool(input: SolveSketchInput = {}): Promise<Sol
 
   if (errors.length > 0) {
     return { ok: false, errors, entities, constraints };
+  }
+
+  const missingConstraints = unconstrainedSketchError(entities, constraints);
+  if (missingConstraints !== undefined) {
+    return { ok: false, errors: [missingConstraints], entities, constraints };
   }
 
   const entityMap = new Map(entities.map(entity => [entity.id, entity]));

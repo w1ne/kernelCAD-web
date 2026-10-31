@@ -4,6 +4,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { TOOLS } from './toolRegistry';
+import { TOOL_ANNOTATIONS } from './toolAnnotations';
+import { TOOL_TITLES } from './toolTitles';
 import { RETIRED_TOOL_NAMES } from './retiredToolNames';
 
 // Repo root relative to this file: src/agent/mcp → ../../../
@@ -128,19 +130,36 @@ describe('tool-name consistency', () => {
     expect(offenders, `Tool descriptions must start with "Use this when…":\n${offenders.join('\n')}`).toEqual([]);
   });
 
-  it('every tool carries readOnly/destructive/openWorld behavioral annotations (ChatGPT directory requirement)', () => {
-    // OpenAI Apps SDK: "incorrect or missing action labels are a common cause of
-    // rejection." Every tool must declare all three hints as booleans.
+  it('every tool carries a title and readOnly/destructive/openWorld hints (directory requirement)', () => {
+    // Anthropic Connectors Directory wants human titles; OpenAI Apps SDK rejects
+    // missing action labels. Fail fast if either a title or a hint is absent.
     const offenders = TOOLS
       .filter(t => {
+        const title = (t as { title?: unknown }).title
+          ?? (t as { annotations?: { title?: unknown } }).annotations?.title;
         const a = (t as { annotations?: Record<string, unknown> }).annotations;
-        return !a
-          || typeof a.readOnlyHint !== 'boolean'
-          || typeof a.destructiveHint !== 'boolean'
-          || typeof a.openWorldHint !== 'boolean';
+        const hasTitle = typeof title === 'string' && title.trim().length > 0;
+        const hasHints = !!a
+          && typeof a.readOnlyHint === 'boolean'
+          && typeof a.destructiveHint === 'boolean'
+          && typeof a.openWorldHint === 'boolean';
+        return !hasTitle || !hasHints;
       })
       .map(t => t.name);
-    expect(offenders, `Tools missing behavioral annotations:\n${offenders.join('\n')}`).toEqual([]);
+    expect(offenders, `Tools missing title or behavioral annotations:\n${offenders.join('\n')}`).toEqual([]);
+  });
+
+  it('TOOL_ANNOTATIONS covers exactly the registered tool names (no retired leftovers)', () => {
+    const registered = new Set(TOOLS.map(t => t.name));
+    const annotated = new Set(Object.keys(TOOL_ANNOTATIONS));
+    const missing = [...registered].filter(n => !annotated.has(n)).sort();
+    const extra = [...annotated].filter(n => !registered.has(n)).sort();
+    expect({ missing, extra }, 'annotation map must match TOOLS 1:1').toEqual({ missing: [], extra: [] });
+  });
+
+  it('TOOL_TITLES covers every registered tool', () => {
+    const offenders = TOOLS.filter(t => !TOOL_TITLES[t.name]).map(t => t.name);
+    expect(offenders, `Tools missing curated titles:\n${offenders.join('\n')}`).toEqual([]);
   });
 
   it('every tool declares an outputSchema (structured-output metadata)', () => {

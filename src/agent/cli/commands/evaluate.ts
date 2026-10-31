@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path';
 import { Command } from 'commander';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import type { SelectionRecord } from '../../../shared/intent/selectionRecord';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import type { Assembly } from '../../../modeling/capture/assembly';
@@ -180,6 +181,12 @@ export interface EvaluateWithEnvelopeResult {
   trace?: FeatureTraceEntry[];
   /** Dimensions declared with `shape.dimension()`; absent when none. */
   dimensions?: EvaluateResult['dimensions'];
+  /** What each feature's selectors bound to; feed it back as the baseline of
+   *  the next evaluation. Absent when no feature used a selector. */
+  selections?: EvaluateResult['selections'];
+  /** One requirements ledger: script `require()`, dfmSpec, gated FEA,
+   *  mechanical intent and external requirements passed in this call. */
+  requirements?: EvaluateResult['requirements'];
   /** Tube line report and system totals; absent when the model has no tubes. */
   tubes?: ReturnType<typeof tubesOutput>;
   /** Every fluid port of the script's assembly; absent when it declares none. */
@@ -204,7 +211,7 @@ export async function evaluateWithEnvelope(
   const misuse = envelopeMisuse(input);
   if (misuse !== undefined) return misuse;
 
-  const built = await evaluateAndBuildScript({ file: input.file, code: input.code });
+  const built = await evaluateAndBuildScript({ file: input.file, code: input.code, ...(input.baseline !== undefined ? { baseline: input.baseline } : {}) });
   const { model } = built;
   // Authoring intent lint: info-only hints that name the API for the intent
   // the source states (M4, gear, sheet metal...). Never changes exitCode.
@@ -299,6 +306,8 @@ function evaluationResult(
     featureCount: evaluation.featureCount,
     diagnostics: evaluation.diagnostics,
     ...(evaluation.dimensions !== undefined ? { dimensions: evaluation.dimensions } : {}),
+    ...(evaluation.selections !== undefined ? { selections: evaluation.selections } : {}),
+    ...(evaluation.requirements !== undefined ? { requirements: evaluation.requirements } : {}),
     ...tubeReportFields(reports),
     ...(trace !== undefined ? { trace } : {}),
   };
@@ -366,18 +375,30 @@ interface EvaluateCliOptions {
   samplesPerMate?: number;
   combinatorial?: boolean;
   traceOut?: string;
+  baseline?: string;
 }
 
 /** Map parsed commander options onto the `evaluateWithEnvelope` input shape,
  *  forwarding only the flags that were actually supplied. */
-function evaluateCliInput(file: string, opts: EvaluateCliOptions): EvaluateWithEnvelopeInput {
+function evaluateCliInput(file: string, opts: EvaluateCliOptions, baseline?: SelectionRecord[]): EvaluateWithEnvelopeInput {
   return {
     file,
     ...(opts.envelope ? { envelope: true } : {}),
     ...(opts.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
     ...(opts.combinatorial ? { combinatorial: true } : {}),
     ...(opts.traceOut !== undefined ? { trace: true } : {}),
+    ...(baseline !== undefined ? { baseline } : {}),
   };
+}
+
+/** Read `--baseline <file>`: the JSON an earlier `evaluate --json` printed, or
+ *  a bare `selections` array. */
+async function readBaseline(file: string | undefined): Promise<SelectionRecord[] | undefined> {
+  if (file === undefined) return undefined;
+  const parsed: unknown = JSON.parse(await readFile(file, 'utf8'));
+  const list = Array.isArray(parsed) ? parsed : (parsed as { selections?: unknown }).selections;
+  if (!Array.isArray(list)) throw new Error(`--baseline ${file}: expected the JSON of 'evaluate --json' or an array of selections.`);
+  return list as SelectionRecord[];
 }
 
 /** Write the per-feature trace to `--trace-out <file>` when both the flag and
@@ -401,6 +422,8 @@ export function evaluateJsonOutput(r: EvaluateWithEnvelopeResult): Record<string
     featureCount: r.featureCount,
     diagnostics: r.diagnostics,
     ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
+    ...(r.selections !== undefined ? { selections: r.selections } : {}),
+    ...(r.requirements !== undefined ? { requirements: r.requirements } : {}),
     ...tubeReportFields(r),
     ...(r.envelopeDiagnostics !== undefined ? {
       envelopeDiagnostics: r.envelopeDiagnostics,
@@ -427,6 +450,13 @@ function printEvaluateResult(r: EvaluateWithEnvelopeResult, opts: EvaluateCliOpt
     } else if (r.envelopeDiagnostics !== undefined) {
       console.log(`Pose-envelope: ${r.envelopeSampleCount} sample${r.envelopeSampleCount === 1 ? '' : 's'} clean.`);
     }
+    if (r.requirements !== undefined && r.requirements.entries.length > 0) {
+      const s = r.requirements.summary;
+      console.log(`Requirements: ${s.pass} pass, ${s.fail} fail, ${s.notEvaluated} not evaluated.`);
+      for (const e of r.requirements.entries.filter(x => x.status !== 'pass')) {
+        console.log(`  [${e.status}] ${e.message ?? e.name}`);
+      }
+    }
     if (r.exitCode === 0) console.log('OK');
   }
 }
@@ -439,9 +469,10 @@ export function evaluateCommand(): Command {
     .option('--envelope', 'after the script runs, run reviewPoseEnvelope on every captured assembly; non-zero exit on envelope-error')
     .option('--samples-per-mate <n>', 'interior samples per mate for the envelope sweep (integer ≥ 1)', (v) => parseInt(v, 10))
     .option('--combinatorial', 'enumerate corner combinations across all limited mates (cap: 8 mates)')
+    .option('--baseline <file>', "selections of an earlier evaluation (its 'evaluate --json' output): report selectors that now bind to a different entity")
     .option('--trace-out <file>', 'write the per-feature trace (call site, AST node range, diagnostics, inputs, dependents) to a JSON file')
     .action(async (file: string, opts: EvaluateCliOptions) => {
-      const r = await evaluateWithEnvelope(evaluateCliInput(file, opts));
+      const r = await evaluateWithEnvelope(evaluateCliInput(file, opts, await readBaseline(opts.baseline)));
 
       await writeTraceOut(file, opts.traceOut, r);
 

@@ -11,11 +11,20 @@ import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { evaluateAndBuildScript } from '../../src/agent/cli/commands/evaluate';
 import { isSceneBackend } from '../../src/kernel/backends/sceneBackend';
+import { analysisBodyOf } from '../../src/kernel/backends/occt/occtBackend';
 import { clearanceFitForHoleDiameter } from '../../src/modeling/parts/holeInsert';
 import { FLATHEAD_HEAD } from '../../src/modeling/parts/familyTable';
 
+
+// Overlaps are measured the way the product's clash checks measure them:
+// through each part's nominal analysis body (analysisBodyOf). A modeled
+// thread in its nut, or an ISO 4762 under-head fillet (da up to 5.7 mm on M5)
+// against an ISO 7089 washer bore (5.3 mm), is not a clash.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fitBody = (shape: any): any => analysisBodyOf(shape);
+
 const dir = new URL('.', import.meta.url).pathname;
-const TOL = 1e-6;
+const TOL = 1e-4; // exact OCCT bounds carry ~1e-6 mm float noise
 const outerR = 55;
 const innerR = 27.5;
 const thickness = 10;
@@ -26,7 +35,7 @@ const clearanceD = 6.6;
 interface SceneLike {
   parts: readonly {
     name: string;
-    shape: { boundingBox(): { min: number[]; max: number[] }; volume(): number };
+    shape: { boundingBox(opts?: { exact?: boolean }): { min: number[]; max: number[] }; volume(): number };
   }[];
 }
 
@@ -47,7 +56,7 @@ interface PartRow {
 
 function rowsFor(scene: SceneLike): PartRow[] {
   return scene.parts.map((part) => {
-    const bounds = part.shape.boundingBox();
+    const bounds = part.shape.boundingBox({ exact: true });
     return {
       name: part.name,
       min: [bounds.min[0], bounds.min[1], bounds.min[2]],
@@ -74,7 +83,8 @@ assert.deepEqual(
   'one ring and eight three-part stacks',
 );
 
-// M6 clearance is normal (ISO 273), grip 10 + washer 1.6 + nut 5 -> M6 x 18.
+// M6 clearance is normal (ISO 273), grip 10 + washer 1.6 + ISO 4032 nut 5.2
+// + 2 pitches (2 mm) past the nut = 18.8 -> M6 x 20.
 const sized = clearanceFitForHoleDiameter(clearanceD);
 assert.deepEqual(sized, { thread: 'M6', fit: 'normal' });
 const headD = FLATHEAD_HEAD.M6!.D;
@@ -84,16 +94,16 @@ const headK = FLATHEAD_HEAD.M6!.K;
 // spans the full ISO 10642 head diameter there.
 const screw = byName.get('m6-1-screw')!;
 assert(Math.abs(screw.max[2] - thickness) < TOL, `head top ${screw.max[2]}`);
-assert(Math.abs(screw.min[2] - -8) < TOL, `tip ${screw.min[2]}`);
+assert(Math.abs(screw.min[2] - -10) < TOL, `tip ${screw.min[2]}`);
 assert(Math.abs(screw.max[0] - screw.min[0] - headD) < TOL, `head Ø${screw.max[0] - screw.min[0]}`);
 
-// The stack under the ring: washer 0..-1.6, nut -1.6..-6.6, tip past both.
+// The stack under the ring: washer 0..-1.6, nut -1.6..-6.8, tip 3.2 mm past.
 const washer = byName.get('m6-1-tail-washer')!;
 assert(Math.abs(washer.max[2]) < TOL, `washer top ${washer.max[2]}`);
 assert(Math.abs(washer.min[2] + 1.6) < TOL, `washer bottom ${washer.min[2]}`);
 const nut = byName.get('m6-1-nut')!;
 assert(Math.abs(nut.max[2] + 1.6) < TOL, `nut top ${nut.max[2]}`);
-assert(Math.abs(nut.min[2] + 6.6) < TOL, `nut bottom ${nut.min[2]}`);
+assert(Math.abs(nut.min[2] + 6.8) < TOL, `nut bottom ${nut.min[2]}`);
 
 // The seats are cut: the ring volume is below the same ring with plain bores.
 const positions = Array.from({ length: boltCount }, (_, i) => {
@@ -127,7 +137,7 @@ for (let i = 0; i < scene.parts.length; i++) {
     pairs++;
     const a = scene.parts[i]!;
     const b = scene.parts[j]!;
-    const volume = Math.abs(a.shape.intersect(b.shape).volume());
+    const volume = Math.abs(fitBody(a.shape).intersect(fitBody(b.shape)).volume());
     if (volume > TOL) interferences.push({ a: a.name, b: b.name, volumeMm3: volume });
   }
 }

@@ -9,6 +9,8 @@ import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngin
 import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import type { Sketch } from '../../../../src/modeling/capture/sketch';
+import { loftSkinContinuityShortfalls } from '../../../../src/kernel/backends/occt/segmentedLoft';
+import type { OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 
 const RADII = [8, 10.5, 12, 12, 10.5, 8];
 const Z = [0, 20, 40, 60, 80, 100];
@@ -88,4 +90,35 @@ describe('segmented loft', () => {
     const result = await new RecomputeEngine(new OcctLowerer()).run(session.getRecords());
     expect(result.diagnostics.some((d) => d.code === 'feature.loft.span-failed')).toBe(true);
   });
+  // Regression for #1071 review: explicit mode/continuity options must not
+  // silently drop `ruled`, and G1/G2 must be checked, not just accepted.
+  it("keeps ruled: true on the explicit mode: 'single' path", async () => {
+    const smooth = await build({ mode: 'single' }).shape.lower();
+    const ruled = await build({ mode: 'single', ruled: true }).shape.lower();
+    const plainRuled = await build({ ruled: true }).shape.lower();
+    const faceCount = (s: typeof ruled) => (s.getReplicadShape() as unknown as { faces: unknown[] }).faces.length;
+    // A ruled skin is split at every station; the smooth skin is not.
+    expect(faceCount(ruled)).toBe(faceCount(plainRuled));
+    expect(faceCount(ruled)).toBeGreaterThan(faceCount(smooth));
+  });
+
+  it('keeps ruled: true on the sewn G0 path', async () => {
+    const sewnRuled = await build({ mode: 'sewn', spanSize: 3, ruled: true }).shape.lower();
+    const plainRuled = await build({ ruled: true }).shape.lower();
+    expect(Math.abs(sewnRuled.volume() - plainRuled.volume()) / plainRuled.volume()).toBeLessThan(0.01);
+  });
+
+  it('rejects ruled: true with G1/G2 at capture time', () => {
+    expect(() => build({ continuity: 'G2', ruled: true })).toThrow(/ruled/);
+    expect(() => build({ continuity: 'G1', ruled: true })).toThrow(/ruled/);
+  });
+
+  it.each(['G1', 'G2'] as const)('%s skin is verified across the stations', async (continuity) => {
+    const { session } = build({ continuity });
+    const result = await new RecomputeEngine(new OcctLowerer()).run(session.getRecords());
+    expect(result.diagnostics.some((d) => d.code === 'feature.loft.continuity-unresolved')).toBe(false);
+    const smooth = await build({ continuity }).shape.lower();
+    expect(loftSkinContinuityShortfalls(smooth as unknown as OcctBackend, continuity)).toEqual([]);
+  });
+
 });

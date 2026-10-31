@@ -1,9 +1,8 @@
-# kernelCAD Attribution and Referral Links
+# kernelCAD Attribution
 
-kernelCAD names itself in the files it writes and on its public viewer pages,
-and it can add referral tags to links that point at vendors. This page lists
-every place this happens and how to change it. Nothing is hidden: all of it is
-visible in the output, and all of it lives in two source files.
+kernelCAD names itself in the files it writes and on its public viewer pages.
+This page lists every place this happens and how to change it. Nothing is
+hidden: all of it is visible in the output.
 
 ## Attribution in exported files
 
@@ -26,41 +25,10 @@ link in a corner. It links to `https://kernelcad.com/?ref=<surface>` with
 `utm_source=kernelcad&utm_medium=<surface>`, so we can see which surface a
 visit came from.
 
-## Referral links to vendors
-
-Some tools return links to vendor pages: `fetch_part` returns a
-vendor-configurator link (`kind: 'link_out'`), and `verify` with
-`check: 'dfm-preflight'` returns the job shop's catalog pages as `sources`.
-
-- Data files store clean vendor URLs only. Tags are added when a link is shown,
-  by one function (`buildVendorUrl` in `src/shared/links/referral.ts`). A test
-  fails if any other code emits a vendor URL.
-- A tagged link gets `<param>=<tag>`, `utm_source=kernelcad` and
-  `utm_medium=<surface>` (for example `shopcheck`, `part`, `bom`).
-- A vendor with no tag gets the clean URL, unchanged.
-- When a result contains a tagged link, it also contains this disclosure, and
-  the agent is asked to show it with the link:
-  "Some links are referral links; kernelCAD may earn a commission."
-
-The current tags are the `tag` values in `referral.ts`. An empty tag means that
-vendor's links are clean.
-
 ## Changing it (self-hosters and forks)
 
-Two files hold everything:
-
-- `src/shared/links/attribution.ts`: the name, homepage, app URL, the
-  generator string used in exported files, and the tagged links to our own
-  pages.
-- `src/shared/links/referral.ts`: the vendor list, each vendor's referral
-  parameter and tag, and the disclosure text.
-
-At runtime, without code changes:
-
-- `KERNELCAD_REFERRAL_<VENDOR>=<tag>` sets or replaces one vendor's tag
-  (for example `KERNELCAD_REFERRAL_SENDCUTSEND=mytag`). An empty value
-  clears it.
-- `KERNELCAD_REFERRALS=off` turns every vendor tag off.
+`src/shared/links/attribution.ts` holds the name, homepage, app URL, the
+generator string used in exported files, and the tagged links to our own pages.
 
 A fork that keeps the attribution states truthfully that it is built on
 kernelCAD, which the [trademark policy](TRADEMARKS.md) allows. A renamed fork
@@ -78,13 +46,21 @@ hand edits.
 | --- | --- | --- | --- | --- |
 | `examples/from-reference/hatchback/hatchback.kcad.ts`, cookbook `automotive-body-envelope` | `hatchback` from [osrf/gazebo_models](https://github.com/osrf/gazebo_models) (commit `8163eb4b`) | Copyright 2012 Nathan Koenig (Open Source Robotics Foundation); modified: measured and re-modelled, mesh not included | [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/) | [`PROVENANCE.md`](examples/from-reference/hatchback/PROVENANCE.md) |
 
+## Vendored measurement oracles
+
+| Used in | Source | What is included | License | Pin |
+| --- | --- | --- | --- | --- |
+| SolidCraft CI ledger (`assets/reference-parts/solidcraft/`, `docs/solidcraft-ledger.md`) | [tangency-labs/solidcraft](https://github.com/tangency-labs/solidcraft) | `expected.json` and `recipe.json` for each oracle case. Engine code and reference meshes are not included. kernelCAD `.kcad.ts` parts under `parts/` are original. | Apache-2.0 (upstream is Apache-2.0 OR MIT; this copy uses Apache-2.0). Text: [`LICENSE-APACHE`](assets/reference-parts/solidcraft/LICENSE-APACHE) | `7a6c884418698e9c9fb0e6f97b9b847998c58c49` |
+
 ## Opt-in solid-modeling dependency
 
-`@classcad/smlibwasm` is pinned to 0.3.1. The ClassCAD JavaScript bindings are
+`@classcad/smlibwasm` is pinned to 0.6.2. The ClassCAD JavaScript bindings are
 MIT-licensed (Copyright 2026 AWV Informatik AG); the bundled USD BRep/SMLib
 core is Apache-2.0 (Copyright 2020–2026 NVIDIA CORPORATION & AFFILIATES).
 The package also contains unmodified Lato Regular under OFL-1.1, with Reserved
-Font Name “Lato” (Copyright 2010–2013 tyPoland Lukasz Dziedzic).
+Font Name “Lato” (Copyright 2010–2013 tyPoland Lukasz Dziedzic), and the
+unmodified Brotli static dictionary (`dist/_brotli_dictionary.js`, MIT,
+Copyright 2009, 2010, 2013–2016 by the Brotli Authors).
 See [NOTICE](NOTICE) and [retained license texts](licenses/smlibwasm/).
 The kernel loads only when explicitly selected; kernelCAD does not ship native
 experimental core patches.

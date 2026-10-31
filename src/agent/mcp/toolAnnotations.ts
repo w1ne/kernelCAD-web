@@ -5,8 +5,9 @@
  *
  * REQUIRED for ChatGPT app-directory submission: OpenAI's Apps SDK submission
  * guidelines state that "incorrect or missing action labels are a common cause
- * of rejection." Every registry tool must carry all three hints; the
- * consistency gate enforces it.
+ * of rejection." Every registry tool must carry readOnly/destructive/openWorld
+ * hints; the consistency gate also requires a human `title` (merged from
+ * toolTitles.ts) and rejects tools missing either a title or a hint.
  *
  * Classification rule:
  *  - readOnlyHint: true  → only retrieves or computes; no write/author intent,
@@ -18,40 +19,64 @@
  *  - destructiveHint: true  → deletes or overwrites existing user data.
  *  - openWorldHint:  true   → may reach an external system / filesystem / remote
  *                             catalog beyond the in-ChatGPT compute sandbox.
+ *  - idempotentHint: true   → repeating the call with the same args has no
+ *                             additional effect beyond the first call.
  *
  * Server-native tools (generate_kcad_from_prompt, lookup_authoring_skill,
  * open_in_studio, get_project, list_my_projects) are annotated in kernelCAD-server
  * (they are defined there, not in this registry).
  */
 export interface ToolAnnotations {
+  /** Optional; withMetadata merges the curated title from TOOL_TITLES. */
+  title?: string;
   readOnlyHint: boolean;
   destructiveHint: boolean;
   openWorldHint: boolean;
+  idempotentHint?: boolean;
 }
 
-const READ: ToolAnnotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: false };
-const READ_REMOTE: ToolAnnotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: true };
-const AUTHOR: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: false };
+const READ: ToolAnnotations = {
+  readOnlyHint: true, destructiveHint: false, openWorldHint: false, idempotentHint: true,
+};
+const READ_REMOTE: ToolAnnotations = {
+  readOnlyHint: true, destructiveHint: false, openWorldHint: true, idempotentHint: true,
+};
+/** Full CAD builds/reviews update the active MCP session and viewer state. */
+const STATEFUL_REMOTE: ToolAnnotations = {
+  readOnlyHint: false, destructiveHint: false, openWorldHint: true, idempotentHint: false,
+};
+const AUTHOR: ToolAnnotations = {
+  readOnlyHint: false, destructiveHint: false, openWorldHint: false, idempotentHint: true,
+};
 /** Authoring that may fetch its input from a URL or call a remote vision model. */
-const AUTHOR_REMOTE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: true };
-const AUTHOR_DESTRUCTIVE: ToolAnnotations = { readOnlyHint: false, destructiveHint: true, openWorldHint: false };
-const WRITES_FILE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: true };
+const AUTHOR_REMOTE: ToolAnnotations = {
+  readOnlyHint: false, destructiveHint: false, openWorldHint: true, idempotentHint: true,
+};
+const AUTHOR_DESTRUCTIVE: ToolAnnotations = {
+  readOnlyHint: false, destructiveHint: true, openWorldHint: false, idempotentHint: false,
+};
+const WRITES_FILE: ToolAnnotations = {
+  readOnlyHint: false, destructiveHint: false, openWorldHint: true, idempotentHint: false,
+};
 /** Analysis that changes nothing about the design but CAN drop artifacts on
  *  the local filesystem on an opt-in flag (diff_geometry's render overlay).
  *  Read-only is the honest label for the design; openWorld is the honest
  *  label for the optional file output. */
-const READ_MAY_WRITE_ARTIFACTS: ToolAnnotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: true };
+const READ_MAY_WRITE_ARTIFACTS: ToolAnnotations = {
+  readOnlyHint: true, destructiveHint: false, openWorldHint: true, idempotentHint: false,
+};
 /** Starts a job on real hardware that cannot be taken back (a print uses
  *  material and machine time). */
-const PHYSICAL_ACTION: ToolAnnotations = { readOnlyHint: false, destructiveHint: true, openWorldHint: true };
+const PHYSICAL_ACTION: ToolAnnotations = {
+  readOnlyHint: false, destructiveHint: true, openWorldHint: true, idempotentHint: false,
+};
 
 export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
-  // Read / compute / analysis — no mutation. evaluate_script loads imported
-  // geometry from https:// and asset URLs (lib.fromSTEP etc.) and inspect can
-  // read the remote parts catalog, so both are open-world.
+  // Full evaluation/review updates the active MCP session and viewer state;
+  // supplied scripts may also load remote geometry or assets.
   get_selection: READ_REMOTE,
   set_selection: AUTHOR_REMOTE,
-  evaluate_script: READ_REMOTE,
+  evaluate_script: STATEFUL_REMOTE,
   diff_scripts: READ,
   inspect: READ_REMOTE,
   query: READ,
@@ -61,11 +86,11 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   lookup_api: READ,
   lookup_diagnostics: READ,
   lookup_cookbook: READ,
-  review_cad: READ,
-  review_paint_peek_latest: READ,
+  review_cad: STATEFUL_REMOTE,
   solve_sketch: READ,
   solve_mates: READ,
   flatten_pattern: READ,
+  asset_manifest: READ,
 
   // Read-only analysis that can write an OPTIONAL local artifact (render: true).
   diff_geometry: READ_MAY_WRITE_ARTIFACTS,
@@ -76,7 +101,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Read — but may fetch from a remote parts catalog (KERNELCAD_PARTS_BASE_URL).
   find_part: READ_REMOTE,
   fetch_part: READ_REMOTE,
-  fetch_part_model: READ_REMOTE,
 
   // Authoring — return modified source (side-effect-free, additive).
   set_param: AUTHOR,
@@ -123,8 +147,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   execute_cookbook: WRITES_FILE,
   // Downloads a user-supplied file (open world) and writes it plus a starter script.
   import_step: AUTHOR_REMOTE,
-  // Writes the pack files + zip locally; never contacts a vendor.
-  fab_pack: WRITES_FILE,
   explode_view: READ,
 
   // Renders the model to PNG views on the local filesystem — does not change the
@@ -137,12 +159,10 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
   ray_pick: READ,
-  inspect_nurbs: READ,
+  // Evaluates supplied script/file input to capture authored NURBS data; the
+  // script may load referenced assets but does not replace the active session.
+  inspect_nurbs: READ_REMOTE,
   fit_plane: READ,
-  route_wires: READ,
-  // Parses a provided handoff and returns a proposed authoring script.
-  import_handoff: AUTHOR,
-  inspect_assembly: READ,
-  // Writes a BOM CSV locally and returns Sheets-ready rows; never contacts a spreadsheet.
-  write_bom: WRITES_FILE,
+  // Pure generator: turns a parts list into a placeholder assembly script; writes nothing.
+  blockout_assembly: AUTHOR,
 };

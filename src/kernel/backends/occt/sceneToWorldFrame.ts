@@ -29,6 +29,9 @@ export interface WorldFramePart {
   readonly color?: string;
   /** Full PBR material attribution (from `.material({...})`). */
   readonly material?: PBRMaterial;
+  /** Optional name of a colour parameter for exporters. Parameter provenance
+   *  is not captured yet; callers may supply it directly at export time. */
+  readonly colorParamName?: string;
   /** Engineering-material name (e.g. `pla`) from `arm.part(..., { material })`. */
   readonly materialName?: string;
   /** Identity of the world-frame geometry: the untransformed source shape
@@ -36,6 +39,8 @@ export interface WorldFramePart {
    *  `source.shape` object and `source.transformKey` are the same geometry,
    *  so per-part results (viewer dimensions) can be reused. */
   readonly source?: { readonly shape: object; readonly transformKey: string };
+  /** Part-local to assembly-world rigid transform, retained for rig parenting. */
+  readonly worldTransform?: readonly number[];
 }
 
 /**
@@ -60,6 +65,7 @@ export function sceneToWorldFrameParts(scene: SceneBackend): WorldFramePart[] {
       name: p.name,
       shape: transformed,
       source: { shape: p.shape, transformKey: JSON.stringify(p.worldTransform) },
+      worldTransform: p.worldTransform.toMat4(),
     };
     if (p.color !== undefined) {
       (entry as { color?: string }).color = p.color;
@@ -72,6 +78,24 @@ export function sceneToWorldFrameParts(scene: SceneBackend): WorldFramePart[] {
     }
     return entry;
   });
+}
+
+/** Free the clones {@link sceneToWorldFrameParts} handed out. The caller's scene is untouched. */
+export function releaseWorldFrameParts(parts: readonly { shape: { dispose?: () => void } }[]): void {
+  for (const part of parts) {
+    try { part.shape.dispose?.(); } catch { /* clone already freed */ }
+  }
+}
+
+/** Free world-frame clones from {@link drawingPartsForBackend}. A part whose
+ *  shape is the caller's own solid (a single body, not a scene clone) stays. */
+export function releaseDrawingParts(
+  parts: readonly { shape: { dispose?: () => void }; source?: { shape: object } }[],
+): void {
+  for (const part of parts) {
+    if (part.source && part.shape === part.source.shape) continue;
+    try { part.shape.dispose?.(); } catch { /* clone already freed */ }
+  }
 }
 
 /** World-frame parts for a lowered root: a scene's parts, or the single shape as `part`. */

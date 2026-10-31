@@ -128,6 +128,8 @@ Break edges, add draft, hollow out a wall, fold sheet metal.
 | `Shape.chamfer(distance, edges?: EdgeSelector) => Shape` | Bevel edges. |
 | `Shape.draft(angleDeg: Editable<number>, opts: { face: FaceSelector \| string; neutralPlane?: string; pullDir?: [number, number, number] }) => Shape` | Taper the selected face(s) for moldability. |
 | `Shape.shell(thickness, { face: FaceSelector }) => Shape` | Hollow the solid removing the named face. |
+| `Shape.offsetFaces(faces: FaceSelector \| FaceSelector[], distance: Editable<number>) => Shape` | Push or pull planar faces along their outward normals. |
+| `Shape.moveFaces(faces: FaceSelector \| FaceSelector[], by: [number, number, number]) => Shape` | Move planar faces by `by` (mm). |
 | `Shape.bend(edgeRef: EdgeSelector \| string, angle: Editable<number>, radius: Editable<number>) => Shape` | Add a sheet-metal bend along a linear edge. |
 | `Shape.flattenPattern() => Region` | Return the unfolded 2D flat-pattern of this bent sheet-metal Shape as a Region (closed outer wire + holes + bend-line metadata + source plane). |
 
@@ -140,7 +142,9 @@ Pick the edges or faces a feature acts on. Query first, then sort or group what 
 | `selectEdges(shape, query?) => Promise<ShapeList<EdgeSegment>>` | Pre-select edges by EdgeQuery. |
 | `selectEdge(shape, query) => Promise<EdgeSegment>` | Like selectEdges but throws if zero or multiple edges match. |
 | `select : <T>(items: Iterable<T>) => ShapeList<T>` | Wrap any array of topology query results in a `ShapeList` so the selector algebra applies — face summaries from `inspect({ of: 'faces' })`, `ResolvedEntity[]` from `q.face(...).evaluate(scene)`, or a hand-assembled list. |
-| `q : { face, edge, vertex, connector, part, solid, createdBy, ownedByPart, ownerPart, union, intersection, subtraction, containsPoint, closestTo, geometryType, withLabel, withFeatureName, nthElement, fromString, nothing, everything }` | Query DSL constructor namespace. |
+| `q : { face, edge, vertex, connector, part, solid, createdBy, newSince, derivedFrom, ownedByPart, ownerPart, union, intersection, subtraction, containsPoint, closestTo, geometryType, withLabel, withFeatureName, nthElement, fromString, nothing, everything }` | Query DSL constructor namespace. |
+| `faces(shape, query?) => RequirementSelectionHandle` | Select all faces of `shape` matching a FaceQuery (default every face) for a requirement predicate. |
+| `edges(shape, query?) => RequirementSelectionHandle` | Select all edges of `shape` matching an EdgeQuery (default every edge) for a requirement predicate. |
 | `ShapeList.sortBy(criterion: 'X' \| 'Y' \| 'Z' \| Vec3 \| 'area' \| 'length' \| 'radius', opts?: { descending?: boolean; tolerance?: number }) => ShapeList<T>` | Order the list by a criterion, ascending by default. |
 | `ShapeList.sortByDistance(point: Vec3, opts?: { descending?: boolean; tolerance?: number }) => ShapeList<T>` | Order by straight-line distance from each entity position to `point`, nearest first. |
 | `ShapeList.groupBy(criterion: 'X' \| 'Y' \| 'Z' \| Vec3 \| 'area' \| 'length' \| 'radius', opts?: { tolerance?: number; descending?: boolean }) => ShapeGroups<T>` | Partition into groups sharing a quantized criterion value — one group per Z level, per hole diameter, per face area. |
@@ -164,7 +168,7 @@ Move a body into position, mirror it, or repeat it.
 | `Shape.rotateZ(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]) => Shape` | Rotate `degrees` around the world Z axis. |
 | `Shape.transform(t: Transform) => Shape` | Apply an SE(3) Transform. |
 | `Shape.alongAxis(axis: [number, number, number]) => Shape` | Orient this shape so its current +Z axis aligns with the given direction. |
-| `Shape.scale(factor: number \| [number, number, number]) => Shape` | Scale this shape uniformly (single positive finite number) or per-axis (Vec3 — sx/sy/sz). |
+| `Shape.scale(factor: Editable<number> \| [Editable<number>, Editable<number>, Editable<number>]) => Shape; (sx: Editable<number>, sy: Editable<number>, sz: Editable<number>) => Shape` | Scale this shape uniformly or per-axis. |
 | `Shape.reflect(plane: 'xy' \| 'xz' \| 'yz' \| { plane: 'xy' \| 'xz' \| 'yz'; offset: number }) => Shape` | Reflect (pure rigid-body transformation) across a cardinal plane or an offset parallel plane. |
 | `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: Editable<number> }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
 | `Sketch.reflect(axis: 'x' \| 'y' \| { axis: 'x' \| 'y'; offset: number }) => Sketch` | Reflect this sketch's path across an axis, returning a new Sketch. |
@@ -181,11 +185,12 @@ Build a mechanism from parts: connectors, mates, joints, posed Scenes.
 
 | Call | What it does |
 |---|---|
-| `assembly(name?) => Assembly` | Start an inspectable mechanical assembly. |
-| `joint : { clevis(opts: ClevisJointOptions): ClevisJoint; supportedServoRevolute(arm: Assembly, opts: SupportedServoRevoluteOptions): SupportedServoRevoluteResult; articulatedDigit(arm: Assembly, opts: ArticulatedDigitOptions): ArticulatedDigitResult }` | Mechanism-delivery joint helpers. |
+| `assembly(name?) => Assembly` | `arm.tendon(name, { from, to, via?, actuator?: { kind: force, maxForceN }, maxLengthMm?, profile?: { kind: round \| flat, ... |
+| `joint : { clevis(opts: ClevisJointOptions): ClevisJoint }` | Mechanism-delivery joint helpers. |
 | `Scene.part(name: string) => ScenePart` | Look up a part by its assembly-unique name. |
 | `Scene.parts : readonly ScenePart[]` | Frozen, ordered list of parts in the Scene; ordering matches the order parts were added to the Assembly. |
 | `Scene.assemblyName : string` | Name passed to `assembly(name?)` at capture time; "unnamed-assembly" if no name was provided. |
+| `Shape.resolutionInputs() => { records: FeatureRecord[]; paramTable: ParamTable }` | Live feature records and param table for this shape. |
 
 ## Curves & surfaces
 
@@ -231,14 +236,26 @@ Ask the kernel what you actually built, and check it before shipping.
 | Call | What it does |
 |---|---|
 | `Shape.boundingBox(opts?: { exact?: boolean }) => Promise<{ min: [number, number, number]; max: [number, number, number]; size: [number, number, number]; center: [number, number, number] }>` | Axis-aligned bounding box in the CURRENT world frame (after every transform appended so far), in mm. |
+| `bbox(selection) => RequirementPredicate` | Bounding-box size of a body selection in mm. |
 | `Scene.bbox : { min: [number, number, number]; max: [number, number, number] }` | Lazy axis-aligned bounding box over all transformed parts. |
 | `Curve3D.length() => number` | Total arc length in mm. |
 | `Shape.lower() => Promise<OcctBackend>` | Eagerly lower this Shape for inspection. |
-| `kinematic : KinematicFacade` | Namespace with in-process feasibility checks an agent can run before declaring a mechanism design done: `kinematic.checkMountingHoleConsistency(arm)` (fastener-side hole agreement; dispatches to the v0.7.4 substrate), `kinematic.checkSweptCollision(arm, opts?)` (sampled-pose collision sweep across declared joint ranges), `kinematic.checkReachable(arm, opts)` (IK reachability — analytical Pieper first, DLS numeric fallback), `kinematic.checkLoadCapacity(arm, opts?)` (closed-form Euler-Bernoulli beam load check), `kinematic.checkStaticHold(arm, opts?)` (gravitational holding torque/force at a sampled pose grid vs each joint's declared actuator capacity), `kinematic.sweepTolerance({ code\|file, params, gates? |
+| `kinematic : KinematicFacade` | Namespace with in-process feasibility checks an agent can run before declaring a mechanism design done: `kinematic.checkMountingHoleConsistency(arm)` (fastener-side hole agreement; dispatches to the v0.7.4 substrate), `kinematic.checkSweptCollision(arm, opts?)` (sampled-pose collision sweep across declared joint ranges), `kinematic.checkReachable(arm, opts)` (IK reachability — analytical Pieper first, DLS numeric fallback), `kinematic.checkLoadCapacity(arm, opts?)` (closed-form Euler-Bernoulli beam load check), `kinematic.checkStaticHold(arm, opts?)` (gravitational holding torque/force at a sampled pose grid vs each joint's declared actuator capacity), `kinematic.motionLoad(arm, opts?)` (per-joint wrench along the animation tracks, a joint-limit range, or explicit `poses`; also returns `partLoads`, the worst wrench per part in that part's frame, for `feaStudy({ loadsFrom })`), `kinematic.sweepTolerance({ code\|file, params, gates?, boundaryTolerance?, boundaryBudget? |
 | `dfmSpec(spec: { minWall?: number; minClearance?: number; includeArticulatedMates?: boolean; ignore?: [string, string][]; exclude?: string[]; channels?: Array<{ part: string; name: string; openings: number; sealed?: boolean }>; process?: 'fdm'; buildDirection?: '+x' \| '-x' \| '+y' \| '-y' \| '+z' \| '-z' \| [number, number, number]; nozzleMm?: number; maxOverhangDeg?: number; maxBridgeMm?: number; printer?: string }) => DfmSpecHandle` | Declare printability (design-for-manufacture) gates for the model. |
-| `Shape.feaStudy(spec: { material: 'mild-steel' \| 'aluminum-6061' \| 'pla' \| 'petg' \| 'abs' \| 'nylon' \| { E: number; nu: number; yield: number }; fixed: FaceQuery \| string; loads: Array<{ faces: FaceQuery \| string; force: [number, number, number]; name?: string }>; meshSize?: number; minSafetyFactor?: number; name?: string }) => FeaStudyHandle` | Declare a linear-static structural study on this shape: where it is held (`fixed`), what pushes on it (`loads`, force in TOTAL newtons over the selected faces), and what it is made of. |
+| `Shape.feaStudy(spec: { material: 'mild-steel' \| 'aluminum-6061' \| 'pla' \| 'petg' \| 'abs' \| 'nylon' \| { E: number; nu: number; yield: number }; fixed: FaceQuery \| string; loads?: Array<{ faces: FaceQuery \| string; force: [number, number, number]; pointMm?: [number, number, number]; momentNmm?: [number, number, number]; name?: string }>; loadsFrom?: { motion: { partLoads: MotionPartLoadSample[] }; part: string; joint?: string; pose?: Record<string, number>; faces?: FaceQuery \| string }; meshSize?: number; minSafetyFactor?: number; name?: string }) => FeaStudyHandle` | Declare a linear-static structural study on this shape: where it is held (`fixed`), what pushes on it (`loads`, force in TOTAL newtons over the selected faces, or `loadsFrom` to take the worst sampled wrench from `kinematic.motionLoad`), and what it is made of. |
 | `tube(name, { from, to, via?, od?, wall, bendRadius, system?, material?, density?, flow? }) => Shape` | Bent tube between two ends: straight legs joined by constant-radius bends, built as one hollow solid in assembly space. |
 | `tubeSpec({ minBendRadiusFactor?, minStraightBetweenBends?, minStraightAtEnd?, maxBendAngle?, clearance?: { default?, pairs? }, systems?: { [system]: { minBendRadiusFactor?, minStraightBetweenBends?, minStraightAtEnd?, maxBendAngle? } } }) => { id, metadata }` | Declare the rules every tube() in the script must meet. |
+| `require(name: string, predicate: RequirementPredicate) => void` | Declare a named, kernel-measured requirement, reported in the `requirements` ledger every evaluation returns. |
+| `clearance(a, b) => RequirementPredicate` | Minimum surface-to-surface BREP distance between two selections, mm. |
+| `distance(a, b) => RequirementPredicate` | Distance between two selections, mm. |
+| `mass(selection) => RequirementPredicate` | Mass of a body selection in kg. |
+| `volume(selection) => RequirementPredicate` | Volume of a body selection in mm^3. |
+| `centerOfMass(selection) => RequirementPredicate` | Centre of mass in mm. |
+| `count(selection) => RequirementPredicate` | Number of resolved faces/edges in a selection. |
+| `innerLoops(selection) => RequirementPredicate` | Largest inner-boundary-loop (cutout) count across selected faces. |
+| `angle(a, b) => RequirementPredicate` | Angle between two selections' directions (face normal, edge tangent/axis or a body's principal axis), degrees. |
+| `concentric(a, b) => RequirementPredicate` | Two selections share an axis: parallel axes and coincident centres. |
+| `coplanar(a, b) => RequirementPredicate` | Two selections are coplanar: parallel normals and zero plane offset. |
 
 ## Parametrize
 
@@ -246,8 +263,10 @@ Declare editable dimensions and do arithmetic on them (JS operators throw on a P
 
 | Call | What it does |
 |---|---|
-| `param(name, defaultValue, meta?) => ParamRef` | Declare a symbolic editable parameter. |
-| `params(decl) => { [name]: ParamRef }` | Batched form of `param()` — declare many params at once. |
+| `param(name, defaultValue, meta?) => ParamRef` | Declare a symbolic editable parameter (a ParamRef the chain ops accept anywhere a number is expected); MCP `set_param({ ..., preview: true })` previews a change against declared intent by returning the diff_geometry summary plus the requirements-ledger and S1 binding diffs, without writing source, session or caches. |
+| `params(decl) => { [name]: ParamRef \| TypedParamRef }` | Declare many params at once. |
+| `meta(metadata) => void` | Set validated asset metadata for `asset_manifest`: name/title, description, authors, tags, sourceUrl and an SPDX-allowlisted content licence (default CC-BY-4.0, distinct from the kernelCAD package MIT licence). |
+| `presets(presets) => void` | Declare named maps of parameter overrides for `asset_manifest`. |
 | `ParamRef.add(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef plus `other`. |
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |
 | `ParamRef.subtract(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef minus `other`. |
@@ -265,8 +284,34 @@ Bring in vendor geometry, and write models back out.
 
 | Call | What it does |
 |---|---|
-| `lib : { fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; meshFromSTL(path: string): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; part(request: { family: string; thread?: string; lengthMm?: number }): Promise<Shape>; stack(request: { thread: string; gripMm: number; mode?: "screw" \| "bolt" }): Promise<{ lengthMm: number; screw: Shape }>; insert(shape: Shape, request: { diameterMm?: number; near?: Vec3; family: "socket-head-cap-screw" \| "button-head-cap-screw" \| "flat-head-countersunk"; mode?: "screw" \| "bolt"; gripMm?: number; seat?: "auto" \| "none" \| "counterbore"; headAt?: Vec3 }): Promise<{ shape: Shape; holes: Array<{ centerMm: Vec3; direction: Vec3; diameterMm: number; depthMm: number; thread: string; fit: "close" \| "normal" \| "loose"; lengthMm: number; screw: Shape; headWasher?: Shape; tailWasher?: Shape; nut?: Shape }> }>; fixture: FixtureParts; standard: StandardParts }` | Parts library namespace. |
+| `lib : { fromSTEP(path: string, opts?: { solid?: number }): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; meshFromSTL(path: string): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; part(request: { family: string; thread?: string; lengthMm?: number; detail?: "full" \| "envelope" }): Promise<Shape>; stack(request: { thread: string; gripMm: number; mode?: "screw" \| "bolt"; detail?: "full" \| "envelope"; protrusionPitches?: number }): Promise<{ lengthMm: number; protrusionMm?: number; screw: Shape }>; insert(shape: Shape, request: { diameterMm?: number; near?: Vec3; family: "socket-head-cap-screw" \| "button-head-cap-screw" \| "flat-head-countersunk"; mode?: "screw" \| "bolt"; gripMm?: number; seat?: "auto" \| "none" \| "counterbore"; headAt?: Vec3; detail?: "full" \| "envelope"; protrusionPitches?: number }): Promise<{ shape: Shape; holes: Array<{ centerMm: Vec3; direction: Vec3; diameterMm: number; depthMm: number; thread: string; fit: "close" \| "normal" \| "loose"; lengthMm: number; protrusionMm?: number; screw: Shape; headWasher?: Shape; tailWasher?: Shape; nut?: Shape }> }>; fixture: FixtureParts; standard: StandardParts }` | Parts library namespace. |
 | `Scene.toCompound() => Shape` | Groups bodies without booleaning. |
+
+### GLB assembly rigs
+
+When a returned assembly scene has mates, GLB export defaults to a strict node
+hierarchy. Revolute, prismatic, and cylindrical mates create `pivot:<mateName>`
+nodes at the resolved connector frame; moving part meshes are offset beneath
+those pivots so the solved pose remains unchanged. Fastened parts remain
+grouped under their parent. A pivot’s local `+Z` axis follows the mate axis.
+
+The asset-level `extras.kernelcad.rig` map records `type`, local `axis`,
+`range`, and pivot `node`. Rotational `range` values are degrees; slide `range`
+and cylindrical `slideRange` values are millimetres. Explicit absolute mate
+limits are offset by the captured pose, so ranges are relative to the exported
+rest pose (for example, limits `[0, 110]` at pose `35` become `[-35, 75]`).
+Cylindrical entries identify both degrees of freedom with
+`degreesOfFreedom: ['rotate', 'slide']`; the current solver poses its
+secondary axial degree of freedom at zero. Loop-closing mates have
+`closed: true`, are not nested, and generate a warning. Ball, planar, and
+pin-slot mates are held fixed with a warning; GLB animation clips and IK are
+not emitted. When a solved assembly is active, `asset_manifest` includes the
+same `rig` map and `rigWarnings`; the params JSON helper can emit a
+`{ params, rig }` envelope when given that map (without it, the legacy flat
+knob JSON remains unchanged).
+
+Set the GLB export option `hierarchy: 'flat'` to keep the historical flat
+node list. See the original [hinge assembly example](../examples/assemblies/glb-rig-hinge.kcad.ts).
 
 ## Annotate & present
 

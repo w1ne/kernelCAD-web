@@ -49,6 +49,9 @@ export interface FaceLineage {
   /** OCCT surface type read at create time (`face.geomType`). Used as the
    *  4th discriminator in the geometry-snapshot fallback. */
   surfaceType?: 'PLANE' | 'CYLINDRE' | 'CONE' | 'SPHERE' | 'TORUS' | 'BSPLINE' | 'OTHER';
+  /** Feature ids whose output geometry this face descends from, earliest first.
+   *  Absent on a birth stamp: the root (and featureId, when it differs) is the chain. */
+  descendsFrom?: readonly string[];
 }
 
 export interface EdgeLineage {
@@ -70,6 +73,8 @@ export interface EdgeLineage {
    *  enables `kc.q.edge(kc.q.geometryType('LINE'))` when combined with
    *  surface-type heuristics. */
   featureKind?: import('../../shared/intent/types').FeatureKind;
+  /** Feature ids whose output geometry this edge descends from, earliest first. */
+  descendsFrom?: readonly string[];
 }
 
 export type HistoryMap = Map<FaceHash, FaceLineage>;

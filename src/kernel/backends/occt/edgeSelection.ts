@@ -46,6 +46,7 @@ import {
 } from '../../naming/selectorParser';
 import { evaluate } from '../../naming/queryEvaluator';
 import { makeQuery } from '../../naming/query';
+import { reportBinding } from './bindingFingerprint';
 import {
   canonicalFaceOnSweptSolid,
   faceByHash,
@@ -57,6 +58,7 @@ import {
   resolveFaceQueryRef,
   resolveFromMetadataHit,
   resolveQueryDslFace,
+  resolveQueryDslFaces,
 } from './faceSelectionPhases';
 import type { QueryDslFaceRef } from './faceSelectionPhases';
 
@@ -70,6 +72,20 @@ export type PickEdgesResult =
   | { error: CompilerDiagnostic };
 
 export function pickEdges(
+  record: FeatureRecord,
+  base: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+): PickEdgesResult {
+  const result = resolveEdges(record, base, records);
+  // Face-bound selections report the face they bound to (below); an edge
+  // selector reports the edges themselves.
+  if (Array.isArray(result) && record.inputs.edges?.kind === 'edge') {
+    reportBinding(record, base, 'edges', result);
+  }
+  return result;
+}
+
+function resolveEdges(
   record: FeatureRecord,
   base: OcctBackend,
   records: readonly FeatureRecord[] | undefined,
@@ -120,6 +136,7 @@ function pickEdgesForQueryDslFace(
 ): PickEdgesResult {
   const faceResult = resolveQueryDslFace(record, base, ref, records);
   if ('error' in faceResult) return faceResult;
+  reportBinding(record, base, 'face', [faceResult.face]);
   const faceEdges = collectFaceEdges([faceResult.face]);
   if (faceEdges.length === 0) {
     return {
@@ -181,6 +198,7 @@ function pickEdgesForFaceQuery(
       },
     };
   }
+  reportBinding(record, base, 'face', faces);
   return collectFaceEdges(faces);
 }
 
@@ -220,7 +238,10 @@ function pickEdgesFromLabelHistoryMap(
     for (const h of matchingHashes) {
       try { faces.push(faceByHash(base, h)); } catch { /* skip stale hashes */ }
     }
-    if (faces.length > 0) return collectFaceEdges(faces);
+    if (faces.length > 0) {
+      reportBinding(record, base, 'face', faces);
+      return collectFaceEdges(faces);
+    }
   }
   // Slice-2 snapshot fallback for named/ordinal selectors.
   if (parsed.kind === 'named' || parsed.kind === 'ordinal') {
@@ -230,6 +251,7 @@ function pickEdgesFromLabelHistoryMap(
       if (snapMatches.length === 1) {
         try {
           const faces = [faceByHash(base, snapMatches[0])];
+          reportBinding(record, base, 'face', faces);
           return collectFaceEdges(faces);
         } catch { /* fallthrough */ }
       }
@@ -271,6 +293,7 @@ function pickEdgesFromLabelMetadata(
   if ('hit' in meta) {
     const faceResult = resolveFromMetadataHit(record, base, meta.hit);
     if ('error' in faceResult) return faceResult;
+    reportBinding(record, base, 'face', [faceResult.face]);
     const faceEdges = collectFaceEdges([faceResult.face]);
     if (faceEdges.length === 0) {
       return {
@@ -378,6 +401,7 @@ function pickEdgesForCanonicalOrCreated(
         ...resolved.warnings,
       ];
     }
+    try { reportBinding(record, base, 'face', [faceByHash(base, resolved.faceHash)]); } catch { /* stale hash: nothing to report */ }
     return edgesOfFaceByHash(base, resolved.faceHash);
   }
 
@@ -626,6 +650,61 @@ function canonicalCylinderEndCapEdges(base: OcctBackend, face: 'top'|'bottom'): 
  *   - The canonical face name must be applicable to the primitive kind.
  */
 export function pickFace(
+  record: FeatureRecord,
+  base: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+): Face | { error: CompilerDiagnostic } {
+  const result = resolveFace(record, base, records);
+  if (!('error' in result)) reportBinding(record, base, 'face', [result]);
+  return result;
+}
+
+/**
+ * Every face a FaceRef names. A FaceQuery is a set selector — `{ byNormal: 'X' }`
+ * is every +X-facing face — so a face edit can move all of them instead of
+ * silently taking the first match. `near` is the one positional filter that
+ * means "the closest face", so it still resolves to exactly one; every other
+ * ref kind (canonical name, label, created, tracked) names one face.
+ */
+export function resolveFaceRefFaces(
+  record: FeatureRecord,
+  base: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+): Face[] | { error: CompilerDiagnostic } {
+  const faceRef = record.inputs.face;
+  if (faceRef?.kind === 'face') {
+    if (faceRef.ref.kind === 'queryDsl') {
+      const all = resolveQueryDslFaces(record, base, faceRef.ref, records);
+      if ('error' in all) return all;
+      reportBinding(record, base, 'face', all);
+      return all;
+    }
+    if (faceRef.ref.kind === 'query') {
+      const faces = resolveFaceQuery(base, faceRef.ref.query);
+      if (faces.length === 0) {
+        return {
+          error: {
+            target: 'export-occt',
+            code: 'feature.selection.no-match',
+            featureId: record.id,
+            severity: 'error',
+            message: `Face query matched zero faces on the input shape.`,
+            hint: 'Inspect available faces with list_faces, or relax the FaceQuery.',
+          },
+        };
+      }
+      const selected = faceRef.ref.query.near !== undefined ? [faces[0]] : faces;
+      reportBinding(record, base, 'face', selected);
+      return selected;
+    }
+  }
+  const one = resolveFace(record, base, records);
+  if ('error' in one) return one;
+  reportBinding(record, base, 'face', [one]);
+  return [one];
+}
+
+function resolveFace(
   record: FeatureRecord,
   base: OcctBackend,
   records: readonly FeatureRecord[] | undefined,

@@ -31,6 +31,30 @@ describe('arm.part(...).connector(...)', () => {
     expect(part.connectors![0].origin).toEqual({ kind: 'vec3', value: [0, 0, 5] });
   });
 
+  it('replaces a promoted bolt-holes frame and still rejects a second manual declare', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const arm = kcad.assembly('test');
+    const plate = kcad.box(40, 20, 3).holes('top', {
+      positions: [{ u: -10, v: 0 }, { u: 10, v: 0 }],
+      diameter: 3,
+      depth: 'through',
+    });
+    const part = arm.part('plate', plate);
+    part.connector('bolt-holes-1', {
+      type: 'frame',
+      origin: { kind: 'vec3', value: [-10, 0, 1.5] },
+    });
+    const replaced = part.mateConnectors.find((c) => c.name === 'bolt-holes-1');
+    expect(replaced?.origin).toEqual({ kind: 'vec3', value: [-10, 0, 1.5] });
+    expect(() =>
+      part.connector('bolt-holes-1', {
+        type: 'frame',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+      }),
+    ).toThrow(/assembly\.connector\.duplicate-name/);
+  });
+
   it('throws on duplicate connector name on same part', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });

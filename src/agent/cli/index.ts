@@ -17,6 +17,7 @@ import { animateCommand } from './commands/animate';
 import { dfmCommand } from './commands/dfm';
 import { evaluateCommand } from './commands/evaluate';
 import { exportCommand } from './commands/export';
+import { importStepCommand } from './commands/importStep';
 import { printCommand } from './commands/print';
 import { reconstructCommand } from './commands/reconstruct';
 import { inspectCommand } from './commands/inspect';
@@ -30,6 +31,7 @@ import { statsCommand } from './commands/stats';
 import { telemetryCommand } from './commands/telemetry';
 import { validateCommand } from './commands/validate';
 import { dynamicsCommand } from './commands/dynamics';
+import { collabCheckCommand } from './commands/collabCheck';
 
 // Mesh-heavy commands (parts/export/render/…) OOM at the default ~2 GB heap
 // (gap #11). Re-exec once with a larger heap before commander parses anything;
@@ -68,6 +70,7 @@ program.addCommand(dfmCommand());
 program.addCommand(evaluateCommand());
 program.addCommand(exportCommand());
 program.addCommand(inspectCommand());
+program.addCommand(importStepCommand());
 program.addCommand(installCommand());
 program.addCommand(interferenceCommand());
 program.addCommand(mcpCommand());
@@ -80,6 +83,7 @@ program.addCommand(statsCommand());
 program.addCommand(telemetryCommand());
 program.addCommand(validateCommand());
 program.addCommand(dynamicsCommand());
+program.addCommand(collabCheckCommand());
 
 program.parseAsync(process.argv).catch(err => {
   console.error(err);

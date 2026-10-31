@@ -476,6 +476,18 @@ export function resolveQueryDslFace(
   ref: QueryDslFaceRef,
   records: readonly FeatureRecord[] | undefined,
 ): { face: Face } | { error: CompilerDiagnostic } {
+  const all = resolveQueryDslFaces(record, base, ref, records);
+  return 'error' in all ? all : { face: all[0] };
+}
+
+/** Every face a Query DSL ref evaluates to (canonical order). Used by face
+ *  edits, where a set query is the natural way to select several walls. */
+export function resolveQueryDslFaces(
+  record: FeatureRecord,
+  base: OcctBackend,
+  ref: QueryDslFaceRef,
+  records: readonly FeatureRecord[] | undefined,
+): Face[] | { error: CompilerDiagnostic } {
   const query = makeQuery<unknown>(
     ref.queryTarget,
     ref.queryAst,
@@ -495,22 +507,24 @@ export function resolveQueryDslFace(
         },
       };
     }
-    // Resolve the first canonical-ordered entity to its replicad Face.
-    const e = entities[0];
-    try {
-      return { face: faceByHash(base, e.handle) };
-    } catch {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.face-ref.not-resolvable',
-          featureId: record.id,
-          severity: 'error',
-          message: `Query DSL face ref resolved to entity '${e.ref}' but the underlying face hash '${e.handle}' is not present on the lowered backend.`,
-          hint: 'The Query targeted a face that survived lineage but not topology — try a tighter Query (.and(closestTo(...))) or rebuild against the current scene.',
-        },
-      };
+    const faces: Face[] = [];
+    for (const e of entities) {
+      try {
+        faces.push(faceByHash(base, e.handle));
+      } catch {
+        return {
+          error: {
+            target: 'export-occt',
+            code: 'feature.face-ref.not-resolvable',
+            featureId: record.id,
+            severity: 'error',
+            message: `Query DSL face ref resolved to entity '${e.ref}' but the underlying face hash '${e.handle}' is not present on the lowered backend.`,
+            hint: 'The Query targeted a face that survived lineage but not topology — try a tighter Query (.and(closestTo(...))) or rebuild against the current scene.',
+          },
+        };
+      }
     }
+    return faces;
   } catch (e) {
     return queryDiagnosticToCompilerError(record, e, 'face');
   }

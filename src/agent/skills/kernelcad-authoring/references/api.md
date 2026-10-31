@@ -10,7 +10,7 @@ NEVER tell a user a shape is impossible, or that it needs other software, withou
 - It is a **solid/NURBS** kernel, not a **polygon/subdivision sculptor** (Blender/Maya).
 - Its viewer renders clean CAD, not **photoreal** images — for a photoreal hero shot, export STEP/GLB and finish in a render tool.
 
-For an **organic** vehicle / berlinetta / fairing body, reach for `automotive-body-envelope` (`lookup_cookbook("automotive body envelope")`) — spline/rail loft or surfaceFromCurves + sew + thicken; glass/aero as separate parts. Reserve `loft-body-shell-from-profiles` (`lookup_cookbook("loft a stylized body shell")`) for stylized / mechanism-demo shells only.
+For an **organic** vehicle / fairing body, reach for `automotive-body-envelope` (`lookup_cookbook("automotive body envelope")`) — spline/rail loft or surfaceFromCurves + sew + thicken; glass/aero as separate parts. Reserve `loft-body-shell-from-profiles` (`lookup_cookbook("loft a stylized body shell")`) for stylized / mechanism-demo shells only.
 
 ### Top-level functions
 
@@ -18,6 +18,9 @@ For an **organic** vehicle / berlinetta / fairing body, reach for `automotive-bo
 // Editable symbolic parameters. Returned value is a ParamRef accepted anywhere
 // the API expects an editable number or boolean. Edit the param() default
 // post-build with set_param via MCP / session.params.update in runtime code.
+// Preview a change without writing it: set_param({ code, param_name,
+// new_value, preview: true }) returns the diff_geometry summary plus the
+// requirements-ledger diff and S1 selector re-binds.
 param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
   min?: number;
   max?: number;
@@ -107,7 +110,10 @@ select<T>(items: Iterable<T>): ShapeList<T>;
 // arm.part(...) like any primitive.
 
 // STEP — the default for vendor catalog components.
-lib.fromSTEP(path: string): Promise<Shape>;
+// Length units (mm, inch, metre) come back in millimetres.
+// SolidWorks .sldprt/.sldasm are refused. Save as STEP AP214 or AP242 with
+// solid bodies. opts.solid picks one body (zero-based) from a multi-body file.
+lib.fromSTEP(path: string, opts?: { solid?: number }): Promise<Shape>;
 
 // Native BREP — lossless (exact analytic surfaces and full topology, no
 // schema translation, no tessellation). Every downstream op is valid on the
@@ -254,6 +260,29 @@ dfmSpec(spec: {
 }): DfmSpecHandle;
 ```
 
+`require(name, predicate)` declares a named, kernel-measured requirement. It
+reports into the `requirements` block every `evaluate` / `evaluate_script`
+returns, alongside `dfmSpec`, gated `feaStudy.minSafetyFactor` and mechanical
+intent. Entries carry `status` (`pass` / `fail` / `not-evaluated`), `measured`,
+`limit`, `margin` and the selections with S1 fingerprints.
+
+```typescript
+require('bolt-clearance', clearance(bracket, housing).gte(1.0));
+require('hole-count', count(faces(plate, { ofSurfaceType: 'CYLINDER' })).eq(4));
+require('envelope', bbox(body).within({ x: [39, 41], y: [29, 31], z: [9, 11] }));
+require('volume-band', volume(body).between(1200, 1800));
+require('mass-budget', mass(body).atDensity(2700).lte(0.25));
+require('top-level', angle(faces(body, { byNormal: 'Z' }), faces(body, { byNormal: 'Z' })).lte(1));
+```
+
+Predicates: `clearance`, `distance`, `mass`, `volume`, `bbox`,
+`centerOfMass`, `count`, `innerLoops`, `angle`, `concentric`, `coplanar`.
+Comparisons: `.gte`, `.lte`, `.eq`, `.between(lo, hi)`, `.in([lo, hi])`,
+`.within(bands | tolerance)`. A selection is a `Shape`, `faces(shape, query?)`,
+`edges(shape, query?)`, or a resolved entity list with `@kc[...]` refs.
+Call-time external specs use `verify({ requirements: [...] })` and are tagged
+`source: 'external'`; they are never persisted.
+
 ### Selector algebra (ShapeList)
 
 `EdgeQuery` / `FaceQuery` are flat predicate bags: they answer *"which entities
@@ -321,11 +350,14 @@ Check world-frame spacing after reuse changes. The authoring `Shape` API has no
 .rotateX(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([1, 0, 0], ...)
 .rotateY(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([0, 1, 0], ...)
 .rotateZ(degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]): Shape  // .rotate([0, 0, 1], ...)
-// Uniform (single positive finite number) or per-axis Vec3 (non-uniform sx/sy/sz).
+// Uniform or per-axis Vec3 (non-uniform sx/sy/sz); each factor can be a number
+// or a numeric ParamRef and resolves when the shape is built.
 // Non-uniform lowers via gp_GTrsf + BRepBuilderAPI_GTransform so face refs survive
 // (topology preserved under any affine transform). All factors must be positive
 // and finite; otherwise feature.invalid-args.
-.scale(factor: number | [number, number, number]): Shape
+.scale(factor: Editable<number> | [Editable<number>, Editable<number>, Editable<number>]): Shape
+.scale(sx: Editable<number>, sy: Editable<number>, sz: Editable<number>): Shape
+// Example: box(10, 10, 4).scale(param('hexSize', 2))
 
 // Orient this shape so its current +Z axis aligns with `axis`. Sugar over .rotate() —
 // preferred for cross-axis cylinders/axles. Identity [0, 0, 1] is a no-op; antipodal
@@ -380,6 +412,21 @@ Check world-frame spacing after reuse changes. The authoring `Shape` API has no
 
 // Face features:
 .shell(thickness: number, { face: FaceSelector }): Shape  // face REQUIRED
+// Direct face edit. Positive distance / an outward vector grows the solid.
+// OCCT only slides a planar face along its normal and rejects anything else
+// by name (`feature.face-edit.rejected`). A FaceQuery is a SET selector:
+// every face it matches moves (`{ byNormal: 'X' }` moves all +X-facing walls;
+// `near` still means the one closest face). When a multi-face selection
+// contains a face that cannot slide, the others move and the refused face is
+// reported as `feature.face-edit.skipped` (warn); a one-face selection fails
+// closed. A slide into a pocket may expose tangent fillet strips, which is a
+// valid result; a step on an outer face is refused. `kernel: 'smlib'` uses the
+// guarded native Part.offsetFaces / Part.moveFaces.
+.offsetFaces(faces: FaceSelector | string | Array<FaceSelector | string>, distance: Editable<number>): Shape
+.moveFaces(faces: FaceSelector | string | Array<FaceSelector | string>, by: [Editable<number>, Editable<number>, Editable<number>]): Shape
+//   box(40, 30, 10).offsetFaces('top', 2)
+//   plate.offsetFaces({ byNormal: 'X', ofSurfaceType: 'PLANE' }, 6)  // every +X planar wall
+//   box(40, 30, 10).moveFaces(kc.q.face(kc.q.createdBy(plateId)), [0, 0, -1])
 // Draft — taper faces for mold release (Slice E). angleDeg: 0–90.
 // neutralPlane defaults to the selected face; pullDir defaults to face normal.
 .draft(angleDeg: Editable<number>, opts: { face: FaceSelector | string; neutralPlane?: string; pullDir?: [number, number, number] }): Shape
@@ -418,6 +465,8 @@ const plate = box(60, 40, 6)
   .threadedHole('top', { u: 0, v: 12, spec: 'M5', depth: 8 }) // ISO tapped hole by designation; modeled: true cuts the thread
   .dimension({ kind: 'linear', from: holeAt(15, 20), to: holeAt(45, 20), label: 'hole spacing' }); // "hole spacing 30"
 ```
+
+**Loads from motion.** `feaStudy({ loadsFrom: { motion, part } })` takes the worst sampled joint wrench from `kinematic.motionLoad` instead of a hand-typed load. `partLoads` ranks samples by a named proxy (section bending stress, else joint-moment magnitude); the study applies the selected force + moment as a statically equivalent remote load and records the pose in the summary and S2 ledger. `loads` and `loadsFrom` are mutually exclusive; a part with no sampled load throws at capture.
 
 ### Sketch methods
 

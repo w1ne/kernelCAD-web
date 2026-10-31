@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "sourceLengthUnits": [
+    "conversion-based:INCH",
+    "millimetre"
+  ],
+  "externalDocumentCount": 12,
+  "definitionCount": 8,
+  "occurrenceCount": 11,
+  "loadedPartCount": 11,
+  "maxMeshBoundsOutsideTransformedBrepEnvelopeMm": 0.0,
+  "maxTessellatedBoundsGapInsideConservativeEnvelopeMm": 0.06931062115756959,
+  "maxRelativeVolumeError": 1.3190712269531044e-14,
+  "partsDiagnostics": 0,
+  "boundsMethod": "parts reports tessellated mesh bounds; comparison uses transformed corners of each exact local BRep AABB, a conservative world envelope."
+}

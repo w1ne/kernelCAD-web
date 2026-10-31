@@ -3,16 +3,16 @@
 import type { FeatureLowerer, LowerResult, ResolvedInputs, ShapeBackend } from '../../../kernel/backends/backend';
 import { importStepShape } from '../../../kernel/import/inspectStep';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
-import { pickEdges } from '../../../kernel/backends/occt/edgeSelection';
+import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { createOcctLowerer } from '../occt/occtLowerer';
 import type { LowererSession } from '../kernelRegistry';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { withNextAction } from '../../../shared/diagnostics/diagnostic';
 import { cutNoOp, GuardError, measureCrossCheck, repairInvariant, requireSimpleProfile, type Measures, type Point2 } from './guards';
-import { loadSmlib } from './runtime';
+import { loadSmlib, takeSmlibWarnings } from './runtime';
 import { preserveProvenance } from './provenance';
-import type { Part, Edge, Shell } from '@classcad/smlibwasm';
+import type { Part, Edge, Face, Shell } from '@classcad/smlibwasm';
 
 type Smlib = typeof import('@classcad/smlibwasm');
 export interface KernelGuardRecord { featureId: string; outcome: 'accepted' | 'fallback'; guard?: string; message?: string }
@@ -23,7 +23,7 @@ const nativeMeasures = (part: Part): Measures => {
 };
 // Kinds for which lower() currently reaches a native SMLib build attempt.
 // Other kinds deliberately use the OCCT reference without a native attempt.
-const NATIVE_ATTEMPT_KINDS = ['box', 'cylinder', 'sphere', 'extrude', 'boolean', 'fillet', 'importedStep'] as const;
+const NATIVE_ATTEMPT_KINDS = ['box', 'cylinder', 'sphere', 'extrude', 'boolean', 'fillet', 'moveFaces', 'offsetFaces', 'importedStep'] as const;
 
 /** Experimental hybrid lowerer. Native candidates are checked against a full
  * OCCT reference, then returned as OCCT-compatible shapes for existing naming,
@@ -38,6 +38,19 @@ export class SmlibLowerer implements FeatureLowerer {
     this.supports = new Set(NATIVE_ATTEMPT_KINDS);
   }
 
+  /** OCCT must have produced a solid this lowerer knows how to attempt. */
+  private assertNativeAttempt(record: FeatureRecord, reference: LowerResult): void {
+    if (reference.diagnostics.some((d) => d.severity === 'error') || !reference.shape) {
+      throw new GuardError('OCCT_REFERENCE_FAILED', 'OCCT reference did not produce an acceptable result');
+    }
+    if (!(NATIVE_ATTEMPT_KINDS as readonly string[]).includes(record.kind)) {
+      throw new GuardError('UNSUPPORTED_FEATURE', `Native ${record.kind} is not implemented`);
+    }
+    if (record.transforms.length) {
+      throw new GuardError('UNSUPPORTED_TRANSFORM', 'Post-feature transforms use OCCT');
+    }
+  }
+
   async lower(record: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
     // Build once, preserving OCCT's own diagnostics and result for fallback.
     const reference = await this.reference.lower(record, inputs);
@@ -45,15 +58,10 @@ export class SmlibLowerer implements FeatureLowerer {
     const occtOwned: ShapeBackend[] = [];
     let compatibility: OcctBackend | undefined;
     try {
-      if (reference.diagnostics.some(d => d.severity === 'error') || !reference.shape) {
-        throw new GuardError('OCCT_REFERENCE_FAILED', 'OCCT reference did not produce an acceptable result');
-      }
-      if (!['box','cylinder','sphere','extrude','boolean','fillet','importedStep'].includes(record.kind)) {
-        throw new GuardError('UNSUPPORTED_FEATURE', `Native ${record.kind} is not implemented`);
-      }
-      if (record.transforms.length) throw new GuardError('UNSUPPORTED_TRANSFORM', 'Post-feature transforms use OCCT');
+      this.assertNativeAttempt(record, reference);
       this.checkProfile(record, inputs);
       const sm = await loadSmlib();
+      takeSmlibWarnings();
       const own = (part: Part | Shell): Part => {
         if (!(part instanceof sm.Part)) { part.dispose(); throw new GuardError('INVALID_CANDIDATE', 'Expected a closed solid'); }
         owned.push(part); return part;
@@ -83,6 +91,8 @@ export class SmlibLowerer implements FeatureLowerer {
       };
       const candidate = await this.build(sm, record, inputs, reference.shape, read, own, occtOwned);
       if (!candidate.isValid()) throw new GuardError('INVALID_CANDIDATE', 'SMLib topology check failed');
+      const deprecated = takeSmlibWarnings();
+      if (deprecated.length) throw new GuardError('DEPRECATION', deprecated.join(' '));
       measureCrossCheck(measures(reference.shape), nativeMeasures(candidate));
       compatibility = await importStepShape(new TextEncoder().encode(sm.toStep(candidate)));
       // Export/re-import is a separate guard: healthy native volume does not
@@ -149,6 +159,7 @@ export class SmlibLowerer implements FeatureLowerer {
     if (!base) throw new GuardError('MISSING_INPUT', 'Missing base solid');
     if (r.kind === 'boolean') return this.buildBoolean(r,inputs,base,read,own,occtOwned);
     if (r.kind === 'fillet') return this.buildFillet(r,inputs,base,read,own);
+    if (r.kind === 'moveFaces' || r.kind === 'offsetFaces') return this.buildFaceEdit(r, inputs, base, read, own);
     throw new GuardError('UNSUPPORTED_FEATURE', r.kind);
   }
 
@@ -216,7 +227,39 @@ export class SmlibLowerer implements FeatureLowerer {
       return matches[0];
     });
     if (!native.length) throw new GuardError('EDGE_SELECTION', 'Empty fillet selection');
-    return own(part.fillet(native,p('radius')));
+    // 0.6 fillets the whole tangent run unless propagate is false. The OCCT
+    // reference rounds only the edges this record selected.
+    return own(part.fillet(native, p('radius'), { propagate: false }));
+  }
+
+  private async buildFaceEdit(r: FeatureRecord, inputs: ResolvedInputs, base: ShapeBackend,
+    read: (shape: ShapeBackend) => Promise<Part>, own: (part: Part | Shell) => Part): Promise<Part> {
+    if (!(base instanceof OcctBackend)) throw new GuardError('FACE_SELECTION', 'Missing OCCT selection source');
+    const keys = Object.keys(r.inputs).filter((key) => key === 'face' || /^face_\d+$/.test(key))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    if (!keys.length) throw new GuardError('FACE_SELECTION', 'Empty face selection');
+    const selected = keys.map((key) => {
+      const picked = pickFace({ ...r, inputs: { ...r.inputs, face: r.inputs[key] } }, base, inputs.records);
+      if ('error' in picked) throw new GuardError('FACE_SELECTION', picked.error.message);
+      return picked;
+    });
+    const part = await read(base);
+    const faces = part.faces();
+    const native: Face[] = selected.map((face) => {
+      const box = (face as { boundingBox?: { bounds: [[number, number, number], [number, number, number]] } }).boundingBox?.bounds;
+      if (!box) throw new GuardError('FACE_SELECTION', 'Selected face has no bounding box');
+      const [lo, hi] = box;
+      const matches = faces.filter((candidate) => {
+        const b = candidate.bbox();
+        return [b.min.x, b.min.y, b.min.z, b.max.x, b.max.y, b.max.z]
+          .every((value, index) => Math.abs(value - [...lo, ...hi][index]) < 1e-4);
+      });
+      if (matches.length !== 1) throw new GuardError('FACE_SELECTION', 'No unique STEP face correspondence');
+      return matches[0];
+    });
+    if (r.kind === 'offsetFaces') return own(part.offsetFaces(native, r.params.distance.evaluated));
+    const by: [number, number, number] = [r.params.dx.evaluated, r.params.dy.evaluated, r.params.dz.evaluated];
+    return own(part.moveFaces(native, by));
   }
 
   private sketch(sm: Smlib, commands: SketchCommand[]): ReturnType<Smlib['makeFace']> {

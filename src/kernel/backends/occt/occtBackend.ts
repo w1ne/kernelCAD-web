@@ -22,9 +22,11 @@ import { locateShape } from './occtPlacement';
 import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
-import { sceneToWorldFrameParts } from './sceneToWorldFrame';
+import { releaseWorldFrameParts, sceneToWorldFrameParts } from './sceneToWorldFrame';
 import { writeStepAssembly } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
+import { memoBox, memoMass, memoVolume } from './analysisMemo';
+import { disposeOcctHandles } from './occtDispose';
 import { KernelError } from '../../../shared/intent/kernelError';
 import {
   resolveExtrudeTwistAngle,
@@ -35,48 +37,17 @@ import {
   extrudeRoundedRectShape,
 } from './backendExtrudeProfiles';
 
-export { initOcct, type InitOcctOptions } from './backendInit';
+export { initOcct, occtHeapBytes, type InitOcctOptions } from './backendInit';
 export { resetOcct, registerOcctResetHook, withOcctPoisonRecovery } from './backendInit';
 export { meshShapeForExport } from './backendMesh';
+// XCAF import/export paths need OCCT labels and tools that ShapeBackend hides.
+export { getOC as getOcctRuntime };
+import { assertCanonicalFaceSupported, resolveCanonicalFaceTarget, type CanonicalFaceName } from './canonicalFaceTarget';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
 
 type ReplicadShape3D = replicad.Shape3D;
-
-type CanonicalFaceName = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
-
-const CANONICAL_FACE_AXIS: Record<CanonicalFaceName, { axisIndex: 0 | 1 | 2; bound: 'min' | 'max' }> = {
-  top:    { axisIndex: 2, bound: 'max' },
-  bottom: { axisIndex: 2, bound: 'min' },
-  right:  { axisIndex: 0, bound: 'max' },
-  left:   { axisIndex: 0, bound: 'min' },
-  back:   { axisIndex: 1, bound: 'max' },
-  front:  { axisIndex: 1, bound: 'min' },
-};
-
-function assertCanonicalFaceSupported(
-  kind: 'box' | 'cylinder' | 'sphere' | 'sketch' | undefined,
-  face: CanonicalFaceName,
-): void {
-  if (!kind) {
-    throw new Error('findCanonicalFaceHash: only valid on primitives (box/cylinder/sphere); kind is unset');
-  }
-  if (kind === 'sphere') {
-    throw new Error('findCanonicalFaceHash: spheres have no canonical planar face names');
-  }
-  if (kind === 'cylinder' && face !== 'top' && face !== 'bottom') {
-    throw new Error(`findCanonicalFaceHash: '${face}' is not applicable to cylinder (only top/bottom)`);
-  }
-}
-
-function resolveCanonicalFaceTarget(
-  face: CanonicalFaceName,
-  bb: { min: Vec3; max: Vec3 },
-): { axisIndex: 0 | 1 | 2; value: number } {
-  const { axisIndex, bound } = CANONICAL_FACE_AXIS[face];
-  return { axisIndex, value: bound === 'max' ? bb.max[axisIndex] : bb.min[axisIndex] };
-}
 
 /**
  * `ShapeBackend` implementation backed by Replicad / OpenCascade.
@@ -99,6 +70,8 @@ export class OcctBackend implements ShapeBackend {
   /** v0.2: per-shape face/edge identity tracking. Undefined for shapes that don't
    *  participate in history walks (legacy paths that don't construct lineage). */
   readonly historyMap?: import('../../naming/evolutionRecord').HistoryMap;
+  /** Edge ancestry. Populated for primitives and for operations that record it. */
+  edgeHistoryMap?: import('../../naming/evolutionRecord').EdgeHistoryMap;
   private _drawing: replicad.Drawing | null = null;
   private _commands: SketchCommand[] | null = null;
   // When `_commands` contains at least one Slice D NURBS segment (`spline`,
@@ -118,6 +91,17 @@ export class OcctBackend implements ShapeBackend {
    *  branch — the sketch is already lifted into a 3D coordinate frame and
    *  cannot be reused on another plane. */
   private _faceBoundSketch: replicad.SketchInterface | null = null;
+  /**
+   * Nominal stand-in that fit, clash and installation checks measure in place
+   * of this display solid. Set on catalog fasteners built with modeled
+   * threads: the envelope (nominal head + shank, nut with a nominal bore) is
+   * what a clearance hole, a tapped hole or the mating nut is designed
+   * around, so a modeled thread inside one is not a clash. Rigid moves
+   * (clone, translate, rotate, located) carry it along; booleans, scaling
+   * and mirroring drop it, because the stand-in no longer describes the
+   * result. Read it through {@link analysisBodyOf}.
+   */
+  analysisBody?: OcctBackend;
 
   constructor(
     shape: ReplicadShape3D,
@@ -139,7 +123,16 @@ export class OcctBackend implements ShapeBackend {
   }
 
   clone(): OcctBackend {
-    return new OcctBackend(this.shape.clone() as ReplicadShape3D, this.kind, this.historyMap);
+    const out = new OcctBackend(this.shape.clone() as ReplicadShape3D, this.kind, this.historyMap);
+    if (this.edgeHistoryMap) out.edgeHistoryMap = this.edgeHistoryMap;
+    if (this.analysisBody !== undefined) out.analysisBody = this.analysisBody.clone();
+    return out;
+  }
+
+  /** `out` with this shape's analysis body moved by `move` (rigid edits). */
+  private carryAnalysisBody(out: OcctBackend, move: (body: OcctBackend) => OcctBackend): OcctBackend {
+    if (this.analysisBody !== undefined) out.analysisBody = move(this.analysisBody);
+    return out;
   }
 
   /**
@@ -771,11 +764,13 @@ export class OcctBackend implements ShapeBackend {
   }
 
   translate(x: number, y: number, z: number): OcctBackend {
-    return new OcctBackend(this.shape.translate(x, y, z) as ReplicadShape3D);
+    const out = new OcctBackend(this.shape.translate(x, y, z) as ReplicadShape3D);
+    return this.carryAnalysisBody(out, (body) => body.translate(x, y, z));
   }
 
   rotate(axis: Vec3, degrees: number, pivot: Vec3 = [0, 0, 0]): OcctBackend {
-    return new OcctBackend(this.shape.rotate(degrees, pivot, axis) as ReplicadShape3D);
+    const out = new OcctBackend(this.shape.rotate(degrees, pivot, axis) as ReplicadShape3D);
+    return this.carryAnalysisBody(out, (body) => body.rotate(axis, degrees, pivot));
   }
 
   /**
@@ -803,7 +798,8 @@ export class OcctBackend implements ShapeBackend {
    *  instead of copying it (occtPlacement.ts). Not consumed. */
   located(t: import('../../../shared/runtime/se3').Transform): OcctBackend {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new OcctBackend(replicad.cast(locateShape((this.shape as any).wrapped, t) as any) as ReplicadShape3D);
+    const out = new OcctBackend(replicad.cast(locateShape((this.shape as any).wrapped, t) as any) as ReplicadShape3D);
+    return this.carryAnalysisBody(out, (body) => body.located(t));
   }
 
   /** Same underlying shape (TopoDS `IsPartner`), e.g. pattern instances. */
@@ -1108,9 +1104,14 @@ export class OcctBackend implements ShapeBackend {
   }
 
   boundingBox(opts?: { exact?: boolean }): { min: Vec3; max: Vec3 } {
-    if (opts?.exact) {
-      const exact = this.tessellatedBoundingBox();
-      if (exact) return exact;
+    const exact = opts?.exact === true;
+    return memoBox(this, exact, () => this.boundsUncached(exact));
+  }
+
+  private boundsUncached(exact: boolean): { min: Vec3; max: Vec3 } {
+    if (exact) {
+      const tight = this.tessellatedBoundingBox();
+      if (tight) return tight;
       // Empty / unmeshable shape — fall through to Bnd_Box.
     }
     const bb = this.shape.boundingBox;
@@ -1158,13 +1159,19 @@ export class OcctBackend implements ShapeBackend {
    * pattern in `curve3dEval.ts` for `LinearProperties`.
    */
   massProperties(density: number = 1000, gyrationAxis?: GyrationAxis): MassProperties {
+    // A caller-supplied axis is part of the question, so it is not memoised.
+    if (gyrationAxis) return this.massUncached(density, gyrationAxis);
+    return memoMass(this, density, () => this.massUncached(density));
+  }
+
+  private massUncached(density: number, gyrationAxis?: GyrationAxis): MassProperties {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = (this.shape as any).wrapped;
     return computeMassProperties(wrapped, density, gyrationAxis);
   }
 
   volume(): number {
-    return Math.abs(replicad.measureVolume(this.shape));
+    return memoVolume(this, () => Math.abs(replicad.measureVolume(this.shape)));
   }
 
   surfaceArea(): number {
@@ -1431,10 +1438,7 @@ export class OcctBackend implements ShapeBackend {
   }
 
   dispose(): void {
-    const maybeDelete = (this.shape as { delete?: () => void }).delete;
-    if (typeof maybeDelete === 'function') {
-      maybeDelete.call(this.shape);
-    }
+    disposeOcctHandles(this, this.shape);
   }
 }
 
@@ -1465,13 +1469,17 @@ export async function exportSceneToSTEPAsync(
   // `sceneToWorldFrameParts` enforces the non-empty-scene invariant and
   // owns the clone-before-transform contract for every multi-body exporter.
   const worldParts = sceneToWorldFrameParts(sceneBackend);
-  return writeStepAssembly(
-    worldParts.map((p) => ({
-      shape: p.shape.getReplicadShape().wrapped,
-      name: p.name,
-      color: resolveColor(p.color),
-    })),
-  );
+  try {
+    return await writeStepAssembly(
+      worldParts.map((p) => ({
+        shape: p.shape.getReplicadShape().wrapped,
+        name: p.name,
+        color: resolveColor(p.color),
+      })),
+    );
+  } finally {
+    releaseWorldFrameParts(worldParts);
+  }
 }
 
 /**
@@ -1489,4 +1497,10 @@ export function pbrFromMetadata(metadata: Record<string, unknown> | undefined): 
     return { baseColor: metadata.color };
   }
   return undefined;
+}
+
+/** The body fit / clash / installation checks measure for `shape`: its
+ *  nominal analysis stand-in when it carries one, else the shape itself. */
+export function analysisBodyOf<T>(shape: T): T | OcctBackend {
+  return shape instanceof OcctBackend && shape.analysisBody !== undefined ? shape.analysisBody : shape;
 }

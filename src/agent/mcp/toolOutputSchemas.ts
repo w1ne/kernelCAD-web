@@ -27,17 +27,14 @@ import { VERIFY_OUTPUT_SCHEMA } from './verificationOutputSchema';
 import { MESH_RECONSTRUCT_OUTPUT_SCHEMAS } from './registry/meshReconstructTools.outputSchemas';
 import { MESH_BOOLEAN_OUTPUT_SCHEMAS } from './registry/meshBooleanTools.outputSchemas';
 import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
-import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 import { FEA_OUTPUT_SCHEMAS } from './registry/feaTools.outputSchemas';
 import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outputSchemas';
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
 import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputSchemas';
 import { SURFACE_BLEND_OUTPUT_SCHEMAS } from './registry/surfaceBlendTools.outputSchemas';
-import { PART_MODEL_OUTPUT_SCHEMAS } from './registry/partModelTools.outputSchemas';
-import { BOM_OUTPUT_SCHEMAS } from './registry/bomTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
-import { MECHANISM_SUMMARY, SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
+import { MECHANISM_SUMMARY, SELECTION, SET_PARAM, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
 
 export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   get_selection: SELECTION,
@@ -58,7 +55,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     properties: {
       sceneSummary: SCENE_SUMMARY_SCHEMA,
       ok: { type: 'boolean', description: 'Whether the script compiled and lowered cleanly.' },
-      viewerUrl: { type: 'string', description: 'Live loopback Studio URL; reused on later full builds in the same local MCP process.' },
+      viewerUrl: { type: 'string', description: 'Live loopback viewer URL, available only with an explicitly supplied KERNELCAD_VIEWER_DIST bundle; reused on later local full builds.' },
       viewerError: { type: 'string', description: 'Viewer provisioning error; separate from the CAD build result.' },
       viewerMode: { type: 'string', enum: ['hosted'], description: 'Hosted mode uses open_in_studio instead of a process-local viewer.' },
       viewerHint: { type: 'string', description: 'How to view the built model in hosted Studio.' },
@@ -79,6 +76,16 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
           additionalProperties: false,
         },
         description: 'Per-feature health degradations — ONLY features that fell back to a passthrough (warning) or failed to lower (error). Empty when every feature is healthy. Surfaces which feature degraded even when ok is true.',
+      },
+      selections: {
+        type: 'array',
+        items: { type: 'object', additionalProperties: true },
+        description: 'What each feature\'s selectors bound to: { consumerFeatureId, selectorText, syntax: lineage | topoRef | query, fingerprints[] (entity kind, surface type, producing feature, direction, radius, size, centroid), partDiagonal }. Pass back as `baseline` to learn which selectors an edit re-bound. Omitted when no feature used a selector.',
+      },
+      requirements: {
+        type: 'object',
+        additionalProperties: true,
+        description: 'One requirements ledger: { ok, summary: { pass, fail, notEvaluated }, entries: [{ name, source: script | external | dfm | fea | mechanical, status: pass | fail | not-evaluated, measured, limit, margin, selections[] with S1 fingerprints, message? }] }. The ledger is the repair signal: it names the requirement, the measured value, the limit and the exact selections. ok is true only when every entry passed; a not-evaluated entry is never green.',
       },
       dimensions: {
         type: 'array',
@@ -279,16 +286,22 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
 
-  set_param: SOURCE_EDIT,
+  set_param: SET_PARAM,
   sweep_tolerance: {
     type: 'object',
     properties: {
-      ok: { type: 'boolean', description: 'Whether every gate passed on every evaluated combo.' },
+      ok: { type: 'boolean', description: 'Whether every gate and every ledger requirement passed on every evaluated combo.' },
       combosEvaluated: { type: 'number', description: 'Number of combos actually evaluated (capped at 64).' },
       combosCapped: { type: 'boolean', description: 'True when the full cartesian product exceeded the 64-combo cap.' },
-      results: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'One entry per evaluated combo: { combo, gates, diagnostics }.' },
+      results: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'One entry per evaluated combo: { combo, gates, requirements, verdict, diagnostics }.' },
       firstFailure: { type: 'object', additionalProperties: true, description: 'First failing combo per gate name.' },
-      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Sweep-level diagnostics (e.g. combo-cap-exceeded).' },
+      firstRequirementFailure: { type: 'object', additionalProperties: true, description: 'First non-passing combo per ledger requirement name.' },
+      boundaries: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Bisected pass/fail transitions: { parameter, direction, passValue, failValue, value, failureSide, bindingRequirements, bindingGates, at, evaluations, withinTolerance, exhausted, message }.' },
+      boundaryEvaluations: { type: 'number', description: 'Extra evaluations spent on boundary bisection.' },
+      boundaryBudget: { type: 'number', description: 'Evaluation budget used for boundary bisection.' },
+      boundaryTolerance: { type: 'number', description: 'Absolute parameter tolerance the boundaries were bisected to.' },
+      coverage: { type: 'object', additionalProperties: true, description: 'Honest coverage: { points, boundaries, boundaryEvaluations, statement, proven: false }.' },
+      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Sweep-level diagnostics (combo-cap-exceeded, boundary-budget-exhausted).' },
       error: { type: 'string' },
       errorCode: { type: 'string' },
     },
@@ -309,10 +322,6 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       imageDims: { type: 'array', items: { type: 'number' }, description: 'Pixel dimensions [width, height] of the source image.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       ledger: { type: 'object', additionalProperties: true, description: 'Assumption ledger: { facts, scale?, unresolvedCount } classifying every fact as visible/inferred/assumed/missing.' },
-      detectedParts: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Optional labeled component detections: name, quantity, outline-frame position/bbox and confidence.' },
-      draftBom: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Optional unverified BOM draft grouped by detected part name.' },
-      unmatchedLabels: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Detected labels without a sufficiently strong bundled-catalog match.' },
-      partDetectionFrame: { type: 'string', enum: ['outline', 'image', 'mixed'], description: 'Coordinate frame used by all detected boxes, or mixed when some boxes fall outside the silhouette and retain image coordinates.' },
     },
     required: ['ok', 'features', 'imageDims', 'diagnostics', 'ledger'],
     additionalProperties: true,
@@ -498,9 +507,13 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       sha256: { type: 'string', description: 'SHA-256 fingerprint of the STEP file (success).' },
       source: { type: 'string', description: "Where the part came from ('local' | 'remote') (success)." },
       kind: { type: 'string', description: "'link_out' when the URL is a vendor configurator the agent must drive by hand." },
-      url: { type: 'string', description: 'Outbound vendor URL (link_out). May carry a referral tag; see disclosure.' },
+      url: { type: 'string', description: 'Canonical outbound configurator URL (link_out).' },
       instruction: { type: 'string', description: 'What to do with the link_out URL.' },
-      disclosure: { type: 'string', description: 'Referral disclosure. Present only when url carries a referral tag; show it with the link.' },
+      format: { type: 'string', enum: ['step', 'glb'], description: 'Model format (includeModel mode).' },
+      model_path: { type: 'string', description: 'Local cache path of the verified model file (includeModel mode).' },
+      cache_hit: { type: 'boolean', description: 'Whether the verified model came from the SHA-256 cache (includeModel mode).' },
+      bbox_check: { type: 'object', properties: { status: { type: 'string', enum: ['not_checked', 'within_tolerance', 'outside_tolerance'] }, expected_mm: { type: 'array', items: { type: 'number' } }, actual_mm: { type: 'array', items: { type: 'number' } }, tolerance_ratio: { type: 'number' } }, additionalProperties: true },
+      attribution: { type: 'object', additionalProperties: true, description: 'Model provenance { source, license, url?, attribution? } (includeModel mode).' },
       error: { type: 'string' },
       errorCode: { type: 'string' },
       errorHint: { type: 'string' },
@@ -544,7 +557,6 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         items: { type: 'object', additionalProperties: true },
         description: 'Connector workspace bounds.',
       },
-      gripperAperture: { type: 'object', additionalProperties: true },
       physicalUseCaseStaticCertificates: {
         type: 'array',
         items: { type: 'object', additionalProperties: true },
@@ -634,19 +646,6 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
 
-  review_paint_peek_latest: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean' },
-      empty: { type: 'boolean', description: 'True when no fresh packet was found.' },
-      packet: { type: 'object', additionalProperties: true, description: 'The freshest review packet (screenshot + mask + metadata).' },
-      scanned_roots: { type: 'array', items: { type: 'string' }, description: 'Checkout roots that were scanned.' },
-      scanned_candidates: { type: 'number', description: 'Number of candidate packets considered.' },
-    },
-    required: ['ok'],
-    additionalProperties: true,
-  },
-
   design_loop: {
     type: 'object',
     properties: {
@@ -679,6 +678,45 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     },
     required: ['ok', 'diagnostics'],
     additionalProperties: true,
+  },
+
+  asset_manifest: {
+    type: 'object',
+    properties: {
+      meta: {
+        type: 'object',
+        properties: {
+          schemaVersion: { type: 'integer', const: 1 },
+          name: { type: 'string' },
+          title: { type: 'string' },
+          description: { type: 'string' },
+          license: { type: 'string', enum: ['CC-BY-4.0', 'CC-BY-SA-4.0', 'CC-BY-NC-4.0', 'CC-BY-NC-SA-4.0', 'CC0-1.0', 'MIT', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', 'MPL-2.0', 'Unlicense'] },
+          authors: { type: 'array', items: { type: 'string' } },
+          tags: { type: 'array', items: { type: 'string' } },
+          sourceUrl: { type: 'string' },
+        },
+        required: ['schemaVersion', 'license'],
+        additionalProperties: false,
+      },
+      params: { type: 'object', additionalProperties: { type: ['string', 'number', 'boolean'] } },
+      presets: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            schemaVersion: { type: 'integer', const: 1 },
+            name: { type: 'string' },
+            label: { type: 'string' },
+            description: { type: 'string' },
+            params: { type: 'object', additionalProperties: { type: ['string', 'number', 'boolean'] } },
+          },
+          required: ['schemaVersion', 'name', 'params'],
+          additionalProperties: false,
+        },
+      },
+    },
+    required: ['meta', 'params', 'presets'],
+    additionalProperties: false,
   },
 
   evaluate_sdf: {
@@ -805,24 +843,12 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
   ...IMPORT_OUTPUT_SCHEMAS,
-  ...FABRICATION_OUTPUT_SCHEMAS,
   ...MANUFACTURING_OUTPUT_SCHEMAS,
   ...NURBS_OUTPUT_SCHEMAS,
   ...SURFACE_BLEND_OUTPUT_SCHEMAS,
-  ...PART_MODEL_OUTPUT_SCHEMAS,
-  ...BOM_OUTPUT_SCHEMAS,
-  route_wires: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean' }, routes: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, route_found: { type: 'boolean' }, route_failure: { type: 'string' }, length_mm: { type: ['number', 'null'] }, bend_count: { type: ['integer', 'null'] }, points_mm: { type: 'array', items: { type: 'array', items: { type: 'number' } } }, collisions: { type: 'array', items: { type: 'string' } }, clearance_violations: { type: 'array', items: { type: 'string' } } }, additionalProperties: true } },
-      warnings: { type: 'array', items: { type: 'string' } },
-      unresolved_wire_count: { type: 'integer' }, clearance_mm: { type: 'number' }, requested_bend_radius_mm: { type: 'number' },
-    }, required: ['ok', 'routes', 'warnings', 'unresolved_wire_count'], additionalProperties: true,
-    },
-  import_handoff: {
+  blockout_assembly: {
     type: 'object', properties: {
-      ok: { type: 'boolean' }, device: { type: 'string' }, part_count: { type: 'number' }, wire_mate_count: { type: 'number' },
-      cutout_hints: { type: 'array', items: { type: 'object', additionalProperties: true, description: 'Connector-face cutout hints { ref, feature, face?, cutout_mm }; descriptive input dimensions, not applied wall cuts.' } },
+      ok: { type: 'boolean' }, part_count: { type: 'number' }, connection_count: { type: 'number' },
       script: { type: 'string', description: 'Evaluable .kcad.ts assembly script with bbox placeholder parts and named anchors.' },
       warnings: { type: 'array', items: { type: 'string' } }, error: { type: 'string' },
     }, required: ['ok', 'warnings'], additionalProperties: true,

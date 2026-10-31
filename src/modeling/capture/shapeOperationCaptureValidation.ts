@@ -6,6 +6,7 @@ import type { Editable } from '../../shared/runtime/paramRef';
 import {
   buildBendFeatureSpec,
   buildDraftFeatureSpec,
+  buildFaceEditFeatureSpec,
   buildScalarEdgeFeatureSpec,
   buildVariableEdgeFeatureSpec,
   type DraftFeatureOpts,
@@ -41,6 +42,17 @@ export function createBendFeatureCaptureSpec(
 ): ShapeOperationFeatureSpec {
   requireRecord(records, baseId, `bend: base shape '${baseId}' is not from this CaptureSession`);
   return buildBendFeatureSpec(baseId, angleParam, radiusParam, selector);
+}
+
+export function createFaceEditCaptureSpec(
+  records: readonly FeatureRecord[],
+  kind: 'moveFaces' | 'offsetFaces',
+  baseId: FeatureId,
+  faces: readonly (import('./shapeOperationFeatureRecords').ShapeOperationFaceSelector | string)[],
+  params: Record<string, import('../../shared/intent/types').Param>,
+): ShapeOperationFeatureSpec {
+  requireRecord(records, baseId, `${kind}: base shape '${baseId}' is not from this CaptureSession`);
+  return buildFaceEditFeatureSpec(kind, baseId, faces, params);
 }
 
 export function createDraftFeatureCaptureSpec(

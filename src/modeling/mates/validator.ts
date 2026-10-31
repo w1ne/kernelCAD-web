@@ -881,35 +881,25 @@ function pushSolveStatusDiagnostics(
       });
       break;
     case 'did-not-converge': {
-      // v0.6.0 articulated closed-loop FK is intentionally unsupported
-      // (Newton free-DOF path is T7.x). Surface body + articulated-mate
-      // rosters so agents stop inventing gear-contact / loop-constraint
-      // types and instead pick an open-chain or fastened-only rewrite.
-      const partNames = arm.__parts().map((part) => part.name);
-      const articulatedMates = arm.__mates().filter((mate) => mate.type !== 'fastened');
-      const mateRoster = articulatedMates.map((mate) => `${mate.name}:${mate.type}`);
-      const partList = partNames.map((name) => `'${name}'`).join(', ');
-      const mateList = mateRoster.length > 0
-        ? mateRoster.map((name) => `'${name}'`).join(', ')
-        : '(none)';
-      const iterations = solveResult?.iterations ?? 0;
+      // The loop-closure solver could not close a loop through articulated
+      // mates (or a fastened tree path left it no joint to move). Its own
+      // `kinematic.loop.*` findings name the loop, the joint and the pose.
+      const partList = arm.__parts().map((part) => `'${part.name}'`).join(', ');
+      const loopFindings = (solveResult?.loop?.diagnostics ?? [])
+        .filter((d) => d.severity === 'error')
+        .map((d) => `${d.code}: ${d.message}`);
       diagnostics.push({
         code: 'assembly.solver.did-not-converge',
         severity: 'error',
         message:
-          `Assembly '${arm.name}' did not converge within the solver iteration cap (${iterations} iterations). ` +
-          `UNSUPPORTED on v0.6.0: articulated closed-loop FK (4-bar / parallelogram / any loop containing revolute|prismatic|cylindrical|pin_slot). ` +
-          `Bodies: [${partList}]. Articulated mates: [${mateList}]. ` +
-          (iterations === 0
-            ? 'Zero iterations means the solver refused the articulated loop up-front (no Newton attempt). '
-            : '') +
-          `Rewrite as an open chain (drop one loop-closing mate; keep a stable ground/base root) or a fastened-only loop. ` +
-          `Do not invent gear-contact / loop-constraint connector types.`,
+          `Assembly '${arm.name}': a closed kinematic loop does not close at the rest pose (bodies: [${partList}]). ` +
+          (loopFindings.length > 0
+            ? loopFindings.join(' ')
+            : `The loop has no articulated joint on its tree path that could move to close it.`),
         hint:
-          `invalid-args.assembly.did-not-converge — articulated closed loops are not supported by the v0.6.0 solver (T7.x epic). ` +
-          `Use an open kinematic chain or fastened-only closed loop. ` +
-          `For industrial scissor tables: lookup_cookbook('scissor lift closed loop') — do not invent joint.scissorLift. ` +
-          `limitsDeg/jointSupport/mechanicalJoint still matter for open chains but will not make a 4-bar converge here.`,
+          `invalid-args.assembly.did-not-converge — the loop-closure solver could not assemble a closed loop. ` +
+          `Check link lengths and connector origins so the loop can close, give the loop an articulated joint, ` +
+          `or drive only as many joints as the loop has degrees of freedom (see result.loop.mobility).`,
       });
       break;
     }
@@ -995,11 +985,6 @@ function foldEnvelopeDiagnostics(
 ): void {
   if (!envelope) return;
   for (const ed of envelope.diagnostics) {
-    // Skip codes that don't belong in the validator union (defensive: the
-    // `gripper-aperture.connector-missing` envelope code is not folded —
-    // it's a UX-layer aperture-tracking diagnostic, not a structural
-    // validity concern).
-    if (ed.code === 'assembly.gripper-aperture.connector-missing') continue;
     out.push({
       code: ed.code,
       severity: ed.severity,

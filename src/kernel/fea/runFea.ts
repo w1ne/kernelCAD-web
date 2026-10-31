@@ -23,6 +23,7 @@ import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeaStudyMetadata } from '../../shared/intent/feaStudyRecord';
+import type { MotionPartLoadSample } from '../../shared/intent/motionLoadRecord';
 import type { OcctBackend } from '../backends/occt/occtBackend';
 import { describeAllFaces, labelSurfaces, nodesForFaces, resolveSelector } from './faceBinding';
 import { parseDat } from './datParser';
@@ -31,6 +32,7 @@ import { parseFrd } from './frdParser';
 import { maxOf } from './maxOf';
 import { LOW_QUALITY_SICN, meshStep } from './gmshDriver';
 import { writeInp } from './inpWriter';
+import { equivalentRemoteLoad } from './remoteLoad';
 import { resolveStudyParams } from './studyParams';
 import { supportZone, type SupportZone } from './supportZone';
 import { detectFeaToolchain, runBounded, type FeaToolchain } from './toolchain';
@@ -239,6 +241,15 @@ async function resolveStudyInputs(
   return { material, toolchain };
 }
 
+interface ResolvedLoadFace {
+  name: string;
+  force: readonly [number, number, number];
+  faces: ReturnType<typeof resolveSelector>['faces'];
+  pointMm?: readonly [number, number, number];
+  momentNmm?: readonly [number, number, number];
+  fromMotion?: MotionPartLoadSample;
+}
+
 /** BREP handoff + face-selector resolution. Returns undefined after pushing
  *  the failing diagnostic. */
 async function writeBrepAndResolveFaces(
@@ -247,7 +258,7 @@ async function writeBrepAndResolveFaces(
 ): Promise<{
   brepPath: string;
   fixedFaces: ReturnType<typeof resolveSelector>;
-  loadFaces: Array<{ name: string; force: readonly [number, number, number]; faces: ReturnType<typeof resolveSelector>['faces'] }>;
+  loadFaces: ResolvedLoadFace[];
 } | undefined> {
   const { shape, study, owner, records, diagnostics, artifacts } = ctx;
   // 1. Geometry handoff as OCCT-native BREP. gmsh's geometry kernel IS OCC,
@@ -269,7 +280,7 @@ async function writeBrepAndResolveFaces(
     );
     return undefined;
   }
-  const loadFaces: Array<{ name: string; force: readonly [number, number, number]; faces: ReturnType<typeof resolveSelector>['faces'] }> = [];
+  const loadFaces: ResolvedLoadFace[] = [];
   for (const load of study.loads) {
     const r = resolveSelector(shape, load.faces, { owner, ...(records ? { records } : {}) });
     if (!r.ok) {
@@ -278,9 +289,91 @@ async function writeBrepAndResolveFaces(
       );
       return undefined;
     }
-    loadFaces.push({ name: load.name, force: load.force, faces: r.faces });
+    loadFaces.push({
+      name: load.name,
+      force: load.force,
+      faces: r.faces,
+      ...(load.pointMm !== undefined ? { pointMm: load.pointMm } : {}),
+      ...(load.momentNmm !== undefined ? { momentNmm: load.momentNmm } : {}),
+      ...(load.fromMotion !== undefined ? { fromMotion: load.fromMotion } : {}),
+    });
   }
   return { brepPath, fixedFaces, loadFaces };
+}
+
+
+/** Bind resolved load faces to meshed node sets and turn a remote wrench into
+ *  equivalent nodal forces. Returns undefined after pushing a diagnostic. */
+function bindResolvedLoads(
+  ctx: FeaRunContext,
+  meshed: Awaited<ReturnType<typeof meshStep>>,
+  labelled: ReturnType<typeof labelSurfaces>,
+  fixedBind: ReturnType<typeof nodesForFaces>,
+  loadFaces: readonly ResolvedLoadFace[],
+  scaleMm: number,
+): FeaResolvedLoad[] | undefined {
+  const { study, owner, diagnostics } = ctx;
+  const loads: FeaResolvedLoad[] = [];
+  for (const [i, l] of loadFaces.entries()) {
+    const bind = nodesForFaces(labelled, l.faces, scaleMm);
+    if (bind.nodes.length === 0) {
+      diagnostics.push(
+        diag(
+          'fea.study.load-unresolved',
+          'error',
+          `feaStudy '${study.name}', load '${l.name}': face(s) ${l.faces.map(f => f.ref).join(', ')} matched no meshed surface, so the force would be applied to no node.`,
+          owner,
+        ),
+      );
+      return undefined;
+    }
+    // A load on faces the study also clamps goes straight into the support:
+    // the solve is a silent zero (no stress, no reaction), not a pass.
+    const held = new Set(fixedBind.nodes);
+    if (bind.nodes.every(n => held.has(n))) {
+      diagnostics.push(
+        diag(
+          'fea.study.load-unresolved',
+          'error',
+          `feaStudy '${study.name}', load '${l.name}': face(s) ${l.faces.map(f => f.ref).join(', ')} are all held by the fixed face(s), so the force would go straight into the support and nothing would be loaded. Select the load and fixed faces so they are different faces.`,
+          owner,
+        ),
+      );
+      return undefined;
+    }
+    const moment = l.momentNmm ?? [0, 0, 0];
+    const hasMoment = Math.hypot(moment[0], moment[1], moment[2]) > 1e-12;
+    const nodalForces = l.pointMm === undefined || !hasMoment
+      ? undefined
+      : equivalentRemoteLoad(
+          bind.nodes.map((id) => ({ id, at: meshed.mesh.nodes.get(id)! })),
+          l.pointMm,
+          l.force,
+          moment,
+        );
+    if (l.pointMm !== undefined && hasMoment && nodalForces === undefined) {
+      diagnostics.push(
+        diag(
+          'fea.study.load-unresolved',
+          'error',
+          `feaStudy '${study.name}', load '${l.name}': the face(s) ${l.faces.map(f => f.ref).join(', ')} are too degenerate to carry a remote wrench (their nodes are collinear or empty). Select a wider joint face.`,
+          owner,
+        ),
+      );
+      return undefined;
+    }
+    loads.push({
+      name: l.name,
+      force: l.force,
+      set: { name: `NLOAD${i}`, nodes: bind.nodes },
+      tris: bind.tris,
+      ...(l.pointMm !== undefined ? { pointMm: l.pointMm } : {}),
+      ...(l.momentNmm !== undefined ? { momentNmm: l.momentNmm } : {}),
+      ...(nodalForces !== undefined ? { nodalForces } : {}),
+      ...(l.fromMotion !== undefined ? { fromMotion: l.fromMotion } : {}),
+    });
+  }
+  return loads;
 }
 
 /** Mesh the BREP, enforce the element ceiling, and bind fixed/load faces to
@@ -292,7 +385,7 @@ async function meshAndBindFaces(
   resolved: {
     brepPath: string;
     fixedFaces: ReturnType<typeof resolveSelector>;
-    loadFaces: Array<{ name: string; force: readonly [number, number, number]; faces: ReturnType<typeof resolveSelector>['faces'] }>;
+    loadFaces: ResolvedLoadFace[];
   },
 ): Promise<{
   meshed: Awaited<ReturnType<typeof meshStep>>;
@@ -353,22 +446,8 @@ async function meshAndBindFaces(
     );
     return undefined;
   }
-  const loads: FeaResolvedLoad[] = [];
-  for (const [i, l] of loadFaces.entries()) {
-    const bind = nodesForFaces(labelled, l.faces, scaleMm);
-    if (bind.nodes.length === 0) {
-      diagnostics.push(
-        diag(
-          'fea.study.load-unresolved',
-          'error',
-          `feaStudy '${study.name}', load '${l.name}': face(s) ${l.faces.map(f => f.ref).join(', ')} matched no meshed surface, so the force would be applied to no node.`,
-          owner,
-        ),
-      );
-      return undefined;
-    }
-    loads.push({ name: l.name, force: l.force, set: { name: `NLOAD${i}`, nodes: bind.nodes }, tris: bind.tris });
-  }
+  const loads = bindResolvedLoads(ctx, meshed, labelled, fixedBind, loadFaces, scaleMm);
+  if (loads === undefined) return undefined;
 
   return { meshed, labelled, fixedBind, loads, meshSize };
 }
@@ -686,6 +765,11 @@ export function computeFeaSummary(
   const hotSpots: FeaHotSpot[] = computeHotSpots(fields, labelled, coordOf, yieldMPa, support.include);
 
   const { applied, reaction, equilibriumResidual } = computeEquilibrium(loads, dat);
+  const appliedMoment = loads.reduce<[number, number, number]>(
+    (m, l) => (l.momentNmm === undefined ? m : [m[0] + l.momentNmm[0], m[1] + l.momentNmm[1], m[2] + l.momentNmm[2]]),
+    [0, 0, 0],
+  );
+  const fromMotion = loads.find((l) => l.fromMotion !== undefined)?.fromMotion;
 
   const maxErr = governingError(fields, support.include, maxVm);
   const trust = trustFrom(meshed.mesh.quality, meshed.mesh.elements.length, maxErr);
@@ -709,6 +793,8 @@ export function computeFeaSummary(
     hotSpots,
     ...supportSummaryFields(support),
     appliedForceN: applied,
+    ...(appliedMoment.some((v) => v !== 0) ? { appliedMomentNmm: appliedMoment } : {}),
+    ...(fromMotion !== undefined ? { loadsFrom: fromMotion } : {}),
     ...(reaction !== undefined ? { reactionForceN: [reaction[0], reaction[1], reaction[2]] } : {}),
     ...(equilibriumResidual !== undefined ? { equilibriumResidual } : {}),
     solveMs,

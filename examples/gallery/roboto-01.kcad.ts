@@ -71,12 +71,21 @@ const rp1 = assembly('roboto-01-rp1');
 // STL is already expressed relative to its link. The joint mates place every
 // child at its parent's joint origin and drive it with the pose parameters, so
 // no transform is pre-baked into the mesh (that would double-place the chain).
-const paintFor = (name: string) => name.includes('ankle_roll') ? rubber
+// The base_link visual includes the waist joint cover. It is painted anodized
+// light grey so the open multi-shell cover reads as joint hardware instead of
+// a blown-out white glue patch between the torso and hips.
+// The geometry is untouched; only the finish changes.
+const paintFor = (name: string) => name === 'base_link' ? anodized
+  : name.includes('ankle_roll') ? rubber
   : name.includes('hip') || name.includes('shoulder') || name.includes('elbow') || name.includes('ankle_pitch') ? anodized
   : name.includes('waist') ? graphite
   : name.includes('knee') || name.includes('wrist') ? graphite : shellWhite;
+// Geometry stays byte-identical to the upstream STL. Only the unit scale and
+// the PBR finish are applied; no shape operations are allowed here.
 const loadLink = async (name: string) =>
-  (await lib.meshFromSTL(`./roboto-01/meshes/${name}.STL`)).scale(1000).color(paintFor(name));
+  (await lib.meshFromSTL(`./roboto-01/meshes/${name}.STL`))
+    .scale(1000)
+    .material({ baseColor: paintFor(name), metalness: 0.05, roughness: 0.75 });
 const refs: Record<string, ReturnType<typeof rp1.part>> = {
   base_link: rp1.part('base_link', await loadLink('base_link')),
 };

@@ -47,6 +47,7 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { parseCode } from '../../shared/codeGeneration/ast';
 import { brepExtremaDistance, wrappedShape } from '../runtime/brepDistance';
+import { realSolids, safeVolume } from './solidComponents';
 
 /** Overlap volume (mm³) above which two separately finished members clash. */
 export const MEMBER_OVERLAP_MIN_MM3 = 1;
@@ -54,8 +55,6 @@ export const MEMBER_OVERLAP_MIN_MM3 = 1;
 const TOUCH_EPS_MM = 1e-4;
 /** BREP distance (mm) at or below which two operands count as touching. */
 const CONNECT_TOL_MM = 1e-3;
-/** Solids below this volume (mm³) are fuse slivers, not parts. */
-const SLIVER_MM3 = 1e-3;
 /** Cap on BREP overlap probes per union; beyond it a warning says the check
  *  was partial. Keeps a union of hundreds of same-material pieces bounded. */
 export const MAX_OVERLAP_PROBES = 300;
@@ -84,6 +83,12 @@ function isUnion(r: FeatureRecord): boolean {
 
 function hasOwnFinish(r: FeatureRecord | undefined): boolean {
   return r?.metadata?.material !== undefined;
+}
+
+/** Joint-helper hardware (clevis fork / tongue) is fused into its link by
+ *  design, so it never counts as a separate same-stock member. */
+function isJointHardware(r: FeatureRecord | undefined): boolean {
+  return (r?.metadata as Record<string, unknown> | undefined)?.jointHardware !== undefined;
 }
 
 /** Canonical key of a record's own material (key order independent), so two
@@ -248,7 +253,7 @@ function memberOverlaps(
   namer: OperandNamer,
 ): CompilerDiagnostic[] {
   const members = leaves
-    .filter(l => hasOwnFinish(byId.get(l.id)))
+    .filter(l => hasOwnFinish(byId.get(l.id)) && !isJointHardware(byId.get(l.id)))
     .map(l => ({ leaf: l, shape: asOcct(shapes.get(l.id)) }))
     .filter((m): m is { leaf: Leaf; shape: OcctBackend } => m.shape !== undefined)
     .map(m => ({ ...m, box: m.shape.boundingBox(), stock: materialKey(byId.get(m.leaf.id)) }));
@@ -442,23 +447,7 @@ function disconnectedDiagnostic(
   };
 }
 
-/** Solid components with real volume. A fuse of near-tangent operands can
- *  leave zero-volume sliver solids next to the real body; those are kernel
- *  noise, not floating parts. Single-solid shapes cost one explorer pass. */
-function realSolids(s: ShapeBackend): OcctBackend[] {
-  let solids: readonly ShapeBackend[];
-  try {
-    solids = s.solidComponents();
-  } catch {
-    return [];
-  }
-  if (solids.length <= 1) return solids as OcctBackend[];
-  return (solids as OcctBackend[]).filter(c => safeVolume(c) > SLIVER_MM3);
-}
-
-function safeVolume(s: OcctBackend): number {
-  try { return s.volume(); } catch { return 0; }
-}
+/** Solid components with real volume (shared with the boolean guards). */
 
 /** Names union operands by the source expressions passed to the `union`
  *  call that captured them (`union(sheet, front)` → 'sheet', 'front'),

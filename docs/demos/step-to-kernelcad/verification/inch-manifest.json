@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "kernelcad import-step",
+  "input": {
+    "fileName": "TAIL_TURBINE.stp",
+    "sha256": "19f11d26b86381b5a6ea18f6c4d78173d99d6398546a81b304d1a789380639a5",
+    "sizeBytes": 40447
+  },
+  "assemblyName": "TAIL_TURBINE",
+  "sourceLengthUnits": [
+    "conversion-based:INCH",
+    "millimetre"
+  ],
+  "canonicalLengthUnit": "mm",
+  "definitions": [
+    {
+      "id": "def-6e76817a505a3c499b3e1cf81a629d0c7ce6bcac9a70bc39840e25eb90edbb9d",
+      "sourceLabel": "0:1:1:1",
+      "originalName": "TAIL_TURBINE",
+      "asset": "parts/00576c80721f025d007a18231499775db1aa2bb968a3a01fe91798582b472fe5.brep",
+      "sha256": "00576c80721f025d007a18231499775db1aa2bb968a3a01fe91798582b472fe5",
+      "serializationVersion": "CASCADE Topology V3, (c) Open Cascade",
+      "solidCount": 1,
+      "boundsMm": {
+        "min": [
+          -240.00000010005598,
+          61.999287956992085,
+          -50.00000010010453
+        ],
+        "max": [
+          -119.21114652547084,
+          98.00078887029531,
+          50.00000010030799
+        ]
+      },
+      "volumeMm3": 82452.38166871322,
+      "validation": {
+        "valid": true,
+        "closedSolids": 1
+      }
+    }
+  ],
+  "occurrences": [
+    {
+      "id": "occ-000001",
+      "originalName": "TAIL_TURBINE",
+      "sourcePath": [
+        "TAIL_TURBINE"
+      ],
+      "definitionId": "def-6e76817a505a3c499b3e1cf81a629d0c7ce6bcac9a70bc39840e25eb90edbb9d",
+      "transformMm": {
+        "matrixColumnMajor": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotationAxis": [
+          0,
+          0,
+          1
+        ],
+        "rotationDegrees": 0
+      },
+      "color": {
+        "hex": "#ffff00",
+        "alpha": 1
+      }
+    }
+  ],
+  "warnings": []
+}

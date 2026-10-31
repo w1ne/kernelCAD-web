@@ -35,6 +35,7 @@ import { PARTS_CODES } from './parts';
 import { DFM_CODES } from './dfm';
 import { KINEMATIC_CODES } from './kinematic';
 import { QUERY_CODES } from './query';
+import { SELECTOR_CODES } from './selector';
 import { ANIMATION_CODES } from './animation';
 import { DRAWING_CODES } from './drawing';
 import { REFERENCE_CODES } from './reference';
@@ -48,6 +49,7 @@ import { VIEWER_CODES } from './viewer';
 import { UNION_CODES } from './union';
 import { SCRIPT_CODES } from './script';
 import { TUBE_CODES } from './tube';
+import { COLLAB_CODES } from './collab';
 
 export type { DiagnosticGroup, DiagnosticSeverityLevel, DiagnosticCodeSpec } from './types';
 
@@ -67,6 +69,7 @@ export const DIAGNOSTIC_REGISTRY = {
   ...DFM_CODES,
   ...KINEMATIC_CODES,
   ...QUERY_CODES,
+  ...SELECTOR_CODES,
   ...ANIMATION_CODES,
   ...DRAWING_CODES,
   ...REFERENCE_CODES,
@@ -80,6 +83,7 @@ export const DIAGNOSTIC_REGISTRY = {
   ...UNION_CODES,
   ...SCRIPT_CODES,
   ...TUBE_CODES,
+  ...COLLAB_CODES,
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;
@@ -160,6 +164,7 @@ const LEGACY_CODE_ORDER = [
   'export.mesh.not-watertight',
   'export.part.not-found',
   'export.glb.draco-glass-conflict',
+  'export.glb.rig-warning',
   'export.urdf.cylindrical-lossy',
   'export.urdf.pin-slot-lossy',
   'export.urdf.ball-decomposed',
@@ -225,7 +230,6 @@ const LEGACY_CODE_ORDER = [
   'assembly.pose-envelope.clearance-violated',
   'assembly.pose-envelope.clearance-unresolved',
   'assembly.pose-envelope.connector-unresolved',
-  'assembly.gripper-aperture.connector-missing',
   'assembly.mate.limit-missing',
   'assembly.connectivity.floating-moving-part',
   'assembly.connectivity.no-load-path',
@@ -316,30 +320,6 @@ const LEGACY_CODE_ORDER = [
   'parts.fetch.api-error',
   'parts.fetch.remote-disabled',
   'parts.fetch.geometry-not-brep',
-  'dfm.input.vendor-required',
-  'dfm.input.material-required',
-  'dfm.input.thickness-required',
-  'dfm.units.dxf-not-mm',
-  'dfm.material.unknown-sku',
-  'dfm.thickness.not-stocked',
-  'dfm.thickness.out-of-range',
-  'dfm.thickness.out-of-range-for-service',
-  'dfm.hole.below-minimum',
-  'dfm.slot.below-minimum',
-  'dfm.web.below-minimum',
-  'dfm.bend.radius-below-minimum',
-  'dfm.bend.angle-too-acute',
-  'dfm.bend.length-exceeds-max',
-  'dfm.bend.flange-too-short',
-  'dfm.bend.channel-ratio-too-low',
-  'dfm.bend.layer-missing',
-  'dfm.bending.material-unsupported',
-  'dfm.size.below-minimum',
-  'dfm.size.exceeds-instant-quote',
-  'dfm.size.exceeds-max',
-  'dfm.dxf.spline-present',
-  'dfm.dxf.tessellation-near-tolerance',
-  'dfm.rule.threshold-unknown',
   'dfm.wall.too-thin',
   'dfm.clearance.violated',
   'dfm.channel.openings-mismatch',

@@ -48,9 +48,7 @@ export function openaiExtensions(cfg) {
         positive: c.testCases.positive.map(caseForZip),
         negative: c.testCases.negative.map(caseForZip),
       },
-      // Emitted only once the commerce decision is made (see chatgpt.commerceDecision).
       ...(typeof c.commerce === 'boolean' ? { commerce: c.commerce } : {}),
-      ...(c.commerceDescription ? { commerce_description: c.commerceDescription } : {}),
       ...(c.demoRecordingUrl ? { demo_recording_url: c.demoRecordingUrl } : {}),
     };
   }

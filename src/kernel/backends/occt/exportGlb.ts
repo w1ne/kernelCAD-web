@@ -51,6 +51,14 @@ import type { WorldFramePart } from './sceneToWorldFrame';
 import { computeProjectedUVs } from '../../../shared/intent/textureProjection';
 import { resolveAndLoadTextureBytes } from '../../../shared/textures';
 import { attributionGenerator } from '../../../shared/links/attribution';
+import { createMaterialNameRegistry } from '../../export/materialNaming';
+import {
+  buildRigTree,
+  invertRigidMatrix,
+  rigMetadataFromTree,
+  type RigNode,
+  type SolvedRigAssembly,
+} from '../../export/rigHierarchy';
 
 const requireFromHere = createRequire(import.meta.url);
 // At source: src/kernel/backends/occt/exportGlb.ts → ../../../../package.json (4 up).
@@ -69,6 +77,8 @@ const KERNELCAD_VERSION = loadPkg().version;
 
 export interface ExportGlbOptions {
   format: 'glb';
+  /** Preserve solved mate pivots, or retain the historical flat node list. */
+  hierarchy?: 'rig' | 'flat';
   /** Axis convention. `y-up` (default, glTF convention) applies a -PI/2
    *  rotation about X at the scene root so viewers render the CAD body
    *  upright. `z-up` preserves kernelCAD's native orientation. */
@@ -101,6 +111,7 @@ export interface MeshedGlbPart extends WorldFramePart {
 export async function exportGlbAsync(
   parts: ReadonlyArray<WorldFramePart | MeshedGlbPart>,
   options: ExportGlbOptions,
+  solvedAssembly?: SolvedRigAssembly,
 ): Promise<Uint8Array> {
   // Runtime gate: `draco` is type-narrowed to `false`, but the gate catches
   // the case where a caller widens the type via `as unknown as ...` or a
@@ -123,44 +134,10 @@ export async function exportGlbAsync(
   );
 
   const axis = options.axis ?? 'y-up';
-  const root = new THREE.Group();
-  if (axis === 'y-up') {
-    // kernelCAD world is Z-up; glTF default is Y-up. Rotate the scene root
-    // -PI/2 about X so +Z becomes +Y in viewer space.
-    root.rotateX(-Math.PI / 2);
-  }
-
-  // Parts that wrapped a texture (`material.textureProjection`) — UVs go
-  // onto the three.js geometry now (so GLTFExporter serializes a real
-  // TEXCOORD_0 accessor); the image itself is embedded afterwards via a
-  // gltf-transform post-process (see below) because Node has no Canvas for
-  // GLTFExporter's own image-encoding path.
-  const wrappedParts: Array<{ name: string; projection: NonNullable<PBRMaterial['textureProjection']> }> = [];
-
-  for (const p of meshed) {
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute(
-      'position',
-      new THREE.Float32BufferAttribute(p.mesh.vertices, 3),
-    );
-    geom.setIndex(Array.from(p.mesh.triangles));
-    geom.computeVertexNormals();
-
-    const projection = p.material?.textureProjection;
-    if (projection !== undefined && p.material?.textures?.albedo !== undefined) {
-      const uv = computeProjectedUVs(p.mesh.vertices, projection);
-      geom.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-      wrappedParts.push({ name: p.name, projection });
-    }
-
-    const mat = buildMaterial(p.material, p.color);
-    const mesh = new THREE.Mesh(geom, mat);
-    mesh.name = p.name;
-    root.add(mesh);
-  }
-
-  const scene = new THREE.Scene();
-  scene.add(root);
+  const rigTree = options.hierarchy !== 'flat' && solvedAssembly !== undefined && solvedAssembly.mates.length > 0
+    ? buildRigTree(solvedAssembly)
+    : undefined;
+  const { scene, wrappedParts } = createExportScene(meshed, axis, rigTree, solvedAssembly);
 
   const exporter = new GLTFExporter();
   const isoDate = new Date().toISOString().slice(0, 10);
@@ -199,13 +176,142 @@ export async function exportGlbAsync(
     out = await embedWrappedTextures(out, meshed, wrappedParts, options.scriptDir);
   }
 
-  return injectAssetExtras(out, {
-    kernelcad: {
-      version: KERNELCAD_VERSION,
-      isoDate,
-      axisConvention: axis,
-    },
-  }, attributionGenerator(KERNELCAD_VERSION));
+  const kernelcadExtras: Record<string, unknown> = {
+    version: KERNELCAD_VERSION,
+    isoDate,
+    axisConvention: axis,
+  };
+  if (rigTree !== undefined) {
+    const metadata = rigMetadataFromTree(rigTree);
+    kernelcadExtras.rig = metadata.rig;
+    kernelcadExtras.rigWarnings = metadata.warnings;
+  }
+  return injectAssetExtras(out, { kernelcad: kernelcadExtras }, attributionGenerator(KERNELCAD_VERSION));
+}
+
+interface ExportSceneContext {
+  readonly root: THREE.Group;
+  readonly rigTree: readonly RigNode[] | undefined;
+  readonly rigPartNodes: Map<string, THREE.Group> | undefined;
+  readonly solvedAssembly: SolvedRigAssembly | undefined;
+  readonly wrappedParts: Array<{ name: string; projection: NonNullable<PBRMaterial['textureProjection']> }>;
+  readonly materialNames: ReturnType<typeof createMaterialNameRegistry>;
+  readonly materialsByKey: Map<string, THREE.MeshPhysicalMaterial>;
+}
+
+function createExportScene(
+  meshed: ReadonlyArray<MeshedGlbPart>,
+  axis: 'y-up' | 'z-up',
+  rigTree: RigNode[] | undefined,
+  solvedAssembly: SolvedRigAssembly | undefined,
+): { scene: THREE.Scene; wrappedParts: ExportSceneContext['wrappedParts'] } {
+  const root = new THREE.Group();
+  if (axis === 'y-up') {
+    // kernelCAD world is Z-up; glTF default is Y-up. Rotate the scene root
+    // -PI/2 about X so +Z becomes +Y in viewer space.
+    root.rotateX(-Math.PI / 2);
+  }
+  const rigPartNodes = rigTree === undefined ? undefined : createRigGroups(rigTree, root);
+  const context: ExportSceneContext = {
+    root,
+    rigTree,
+    rigPartNodes,
+    solvedAssembly,
+    wrappedParts: [],
+    materialNames: createMaterialNameRegistry(),
+    materialsByKey: new Map(),
+  };
+  meshed.forEach((part, index) => addPartToExportScene(part, index, context));
+
+  const scene = new THREE.Scene();
+  scene.add(root);
+  return { scene, wrappedParts: context.wrappedParts };
+}
+
+function addPartToExportScene(
+  part: MeshedGlbPart,
+  index: number,
+  context: ExportSceneContext,
+): void {
+  const geom = createPartGeometry(part, context.wrappedParts);
+  const resolved = context.materialNames.resolve({
+    pbr: part.material,
+    colorParamName: part.colorParamName,
+    partName: part.name,
+    materialIndex: index,
+    color: part.color,
+  });
+  const material = getExportMaterial(resolved.key, resolved.name, part, context);
+  const mesh = new THREE.Mesh(geom, material);
+  mesh.name = part.name;
+  attachPartMesh(mesh, part, context);
+}
+
+function createPartGeometry(
+  part: MeshedGlbPart,
+  wrappedParts: ExportSceneContext['wrappedParts'],
+): THREE.BufferGeometry {
+  // Projected UVs are serialized with the mesh; Node image bytes are embedded
+  // later by the glTF-Transform post-process because GLTFExporter needs Canvas.
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(part.mesh.vertices, 3));
+  geometry.setIndex(Array.from(part.mesh.triangles));
+  geometry.computeVertexNormals();
+  const projection = part.material?.textureProjection;
+  if (projection !== undefined && part.material?.textures?.albedo !== undefined) {
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(computeProjectedUVs(part.mesh.vertices, projection), 2));
+    wrappedParts.push({ name: part.name, projection });
+  }
+  return geometry;
+}
+
+function getExportMaterial(
+  key: string,
+  name: string,
+  part: MeshedGlbPart,
+  context: ExportSceneContext,
+): THREE.MeshPhysicalMaterial {
+  let material = context.materialsByKey.get(key);
+  if (material === undefined) {
+    material = buildMaterial(part.material, part.color, name);
+    context.materialsByKey.set(key, material);
+  }
+  return material;
+}
+
+function attachPartMesh(
+  mesh: THREE.Mesh,
+  part: MeshedGlbPart,
+  context: ExportSceneContext,
+): void {
+  if (context.rigTree === undefined || context.rigPartNodes === undefined) {
+    context.root.add(mesh);
+    return;
+  }
+  const partNode = context.rigPartNodes.get(part.name);
+  const worldTransform = part.worldTransform
+    ?? context.solvedAssembly?.parts.find((item) => item.name === part.name)?.worldTransform;
+  if (partNode === undefined || worldTransform === undefined) {
+    throw new Error(`exportGlbAsync: rig hierarchy has no solved part transform for '${part.name}'.`);
+  }
+  mesh.matrixAutoUpdate = false;
+  mesh.matrix.fromArray(invertRigidMatrix(worldTransform) as number[]);
+  partNode.add(mesh);
+}
+
+function createRigGroups(nodes: readonly RigNode[], root: THREE.Group): Map<string, THREE.Group> {
+  const partNodes = new Map<string, THREE.Group>();
+  const add = (node: RigNode, parent: THREE.Group): void => {
+    const group = new THREE.Group();
+    group.name = node.kind === 'part' ? `part:${node.name}` : node.name;
+    group.matrixAutoUpdate = false;
+    group.matrix.fromArray(node.matrix as number[]);
+    parent.add(group);
+    if (node.kind === 'part') partNodes.set(node.name, group);
+    node.children.forEach((child) => add(child, group));
+  };
+  nodes.forEach((node) => add(node, root));
+  return partNodes;
 }
 
 /**
@@ -341,8 +447,10 @@ function hasMesh(p: WorldFramePart | MeshedGlbPart): p is MeshedGlbPart {
 function buildMaterial(
   pbr: PBRMaterial | undefined,
   color: string | undefined,
+  name: string,
 ): THREE.MeshPhysicalMaterial {
   const mat = new THREE.MeshPhysicalMaterial();
+  mat.name = name;
   applyBaseColor(mat, pbr, color);
   if (pbr === undefined) return mat;
 

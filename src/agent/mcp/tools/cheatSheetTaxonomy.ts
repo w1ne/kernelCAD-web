@@ -114,14 +114,14 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Finish edges',
     blurb: 'Break edges, add draft, hollow out a wall, fold sheet metal.',
-    names: ['fillet', 'filletIntersection', 'chamfer', 'draft', 'shell', 'bend', 'flattenPattern'],
+    names: ['fillet', 'filletIntersection', 'chamfer', 'draft', 'shell', 'offsetFaces', 'moveFaces', 'bend', 'flattenPattern'],
   },
   {
     task: 'Select geometry',
     blurb:
       'Pick the edges or faces a feature acts on. Query first, then sort or group what comes back.',
     names: [
-      'selectEdges', 'selectEdge', 'select', 'q',
+      'selectEdges', 'selectEdge', 'select', 'q', 'faces', 'edges',
       'sortBy', 'sortByDistance', 'groupBy', 'filterBy', 'filterByPosition',
       'take', 'first', 'last', 'at',
     ],
@@ -139,7 +139,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Assemble',
     blurb: 'Build a mechanism from parts: connectors, mates, joints, posed Scenes.',
-    names: ['assembly', 'joint', 'part', 'parts', 'assemblyName'],
+    names: ['assembly', 'joint', 'part', 'parts', 'assemblyName', 'resolutionInputs'],
   },
   {
     task: 'Curves & surfaces',
@@ -158,12 +158,14 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Measure & verify',
     blurb: 'Ask the kernel what you actually built, and check it before shipping.',
-    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy', 'tube', 'tubeSpec'],
+    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy', 'tube', 'tubeSpec',
+      'require', 'clearance', 'distance', 'mass', 'volume', 'centerOfMass', 'count', 'innerLoops',
+      'angle', 'concentric', 'coplanar'],
   },
   {
     task: 'Parametrize',
     blurb: 'Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef).',
-    names: ['param', 'params', 'add', 'subtract', 'multiply', 'divide', 'negate', 'min', 'max', 'abs', 'clamp'],
+    names: ['param', 'params', 'meta', 'presets', 'add', 'subtract', 'multiply', 'divide', 'negate', 'min', 'max', 'abs', 'clamp'],
   },
   {
     task: 'Import & export',

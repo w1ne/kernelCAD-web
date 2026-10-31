@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "bundle": {
+    "outDir": "/tmp/step-inch-kcad",
+    "script": "/tmp/step-inch-kcad/TAIL_TURBINE.kcad.ts",
+    "manifest": "/tmp/step-inch-kcad/manifest.json",
+    "partAssets": 1,
+    "occurrenceCount": 1,
+    "definitionCount": 1
+  },
+  "warnings": []
+}

@@ -4,6 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { parseArgs } from './run';
 
 describe('parseArgs', () => {
+  it('requires an explicit model and compatible options for ChatGPT plan usage', () => {
+    expect(() => parseArgs(['--chatgpt-plan-dir','/private'], {})).toThrow(/--model/);
+    expect(() => parseArgs(['--chatgpt-plan-dir','/private','--model','m','--temperature','0'], {})).toThrow(/temperature/);
+    expect(parseArgs(['--chatgpt-plan-dir','/private','--model','m'], {}).chatgptPlanDir).toBe('/private');
+  });
+
   it('samples per type, defaults to Anthropic, and never agrees to publish by default', () => {
     const o = parseArgs(['--generation', '3', '--editing', '2', '--run-dir', '/tmp/r'], { USER: 'me' });
     expect(o.selection).toEqual({ generation: 3, editing: 2 });
@@ -30,5 +36,22 @@ describe('parseArgs', () => {
 
   it('reads the official-gate Python from the environment', () => {
     expect(parseArgs(['--official-check'], { CADGENBENCH_PYTHON: '/venv/bin/python' }).python).toBe('/venv/bin/python');
+  });
+
+  it('records a sampling seed', () => {
+    expect(parseArgs(['--seed', '42'], {}).seed).toBe(42);
+    expect(parseArgs([], {}).seed).toBeUndefined();
+    expect(() => parseArgs(['--seed', '-1'], {})).toThrow(/--seed/);
+  });
+
+  it('keeps edit promotion on by default and can turn it off for submission runs', () => {
+    expect(parseArgs([], {}).editPromotion).toBe('auto');
+    expect(parseArgs(['--edit-promotion', 'off'], {}).editPromotion).toBe('off');
+    expect(() => parseArgs(['--edit-promotion', 'nope'], {})).toThrow(/--edit-promotion/);
+  });
+
+  it('keeps visual review opt-in', () => {
+    expect(parseArgs([], {}).visualReview).toBe(false);
+    expect(parseArgs(['--visual-review'], {}).visualReview).toBe(true);
   });
 });

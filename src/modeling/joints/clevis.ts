@@ -29,8 +29,10 @@
 
 import type { KernelCadApi } from '../api';
 import type { Shape } from '../capture/proxy';
+import { annotateShapeRecord } from '../capture/recordAnnotation';
 import type { Vec3 } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type {
   AxisHint,
   ClevisJoint,
@@ -248,14 +250,12 @@ function normalizeLiftDir(hint: Vec3 | undefined): Vec3 {
 // =============================================================================
 
 /**
- * Resolve a partial `ClevisStyle` against scale-derived defaults. Without a
- * caller-supplied scale hint we assume a nominal arm-class scale of 12 mm
- * for `knuckleR`, which produces a buildable clevis for the Luxo-lamp class
- * of designs (the dimension drove the existing examples/kinematic/luxo
- * geometry). Callers who want fully-bespoke geometry pass every field.
+ * Resolve a partial `ClevisStyle`. `knuckleR` is the one scale input and is
+ * REQUIRED: captured parent/child bodies are lazy shapes with no measurable
+ * size at capture time, so the scale cannot be derived from them. Every
+ * other dimension that is omitted is derived proportionally from it.
  *
- * Defaults (documented in `types.ts`):
- *  - knuckleR = 12 mm (clamped to [3, 25])
+ * Proportional defaults (documented in `types.ts`):
  *  - tongueY = 0.6 * knuckleR
  *  - forkGapY = tongueY + 0.65 * knuckleR (visible daylight on both fork sides)
  *  - plateT = 0.4 * knuckleR
@@ -281,7 +281,17 @@ interface ResolvedStyleDimensions {
 }
 
 function resolveStyleDimensions(style: ClevisStyle | undefined): ResolvedStyleDimensions {
-  const knuckleR = clamp(style?.knuckleR ?? 12, 3, 25);
+  const knuckleR = style?.knuckleR;
+  if (knuckleR === undefined) {
+    invalidArgs({
+      api: 'joint.clevis',
+      path: 'style.knuckleR',
+      got: undefined,
+      requires: 'a positive knuckle radius in mm; it is the scale all other clevis dimensions derive from (tongueY, forkGapY, plateT, pinR)',
+      example: 'joint.clevis({ parentBody, childBody, axis: "Y", pivotParent: [0, 0, 15], style: { knuckleR: 12 } })',
+      unit: 'mm',
+    });
+  }
   const tongueY = style?.tongueY ?? 0.6 * knuckleR;
   const forkGapY = style?.forkGapY ?? tongueY + DEFAULT_FORK_CLEARANCE_RATIO * knuckleR;
   const plateT = style?.plateT ?? 0.4 * knuckleR;
@@ -384,10 +394,6 @@ function composeResolvedStyle(
     ...(style?.tongueMaterial !== undefined ? { tongueMaterial: style.tongueMaterial } : {}),
     ...(style?.pinMaterial !== undefined ? { pinMaterial: style.pinMaterial } : {}),
   };
-}
-
-function clamp(value: number, lo: number, hi: number): number {
-  return Math.max(lo, Math.min(hi, value));
 }
 
 // =============================================================================
@@ -497,6 +503,10 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
   //    instead of interpenetrating the child tongue.
   const parentPocket = makeTongueClearancePocket(kc, style, axis, pivotParentLifted, liftDir, liftZ);
   const parentWithClearance = parentWithFork.subtract(parentPocket);
+  // The pocket only clears parent material that happens to sit between the
+  // plates. A parent that carries its fork on spines has none there, and that
+  // empty cut is correct, not a cutter that missed.
+  annotateShapeRecord(parentWithClearance, { clearanceCut: true });
 
   // 6. Drill the pin clearance bore through BOTH the parent fork and the
   //    child tongue (ISO 286 H8/f7 running fit). The hole is co-located in
@@ -646,6 +656,9 @@ function buildFork(
   if (style.forkMaterial !== undefined) {
     fork = fork.material(style.forkMaterial);
   }
+  // Fork plates and webs are fused into the parent by design (webs reach
+  // 1 mm into it), so the same-stock overlap guard must not count them.
+  annotateShapeRecord(fork, { jointHardware: 'clevis-fork' });
   return fork;
 }
 
@@ -679,6 +692,7 @@ function buildTongue(
   if (style.tongueMaterial !== undefined) {
     tongue = tongue.material(style.tongueMaterial);
   }
+  annotateShapeRecord(tongue, { jointHardware: 'clevis-tongue' });
   return tongue;
 }
 

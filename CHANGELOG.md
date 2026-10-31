@@ -1,10 +1,272 @@
 # Unreleased
 
+- Asset manifests: `meta()` and `presets()` now capture validated asset metadata
+  and named knob overrides on `CaptureSession`; asset content defaults to the
+  SPDX-allowlisted `CC-BY-4.0` licence, separate from the package's MIT licence.
+  Typed `params({ knob: { default, ...metadata } })` entries support all
+  `param()` value kinds while preserving the existing numeric/boolean shorthand.
+  The read-only MCP `asset_manifest` returns versioned metadata, deterministic
+  evaluated params JSON, and sorted presets. See
+  `examples/params/asset-manifest-mounting-plate.kcad.ts` and the
+  `kernelcad-params` skill; local demo bundle:
+  `docs/demos/asset-manifest-params/`.
+- SolidCraft oracle ledger. The public SolidCraft reference cases (expected
+  values and recipes only, Apache-2.0, pinned commit
+  `7a6c884418698e9c9fb0e6f97b9b847998c58c49`) are vendored beside a kernelCAD
+  ledger. Pending cases are recorded and are not CI failures. The report does
+  not lock a part count or a pass-count baseline. PR CI runs the fast subset
+  (`npm run test:solidcraft-ledger`, 60 s budget). The nightly job runs every
+  implemented part.
+- `hole-axis` topology queries resolve an authored `.hole()` / `.holes()` to
+  the entry-face mouth and the axis into the hole, and re-resolve after a
+  param edit. `.hole()` / `.holes()` promote `bolt-holes-N` (feature order,
+  then u/v; a later hole does not reuse `bolt-holes-1`; a boolean cutter
+  counts; pattern copies do not) so mates follow the hole, including after
+  rotate / scale / reflect / translate and part `at`. A later
+  `part.connector('bolt-holes-N', ...)` replaces the promoted frame.
+  Joint, export, and motion paths read the resolved into-body axis.
+  Catalog STEP bolt-holes stay numeric vec3.
+
+# v0.17.2 — 2026-10-26
+
+## S7 + S8 Part A — collaborative feature graph, change-sets, merge and gate
+
+- `src/collab` captures a feature graph from `.kcad.ts` source without lowering
+  (stable ids, resolved params, id refs, statement spans, project params,
+  requirement inputs, unowned source), lifts an edit into typed change-set ops,
+  and merges three-way on feature id.
+- Structural conflicts are typed and returned with both values:
+  `collab.conflict.param` carries base/head/yours, plus `deleted-ref`, `cycle`,
+  `forward-ref`, `duplicate-id`, `invalid-value`, `same-feature` and `unowned`.
+  Disjoint edits on a stale base auto-rebase; feature order is never commuted.
+- `footprint` computes writes, static reads, same-body downstream features,
+  assembly placements and the requirements whose inputs fall in the closure;
+  `independent(a, b)` decides what may be evaluated in parallel.
+- `gateCandidate` evaluates only the merged candidate and rejects a feature that
+  was healthy in both parents, a binding change outside the write footprint, or
+  a requirement that passed at head. Requirements already failing at head are
+  reported as pre-existing; an evaluation throw always rejects.
+- `kernelcad collab check --file … --base … --head … --yours <ref|dir> [--json]
+  [--out]` runs the whole local gate for separate agent branches/worktrees.
+  Exit 0 = pass, 1 = conflict/reject.
+- New diagnostics: `collab.conflict.*` and `collab.gate.*`.
+- Example `examples/collab/bracket-and-motor-plate.kcad.ts`; cookbook
+  `collab-gate` and `collab-local-gate`; assemblies skill section "Several
+  agents on one repo".
+- Task 0 measured p95 incremental evaluation at 5.78 s on five real assemblies
+  (below the 10 s decision gate), so dependency-keyed reuse is not a
+  precondition for the hosted sequencer.
+- Hosted queue, sequencer, agents/claims, MCP tools and the OCCT worker pool
+  remain Part B in the private server repository.
+
+## S6 — edit preview against intent
+
+- `set_param({ ..., preview: true })` builds the current and revised source in
+  scratch sessions and returns the `diff_geometry` material summary, the S2
+  requirements-ledger diff (status flips, margin shrink/grow, added/removed)
+  and the S1 selectors that moved or re-bound.
+- Preview writes nothing: the source argument, active MCP session, revision and
+  per-session caches are untouched. A revised build that fails returns
+  `ok: false` with diagnostics and no diff.
+- `after.requirementsOk` is the revised ledger verdict; `preview.ok` only means
+  the preview was computed, so a correctly-previewed intent break is still a
+  successful preview.
+- Added the reusable pure helpers `diffRequirementLedgers` (S2) and
+  `diffSelectionBindings` (S1), plus `diffGeometrySides` / `sideFromBuiltModel`
+  so a caller can build each side once for both the ledger and the geometry
+  report.
+- Docs: `docs/guide/edit-preview.md`, the params/MCP/features skills and the
+  cheat sheet.
+
+## P3 — approximate static stability in the assembly sequence
+
+- `verify({ check: 'assembly-path', sequence: true, stability: true })` now
+  checks each build step with a centre-of-mass/support-polygon projection.
+  Each part's closed-mesh centre of mass must project inside the convex hull of
+  its contacts with already-stable parts. Unsupported parts become
+  `sequence.needsHold` (`{ part, status: 'needs-hold', reason, supports,
+  centerOfMass, supportPolygon? }`), their steps carry
+  `stability: 'needs-hold'`, and `ok` is false. Stable steps may carry
+  `heldBy` naming their supporters.
+- The check is labelled **approximate** in the model stamp
+  (`gravity: 'approximate-support-projection'` plus `model.stability`) and in
+  the docs. It is not gravity simulation, friction, tipping, compliance or a
+  fixture solve.
+- Build orientation is declared with `gravity` (world direction, default
+  `[0, 0, -1]`); `fixtures` declares base/jig parts stable from step 1, or the
+  lowest part(s) along gravity seed the model. `contactToleranceMm` defaults to
+  0.05. The centre of mass is the closed-mesh volume centroid under a uniform
+  density; a single part's centroid is unchanged by declared mass/density. The
+  stamp records `massBasis: 'uniform-density-mesh-volume'`.
+- Example `examples/assemblies/assembly-stability-bracket.kcad.ts` places a
+  cantilever before the support under its free end and reports it `needs-hold`;
+  guide `docs/guide/assembly-path.md`; cookbook
+  `assembly-stability-support-polygon`.
+
+## S5 — FEA loads from motion at the worst pose
+
+- `kinematic.motionLoad(arm, opts)` is now a script-level API (the same study
+  as `verify({ check: 'motion-load' })`). It accepts `mode: 'tracks' | 'range' |
+  'poses'` and returns `partLoads`: the worst sampled joint wrench per part and
+  side, in that part's own frame, ranked by a named proxy (bending stress from
+  the part's declared `crossSection`, else joint-moment magnitude).
+- `shape.feaStudy({ loadsFrom: { motion, part } })` takes that wrench instead
+  of a hand-typed load. It applies the force and moment as a statically
+  equivalent remote load over the joint face, in both the CalculiX and
+  in-process voxel solvers, and records the pose in the summary.
+- The S2 ledger entry (`fea.<study>.minSafetyFactor`) now names the pose and
+  the margin for a motion-derived study. An empty motion result, a part with no
+  sampled load, or both `loads` and `loadsFrom` fails loudly at capture; it is
+  never reported as an unloaded pass.
+- The servo-arm cookbook (07) reports the bracket safety factor at the worst
+  shoulder pose without typing a force.
+
+## S3 stage B — standard-part range proofs in the catalog
+
+- The fastener, nut and washer `lib.standard.*` shortcuts declare their
+  stocked thread / sampled length domains and two ledger requirements
+  (envelope bbox band, positive volume). The remaining standard parts are
+  listed in `STANDARD_PART_RANGE_REMAINING` rather than claimed.
+- The `qc:build` CI gate (run by the `build-and-checks` job) now runs
+  `npm run test:standard-part-ranges`, which sends all 94 sampled points
+  through the same `sweepTolerance` path an agent uses and prints the point
+  and boundary count for each family.
+- Generated catalog records and the committed seed now carry
+  `attributes.verified*` (thread range, sampled length range, requirements,
+  points, boundaries, "checked, not proven"), so `find_part` shows the range
+  the part was checked over instead of only its default build.
+
+## S3 stage A — range proofs instead of grids
+
+- `kinematic.sweepTolerance` now measures every entry in the S2 requirements
+  ledger at each swept point (script `require()`, `dfmSpec`, gated FEA and
+  mechanical intent), not just the mechanism gates. A `not-evaluated` ledger
+  entry never counts as green.
+- After the coarse grid it bisects each numeric pass/fail transition down to
+  `boundaryTolerance` (default 0.001) and reports `boundaries[]` with the
+  boundary value, failing side, and the binding requirement/gate names.
+- `firstRequirementFailure` mirrors `firstFailure` for ledger entries.
+- `boundaryBudget` (default 64) bounds the extra evaluations; exhaustion is
+  reported as an interval plus `kinematic.sweep-tolerance.boundary-budget-exhausted`,
+  never as a proven edge.
+- Discrete `choice`/`string` params can be swept as points (not bisected).
+- Every result carries a `coverage` block: "checked at N points plus
+  boundaries; sampled, not a proof" (`proven: false`).
+- The MCP `sweep_tolerance` tool accepts `boundaryTolerance` / `boundaryBudget`
+  and returns the per-combo ledger, boundaries and coverage. Its `ok` now
+  reflects the sweep verdict rather than call success.
+
+# kernelCAD v0.17.1
+
+## Summary
+
+v0.17.1 makes cable-driven mechanisms physically honest and gives MCP agents a
+full physics check. Tendons can declare a hard length limit, fasteners use real
+ISO geometry, and `verify({ check: 'physics' })` runs the physics engine's
+static-equilibrium and drop-on-release checks on an assembly.
+
+## Highlights
+
+### Tendon length limits
+
+- `arm.tendon(...)` accepts `maxLengthMm`. The physics export writes it as a
+  hard `limited` range, so a braided strap can go slack but cannot stretch past
+  its braided length.
+- Spring fields are optional for a limit-only strap.
+- On the hand, capping each ligament at its undeformed length plus 0.5 mm cut
+  the little-finger DIP axial slide from 5.40 mm to 0.25 mm at the same 0.2 ms
+  step. The 10 N pull case still holds at 0.51 mm.
+
+### ISO fasteners
+
+- `lib.part`, `lib.stack`, `lib.insert` and the `lib.standard` shortcuts take
+  `detail: 'full' | 'envelope'` (default `full`).
+- Bolt stacks count the washer under the head and require thread past the nut
+  face. A grip no stocked length reaches fails instead of silently choosing a
+  short bolt.
+- Nut heights follow ISO 4032. Threads use ISO 68-1 at ISO 261 coarse pitch.
+
+### Physics in MCP
+
+- New `verify({ check: 'physics' })` runs the full mechanism-truth probe with
+  the physics engine: disconnect, interference, DOF, orphan checks, static
+  equilibrium at sampled poses, and drop-on-release under gravity.
+- Returns `{ ok, mechanism: 'real' | 'broken' | 'unverified', failures, coverage }`.
+- The hosted server generation gate runs the same physics check, so a generated
+  mechanism cannot pass by looking correct while collapsing under gravity.
+
+### Install
+
+- The CLI is a self-contained GitHub Release archive. There is no npm package.
+- One line: `curl -fsSL https://kernelcad.com/install.sh | sh`.
+- The same installer prints MCP setup for Claude Code, Codex, Gemini and the
+  hosted ChatGPT / Claude connector.
+
+## Quality Gates
+
+- Release QC: `npm run qc` passed under Node 22.22.0.
+- 8,521 tests passed, 130 skipped, 28 skipped files.
+- `tsc -b --noEmit` and eslint passed on the changed packages.
+- Platform: linux.
+
+## Install And Upgrade
+
+kernelCAD is distributed as a self-contained archive attached to this GitHub
+Release. There is no npm package.
+
+```bash
+curl -fsSL https://kernelcad.com/install.sh | sh
+```
+
+Pin this release:
+
+```bash
+curl -fsSL https://kernelcad.com/install.sh | KERNELCAD_VERSION=v0.17.1 sh
+```
+
+Connect an agent:
+
+```bash
+# Claude Code, hosted MCP
+claude mcp add --transport http kernelcad https://mcp.kernelcad.com/mcp
+# Claude Code, local CLI
+claude mcp add kernelcad -- kernelcad mcp
+# Codex, local CLI
+codex mcp add kernelcad -- kernelcad mcp
+```
+
+For repo development:
+
+```bash
+git clone https://github.com/w1ne/kernelCAD-web.git
+cd kernelCAD-web
+git checkout v0.17.1
+npm install
+npm run dev
+```
+
+## Links
+
+- Web app: https://kernelcad.com
+- Issues: https://github.com/w1ne/kernelCAD-web/issues
+
+
+# Unreleased
+
 ## Added
 
+- Assembly sequence planner core (P1 stage A). `verify({ check: 'assembly-path', sequence: true })` treats the per-direction blocker sets as a directional blocking graph, peels it deterministically and returns the reversed build `sequence` (`steps`, `model`, `unknown`). Every part now carries one of three states — `removable { direction, testedDirections }`, `blocked { blockersByDirection }` or `unknown { reason }` — and blocked/unknown are never reported as impossible. Every result carries a model stamp (rigid parts, straight-line translation, tested directions, no gravity, tessellation and zero-clearance tolerance). Catalog screw, bolt, threaded-rod and nut families are detected and reported `unknown: non-straight-path` until P2 models helical removal; a budget stop is `unknown: budget`. Example `examples/assemblies/assembly-sequence-gearbox.kcad.ts` (twelve parts, bottom-up sequence); guide `docs/guide/assembly-path.md`.
+- Assembly sequence planner stage B. Fastened-mate and fixed-connect clusters are now subassembly candidates: each is planned recursively inside and installed as one unit at the top level (`Step.subassembly`). Valid orders use deterministic heuristics (subassemblies first, outside-in, fewest reorientations, fewest tool changes); stuck sets get a budgeted blocking-reduction partition, and parts that fail every tested straight direction get a deterministic RRT-style sampling fallback. Sampling results are labelled `sequence.search[].status: 'found-by-search'` and never claim proof; exhaustion is `unknown: budget`, an undecided multi-part set is `unknown: needs-multi-part-move`, and a proven trap stays `blocked`. The gearbox example now declares two fastened clusters and plans it as 14 steps (12 parts plus 2 unit installs).
+- Fastener-aware precedence and tool reach (P2). A `fastened` mate can declare `{ fastener: { part?, axis, pitchMm?, handedness?, threadLengthMm?, standard?, tool? }, fit?: { kind: 'press' | 'snap', part?, axis? } }`. Declared fasteners are tested along a sampled helical path and planned as `motion: 'helical'` (pitch, turns, axis and hand recorded) instead of `unknown: non-straight-path`; catalog pitch/thread length and a default hex-key/socket envelope come from catalog attributes. A tool envelope is swept along the approach axis against the assembled parts, producing `toolBlocked` / `Step.tool` with named blockers. Declared press/snap fits become `requires-force` steps and are never simulated or called proven. The model stamp adds `motionModels` and `toolReach`; the assembly-path result carries an S2 ledger (`assembly.toolReach.*` pass/fail, `assembly.requiresForce.*` not-evaluated) when those findings exist. The gearbox example now has four helical bolts, a press-fit gear and a rib that blocks one driver: 19 steps, no unknown parts. Guide `docs/guide/assembly-path.md`; demo `docs/demos/assembly-sequence-planner/`.
+- Closed-loop kinematics. Four-bars, slider-cranks, scissor lifts and over-center latches built from mates (or a joint graph where a part has two parent joints) now pose instead of being refused: each mate the spanning tree leaves out closes a loop (and names it), closure is solved by damped least squares, and only the driven joints are taken from the poses. Solves continue from the as-built pose and sweeps (`checkSweptCollision`, motion-load, IK) seed each pose from the last, reporting `kinematic.loop.branch-flip` (over center / other assembly mode), `kinematic.loop.lockup` (singular, at a named joint and pose), `kinematic.loop.mobility-mismatch` (driven DOF vs rank-based mobility, next to the Grübler count) and `kinematic.loop.branch-ambiguous`. `assembly.loopMode(loop, { joint, sign })` pins a branch. `checkSweptCollision` and `checkReachable` accept mate names. Example `examples/kinematic/four-bar-swept.kcad.ts`; kinematic cookbooks 04 and 06 are now real loops, 09 is new.
+- One requirements ledger. `require(name, predicate)` declares named design intent measured by the kernel on every evaluation: `clearance(a, b).gte(d)`, `distance(a, b).in([lo, hi])`, `mass` / `volume` / `bbox` / `centerOfMass` bands, `count(selection).eq(n)`, `innerLoops(face).gte(n)`, `angle`, `concentric` and `coplanar`, over a `Shape`, `faces(shape, query?)`, `edges(shape, query?)` or a resolved entity list. Every `evaluate` / `evaluate_script` result carries one `requirements` block; each entry has `status` (`pass` / `fail` / `not-evaluated`), `measured`, `limit`, `margin` and the selections with their S1 fingerprints. `dfmSpec`, gated `feaStudy.minSafetyFactor` and mechanical intent report into the same ledger. Call-time external requirements (`verify({ requirements: [...] })`) are tagged `source: 'external'` and never persisted; `verify({ check: 'requirements' })` and `design_loop` grade from the ledger alone. Example `examples/requirements-ledger.kcad.ts`.
+- Selectors notice when an edit re-binds them. Every selector (label, `@kc[...]` ref, `q.*` or face-query object) records the entity it bound to (kind, surface type, producing feature, direction, radius, area or length, centroid) as `selections` on `evaluate_script` and `kernelcad evaluate --json`. Re-evaluating compares against the previous evaluation and reports `selector.binding-changed` (warning: a different face, naming old and new entity, consuming feature and selector) or `selector.binding-moved` (info: the same face, moved or resized). `set_param`, `evaluate_script` on the same file and incremental rebuilds compare automatically; `kernelcad evaluate --baseline <json>` and the `baseline` input of `evaluate_script` take an explicit earlier record. Thresholds: changed = other feature, kind or surface type, or direction over 10 degrees; moved = direction over 1 degree, size over 1 %, centroid beyond max(0.01 mm, 0.1 % of the part diagonal). Example `examples/selector-binding-drift.kcad.ts`.
+- Standard fasteners are drawn as the hardware. `lib.part`, `lib.stack`, `lib.insert` and the `lib.standard` fastener shortcuts take `detail: 'full' | 'envelope'`, default `'full'`: hex sockets with a 118° drill point, the ISO 4762 head chamfer and under-head fillet, the ISO 7380 dome, the ISO 10642 90° cone, the ISO 4017 30° crown chamfer and washer face, ISO 4032 nuts chamfered and countersunk on both faces with an internal thread, the ISO 4026 flat point and the DIN 127B split, all with ISO 68-1 threads at the ISO 261 coarse pitch and a chamfered start. ISO 4762 and ISO 10642 screws carry the partial thread length b by a stated rule close to the standards' table. Threads over 100 turns (DIN 975 rod) are revolved rings and the part record says `threadForm: 'annular'`. `'envelope'` is the previous nominal solid. Fit, clash, installation, tolerance, DFM-clearance and rest-pose checks measure the nominal envelope at either detail, so a modeled thread in its clearance hole or nut is not a clash; mass and BOM volume use the drawn solid. A first 'full' build takes about 4–6 s per distinct part and is cached (eight M6 bolts with nuts add about 12 s); meshing a threaded part takes 3–27 s. The catalog STEP files stay at envelope detail and come from the same builder. Guide `docs/guide/standard-parts-library.md` has new renders.
+- `blockout_assembly({ parts: [{ name, bboxMm, positionMm, rotationDeg?, anchors? }], connections? })` generates an evaluable placeholder assembly script (corner-anchored boxes, named connectors, fastened mates for anchor connections) from a plain parts list. It replaces import_handoff, which took one product-specific JSON schema.
+- `fetch_part` accepts `includeModel` and a `model` object (`url`, `sha256`, `source`, `license`, `expectedBboxMm`, `toleranceRatio`) to resolve a hash-verified STEP or GLB file with a bounding-box check. It replaces fetch_part_model.
 - Reference-parts accuracy gate. Twenty-seven native `.kcad.ts` models compare OCCT volume, surface area and bounding box against analytic or recorded OCCT ground truth; the fast CI job also checks the deterministic scorecard. Two 0.01 mm hole-depth deviations remain documented as known failures. Report and local-run demo: `docs/reference-parts-scorecard.md` and `docs/demos/reference-parts-scorecard/`.
 - Hole-driven fastening. `lib.insert(shape, { diameterMm | near, family, mode?, gripMm?, seat?, headAt? })` reads the bores on the shape's lowered BREP, sizes the thread from the hole diameter (ISO 273 close, normal or loose; normal is Ø2.4 M2, Ø2.9 M2.5, Ø3.4 M3, Ø4.5 M4, Ø5.5 M5, Ø6.6 M6, Ø9 M8, Ø11 M10, Ø13.5 M12, Ø17.5 M16, Ø22 M20), covers every similar hole (same diameter, parallel axis, so patterns are included), cuts the seat the family needs (a 90° countersink to the head diameter for flat-head, an optional counterbore for cap heads, none by default for cap heads), and returns `{ shape, holes }` with the seats applied and one placed stack per hole. Each hole reports its matched `fit` (`'close' | 'normal' | 'loose'`). A blind hole takes `mode: 'screw'` and the longest stocked length that fits; `'bolt'` needs a through bore. A bore that sits exactly on a larger thread's tap drill (ISO 2306) is reported as `pilotFor`, and a coaxial larger bore already at the mouth (a counterbore) is reported as `existingSeatMm` so `seat: 'auto'` leaves it alone. The envelope for countersunk heads is now the seated ISO 10642 frustum (rim on the seat plane, small end at the nominal Ø) instead of a cylinder, so a flat head fills its countersink. Example `examples/parts/hole-driven-insert.kcad.ts`; the parts skill documents the call.
-- Machining-fixture library. Five new part families join the table — `t-slot-nut` (DIN 508 form, slot 10/12/14 mm for M8/M10/M12), `clamping-stud` (DIN 6379 form, stocked 63/100, 80/125, 100/160 mm), `flange-nut` (DIN 6330 form), `strap-clamp` (slot center at its origin, nose toward -X) and `step-block` (treads rising along +X at 10/20/30/40, 12/24/36/48, 15/30/45/60 mm) — reachable as `lib.part({ family, thread })` and as typed `lib.fixture.tSlotNut / clampStud / flangeNut / strapClamp / stepBlock`. Each record carries its stock dimensions and placement connectors (mating-face/top-face, table-end/clamp-end/axis, nose-bearing/tail-bearing/slot-axis, base-face/step-1..4); the browser builds the same envelopes in memory and the catalog generator exports the same solids to STEP from one shared builder. Dimensions are nominal envelope values, not certified standard dims. Example `examples/fixture/table-clamp-set.kcad.ts` (T-slot table, workpiece, two M10 clamp sets), evidence bundle under `docs/demos/fixture-library/`.
+- Machining-fixture library. Five new part families join the table — `t-slot-nut` (DIN 508 form, slot 10/12/14 mm for M8/M10/M12), `clamping-stud` (DIN 6379 form, stocked 63/100, 80/125, 100/160 mm), `flange-nut` (DIN 6330 form), `strap-clamp` (slot center at its origin, nose toward -X) and `step-block` (treads rising along +X at 10/20/30/40, 12/24/36/48, 15/30/45/60 mm) — reachable as `lib.part({ family, thread, lengthMm? })`. Each record carries its stock dimensions and placement connectors (mating-face/top-face, table-end/clamp-end/axis, nose-bearing/tail-bearing/slot-axis, base-face/step-1..4); the browser builds the same envelopes in memory and the catalog generator exports the same solids to STEP from one shared builder. Dimensions are nominal envelope values, not certified standard dims. Example `examples/fixture/table-clamp-set.kcad.ts` (T-slot table, workpiece, two M10 clamp sets), evidence bundle under `docs/demos/fixture-library/`.
 - Catalog breadth. The fastener table adds hex head bolts (ISO 4017, M3–M20),
   headless set screws (ISO 4026, M3–M12) and threaded rod (DIN 975, M3–M12 ×
   250/1000 mm); socket-head screws, hex nuts and flat washers extend to M16
@@ -13,7 +275,6 @@
   longer offered. The seed catalog grows to 671 records; `lib.standard.boltHex`,
   `setScrew` and `rodThreaded` join the typed shortcuts.
 - One fastener table for `lib.part` and `lib.stack`. `lib.part({ family, thread, lengthMm })` builds one envelope solid for socket-head (ISO 4762, M2–M20), button-head (ISO 7380), countersunk (ISO 10642), hex-head (ISO 4017, M3–M20), set-screw (ISO 4026) and threaded-rod (DIN 975) families, hex nuts (ISO 4032, M2–M20), lock nuts (DIN 985), flat washers (ISO 7089, M2–M20) and lock washers (DIN 127B), with per-thread stocked lengths. `lib.stack({ thread, gripMm, mode })` places a screw alone or a bolt stack (washer under the head, washer and hex nut on the back) and picks the shortest stocked screw length for the grip; the browser builds the envelope in memory. `lib.fetchPart`, `lib.findPart` and `lib.standard.*` are unchanged, and a catalog in `KERNELCAD_PARTS_DIR` or `~/.kernelcad/parts` overrides the generated one. Examples `examples/parts/fastener-lineup.kcad.ts` and `examples/parts/bolt-stack.kcad.ts`; guide `docs/guide/standard-parts-library.md`.
-- `lib.fixture.clampSet({ thread, workpieceHeightMm })` plans and places a complete clamp set around a workpiece height: T-slot nut, clamping stud, strap clamp, step block and flange nut in one frame (stud axis at the origin, table surface at z = 0). The height must equal a stocked step-block tread; the stud is the shortest stocked length that clears clamp + nut.
 - Kernel selection seam. Models, `evaluate_script` and `execute_cookbook` accept an optional `kernel` (`'occt'` default, `'smlib'` reserved). `'smlib'` is not wired yet and fails cleanly with the new `recompute.kernel.unavailable` diagnostic (no fallback to OCCT). Builds go through a lowerer registry (`src/modeling/backends/kernelRegistry.ts`); the per-kernel feature list is generated into `src/modeling/backends/kernelCapabilities.generated.json` (`npm run kernel:capabilities`). New lint warning for direct imports of the OCCT binding packages outside the OCCT backend folders, with existing files baselined. Default builds are unchanged.
 - Colour params. A `param()` whose default is a hex colour (`'#rrggbb'` or `'#rgb'`, no `choices`) is a `color` param: the Studio customizer and Params tab show a colour picker (the customizer also has a hex field), and the value is always `'#rrggbb'`. `set_param` and shared-link values also take `'#rgb'` or a basic CSS colour name and write back `'#rrggbb'`; anything else is refused with `invalid-args.param.type-mismatch`. `.color(ref)` and `.finish(token, { color: ref })` take the param ref directly. `inspect({ of: 'params' })` lists the new `color` type. Example `examples/params/color-enclosure.kcad.ts`.
 - Live code while the agent works. The Studio agent pane and the `/generate` page show the script as the server streams it (`code` events on `POST /api/v1/generate`), following the newest line, with "Attempt 2 — fixing" when the agent rewrites it. The finished run shows the final script in the review as before. Older servers send no `code` events and the pane shows the steps only.
@@ -52,6 +313,17 @@
 
 ## Changed
 
+- Hex nut heights follow ISO 4032 (m max) instead of DIN 934: M5 4.7, M6 5.2, M8 6.8, M10 8.4, M12 10.8, M16 14.8, M20 18 mm. The ISO 7089 M2.5 washer outer diameter is 6 mm (was 5).
+- Bolt stack length. `lib.stack` and through-bolt `lib.insert` count the washer under the head (it was left out, so the tip could end inside the nut) and require thread past the nut's outer face: new option `protrusionPitches` (default 2 pitches), result field `protrusionMm`. A grip no stocked length reaches fails with `invalid-args` naming the needed length instead of picking a short bolt. Lengths move up: the 12 mm M5 lap joint takes M5 × 25 (was M5 × 18, which ended 0.7 mm inside the nut), an M8 bolt for a 21.8 mm grip M8 × 35 (was M8 × 30), the flange example M6 × 20 (was M6 × 18).
+- BREAKING: `assembly.joint.not-visible` (Gate 4) is opt-in per mate. It only runs for revolute mates that declare `exposure: 'exposed'`; undeclared and `'concealed'` mates are skipped (previously every revolute was checked unless `'concealed'`). The Luxo-derived pin-radius fallback is gone: when no pin radius can be measured the gate reports that with a warning instead of assuming 3.5 mm. The hint no longer names `FORK_GAP_Y` / `PIN_LEN`. To keep the old behavior, add `exposure: 'exposed'` to the mate.
+- BREAKING: `assembly.mate.not-physically-realized` (Gate 6) only evaluates revolute mates built with `joint.clevis(...)` and given its record as `capacity: { structure: clevis.structural }`. Pin radius, plate thickness and knuckle radius come from that record; the 3.5 mm / 4 mm fallbacks are removed. Hand-built, prismatic and other mates are no longer evaluated.
+- BREAKING: `joint.clevis` requires `style.knuckleR` (mm). The silent 12 mm default and the [3, 25] clamp are removed because captured bodies have no measurable size at capture time; `tongueY`, `forkGapY`, `plateT` and `pinR` still derive proportionally from it. Calling without it throws `feature.invalid-args` with a hint. Replace `joint.clevis({ ... })` by `joint.clevis({ ..., style: { knuckleR: 12 } })` to keep the old geometry.
+- BREAKING: `review_cad` and `design_loop` collapse `includePhysicalUseCaseReachability`, `includePhysicalUseCaseStatics`, `includePhysicalUseCaseJointReactions`, `includePhysicalUseCaseJointStructure` and `physicalUseCaseReachabilitySamplesPerMate` into `physicalUseCaseLevel: 'reachability' | 'statics' | 'reactions'` (each level includes the previous) and `physicalUseCaseSamplesPerMate`. The clevis structural check now runs automatically at `'reactions'` (previously its own flag); mates without the `joint.clevis` structural record still report `joint-structure-input-incomplete`. `requirePhysicalUseCase` still defaults the level to `'reachability'`.
+- BREAKING: transmission kind `'direct-horn'` is renamed `'direct'` (`arm.transmission`, `add_mate` relation `transmission`, source edits). Replace `kind: 'direct-horn'` with `kind: 'direct'`.
+- BREAKING: `joint.supportedServoRevolute` is removed. Use `arm.part(name, shape)` for the servo, `arm.mate(..., 'fastened')` to seat it and `arm.mechanicalJoint(...)` for the support contract.
+- BREAKING: `lib.fixture.*` (`tSlotNut`, `clampStud`, `flangeNut`, `strapClamp`, `stepBlock`, `clampSet`) is removed. Use `lib.part({ family: 't-slot-nut' | 'clamping-stud' | 'flange-nut' | 'strap-clamp' | 'step-block', thread, lengthMm? })`, which resolves the same catalog entries; `clampSet` has no replacement, place the members with `translate`.
+- Removed keyword heuristics that keyed on product words. Grounding by part name is gone: parts named palm, base, ground, root and similar are no longer treated as stable roots. Declare the fixed part with `physicalUseCase(...).stableParts: ['<part>']`, or add it first in `arm.add(...)` order (the solver grounds the first part). `design_loop` visual review no longer pattern-matches finding text or requires the `device-depth-and-construction` check; passed checks need a specific finding, a screenshot path and the passed flag. Goal-text cookbook routing, the production-goal stacked-primitive and missing-fillet facts, and the yoke bridging hint are removed from revision assist; diagnostic-keyed repair hints remain.
+- Removed MCP tools that existed for one partner handoff format, with generic replacements: import_handoff -> `blockout_assembly`; fetch_part_model -> `fetch_part` with `includeModel` / `model`; write_bom -> `inspect({ of: 'bom' })` and `export({ format: 'bom-csv' | 'bom-json' })` over the model's assembly; route_wires (a bounding-box-only orthogonal estimate) -> model real wires and tubes with sweeps along a path. `explode_view` no longer takes a `handoff` input; pass `parts: [{ name, center, size }]`. The registry is 59 tools; `mesh_boolean`, `explode_view` and `apply_surface_blend` each moved two positions earlier, relative order is unchanged and `blockout_assembly` is last.
 - Multi-tool booleans run one OCCT build. `plate.subtract(h1, …, h8)` (one record, eight tools) used to fold eight pairwise cuts of a growing solid; it now runs a single general boolean — 8 → 1 builds, a warm 8-hole plate ~1050 ms → ~570 ms, identical volume. Intersection keeps its sequential fold: OCCT's multi-tool `Common` computes `a ∩ (b ∪ c)`, while the record semantics are `a ∩ b ∩ c`.
 - STEP exports run the watertight verify gate by default, like STL. `export({ format: 'step' })` (MCP and CLI) now meshes the exported scene and fails with `export.mesh.not-watertight` when the mesh is not a closed manifold; the file is still written for inspection, and `no_verify` / `--no-verify` skips the gate. The diagnostic now reports non-manifold edges (an edge shared by 3+ triangles — exact coincident/tangent faces) separately from open edges, and the crack-cluster hint applies to both formats.
 - STEP exports also run a **B-rep validity check** (BRepCheck): invalid topology such as an unorientable face — typically left by a boolean on imported geometry — fails the export with the new `export.brep.invalid` diagnostic instead of shipping a STEP that downstream validity gates reject.
@@ -59,8 +331,22 @@
 - Studio paints an edit in two tiers. The debounced run meshes a coarse preview first (the `COARSE_MESH_OPTIONS` preset — an r=20 sphere drops from 2,556 triangles / 48 ms to 306 / 7 ms) and replaces it with the display-quality mesh once the same build re-tessellates. The refine reuses the first pass's lowered solids, so it refines triangles only — no rebuild, and the coarse mesh is never the final paint. Slider drags (SSE relower) and Validate paint the same two tiers. Localhost only: the node dev-kernel mesh endpoint carries the tier as `quality: 'coarse'`, and the in-browser worker posts the coarse tessellation as an `EXECUTE_PREVIEW` frame before the display result of the same EXECUTE (the script still runs once). The hosted precompute path is unchanged.
 - Mark in host chats (ChatGPT apps, Claude / MCP Apps) is paint only. The embed's Mark is a pencil toggle in the viewer toolbar, with Undo and Clear icons once there are marks. There is no note box, Send button, panel, hint or dialog. With the pencil on, a drag that starts on the model paints a stroke that sticks to the surface (constant 24 px brush, one bright colour at 50 % opacity); a drag on the background, right or middle drag, and two fingers still orbit, pan and zoom; a second finger within 150 ms drops the partial stroke; a two-finger tap undoes. Turning the pencil on with touch asks the host for fullscreen so a drag paints instead of scrolling the chat. Each change is posted to the widget as `kernelcad.marks` (stroke paths on the model and on screen, touched faces with share and rough coverage, bounds, camera, viewport, annotated screenshot), and the widget puts it into the host model's context, so the user types the change in the host chat's own composer. Marks stay until Clear or a new revision. The legacy note panel and `kernelcad.edit-request` posting are gone from the embed.
 - FEA automatic mesh refinement is a single re-solve at 0.75x the element size (was up to 2 passes with a step-size formula, a wall-time budget and a peak-convergence trust rule). `KERNELCAD_FEA_REFINE_TIME_MS` and `trust.basis` are gone; `KERNELCAD_FEA_MAX_ELEMENTS` still caps the mesh.
+- Removed the `review_paint_peek_latest` tool from the agent MCP toolset: it scanned hard-coded local checkout paths. The hosted server keeps its own implementation, and the local Claude Code hook and `/review-paint` command are unchanged.
+- `trace_from_image` is a pure curve tracer. The `detectParts` option and the `detectedParts`, `draftBom`, `unmatchedLabels` and `partDetectionFrame` outputs are gone, along with the `tool.trace-from-image.part-detection-failed` diagnostic.
+- The eyewear fidelity-gate and judge helpers moved from `src/lib/imageSimilarity/` to `eval/oracle/`; the skill prose for kinematics, assemblies and reference modelling now uses neutral mechanism and product examples.
+
+## Removed
+
+- `joint.articulatedDigit` (finger/digit builder), its example and docs. `joint.clevis` and `joint.supportedServoRevolute` stay.
+- The `gripperAperture` option of `review_cad`/`design_loop`, the `gripperAperture*` result and summary fields, the `gripper-aperture-moves` check and the `assembly.gripper-aperture.connector-missing` diagnostic. Use `trackConnectors` and read the tracked connector poses (`poseEnvelope.connectorPoses`) instead.
+
+## Removed
+
+- Automotive body-likeness gate. `verify({ check: 'body-likeness' })` and its car-only inputs (`body_bbox`, `body_feature_id`, `cabin_bbox`, `wheels`, `length_axis`, `still_verdicts`, `require_stills`), `design_loop` `likenessProfile` / `bodyLikeness`, and the `reference.likeness.*` diagnostics are gone. The generic `visualReview.checks` mechanism is unchanged.
 
 ## Fixed
+
+- A tendon spring no longer pushes. The MJCF export emitted `springlength="L"`, which MuJoCo treats as a two-sided spring, so a strap or cable shorter than its rest length pushed its ends apart. It now emits `springlength="0 L"`: the cable pulls above its rest length and goes slack below it.
 
 - Fixture dimensions now come from the DIN tables instead of nominal values: T-slot nuts follow DIN 508 (a/e/h/k; neck = a min, base = e min) and collar nuts DIN 6331 (s/m/d1/a). The fixture example's channel and stud offsets and its evidence follow the real nut; strap clamps and step blocks have no DIN table and stay nominal kit dimensions.
 
@@ -1973,7 +2259,7 @@ v0.6.0 ships the assembly **structure validity** layer — the mate vocabulary, 
 - `arm.part(...).connector(name, opts)` chain method on parts. Connectors are named coordinate frames embedded in a part. Four types: `frame` (full 6-DOF), `axis` (line + point), `planar` (plane + origin), `ball` (point only). Origin can be a numeric `Vec3` or a topology-bound query.
 - `Connector` topology-bound origins: `face-center` / `face-normal` queries resolve user-declared face labels (declared via `box(..., { faceLabels: { lid: 'top' } })` and peers) in addition to the six canonical face names, by walking the capture session's upstream feature records — same machinery as fillet/chamfer/shell label resolution. `edge-axis` queries resolve canonical box edges by name (`edge-<face1>-<face2>`, e.g. `edge-top-front`; order insignificant) and canonical cylinder cap edges (`edge-top` / `edge-bottom`). Resolution survives `.translate` and `.rotate` because the bounding-box plane match tracks transforms. Post-boolean shapes where the canonical face/edge no longer exists surface `assembly.connector.topology-not-resolvable` cleanly. Vertex queries deferred to v0.7.
 - `arm.mate(name, aRef, bRef, type, opts?)` API. 7 mate types: `fastened`, `revolute`, `prismatic`, `cylindrical`, `planar`, `ball`, `pin_slot`. Capture-time pair-compatibility validation (build123d-style early error) throws `KernelError('feature.invalid-args')` with structured hints (`invalid-args.assembly.mate-type-mismatch`, `invalid-args.assembly.mate-connector-not-found`). `opts.pose` accepts a numeric or `ParamRef` pose for revolute / prismatic / cylindrical / ball / pin_slot mates; `fastened` / `planar` reject the pose arg.
-- Pattern-A forward-kinematics walk over the mate graph: parts authored in their own LOCAL FRAMES, `solveMates(arm, poses?)` composes per-part world transforms by walking the mate tree from root, applying each mate's joint-frame contribution (rotation around the connector axis for revolute, translation along axis for prismatic, etc.). Industry-standard data flow — same model used by Fusion 360, OnShape, build123d, URDF, MuJoCo, Drake, USD.
+- Pattern-A forward-kinematics walk over the mate graph: parts authored in their own LOCAL FRAMES, `solveMates(arm, poses?)` composes per-part world transforms by walking the mate tree from root, applying each mate's joint-frame contribution (rotation around the connector axis for revolute, translation along axis for prismatic, etc.). Industry-standard data flow — same model used by Fusion 360, OnShape, build123d, URDF, physics engine, Drake, USD.
 - Mate-FK transforms wired through `Assembly.solvedModel(poses, opts)` (capture-time Scene composition) AND the OCCT lowerer (recompute-time mesh placement), so rendered output reflects mate-driven placement end-to-end. Mate-transforms win over v0.5 joint-FK transforms for parts in the mate graph; v0.5 joint-only assemblies render unchanged.
 - Newton-Raphson closed-loop solver scaffold (iter-cap 50, finite-diff Jacobian). Fastened-only loops classified `redundant-ok` / `over-constrained`. Articulated closed loops (revolute / prismatic in a cycle) return `did-not-converge` — deferred to v0.6.x.
 
@@ -2014,7 +2300,7 @@ The biggest open thing v0.6 does NOT do: **prove that the mechanism would actual
 - Static load capacity — given declared servo torque + cumulative downstream mass + lever arm, each joint must support the load.
 - Mechanism intent contract — `assembly.intent({ type, reach })` annotations; the kernel proves the geometry realizes the declared intent.
 
-Nobody else has design-time mechanism-feasibility gates inside CAD authoring (Fusion / OnShape relegate it to separate sim modules; Drake / MuJoCo are post-design sim research). This is the agent-first kernel differentiator.
+Nobody else has design-time mechanism-feasibility gates inside CAD authoring (Fusion / OnShape relegate it to separate sim modules; Drake / physics engine are post-design sim research). This is the agent-first kernel differentiator.
 
 ### Deferred to v0.7 — smaller items
 
@@ -2244,7 +2530,7 @@ npm run dev
   non-uniform-scale lowerer).
 - Joint origin convention changed from `EditableVec3` (worldOrigin from
   `parent.connector('tip').worldOrigin`) to numeric `Vec3` in the
-  **parent part's local frame** (URDF/MuJoCo convention). This unblocks
+  **parent part's local frame** (URDF/physics convention). This unblocks
   multi-joint forward kinematics — the canonical bug case (yaw 90°Z +
   pitch 90°Y on vertical-shoulder + horizontal-elbow → previously gave
   wrong elbow position) now resolves correctly via SE(3) composition.

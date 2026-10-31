@@ -1,0 +1,2 @@
+$ kernelcad collab check --file bracket.kcad.ts --base main --head main --yours fillet
+collab check: PASS (rebased: no)

@@ -17,10 +17,12 @@ import { toVec3Param } from '../../shared/runtime/editableHelpers';
 import { paramExprToDebugString, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
 import type { PartLineage } from '../../kernel/naming/evolutionRecord';
+import { promoteAuthoredHoleConnectors, takeConnectorSlot } from './assemblyHolePromote';
 import type { Shape } from './proxy';
 import type { CaptureSession } from './captureSession';
 import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLibrary';
 import { validateMassKg, validateOverlayOption } from './assemblyPartOverlayValidation';
+import { createPartCollision } from './assemblyPartCollision';
 import { copyMateCapacity } from './assemblyMateCapacity';
 import type { Assembly } from './assembly';
 import type {
@@ -333,14 +335,7 @@ function createPartConnector(
   ): AssemblyConnectorRef | AssemblyPartRef => {
     if (opts !== undefined) {
       assertTopoRefSafeName(connectorName, 'connector-name', id);
-      if (mateConnectors.some((c) => c.name === connectorName)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.connector.duplicate-name: part '${name}' already has a connector named '${connectorName}'.`,
-          id,
-          `invalid-args.assembly.connector-duplicate-name — rename one of the connectors on '${name}'.`,
-        );
-      }
+      takeConnectorSlot(mateConnectors, connectorName, name, id);
       // F-surface F4: opts.origin accepts a `@kc[<part>/<kind>/<name>]` string
       // alongside the structured ConnectorOrigin union. Normalise here BEFORE
       // constructing the Connector record so downstream solvers see only the
@@ -590,6 +585,7 @@ export function makePartRef(
     assemblyName, id, name, at, connectors, mateConnectors, () => ref,
   );
   const wrapGeom = createPartWrapGeom(id, name, wrapGeoms, () => ref);
+  const collisionPart = createPartCollision(id, () => ref);
   const ref: AssemblyPartRef = {
     id,
     name,
@@ -600,6 +596,7 @@ export function makePartRef(
     wrapGeoms,
     connector: connector as AssemblyPartRef['connector'],
     wrapGeom,
+    ...collisionPart,
     port: createPartPort(id, name, at, mateConnectors),
     part: addPart,
     model: () => owner.model(),
@@ -701,10 +698,6 @@ function resolvePartMaterialAndValidateOpts(
   return { resolvedMaterial, effectiveDensity };
 }
 
-/** Merge promoted catalog connectors into the user-declared connector map,
- *  rejecting a name collision. Split out of `recordPartInternal` for the
- *  same complexity-budget reason as `resolvePartMaterialAndValidateOpts`;
- *  no behavior change. */
 function mergeCatalogConnectors(
   connectors: Record<string, AssemblyConnectorFrameStored>,
   transformedCatalogConnectors: readonly TransformedCatalogConnector[],
@@ -785,6 +778,11 @@ export function recordPartInternal(
         : { axis: connector.axis }),
     });
   }
+  // Generic autoConnectors stay off the mate graph (heuristic STEP frames
+  // have no feature to re-resolve). Authored hole-axis connectors do not:
+  // bolt-holes-N follows the hole after a param edit. Sub-assembly import
+  // copies mate connectors itself, so it skips this pass.
+  promoteAuthoredHoleConnectors(promoteCatalogConnectors, state.session, shape, part);
   const stored: AssemblyPartStored = {
     ...part,
     originalShape: shape,
@@ -933,6 +931,12 @@ function importSubAssemblyMates(state: AssemblyState, prefix: string, other: Ass
       ...(om.pose !== undefined ? { pose: om.pose } : {}),
       ...(om.limitsDeg !== undefined ? { limitsDeg: om.limitsDeg } : {}),
       ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
+      ...(om.stiffnessNmmPerDeg !== undefined ? { stiffnessNmmPerDeg: om.stiffnessNmmPerDeg } : {}),
+      ...(om.springRefDeg !== undefined ? { springRefDeg: om.springRefDeg } : {}),
+      ...(om.dampingNmmsPerDeg !== undefined ? { dampingNmmsPerDeg: om.dampingNmmsPerDeg } : {}),
+      ...(om.stiffnessNPerMm !== undefined ? { stiffnessNPerMm: om.stiffnessNPerMm } : {}),
+      ...(om.springRefMm !== undefined ? { springRefMm: om.springRefMm } : {}),
+      ...(om.dampingNsPerMm !== undefined ? { dampingNsPerMm: om.dampingNsPerMm } : {}),
       ...(om.capacity !== undefined ? { capacity: copyMateCapacity(om.capacity) } : {}),
       ...(om.maxLoad !== undefined
         ? {

@@ -1,0 +1,171 @@
+name: Release archive
+
+# Builds portable native CLI archives, attaches them to the GitHub Release,
+# then publishes the same stable tag to npm through Trusted Publishing.
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }} archive
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux-x86_64
+            runner: ubuntu-24.04
+          - platform: linux-aarch64
+            runner: ubuntu-24.04-arm
+          - platform: darwin-x86_64
+            runner: macos-15-intel
+          - platform: darwin-arm64
+            runner: macos-15
+          - platform: windows-x86_64
+            runner: windows-2025
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.0'
+          cache: npm
+
+      - name: Verify tag matches package version
+        shell: bash
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          package_version="$(node -p "require('./package.json').version")"
+          test "$tag_version" = "$package_version"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build CLI and player
+        run: npm run build
+
+      - name: Keep production dependencies only
+        run: npm prune --omit=dev
+
+      - name: Build release archive
+        env:
+          KERNELCAD_RELEASE_PLATFORM: ${{ matrix.platform }}
+        run: node scripts/build-release-archive.mjs
+
+      - name: Upload archive for release assembly
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernelcad-${{ matrix.platform }}
+          path: release/kernelcad-*-${{ matrix.platform }}.*
+          if-no-files-found: error
+          retention-days: 2
+
+  publish-release:
+    name: Attach archives and attestations
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      attestations: write
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          pattern: kernelcad-*
+          merge-multiple: true
+
+      - name: Create checksums
+        shell: bash
+        run: |
+          cd release-artifacts
+          mapfile -t archives < <(printf '%s\n' kernelcad-*.tar.gz kernelcad-*.zip | grep -v '\*')
+          test "${#archives[@]}" -eq 5
+          sha256sum "${archives[@]}" > SHA256SUMS
+
+      - name: Attest release archives
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: release-artifacts/kernelcad-*
+
+      - name: Create GitHub Release when missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            if [[ "$tag" == *-* ]]; then
+              gh release create "$tag" \
+                --title "$tag — kernelCAD prerelease" \
+                --notes-file RELEASE_NOTES.md \
+                --prerelease
+            else
+              gh release create "$tag" \
+                --title "$tag — kernelCAD release" \
+                --notes-file RELEASE_NOTES.md \
+                --latest
+            fi
+          fi
+
+      - name: Upload archives and checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh release upload "${GITHUB_REF_NAME}" release-artifacts/* --clobber
+
+  publish-npm:
+    name: Publish npm package
+    needs: publish-release
+    if: ${{ !contains(github.ref_name, '-') }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Install npm with Trusted Publishing support
+        run: npm install --global 'npm@11.5.1'
+
+      - name: Verify stable tag matches package version
+        shell: bash
+        run: |
+          [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          tag_version="${GITHUB_REF_NAME#v}"
+          package_version="$(node -p "require('./package.json').version")"
+          test "$tag_version" = "$package_version"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build package payload
+        run: npm run build
+
+      - name: Publish package through npm Trusted Publishing
+        run: npm publish

@@ -1,11 +1,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import * as fs from 'node:fs';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { BuiltModel } from '../../composition/buildModel';
+import { clearActiveMcpSession, setActiveMcpSession } from './activeSession';
 import { createLiveViewer } from './liveViewer';
+
+vi.mock('node:fs', async importOriginal => {
+  const actual = await importOriginal<typeof import('node:fs')>();
+  return { ...actual, existsSync: vi.fn(actual.existsSync) };
+});
 
 const closers: Array<() => Promise<void>> = [];
 afterEach(async () => { await Promise.all(closers.splice(0).map(close => close())); });
@@ -82,9 +89,61 @@ describe('live MCP Studio viewer', () => {
     expect((await fetch(endpoint(link, 'source'), { headers: { Origin: 'https://evil.example' } })).status).toBe(403);
   });
 
+  it('does not auto-detect stale packaged or checkout viewer bundles', async () => {
+    vi.stubEnv('KERNELCAD_VIEWER_DIST', undefined);
+    // Simulate every legacy bundle path existing. No implicit path may be consulted.
+    const exists = vi.mocked(fs.existsSync).mockClear().mockReturnValue(true);
+    const viewer = createLiveViewer();
+    try {
+      await expect(viewer.update(model('geometry still built'))).rejects.toThrow('KERNELCAD_VIEWER_DIST');
+      expect(exists).not.toHaveBeenCalled();
+    } finally {
+      await viewer.close();
+      const actual = await vi.importActual<typeof import('node:fs')>('node:fs');
+      exists.mockImplementation(actual.existsSync);
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('fails clearly when the packaged Studio assets are absent', async () => {
     const viewer = createLiveViewer({ dist: '/does-not-exist' });
-    await expect(viewer.update(model('first'))).rejects.toThrow('build:mcp-viewer');
+    await expect(viewer.update(model('first'))).rejects.toThrow('KERNELCAD_VIEWER_DIST');
     await viewer.close();
+  });
+
+  it('close disposes a model whose session the viewer no longer shares', async () => {
+    const disposed: string[] = [];
+    const shape = { dispose() { disposed.push('shape'); }, isDeleted: () => false };
+    const session = { cachedShapes: { values: () => [] as object[], clear() { disposed.push('clear'); } } };
+    const viewer = await fixture();
+    await viewer.update({ code: 'old', shapes: new Map([['a', shape]]), session } as unknown as BuiltModel);
+    setActiveMcpSession({ session: { cachedShapes: { values: () => [], clear() {} } } as never });
+    try {
+      await viewer.close();
+      expect(disposed).toContain('shape');
+    } finally {
+      clearActiveMcpSession();
+    }
+  });
+
+  it('close keeps a solid the active session cache still owns and drops one it does not', async () => {
+    const disposed: string[] = [];
+    const stale = { dispose() { disposed.push('stale'); }, isDeleted: () => false };
+    const live = { dispose() { disposed.push('live'); }, isDeleted: () => false };
+    const session = { cachedShapes: { values: () => [live], clear() { disposed.push('clear'); } } };
+    const viewer = await fixture();
+    await viewer.update({
+      code: 'old',
+      shapes: new Map([['a', stale]]),
+      rootShape: stale,
+      session,
+    } as unknown as BuiltModel);
+    setActiveMcpSession({ session: session as never });
+    try {
+      await viewer.close();
+      expect(disposed).toEqual(['stale']);
+    } finally {
+      clearActiveMcpSession();
+    }
   });
 });

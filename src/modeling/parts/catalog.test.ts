@@ -18,7 +18,12 @@ function makeFixtureCatalog(): string {
         family: 'socket-head-cap-screw',
         standard: 'ISO 4762',
         tags: ['screw', 'metric', 'DIN 912'],
-        attributes: { thread: 'M3', lengthMm: 12 },
+        attributes: {
+          thread: 'M3',
+          lengthMm: 12,
+          verifiedThreads: 'M2, M2.5, M3, M4',
+          verifiedLengths: 'M3 6–20 mm; sampled 6, 12, 20 of 5',
+        },
         sha256: '0'.repeat(64),
         source: 'local-catalog' as const,
         license: 'MIT',
@@ -31,7 +36,12 @@ function makeFixtureCatalog(): string {
         family: 'socket-head-cap-screw',
         standard: 'ISO 4762',
         tags: ['screw', 'metric', 'DIN 912'],
-        attributes: { thread: 'M4', lengthMm: 16 },
+        attributes: {
+          thread: 'M4',
+          lengthMm: 16,
+          verifiedThreads: 'M2, M2.5, M3, M4',
+          verifiedLengths: 'M3 6–20 mm; sampled 6, 12, 20 of 5',
+        },
         sha256: '0'.repeat(64),
         source: 'local-catalog' as const,
         license: 'MIT',
@@ -81,6 +91,12 @@ describe('catalog resolver', () => {
     expect(r1.map((r) => r.id)).toContain('iso-4762-m3x12');
     const r2 = queryCatalog(cat, 'M4', { family: 'socket-head-cap-screw' });
     expect(r2.map((r) => r.id)).toContain('iso-4762-m4x16');
+  });
+
+  it('does not treat verified range metadata as part identity in discovery', () => {
+    const cat = loadCatalog(dir);
+    const r = queryCatalog(cat, 'M3');
+    expect(r.map((record) => record.id)).toEqual(['iso-4762-m3x12']);
   });
 
   it('aliases DIN 912 ↔ ISO 4762 via tag set', () => {

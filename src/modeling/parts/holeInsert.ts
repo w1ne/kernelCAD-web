@@ -29,6 +29,8 @@ import {
   FLATHEAD_HEAD,
   SHCS_HEAD,
   planStackFor,
+  resolveDetail,
+  type FastenerDetail,
   stockedScrewLengths,
 } from './familyTable';
 import { placeStackFor } from './placePart';
@@ -60,6 +62,12 @@ export interface InsertRequest {
   /** Head-side hint: the bore end nearest this point takes the head. Defaults
    *  to the end nearest `near`, then the end with the larger Z. */
   headAt?: Vec3;
+  /** Geometric detail of the placed stacks; default `'full'`. The seats and
+   *  every fit check use the nominal envelope either way. */
+  detail?: FastenerDetail;
+  /** Bolt mode: whole thread pitches the tip must reach past the nut's outer
+   *  face; default 2. */
+  protrusionPitches?: number;
 }
 
 export interface InsertedHole {
@@ -75,6 +83,8 @@ export interface InsertedHole {
   fit: ClearanceFit;
   /** Stocked screw length chosen for the grip. */
   lengthMm: number;
+  /** Bolt mode: tip distance past the nut's outer face, mm. */
+  protrusionMm?: number;
   /** Set when the bore diameter sits exactly on a larger thread's tap drill
    *  (ISO 2306): the bore may be a tapped pilot rather than clearance. */
   pilotFor?: string;
@@ -336,6 +346,7 @@ export function resolveInsert(request: InsertRequest): ResolvedInsert {
       example: INSERT_EXAMPLE,
     });
   }
+  resolveDetail(request.detail, 'lib.insert(shape, { detail, ... })');
   const mode = request.mode ?? 'bolt';
   if (mode !== 'screw' && mode !== 'bolt') {
     invalidArgs({
@@ -487,6 +498,7 @@ export function planInserts(
               thread,
               gripMm,
               mode: resolved.mode,
+              ...(request.protrusionPitches !== undefined ? { protrusionPitches: request.protrusionPitches } : {}),
             }).lengthMm;
       const pilotFor = pilotForThread(bore.diameterMm, thread);
       const existing =
@@ -583,6 +595,8 @@ export async function insertFasteners(
       thread: plan.thread,
       gripMm: stackGrip,
       mode: resolved.mode,
+      ...(request.detail !== undefined ? { detail: request.detail } : {}),
+      ...(request.protrusionPitches !== undefined ? { protrusionPitches: request.protrusionPitches } : {}),
     });
     holes.push({
       centerMm: plan.centerMm,
@@ -592,6 +606,7 @@ export async function insertFasteners(
       thread: plan.thread,
       fit: plan.fit,
       lengthMm: placed.lengthMm,
+      ...(placed.protrusionMm !== undefined ? { protrusionMm: placed.protrusionMm } : {}),
       ...(plan.pilotFor !== undefined ? { pilotFor: plan.pilotFor } : {}),
       ...(plan.existingSeatMm !== undefined ? { existingSeatMm: plan.existingSeatMm } : {}),
       screw: placeMember(placed.screw, plan),

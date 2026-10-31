@@ -10,7 +10,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
     name: 'evaluate_script',
     description:
       'Use this when you need to run a script and check it compiles. ' +
-      'Full local builds return viewerUrl: a live Studio link reused and updated on later full builds in the same MCP process. ' +
+      'Full local builds return viewerUrl only when KERNELCAD_VIEWER_DIST explicitly supplies a separate viewer bundle; the link is reused on later full builds. Otherwise viewerError explains the missing viewer and geometry remains available. ' +
       'Hosted builds return viewerMode: hosted and viewerHint pointing to open_in_studio; they do not start a loopback viewer. ' +
       'Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. ' +
       'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics + sceneSummary (BREP validity, volume in mm³, face count, bounding size in mm). ' +
@@ -66,6 +66,24 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
             "mechanism makes ok:false. Set true to skip the sweep entirely (no " +
             '`mechanism` field, no cost). Ignored for dryRun and non-assembly scripts.',
         },
+        baseline: {
+          type: 'array',
+          items: { type: 'object', additionalProperties: true },
+          description:
+            'The `selections` of an earlier evaluation of this model. A selector that now binds to a different ' +
+            'face or edge is reported as selector.binding-changed (warning), one whose entity only moved or ' +
+            'resized as selector.binding-moved (info). Defaults to the previous evaluation of the same `file`.',
+        },
+        requirements: {
+          type: 'array',
+          items: { type: 'object', additionalProperties: true },
+          description:
+            'Call-time external requirements ([{ name, predicate }]) measured in the same `requirements` ledger, ' +
+            "tagged source: 'external' and never persisted. The predicate is the serializable form of require(): " +
+            "{ metric: clearance | distance | mass | volume | bbox | centerOfMass | count | innerLoops | angle | concentric | coplanar, " +
+            "a?, b?, op: gte | lte | eq | between | within, limit, tolerance?, density? }. Operands are " +
+            "{ kind: body | faces | edges | part, ref: <feature id/name or part name>, query? }.",
+        },
       },
     },
   },
@@ -105,13 +123,17 @@ const diffScriptsToolEntry: ToolRegistryEntry = {
 const setParamToolEntry: ToolRegistryEntry = {
   definition: {
     name: 'set_param',
-    description: 'Use this when you need to edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects).',
+    description:
+      'Use this when you need to edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects). ' +
+      'With preview: true it builds the edit in a scratch session instead and returns the diff_geometry summary plus the requirements-ledger and S1 binding diffs (which requirements flip, which margins shrink, which selectors moved or re-bound), without touching the active session, source, revision or caches. ' +
+      'A preview whose revised build fails returns ok:false and no diff. Inspect after.requirementsOk to see whether the edit preserves declared intent; preview.ok only says the preview could be computed.',
     inputSchema: {
       type: 'object',
       properties: {
         code: { type: 'string', description: 'The .kcad.ts source code.' },
         param_name: { type: 'string', description: 'The string literal name of the param (first arg to param()).' },
         new_value: { type: ['number', 'boolean', 'string'], description: 'The new default value: number for numeric params, boolean for boolean params, or string for choice/string/color params (must be one of the declared choices for a choice param; a color param — one whose default is a hex literal — takes \'#rrggbb\', \'#rgb\' or a basic CSS colour name and is written back as \'#rrggbb\').' },
+        preview: { type: 'boolean', description: 'S6 edit preview: evaluate the edit in a scratch session and return geometry + requirements-ledger + S1 binding diffs. Writes nothing. Default false (the normal source-edit result).' },
       },
       required: ['code', 'param_name', 'new_value'],
     },

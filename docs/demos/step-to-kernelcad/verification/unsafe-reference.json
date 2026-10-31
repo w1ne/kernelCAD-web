@@ -1,0 +1,12 @@
+{
+  "exitCode": 1,
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "step.external-reference",
+      "message": "STEP external document '../TAIL.stp' resolves outside the input directory."
+    }
+  },
+  "stderr": "",
+  "bundleCreated": false
+}

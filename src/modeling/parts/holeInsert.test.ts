@@ -119,7 +119,9 @@ describe('lib.insert on modeled parts', () => {
     expect(result.holes).toHaveLength(3);
     for (const hole of result.holes) {
       expect(hole.thread).toBe('M5');
-      expect(hole.lengthMm).toBe(14); // grip 8 + washer 1 + nut 4, next stocked
+      // washer 1 + grip 8 + washer 1 + nut 4.7 + 2 pitches 1.6 = 16.3, next stocked
+      expect(hole.lengthMm).toBe(18);
+      expect(hole.protrusionMm).toBeCloseTo(3.3, 6);
       expect(hole.headWasher).toBeDefined();
       expect(hole.tailWasher).toBeDefined();
       expect(hole.nut).toBeDefined();
@@ -146,7 +148,7 @@ describe('lib.insert on modeled parts', () => {
     });
     expect(m6.holes[0]!.thread).toBe('M6');
     expect(m6.holes[0]!.fit).toBe('loose');
-    expect(m6.holes[0]!.lengthMm).toBe(16); // 8 grip + 1.6 tail washer + 5 nut, next stocked
+    expect(m6.holes[0]!.lengthMm).toBe(20); // 1.6 + 8 grip + 1.6 + 5.2 nut + 2 × 1.0 = 18.4, next stocked
 
     const m8 = await kcad.lib.insert(plate, {
       diameterMm: 9.0,
@@ -155,7 +157,7 @@ describe('lib.insert on modeled parts', () => {
     });
     expect(m8.holes[0]!.thread).toBe('M8');
     expect(m8.holes[0]!.fit).toBe('normal');
-    expect(m8.holes[0]!.lengthMm).toBe(18); // 8 grip + 1.6 tail washer + 6.5 nut, next stocked
+    expect(m8.holes[0]!.lengthMm).toBe(25); // 1.6 + 8 grip + 1.6 + 6.8 nut + 2 × 1.25 = 20.5, next stocked
   }, 120000);
 
   it('cuts the countersink a flat head needs and skips the head washer', async () => {    const { kcad } = api();

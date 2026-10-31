@@ -37,10 +37,13 @@
         "importedStl",
         "loft",
         "mirror",
+        "moveFaces",
+        "offsetFaces",
         "pattern",
         "projectCurve",
         "referenceImage",
         "renderEnvironment",
+        "require",
         "revolve",
         "sdfMaterialize",
         "shapeThicken",
@@ -69,6 +72,8 @@
         "extrude",
         "fillet",
         "importedStep",
+        "moveFaces",
+        "offsetFaces",
         "sphere"
       ]
     }

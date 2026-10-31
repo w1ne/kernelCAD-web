@@ -19,6 +19,7 @@ import {
   type BuiltModel,
 } from '../modeling/buildModel';
 import { composedApiFactory } from './scriptEvaluation';
+import { createWarmDocumentStore as createWarmDocumentStorePrimitive } from '../modeling/warm/documentSession';
 
 export type {
   BuildModelFromFileInput,
@@ -55,4 +56,11 @@ export async function modelForEditedMesh(
   input: BuildModelInput,
 ): Promise<BuiltModel> {
   return modelForEditedMeshPrimitive(prev, input, { apiFactory: composedApiFactory });
+}
+
+export function createWarmDocumentStore(opts?: { maxDocuments?: number }) {
+  return createWarmDocumentStorePrimitive({
+    ...opts,
+    build: (input) => buildModel(input),
+  });
 }

@@ -74,7 +74,6 @@ const DEFAULT_FIXTURES = [
   'revolve-crosses-axis.kcad.ts',
   'tangency-radius-too-small.kcad.ts',
   'draft-angle-degenerate.kcad.ts',
-  'shell-too-thick.kcad.ts',
   'emboss-over-hole.kcad.ts',
 ].map(name => join(HERE, name));
 

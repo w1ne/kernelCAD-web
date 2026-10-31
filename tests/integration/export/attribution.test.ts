@@ -6,7 +6,7 @@
 // metadata field (never into geometry), and the files stay valid. Reads each
 // file back instead of trusting the writer.
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { NodeIO } from '@gltf-transform/core';
@@ -70,6 +70,28 @@ describe('export attribution', () => {
     expect(readStepOriginatingSystem(buf)).toMatch(GENERATOR);
     const report = await inspectStepBuffer(buf, 'pair.step');
     expect(report.solidCount).toBe(2);
+  }, 60000);
+
+  // `union()` means one connected body. The evaluate seam has always rejected
+  // a union that left its operands as separate solids (`union.disconnected`);
+  // export runs the same guard, so a floating operand is a reported failure
+  // here instead of a silent two-solid STEP. Multi-solid files stay available
+  // through `assembly()` (the test above exports one and keeps both solids).
+  it('STEP: a disconnected union is refused with union.disconnected, not exported', async () => {
+    const out = join(tmpDir, 'disconnected-union.step');
+    const r = await exportModelTool({
+      code: `
+        const body = box(10, 10, 10);
+        return body.union(box(10, 10, 10).translate(30, 0, 0));
+      `,
+      output_path: out,
+      format: 'step',
+    });
+    expect(r.ok).toBe(false);
+    const diagnostic = r.diagnostics?.find((d) => d.code === 'union.disconnected');
+    expect(diagnostic?.severity).toBe('error');
+    expect(diagnostic?.message).toMatch(/2 separate solids/);
+    expect(existsSync(out)).toBe(false);
   }, 60000);
 
   it('STL: the 80-byte binary header names kernelCAD and the file is still binary STL', async () => {

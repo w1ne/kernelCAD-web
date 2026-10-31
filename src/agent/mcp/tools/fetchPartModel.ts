@@ -165,7 +165,7 @@ function glbBounds(bytes: Uint8Array): number[] | undefined {
   const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
   let found = false;
   for (const root of roots) if (includeNodeBounds(root, identity, doc, bounds)) found = true;
-  // glTF 2.0 defines linear distances in meters. Handoff bbox values and the
+  // glTF 2.0 defines linear distances in meters. bbox values and the
   // tool output are millimeters, so convert after applying node transforms.
   return found ? bounds.max.map((value, axis) => (value - bounds.min[axis]) * 1000) : undefined;
 }
@@ -332,7 +332,7 @@ async function loadModel(state: ModelFileState, ref?: string): Promise<LoadedMod
 
 async function measureStepBounds(bytes: Buffer, state: ModelFileState): Promise<number[] | string> {
   try {
-    const report = await inspectStepBuffer(bytes, state.path ?? state.url ?? 'handoff STEP');
+    const report = await inspectStepBuffer(bytes, state.path ?? state.url ?? 'part STEP');
     if (!report.solids.length) return 'STEP model contains no measurable solids.';
     const min = [Infinity, Infinity, Infinity];
     const max = [-Infinity, -Infinity, -Infinity];
@@ -385,5 +385,30 @@ export async function fetchPartModelTool(input: FetchPartModelInput): Promise<Fe
     cache_hit: loaded.cacheHit,
     bbox_check: bboxCheck,
     attribution: { source: source.source ?? 'catalog', license: source.license ?? 'unknown', ...(state.url ? { url: state.url } : {}), ...(source.attribution ? { attribution: source.attribution } : {}) },
+  };
+}
+
+/** The `model` option object accepted by `fetch_part`. */
+export interface FetchPartModelOptions {
+  url?: string; sha256?: string; source?: string; license?: string; attribution?: string;
+  expectedBboxMm?: number[]; toleranceRatio?: number;
+}
+
+/** Map `fetch_part` inputs (id/query/partsBaseUrl plus `model` options) to a verified-model request. */
+export function toFetchPartModelInput(
+  fetchInput: { id?: string; query?: string; partsBaseUrl?: string },
+  model: FetchPartModelOptions = {},
+): FetchPartModelInput {
+  return {
+    ...(model.url ? { url: model.url } : {}),
+    ...(model.sha256 ? { expected_sha256: model.sha256 } : {}),
+    ...(model.source ? { source: model.source } : {}),
+    ...(model.license ? { license: model.license } : {}),
+    ...(model.attribution ? { attribution: model.attribution } : {}),
+    ...(model.expectedBboxMm ? { bbox_mm: model.expectedBboxMm } : {}),
+    ...(model.toleranceRatio !== undefined ? { tolerance_ratio: model.toleranceRatio } : {}),
+    ...(fetchInput.id ? { catalog_id: fetchInput.id } : {}),
+    ...(!fetchInput.id && fetchInput.query ? { mpn: fetchInput.query } : {}),
+    ...(fetchInput.partsBaseUrl ? { partsBaseUrl: fetchInput.partsBaseUrl } : {}),
   };
 }

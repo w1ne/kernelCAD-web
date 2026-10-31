@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// lib.part and lib.stack. A catalog STEP is used when the file is on disk.
-// Otherwise the envelope is built in memory, which is what the browser can do.
-// The catalog modules pull node:fs, so they are imported only when a filesystem
-// is installed.
+// lib.part and lib.stack. Detail 'full' (the default) is built in memory by
+// the shared builder (fastenerGeometry.ts); detail 'envelope' uses the
+// catalog STEP when it is on disk, which holds the same envelope solid.
+// The catalog modules pull node:fs, so they are imported only when a
+// filesystem is installed.
 
 import { getHostFs, hasHostFs } from '../../shared/runtime/hostFs';
 import type { Shape } from '../capture/proxy';
 import type { CaptureSession } from '../capture/captureSession';
 import {
   planStackFor,
+  resolveDetail,
   resolvePart,
   type PartRequest,
   type StackRequest,
@@ -24,6 +26,8 @@ export interface PlaceCtx {
 
 export interface PlacedStack {
   lengthMm: number;
+  /** Bolt mode: tip distance past the nut's outer face, mm. */
+  protrusionMm?: number;
   screw: Shape;
   headWasher?: Shape;
   tailWasher?: Shape;
@@ -32,6 +36,8 @@ export interface PlacedStack {
 
 async function shapeFor(ctx: PlaceCtx, request: PartRequest): Promise<Shape> {
   const part = resolvePart(request);
+  const detail = resolveDetail(request.detail, 'lib.part({ family, thread, lengthMm, detail })');
+  if (detail === 'full') return synthesizeEnvelope(ctx, part, 'full');
   if (hasHostFs()) {
     const fs = getHostFs();
     const { loadCatalog, resolveById } = await import('./catalog');
@@ -42,7 +48,7 @@ async function shapeFor(ctx: PlaceCtx, request: PartRequest): Promise<Shape> {
       return fetched.shape;
     }
   }
-  return synthesizeEnvelope(ctx, part);
+  return synthesizeEnvelope(ctx, part, 'envelope');
 }
 
 export async function placePart(ctx: PlaceCtx, request: PartRequest): Promise<Shape> {
@@ -63,6 +69,7 @@ export async function placeStackFor(
   const plan = planStackFor(family, request);
   const placed: PlacedStack = {
     lengthMm: plan.lengthMm,
+    ...(plan.protrusionMm !== undefined ? { protrusionMm: plan.protrusionMm } : {}),
     screw: undefined as unknown as Shape,
   };
   for (const member of plan.members) {
@@ -70,6 +77,7 @@ export async function placeStackFor(
       family: member.part.family,
       thread: member.part.thread,
       ...(member.part.kind === 'screw' ? { lengthMm: member.part.lengthMm } : {}),
+      ...(request.detail !== undefined ? { detail: request.detail } : {}),
     });
     if (member.offsetZ !== 0) shape.translate(0, 0, member.offsetZ);
     if (member.role === 'screw') placed.screw = shape;

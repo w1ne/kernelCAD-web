@@ -18,8 +18,9 @@ import { RecomputeEngine, predecessorsByRecord, compiledEventForRecord, type Rec
 import { meshShape, type MeshOptions } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { MeshBackend } from '../../kernel/backends/meshBackend';
-import { generatePlanarUVs } from './planarUv';
-import { computeFeatureOwnership } from './featureOwnership';
+import { buildHelixTubeIndices, buildRibbonMesh, buildRoundSweep, flatWidthDirs, helixTubeTangents, wrapArcPoints, writeHelixTubeRings, type WrapCylinderWorld } from './tendonSweepMesh';
+import { attachMaterialUVs, generatePlanarUVs } from './planarUv';
+import { computeFeatureOwnership, hasFeatureOwnership } from './featureOwnership';
 import { helixPolylineRouted } from '../mates/helixPolyline';
 import { partAtFor } from '../mates/partFrame';
 import {
@@ -77,6 +78,15 @@ function extractRawShape(backend: ShapeBackend): unknown {
   );
 }
 
+function solidCountOf(shape: ShapeBackend): number | undefined {
+  try {
+    return shape.solidComponents().length;
+  } catch {
+    // Display-only mesh backends do not have BREP solids to enumerate.
+    return undefined;
+  }
+}
+
 export interface FeatureMesh {
   featureId: FeatureId;
   featureKind: FeatureKind;
@@ -85,6 +95,10 @@ export interface FeatureMesh {
   faces: FaceGeometry[];
   /** Direct indexed display buffer for display-only mesh bodies. */
   mesh?: { positions: Float32Array; normals: Float32Array; indices: Uint32Array };
+  /** Number of BREP solids represented by this feature mesh. Unlike mesh or
+   *  feature counts, this follows OCCT's TopAbs_SOLID exploration and therefore
+   *  agrees with STEP inspection for disconnected compounds. */
+  solidCount?: number;
   volume?: number;
   edges?: Float32Array;
   /** Color attribute carried from FeatureRecord.metadata.color (a ColorToken
@@ -187,6 +201,9 @@ export type MaterialShadowingWarning = AttributeShadowingWarning;
 export interface MeshFeaturesResult {
   features: FeatureMesh[];
   bounds: Bounds;
+  /** Solid count across terminal/root feature meshes, when every terminal
+   *  mesh has an authoritative BREP count. */
+  solidCount?: number;
   failedFeatureIds: FeatureId[];  // empty array if no failures
   /** Soft warnings collected during per-face material label resolution.
    *  Optional — absent when no labels were referenced. */
@@ -223,7 +240,14 @@ interface AssemblyLikeForTendons {
     readonly wrapGeoms?: readonly {
       readonly partName: string;
       readonly wrapName: string;
+      readonly sidesite?: readonly [number, number, number];
     }[];
+    /** Ordered route (connector refs / wrap refs); replaces `wrapGeoms`. */
+    readonly via?: readonly (string | { readonly wrap: { readonly partName: string; readonly wrapName: string; readonly sidesite?: readonly [number, number, number] } })[];
+    readonly profile?:
+      | { readonly kind: 'round'; readonly diameterMm: number }
+      | { readonly kind: 'flat'; readonly widthMm: number; readonly thicknessMm: number; readonly widthAxis?: Vec3 };
+    readonly material?: PBRMaterial;
   }[];
   __parts(): readonly {
     readonly name: string;
@@ -239,6 +263,8 @@ interface AssemblyLikeForTendons {
     readonly wrapGeoms?: readonly {
       readonly name: string;
       readonly origin: Vec3;
+      readonly axis: Vec3;
+      readonly radiusMm: number;
     }[];
   }[];
   /** Optional so structural fakes without mates keep working. */
@@ -401,103 +427,6 @@ function buildHelixTubeMesh(
   };
 }
 
-/** Per-ring tangents (central differences interior; one-sided at ends). */
-function helixTubeTangents(polyline: readonly Vec3[]): Vec3[] {
-  const ringCount = polyline.length;
-  const tangents: Vec3[] = new Array(ringCount);
-  for (let i = 0; i < ringCount; i++) {
-    const prev = polyline[Math.max(0, i - 1)];
-    const next = polyline[Math.min(ringCount - 1, i + 1)];
-    let tx = next[0] - prev[0];
-    let ty = next[1] - prev[1];
-    let tz = next[2] - prev[2];
-    const len = Math.sqrt(tx * tx + ty * ty + tz * tz) || 1;
-    tx /= len; ty /= len; tz /= len;
-    tangents[i] = [tx, ty, tz];
-  }
-  return tangents;
-}
-
-/** Write ring vertices/normals for a tube swept along `polyline` using a
- *  parallel-transport frame. */
-function writeHelixTubeRings(
-  polyline: readonly Vec3[],
-  tangents: readonly Vec3[],
-  radialSegments: number,
-  tubeR: number,
-  vertices: Float32Array,
-  normals: Float32Array,
-): void {
-  const ringCount = polyline.length;
-  // Parallel-transport frame: pick an initial up vector ⊥ tangents[0],
-  // then rotate it forward at each step to stay perpendicular.
-  const seed: Vec3 = Math.abs(tangents[0][2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
-  // initial u = normalize(seed × tangent[0])
-  let ux = seed[1] * tangents[0][2] - seed[2] * tangents[0][1];
-  let uy = seed[2] * tangents[0][0] - seed[0] * tangents[0][2];
-  let uz = seed[0] * tangents[0][1] - seed[1] * tangents[0][0];
-  const uLen0 = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
-  ux /= uLen0; uy /= uLen0; uz /= uLen0;
-  // v = tangent × u
-  let vx = tangents[0][1] * uz - tangents[0][2] * uy;
-  let vy = tangents[0][2] * ux - tangents[0][0] * uz;
-  let vz = tangents[0][0] * uy - tangents[0][1] * ux;
-
-  for (let i = 0; i < ringCount; i++) {
-    const center = polyline[i];
-    if (i > 0) {
-      // Parallel-transport u, v to stay ⊥ tangent[i]: subtract the
-      // component along the new tangent, renormalize, then rebuild v.
-      const tDot = ux * tangents[i][0] + uy * tangents[i][1] + uz * tangents[i][2];
-      ux -= tangents[i][0] * tDot;
-      uy -= tangents[i][1] * tDot;
-      uz -= tangents[i][2] * tDot;
-      const l = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
-      ux /= l; uy /= l; uz /= l;
-      vx = tangents[i][1] * uz - tangents[i][2] * uy;
-      vy = tangents[i][2] * ux - tangents[i][0] * uz;
-      vz = tangents[i][0] * uy - tangents[i][1] * ux;
-    }
-    for (let s = 0; s < radialSegments; s++) {
-      const theta = (s / radialSegments) * 2 * Math.PI;
-      const cosT = Math.cos(theta);
-      const sinT = Math.sin(theta);
-      const nx = ux * cosT + vx * sinT;
-      const ny = uy * cosT + vy * sinT;
-      const nz = uz * cosT + vz * sinT;
-      const vi = (i * radialSegments + s) * 3;
-      vertices[vi + 0] = center[0] + nx * tubeR;
-      vertices[vi + 1] = center[1] + ny * tubeR;
-      vertices[vi + 2] = center[2] + nz * tubeR;
-      normals[vi + 0] = nx;
-      normals[vi + 1] = ny;
-      normals[vi + 2] = nz;
-    }
-  }
-}
-
-/** Two triangles per (ring i → ring i+1, radial s → s+1) quad. */
-function buildHelixTubeIndices(ringCount: number, radialSegments: number): Uint32Array {
-  const quadCount = (ringCount - 1) * radialSegments;
-  const indices = new Uint32Array(quadCount * 6);
-  let idx = 0;
-  for (let i = 0; i < ringCount - 1; i++) {
-    for (let s = 0; s < radialSegments; s++) {
-      const sNext = (s + 1) % radialSegments;
-      const a = i * radialSegments + s;
-      const b = i * radialSegments + sNext;
-      const c = (i + 1) * radialSegments + s;
-      const d = (i + 1) * radialSegments + sNext;
-      indices[idx++] = a;
-      indices[idx++] = c;
-      indices[idx++] = b;
-      indices[idx++] = b;
-      indices[idx++] = c;
-      indices[idx++] = d;
-    }
-  }
-  return indices;
-}
 
 /**
  * P7 — read the Assembly's declared tendons (if any) and pack them into
@@ -534,6 +463,7 @@ type TendonLike = ReturnType<AssemblyLikeForTendons['__tendons']>[number];
 interface TendonLookups {
   originByRef: Map<string, Vec3>;
   wrapOriginByRef: Map<string, Vec3>;
+  wrapByRef: Map<string, { origin: Vec3; axis: Vec3; radiusMm: number }>;
   transformByPart: Map<string, readonly number[]>;
 }
 
@@ -545,6 +475,7 @@ function collectTendonLookups(
   const originByRef = new Map<string, Vec3>();
   // (partName, wrapName) → part-local wrap origin lookup (P11 Slice 3).
   const wrapOriginByRef = new Map<string, Vec3>();
+  const wrapByRef = new Map<string, { origin: Vec3; axis: Vec3; radiusMm: number }>();
   // The scene transforms below move shapes that already carry `at`; a mated
   // part's declared origins get its `at` so they land on its body.
   const atOf = partAtFor(arm.__mates?.() ?? [], arm.__parts(), arm.__session?.().paramTable);
@@ -558,6 +489,7 @@ function collectTendonLookups(
     }
     for (const wg of part.wrapGeoms ?? []) {
       wrapOriginByRef.set(`${part.name}.${wg.name}`, onPart(wg.origin));
+      wrapByRef.set(`${part.name}.${wg.name}`, { origin: onPart(wg.origin), axis: wg.axis, radiusMm: wg.radiusMm });
     }
   }
 
@@ -567,20 +499,68 @@ function collectTendonLookups(
   for (const part of scene.parts ?? []) {
     transformByPart.set(part.name, part.worldTransform.toMat4());
   }
-  return { originByRef, wrapOriginByRef, transformByPart };
+  return { originByRef, wrapOriginByRef, wrapByRef, transformByPart };
 }
 
 interface TendonPath {
   fromWorld: Vec3;
   toWorld: Vec3;
   centerline: Vec3[];
+  /** Owning-part world transform of each centerline point (strap width axis). */
+  frames: (readonly number[])[];
+}
+
+// A routed cable step in world space: a pulley point, or a wrap cylinder
+// whose tangent points and arc depend on both neighbours.
+type ResolvedRouteStep =
+  | { kind: 'point'; p: Vec3; frame: readonly number[] }
+  | { kind: 'wrap'; cyl: WrapCylinderWorld; frame: readonly number[] };
+type RouteEntry = string | { readonly wrap: { readonly partName: string; readonly wrapName: string; readonly sidesite?: readonly [number, number, number] } };
+
+function resolveWrapStep(
+  w: Exclude<RouteEntry, string>['wrap'],
+  lookups: TendonLookups,
+): ResolvedRouteStep | undefined {
+  const wg = lookups.wrapByRef.get(`${w.partName}.${w.wrapName}`);
+  const wT = lookups.transformByPart.get(w.partName);
+  if (wg === undefined || wT === undefined) return undefined;
+  const center = applyMat4ToPoint(wT, wg.origin);
+  const tip = applyMat4ToPoint(wT, [wg.origin[0] + wg.axis[0], wg.origin[1] + wg.axis[1], wg.origin[2] + wg.axis[2]]);
+  const side = w.sidesite === undefined ? undefined : applyMat4ToPoint(wT, [w.sidesite[0], w.sidesite[1], w.sidesite[2]]);
+  const axis: Vec3 = [tip[0] - center[0], tip[1] - center[1], tip[2] - center[2]];
+  return { kind: 'wrap', frame: wT, cyl: { center, axis, radiusMm: wg.radiusMm, ...(side ? { side } : {}) } };
+}
+
+function resolveRoute(route: readonly RouteEntry[], lookups: TendonLookups): ResolvedRouteStep[] {
+  const out: ResolvedRouteStep[] = [];
+  for (const entry of route) {
+    if (typeof entry !== 'string') {
+      const step = resolveWrapStep(entry.wrap, lookups);
+      if (step !== undefined) out.push(step);
+      continue;
+    }
+    const local = lookups.originByRef.get(entry);
+    const wT = lookups.transformByPart.get(splitConnectorRef(entry)[0] ?? '');
+    if (local !== undefined && wT !== undefined) out.push({ kind: 'point', p: applyMat4ToPoint(wT, local), frame: wT });
+  }
+  return out;
+}
+
+/** Append resolved steps to the centerline; a wrap adds its surface arc. */
+function appendRoute(steps: readonly ResolvedRouteStep[], centerline: Vec3[], frames: (readonly number[])[], toWorld: Vec3): void {
+  steps.forEach((step, i) => {
+    if (step.kind === 'point') { centerline.push(step.p); frames.push(step.frame); return; }
+    const after = steps[i + 1];
+    const next = after === undefined ? toWorld : after.kind === 'point' ? after.p : after.cyl.center;
+    for (const q of wrapArcPoints(centerline[centerline.length - 1], next, step.cyl)) { centerline.push(q); frames.push(step.frame); }
+  });
 }
 
 function resolveTendonPath(
   t: TendonLike,
   lookups: TendonLookups,
 ): TendonPath | undefined {
-  const { originByRef, wrapOriginByRef, transformByPart } = lookups;
+  const { originByRef, transformByPart } = lookups;
   const fromOrigin = originByRef.get(t.from);
   const toOrigin = originByRef.get(t.to);
   if (fromOrigin === undefined || toOrigin === undefined) {
@@ -602,21 +582,39 @@ function resolveTendonPath(
   // the to-anchor. With no wrapGeoms this is just [from, to], so straight
   // tendons render identically to the pre-Slice-3 path.
   const centerline: Vec3[] = [fromWorld];
-  for (const w of t.wrapGeoms ?? []) {
-    const wLocal = wrapOriginByRef.get(`${w.partName}.${w.wrapName}`);
-    const wT = transformByPart.get(w.partName);
-    if (wLocal !== undefined && wT !== undefined) {
-      centerline.push(applyMat4ToPoint(wT, wLocal));
-    }
-  }
+  const frames: (readonly number[])[] = [fromT];
+  // `via` replaces `wrapGeoms` (mutually exclusive); a connector entry is
+  // posed with its owning part's transform exactly like from/to.
+  const route = t.via !== undefined && t.via.length > 0
+    ? t.via
+    : (t.wrapGeoms ?? []).map((w) => ({ wrap: w }));
+  appendRoute(resolveRoute(route, lookups), centerline, frames, toWorld);
   centerline.push(toWorld);
-  return { fromWorld, toWorld, centerline };
+  frames.push(toT);
+  return { fromWorld, toWorld, centerline, frames };
+}
+
+/** Tendon PBR: the declared material (textures included) or the dark metallic default. */
+function tendonPbr(t: TendonLike): PBRMaterial {
+  return t.material ?? { baseColor: '#2a2e36', metalness: 0.85, roughness: 0.4 };
 }
 
 function buildTendonFace(t: TendonLike, path: TendonPath): FaceGeometry | null {
   // P10: coil tendons sweep an 8-facet tube along the helix polyline;
   // line tendons fall through to the existing PR #368 cylinder path.
   const style = t.visualStyle ?? 'line';
+  const p = t.profile;
+  if (p?.kind === 'flat') {
+    return buildRibbonMesh({
+      points: path.centerline,
+      widthDirs: flatWidthDirs(p.widthAxis ?? [0, 1, 0], path.frames),
+      widthMm: p.widthMm,
+      thicknessMm: p.thicknessMm,
+    });
+  }
+  if (p?.kind === 'round') return buildRoundSweep(path.centerline, p.diameterMm);
+  // A routed 'line' follows its route as a tube; a direct one stays a cylinder.
+  if (style === 'line' && path.centerline.length > 2) return buildRoundSweep(path.centerline, t.visualDiameterMm);
   if (style === 'coil') {
     const turns = t.coilTurns ?? 10;
     const coilDiameter = t.coilDiameterMm ?? 7;
@@ -648,12 +646,7 @@ function collectTendonMeshes(
     const face = buildTendonFace(t, path);
     if (face === null) continue;
     const tendonId = `${sceneFeatureId}__tendon__${t.name}`;
-    // Dark metallic PBR — matches Studio's `TendonRenderer.tsx`.
-    const tendonMaterial: PBRMaterial = {
-      baseColor: '#2a2e36',
-      metalness: 0.85,
-      roughness: 0.4,
-    };
+    const tendonMaterial = tendonPbr(t);
     meshes.push({
       featureId: tendonId,
       // Reuse the SceneBackend's feature-kind so the renderer's existing
@@ -662,6 +655,8 @@ function collectTendonMeshes(
       featureKind: 'solvedAssembly',
       predecessors: [sceneFeatureId],
       faces: [face],
+      // Tendons are viewer-only overlays, not exportable BREP bodies.
+      solidCount: 0,
       assemblyFeatureId: sceneFeatureId,
       assemblyPartName: `__tendon__${t.name}`,
       displayName: `tendon:${t.name}`,
@@ -820,7 +815,7 @@ export async function meshFeaturesPerFeature(
     | Map<FeatureId, FeatureMesh>
     | undefined;
   const cachedAssemblyPartMeshes = session?.cachedAssemblyPartMeshes as
-    | Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>
+    | Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; solidCount?: number; edges?: Float32Array }>>
     | undefined;
   const cachedShapesIn = session?.cachedShapes;
   const assembliesIn = session?.assemblies;
@@ -858,7 +853,7 @@ export async function meshFeaturesPerFeature(
   await engine.run(records, {
     paramTable,
     onEvent: (event) => handleMeshFeatureEvent(event, eventCtx),
-    ...engineSeedOptions(engineSeeds, meshFromSeed, refineSeededMesh(eventCtx)),
+    ...engineSeedOptions(engineSeeds, meshFromSeed, refineSeededMesh(eventCtx), constructionClosure),
   });
 
   reEmitSeededFeatureMeshes(
@@ -895,13 +890,21 @@ function engineSeedOptions(
   engineSeeds: Map<FeatureId, ShapeBackend> | undefined,
   meshFromSeed: ReadonlyMap<FeatureId, ShapeBackend>,
   meshSeeded: (record: FeatureRecord, shape: ShapeBackend) => void,
+  constructionClosure: ReadonlySet<FeatureId>,
 ): Pick<RecomputeOptions, 'seedShapes' | 'onSeedHit'> {
-  return {
-    ...(engineSeeds !== undefined && engineSeeds.size > 0 ? { seedShapes: engineSeeds } : {}),
-    ...(meshFromSeed.size > 0
-      ? { onSeedHit: (record: FeatureRecord, shape: ShapeBackend) => { if (meshFromSeed.has(record.id)) { meshSeeded(record, shape); releaseBorrowedTriangulation(shape); } } }
-      : {}),
+  if (engineSeeds === undefined || engineSeeds.size === 0) return {};
+  const onSeedHit = (record: FeatureRecord, shape: ShapeBackend): void => {
+    if (meshFromSeed.has(record.id)) {
+      meshSeeded(record, shape);
+      releaseBorrowedTriangulation(shape);
+    } else if (constructionClosure.has(record.id) && !hasFeatureOwnership(shape)) {
+      // A construction record lowered by the build or params.update (not by
+      // a mesh pass) has no face owners yet; the assembly part meshes built
+      // from it need them (selection ↔ code link).
+      meshSeeded(record, shape);
+    }
   };
+  return { seedShapes: engineSeeds, onSeedHit };
 }
 
 /** Attach the optional session hooks (imported geometry, NURBS surface
@@ -928,7 +931,7 @@ interface MeshFeatureEventContext {
   readonly meshBounds: MeshBoundsAccumulator;
   readonly failedFeatureIds: FeatureId[];
   readonly constructionClosure: ReadonlySet<FeatureId>;
-  readonly cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>;
+  readonly cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; solidCount?: number; edges?: Float32Array }>>;
   readonly explodeOffsets?: ReadonlyMap<string, readonly [number, number, number]>;
   readonly assembliesIn?: ReadonlyMap<string, unknown>;
   readonly recordById: ReadonlyMap<FeatureId, FeatureRecord>;
@@ -1147,6 +1150,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     );
   }
 
+  attachMaterialUVs(meshed.faces, material);
   attachPlanarUVs(meshed.faces);
   const emitted: FeatureMesh = {
     featureId: event.featureId,
@@ -1154,6 +1158,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     predecessors: meshPredecessors(event),
     op: event.op,
     faces: meshed.faces,
+    solidCount: solidCountOf(event.shape),
     volume: meshed.volume,
     edges: meshed.edges,
     ...linkFieldsOf(event, rawShape, meshed, ctx),
@@ -1179,4 +1184,3 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   // Aggregate bounds from this feature's vertices
   accumulateMeshBounds(ctx.meshBounds, meshed.faces);
 }
-

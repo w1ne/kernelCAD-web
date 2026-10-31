@@ -7,6 +7,9 @@ import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { computeDihedralPublic } from '../../../../kernel/backends/occt/edgeQueries';
 import { pickEdges } from '../../../../kernel/backends/occt/edgeSelection';
+import { aliasSelectionSink } from '../../../../kernel/naming/selectionSink';
+import { stampSolid } from '../../../../kernel/naming/operationLineage';
+import type { EdgeHistoryMap } from '../../../../kernel/naming/evolutionRecord';
 import {
   chamferWithHistory,
   discardOcctShape,
@@ -265,6 +268,7 @@ function resolveVariableEdgeGroup(
     suppressed: false,
   };
 
+  aliasSelectionSink(synth, feature);
   const edgesResult = pickEdges(synth, vc.base, vc.allRecords);
   if ('error' in edgesResult) {
     // Forward the underlying selection diagnostic verbatim — its code
@@ -490,11 +494,29 @@ function volumeTrendOf(base: OcctBackend, edges: Edge[]): EdgeFeatureVolumeTrend
   return 'mixed';
 }
 
-function builtFromAttempt(base: OcctBackend, result: EdgeFeatureHistoryResult): LowerOutcome {
-  const newMap = mergeEdgeFeatureHistory(base.historyMap, result);
+function mergeOneEdgeMap(input: EdgeHistoryMap | undefined, result: EdgeFeatureHistoryResult): EdgeHistoryMap {
+  const out: EdgeHistoryMap = new Map();
+  if (!input) return out;
+  for (const [hash, lineage] of input) {
+    if (result.deletedEdges.has(hash)) continue;
+    const children = result.edgeHistory.get(hash);
+    if (children && children.length > 0) {
+      for (const child of children) if (!out.has(child)) out.set(child, lineage);
+    } else if (!out.has(hash)) out.set(hash, lineage);
+  }
+  return out;
+}
+
+function builtFromAttempt(base: OcctBackend, result: EdgeFeatureHistoryResult, featureId: string): LowerOutcome {
+  const faceMap = mergeEdgeFeatureHistory(base.historyMap, result);
+  const edgeMap = mergeOneEdgeMap(base.edgeHistoryMap, result);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrapped = replicad.cast(result.shape as any) as replicad.Shape3D;
-  return built(new OcctBackend(wrapped, undefined, newMap));
+  const probe = new OcctBackend(wrapped);
+  const stamped = stampSolid(faceMap, probe.faceHashes(), edgeMap, probe.edgeHashes(), featureId);
+  const out = new OcctBackend(wrapped, undefined, stamped.historyMap);
+  out.edgeHistoryMap = stamped.edgeHistoryMap;
+  return built(out);
 }
 
 /**
@@ -513,7 +535,7 @@ function applyConstantEdgeFeature(
   op: EdgeOp,
 ): LowerOutcome {
   const full = attemptEdgeFeature(base, edges, op);
-  if (full.ok) return builtFromAttempt(base, full.result);
+  if (full.ok) return builtFromAttempt(base, full.result, r.id);
   const filter = filterEdgesByMinLength(edges, 2 * op.value, {
     op: op.kind, paramName: op.kind === 'fillet' ? 'radius' : 'distance', featureId: r.id,
   });
@@ -525,7 +547,7 @@ function applyConstantEdgeFeature(
     const subset = attemptEdgeFeature(base, filter.kept, op);
     if (subset.ok) {
       ctx.diagnostics.push(filter.diagnostic);
-      return builtFromAttempt(base, subset.result);
+      return builtFromAttempt(base, subset.result, r.id);
     }
   }
   ctx.diagnostics.push(edgeFailureDiagnostic(r, base, edges, op, full));

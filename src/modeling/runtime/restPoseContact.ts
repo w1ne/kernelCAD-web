@@ -40,7 +40,7 @@
 
 import type { Assembly } from '../capture/assembly';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend, analysisBodyOf } from '../../kernel/backends/occt/occtBackend';
 import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { CONTACT_THICKNESS_MM, isActionableOverlap, overlapThicknessMm } from './jointContactCap';
@@ -337,8 +337,8 @@ function brepOverlap(
     return { volumeMm3: NaN, thicknessMm: NaN, at, cellMm: 0 };
   }
   try {
-    const wa = (a.shape as OcctBackend).clone().applyTransform(a.worldTransform);
-    const wb = (b.shape as OcctBackend).clone().applyTransform(b.worldTransform);
+    const wa = (analysisBodyOf(a.shape) as OcctBackend).clone().applyTransform(a.worldTransform);
+    const wb = (analysisBodyOf(b.shape) as OcctBackend).clone().applyTransform(b.worldTransform);
     const m = wa.intersectionMetrics(wb);
     return { volumeMm3: m.volumeMm3, thicknessMm: overlapThicknessMm(m.volumeMm3, m.areaMm2), at, cellMm: 0 };
   } catch {
@@ -355,7 +355,7 @@ export function restPosePenetrations(scene: SceneBackend): RestPenetration[] {
     // Exact/closed-solid validation does not currently classify display-only
     // triangle soups. Leave those pairs unchecked while retaining BRep checks.
     if (!(p.shape instanceof OcctBackend)) continue;
-    const mesh = worldMesh(p.shape as OcctBackend, p.worldTransform);
+    const mesh = worldMesh(analysisBodyOf(p.shape) as OcctBackend, p.worldTransform);
     if (mesh !== undefined) meshes.push({ name: p.name, mesh, part: p });
   }
   const out: RestPenetration[] = [];
@@ -412,7 +412,7 @@ export function restPoseMateGaps(
     const key = a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`;
     if (!seen.has(key)) {
       seen.set(key, measureBodyToBodyGap(
-        pa.shape as OcctBackend, pa.worldTransform, pb.shape as OcctBackend, pb.worldTransform,
+        analysisBodyOf(pa.shape) as OcctBackend, pa.worldTransform, analysisBodyOf(pb.shape) as OcctBackend, pb.worldTransform,
       ));
     }
     const gap = seen.get(key);

@@ -1,0 +1,23 @@
+{
+  "fixturePackage": {
+    "name": "occt-import-js",
+    "version": "0.0.23"
+  },
+  "fixtures": [
+    {
+      "path": "test/testfiles/cax-if/as1-oc-214.stp",
+      "sha256": "038be659c54b16c9f3da8d7b2da7b63e3fd8879d3abe5b7826108336a7c0bae9",
+      "purpose": "Nested millimetre assembly with 13 STEP assembly usages and component styles."
+    },
+    {
+      "path": "test/testfiles/cax-if/s1-c5-214/s1-c5-214.stp",
+      "sha256": "558f74b85cc8b9c9c881335ac24abda58ef706fc3c378ba6a01c23f8f8770259",
+      "purpose": "Nested multi-file AP214 assembly with 12 recursive local STEP dependencies, shared definitions, and INCH plus millimetre unit declarations."
+    },
+    {
+      "path": "test/testfiles/cax-if/s1-c5-214/TAIL_TURBINE.stp",
+      "sha256": "19f11d26b86381b5a6ea18f6c4d78173d99d6398546a81b304d1a789380639a5",
+      "purpose": "Self-contained solid with conversion-based INCH and millimetre unit declarations."
+    }
+  ]
+}

@@ -20,6 +20,45 @@ describe('Shape.material()', () => {
     });
   });
 
+  it('preserves an explicit material name', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const s = kcad.box(10, 10, 10);
+    s.material({ baseColor: '#c8a24a', name: 'custom brass' });
+
+    const record = session.getRecords().find(r => r.id === s.id)!;
+    expect(record.metadata?.material).toEqual({ baseColor: '#c8a24a', name: 'custom brass' });
+  });
+
+  it('trims a non-empty material name', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const s = kcad.box(10, 10, 10);
+    s.material({ baseColor: '#c8a24a', name: '  custom brass  ' });
+
+    const record = session.getRecords().find(r => r.id === s.id)!;
+    expect(record.metadata?.material).toEqual({ baseColor: '#c8a24a', name: 'custom brass' });
+  });
+
+  it('rejects a material name that is not a non-empty string', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const s = kcad.box(10, 10, 10);
+
+    expect(() => s.material({ baseColor: '#c8a24a', name: 42 as any })).toThrow(/name.*non-empty string/);
+    expect(() => s.material({ baseColor: '#c8a24a', name: '   ' })).toThrow(/name.*non-empty string/);
+  });
+
+  it('names expanded finish materials after their finish token', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const s = kcad.box(10, 10, 10);
+    s.finish('brass');
+
+    const record = session.getRecords().find(r => r.id === s.id)!;
+    expect((record.metadata?.material as { name?: string } | undefined)?.name).toBe('brass');
+  });
+
   it('throws on missing baseColor', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });

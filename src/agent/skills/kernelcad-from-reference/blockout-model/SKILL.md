@@ -25,10 +25,10 @@ Map each dimension in the brief's Scale section to a `param()`. Use the brief's
 estimated value as the default:
 
 ```ts
-const frameW  = param('frameWidth',  130, { min: 100, max: 160, description: 'outer frame width mm' });
-const frameH  = param('frameHeight',  48, { min: 30,  max: 70  });
+const bodyW   = param('bodyWidth',   130, { min: 100, max: 160, description: 'outer body width mm' });
+const bodyH   = param('bodyHeight',   48, { min: 30,  max: 70  });
 const bodyD   = param('bodyDepth',     5, { min: 2,   max: 12  });
-const bridgeW = param('bridgeWidth',  18, { min: 10,  max: 30  });
+const neckW   = param('neckWidth',    18, { min: 10,  max: 30  });
 ```
 
 All key dimensions must be params, not magic numbers. The blockout must be
@@ -58,15 +58,15 @@ features, no material yet. Translate each into position. For symmetric objects,
 build one half only and call `.mirror()` after the blockout check:
 
 ```ts
-// primary lens+frame slab
-const frameBody = extrudeRoundedRect(frameW, frameH, bodyD, 4)
-  .translate(-frameW / 2, 0, -frameH / 2);
+// primary body slab
+const mainBody = extrudeRoundedRect(bodyW, bodyH, bodyD, 4)
+  .translate(-bodyW / 2, 0, -bodyH / 2);
 
 // arm stubs — one side, to be mirrored
 const armStub = box(50, armW, armT)
-  .translate(frameW / 2, 0, -armT / 2);
+  .translate(bodyW / 2, 0, -armT / 2);
 
-const full = frameBody.union(armStub.mirror('YZ'));
+const full = mainBody.union(armStub.mirror('YZ'));
 return full;
 ```
 
@@ -110,7 +110,7 @@ then `image-replicator/SKILL.md` to iterate.
 
 ## Blockout anti-patterns
 
-- **Detailing before blockout**: adding fillets, lens geometry, or material
+- **Detailing before blockout**: adding fillets, small cutout geometry, or material
   before the envelope check is confirmed. This makes it hard to adjust global
   params later.
 - **Committing to one view only**: render all four canonical views. A front-view
@@ -128,7 +128,7 @@ Two paths after the blockout passes:
 - **Right-angled / parametric shape** (everything captured by box, cylinder,
   rounded-rect, fillet/chamfer): proceed directly to `image-replicator/SKILL.md`
   for the render→score→iterate loop.
-- **Organic curves** (eyewear brow, ergonomic handle, sneaker midsole — anything
+- **Organic curves** (upper contour, ergonomic handle, sneaker midsole — anything
   where you'd otherwise eyeball waypoints off the reference): load
   `kernelcad-trace-from-image/SKILL.md` FIRST to extract normalized waypoints
   from the photo, then `image-replicator/SKILL.md`.

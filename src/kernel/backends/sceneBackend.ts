@@ -3,6 +3,7 @@
 import type { ShapeBackend, BackendTarget } from './backend';
 import type { Transform } from '../../shared/runtime/se3';
 import type { PBRMaterial } from '../../shared/intent/material';
+import type { SolvedRigAssembly } from '../export/rigHierarchy';
 
 export interface SceneBackendPart {
   readonly name: string;
@@ -25,6 +26,8 @@ export interface SceneBackend {
   readonly target: BackendTarget;
   readonly assemblyName: string;
   readonly parts: readonly SceneBackendPart[];
+  /** Resolved mate graph for native GLB rig export; absent for non-mated scenes. */
+  readonly rig?: SolvedRigAssembly;
   readonly _kind: 'scene';
 }
 

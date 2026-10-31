@@ -1,0 +1,1345 @@
+{
+  "checkedAt": "2026-10-25T11:46:44.761Z",
+  "command": "verify({ check: 'assembly-path', file: 'examples/assemblies/assembly-sequence-gearbox.kcad.ts', sequence: true })",
+  "source": "examples/assemblies/assembly-sequence-gearbox.kcad.ts",
+  "sourceSha256": "84ce4ff50f51e7807ae77e62863e837f63802984739ba7e179a6d7eebd79b439",
+  "result": {
+    "ok": false,
+    "model": {
+      "rigidParts": true,
+      "motion": "straight-line-translation",
+      "motionModels": [
+        "straight-line-translation",
+        "helical-screw",
+        "requires-force"
+      ],
+      "testedDirections": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          -1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          -1
+        ]
+      ],
+      "gravity": "not-modelled",
+      "basis": "continuous-triangle-mesh",
+      "tessellation": {
+        "linearMm": 0.01,
+        "relative": true,
+        "angularRad": 0.05,
+        "source": "meshShapeForExport default: relative linear 0.01, angular 0.05 rad; per-face fallback absolute 0.02 mm, 0.1 rad"
+      },
+      "clearanceMm": 0,
+      "clearancePolicy": "Zero clearance: any positive-travel triangle contact blocks; t=0 departure is free.",
+      "toolReach": "swept-envelope"
+    },
+    "states": [
+      {
+        "part": "cover",
+        "kind": "blocked",
+        "blockedDirections": [
+          {
+            "direction": [
+              1,
+              0,
+              0
+            ],
+            "blockers": [
+              "output-shaft",
+              "input-shaft",
+              "bolt-a",
+              "bolt-b",
+              "bolt-c",
+              "bolt-d",
+              "tool-clearance-rib"
+            ]
+          },
+          {
+            "direction": [
+              -1,
+              0,
+              0
+            ],
+            "blockers": [
+              "output-shaft",
+              "input-shaft",
+              "bolt-a",
+              "bolt-b",
+              "bolt-c",
+              "bolt-d",
+              "tool-clearance-rib"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "blockers": [
+              "output-shaft",
+              "input-shaft",
+              "bolt-a",
+              "bolt-b",
+              "bolt-c",
+              "bolt-d",
+              "tool-clearance-rib"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              -1,
+              0
+            ],
+            "blockers": [
+              "output-shaft",
+              "input-shaft",
+              "bolt-a",
+              "bolt-b",
+              "bolt-c",
+              "bolt-d",
+              "tool-clearance-rib"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              1
+            ],
+            "blockers": [
+              "bolt-a",
+              "bolt-b",
+              "bolt-c",
+              "bolt-d",
+              "tool-clearance-rib"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              -1
+            ],
+            "blockers": [
+              "gear-d",
+              "gear-c",
+              "gear-b",
+              "gear-a",
+              "output-shaft",
+              "input-shaft",
+              "post-d",
+              "post-c",
+              "post-b",
+              "post-a",
+              "base"
+            ]
+          }
+        ]
+      },
+      {
+        "part": "gear-d",
+        "kind": "blocked",
+        "blockedDirections": [
+          {
+            "direction": [
+              1,
+              0,
+              0
+            ],
+            "blockers": [
+              "output-shaft"
+            ]
+          },
+          {
+            "direction": [
+              -1,
+              0,
+              0
+            ],
+            "blockers": [
+              "gear-b",
+              "output-shaft",
+              "input-shaft"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "blockers": [
+              "output-shaft"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              -1,
+              0
+            ],
+            "blockers": [
+              "output-shaft"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              1
+            ],
+            "blockers": [
+              "cover"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              -1
+            ],
+            "blockers": [
+              "gear-c",
+              "base"
+            ]
+          }
+        ]
+      },
+      {
+        "part": "gear-c",
+        "kind": "blocked",
+        "blockedDirections": [
+          {
+            "direction": [
+              1,
+              0,
+              0
+            ],
+            "blockers": [
+              "output-shaft",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              -1,
+              0,
+              0
+            ],
+            "blockers": [
+              "gear-a",
+              "output-shaft",
+              "input-shaft",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "blockers": [
+              "output-shaft",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              -1,
+              0
+            ],
+            "blockers": [
+              "output-shaft",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              1
+            ],
+            "blockers": [
+              "cover",
+              "gear-d"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              -1
+            ],
+            "blockers": [
+              "base"
+            ]
+          }
+        ]
+      },
+      {
+        "part": "gear-b",
+        "kind": "blocked",
+        "blockedDirections": [
+          {
+            "direction": [
+              1,
+              0,
+              0
+            ],
+            "blockers": [
+              "gear-d",
+              "output-shaft",
+              "input-shaft"
+            ]
+          },
+          {
+            "direction": [
+              -1,
+              0,
+              0
+            ],
+            "blockers": [
+              "input-shaft"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "blockers": [
+              "input-shaft"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              -1,
+              0
+            ],
+            "blockers": [
+              "input-shaft"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              1
+            ],
+            "blockers": [
+              "cover"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              -1
+            ],
+            "blockers": [
+              "gear-a",
+              "base"
+            ]
+          }
+        ]
+      },
+      {
+        "part": "gear-a",
+        "kind": "requires-force",
+        "fit": "press"
+      },
+      {
+        "part": "output-shaft",
+        "kind": "blocked",
+        "blockedDirections": [
+          {
+            "direction": [
+              1,
+              0,
+              0
+            ],
+            "blockers": [
+              "cover",
+              "gear-d",
+              "gear-c",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              -1,
+              0,
+              0
+            ],
+            "blockers": [
+              "cover",
+              "gear-d",
+              "gear-c",
+              "gear-b",
+              "gear-a",
+              "input-shaft",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "blockers": [
+              "cover",
+              "gear-d",
+              "gear-c",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              -1,
+              0
+            ],
+            "blockers": [
+              "cover",
+              "gear-d",
+              "gear-c",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              1
+            ],
+            "blockers": [
+              "cover"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              -1
+            ],
+            "blockers": [
+              "base"
+            ]
+          }
+        ]
+      },
+      {
+        "part": "input-shaft",
+        "kind": "blocked",
+        "blockedDirections": [
+          {
+            "direction": [
+              1,
+              0,
+              0
+            ],
+            "blockers": [
+              "cover",
+              "gear-d",
+              "gear-c",
+              "gear-b",
+              "gear-a",
+              "output-shaft",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              -1,
+              0,
+              0
+            ],
+            "blockers": [
+              "cover",
+              "gear-b",
+              "gear-a",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "blockers": [
+              "cover",
+              "gear-b",
+              "gear-a",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              -1,
+              0
+            ],
+            "blockers": [
+              "cover",
+              "gear-b",
+              "gear-a",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              1
+            ],
+            "blockers": [
+              "cover"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              -1
+            ],
+            "blockers": [
+              "base"
+            ]
+          }
+        ]
+      },
+      {
+        "part": "post-d",
+        "kind": "blocked",
+        "blockedDirections": [
+          {
+            "direction": [
+              1,
+              0,
+              0
+            ],
+            "blockers": [
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              -1,
+              0,
+              0
+            ],
+            "blockers": [
+              "post-c",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "blockers": [
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              -1,
+              0
+            ],
+            "blockers": [
+              "post-b",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              1
+            ],
+            "blockers": [
+              "cover"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              -1
+            ],
+            "blockers": [
+              "base"
+            ]
+          }
+        ]
+      },
+      {
+        "part": "post-c",
+        "kind": "blocked",
+        "blockedDirections": [
+          {
+            "direction": [
+              1,
+              0,
+              0
+            ],
+            "blockers": [
+              "post-d",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              -1,
+              0,
+              0
+            ],
+            "blockers": [
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "blockers": [
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              -1,
+              0
+            ],
+            "blockers": [
+              "post-a",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              1
+            ],
+            "blockers": [
+              "cover"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              -1
+            ],
+            "blockers": [
+              "base"
+            ]
+          }
+        ]
+      },
+      {
+        "part": "post-b",
+        "kind": "blocked",
+        "blockedDirections": [
+          {
+            "direction": [
+              1,
+              0,
+              0
+            ],
+            "blockers": [
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              -1,
+              0,
+              0
+            ],
+            "blockers": [
+              "post-a",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "blockers": [
+              "post-d",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              -1,
+              0
+            ],
+            "blockers": [
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              1
+            ],
+            "blockers": [
+              "cover"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              -1
+            ],
+            "blockers": [
+              "base"
+            ]
+          }
+        ]
+      },
+      {
+        "part": "post-a",
+        "kind": "blocked",
+        "blockedDirections": [
+          {
+            "direction": [
+              1,
+              0,
+              0
+            ],
+            "blockers": [
+              "post-b",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              -1,
+              0,
+              0
+            ],
+            "blockers": [
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              1,
+              0
+            ],
+            "blockers": [
+              "post-c",
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              -1,
+              0
+            ],
+            "blockers": [
+              "base"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              1
+            ],
+            "blockers": [
+              "cover"
+            ]
+          },
+          {
+            "direction": [
+              0,
+              0,
+              -1
+            ],
+            "blockers": [
+              "base"
+            ]
+          }
+        ]
+      },
+      {
+        "part": "base",
+        "kind": "removable",
+        "removalDirection": [
+          0,
+          0,
+          -1
+        ],
+        "motion": "straight"
+      },
+      {
+        "part": "bolt-a",
+        "kind": "removable",
+        "removalDirection": [
+          0,
+          0,
+          1
+        ],
+        "motion": "helical",
+        "fastener": {
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "pitchMm": 0.7,
+          "handedness": "right",
+          "threadLengthMm": 12,
+          "turns": 17.142857142857142,
+          "standard": "ISO 4762"
+        },
+        "toolReach": {
+          "fastener": "bolt-a",
+          "status": "tool-blocked",
+          "blockers": [
+            "tool-clearance-rib"
+          ],
+          "tool": {
+            "kind": "cylinder",
+            "lengthMm": 30,
+            "diameterMm": 9,
+            "label": "hex-key"
+          },
+          "basis": "assembled-parts"
+        }
+      },
+      {
+        "part": "bolt-b",
+        "kind": "removable",
+        "removalDirection": [
+          0,
+          0,
+          1
+        ],
+        "motion": "helical",
+        "fastener": {
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "pitchMm": 0.7,
+          "handedness": "right",
+          "threadLengthMm": 12,
+          "turns": 17.142857142857142,
+          "standard": "ISO 4762"
+        },
+        "toolReach": {
+          "fastener": "bolt-b",
+          "status": "clear",
+          "blockers": [],
+          "tool": {
+            "kind": "cylinder",
+            "lengthMm": 30,
+            "diameterMm": 9,
+            "label": "hex-key"
+          },
+          "basis": "assembled-parts"
+        }
+      },
+      {
+        "part": "bolt-c",
+        "kind": "removable",
+        "removalDirection": [
+          0,
+          0,
+          1
+        ],
+        "motion": "helical",
+        "fastener": {
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "pitchMm": 0.7,
+          "handedness": "right",
+          "threadLengthMm": 12,
+          "turns": 17.142857142857142,
+          "standard": "ISO 4762"
+        },
+        "toolReach": {
+          "fastener": "bolt-c",
+          "status": "clear",
+          "blockers": [],
+          "tool": {
+            "kind": "cylinder",
+            "lengthMm": 30,
+            "diameterMm": 9,
+            "label": "hex-key"
+          },
+          "basis": "assembled-parts"
+        }
+      },
+      {
+        "part": "bolt-d",
+        "kind": "removable",
+        "removalDirection": [
+          0,
+          0,
+          1
+        ],
+        "motion": "helical",
+        "fastener": {
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "pitchMm": 0.7,
+          "handedness": "right",
+          "threadLengthMm": 12,
+          "turns": 17.142857142857142,
+          "standard": "ISO 4762"
+        },
+        "toolReach": {
+          "fastener": "bolt-d",
+          "status": "clear",
+          "blockers": [],
+          "tool": {
+            "kind": "cylinder",
+            "lengthMm": 30,
+            "diameterMm": 9,
+            "label": "hex-key"
+          },
+          "basis": "assembled-parts"
+        }
+      },
+      {
+        "part": "tool-clearance-rib",
+        "kind": "removable",
+        "removalDirection": [
+          0,
+          0,
+          1
+        ],
+        "motion": "straight"
+      }
+    ],
+    "steps": [
+      {
+        "index": 1,
+        "adds": [
+          "bolt-d"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "motion": "helical",
+        "fastener": {
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "pitchMm": 0.7,
+          "handedness": "right",
+          "threadLengthMm": 12,
+          "turns": 17.142857142857142,
+          "standard": "ISO 4762"
+        }
+      },
+      {
+        "index": 2,
+        "adds": [
+          "bolt-c"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "motion": "helical",
+        "fastener": {
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "pitchMm": 0.7,
+          "handedness": "right",
+          "threadLengthMm": 12,
+          "turns": 17.142857142857142,
+          "standard": "ISO 4762"
+        }
+      },
+      {
+        "index": 3,
+        "adds": [
+          "bolt-b"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "motion": "helical",
+        "fastener": {
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "pitchMm": 0.7,
+          "handedness": "right",
+          "threadLengthMm": 12,
+          "turns": 17.142857142857142,
+          "standard": "ISO 4762"
+        }
+      },
+      {
+        "index": 4,
+        "adds": [
+          "bolt-a"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "motion": "helical",
+        "fastener": {
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "pitchMm": 0.7,
+          "handedness": "right",
+          "threadLengthMm": 12,
+          "turns": 17.142857142857142,
+          "standard": "ISO 4762"
+        },
+        "tool": {
+          "fastener": "bolt-a",
+          "status": "tool-blocked",
+          "blockers": [
+            "tool-clearance-rib"
+          ],
+          "tool": {
+            "kind": "cylinder",
+            "lengthMm": 30,
+            "diameterMm": 9,
+            "label": "hex-key"
+          },
+          "basis": "assembled-parts"
+        }
+      },
+      {
+        "index": 5,
+        "adds": [
+          "cover"
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "index": 6,
+        "adds": [
+          "post-d"
+        ],
+        "direction": [
+          -1,
+          0,
+          0
+        ]
+      },
+      {
+        "index": 7,
+        "adds": [
+          "post-b"
+        ],
+        "direction": [
+          -1,
+          0,
+          0
+        ]
+      },
+      {
+        "index": 8,
+        "adds": [
+          "post-c"
+        ],
+        "direction": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "index": 9,
+        "adds": [
+          "post-a"
+        ],
+        "direction": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "index": 10,
+        "adds": [
+          "tool-clearance-rib"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ]
+      },
+      {
+        "index": 11,
+        "adds": [
+          "gear-d"
+        ],
+        "direction": [
+          -1,
+          0,
+          0
+        ],
+        "subassembly": "subassembly-2-gear-c"
+      },
+      {
+        "index": 12,
+        "adds": [
+          "output-shaft"
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ],
+        "subassembly": "subassembly-2-gear-c"
+      },
+      {
+        "index": 13,
+        "adds": [
+          "gear-c"
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ],
+        "subassembly": "subassembly-2-gear-c"
+      },
+      {
+        "index": 14,
+        "adds": [
+          "subassembly-2-gear-c"
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ],
+        "subassembly": "subassembly-2-gear-c"
+      },
+      {
+        "index": 15,
+        "adds": [
+          "input-shaft"
+        ],
+        "direction": [
+          -1,
+          0,
+          0
+        ],
+        "subassembly": "subassembly-1-gear-a"
+      },
+      {
+        "index": 16,
+        "adds": [
+          "gear-b"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "subassembly": "subassembly-1-gear-a"
+      },
+      {
+        "index": 17,
+        "adds": [
+          "gear-a"
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "motion": "requires-force",
+        "requiresForce": {
+          "kind": "press"
+        },
+        "subassembly": "subassembly-1-gear-a"
+      },
+      {
+        "index": 18,
+        "adds": [
+          "subassembly-1-gear-a"
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ],
+        "subassembly": "subassembly-1-gear-a"
+      },
+      {
+        "index": 19,
+        "adds": [
+          "base"
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "unknown": [],
+    "search": [],
+    "requiresForce": [
+      {
+        "part": "gear-a",
+        "kind": "press"
+      }
+    ],
+    "toolBlocked": [
+      {
+        "fastener": "bolt-a",
+        "status": "tool-blocked",
+        "blockers": [
+          "tool-clearance-rib"
+        ],
+        "tool": {
+          "kind": "cylinder",
+          "lengthMm": 30,
+          "diameterMm": 9,
+          "label": "hex-key"
+        },
+        "basis": "assembled-parts"
+      }
+    ],
+    "requirements": {
+      "ok": false,
+      "entries": [
+        {
+          "name": "assembly.toolReach.bolt-a",
+          "source": "assembly",
+          "status": "fail",
+          "measured": 1,
+          "limit": 0,
+          "margin": -1,
+          "selections": [],
+          "message": "assembly.toolReach.bolt-a failed: the hex-key envelope cannot reach 'bolt-a'; blocked by tool-clearance-rib."
+        },
+        {
+          "name": "assembly.toolReach.bolt-b",
+          "source": "assembly",
+          "status": "pass",
+          "measured": 0,
+          "limit": 0,
+          "margin": 0,
+          "selections": []
+        },
+        {
+          "name": "assembly.toolReach.bolt-c",
+          "source": "assembly",
+          "status": "pass",
+          "measured": 0,
+          "limit": 0,
+          "margin": 0,
+          "selections": []
+        },
+        {
+          "name": "assembly.toolReach.bolt-d",
+          "source": "assembly",
+          "status": "pass",
+          "measured": 0,
+          "limit": 0,
+          "margin": 0,
+          "selections": []
+        },
+        {
+          "name": "assembly.requiresForce.gear-a",
+          "source": "assembly",
+          "status": "not-evaluated",
+          "measured": null,
+          "limit": null,
+          "margin": null,
+          "selections": [],
+          "message": "assembly.requiresForce.gear-a: declared press fit; insertion force and deformation are not simulated by the rigid planner."
+        }
+      ],
+      "summary": {
+        "pass": 3,
+        "fail": 1,
+        "notEvaluated": 1
+      }
+    }
+  }
+}

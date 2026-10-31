@@ -7,6 +7,7 @@
  * ratchet, and split into range/build/fuse steps so each stays inside the
  * complexity budget.
  */
+import { getOC } from 'replicad';
 import type { OcctBackend } from './occtBackend';
 
 type LoftPlane = { plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number]; rotationDeg?: number };
@@ -93,4 +94,57 @@ export function loftSegmentedFromSketches(
   const spans = ranges.map((range, i) =>
     buildSpan(backend, sketches, planes, range, i, ranges.length - 1, opts));
   return fuseSpans(spans);
+}
+
+/** One lateral face whose skin does not reach the requested grade. */
+export interface LoftContinuityShortfall {
+  /** Index in the shape's face list. */
+  faceIndex: number;
+  /** What OCCT reports for the face surface across the stations. */
+  got: string;
+}
+
+/**
+ * Check a single-skin loft against the requested station-join grade.
+ *
+ * `BRepOffsetAPI_ThruSections` (non-ruled) builds one face per section edge
+ * that spans every station, so the station joins live INSIDE each face's
+ * B-spline surface; its continuity across the stations (the V direction,
+ * U runs along the section) is the join grade. G1 needs at least G1/C1,
+ * G2 at least G2/C2. Faces that report a lower class are returned; an
+ * unreadable face is reported as `got: 'unknown'` rather than passed.
+ */
+export function loftSkinContinuityShortfalls(
+  shape: OcctBackend,
+  grade: 'G1' | 'G2',
+): LoftContinuityShortfall[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- replicad-opencascadejs has no exported OC type
+  const oc = getOC() as any;
+  const G = oc.GeomAbs_Shape;
+  const need: number = grade === 'G2' ? G.GeomAbs_G2.value : G.GeomAbs_G1.value;
+  const names: Record<number, string> = {
+    [G.GeomAbs_C0.value]: 'C0', [G.GeomAbs_G1.value]: 'G1', [G.GeomAbs_C1.value]: 'C1',
+    [G.GeomAbs_G2.value]: 'G2', [G.GeomAbs_C2.value]: 'C2', [G.GeomAbs_C3.value]: 'C3',
+    [G.GeomAbs_CN.value]: 'CN',
+  };
+  const faces = (shape.getReplicadShape() as unknown as { faces: Array<{ wrapped: unknown }> }).faces;
+  const out: LoftContinuityShortfall[] = [];
+  faces.forEach((face, faceIndex) => {
+    let got: number | undefined;
+    let adaptor: { VContinuity: () => { value?: number } | number; delete?: () => void } | undefined;
+    try {
+      adaptor = new oc.BRepAdaptor_Surface_2(face.wrapped, true) as NonNullable<typeof adaptor>;
+      const raw = adaptor.VContinuity();
+      got = typeof raw === 'number' ? raw : raw.value;
+    } catch {
+      got = undefined;
+    } finally {
+      // Free the wrapper on the failure path too, so repeated recomputes
+      // that hit an unreadable face do not leak OCCT objects.
+      adaptor?.delete?.();
+    }
+    if (got === undefined) out.push({ faceIndex, got: 'unknown' });
+    else if (got < need) out.push({ faceIndex, got: names[got] ?? String(got) });
+  });
+  return out;
 }

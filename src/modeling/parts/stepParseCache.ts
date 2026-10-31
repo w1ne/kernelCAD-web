@@ -23,9 +23,24 @@
 // shapes held in the OCCT WASM heap; evicted masters are disposed.
 
 import * as replicad from 'replicad';
+import { getOC } from 'replicad';
 import { createHash } from 'node:crypto';
 import { OcctBackend, initOcct, registerOcctResetHook } from '../../kernel/backends/occt/occtBackend';
 import { describeOcctThrow, isOcctOutOfMemory } from '../../kernel/backends/occt/occtException';
+import { approxOcctBytes } from '../../kernel/backends/occt/shapeWeight';
+import { healImportedStep } from './healStep';
+import { rebuildImportedPCurves } from './healStepPCurves';
+import { removeSliverFaces } from './healStepSliver';
+import { isValidShape } from '../../kernel/backends/occt/booleanRecovery';
+
+/** Backends whose STEP import was normalized by `healImportedStep`. Weak so a
+ *  disposed backend is collectable; read by `fromSTEP` to stamp metadata. */
+const healedStepBackends = new WeakSet<object>();
+
+/** Whether this backend came from a STEP import that was topology-normalized. */
+export function isStepBackendHealed(backend: object): boolean {
+  return healedStepBackends.has(backend);
+}
 
 /** Why a STEP byte buffer could not be turned into a 3D solid. Reported so
  *  callers map to their own KernelError code/hint — the cache stays free of
@@ -51,8 +66,19 @@ export class StepParseError extends Error {
  *  distinct imported parts in the current model; a few dozen covers a large
  *  assembly while bounding WASM-heap growth across a long session. */
 const MAX_ENTRIES = 32;
+/** Approximate native bytes of masters. A count cap of 32 still fits a
+ *  gigabyte when each master is a large assembly, and the wasm heap never
+ *  shrinks back under the evaluator RSS cap. */
+const MAX_BYTES = 128 * 1024 * 1024;
 
-const cache = new Map<string, OcctBackend>();
+interface CachedMaster {
+  master: OcctBackend;
+  bytes: number;
+}
+
+const cache = new Map<string, CachedMaster>();
+let maxEntries = MAX_ENTRIES;
+let maxBytes = MAX_BYTES;
 let hits = 0;
 let misses = 0;
 
@@ -70,8 +96,9 @@ function sha256Hex(bytes: Buffer | Uint8Array): string {
 
 /**
  * Parse STEP bytes into an OcctBackend, reusing a cached parse when the exact
- * same bytes were seen before. Always returns a fresh clone the caller owns
- * and may safely consume (transform / dispose) without affecting the cache.
+ * same bytes were seen before. Returns a fresh clone the caller owns, unless
+ * the solid is larger than the byte budget: then the caller owns the only
+ * copy and nothing is pinned.
  *
  * @throws StepParseError('parse')    replicad.importSTEP rejected the bytes
  * @throws StepParseError('no-solid') the import held no 3D solid body
@@ -85,7 +112,7 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
     cache.delete(key);
     cache.set(key, cached);
     hits++;
-    return cached.clone();
+    return cloneMaster(cached.master);
   }
 
   await initOcct();
@@ -124,22 +151,85 @@ export async function importStepCached(bytes: Buffer | Uint8Array): Promise<Occt
     throw new StepParseError('no-solid', 'STEP import contained no 3D solid body');
   }
 
-  const master = new OcctBackend(imported as replicad.Shape3D);
-  cache.set(key, master);
+  // Normalize same-domain faces before handing the shape to the backend.
+  // Third-party STEP re-exports carry split/duplicate patches that survive
+  // `BRepCheck` but tessellate into non-manifold edges; unification collapses
+  // them without moving surfaces. A failed/invalid unification returns the
+  // original import untouched.
+  const healed = await healImport(imported as replicad.Shape3D);
+  const master = new OcctBackend(healed.shape);
+  if (healed.changed) healedStepBackends.add(master);
   misses++;
+  const weight = approxOcctBytes(master);
+  // A single master over the budget is handed to the caller and not pinned.
+  // The next import of the same bytes parses again rather than retaining a
+  // solid the evaluator cannot afford to keep.
+  if (weight <= maxBytes) {
+    cache.set(key, { master, bytes: weight });
+    evictMasters(key);
+    return cloneMaster(master);
+  }
+  return master;
+}
 
-  // Evict oldest beyond capacity; dispose the evicted master's OCCT handle so
-  // the WASM heap doesn't grow unbounded. Outstanding clones are independent
-  // handles and are unaffected.
-  while (cache.size > MAX_ENTRIES) {
+function cacheBytes(): number {
+  let total = 0;
+  for (const entry of cache.values()) total += entry.bytes;
+  return total;
+}
+
+/** Evict oldest masters past the count cap and the byte budget. */
+function evictMasters(protectKey?: string): void {
+  while (cache.size > maxEntries || cacheBytes() > maxBytes) {
     const oldestKey = cache.keys().next().value as string | undefined;
-    if (oldestKey === undefined) break;
+    if (oldestKey === undefined || oldestKey === protectKey) break;
     const evicted = cache.get(oldestKey);
     cache.delete(oldestKey);
-    evicted?.dispose();
+    evicted?.master.dispose();
+    if (cache.size === 0) break;
   }
+}
 
-  return master.clone();
+/**
+ * Run every import heal on a freshly parsed STEP solid. `changed` is true when
+ * any stage replaced the import.
+ */
+async function healImport(imported: replicad.Shape3D): Promise<{ shape: replicad.Shape3D; changed: boolean }> {
+  const healed = healImportedStep(imported);
+  let shape = healed.shape;
+  let changed = healed.unified || healed.repaired === true;
+  // A face far below any meshing deflection (a two-edge fillet run-out a few
+  // hundredths of a millimetre long) is BRepCheck-valid but meshes into an
+  // edge shared by four triangles. Drop it and sew the gap (healStepSliver.ts);
+  // the result is kept only when it is a valid, volume-identical solid.
+  const desliver = removeSliverFaces(shape);
+  if (desliver !== undefined) {
+    shape = desliver;
+    changed = true;
+  }
+  // Still invalid after topology repair: the remaining defect can be a pcurve
+  // that only the writing system could read. Rebuild the 2D curves with a
+  // pcurve-free STEP round-trip (see healStepPCurves.ts); the result is kept
+  // only when it is valid and topologically identical.
+  let stillInvalid = false;
+  try {
+    stillInvalid = !isValidShape(getOC(), (shape as unknown as { wrapped: unknown }).wrapped);
+  } catch {
+    // OCCT is not loaded in this host (unit fakes / browser shims): there is
+    // no validity verdict to act on, so keep the import exactly as parsed.
+  }
+  if (stillInvalid) {
+    const rebuilt = await rebuildImportedPCurves(shape);
+    if (rebuilt !== undefined) return { shape: rebuilt, changed: true };
+  }
+  return { shape, changed };
+}
+
+/** Clone a cached master, carrying its healed-import mark to the clone. */
+function cloneMaster(master: OcctBackend): OcctBackend {
+  const clone = master.clone();
+  if (healedStepBackends.has(master)) healedStepBackends.add(clone);
+  return clone;
 }
 
 /** Test-only: parse-cache instrumentation. */
@@ -151,7 +241,7 @@ export function __stepParseCacheStats(): { hits: number; misses: number; size: n
  *  the hit/miss counters alone — this runs on the OOM recovery path, where the
  *  instrumentation is what tells us reclamation happened. */
 function purgeMasters(): void {
-  for (const v of cache.values()) v.dispose();
+  for (const v of cache.values()) v.master.dispose();
   cache.clear();
 }
 
@@ -160,4 +250,12 @@ export function __resetStepParseCache(): void {
   purgeMasters();
   hits = 0;
   misses = 0;
+  maxEntries = MAX_ENTRIES;
+  maxBytes = MAX_BYTES;
+}
+
+/** Test-only: tighten the cache so a unit test can force eviction. */
+export function __setStepParseCacheLimitsForTests(limits: { maxEntries?: number; maxBytes?: number }): void {
+  if (limits.maxEntries !== undefined) maxEntries = limits.maxEntries;
+  if (limits.maxBytes !== undefined) maxBytes = limits.maxBytes;
 }

@@ -10,6 +10,7 @@
 // material table stores MPa rather than Pa.
 
 import type { FeaMaterialProps } from '../../shared/intent/feaStudyRecord';
+import type { MotionPartLoadSample } from '../../shared/intent/motionLoadRecord';
 
 /** One 10-node quadratic tetrahedron, node ids in GMSH local order. */
 export interface FeaTet10 {
@@ -71,6 +72,14 @@ export interface FeaResolvedLoad {
    *  on the quadratic faces' mid-side nodes); when absent it falls back to an
    *  equal split over `set`. */
   tris?: readonly (readonly [number, number, number])[];
+  /** Remote wrench this load came from, in the shape frame. */
+  pointMm?: readonly [number, number, number];
+  momentNmm?: readonly [number, number, number];
+  /** Explicit nodal forces from a remote wrench. When present the deck writer
+   *  uses them instead of a uniform traction; the resultant is still `force`. */
+  nodalForces?: readonly { readonly node: number; readonly force: readonly [number, number, number] }[];
+  /** Motion-study provenance, echoed in the summary and the ledger. */
+  fromMotion?: MotionPartLoadSample;
 }
 
 export interface FeaJobSpec {
@@ -161,9 +170,14 @@ export interface FeaSummary {
    *  (finest) pass listed here. */
   refinement?: FeaRefinement;
   appliedForceN: [number, number, number];
+  /** Applied moment about the remote load point, N·mm, when the load was a
+   *  remote wrench. */
+  appliedMomentNmm?: [number, number, number];
   reactionForceN?: [number, number, number];
   /** Relative equilibrium residual |R + F| / |F|. Near 0 is healthy. */
   equilibriumResidual?: number;
+  /** Provenance of a motion-derived load. The ledger names this pose. */
+  loadsFrom?: MotionPartLoadSample;
   solveMs: number;
   meshMs: number;
 }

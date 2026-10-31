@@ -49,9 +49,9 @@ describe('diff_scripts — LLM-style calls', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.base.partCount).toBe(2);
-    expect(r.parts.changed.map((p) => p.name)).toEqual(['body[0]']);
+    expect(r.parts.changed.map((p) => p.name)).toEqual(['part-1']);
     expect(r.parts.changed[0].volumeMm3.delta).toBeCloseTo(200, 3);
-    expect(r.parts.unchanged).toEqual(['body[1]']);
+    expect(r.parts.unchanged).toEqual(['part-2']);
   });
 
   it('names the missing side, the argument and a working example', async () => {

@@ -18,6 +18,12 @@ import type { BuiltModel, BuiltModelParamUpdate, ParamUpdateEdit } from './build
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { KernelError } from '../shared/intent/kernelError';
 import { affectedFeatureIds } from './paramAffect';
+import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
+import { stampFingerprint } from '../kernel/backends/occt/analysisMemo';
+import { featureFingerprints } from './warm/featureFingerprint';
+import { releaseReplacedShapes } from './warm/releaseShapes';
+import { captureBaseline, failedFeatureIds, planRigidReuse, settleFeatureFailures } from './warm/rigidReuse';
+import type { ParamValue } from '../shared/runtime/paramTable';
 
 export function populateCache(session: CaptureSession, shapes: Map<FeatureId, ShapeBackend>): void {
   for (const [id, shape] of shapes) {
@@ -36,6 +42,34 @@ export interface UpdateModelParamsOptions {
    *  (and a client `/transforms` re-fetch + viewport twitch); the bake emits a
    *  single relower itself after restoring the pre-bake pose. */
   silent?: boolean;
+  /**
+   * Drag preview. Finish features that do not read the edited parameters
+   * pass their input solid through. The release update leaves this unset.
+   */
+  preview?: boolean;
+}
+
+/** Diagnostics and selections of a param update. A drag preview skips finish
+ *  features, so its selections are partial: keep the last full set as the
+ *  baseline and report nothing. */
+function selectionsAfterUpdate(
+  model: BuiltModel,
+  result: { diagnostics: BuiltModel['diagnostics']; selections: BuiltModel['selections'] },
+  preview: boolean,
+): Pick<BuiltModel, 'diagnostics' | 'selections'> {
+  if (preview) return { diagnostics: result.diagnostics, selections: model.selections };
+  return {
+    diagnostics: [...result.diagnostics, ...selectionDriftDiagnostics(model.selections, result.selections)],
+    selections: result.selections,
+  };
+}
+
+function savedParamValues(session: CaptureSession, edits: readonly ParamUpdateEdit[]): Array<{ name: string; value: ParamValue }> {
+  return edits.map((edit) => ({ name: edit.name, value: session.paramTable.get(edit.name).value }));
+}
+
+function restoreParamValues(session: CaptureSession, saved: readonly { name: string; value: ParamValue }[]): void {
+  for (const entry of saved) session.paramTable.set(entry.name, entry.value);
 }
 
 export async function updateModelParams(
@@ -45,14 +79,31 @@ export async function updateModelParams(
 ): Promise<BuiltModelParamUpdate> {
   const session = model.session;
   validateParamEdits(session, edits);
+  // Shapes in the cache still match the table. Captured before the edit so a
+  // later failure can put the table back and a rigid placement has a baseline.
+  captureBaseline(session, model.records);
+  const saved = savedParamValues(session, edits);
+  try {
+    return await applyParamEdits(model, edits, options);
+  } catch (err) {
+    restoreParamValues(session, saved);
+    throw err;
+  }
+}
 
+async function applyParamEdits(
+  model: BuiltModel,
+  edits: ParamUpdateEdit[],
+  options: UpdateModelParamsOptions | undefined,
+): Promise<BuiltModelParamUpdate> {
+  const session = model.session;
   const editedNames = new Set<string>();
   for (const edit of edits) {
     session.paramTable.set(edit.name, edit.value);
     editedNames.add(edit.name);
   }
 
-  const { seedShapes, relowered, skipped } = buildSeedShapes(session, model.records, editedNames);
+  const { seedShapes, relowered, skipped, rigidReused } = buildSeedShapes(session, model.records, editedNames);
   await initOcct();
   // Slice 2E: reuse the per-session engine attached by `buildModel` so any
   // `onRelower` subscribers registered after the initial build still fire on
@@ -77,12 +128,31 @@ export async function updateModelParams(
   const result = await engine.run(model.records, {
     paramTable: session.paramTable,
     seedShapes,
+    seedSelections: model.selections,
+    ...(options?.preview ? { previewFinish: true, previewEdited: editedNames } : {}),
     warningSink: (warning: SoftWarning) => session.warnings.push(warning),
     warningPhase: 'update',
     gatedFeatureNames: session.gatedFeatureNames,
   });
 
+  const produced = producedShape(model, result.shapes);
+  if (options?.preview !== true) {
+    settleFeatureFailures(session, featureErrorIds(result.diagnostics), relowered);
+  }
+  // The caller's BuiltModel can still point at an older generation than the
+  // session cache (animation frames, param sweeps). Both are previous solids.
+  // Snapshot before populateCache overwrites the cache entries.
+  const replaced = options?.preview === true
+    ? undefined
+    : [...model.shapes.values(), ...session.cachedShapes.values()];
   populateCache(session, result.shapes);
+  // Preview keeps the previous solids: the passthrough shapes alias them,
+  // and the release edit is what replaces the baseline. Shapes a host still
+  // serves (the local MCP viewer) stay in the keep set via releaseReplacedShapes.
+  if (replaced) {
+    releaseReplacedShapes(replaced, session.cachedShapes.values());
+  }
+  stampAnalyses(model.records, session.paramTable, result.shapes, session.getSurfaceRecords());
   // This run lowered (or reused) every record under the edited param table,
   // so it is the session's full lower now. Recording it lets the next
   // `meshFeaturesPerFeature` mesh the re-lowered shapes instead of lowering
@@ -102,29 +172,16 @@ export async function updateModelParams(
   for (const id of relowered) {
     session.cachedFeatureMeshes.delete(id);
   }
-  const tailId = model.records.length > 0 ? model.records[model.records.length - 1].id : undefined;
-  const tailShape = tailId ? result.shapes.get(tailId) : undefined;
-  const rootShape = model.rootId ? result.shapes.get(model.rootId) : undefined;
-  // A virtual tail (`shape.dimension()`, `shape.datum()`, ...) has no shape
-  // of its own; the returned root still does.
-  const shape = tailShape ?? rootShape;
-  if (!shape) {
-    throw new KernelError(
-      'recompute.lowering.exception',
-      'params.update: no shape produced for the chain tail; check upstream diagnostics.',
-      tailId,
-    );
-  }
 
   const nextModel: BuiltModel = {
     ...model,
     shapes: result.shapes,
-    diagnostics: result.diagnostics,
+    ...selectionsAfterUpdate(model, result, options?.preview === true),
     health: result.health,
     warnings: session.warnings.slice(warningsBefore),
-    tailId,
-    tailShape,
-    rootShape,
+    tailId: produced.tailId,
+    tailShape: produced.tailShape,
+    rootShape: produced.rootShape,
   };
 
   // Slice 2E: notify `onRelower` subscribers with the records re-lowered by
@@ -139,12 +196,47 @@ export async function updateModelParams(
   return {
     model: nextModel,
     result: {
-      shape,
+      shape: produced.shape,
       relowered,
       skipped,
+      rigidReused,
       warnings: nextModel.warnings,
     },
   };
+}
+
+function producedShape(
+  model: BuiltModel,
+  shapes: Map<FeatureId, ShapeBackend>,
+): { shape: ShapeBackend; tailId?: FeatureId; tailShape?: ShapeBackend; rootShape?: ShapeBackend } {
+  const tailId = model.records.length > 0 ? model.records[model.records.length - 1].id : undefined;
+  const tailShape = tailId ? shapes.get(tailId) : undefined;
+  const rootShape = model.rootId ? shapes.get(model.rootId) : undefined;
+  // A virtual tail (`shape.dimension()`, `shape.datum()`, ...) has no shape
+  // of its own; the returned root still does. Checked before the cache is
+  // replaced so a failure leaves the previous solids in place.
+  const shape = tailShape ?? rootShape;
+  if (!shape) {
+    throw new KernelError(
+      'recompute.lowering.exception',
+      'params.update: no shape produced for the chain tail; check upstream diagnostics.',
+      tailId,
+    );
+  }
+  return { shape, tailId, tailShape, rootShape };
+}
+
+function stampAnalyses(
+  records: readonly FeatureRecord[],
+  paramTable: CaptureSession['paramTable'],
+  shapes: ReadonlyMap<string, ShapeBackend>,
+  surfaces: ReturnType<CaptureSession['getSurfaceRecords']>,
+): void {
+  const fingerprints = featureFingerprints(records, paramTable, surfaces);
+  for (const [id, fpShape] of shapes) {
+    const fp = fingerprints.get(id);
+    if (fp) stampFingerprint(fpShape, fp);
+  }
 }
 
 function validateParamEdits(session: CaptureSession, edits: ParamUpdateEdit[]): void {
@@ -194,18 +286,44 @@ function validateParamEdits(session: CaptureSession, edits: ParamUpdateEdit[]): 
   }
 }
 
+function featureErrorIds(diagnostics: readonly { severity: string; featureId?: string }[]): string[] {
+  const ids: string[] = [];
+  for (const diagnostic of diagnostics) {
+    if (diagnostic.severity === 'error' && diagnostic.featureId) ids.push(diagnostic.featureId);
+  }
+  return ids;
+}
+
 function buildSeedShapes(
   session: CaptureSession,
   records: readonly FeatureRecord[],
   editedNames: Set<string>,
-): { seedShapes: Map<FeatureId, ShapeBackend>; relowered: string[]; skipped: string[] } {
+): { seedShapes: Map<FeatureId, ShapeBackend>; relowered: string[]; skipped: string[]; rigidReused: string[] } {
   const affected = affectedFeatureIds(records, editedNames);
+  const { seeds: rigid, blocked } = planRigidReuse(session, records, affected);
+  const failed = failedFeatureIds(session);
   const seedShapes = new Map<FeatureId, ShapeBackend>();
   const relowered: string[] = [];
   const skipped: string[] = [];
+  const rigidReused: string[] = [];
 
   for (const record of records) {
+    // A selector's placed ancestor, or a feature that last lowered with an
+    // error, is not seeded. The cached solid is not the baseline.
+    if (blocked.has(record.id) || failed.has(record.id)) {
+      relowered.push(record.id);
+      continue;
+    }
     if (affected.has(record.id)) {
+      const placed = rigid.get(record.id);
+      if (placed) {
+        rigidReused.push(record.id);
+        seedShapes.set(record.id, placed);
+        // A zero motion reuses the same solid, so its mesh is still valid.
+        if (placed === session.cachedShapes.get(record.id)) skipped.push(record.id);
+        else relowered.push(record.id);
+        continue;
+      }
       relowered.push(record.id);
       continue;
     }
@@ -214,5 +332,5 @@ function buildSeedShapes(
     if (cached) seedShapes.set(record.id, cached);
   }
 
-  return { seedShapes, relowered, skipped };
+  return { seedShapes, relowered, skipped, rigidReused };
 }
