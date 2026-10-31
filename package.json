@@ -66,7 +66,7 @@
     "preview": "vite preview --config vite.player.config.ts",
     "release": "npx tsx scripts/release.ts",
     "prepack": "npm run build",
-    "prepare": "git config core.hooksPath .githooks || true",
+    "setup-hooks": "git config core.hooksPath .githooks",
     "generate:parts": "npx tsx scripts/generateSeedCatalog.ts assets/parts",
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",

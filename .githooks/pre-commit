@@ -15,8 +15,8 @@
 #     exits 0 rather than blocking commits.
 #   - SKIPPABLE: `git commit --no-verify` bypasses it via git's own mechanism.
 #
-# Wired up via core.hooksPath (set by the `prepare` npm script). No husky / no
-# dependencies.
+# Opt-in: run `npm run setup-hooks` once (sets core.hooksPath). No install-time
+# script, no husky, no dependencies.
 set -euo pipefail
 
 # Resolve to the repo root so relative script/path checks are stable regardless
