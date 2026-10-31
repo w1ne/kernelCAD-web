@@ -860,6 +860,58 @@ type Deletable = { delete?: () => void };
 type OcShapeLike = { wrapped: unknown; hashCode: number } & Deletable;
 type OcFaceLike = OcShapeLike & { edges: OcShapeLike[] };
 
+/** Shared state of one `meshShapeEdges` pass. */
+interface EdgeMeshPass {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OCCT wasm bindings are untyped here
+  oc: any;
+  own: <T>(o: T) => T;
+  recorded: Set<number>;
+  pushEdge: (points: [number, number, number][], edgeId: number) => void;
+}
+
+/** Edges on a triangulated face: polygon nodes live in the triangulation's
+ *  frame, so they take the FACE location the triangulation came with. */
+function meshFaceEdges(pass: EdgeMeshPass, face: OcFaceLike): void {
+  const { oc, own } = pass;
+  own(face);
+  const faceLoc = own(new oc.TopLoc_Location_1());
+  const triangulation = own(oc.BRep_Tool.Triangulation(face.wrapped, faceLoc, 0));
+  if (triangulation.IsNull()) return;
+  const tri = triangulation.get();
+  const faceTrsf = faceLoc.Transformation();
+  for (const edge of face.edges) {
+    own(edge);
+    if (pass.recorded.has(edge.hashCode)) continue;
+    const polygon = own(oc.BRep_Tool.PolygonOnTriangulation_1(edge.wrapped, triangulation, faceLoc));
+    if (!polygon || polygon.IsNull()) continue;
+    const nodes = own(polygon.get().Nodes());
+    const points: [number, number, number][] = [];
+    for (let i = nodes.Lower(); i <= nodes.Upper(); i++) {
+      const p = own(own(tri.Node(nodes.Value(i))).Transformed(faceTrsf));
+      points.push([p.X(), p.Y(), p.Z()]);
+    }
+    pass.pushEdge(points, edge.hashCode);
+  }
+}
+
+/** An edge no triangulated face covered. `BRepAdaptor_Curve` already
+ *  includes the edge's location, so its points take no further transform. */
+function meshFreeEdge(pass: EdgeMeshPass, edge: OcShapeLike, options: MeshOptions): void {
+  const { oc, own } = pass;
+  own(edge);
+  if (pass.recorded.has(edge.hashCode)) return;
+  const curve = own(new oc.BRepAdaptor_Curve_2(edge.wrapped));
+  const sampler = own(new oc.GCPnts_TangentialDeflection_2(
+    curve, options.tolerance, options.angularTolerance, 2, 1e-9, 1e-7,
+  ));
+  const points: [number, number, number][] = [];
+  for (let j = 1; j <= sampler.NbPoints(); j++) {
+    const p = own(sampler.Value(j));
+    points.push([p.X(), p.Y(), p.Z()]);
+  }
+  pass.pushEdge(points, edge.hashCode);
+}
+
 /**
  * BREP edge polylines in WORLD coordinates — a location-correct port of
  * replicad's `Shape.meshEdges()`.
@@ -883,56 +935,24 @@ export function meshShapeEdges(shape: unknown, options: MeshOptions): EdgeMeshRe
   const faces = shape.faces as unknown as OcFaceLike[] | undefined;
   const allEdges = shape.edges as unknown as OcShapeLike[] | undefined;
   if (!Array.isArray(faces) || !Array.isArray(allEdges)) return undefined;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OCCT wasm bindings are untyped here
-  const oc = getOC() as any;
   const owned: Deletable[] = [];
-  const own = <T>(o: T): T => { owned.push(o as Deletable); return o; };
   const lines: number[] = [];
   const edgeGroups: EdgeMeshResult['edgeGroups'] = [];
   const recorded = new Set<number>();
-  const pushEdge = (points: [number, number, number][], edgeId: number) => {
-    const start = lines.length / 3;
-    for (let i = 1; i < points.length; i++) lines.push(...points[i - 1]!, ...points[i]!);
-    edgeGroups.push({ start, count: lines.length / 3 - start, edgeId });
-    recorded.add(edgeId);
+  const pass: EdgeMeshPass = {
+    oc: getOC(),
+    own: (o) => { owned.push(o as Deletable); return o; },
+    recorded,
+    pushEdge: (points, edgeId) => {
+      const start = lines.length / 3;
+      for (let i = 1; i < points.length; i++) lines.push(...points[i - 1]!, ...points[i]!);
+      edgeGroups.push({ start, count: lines.length / 3 - start, edgeId });
+      recorded.add(edgeId);
+    },
   };
   try {
-    for (const face of faces) {
-      own(face);
-      const faceLoc = own(new oc.TopLoc_Location_1());
-      const triangulation = own(oc.BRep_Tool.Triangulation(face.wrapped, faceLoc, 0));
-      if (triangulation.IsNull()) continue;
-      const tri = triangulation.get();
-      const faceTrsf = faceLoc.Transformation();
-      for (const edge of face.edges) {
-        own(edge);
-        if (recorded.has(edge.hashCode)) continue;
-        const polygon = own(oc.BRep_Tool.PolygonOnTriangulation_1(edge.wrapped, triangulation, faceLoc));
-        if (!polygon || polygon.IsNull()) continue;
-        const nodes = own(polygon.get().Nodes());
-        const points: [number, number, number][] = [];
-        for (let i = nodes.Lower(); i <= nodes.Upper(); i++) {
-          const p = own(own(tri.Node(nodes.Value(i))).Transformed(faceTrsf));
-          points.push([p.X(), p.Y(), p.Z()]);
-        }
-        pushEdge(points, edge.hashCode);
-      }
-    }
-    for (const edge of allEdges) {
-      own(edge);
-      if (recorded.has(edge.hashCode)) continue;
-      // BRepAdaptor_Curve already includes the edge's location: no transform.
-      const curve = own(new oc.BRepAdaptor_Curve_2(edge.wrapped));
-      const sampler = own(new oc.GCPnts_TangentialDeflection_2(
-        curve, options.tolerance, options.angularTolerance, 2, 1e-9, 1e-7,
-      ));
-      const points: [number, number, number][] = [];
-      for (let j = 1; j <= sampler.NbPoints(); j++) {
-        const p = own(sampler.Value(j));
-        points.push([p.X(), p.Y(), p.Z()]);
-      }
-      pushEdge(points, edge.hashCode);
-    }
+    for (const face of faces) meshFaceEdges(pass, face);
+    for (const edge of allEdges) meshFreeEdge(pass, edge, options);
     return { lines, edgeGroups };
   } finally {
     for (const o of owned) o?.delete?.();
