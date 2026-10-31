@@ -38,6 +38,7 @@ import type { FaceQuery } from './edgeQueries';
 import { KernelError } from '../../../shared/intent/kernelError';
 import { resolveFaceRef } from '../../naming/resolveFaceRef';
 import { resolveEdgeRef } from '../../naming/resolveEdgeRef';
+import { resolveStableEdgeId } from './edgeIdentity';
 import {
   parseFaceSelector,
   findLineageMatches,
@@ -58,8 +59,10 @@ import {
   resolveFaceQueryRef,
   resolveFromMetadataHit,
   resolveQueryDslFace,
+  resolveQueryDslFaces,
 } from './faceSelectionPhases';
 import type { QueryDslFaceRef } from './faceSelectionPhases';
+import { stableEdgeIdResolutionError } from './edgeSelectionDiagnostics';
 
 export { resolveFaceLabelToFace } from './faceSelectionPhases';
 
@@ -520,6 +523,16 @@ function resolveSingleSegmentEdgeRef(
   base: OcctBackend,
   ref: Extract<EdgeRef, { kind: 'segment' }>,
 ): EdgeList | { error: CompilerDiagnostic } {
+  if (/^s[0-9a-f]{16}$/.test(ref.segmentId)) {
+    const result = resolveStableEdgeId((base.getReplicadShape() as unknown as { edges: Edge[] }).edges, ref.segmentId);
+    if (result.status === 'unique') return [result.edge];
+    const reason = result.status === 'missing'
+      ? 'does not match an edge on the current shape'
+      : `matches ${result.matches} geometrically identical edges`;
+    return {
+      error: stableEdgeIdResolutionError(record, ref.segmentId, reason),
+    };
+  }
   // segmentId encodes index into the lowered shape's edges array (`e0`, `e1`, ...).
   const idx = parseInt(ref.segmentId.replace(/^e/, ''), 10);
   const all = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
@@ -546,20 +559,28 @@ function resolveMultiSegmentEdgeRef(
   const all = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
   const out: Edge[] = [];
   for (const sid of ref.segmentIds) {
-    const idx = parseInt(sid.replace(/^e/, ''), 10);
-    if (Number.isNaN(idx) || idx < 0 || idx >= all.length) {
-      return {
-        error: {
-          target: 'export-occt',
-          code: 'feature.invalid-args',
-          featureId: record.id,
-          severity: 'error',
-          message: `Invalid segment id '${sid}'.`,
-          hint: 'Re-derive segment IDs from the current shape.',
-        },
-      };
+    // Stable IDs were added alongside the legacy positional IDs. Keep the
+    // historical diagnostic for invalid e<N> entries in a segments list.
+    if (!/^s[0-9a-f]{16}$/.test(sid)) {
+      const idx = parseInt(sid.replace(/^e/, ''), 10);
+      if (Number.isNaN(idx) || idx < 0 || idx >= all.length) {
+        return {
+          error: {
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: record.id,
+            severity: 'error',
+            message: `Invalid segment id '${sid}'.`,
+            hint: 'Re-derive segment IDs from the current shape.',
+          },
+        };
+      }
+      out.push(all[idx]);
+      continue;
     }
-    out.push(all[idx]);
+    const resolved = resolveSingleSegmentEdgeRef(record, base, { kind: 'segment', segmentId: sid });
+    if ('error' in resolved) return resolved;
+    out.push(...resolved);
   }
   return out;
 }
@@ -656,6 +677,51 @@ export function pickFace(
   const result = resolveFace(record, base, records);
   if (!('error' in result)) reportBinding(record, base, 'face', [result]);
   return result;
+}
+
+/**
+ * Every face a FaceRef names. A FaceQuery is a set selector — `{ byNormal: 'X' }`
+ * is every +X-facing face — so a face edit can move all of them instead of
+ * silently taking the first match. `near` is the one positional filter that
+ * means "the closest face", so it still resolves to exactly one; every other
+ * ref kind (canonical name, label, created, tracked) names one face.
+ */
+export function resolveFaceRefFaces(
+  record: FeatureRecord,
+  base: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+): Face[] | { error: CompilerDiagnostic } {
+  const faceRef = record.inputs.face;
+  if (faceRef?.kind === 'face') {
+    if (faceRef.ref.kind === 'queryDsl') {
+      const all = resolveQueryDslFaces(record, base, faceRef.ref, records);
+      if ('error' in all) return all;
+      reportBinding(record, base, 'face', all);
+      return all;
+    }
+    if (faceRef.ref.kind === 'query') {
+      const faces = resolveFaceQuery(base, faceRef.ref.query);
+      if (faces.length === 0) {
+        return {
+          error: {
+            target: 'export-occt',
+            code: 'feature.selection.no-match',
+            featureId: record.id,
+            severity: 'error',
+            message: `Face query matched zero faces on the input shape.`,
+            hint: 'Inspect available faces with list_faces, or relax the FaceQuery.',
+          },
+        };
+      }
+      const selected = faceRef.ref.query.near !== undefined ? [faces[0]] : faces;
+      reportBinding(record, base, 'face', selected);
+      return selected;
+    }
+  }
+  const one = resolveFace(record, base, records);
+  if ('error' in one) return one;
+  reportBinding(record, base, 'face', [one]);
+  return [one];
 }
 
 function resolveFace(

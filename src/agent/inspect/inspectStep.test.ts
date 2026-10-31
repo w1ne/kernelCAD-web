@@ -12,7 +12,7 @@ import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
-import { inspectStepFile } from './inspectStep';
+import { inspectNormalizedStepFile, inspectStepFile } from './inspectStep';
 
 let tmpDir: string;
 let stepPath: string;
@@ -72,6 +72,15 @@ describe('inspectStepFile', () => {
     // The in-process export writes empty MANIFOLD_SOLID_BREP names — the
     // pairing must report null, never ''.
     expect(report.solids.map((s) => s.name)).toEqual([null, null]);
+  });
+
+  it('measures the same clean solid after the fromSTEP import normalization', async () => {
+    const raw = await inspectStepFile(stepPath);
+    const normalized = await inspectNormalizedStepFile(stepPath);
+    expect(normalized.solidCount).toBe(raw.solidCount);
+    expect(normalized.solids.map((solid) => solid.faceCount)).toEqual(raw.solids.map((solid) => solid.faceCount));
+    expect(normalized.solids.map((solid) => solid.holes.length)).toEqual(raw.solids.map((solid) => solid.holes.length));
+    expect(normalized.solids[0].volumeMm3).toBeCloseTo(raw.solids[0].volumeMm3, 3);
   });
 
   it('reports a slot-breached bore as partial and marks holeDetection heuristic', async () => {

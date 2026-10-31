@@ -45,11 +45,23 @@ const coreR = 2.1;
 function slotCutter() {
   const halfOpen = slotOpening / 2;
   const halfWide = slotInner / 2;
-  const h = 802;
-  const stem = box(slotOpening, lip + 2, h).translate(-halfOpen, profileSize / 2 - lip, -1);
-  const pocket = box(slotInner, slotDepth - lip + 0.2, h)
-    .translate(-halfWide, profileSize / 2 - slotDepth, -1);
-  return stem.union(pocket);
+  // The pocket walls slope at 45° and stop web/2 short of the diagonals,
+  // as on a real B-type profile: neighbouring pockets never meet, so a
+  // diagonal web ties each corner land to the core. Square pockets would
+  // merge at the corners and cut the four corner lands free.
+  const web = 1.5;
+  const d = (web / 2) * Math.SQRT2;
+  const floorY = profileSize / 2 - slotDepth;
+  const lipY = profileSize / 2 - lip;
+  const topY = profileSize / 2 + 1;
+  // Overshoot the length param range so the channel is always through.
+  return extrudePolygon([
+    [-(floorY - d), floorY], [floorY - d, floorY],
+    [halfWide, halfWide + d], [halfWide, lipY],
+    [halfOpen, lipY], [halfOpen, topY],
+    [-halfOpen, topY], [-halfOpen, lipY],
+    [-halfWide, lipY], [-halfWide, halfWide + d],
+  ], 802).translate(0, 0, -1);
 }
 
 function extrusion() {

@@ -94,6 +94,30 @@ describe('runClosedLoop', () => {
     if (result.status === 'no_script') expect(result.attempts).toBe(2);
   });
 
+  it('keeps the last failed script when a later reply has no code block', async () => {
+    const written: string[] = [];
+    const { generate } = scriptedGenerate([fence('bad-script'), 'I cannot inspect the file, so I will not send code.']);
+    const result = await runClosedLoop({
+      prompt: 'edit it',
+      generate,
+      gateRunner: scriptedGate([FAIL_REPORT]),
+      extractScript,
+      writeScript: async (code) => {
+        written.push(code);
+        return `/tmp/closedloop-test-${written.length}.kcad.ts`;
+      },
+      maxAttempts: 2,
+    });
+    expect(result.status).toBe('gate_failed');
+    if (result.status === 'gate_failed') {
+      expect(result.attempts).toBe(2);
+      expect(result.verdicts[0].code).toBe('evaluate.broken');
+      expect(result.finalText).toContain('bad-script');
+      expect(result.scriptPath).toContain('.kcad.ts');
+    }
+    expect(written.at(-1)).toBe('bad-script');
+  });
+
   it('uses an injected buildRepairPrompt when provided', async () => {
     const { generate, calls } = scriptedGenerate([fence('bad'), fence('good')]);
     await runClosedLoop({ prompt: 'x', generate, gateRunner: scriptedGate([FAIL_REPORT, PASS_REPORT]), extractScript, writeScript, maxAttempts: 2, buildRepairPrompt: () => 'CUSTOM_REPAIR' });
