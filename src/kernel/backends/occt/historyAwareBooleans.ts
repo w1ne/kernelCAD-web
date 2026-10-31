@@ -489,23 +489,34 @@ function solidsOf(oc: ReturnType<typeof getOC>, shape: unknown): unknown[] {
 }
 
 /**
- * A fuse that produced several solids while its operands overlap or touch is
- * a partial merge, not a valid union result. Disjoint operands are left alone:
- * their union is reported by the union-integrity guard, and no fuzzy value can
- * legitimately connect them. Exported for the regression test.
+ * A fuse left solids unmerged when its result has more solids than a full
+ * merge could: every tool solid whose box touches a solid of another operand
+ * must join something, so the result holds at most (all operand solids) minus
+ * (touching tool solids). An operand that is already several solids (a clevis
+ * pin next to its fork, say) legitimately keeps them apart; counting only
+ * "more than one solid" sent every such fuse down the fuzzy retry ladder for
+ * nothing. Disjoint operands are left alone: their union is reported by the
+ * union-integrity guard, and no fuzzy value can legitimately connect them.
+ * Exported for the regression test.
  */
 export function fuseLeftUnmerged(
   oc: ReturnType<typeof getOC>,
   inputs: readonly unknown[],
   resultShape: unknown,
 ): boolean {
-  if (inputs.length < 2 || solidCount(oc, resultShape) <= 1) return false;
-  for (let i = 0; i < inputs.length; i++) {
-    for (let j = i + 1; j < inputs.length; j++) {
-      if (boxesTouch(oc, inputs[i], inputs[j])) return true;
+  if (inputs.length < 2) return false;
+  const resultSolids = solidCount(oc, resultShape);
+  if (resultSolids <= 1) return false;
+  const solidsByInput = inputs.map((input) => solidsOf(oc, input));
+  const total = solidsByInput.reduce((n, solids) => n + solids.length, 0);
+  let touching = 0;
+  for (let i = 1; i < solidsByInput.length; i++) {
+    for (const tool of solidsByInput[i]) {
+      const hits = solidsByInput.some((others, j) => j !== i && others.some((other) => boxesTouch(oc, tool, other)));
+      if (hits) touching++;
     }
   }
-  return false;
+  return touching > 0 && resultSolids > total - touching;
 }
 
 /** Build one boolean with `plan` and judge its result. */

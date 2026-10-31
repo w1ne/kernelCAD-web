@@ -22,8 +22,7 @@
 // named API would replace. A word with nothing to convert is a hint the
 // agent "fixes" by changing the wrong thing, then retries.
 
-import type * as TS from 'typescript';
-import { lazyTs as ts } from '../../shared/runtime/lazyTypescript';
+import { commentRanges } from './commentRanges';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { DIAGNOSTIC_REGISTRY, NEXT_ACTIONS, type DiagnosticCode } from '../../shared/diagnostics/registry';
 
@@ -234,9 +233,9 @@ export function readSource(src: string): IntentLintSource {
 
 /**
  * `src` with every comment replaced by spaces (newlines kept, so offsets and
- * line numbers are unchanged). Comment ranges come from the TypeScript
- * parser's own trivia, so a `//` inside a string, template or regex literal
- * is never mistaken for a comment.
+ * line numbers are unchanged). Comment ranges come from a small scanner
+ * (./commentRanges) that skips strings, templates and regex literals, so a
+ * `//` inside them is never mistaken for a comment.
  */
 export function stripComments(src: string): string {
   const ranges = commentRanges(src);
@@ -248,23 +247,6 @@ export function stripComments(src: string): string {
     at = r.end;
   }
   return out + src.slice(at);
-}
-
-function commentRanges(src: string): TS.CommentRange[] {
-  const sf = ts.createSourceFile('intent-lint.ts', src, ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
-  const byPos = new Map<number, TS.CommentRange>();
-  const visit = (node: TS.Node): void => {
-    if (ts.isJSDoc(node)) return; // its text is already a leading-trivia range of the next token
-    const children = node.getChildren(sf);
-    if (children.length > 0) {
-      for (const child of children) visit(child);
-      return;
-    }
-    for (const r of ts.getLeadingCommentRanges(src, node.pos) ?? []) byPos.set(r.pos, r);
-    for (const r of ts.getTrailingCommentRanges(src, node.end) ?? []) byPos.set(r.pos, r);
-  };
-  visit(sf);
-  return [...byPos.values()].sort((x, y) => x.pos - y.pos);
 }
 
 // ------------------------------------------------- actionable targets --

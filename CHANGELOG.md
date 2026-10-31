@@ -4,6 +4,18 @@
   `torus()` are now exact circles (two arcs) unless you pass `segments`. The old
   48-gon default revolved every ring into 48 faces, and each later boolean
   against it took seconds. Pass `segments` to keep a faceted polygon.
+- Memory: OCCT objects registered for GC cleanup are unregistered on an
+  explicit `.delete()`, and recompute yields a macrotask turn every ~100 ms so
+  cleanups run during long builds. A 527-feature assembly held ~420K stale
+  registrations (~80 MB of JS heap); the shipped CLI's peak RSS for it went
+  from 420 MB to ~340 MB.
+- Evaluate no longer loads the TypeScript compiler: scripts are type-stripped
+  with Node's built-in stripper (positions unchanged; TypeScript stays the
+  fallback for enums/namespaces), and intent lint finds comments with a small
+  scanner instead of a full AST walk.
+- Booleans: the "fuse left solids unmerged" guard counts solids an operand
+  already had, so fusing into one solid of a multi-solid body (a clevis fork
+  beside its pin) no longer runs three fuzzy retries that cannot help.
 - Booleans: the fuse "lost material" guard caches solid volumes by shape
   identity, so a body grown by repeated unions is measured once per step
   instead of twice.
