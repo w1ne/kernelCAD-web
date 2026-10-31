@@ -97,8 +97,8 @@ describe('Shape.material()', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
-    s.color('#aabbcc').material({ baseColor: '#0a0a0a', clearcoat: 0.8 });
-    const record = session.getRecords().find(r => r.id === s.id)!;
+    const out = s.color('#aabbcc').material({ baseColor: '#0a0a0a', clearcoat: 0.8 });
+    const record = session.getRecords().find(r => r.id === out.id)!;
     expect(record.metadata?.color).toBe('#aabbcc');
     expect(record.metadata?.material).toEqual({ baseColor: '#0a0a0a', clearcoat: 0.8 });
   });

@@ -2,10 +2,12 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/mcp/tools/meshToFeatures.ts
 //
-// MCP `mesh_to_features` — turn an STL / OBJ / 3MF of a mostly prismatic
-// mechanical part into an editable `.kcad.ts` feature tree, and PROVE how well
-// it matches: the emitted script is evaluated in-process, tessellated, and
-// compared against the mesh (volume IoU + symmetric surface deviation).
+// MCP `mesh_to_features` — turn an STL / OBJ / 3MF (or one solid of a STEP
+// file) of a mostly prismatic mechanical part into an editable `.kcad.ts`
+// feature tree, and PROVE how well it matches: the emitted script is evaluated
+// in-process, tessellated, and compared against the source (volume IoU +
+// symmetric surface deviation). A STEP solid is tessellated finely first
+// (`stepSoup.ts`), so the same fit-and-verify loop runs on it.
 //
 // The deterministic pipeline lives in `src/agent/reconstruct/` (pure, no OCCT);
 // this file supplies the file IO and the OCCT evaluator it is parameterised
@@ -26,7 +28,8 @@ import { withNextActions, type CompilerDiagnostic } from '../../../shared/diagno
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 import { FILE_READ_CODE, fileReadErrorMessage } from '../../../shared/diagnostics/fileReadError';
 import { runMcpScript } from '../runMcpScript';
-import { detectMeshFormat, MeshParseError, parseMeshBytes, type MeshFormat } from '../../reconstruct/meshIO';
+import { detectMeshFormat, isStepSource, MeshParseError, parseMeshBytes, type MeshFormat, type TriangleSoup } from '../../reconstruct/meshIO';
+import { stepBytesToSoup, type StepSourceReport } from './stepSoup';
 import {
   reconstructFromSoup,
   type ReconstructEvaluator,
@@ -34,12 +37,14 @@ import {
 } from '../../reconstruct/reconstruct';
 
 export interface MeshToFeaturesInput {
-  /** Path to a .stl, .obj or .3mf file. One of file / data is required. */
+  /** Path to a .stl, .obj, .3mf, .step or .stp file. One of file / data is required. */
   file?: string;
-  /** Inline mesh bytes, base64 — for hosted servers that cannot see local files. */
+  /** Inline mesh or STEP bytes, base64 — for hosted servers that cannot see local files. */
   data?: string;
   /** Format override; default from the file extension or content. */
-  format?: MeshFormat;
+  format?: MeshFormat | 'step';
+  /** STEP only: 0-based solid to rebuild when the file holds more than one. */
+  solid?: number;
   /** Write the script here (and the ledger to the sibling `.ledger.json`). */
   out?: string;
   /** Minimum volume IoU for a `faithful` verdict (default 0.98). */
@@ -58,7 +63,11 @@ export interface MeshToFeaturesInput {
  *  triangle count; past this budget the call fails fast with a decimation hint. */
 export const DEFAULT_MAX_MESH_TRIANGLES = 300_000;
 
-export type MeshToFeaturesOutput = ReconstructResult & { written?: { script: string; ledger: string } };
+export type MeshToFeaturesOutput = ReconstructResult & {
+  written?: { script: string; ledger: string };
+  /** Present for a STEP input: which solid was rebuilt and how finely its exact B-rep was tessellated. */
+  source?: StepSourceReport;
+};
 
 function fail(error: string, errorCode: CompilerDiagnostic['code']): MeshToFeaturesOutput {
   return {
@@ -74,7 +83,7 @@ function fail(error: string, errorCode: CompilerDiagnostic['code']): MeshToFeatu
         hint:
           errorCode === FILE_READ_CODE
             ? 'Check the mesh path, or pass the file inline as base64 `data` when the server cannot see your filesystem.'
-            : 'Pass a readable .stl (binary or ASCII), .obj or .3mf mesh via `file` or base64 `data`.',
+            : 'Pass a readable .stl (binary or ASCII), .obj, .3mf or STEP (.step/.stp) file via `file` or base64 `data`.',
         nextAction: NEXT_ACTIONS[errorCode],
       },
     ]),
@@ -172,57 +181,86 @@ export const occtReconstructionEvaluator: ReconstructEvaluator = async (script, 
   };
 };
 
-export async function meshToFeaturesTool(input: MeshToFeaturesInput): Promise<MeshToFeaturesOutput> {
+type Loaded<T> = T | { failure: MeshToFeaturesOutput };
+
+async function readSourceBytes(input: MeshToFeaturesInput): Promise<Loaded<{ bytes: Uint8Array; name?: string }>> {
   if ((input.file === undefined) === (input.data === undefined)) {
-    return fail('mesh_to_features: pass exactly one of { file } (a mesh path) or { data } (base64 mesh bytes).', 'cli.invalid-args');
+    return { failure: fail('mesh_to_features: pass exactly one of { file } (a mesh or STEP path) or { data } (base64 bytes).', 'cli.invalid-args') };
   }
-  let bytes: Uint8Array;
-  let name: string | undefined;
-  if (input.file !== undefined) {
-    try {
-      bytes = new Uint8Array(await readFile(resolve(input.file)));
-      name = basename(input.file);
-    } catch (e) {
-      return fail(fileReadErrorMessage(e), FILE_READ_CODE);
-    }
-  } else {
-    bytes = new Uint8Array(Buffer.from(input.data!, 'base64'));
-  }
-  let soup;
+  if (input.data !== undefined) return { bytes: new Uint8Array(Buffer.from(input.data, 'base64')) };
   try {
-    const format = input.format ?? detectMeshFormat(name, bytes);
-    soup = parseMeshBytes(bytes, format);
+    return { bytes: new Uint8Array(await readFile(resolve(input.file!))), name: basename(input.file!) };
   } catch (e) {
-    if (e instanceof MeshParseError) return fail(`mesh_to_features: ${e.message}`, 'cli.invalid-args');
+    return { failure: fail(fileReadErrorMessage(e), FILE_READ_CODE) };
+  }
+}
+
+/** Parse a mesh, or tessellate one solid of a STEP, into the soup the pipeline fits. */
+async function loadSoup(
+  input: MeshToFeaturesInput,
+  bytes: Uint8Array,
+  name: string | undefined,
+): Promise<Loaded<{ soup: TriangleSoup; source?: StepSourceReport }>> {
+  if (input.format === 'step' || (input.format === undefined && isStepSource(name, bytes))) {
+    const step = await stepBytesToSoup(bytes, input.solid !== undefined ? { solid: input.solid } : {});
+    return step.ok ? { soup: step.soup, source: step.source } : { failure: fail(`mesh_to_features: ${step.error}`, 'cli.invalid-args') };
+  }
+  if (input.solid !== undefined) return { failure: fail('mesh_to_features: `solid` applies to STEP input only.', 'cli.invalid-args') };
+  try {
+    return { soup: parseMeshBytes(bytes, (input.format ?? detectMeshFormat(name, bytes)) as MeshFormat) };
+  } catch (e) {
+    if (e instanceof MeshParseError) return { failure: fail(`mesh_to_features: ${e.message}`, 'cli.invalid-args') };
     throw e;
   }
+}
+
+function overBudget(triangles: number, budget: number, source: StepSourceReport | undefined): MeshToFeaturesOutput {
+  return fail(
+    source
+      ? `mesh_to_features: the STEP solid tessellated to ${triangles} triangles at ${source.tessellation.linearMm} mm, over the ${budget} budget. Raise maxTriangles; a part this detailed is usually outside what the prismatic rebuild can represent.`
+      : `mesh_to_features: the mesh has ${triangles} triangles, over the ${budget} budget. Decimate it (a prismatic part rarely needs more than a few tens of thousands) or raise maxTriangles.`,
+    'cli.invalid-args',
+  );
+}
+
+function sourceLabel(name: string | undefined, soup: TriangleSoup, source: StepSourceReport | undefined): string {
+  if (!source) return name ?? `inline ${soup.format.toUpperCase()} data`;
+  const which = source.solidCount > 1 ? ` (solid ${source.solid} of ${source.solidCount})` : '';
+  return `${name ?? 'inline STEP data'}${which}`;
+}
+
+async function writeOutputs(out: string, script: string, ledger: unknown): Promise<Loaded<{ script: string; ledger: string }>> {
+  const scriptPath = resolve(out);
+  const ledgerPath = scriptPath.replace(/(\.kcad)?\.ts$/, '') + '.ledger.json';
+  try {
+    await writeFile(scriptPath, script, 'utf8');
+    await writeFile(ledgerPath, JSON.stringify(ledger, null, 2) + '\n', 'utf8');
+  } catch (e) {
+    return { failure: fail(`mesh_to_features: could not write ${scriptPath}: ${e instanceof Error ? e.message : String(e)}`, 'cli.file-write') };
+  }
+  return { script: scriptPath, ledger: ledgerPath };
+}
+
+export async function meshToFeaturesTool(input: MeshToFeaturesInput): Promise<MeshToFeaturesOutput> {
+  const read = await readSourceBytes(input);
+  if ('failure' in read) return read.failure;
+  const loaded = await loadSoup(input, read.bytes, read.name);
+  if ('failure' in loaded) return loaded.failure;
+  const { soup, source } = loaded;
   const budget = input.maxTriangles ?? DEFAULT_MAX_MESH_TRIANGLES;
   const triangles = soup.positions.length / 9;
-  if (triangles > budget) {
-    return fail(
-      `mesh_to_features: the mesh has ${triangles} triangles, over the ${budget} budget. Decimate it (a prismatic part rarely needs more than a few tens of thousands) or raise maxTriangles.`,
-      'cli.invalid-args',
-    );
-  }
+  if (triangles > budget) return overBudget(triangles, budget, source);
   const result = await reconstructFromSoup(soup, occtReconstructionEvaluator, {
-    sourceName: name ?? `inline ${soup.format.toUpperCase()} data`,
+    sourceName: sourceLabel(read.name, soup, source),
     minIoU: input.minIoU,
     maxDeviationMm: input.maxDeviationMm,
     maxPasses: input.maxPasses,
     weldToleranceMm: input.weldToleranceMm,
   });
-  if (!result.ok) return { ...result, diagnostics: withNextActions(result.diagnostics) };
-  const out: MeshToFeaturesOutput = { ...result, diagnostics: withNextActions(result.diagnostics) };
-  if (input.out !== undefined) {
-    const scriptPath = resolve(input.out);
-    const ledgerPath = scriptPath.replace(/(\.kcad)?\.ts$/, '') + '.ledger.json';
-    try {
-      await writeFile(scriptPath, result.script, 'utf8');
-      await writeFile(ledgerPath, JSON.stringify(result.ledger, null, 2) + '\n', 'utf8');
-    } catch (e) {
-      return fail(`mesh_to_features: could not write ${scriptPath}: ${e instanceof Error ? e.message : String(e)}`, 'cli.file-write');
-    }
-    out.written = { script: scriptPath, ledger: ledgerPath };
-  }
+  const out: MeshToFeaturesOutput = { ...result, ...(source ? { source } : {}), diagnostics: withNextActions(result.diagnostics) };
+  if (!result.ok || input.out === undefined) return out;
+  const written = await writeOutputs(input.out, result.script, result.ledger);
+  if ('failure' in written) return written.failure;
+  out.written = written;
   return out;
 }

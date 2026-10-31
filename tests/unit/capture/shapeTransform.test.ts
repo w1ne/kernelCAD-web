@@ -25,16 +25,16 @@ describe('Shape.transform', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
-    s.transform(Transform.identity());
-    expect(transformsForId(session, s.id)).toHaveLength(0);
+    const out = s.transform(Transform.identity());
+    expect(transformsForId(session, out.id)).toHaveLength(0);
   });
 
   it('pure translation appends a translate transform', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
-    s.transform(Transform.translation(5, 0, -3));
-    const ts = transformsForId(session, s.id);
+    const out = s.transform(Transform.translation(5, 0, -3));
+    const ts = transformsForId(session, out.id);
     expect(ts).toHaveLength(1);
     expect(ts[0].op).toBe('translate');
     if (ts[0].op === 'translate') {
@@ -48,8 +48,8 @@ describe('Shape.transform', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
-    s.transform(Transform.rotationAxisAngleDeg([0, 0, 1], 45));
-    const ts = transformsForId(session, s.id);
+    const out = s.transform(Transform.rotationAxisAngleDeg([0, 0, 1], 45));
+    const ts = transformsForId(session, out.id);
     expect(ts).toHaveLength(1);
     expect(ts[0].op).toBe('rotateAxis');
     if (ts[0].op === 'rotateAxis') {
@@ -68,8 +68,8 @@ describe('Shape.transform', () => {
     const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     const t = Transform.translation(5, 0, 0).compose(Transform.rotationAxisAngleDeg([0, 0, 1], 90));
-    s.transform(t);
-    const ts = transformsForId(session, s.id);
+    const out = s.transform(t);
+    const ts = transformsForId(session, out.id);
     expect(ts).toHaveLength(2);
     expect(ts[0].op).toBe('rotateAxis');
     expect(ts[1].op).toBe('translate');
@@ -79,9 +79,8 @@ describe('Shape.transform', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
-    s.transform(Transform.translation(1, 0, 0));
-    s.transform(Transform.translation(0, 2, 0));
-    const ts = transformsForId(session, s.id);
+    const out = s.transform(Transform.translation(1, 0, 0)).transform(Transform.translation(0, 2, 0));
+    const ts = transformsForId(session, out.id);
     expect(ts).toHaveLength(2);
     expect(ts[0].op).toBe('translate');
     expect(ts[1].op).toBe('translate');

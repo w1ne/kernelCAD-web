@@ -19,4 +19,15 @@ export const SCRIPT_CODES = {
     group: 'script',
     description: 'The script built geometry but returned nothing, so the last created shape stands in for the model.',
   },
+  'script.discarded-transform': {
+    hintTemplate:
+      'Transforms (translate, rotate, scale, reflect, color) return a new Shape and leave the receiver unchanged. Assign the result: `const moved = part.translate(10, 0, 0)`.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'replace the statement `part.translate(…)` with `const moved = part.translate(…)` and use `moved`',
+    },
+    defaultSeverity: 'warn',
+    group: 'script',
+    description: 'A transform was called as a statement and its result discarded; it was applied to the receiver for compatibility.',
+  },
 } as const satisfies Record<string, DiagnosticCodeSpec>;

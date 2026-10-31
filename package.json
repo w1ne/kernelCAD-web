@@ -34,7 +34,9 @@
     "licenses/smlibwasm/**",
     "assets/parts/**",
     "assets/reference-parts/**",
-    "assets/parts-seed/**"
+    "assets/parts-seed/**",
+    "catalog/index.json",
+    "catalog/kits/**"
   ],
   "scripts": {
     "dev": "vite --config vite.player.config.ts",
@@ -51,6 +53,9 @@
     "eval:mech40:self-check": "npx tsx eval/mech40/selfCheck.ts",
     "portfolio:attempt": "npx tsx scripts/portfolioAttempt.ts",
     "cookbook:validate": "npx tsx scripts/cookbookValidate.ts",
+    "catalog:build": "npx tsx scripts/buildAssetCatalog.ts",
+    "catalog:check": "npx tsx scripts/buildAssetCatalog.ts --check",
+    "catalog:previews": "npx tsx scripts/renderCatalogPreviews.ts",
     "cookbook:evaluate": "npx tsx scripts/cookbookEvaluate.ts",
     "cookbook:build": "npx tsx scripts/buildCookbookIndex.ts && npx tsx scripts/buildAuthoringReferences.ts",
     "skill:references": "npx tsx scripts/buildAuthoringReferences.ts",
@@ -66,6 +71,7 @@
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",
     "test": "NODE_OPTIONS='--max-old-space-size=8192' vitest run",
+    "drawing-roundtrip:scorecard": "npx tsx scripts/drawingRoundTripScorecard.ts",
     "test:reference-parts": "node --import tsx scripts/referencePartsScorecard.ts --check",
     "test:solidcraft-ledger": "node --import tsx scripts/solidcraftLedger.ts --check --tier pr",
     "test:solidcraft-ledger:all": "node --import tsx scripts/solidcraftLedger.ts --check --tier all",

@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-31T13:31:40.328Z",
+  "source": "catalog/kits/nature/pine-tree.kcad.ts",
+  "module": "pine-tree.mjs",
+  "moduleBytes": 9404,
+  "moduleSha256": "b63cbadeeacb3be8062b2114a89bae5342df632c141a05c68ca3fe16f9dea882",
+  "calls": [
+    "createAsset()",
+    "createAsset({ leaves: '#c0392b' })",
+    "createAsset({ preset: 'snowy' })"
+  ],
+  "claims": {
+    "runtimeRecolour": true,
+    "geometryKnobsRequireBake": true,
+    "browserRendered": false,
+    "deployedBehavior": false
+  }
+}

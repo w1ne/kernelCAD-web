@@ -279,7 +279,7 @@ For queryable access:
 ```ts
 const solved = arm.solve({ 'base-yaw': 30 });
 const wristT = solved.transform('wrist');         // SE(3) Transform of wrist in world
-shape.transform(wristT);                          // attach a new shape to the wrist's frame
+const onWrist = shape.transform(wristT);          // a copy of shape placed in the wrist's frame
 const angle = solved.value('base-yaw');           // 30
 for (const { name, transform } of solved.bodies()) { /* ... */ }
 const snapScene = solved.toScene();               // snapshot Scene; call .toUnion() / .toCompound() to collapse to a Shape

@@ -45,6 +45,25 @@ const INSTALLED = Symbol.for('kernelcad.occtFinalizers');
 
 let released = 0;
 
+/** Depth of `untracked` calls in progress. */
+let untrackedDepth = 0;
+
+/**
+ * Run `fn` without registering the OCCT objects it constructs or receives.
+ * For hot loops that delete every handle they create: a registration costs
+ * JS heap until the next full GC even when `.delete()` removes it at once,
+ * and reading the SO-100 arm's 65k facets for a drawing (about 25 handles
+ * each) peaked ~300 MB higher with them registered.
+ */
+export function untracked<T>(fn: () => T): T {
+  untrackedDepth += 1;
+  try {
+    return fn();
+  } finally {
+    untrackedDepth -= 1;
+  }
+}
+
 /** Objects freed by the safety net so far (diagnostics and tests). */
 export function finalizedOcctObjectCount(): number {
   return released;
@@ -100,19 +119,25 @@ function wrapReturns(target: Record<string, unknown>, done: Set<object>, track: 
   }
 }
 
-/** Make `.delete()` drop the handle's registration. Embind classes inherit
- *  `delete` from one shared ClassHandle prototype; patch the prototype that
- *  owns it, once. */
-function patchDelete(proto: object, done: Set<object>, registry: FinalizationRegistry<EmbindHandleRecord>): void {
+/**
+ * Make `.delete()` drop the handle's registration. A registry keeps each
+ * registered record until the handle is collected AND a finalizer task runs,
+ * and no task runs inside a synchronous kernel call: reading the SO-100 arm's
+ * 65k facets for a drawing (about 25 short-lived handles each, all deleted)
+ * held ~250 MB of records until it returned.
+ */
+function unregisterOnDelete(proto: object, done: Set<object>, registry: FinalizationRegistry<EmbindHandleRecord>): void {
   let owner: object | null = proto;
-  while (owner && !Object.prototype.hasOwnProperty.call(owner, 'delete')) owner = Object.getPrototypeOf(owner);
+  while (owner && !Object.prototype.hasOwnProperty.call(owner, 'delete')) owner = Object.getPrototypeOf(owner) as object | null;
   if (!owner || done.has(owner)) return;
   done.add(owner);
-  const target = owner as { delete: (this: object) => unknown };
-  const original = target.delete;
+  const target = owner as { delete(this: object): void };
+  const remove = target.delete;
   target.delete = function (this: object) {
-    registry.unregister(this);
-    return original.call(this);
+    // Inside `untracked` nothing new was registered; a handle registered
+    // earlier stays registered and `release` skips it once deleted.
+    if (untrackedDepth === 0) registry.unregister(this);
+    return remove.call(this);
   };
 }
 
@@ -123,35 +148,26 @@ function patchDelete(proto: object, done: Set<object>, registry: FinalizationReg
 export function installOcctFinalizers(oc: Record<string | symbol, unknown>): void {
   if (oc[INSTALLED] || typeof FinalizationRegistry === 'undefined') return;
   const registry = new FinalizationRegistry<EmbindHandleRecord>(release);
-  // The handle is its own unregister token, so an explicit `.delete()` drops
-  // the registration at once. Without that every deleted object kept a
-  // WeakCell, its held record and that record's counter until GC collected
-  // the wrapper AND the registry's cleanup task ran — on a long modelling run
-  // that was hundreds of thousands of entries (~80 MB of JS heap).
-  const register = (handle: object, record: EmbindHandleRecord): void => {
-    registry.register(handle, record, handle);
-  };
   const track = (value: unknown): unknown => {
     const handle = value as { $$?: EmbindHandleRecord } | null;
-    if (handle !== null && typeof handle === 'object' && handle.$$?.ptr) {
+    if (untrackedDepth === 0 && handle !== null && typeof handle === 'object' && handle.$$?.ptr) {
       const name = className(handle as never);
-      if (name !== undefined && RETURNED_VALUE_CLASS.test(name)) register(handle, handle.$$);
+      if (name !== undefined && RETURNED_VALUE_CLASS.test(name)) registry.register(handle, handle.$$, handle);
     }
     return value;
   };
-  const unregisterOnDelete = new Set<object>();
   const wrapped = new Set<object>();
   for (const key of Object.keys(oc)) {
     const ctor = oc[key];
     if (!isEmbindClass(ctor)) continue;
+    unregisterOnDelete(ctor.prototype as object, wrapped, registry);
     wrapReturns(ctor.prototype as Record<string, unknown>, wrapped, track);
     wrapReturns(ctor as unknown as Record<string, unknown>, wrapped, track);
-    patchDelete(ctor.prototype as object, unregisterOnDelete, registry);
     if (isTransientClass(ctor)) continue;
     oc[key] = new Proxy(ctor, {
       construct(target, args, newTarget) {
         const handle = Reflect.construct(target, args, newTarget) as { $$?: EmbindHandleRecord };
-        if (handle.$$) register(handle, handle.$$);
+        if (handle.$$ && untrackedDepth === 0) registry.register(handle, handle.$$, handle);
         return handle;
       },
     });

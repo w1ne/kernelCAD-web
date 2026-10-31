@@ -1,14 +1,40 @@
 # Unreleased
 
+- Catalog asset Studio link: `src/shared/assets/catalogStudioLink.ts` resolves
+  `/studio?catalog=<kit>/<id>` (e.g. `nature/pine-tree`) against
+  `catalog/index.json`, loads the row's `.kcad.ts` and refuses it when it no
+  longer matches `sourceSha256`. Evaluating the loaded source gives the knob
+  table Studio's Params tab shows. The hosted Studio does not read
+  `?catalog=` yet: it still has to call this loader beside `?gallery=` and
+  serve `catalog/`.
+
+- Drawing round-trip scorecard: `npm run drawing-roundtrip:scorecard` draws
+  the 27 reference parts with the `pdf-drawing` exporter, reads each sheet
+  back with `drawing_to_cad`, and checks the rebuilt volume (±0.1 %) and
+  extents (0.05 mm); report in `docs/drawing-roundtrip-scorecard.md`.
+  It found that `drawing_to_cad` misread kernelCAD's own native sheets
+  (0/27). Fixes: thin annotation (datum boxes, tolerance frames, leaders)
+  no longer joins views; circles flattened to line segments are not read as
+  pictorial views; a captioned view with slanted sides stays orthographic;
+  blind holes read from hidden lines are no longer cut 1 mm too deep. Now
+  15/27. Demo bundle: `docs/demos/drawing-roundtrip-scorecard/`.
+
+- STEP to editable feature tree: `mesh_to_features` and `kernelcad reconstruct`
+  accept `.step`/`.stp` (or an ISO-10303-21 header in inline `data`). One
+  solid is read with the OCCT STEP reader (new `solid` / `--solid` picks a body
+  of a multi-solid file, which is otherwise refused), its exact B-rep is
+  tessellated at 0.02 % of the bbox diagonal (0.002–0.05 mm), and the existing
+  fit/verify loop returns an editable `.kcad.ts` with a measured verdict. The
+  result carries `source` { solidCount, solid, mmPerFileUnit, tessellation }.
+  Local demo bundle: `docs/demos/step-to-features/`.
+
 - Faster builds of revolved and filleted detail: `path().circle()` and
   `torus()` are now exact circles (two arcs) unless you pass `segments`. The old
   48-gon default revolved every ring into 48 faces, and each later boolean
   against it took seconds. Pass `segments` to keep a faceted polygon.
-- Memory: OCCT objects registered for GC cleanup are unregistered on an
-  explicit `.delete()`, and recompute yields a macrotask turn every ~100 ms so
-  cleanups run during long builds. A 527-feature assembly held ~420K stale
-  registrations (~80 MB of JS heap); the shipped CLI's peak RSS for it went
-  from 420 MB to ~340 MB.
+- Memory: recompute yields a macrotask turn every ~100 ms, so GC
+  finalizers that free dropped OCCT objects run during long builds instead of
+  only after them.
 - Evaluate no longer loads the TypeScript compiler: scripts are type-stripped
   with Node's built-in stripper (positions unchanged; TypeScript stays the
   fallback for enums/namespaces), and intent lint finds comments with a small
@@ -29,6 +55,78 @@
   that changes the archive inputs now builds all five platform archives.
 
 # v0.17.3 — 2026-10-31
+
+- Characters kit (`catalog/kits/characters`, 5 assets): mechanical low-poly
+  characters rigged through mates — humanoid robot, robot dog, rover robot,
+  desktop robot arm and posable mannequin. Every revolute/prismatic mate is a
+  GLB pivot node listed in `asset.extras.kernelcad.rig` (6–14 pivots each), so
+  they pose and animate in three.js, Godot or Unity without a skinned
+  skeleton. Catalog kits are CC0-1.0. `scripts/checkCatalogAsset.ts` now
+  prints the rig.
+
+- Catalog assets as three.js ES modules: `npx tsx scripts/exportAssetModule.ts
+  <id>` writes a self-contained `.mjs` (`emitAssetModule` in
+  `src/agent/catalog/assetModule.ts`) exporting `createAsset` (default),
+  `params`, `presets`, `palette`, `rig`, `meta` and `runtimeKnobs`.
+  `createAsset(knobs)` builds a `THREE.Group` synchronously from the embedded
+  low-poly triangles on one shared vertex-coloured material, and applies
+  colour knobs and colour presets at runtime. Knobs that change geometry
+  throw with the bake path instead of returning the default shape. Demo:
+  `docs/demos/asset-module/`.
+- Asset catalog kits: 62 original parametric low-poly assets in three kits,
+  `catalog/kits/nature` (21: trees, plants, rocks, logs, terrain tiles),
+  `catalog/kits/interior` (21: living, bedroom, kitchen and office furniture,
+  door, wall segment) and `catalog/kits/city-street` (20: street furniture,
+  traffic pieces, road and sidewalk tiles, shop front). Each has 2–6 knobs,
+  presets, real-world size, 56–388 triangles and a committed preview
+  (`npm run catalog:previews`, z-buffered software render of the low-poly GLB).
+  `catalog/AUTHORING.md` is the authoring contract;
+  `scripts/checkCatalogAsset.ts` builds and previews one asset. New cookbook
+  recipe `lowpoly-game-asset`. Demo: `docs/demos/asset-catalog/`.
+
+
+- Asset catalog MCP tools (read-only, bundled catalog): `search_assets`
+  (q, kit, category, triangle range, sort, paging; compact rows with
+  triangles, size in metres, origin, knobs and palette; a `coverage` verdict
+  with a `next` hint), `get_asset` (full row plus the `.kcad.ts` source),
+  `find_matching`, `get_variant` (plain words to knob values plus the variant
+  source, unknown words reported), `list_kits` and `get_kit`. The catalog is
+  found by walking up from the package to `catalog/index.json`
+  (`KERNELCAD_CATALOG_DIR` overrides).
+
+- Asset catalog: parametric low-poly assets live in
+  `catalog/kits/<kit>/<asset>.kcad.ts` with a `kit.json` per kit.
+  `npm run catalog:build` evaluates each one, exports it with the low-poly GLB
+  profile inside its `meta().triangleBudget`, and writes `catalog/index.json`:
+  knobs (type, default, range/choices, label), presets, rig, measured
+  triangles, size in metres, lowest point, material count and colour zones
+  named after the colour knob that drives them. A test fails when the
+  committed index is stale or any asset exceeds its budget or needs a second
+  opaque material. Pure queries in `src/shared/assets/catalogSearch.ts`:
+  `searchCatalog` (query, kit, category, triangle range, paging, with a
+  `coverage` verdict of `none | poor | ok | filtered_out` and unmatched
+  words), `findMatching` (same kit, shared compat tags, palette and scale,
+  spread across categories) and `resolveVariant` (plain words such as
+  "taller, red foliage, with snow" to knob overrides; unknown words are
+  reported, not guessed).
+
+
+- Low-poly GLB export: `export` glb `{ style: 'lowpoly' }` writes a faceted,
+  flat-shaded game asset in metres (`units` overrides) where every opaque part
+  carries its colour in `COLOR_0` on one shared `kernelcad-palette` material,
+  so a scene of such assets merges into one draw call; glass and translucent
+  parts keep their own material. `lowpoly.angularDeg` (5–60, default 30, about
+  12 segments per circle) sets the facet size and `lowpoly.maxTriangles` fails
+  the export with `export.glb.triangle-budget` instead of writing an
+  over-budget file. Every GLB now records `stats` (triangles, size in metres,
+  lowest point) plus `units` and `style` in `asset.extras.kernelcad`; low-poly
+  files also list their colour zones. `meta()` accepts catalog fields `kit`,
+  `category`, `origin`, `compat` and `triangleBudget`. Example:
+  `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
+  `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
+  `catalog/kits/nature/pine-tree.kcad.ts`; local demo bundle:
+  `examples/assets/pine-tree.kcad.ts`; local demo bundle:
+  `docs/demos/glb-lowpoly/`.
 
 - Asset manifests: `meta()` and `presets()` now capture validated asset metadata
   and named knob overrides on `CaptureSession`; asset content defaults to the
@@ -1243,8 +1341,6 @@ This release contains the changes merged since v0.16.0, including the agent skil
 - Merge pull request #706 from w1ne/docs/v016-demo-shows-drawing (40f68c5e)
 - Merge pull request #705 from w1ne/chore/release-v0.16.0 (7000942b)
 - ci: stop Pages unsharded test colliding with required check; load gmsh libs (a06cdbbe)
-
-
 
 # kernelCAD v0.16.0
 
