@@ -19,6 +19,28 @@ export const ASSET_LICENSE_IDS = [
 
 export const AssetLicenseSchema = z.enum(ASSET_LICENSE_IDS);
 
+/** Catalog shelves for game/scene assets. */
+export const ASSET_CATEGORIES = [
+  'prop',
+  'furniture',
+  'building',
+  'structure',
+  'vehicle',
+  'nature',
+  'terrain',
+  'item',
+  'attachment',
+  'character',
+  'animal',
+] as const;
+
+/** Where the model's origin sits, so a placer knows what y = 0 means.
+ *  `base`: bottom centre on the ground (default). `center`: bounding-box
+ *  centre. `wall`/`ceiling`: the mounting face, built at installed height. */
+export const ASSET_ORIGINS = ['base', 'center', 'wall', 'ceiling'] as const;
+
+const slug = z.string().trim().min(1).max(64).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'lowercase-kebab-case');
+
 const AssetMetadataFields = {
   schemaVersion: z.literal(1).default(1),
   name: z.string().trim().min(1).max(128).optional(),
@@ -28,6 +50,14 @@ const AssetMetadataFields = {
   authors: z.array(z.string().trim().min(1).max(128)).max(32).optional(),
   tags: z.array(z.string().trim().min(1).max(64)).max(64).optional(),
   sourceUrl: z.string().url().optional(),
+  /** Catalog kit (themed set built to one palette and scale) this asset belongs to. */
+  kit: slug.optional(),
+  category: z.enum(ASSET_CATEGORIES).optional(),
+  origin: z.enum(ASSET_ORIGINS).optional(),
+  /** Matching tags beyond the kit: shared grids, styles, settings (e.g. `grid-1m`, `street`). */
+  compat: z.array(slug).max(32).optional(),
+  /** Low-poly GLB triangle budget the catalog build enforces for this asset. */
+  triangleBudget: z.number().int().positive().max(1_000_000).optional(),
 };
 
 export const AssetMetadataSchema = z.object(AssetMetadataFields).strict();
@@ -75,6 +105,8 @@ export const AssetManifestSchema = z.object({
   rigWarnings: z.array(z.string()).optional(),
 }).strict();
 
+export type AssetCategory = (typeof ASSET_CATEGORIES)[number];
+export type AssetOrigin = (typeof ASSET_ORIGINS)[number];
 export type AssetMetadataInput = z.input<typeof AssetMetadataInputSchema>;
 export type AssetMetadata = z.output<typeof AssetMetadataSchema>;
 export type AssetParamValue = z.output<typeof AssetParamValueSchema>;

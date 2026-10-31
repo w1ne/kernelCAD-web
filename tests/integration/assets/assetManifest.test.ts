@@ -182,3 +182,22 @@ describe('asset declarations and manifest tool', () => {
     });
   });
 });
+
+describe('catalog metadata fields', () => {
+  it('accepts kit, category, origin, compat and triangle budget', () => {
+    expect(AssetMetadataSchema.parse({
+      name: 'park-bench',
+      kit: 'city-street',
+      category: 'furniture',
+      origin: 'base',
+      compat: ['grid-1m', 'street'],
+      triangleBudget: 400,
+    })).toMatchObject({ kit: 'city-street', category: 'furniture', compat: ['grid-1m', 'street'], triangleBudget: 400 });
+  });
+
+  it('rejects non-slug kits, unknown categories and non-positive budgets', () => {
+    expect(() => AssetMetadataSchema.parse({ kit: 'City Street' })).toThrow();
+    expect(() => AssetMetadataSchema.parse({ category: 'spaceship' })).toThrow();
+    expect(() => AssetMetadataSchema.parse({ triangleBudget: 0 })).toThrow();
+  });
+});

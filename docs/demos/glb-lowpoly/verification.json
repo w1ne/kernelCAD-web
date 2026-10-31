@@ -1,0 +1,127 @@
+{
+  "checkedAt": "2026-10-31T11:34:53.831Z",
+  "source": "examples/assets/pine-tree.kcad.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ style: \"lowpoly\", lowpoly: { maxTriangles: 400 } })",
+  "variants": [
+    {
+      "id": "default",
+      "params": {},
+      "file": "pine-default.glb",
+      "glbBytes": 14624,
+      "glbSha256": "77b9dff95f4bc865db316a33fd6894694f9635673ecea0b6aa69715fca64fcca",
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.881959,
+          4.5,
+          1.930357
+        ],
+        "minUpM": 0
+      },
+      "palette": [
+        {
+          "name": "trunk",
+          "color": "#7a4b2a",
+          "parts": [
+            "trunk"
+          ]
+        },
+        {
+          "name": "foliage-1",
+          "color": "#2f7d4a",
+          "parts": [
+            "foliage-1",
+            "foliage-2",
+            "foliage-3"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tall-five-tiers",
+      "params": {
+        "heightM": "8",
+        "tiers": "5",
+        "sides": "6"
+      },
+      "file": "pine-tall-five-tiers.glb",
+      "glbBytes": 18984,
+      "glbSha256": "4d41a6a3c59ebc1048ff4b30f350cf4842e62ccf5c5096cbc90169a08ba60510",
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          3.52,
+          8,
+          3.048409
+        ],
+        "minUpM": 0
+      },
+      "palette": [
+        {
+          "name": "trunk",
+          "color": "#7a4b2a",
+          "parts": [
+            "trunk"
+          ]
+        },
+        {
+          "name": "foliage-1",
+          "color": "#2f7d4a",
+          "parts": [
+            "foliage-1",
+            "foliage-2",
+            "foliage-3",
+            "foliage-4",
+            "foliage-5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "autumn-short",
+      "params": {
+        "heightM": "3",
+        "tiers": "2",
+        "sides": "5",
+        "leaves": "#c9772b"
+      },
+      "file": "pine-autumn-short.glb",
+      "glbBytes": 8540,
+      "glbSha256": "65375cff5b150600ed6a2deb178ffa48802b004795a21e753d18e1c7dfe57048",
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          1.193951,
+          3,
+          1.255395
+        ],
+        "minUpM": 0
+      },
+      "palette": [
+        {
+          "name": "trunk",
+          "color": "#7a4b2a",
+          "parts": [
+            "trunk"
+          ]
+        },
+        {
+          "name": "foliage-1",
+          "color": "#c9772b",
+          "parts": [
+            "foliage-1",
+            "foliage-2"
+          ]
+        }
+      ]
+    }
+  ],
+  "claims": {
+    "nativeLowPolyGlb": true,
+    "oneSharedOpaqueMaterial": true,
+    "triangleBudgetEnforced": true,
+    "threeJsRendered": false,
+    "engineImportTested": false,
+    "deployedBehavior": false
+  }
+}

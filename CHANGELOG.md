@@ -1,5 +1,19 @@
 # Unreleased
 
+- Low-poly GLB export: `export` glb `{ style: 'lowpoly' }` writes a faceted,
+  flat-shaded game asset in metres (`units` overrides) where every opaque part
+  carries its colour in `COLOR_0` on one shared `kernelcad-palette` material,
+  so a scene of such assets merges into one draw call; glass and translucent
+  parts keep their own material. `lowpoly.angularDeg` (5–60, default 30, about
+  12 segments per circle) sets the facet size and `lowpoly.maxTriangles` fails
+  the export with `export.glb.triangle-budget` instead of writing an
+  over-budget file. Every GLB now records `stats` (triangles, size in metres,
+  lowest point) plus `units` and `style` in `asset.extras.kernelcad`; low-poly
+  files also list their colour zones. `meta()` accepts catalog fields `kit`,
+  `category`, `origin`, `compat` and `triangleBudget`. Example:
+  `examples/assets/pine-tree.kcad.ts`; local demo bundle:
+  `docs/demos/glb-lowpoly/`.
+
 - Asset manifests: `meta()` and `presets()` now capture validated asset metadata
   and named knob overrides on `CaptureSession`; asset content defaults to the
   SPDX-allowlisted `CC-BY-4.0` licence, separate from the package's MIT licence.
