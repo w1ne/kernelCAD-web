@@ -11,7 +11,7 @@ meta({
   category: 'terrain',
   origin: 'base',
   compat: ['outdoor', 'grid-2m', 'water', 'meadow', 'forest'],
-  triangleBudget: 260,
+  triangleBudget: 220,
 });
 
 const shape = param('shape', 'round', { choices: ['round', 'square', 'stream'], label: 'Pond shape' });

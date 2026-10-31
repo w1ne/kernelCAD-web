@@ -11,7 +11,7 @@ meta({
   category: 'terrain',
   origin: 'base',
   compat: ['outdoor', 'grid-2m', 'meadow', 'forest'],
-  triangleBudget: 200,
+  triangleBudget: 160,
 });
 
 const layout = param('layout', 'straight', { choices: ['straight', 'corner', 'tee', 'cross'], label: 'Layout' });

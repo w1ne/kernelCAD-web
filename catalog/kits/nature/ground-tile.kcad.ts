@@ -11,7 +11,7 @@ meta({
   category: 'terrain',
   origin: 'base',
   compat: ['outdoor', 'grid-2m', 'meadow', 'forest'],
-  triangleBudget: 120,
+  triangleBudget: 80,
 });
 
 const thickness = param('thickness', '0.2', { choices: ['0.1', '0.2', '0.4'], label: 'Thickness (m)' });

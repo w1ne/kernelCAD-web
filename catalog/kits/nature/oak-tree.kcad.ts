@@ -10,7 +10,7 @@ meta({
   category: 'nature',
   origin: 'base',
   compat: ['outdoor', 'forest', 'meadow', 'park'],
-  triangleBudget: 600,
+  triangleBudget: 400,
 });
 
 const heightM = param('heightM', '7', { choices: ['5', '7', '9', '12'], label: 'Height (m)' });

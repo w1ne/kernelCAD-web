@@ -12,7 +12,7 @@ meta({
   category: 'terrain',
   origin: 'base',
   compat: ['outdoor', 'grid-2m', 'mountain', 'forest', 'desert'],
-  triangleBudget: 320,
+  triangleBudget: 200,
 });
 
 const heightM = param('heightM', '2', { choices: ['1', '2', '3'], label: 'Cliff height (m)' });

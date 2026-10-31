@@ -11,7 +11,7 @@ meta({
   category: 'terrain',
   origin: 'base',
   compat: ['outdoor', 'grid-2m', 'meadow', 'forest'],
-  triangleBudget: 220,
+  triangleBudget: 160,
 });
 
 const heightM = param('heightM', '0.8', { choices: ['0.4', '0.8', '1.2'], label: 'Hill height (m)' });

@@ -10,7 +10,7 @@ meta({
   category: 'nature',
   origin: 'base',
   compat: ['outdoor', 'forest', 'meadow'],
-  triangleBudget: 260,
+  triangleBudget: 220,
 });
 
 const diameter = param('diameter', '0.6', { choices: ['0.4', '0.6', '0.9'], label: 'Diameter (m)' });

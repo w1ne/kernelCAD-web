@@ -4,7 +4,7 @@
 meta({
   name: 'mushroom',
   title: 'Mushroom',
-  description: 'Cluster of forest mushrooms with faceted stems and dome, flat or conical caps, optional spots. Knobs: count, size, cap shape, spots, cap, spot and stem colours.',
+  description: 'Cluster of forest mushrooms with faceted stems and dome, flat or conical caps, optional spots. Knobs: count, size, cap shape, spots, cap and stem colours.',
   tags: ['mushroom', 'toadstool', 'fungus', 'fly agaric', 'forest floor', 'nature'],
   kit: 'nature',
   category: 'nature',
@@ -18,12 +18,11 @@ const size = param('size', '0.2', { choices: ['0.1', '0.2', '0.5', '1'], label: 
 const shape = param('shape', 'dome', { choices: ['dome', 'flat', 'cone'], label: 'Cap shape' });
 const spots = param('spots', 'yes', { choices: ['yes', 'no'], label: 'Spots' });
 const cap = param('cap', '#d0362c', { label: 'Cap' });
-const spot = param('spot', '#f6f1e4', { label: 'Spots' });
-const stem = param('stem', '#efe6cf', { label: 'Stem' });
+const stem = param('stem', '#f2ead6', { label: 'Stem and spots' });
 
 presets({
   porcini: { cap: '#8a5a32', spots: 'no', stem: '#e2d3ae' },
-  glowing: { cap: '#4fb0d8', spot: '#d8f4ff' },
+  glowing: { cap: '#4fb0d8', stem: '#d8f4ff' },
 });
 
 const h = Number(size.value) * 1000;
@@ -69,7 +68,7 @@ for (let i = 0; i < n; i++) {
       const sa = (2 * Math.PI * k) / 3 + i;
       const rr = cr * rf2 * 0.84;
       const dot = ngon(cr * 0.17, 3).extrude(cr * 0.14).rotateY(55).rotateZ((sa * 180) / Math.PI);
-      m.part(`spot-${i + 1}-${k + 1}`, dot.translate(x + rr * Math.cos(sa), y + rr * Math.sin(sa), stemH * 0.92 + capH * zf2).color(spot));
+      m.part(`spot-${i + 1}-${k + 1}`, dot.translate(x + rr * Math.cos(sa), y + rr * Math.sin(sa), stemH * 0.92 + capH * zf2).color(stem));
     }
   }
 }
