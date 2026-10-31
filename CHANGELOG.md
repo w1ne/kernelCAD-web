@@ -30,6 +30,14 @@
 
 # v0.17.3 — 2026-10-31
 
+- Characters kit (`catalog/kits/characters`, 5 assets): mechanical low-poly
+  characters rigged through mates — humanoid robot, robot dog, rover robot,
+  desktop robot arm and posable mannequin. Every revolute/prismatic mate is a
+  GLB pivot node listed in `asset.extras.kernelcad.rig` (6–14 pivots each), so
+  they pose and animate in three.js, Godot or Unity without a skinned
+  skeleton. Catalog kits are CC0-1.0. `scripts/checkCatalogAsset.ts` now
+  prints the rig.
+
 - Asset catalog kits: 62 original parametric low-poly assets in three kits,
   `catalog/kits/nature` (21: trees, plants, rocks, logs, terrain tiles),
   `catalog/kits/interior` (21: living, bedroom, kitchen and office furniture,

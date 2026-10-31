@@ -23,4 +23,15 @@ describe('asset catalog', () => {
     CatalogIndexSchema.parse(JSON.parse(committed));
     expect(committed, 'run: npx tsx scripts/buildAssetCatalog.ts').toBe(serializeCatalogIndex(built));
   }, 600_000);
+
+  it('every characters-kit asset ships a GLB rig with a pivot per joint', () => {
+    const index = CatalogIndexSchema.parse(JSON.parse(readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8')));
+    const characters = index.assets.filter((asset) => asset.kit === 'characters');
+    expect(characters.length).toBeGreaterThanOrEqual(5);
+    for (const asset of characters) {
+      const rig = Object.values(asset.rig ?? {});
+      expect(rig.length, asset.id).toBeGreaterThanOrEqual(6);
+      for (const joint of rig) expect(joint.range[0], `${asset.id} ${joint.node}`).toBeLessThan(joint.range[1]);
+    }
+  });
 });
