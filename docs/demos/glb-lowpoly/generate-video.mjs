@@ -111,7 +111,7 @@ for (let f = 0; f < frames; f++) {
     <rect x="0" y="${groundY}" width="${W}" height="${H - groundY}" fill="#dfe7ef"/>
     <rect x="0" y="0" width="${W}" height="13" fill="#2866d5"/>
     <text x="64" y="78" font-family="Arial,sans-serif" font-size="36" font-weight="700" fill="#17243a">Low-poly GLB export: one parametric pine, three variants</text>
-    <text x="66" y="114" font-family="Arial,sans-serif" font-size="20" fill="#53657f">examples/assets/pine-tree.kcad.ts · style: 'lowpoly' · metres · one shared material, colour in COLOR_0 · budget 400</text>
+    <text x="66" y="114" font-family="Arial,sans-serif" font-size="20" fill="#53657f">catalog/kits/nature/pine-tree.kcad.ts · style: 'lowpoly' · metres · one shared material, colour in COLOR_0 · budget 400</text>
     ${bodies}
     ${labels}
     <rect x="64" y="${H - 52}" width="610" height="32" rx="16" fill="#e0e9f7"/>

@@ -1,7 +1,7 @@
 # Low-poly GLB export demo bundle
 
 This bundle demonstrates the native kernelCAD GLB `style: 'lowpoly'` export of
-the original parametric pine tree in `examples/assets/pine-tree.kcad.ts`, at its
+the original parametric pine tree in `catalog/kits/nature/pine-tree.kcad.ts`, at its
 defaults and at two parameter variants.
 
 ## Reproduce
@@ -31,7 +31,7 @@ renders the GLBs into `demo.mp4` and `poster.png`.
 
 ## Provenance and scope
 
-- Geometry is original kernelCAD source (`examples/assets/pine-tree.kcad.ts`):
+- Geometry is original kernelCAD source (`catalog/kits/nature/pine-tree.kcad.ts`):
   polygon-profile lofts and an extruded polygon trunk.
 - No Polyfork downloads or meshes, no external meshes, and no mesh decimation
   are involved.

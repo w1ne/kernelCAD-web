@@ -40,7 +40,7 @@ describe('low-poly GLB demo evidence capture', () => {
 
   it('exports the original pine tree and two parameter variants inside its triangle budget', async () => {
     const repository = resolve(import.meta.dirname, '../../../..');
-    const source = 'examples/assets/pine-tree.kcad.ts';
+    const source = 'catalog/kits/nature/pine-tree.kcad.ts';
     const code = readFileSync(join(repository, source), 'utf8');
     const evidence = [];
     for (const variant of VARIANTS) {
