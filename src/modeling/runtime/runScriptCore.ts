@@ -153,6 +153,10 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
     throw withShapeMethodHint(e);
   }
   returnValue = normalizeArrayReturnValue(returnValue, session, code);
+  // The returned model counts as consumed; then give statement-form
+  // transforms (`p.translate(…); use(p)`) their pre-immutable meaning.
+  if (returnValue instanceof Shape) session.markConsumed(returnValue.id);
+  session.finalizeShapeVersions();
   return {
     records: session.getRecords(),
     session,

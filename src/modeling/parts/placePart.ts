@@ -73,13 +73,13 @@ export async function placeStackFor(
     screw: undefined as unknown as Shape,
   };
   for (const member of plan.members) {
-    const shape = await shapeFor(ctx, {
+    const unplaced = await shapeFor(ctx, {
       family: member.part.family,
       thread: member.part.thread,
       ...(member.part.kind === 'screw' ? { lengthMm: member.part.lengthMm } : {}),
       ...(request.detail !== undefined ? { detail: request.detail } : {}),
     });
-    if (member.offsetZ !== 0) shape.translate(0, 0, member.offsetZ);
+    const shape = member.offsetZ !== 0 ? unplaced.translate(0, 0, member.offsetZ) : unplaced;
     if (member.role === 'screw') placed.screw = shape;
     else if (member.role === 'head-washer') placed.headWasher = shape;
     else if (member.role === 'tail-washer') placed.tailWasher = shape;

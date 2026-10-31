@@ -330,16 +330,18 @@ Contracts worth knowing:
 
 ### Shape methods (chainable)
 
-Transforms mutate the shared `Shape` handle, including geometry already passed
-to `assembly.part`. `const other = shape` does not make a copy: translating either
-name moves the same source for every part that uses it. For repeated parts, keep
-the prototype unmodified and use separate `assembly.part(name, prototype, { at })`
-placements with connectors and mates, or call a geometry factory for each part.
-Check world-frame spacing after reuse changes. The authoring `Shape` API has no
-`.clone()` method; backend clone methods are not script methods.
+Transforms (`translate`, `rotate*`, `scale`, `reflect`, `transform`, `alongAxis`,
+`color`) return a NEW `Shape` and leave the receiver unchanged, so one prototype
+can be placed many times: `const left = wheel.translate(-30, 0, 0)` and
+`const right = wheel.translate(30, 0, 0)` are two wheels, and `wheel` stays at
+the origin. Always use the returned value — `const moved = part.translate(…)`.
+A transform called as a bare statement (`part.translate(…);`) has its result
+discarded; for old scripts the runtime applies it to `part` anyway and emits a
+`script.discarded-transform` warning. `const other = shape` is still the same
+shape, not a copy.
 
 ```typescript
-// Transforms (mutate-then-return-this; chain freely):
+// Transforms (return a new Shape; the receiver is unchanged; chain freely):
 .translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape
 .rotate(
   axis: [Editable<number>, Editable<number>, Editable<number>],
@@ -373,11 +375,11 @@ Check world-frame spacing after reuse changes. The authoring `Shape` API has no
 //
 // AABB in the CURRENT world frame (after every transform appended so far), mm:
 .boundingBox(opts?: { exact?: boolean }): Promise<{ min: [number,number,number]; max: [number,number,number]; size: [number,number,number]; center: [number,number,number] }>
-// Translate so bbox center → world origin; returns this Shape for chaining.
+// Translate so bbox center → world origin; returns the moved Shape.
 // After recenter(), a following .translate(x,y,z) places the part's CENTER at
 // (x,y,z). Pass { z:false } etc to recenter only the named axes.
 .recenter(opts?: { x?: boolean; y?: boolean; z?: boolean }): Promise<Shape>
-// Seat on the z=0 floor (bbox min.z → 0), centered in x/y; returns this Shape.
+// Seat on the z=0 floor (bbox min.z → 0), centered in x/y; returns the moved Shape.
 // { center:false } drops onto z=0 without moving x/y.
 .seatOnFloor(opts?: { center?: boolean }): Promise<Shape>
 //

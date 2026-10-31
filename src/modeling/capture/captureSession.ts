@@ -19,6 +19,8 @@ import type { DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord'
 import { Curve3DProxy } from './curveProxy';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import { Shape } from './proxy';
+import { ShapeVersions, type VersionedOp } from './shapeVersions';
+export type { VersionedOp } from './shapeVersions';
 import { Sketch } from './sketch';
 import { SurfaceProxy } from './surfaceProxy';
 import type {
@@ -763,6 +765,7 @@ export class CaptureSession {
     if (refs.size > 0) {
       r.metadata = { ...(r.metadata ?? {}), paramRefs: Array.from(refs) };
     }
+    this.versions.markInputsConsumed(r);
     this.records.push(r);
     return r;
   }
@@ -812,6 +815,42 @@ export class CaptureSession {
       for (const name of newRefs) merged.add(name);
       r.metadata = { ...(r.metadata ?? {}), paramRefs: Array.from(merged) };
     }
+  }
+
+  // ── Immutable shape handles (see shapeVersions.ts) ─────────────────────
+  private readonly versions = new ShapeVersions({
+    records: () => this.records,
+    nextId: (kind) => this.idGen.next(kind),
+    appendTransform: (id, t) => this.appendTransform(id, t),
+    sideTables: () => [this.importedGeometry, this.autoConnectors, this.catalogConnectorStore],
+    warnings: () => this.warnings,
+  });
+
+  /** Number of versioned ops applied to record `id` so far. */
+  headVersion(id: FeatureId): number {
+    return this.versions.headVersion(id);
+  }
+
+  /** Apply a transform / colour through handle (`id`, `version`) and return
+   *  the handle of the result. The receiver handle is never changed. */
+  applyVersionedOp(id: FeatureId, version: number, op: VersionedOp): Shape {
+    const target = this.versions.apply(id, version, op);
+    return new Shape(target, this, this.versions.headVersion(target));
+  }
+
+  /** The record id a handle (`id`, `version`) stands for right now. */
+  resolveHandle(id: FeatureId, version: number): FeatureId {
+    return this.versions.resolve(id, version);
+  }
+
+  /** Mark a record as consumed outside the record graph (the script's return value). */
+  markConsumed(id: FeatureId): void {
+    this.versions.markConsumed(id);
+  }
+
+  /** End-of-capture fold of statement-form transforms (`p.translate(…); use(p)`). */
+  finalizeShapeVersions(): void {
+    this.versions.finalize();
   }
 
   boolean(op: 'union' | 'difference' | 'intersection', base: Shape, cutters: Shape[]): Shape {
