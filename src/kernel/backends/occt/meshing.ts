@@ -855,6 +855,90 @@ function edgeGroupsToRanges(
   return { edgeRanges, edgeHashes };
 }
 
+type EdgeMeshResult = { lines: number[]; edgeGroups: { start: number; count: number; edgeId: number }[] };
+type Deletable = { delete?: () => void };
+type OcShapeLike = { wrapped: unknown; hashCode: number } & Deletable;
+type OcFaceLike = OcShapeLike & { edges: OcShapeLike[] };
+
+/**
+ * BREP edge polylines in WORLD coordinates — a location-correct port of
+ * replicad's `Shape.meshEdges()`.
+ *
+ * replicad (0.23) gets two transforms wrong, and both only bite on shapes
+ * whose sub-shapes carry a non-identity `TopLoc_Location` — in practice
+ * STEP imports (assembly placements) moved by translate/rotate:
+ *  1. For edges on a triangulated face it calls
+ *     `PolygonOnTriangulation(edge, T, <fresh identity loc>)` and transforms
+ *     the nodes by that identity, instead of passing and applying the FACE
+ *     location the triangulation was fetched with. The polygon nodes then sit
+ *     in the triangulation's local frame — away from the shaded faces.
+ *  2. For free edges it re-applies the last face's location to points that
+ *     `BRepAdaptor_Curve` already returns in global coordinates.
+ * The result was the "ghost" edge clusters of imported SG90 horns floating
+ * tens of mm off their shaded faces in Studio. Grouping, ordering and
+ * `edgeId` hashes match replicad's output exactly.
+ */
+export function meshShapeEdges(shape: unknown, options: MeshOptions): EdgeMeshResult | undefined {
+  if (!isRecord(shape)) return undefined;
+  const faces = shape.faces as unknown as OcFaceLike[] | undefined;
+  const allEdges = shape.edges as unknown as OcShapeLike[] | undefined;
+  if (!Array.isArray(faces) || !Array.isArray(allEdges)) return undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- OCCT wasm bindings are untyped here
+  const oc = getOC() as any;
+  const owned: Deletable[] = [];
+  const own = <T>(o: T): T => { owned.push(o as Deletable); return o; };
+  const lines: number[] = [];
+  const edgeGroups: EdgeMeshResult['edgeGroups'] = [];
+  const recorded = new Set<number>();
+  const pushEdge = (points: [number, number, number][], edgeId: number) => {
+    const start = lines.length / 3;
+    for (let i = 1; i < points.length; i++) lines.push(...points[i - 1]!, ...points[i]!);
+    edgeGroups.push({ start, count: lines.length / 3 - start, edgeId });
+    recorded.add(edgeId);
+  };
+  try {
+    for (const face of faces) {
+      own(face);
+      const faceLoc = own(new oc.TopLoc_Location_1());
+      const triangulation = own(oc.BRep_Tool.Triangulation(face.wrapped, faceLoc, 0));
+      if (triangulation.IsNull()) continue;
+      const tri = triangulation.get();
+      const faceTrsf = faceLoc.Transformation();
+      for (const edge of face.edges) {
+        own(edge);
+        if (recorded.has(edge.hashCode)) continue;
+        const polygon = own(oc.BRep_Tool.PolygonOnTriangulation_1(edge.wrapped, triangulation, faceLoc));
+        if (!polygon || polygon.IsNull()) continue;
+        const nodes = own(polygon.get().Nodes());
+        const points: [number, number, number][] = [];
+        for (let i = nodes.Lower(); i <= nodes.Upper(); i++) {
+          const p = own(own(tri.Node(nodes.Value(i))).Transformed(faceTrsf));
+          points.push([p.X(), p.Y(), p.Z()]);
+        }
+        pushEdge(points, edge.hashCode);
+      }
+    }
+    for (const edge of allEdges) {
+      own(edge);
+      if (recorded.has(edge.hashCode)) continue;
+      // BRepAdaptor_Curve already includes the edge's location: no transform.
+      const curve = own(new oc.BRepAdaptor_Curve_2(edge.wrapped));
+      const sampler = own(new oc.GCPnts_TangentialDeflection_2(
+        curve, options.tolerance, options.angularTolerance, 2, 1e-9, 1e-7,
+      ));
+      const points: [number, number, number][] = [];
+      for (let j = 1; j <= sampler.NbPoints(); j++) {
+        const p = own(sampler.Value(j));
+        points.push([p.X(), p.Y(), p.Z()]);
+      }
+      pushEdge(points, edge.hashCode);
+    }
+    return { lines, edgeGroups };
+  } finally {
+    for (const o of owned) o?.delete?.();
+  }
+}
+
 /**
  * Mesh a single replicad/OCCT shape into a GeometryResult.
  *
@@ -895,10 +979,10 @@ export function meshShape(
   try {
     const meshEdgesFn = getFn(shape, 'meshEdges');
     if (meshEdgesFn) {
-      const edgeRes = meshEdgesFn.call(shape, {
-        tolerance: options.tolerance,
-        angularTolerance: options.angularTolerance,
-      }) as Record<string, unknown>;
+      // Our port, not replicad's meshEdges: replicad drops sub-shape
+      // locations (see meshShapeEdges), which floats the edges of moved
+      // STEP imports away from their faces.
+      const edgeRes = meshShapeEdges(shape, options) as Record<string, unknown> | undefined;
       if (isRecord(edgeRes) && Array.isArray(edgeRes.lines)) {
         const lines = edgeRes.lines as number[];
         if (lines.length > 0) {
