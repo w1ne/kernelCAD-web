@@ -1413,7 +1413,7 @@ export class Shape {
    * agent calls `selectEdges(myShape, ...)` from a `.kcad.ts` script.
    */
   async lower(): Promise<import('../../kernel/backends/occt/occtBackend').OcctBackend> {
-    const backend = await this.lowerBackend();
+    const backend = await Shape.lowerBackendOf(this);
     if (backend instanceof MeshBackend) {
       throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
     }
@@ -1423,85 +1423,86 @@ export class Shape {
   /**
    * Like {@link lower}, but a display mesh body (`lib.meshFromSTL`) comes back
    * as its MeshBackend instead of throwing: for checks that only need what a
-   * mesh has (bounds, triangles), e.g. the mechanism gates.
+   * mesh has (bounds, triangles), e.g. the mechanism gates. Static so it stays
+   * off the script-facing Shape API.
    */
-  async lowerBackend(): Promise<
+  static async lowerBackendOf(self: Shape): Promise<
     import('../../kernel/backends/occt/occtBackend').OcctBackend | import('../../kernel/backends/meshBackend').MeshBackend
   > {
-    const records = this.session.getRecords();
+    const records = self.session.getRecords();
     // Cache invalidates on record-count growth, a transform appended to THIS
     // shape (`appendTransform` mutates `record.transforms` in place, so
     // `records.length` does not change), or a param-table change. A param
     // edit republishes `lastFullLower`; that solid wins over this cache so a
     // topology connector re-resolves on the new face.
-    const ownRecord = records.find(r => r.id === this.id);
+    const ownRecord = records.find(r => r.id === self.id);
     const transformCount = ownRecord?.transforms.length ?? 0;
-    const inputsKey = this.session.lowerInputsKey();
-    const cacheFresh = this._loweredAtRecordCount === records.length
-      && this._loweredAtTransformCount === transformCount
-      && this._loweredAtInputsKey === inputsKey;
+    const inputsKey = self.session.lowerInputsKey();
+    const cacheFresh = self._loweredAtRecordCount === records.length
+      && self._loweredAtTransformCount === transformCount
+      && self._loweredAtInputsKey === inputsKey;
     const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
     // The session's last full lower is param-keyed. A param edit republishes
     // it (`params.update`) with the new solids; prefer that over this Shape's
     // private cache, which was filled on the previous lower.
-    const reused = this.session.reusableLoweredShape(this.id);
+    const reused = self.session.reusableLoweredShape(self.id);
     if (reused instanceof MeshBackend) {
-      this._loweredMeshBackend = reused;
-      this._loweredAtRecordCount = records.length;
-      this._loweredAtTransformCount = transformCount;
-      this._loweredAtInputsKey = inputsKey;
+      self._loweredMeshBackend = reused;
+      self._loweredAtRecordCount = records.length;
+      self._loweredAtTransformCount = transformCount;
+      self._loweredAtInputsKey = inputsKey;
       return reused;
     }
     if (reused instanceof OcctBackend) {
-      this._loweredBackend = reused;
-      this._loweredAtRecordCount = records.length;
-      this._loweredAtTransformCount = transformCount;
-      this._loweredAtInputsKey = inputsKey;
+      self._loweredBackend = reused;
+      self._loweredAtRecordCount = records.length;
+      self._loweredAtTransformCount = transformCount;
+      self._loweredAtInputsKey = inputsKey;
       return reused;
     }
-    if (this._loweredMeshBackend && cacheFresh) {
-      return this._loweredMeshBackend;
+    if (self._loweredMeshBackend && cacheFresh) {
+      return self._loweredMeshBackend;
     }
-    if (this._loweredBackend && cacheFresh) {
-      return this._loweredBackend;
+    if (self._loweredBackend && cacheFresh) {
+      return self._loweredBackend;
     }
     const { RecomputeEngine } = await import('../compute/recomputeEngine');
     const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
-    if (!this.session.importedGeometry.has(this.id)) await initOcct();
-    const engine = new RecomputeEngine(createOcctLowerer(this.session));
-    const track = trackFullLower(this.session, (warning) => this.session.warnings.push(warning));
+    if (!self.session.importedGeometry.has(self.id)) await initOcct();
+    const engine = new RecomputeEngine(createOcctLowerer(self.session));
+    const track = trackFullLower(self.session, (warning) => self.session.warnings.push(warning));
     const r = await engine.run(
       records as readonly import('../../shared/intent/featureRecord').FeatureRecord[],
       {
-        paramTable: this.session.paramTable,
+        paramTable: self.session.paramTable,
         warningSink: track.warningSink,
         warningPhase: 'build',
-        gatedFeatureNames: this.session.gatedFeatureNames,
+        gatedFeatureNames: self.session.gatedFeatureNames,
       },
     );
     // Slice-3: populate per-record cache so `session.params.update` can
     // reuse earlier records' lowered output. Only stores successful records;
     // failed records are absent from `r.shapes` so we don't pollute the cache.
     for (const [id, sh] of r.shapes) {
-      this.session.cachedShapes.set(id, sh);
+      self.session.cachedShapes.set(id, sh);
     }
     track.publish(r);
-    const shape = r.shapes.get(this.id);
+    const shape = r.shapes.get(self.id);
     if (!shape) {
-      throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);
+      throw new Error(`Shape.lower(): shape '${self.id}' not lowered (check upstream diagnostics).`);
     }
     if (shape instanceof MeshBackend) {
-      this._loweredMeshBackend = shape;
-      this._loweredAtRecordCount = records.length;
-      this._loweredAtTransformCount = transformCount;
-      this._loweredAtInputsKey = inputsKey;
+      self._loweredMeshBackend = shape;
+      self._loweredAtRecordCount = records.length;
+      self._loweredAtTransformCount = transformCount;
+      self._loweredAtInputsKey = inputsKey;
       return shape;
     }
     if (!(shape instanceof OcctBackend)) throw new Error('Shape.lower(): shape has no BRep or display mesh backend.');
-    this._loweredBackend = shape;
-    this._loweredAtRecordCount = records.length;
-    this._loweredAtTransformCount = transformCount;
-    this._loweredAtInputsKey = inputsKey;
+    self._loweredBackend = shape;
+    self._loweredAtRecordCount = records.length;
+    self._loweredAtTransformCount = transformCount;
+    self._loweredAtInputsKey = inputsKey;
     return shape;
   }
 }

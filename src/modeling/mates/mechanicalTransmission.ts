@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Assembly, TransmissionIntentRecord } from '../capture/assembly';
+import { Shape } from '../capture/proxy';
 import type { RuntimeMesh } from '../../kernel/backends/runtimeMesh';
 import type { Vec3 } from '../../shared/intent/types';
 import { Transform } from '../../shared/runtime/se3';
@@ -221,7 +222,7 @@ async function worldBoundsFor(
   if (bbox !== undefined) return bbox;
   const part = partsByName.get(partName);
   if (part === undefined) return undefined;
-  const local = (await part.originalShape.lowerBackend()).boundingBox();
+  const local = (await Shape.lowerBackendOf(part.originalShape)).boundingBox();
   const transform = poses.get(partName) ?? Transform.identity();
   bbox = transformBbox(local, transform);
   cache.set(partName, bbox);
@@ -241,7 +242,7 @@ async function worldMeshFor(
   if (part === undefined) return undefined;
   let localMesh = localCache.get(partName);
   if (localMesh === undefined) {
-    localMesh = (await part.originalShape.lowerBackend()).getMesh();
+    localMesh = (await Shape.lowerBackendOf(part.originalShape)).getMesh();
     localCache.set(partName, localMesh);
   }
   const transform = poses.get(partName) ?? Transform.identity();
