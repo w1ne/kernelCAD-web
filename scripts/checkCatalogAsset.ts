@@ -23,7 +23,13 @@ const flag = (name: string): string | undefined => {
 };
 
 await initOcct();
-const { asset, glb } = await buildCatalogAssetWithGlb(repoRoot, relative(repoRoot, resolve(file)));
+// Report the build error itself: an uncaught throw makes Node print the
+// (minified, very long) OCCT glue line it surfaced through first.
+const built = await buildCatalogAssetWithGlb(repoRoot, relative(repoRoot, resolve(file))).catch((err: unknown) => {
+  console.error(err instanceof Error ? err.message : String(err));
+  process.exit(1);
+});
+const { asset, glb } = built;
 console.log(JSON.stringify({
   id: asset.id,
   triangles: asset.stats.triangles,

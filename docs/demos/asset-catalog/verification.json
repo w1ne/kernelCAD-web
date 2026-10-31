@@ -1,12 +1,28 @@
 {
-  "checkedAt": "2026-10-31T12:08:35.475Z",
+  "checkedAt": "2026-10-31T12:30:31.108Z",
   "kits": [
     {
-      "id": "nature",
-      "assets": 1,
+      "id": "city-street",
+      "assets": 20,
       "triangles": {
         "min": 96,
-        "max": 96
+        "max": 344
+      }
+    },
+    {
+      "id": "interior",
+      "assets": 21,
+      "triangles": {
+        "min": 60,
+        "max": 388
+      }
+    },
+    {
+      "id": "nature",
+      "assets": 21,
+      "triangles": {
+        "min": 56,
+        "max": 338
       }
     }
   ],
@@ -14,8 +30,11 @@
     {
       "tool": "search_assets",
       "q": "bench",
-      "coverage": "none",
-      "rows": []
+      "coverage": "ok",
+      "rows": [
+        "park-bench",
+        "bus-stop-shelter"
+      ]
     },
     {
       "tool": "search_assets",
@@ -29,7 +48,78 @@
     {
       "tool": "find_matching",
       "id": "pine-tree",
-      "rows": []
+      "rows": [
+        [
+          "bush",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "cliff-tile",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "fern",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "ground-tile",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "planter-box",
+          [
+            "compat:outdoor",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "shop-front",
+          [
+            "compat:outdoor",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "bus-stop-shelter",
+          [
+            "compat:outdoor",
+            "scale"
+          ]
+        ],
+        [
+          "park-bench",
+          [
+            "compat:outdoor",
+            "scale"
+          ]
+        ]
+      ]
     },
     {
       "tool": "get_variant",

@@ -169,9 +169,9 @@ function scaleCompatible(a: CatalogAsset, b: CatalogAsset): boolean {
 /**
  * Assets that belong in a scene with `id`: same kit first, then shared
  * compat tags, then a shared palette colour, then compatible real-world
- * scale. Results are spread across categories (round-robin by category in
- * score order) so a tree brings a rock, a bench and a lamp rather than five
- * trees. Returns `undefined` when `id` is not in the catalog.
+ * scale. Results are spread across categories (each repeat of a category
+ * loses a few points) so a tree brings a rock, a bench and a lamp rather than
+ * five trees. Palette or scale alone never qualifies a row. Returns `undefined` when `id` is not in the catalog.
  */
 export function findMatching(index: CatalogIndex, id: string, query: MatchingQuery = {}): MatchingRow[] | undefined {
   const anchor = index.assets.find((asset) => asset.id === id);
@@ -180,7 +180,8 @@ export function findMatching(index: CatalogIndex, id: string, query: MatchingQue
     .filter((asset) => asset.id !== id
       && (query.maxTriangles === undefined || asset.stats.triangles <= query.maxTriangles))
     .map((asset) => matchRow(anchor, asset))
-    .filter((row) => row.score > 1)
+    // Palette and scale alone do not make a scene: require the same kit or a shared compat tag.
+    .filter((row) => row.reasons.some((r) => r === 'same-kit' || r.startsWith('compat:')))
     .sort((a, b) => b.score - a.score || a.asset.id.localeCompare(b.asset.id));
   return spreadByCategory(candidates).slice(0, query.limit ?? 12);
 }
@@ -195,15 +196,21 @@ function matchRow(anchor: CatalogAsset, asset: CatalogAsset): MatchingRow {
   return { asset, score, reasons };
 }
 
-/** Round-robin over categories, keeping score order inside each. */
+/** Points a row loses for each better-scored row of its own category. */
+const SAME_CATEGORY_PENALTY = 6;
+
+/** Re-rank score-sorted rows so repeats of one category sink below strong
+ *  rows of other categories, without letting weak rows jump strong ones. */
 function spreadByCategory(rows: readonly MatchingRow[]): MatchingRow[] {
-  const queues = new Map<string, MatchingRow[]>();
-  for (const row of rows) queues.set(row.asset.category, [...(queues.get(row.asset.category) ?? []), row]);
-  const spread: MatchingRow[] = [];
-  for (let depth = 0; spread.length < rows.length; depth++) {
-    for (const queue of queues.values()) if (queue[depth] !== undefined) spread.push(queue[depth]!);
-  }
-  return spread;
+  const seen = new Map<string, number>();
+  return rows
+    .map((row) => {
+      const rank = seen.get(row.asset.category) ?? 0;
+      seen.set(row.asset.category, rank + 1);
+      return { row, effective: row.score - rank * SAME_CATEGORY_PENALTY };
+    })
+    .sort((a, b) => b.effective - a.effective || b.row.score - a.row.score || a.row.asset.id.localeCompare(b.row.asset.id))
+    .map((entry) => entry.row);
 }
 
 // ---------------------------------------------------------------------------

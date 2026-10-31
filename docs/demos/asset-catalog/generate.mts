@@ -46,7 +46,7 @@ async function emit(svg: string, overlays: sharp.OverlayOptions[] = [], seconds 
 }
 
 function textLines(lines: string[], x: number, y: number, size = 17, color = '#24364f'): string {
-  return lines.map((line, i) => `<text x="${x}" y="${y + i * (size + 7)}" font-family="DejaVu Sans Mono,monospace" font-size="${size}" fill="${color}">${esc(line)}</text>`).join('');
+  return lines.map((line, i) => `<text x="${x}" y="${y + i * (size + 7)}" font-family="DejaVu Sans Mono,monospace" font-size="${size}" fill="${color}" xml:space="preserve">${esc(line)}</text>`).join('');
 }
 
 await initOcct();
@@ -65,7 +65,8 @@ for (const kit of kits) {
   }
   const tris = rows.map((r) => r.triangles as number);
   evidence.kits.push({ id: kit.id, assets: rows.length, triangles: { min: Math.min(...tris), max: Math.max(...tris) } });
-  await emit(chrome(`Kit: ${kit.title} — ${rows.length} parametric assets`, `${kit.description} Triangles per asset ${Math.min(...tris)}–${Math.max(...tris)}.`, ''), overlays, 4);
+  const blurb = kit.description.length > 105 ? `${kit.description.slice(0, 102).replace(/\s+\S*$/, '')}…` : kit.description;
+  await emit(chrome(`Kit: ${kit.title} — ${rows.length} parametric assets`, `${blurb} Triangles per asset ${Math.min(...tris)}–${Math.max(...tris)}.`, ''), overlays, 4);
 }
 
 // 2. search_assets: a hit and an honest gap.
@@ -81,7 +82,7 @@ await emit(chrome('search_assets', 'Rows carry triangles, size in metres and kno
 ].join('')), [], 6);
 
 // 3. find_matching.
-const anchor = (await callMcpTool('search_assets', { q: 'tree', limit: 1 }) as Json).rows[0] as Json;
+const anchor = (await callMcpTool('search_assets', { q: 'pine tree', limit: 1 }) as Json).rows[0] as Json;
 const match = await callMcpTool('find_matching', { id: anchor.id, limit: 8 }) as Json;
 evidence.queries.push({ tool: 'find_matching', id: anchor.id, rows: match.rows.map((r: Json) => [r.id, r.reasons]) });
 await emit(chrome('find_matching', `What belongs in a scene with ${anchor.id}: same kit, shared compat tags, palette, scale — spread across categories.`, [

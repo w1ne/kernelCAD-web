@@ -35,14 +35,18 @@ const bench = asset({
   palette: [{ name: 'slats', color: '#2e7a49', parts: ['slats'] }],
 });
 const sofa = asset({ id: 'sofa', kit: 'interior', category: 'furniture', tags: ['couch', 'seat'], stats: { triangles: 200, sizeM: [2, 0.8, 0.9], minUpM: 0, materials: 1 } });
+const frame = asset({
+  id: 'picture-frame', kit: 'interior', category: 'attachment', tags: ['frame'],
+  palette: [{ name: 'mat', color: '#2f7d4a', parts: ['mat'] }],
+});
 const index: CatalogIndex = CatalogIndexSchema.parse({
   schemaVersion: 1,
   kits: [
     { id: 'nature', title: 'Nature', assets: ['boulder', 'oak-tree', 'pine-tree'] },
     { id: 'city-street', title: 'City street', assets: ['park-bench'] },
-    { id: 'interior', title: 'Interior', assets: ['sofa'] },
+    { id: 'interior', title: 'Interior', assets: ['picture-frame', 'sofa'] },
   ],
-  assets: [pine, oak, rock, bench, sofa],
+  assets: [pine, oak, rock, bench, sofa, frame],
 });
 
 describe('searchCatalog', () => {
@@ -72,6 +76,7 @@ describe('searchCatalog', () => {
   it('filters by kit and category, sorts by triangles and pages', () => {
     expect(searchCatalog(index, { kit: 'nature', sort: 'triangles' }).rows.map((r) => r.id)).toEqual(['pine-tree', 'boulder', 'oak-tree']);
     expect(searchCatalog(index, { category: 'furniture' }).rows.map((r) => r.id)).toEqual(['park-bench', 'sofa']);
+    expect(searchCatalog(index, { kit: 'interior' }).rows.map((r) => r.id)).toEqual(['picture-frame', 'sofa']);
     expect(searchCatalog(index, { limit: 2, offset: 2 }).rows.length).toBe(2);
     expect(searchCatalog(index, {}).coverage).toBeUndefined();
   });
@@ -89,6 +94,14 @@ describe('findMatching', () => {
     const bench = rows.find((r) => r.asset.id === 'park-bench')!;
     expect(bench.reasons).toEqual(expect.arrayContaining(['compat:outdoor', 'palette']));
     expect(rows.some((r) => r.asset.id === 'sofa')).toBe(false);
+  });
+
+  it('never matches on palette and scale alone', () => {
+    expect(findMatching(index, 'pine-tree')!.some((r) => r.asset.id === 'picture-frame')).toBe(false);
+  });
+
+  it('lets a strong same-category row outrank weak rows of other categories', () => {
+    expect(findMatching(index, 'pine-tree')!.map((r) => r.asset.id)).toEqual(['boulder', 'oak-tree', 'park-bench']);
   });
 
   it('honours the triangle filter and returns undefined for an unknown id', () => {

@@ -9,6 +9,16 @@
   colour knobs and colour presets at runtime. Knobs that change geometry
   throw with the bake path instead of returning the default shape. Demo:
   `docs/demos/asset-module/`.
+- Asset catalog kits: 62 original parametric low-poly assets in three kits,
+  `catalog/kits/nature` (21: trees, plants, rocks, logs, terrain tiles),
+  `catalog/kits/interior` (21: living, bedroom, kitchen and office furniture,
+  door, wall segment) and `catalog/kits/city-street` (20: street furniture,
+  traffic pieces, road and sidewalk tiles, shop front). Each has 2–6 knobs,
+  presets, real-world size, 56–388 triangles and a committed preview
+  (`npm run catalog:previews`, z-buffered software render of the low-poly GLB).
+  `catalog/AUTHORING.md` is the authoring contract;
+  `scripts/checkCatalogAsset.ts` builds and previews one asset. New cookbook
+  recipe `lowpoly-game-asset`. Demo: `docs/demos/asset-catalog/`.
 
 - Asset catalog MCP tools (read-only, bundled catalog): `search_assets`
   (q, kit, category, triangle range, sort, paging; compact rows with
