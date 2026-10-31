@@ -1,5 +1,13 @@
 # Unreleased
 
+- Catalog asset Studio link: `src/shared/assets/catalogStudioLink.ts` resolves
+  `/studio?catalog=<kit>/<id>` (e.g. `nature/pine-tree`) against
+  `catalog/index.json`, loads the row's `.kcad.ts` and refuses it when it no
+  longer matches `sourceSha256`. Evaluating the loaded source gives the knob
+  table Studio's Params tab shows. The hosted Studio does not read
+  `?catalog=` yet: it still has to call this loader beside `?gallery=` and
+  serve `catalog/`.
+
 - Drawing round-trip scorecard: `npm run drawing-roundtrip:scorecard` draws
   the 27 reference parts with the `pdf-drawing` exporter, reads each sheet
   back with `drawing_to_cad`, and checks the rebuilt volume (±0.1 %) and
