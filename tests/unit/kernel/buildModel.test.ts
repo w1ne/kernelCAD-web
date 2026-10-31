@@ -276,7 +276,7 @@ describe('rebuildModelIncremental', () => {
     }
   });
 
-  it('(b) falls back to a full rebuild on a mid-model edit and lowers the prefix', async () => {
+  it('(b) a first-feature edit re-lowers it and everything downstream', async () => {
     const prev = await buildModel({ fileName: 'm.kcad.ts', code: PREFIX });
     const prefixIds = prev.records.map(r => r.id);
 
@@ -314,5 +314,51 @@ describe('rebuildModelIncremental', () => {
     expect(Math.abs(volA - volB)).toBeLessThan(1e-6);
     expect(incremental.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
     expect(full.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+  });
+
+  // Two independent bodies joined at the end. Editing the SECOND body's size
+  // must keep the first body (and its fillet) and re-lower only what reads it.
+  const TWO_BODIES = (postHeight: number) => `
+    const base = box(20, 20, 5);
+    const rounded = base.fillet(1);
+    const post = box(4, 4, ${postHeight});
+    return rounded.union(post);
+  `;
+
+  it('(d) a mid-script edit re-lowers only the changed feature and its dependents', async () => {
+    const prev = await buildModel({ fileName: 'm.kcad.ts', code: TWO_BODIES(30) });
+    expect(prev.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    const byKind = (m: typeof prev, kind: string) => m.records.filter(r => r.kind === kind).map(r => r.id);
+    const [baseId, postId] = byKind(prev, 'box');
+    const [filletId] = byKind(prev, 'fillet');
+    const [unionId] = byKind(prev, 'boolean');
+
+    const { loweredIds, restore } = instrumentLoweredIds();
+    try {
+      const next = await rebuildModelIncremental(prev, { fileName: 'm.kcad.ts', code: TWO_BODIES(40) });
+      expect(loweredIds.has(baseId)).toBe(false);
+      expect(loweredIds.has(filletId)).toBe(false);
+      expect(next.shapes.get(filletId)).toBe(prev.shapes.get(filletId));
+      expect(loweredIds.has(postId)).toBe(true);
+      expect(loweredIds.has(unionId)).toBe(true);
+
+      const full = await buildModel({ fileName: 'm.kcad.ts', code: TWO_BODIES(40) });
+      expect(Math.abs(next.rootShape!.volume() - full.rootShape!.volume())).toBeLessThan(1e-6);
+      expect(next.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    } finally {
+      restore();
+    }
+  });
+
+  it('(e) an edit that changes nothing reuses every feature', async () => {
+    const prev = await buildModel({ fileName: 'm.kcad.ts', code: TWO_BODIES(30) });
+    const { loweredIds, restore } = instrumentLoweredIds();
+    try {
+      const next = await rebuildModelIncremental(prev, { fileName: 'm.kcad.ts', code: TWO_BODIES(30) + '\n// comment' });
+      expect(loweredIds.size).toBe(0);
+      expect(next.rootShape!.volume()).toBeCloseTo(prev.rootShape!.volume(), 6);
+    } finally {
+      restore();
+    }
   });
 });

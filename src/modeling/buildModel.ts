@@ -16,7 +16,7 @@ import type { CaptureSession } from './capture/captureSession';
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { runScript, type RunScriptFacadeOptions } from './runtime/runScript';
 import { copyDrilledPolarFrames } from '../shared/intent/drilledPolarFrame';
-import { computePrefixReuse, type RecordHealth } from './compute/prefixReuse';
+import { computeGraphReuse, type RecordHealth } from './compute/prefixReuse';
 import { populateCache } from './paramUpdate';
 import { assembleBuiltModel, builtModelFromRun, resolveRootId } from './builtModelFromRun';
 
@@ -109,25 +109,19 @@ export async function buildModel(
 }
 
 /**
- * Incremental code-edit rebuild — Slice 1 (append-only prefix reuse).
+ * Incremental code-edit rebuild: dependency-aware reuse (`computeGraphReuse`).
  *
- * `buildModel` re-lowers every record from scratch on a code edit. When an
- * agent APPENDS a feature to the end of the script, the unchanged prefix is
- * re-lowered needlessly. This function reuses the previous build's cached
- * prefix shapes ONLY when it can prove the new record list is a pure
- * append/strict-prefix-superset of the previous one (same ids, same resolved
- * structural hash for the entire shared prefix, every prefix record healthy +
- * cached). In that case it seeds the engine with the cached prefix shapes and
- * lowers only the appended tail.
+ * `buildModel` re-lowers every record from scratch on a code edit. This
+ * re-captures the script (cheap: JS execution) and seeds every record the
+ * edit provably did not touch: same id, healthy cached shape in the previous
+ * build, identical resolved structural hash, and every input it consumes
+ * itself reused. A change anywhere — an appended feature, a dimension in the
+ * middle, a param default rewritten in the source — re-lowers the changed
+ * records and everything downstream of them, nothing else.
  *
- * In EVERY other case — an edit/insert/delete anywhere in the prefix, any hash
- * mismatch, a missing cached shape, a non-healthy prefix record, or any
- * unexpected condition — it falls back to a full `buildModel(input)`. Its
- * output is shape-identical to `buildModel` for the append case and is
- * literally `buildModel`'s output otherwise, so it never renders a stale or
- * wrong model. See docs/specs/2026-06-14-incremental-code-rebuild-design.md.
- *
- * Slice 1 ships this alongside `buildModel`; existing callers are untouched.
+ * When nothing is reusable, or on any unexpected condition, it falls back to a
+ * full `buildModel(input)`, so it never renders a stale model. See
+ * docs/specs/2026-06-14-incremental-code-rebuild-design.md (kernelCAD-private).
  */
 /** Copy triangle meshes whose lowered shapes were reused object-identically.
  *  A fresh session has empty mesh caches, so the next `meshFeaturesPerFeature`
@@ -179,10 +173,9 @@ export async function rebuildModelIncremental(
   }
   const session = run.session;
 
-  // 2. Decide whether the entire previous record list is a healthy, cached
-  //    prefix of the new one (pure append).
+  // 2. Find the records the edit provably did not touch.
   const prevHealth: ReadonlyMap<string, RecordHealth> = prevModel.health;
-  const decision = computePrefixReuse({
+  const decision = computeGraphReuse({
     prevRecords: prevModel.records,
     nextRecords: run.records,
     prevParamTable: prevModel.session.paramTable,
@@ -191,8 +184,8 @@ export async function rebuildModelIncremental(
     prevHealth,
   });
 
-  if (!decision.reusable) {
-    // Not a provable append → full rebuild. The session we just captured is
+  if (decision.reusableIds.length === 0) {
+    // Nothing provably unchanged → full rebuild. The session we just captured is
     // discarded; `buildModel` re-runs the script in a fresh session. Re-running
     // is acceptable: capture is cheap and re-running guarantees the fallback is
     // byte-identical to the normal build path (no half-seeded state leaks).
@@ -203,12 +196,11 @@ export async function rebuildModelIncremental(
   // axis yet; copy it from the records that drilled those holes.
   copyDrilledPolarFrames(prevModel.records, run.records, decision.reusableIds);
 
-  // 3. Seed the engine with the previous build's cached prefix shapes and lower
-  //    only the appended tail.
+  // 3. Seed the engine with those cached shapes; lower only the rest.
   const seedShapes = new Map<FeatureId, ShapeBackend>();
   for (const id of decision.reusableIds) {
     const cached = prevModel.session.cachedShapes.get(id);
-    // Defensive: computePrefixReuse already verified presence, but a missing
+    // Defensive: computeGraphReuse already verified presence, but a missing
     // entry here would mean lowering a record whose upstream shape we promised
     // to seed — fall back rather than risk it.
     if (!cached) return withSelectionDrift(prevModel.selections, await buildModel(input, opts));
