@@ -1,12 +1,28 @@
 {
-  "checkedAt": "2026-10-31T12:08:35.475Z",
+  "checkedAt": "2026-10-31T12:28:48.398Z",
   "kits": [
     {
-      "id": "nature",
-      "assets": 1,
+      "id": "city-street",
+      "assets": 20,
       "triangles": {
         "min": 96,
-        "max": 96
+        "max": 344
+      }
+    },
+    {
+      "id": "interior",
+      "assets": 21,
+      "triangles": {
+        "min": 60,
+        "max": 388
+      }
+    },
+    {
+      "id": "nature",
+      "assets": 21,
+      "triangles": {
+        "min": 56,
+        "max": 338
       }
     }
   ],
@@ -14,8 +30,11 @@
     {
       "tool": "search_assets",
       "q": "bench",
-      "coverage": "none",
-      "rows": []
+      "coverage": "ok",
+      "rows": [
+        "park-bench",
+        "bus-stop-shelter"
+      ]
     },
     {
       "tool": "search_assets",
@@ -28,20 +47,96 @@
     },
     {
       "tool": "find_matching",
-      "id": "pine-tree",
-      "rows": []
+      "id": "birch-tree",
+      "rows": [
+        [
+          "bush",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "compat:meadow",
+            "compat:park",
+            "scale"
+          ]
+        ],
+        [
+          "ground-tile",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:meadow",
+            "compat:forest",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "park-bench",
+          [
+            "compat:outdoor",
+            "compat:park",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "bike-rack",
+          [
+            "compat:outdoor",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "bus-stop-shelter",
+          [
+            "compat:outdoor",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "shop-front",
+          [
+            "compat:outdoor",
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "picture-frame",
+          [
+            "palette",
+            "scale"
+          ]
+        ],
+        [
+          "oak-tree",
+          [
+            "same-kit",
+            "compat:outdoor",
+            "compat:forest",
+            "compat:meadow",
+            "compat:park",
+            "scale"
+          ]
+        ]
+      ]
     },
     {
       "tool": "get_variant",
-      "id": "pine-tree",
+      "id": "birch-tree",
       "want": "taller, autumn, five tiers",
       "params": {
-        "leaves": "#c9772b",
-        "heightM": "6",
-        "tiers": "5"
+        "leaves": "#e2b93b",
+        "heightM": "12"
       },
-      "unmatched": [],
-      "glbSha256": "f0285d4c57e8c492eba0afeedcc3100a09a91a020f2738607bbfcc372e4e3280"
+      "unmatched": [
+        "5",
+        "tiers"
+      ],
+      "glbSha256": "b6614d3bb15dad3bdc5a77f5bfff8a01052ccb93ebb5b3072d023558956c90cf"
     }
   ],
   "claims": {
