@@ -34,9 +34,19 @@ Ask your agent: **“look at kernelcad.com and install the mcp”**.
 [Agent-readable installation instructions](https://kernelcad.com/llms.txt) cover
 hosted setup, local CLI setup, and connection verification.
 
-### Local CLI: one line
+### Local MCP server: one line
 
-For Node.js users (Node.js 22.12 or newer):
+Run the MCP server over stdio with no install (Node.js 22.12 or newer):
+
+```bash
+npx -y kernelcad mcp
+```
+
+Claude Code: `claude mcp add kernelcad -- npx -y kernelcad mcp`
+
+### Local CLI
+
+To keep the `kernelcad` command on your PATH:
 
 ```bash
 npm install --global kernelcad
