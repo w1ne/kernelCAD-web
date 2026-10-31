@@ -1,5 +1,15 @@
 # Unreleased
 
+- Catalog assets as three.js ES modules: `npx tsx scripts/exportAssetModule.ts
+  <id>` writes a self-contained `.mjs` (`emitAssetModule` in
+  `src/agent/catalog/assetModule.ts`) exporting `createAsset` (default),
+  `params`, `presets`, `palette`, `rig`, `meta` and `runtimeKnobs`.
+  `createAsset(knobs)` builds a `THREE.Group` synchronously from the embedded
+  low-poly triangles on one shared vertex-coloured material, and applies
+  colour knobs and colour presets at runtime. Knobs that change geometry
+  throw with the bake path instead of returning the default shape. Demo:
+  `docs/demos/asset-module/`.
+
 - Asset catalog MCP tools (read-only, bundled catalog): `search_assets`
   (q, kit, category, triangle range, sort, paging; compact rows with
   triangles, size in metres, origin, knobs and palette; a `coverage` verdict
