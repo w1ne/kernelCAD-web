@@ -1413,6 +1413,21 @@ export class Shape {
    * agent calls `selectEdges(myShape, ...)` from a `.kcad.ts` script.
    */
   async lower(): Promise<import('../../kernel/backends/occt/occtBackend').OcctBackend> {
+    const backend = await this.lowerBackend();
+    if (backend instanceof MeshBackend) {
+      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
+    }
+    return backend;
+  }
+
+  /**
+   * Like {@link lower}, but a display mesh body (`lib.meshFromSTL`) comes back
+   * as its MeshBackend instead of throwing: for checks that only need what a
+   * mesh has (bounds, triangles), e.g. the mechanism gates.
+   */
+  async lowerBackend(): Promise<
+    import('../../kernel/backends/occt/occtBackend').OcctBackend | import('../../kernel/backends/meshBackend').MeshBackend
+  > {
     const records = this.session.getRecords();
     // Cache invalidates on record-count growth, a transform appended to THIS
     // shape (`appendTransform` mutates `record.transforms` in place, so
@@ -1435,7 +1450,7 @@ export class Shape {
       this._loweredAtRecordCount = records.length;
       this._loweredAtTransformCount = transformCount;
       this._loweredAtInputsKey = inputsKey;
-      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
+      return reused;
     }
     if (reused instanceof OcctBackend) {
       this._loweredBackend = reused;
@@ -1445,7 +1460,7 @@ export class Shape {
       return reused;
     }
     if (this._loweredMeshBackend && cacheFresh) {
-      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
+      return this._loweredMeshBackend;
     }
     if (this._loweredBackend && cacheFresh) {
       return this._loweredBackend;
@@ -1475,7 +1490,14 @@ export class Shape {
     if (!shape) {
       throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);
     }
-    if (!(shape instanceof OcctBackend)) throw new Error('Shape.lower(): display mesh body has no BRep backend; solid operations are unavailable.');
+    if (shape instanceof MeshBackend) {
+      this._loweredMeshBackend = shape;
+      this._loweredAtRecordCount = records.length;
+      this._loweredAtTransformCount = transformCount;
+      this._loweredAtInputsKey = inputsKey;
+      return shape;
+    }
+    if (!(shape instanceof OcctBackend)) throw new Error('Shape.lower(): shape has no BRep or display mesh backend.');
     this._loweredBackend = shape;
     this._loweredAtRecordCount = records.length;
     this._loweredAtTransformCount = transformCount;

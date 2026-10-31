@@ -270,7 +270,7 @@ async function checkRequiredSupport(
     if (supportPart === undefined) continue;
     const supportPose = poses.get(supportPart.name);
     if (supportPose === undefined) continue;
-    const localBbox = (await supportPart.originalShape.lower()).boundingBox();
+    const localBbox = (await supportPart.originalShape.lowerBackend()).boundingBox();
     const bbox = transformBbox(localBbox, supportPose);
     const distance = distanceOutsideExpandedBbox(worldPoint, bbox, REQUIRED_SUPPORT_TOL_MM);
     bestDistance = Math.min(bestDistance, distance);

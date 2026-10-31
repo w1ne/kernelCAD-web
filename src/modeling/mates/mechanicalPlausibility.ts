@@ -147,7 +147,7 @@ export async function connectorsInSolidDiagnostics(arm: Assembly): Promise<Conne
     if (part === undefined) return undefined;
     let bbox = boundsByPartName.get(part.name);
     if (bbox === undefined) {
-      bbox = (await part.originalShape.lower()).boundingBox();
+      bbox = (await part.originalShape.lowerBackend()).boundingBox();
       boundsByPartName.set(part.name, bbox);
     }
     return bbox;
@@ -174,7 +174,7 @@ export async function reviewMechanicalPlausibility(
     if (part === undefined) return undefined;
     let bbox = boundsByPartName.get(part.name);
     if (bbox === undefined) {
-      bbox = (await part.originalShape.lower()).boundingBox();
+      bbox = (await part.originalShape.lowerBackend()).boundingBox();
       boundsByPartName.set(part.name, bbox);
     }
     return bbox;
@@ -185,7 +185,7 @@ export async function reviewMechanicalPlausibility(
     if (part === undefined) return undefined;
     let backend = backendByPartName.get(part.name);
     if (backend === undefined) {
-      backend = await part.originalShape.lower();
+      backend = await part.originalShape.lowerBackend();
       backendByPartName.set(part.name, backend);
     }
     return backend;

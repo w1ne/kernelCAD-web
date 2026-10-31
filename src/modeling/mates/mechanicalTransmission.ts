@@ -221,7 +221,7 @@ async function worldBoundsFor(
   if (bbox !== undefined) return bbox;
   const part = partsByName.get(partName);
   if (part === undefined) return undefined;
-  const local = (await part.originalShape.lower()).boundingBox();
+  const local = (await part.originalShape.lowerBackend()).boundingBox();
   const transform = poses.get(partName) ?? Transform.identity();
   bbox = transformBbox(local, transform);
   cache.set(partName, bbox);
@@ -241,7 +241,7 @@ async function worldMeshFor(
   if (part === undefined) return undefined;
   let localMesh = localCache.get(partName);
   if (localMesh === undefined) {
-    localMesh = (await part.originalShape.lower()).getMesh();
+    localMesh = (await part.originalShape.lowerBackend()).getMesh();
     localCache.set(partName, localMesh);
   }
   const transform = poses.get(partName) ?? Transform.identity();
