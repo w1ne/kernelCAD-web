@@ -16,6 +16,21 @@ Low-poly crates, barrels, containers, tools, carts and market pieces at real-wor
 | hand-cart | Two-wheeled wooden cart with slatted sides, spoked wheels and shafts | sides, load, spokes, wood, wheel, iron, cargo | 556 |
 | market-stall | Counter stall on four posts under a striped sloping awning with valance | widthM, stripes, goods, wood, awningA, awningB, produce | 432 |
 | treasure-chest | Vaulted-lid chest with iron bands and lock, shut or open over gold | lid, size, wood, iron, gold | 168 |
+| shipping-container | Corrugated ISO container (10/20/40 ft) with corner frame and barred double doors | lengthFt, ribs, steel, frame, bars | 408 |
+| gas-cylinder | Steel gas bottle with painted shoulder and valve, single or a chained pair | count, size, bottle, shoulder, valve | 208 |
+| jerrycan | Steel fuel can with X-pressed sides, three-bar handle and spout cap | can, press, handle, cap | 180 |
+| bucket | Tapered metal or wooden pail with bail handle, empty or filled | style, fill, body, rim, contents | 332 |
+| watering-can | Garden watering can with long angled spout, rose head and handle | can, rose, grip | 228 |
+| haybale | Rectangular twine-bound or big round straw bale, single or stacked | shape, stack, hay, ends, twine | 140 |
+| campfire | Crossed logs in a stone ring with layered flames, or cold embers | state, stones, wood, stone, flame, core | 338 |
+| lantern | Hexagonal glowing lantern with pointed roof, free-standing or on a post | mount, frame, glass, post | 164 |
+| tent | Canvas ridge tent with open door, poles and guy lines, or a round pavilion | style, canvas, trim, inside, poles | 128 |
+| signpost | Crossroads signpost with arrow finger boards on a stone footing | arrows, post, boards, footing | 124 |
+| workbench | Carpenter workbench with shelf, front vice and tools on top | lengthMm, tools, top, frame, metal | 220 |
+| plastic-crate | Stackable slotted plastic crate with hand-holds, optionally full of produce | stack, contents, crate, rim, goods | 232 |
+| well | Round stone village well with gabled roof, winch and hanging bucket | roof, stone, cap, wood, shingles, water | 460 |
+| cauldron | Pot-bellied iron cauldron on three legs with bubbling brew, optional fire | fire, size, iron, brew, wood | 364 |
+| hand-truck | Two-wheeled dolly with looped handle and toe plate, empty or with boxes | load, frame, tyre, plate, boxes | 372 |
 
 ## Licence
 
