@@ -40,6 +40,21 @@ Low-poly trees, plants, rocks, wood and 2 m terrain tiles at real-world scale. E
 | lily-pads | Floating notched lily pads with an optional water lily | pads, bloom, leaf, petals, centre | 340 |
 | bamboo-clump | Bamboo culms with node rings and top leaves | heightM, count, culm, node, leaves | 504 |
 | fallen-branch | Crooked fallen branch with twigs and leaf clumps | lengthM, twigs, leafy, bark, leaves | 168 |
+| cherry-blossom-tree | Sakura with leaning trunk, spreading limbs, flat blossom clouds and petal carpet | heightM, clouds, carpet, bark, blossom, petals | 396 |
+| poplar-tree | Tall Lombardy poplar with a lumpy columnar crown | heightM, lumps, bark, leaves | 280 |
+| baobab-tree | Bottle-trunked baobab with stubby branches and leaf tufts | heightM, branches, tufts, bark, leaves | 412 |
+| bonsai-tree | Bonsai in a footed tray with zig-zag trunk and cloud pads | pads, style, pot, bark, foliage, soil | 324 |
+| giant-mushroom | Fantasy giant toadstool with skirt, gills and raised spots | heightM, shape, spots, cap, spot, stalk, gills | 294 |
+| tumbleweed | Scraggly ball of spiky dry brush layers | size, layers, twig, core | 304 |
+| rose-bush | Leafy mound dotted with open rose blooms | size, blooms, rose, centre, leaves | 444 |
+| clover-patch | Low mat of three-leaf clovers with round blossoms | count, flowers, leaf, base, blossom | 436 |
+| wheat-sheaf | Tied harvest bundle of straw crowned by grain ears | heightM, ears, straw, ear, band | 338 |
+| pebble-cluster | Scatter of flat river pebbles in two tones | count, spread, stone, accent | 256 |
+| crystal-cluster | Hexagonal pointed crystals on a rock bed | heightM, count, crystal, rock | 262 |
+| cairn | Balanced stack of flat stones | stones, size, stone, accent | 228 |
+| hollow-log | Fallen hollow log with cut ends and moss patch | lengthM, diameter, moss, bark, wood, hollow, mossColor | 284 |
+| agave | Spiky agave rosette with optional flowering stalk | size, count, bloom, leaf, stalk, flower | 216 |
+| prickly-pear-cactus | Opuntia of branching flat pads with red fruit | tiers, fruits, pad, fruit | 272 |
 
 ## Licence
 
