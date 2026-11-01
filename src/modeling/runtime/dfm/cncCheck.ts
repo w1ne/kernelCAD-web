@@ -15,7 +15,13 @@
 //     parallel to an approach axis (radius 0) and (b) concave partial
 //     cylinders (pocket-corner fillets) parallel to an approach axis whose
 //     radius is below the tool radius. Full bores are drilled, not milled,
-//     and are not flagged.
+//     and are not flagged. A sharp edge only counts for axis `a` when both
+//     of its faces are walls along `a` (normals ⟂ a) and the corner is
+//     reachable along +a; an edge some allowed axis reaches as a FLOOR
+//     corner (one face facing that tool, the other a wall along it) is cut
+//     sharp by a flat end mill and is not flagged. This keeps the facets of
+//     a drilled hole's floor circle and the floor edges of a closed top
+//     pocket (seen from a side setup) out of the report.
 //
 // Pure mesh geometry plus the cheap OCCT concave-cylinder scan shared with
 // hole detection; no boolean probes. All locations are part-local.
@@ -79,6 +85,10 @@ const CREASE_EPS_DEG = 0.05;
 const FACET_STEP_FACTOR = 1.5;
 const WELD = 1e-4;
 const MAX_REPORTED = 10;
+/** |n·a| below this: the face is a wall along axis a (within ~11.5°). */
+const WALL_DOT = 0.2;
+/** Offset (mm) of the reachability probe from a corner into the air side. */
+const PROBE_OFFSET = 1e-3;
 
 const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
@@ -105,6 +115,7 @@ export interface Tri {
   area: number;
 }
 
+/** Mesh triangles with OUTWARD unit normals (inward-wound meshes are flipped). */
 export function trianglesOf(mesh: DfmMesh): Tri[] {
   const P = (i: number): Vec3 => [mesh.vertices[3 * i], mesh.vertices[3 * i + 1], mesh.vertices[3 * i + 2]];
   const tris: Tri[] = [];
@@ -222,19 +233,34 @@ export function findSharpInternalCorners(
   mesh: DfmMesh,
   axes: readonly Vec3[],
   faceOfTri?: ArrayLike<number>,
+  bvh: TriangleBvh = new TriangleBvh(mesh),
 ): CncSharpCorner[] {
+  const found: CncSharpCorner[] = [];
+  for (const corner of concaveCreaseEdges(mesh, faceOfTri)) {
+    if (!axes.some(a => Math.abs(dot(corner.d, a)) > PARALLEL_COS)) continue;
+    const reach = reachProbe(corner, bvh);
+    if (axes.some(a => isReachableFloorCorner(corner, a, reach))) continue;
+    const axis = axes.find(a => isReachableWallCorner(corner, a, reach));
+    if (axis === undefined) continue;
+    found.push({ location: midpoint(corner), lengthMm: corner.length, axis });
+  }
+  return mergeCorners(found);
+}
+
+const midpoint = (c: CornerEdge): Vec3 => [(c.a[0] + c.b[0]) / 2, (c.a[1] + c.b[1]) / 2, (c.a[2] + c.b[2]) / 2];
+
+/** Mesh edges that are sharp concave creases (see findSharpInternalCorners). */
+function concaveCreaseEdges(mesh: DfmMesh, faceOfTri?: ArrayLike<number>): CornerEdge[] {
   const tris = trianglesOf(mesh);
   const edges = meshEdges(tris);
   const cosSharp = Math.cos(((faceOfTri !== undefined ? CREASE_EPS_DEG : SHARP_DIHEDRAL_DEG) * Math.PI) / 180);
   const faceStep = faceOfTri !== undefined ? faceFacetSteps(edges, tris, faceOfTri) : undefined;
-  const found: CncSharpCorner[] = [];
+  const out: CornerEdge[] = [];
   for (const e of edges.values()) {
     if (e.tris.length !== 2) continue;
     const d = sub(e.b, e.a);
     const l = len(d);
     if (l < 1e-6) continue;
-    const axis = axes.find(a => Math.abs(dot(d, a)) / l > PARALLEL_COS);
-    if (axis === undefined) continue;
     if (faceOfTri !== undefined && faceOfTri[e.tris[0]] === faceOfTri[e.tris[1]]) continue;
     const [t1, t2] = [tris[e.tris[0]], tris[e.tris[1]]];
     const nd = dot(t1.n, t2.n);
@@ -242,13 +268,42 @@ export function findSharpInternalCorners(
     if (faceOfTri !== undefined && faceStep !== undefined && isTangentBlend(nd, faceStep, faceOfTri[e.tris[0]], faceOfTri[e.tris[1]])) continue;
     // Concave: each triangle's centroid sits on the outward side of the other's plane.
     if (dot(t2.n, sub(t1.c, e.a)) <= 1e-6) continue;
-    found.push({
-      location: [(e.a[0] + e.b[0]) / 2, (e.a[1] + e.b[1]) / 2, (e.a[2] + e.b[2]) / 2],
-      lengthMm: l,
-      axis,
-    });
+    out.push({ a: e.a, b: e.b, d: [d[0] / l, d[1] / l, d[2] / l], n1: t1.n, n2: t2.n, length: l });
   }
-  return mergeCorners(found);
+  return out;
+}
+
+interface CornerEdge { a: Vec3; b: Vec3; d: Vec3; n1: Vec3; n2: Vec3; length: number }
+
+/** Is the corner's air side open toward +axis? Probes from the edge
+ *  midpoint, nudged off both faces into the air, along the axis. */
+function reachProbe(c: CornerEdge, bvh: TriangleBvh): (axis: Vec3) => boolean {
+  const bis = [c.n1[0] + c.n2[0], c.n1[1] + c.n2[1], c.n1[2] + c.n2[2]] as Vec3;
+  const bl = len(bis) || 1;
+  const k = PROBE_OFFSET / bl;
+  const origin: Vec3 = [
+    (c.a[0] + c.b[0]) / 2 + k * bis[0],
+    (c.a[1] + c.b[1]) / 2 + k * bis[1],
+    (c.a[2] + c.b[2]) / 2 + k * bis[2],
+  ];
+  return axis => bvh.raycast(origin, axis, { tMin: 1e-6 }) === null;
+}
+
+/** A vertical corner for axis a: runs along a, both faces are walls along a,
+ *  and the tool can come down to it. */
+function isReachableWallCorner(c: CornerEdge, a: Vec3, reach: (axis: Vec3) => boolean): boolean {
+  if (Math.abs(dot(c.d, a)) <= PARALLEL_COS) return false;
+  if (Math.abs(dot(c.n1, a)) >= WALL_DOT || Math.abs(dot(c.n2, a)) >= WALL_DOT) return false;
+  return reach(a);
+}
+
+/** A floor corner for axis a: across a, one face faces the tool (floor) and
+ *  the other is a wall along a. A flat end mill cuts it sharp. */
+function isReachableFloorCorner(c: CornerEdge, a: Vec3, reach: (axis: Vec3) => boolean): boolean {
+  if (Math.abs(dot(c.d, a)) >= 1 - PARALLEL_COS) return false;
+  const floorWall = (f: Vec3, w: Vec3): boolean => dot(f, a) > PARALLEL_COS && Math.abs(dot(w, a)) < WALL_DOT;
+  if (!floorWall(c.n1, c.n2) && !floorWall(c.n2, c.n1)) return false;
+  return reach(a);
 }
 
 /** Merge collinear edge segments (tessellation splits) into one corner each. */
@@ -297,7 +352,7 @@ export function checkCncMachinability(
   return {
     settings,
     undercut: findUndercuts(mesh, settings.approachAxes, bvh),
-    sharpInternalCorners: findSharpInternalCorners(faceMesh, settings.approachAxes, tagged.faceOfTri).slice(0, MAX_REPORTED),
+    sharpInternalCorners: findSharpInternalCorners(faceMesh, settings.approachAxes, tagged.faceOfTri, bvh).slice(0, MAX_REPORTED),
     tightFillets: findTightFillets(shape, settings.approachAxes, settings.toolDiameterMm / 2).slice(0, MAX_REPORTED),
   };
 }

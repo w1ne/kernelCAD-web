@@ -14,7 +14,7 @@
 // gcode export pre-check emit identical findings.
 
 import type { Face } from 'replicad';
-import type { CompilerDiagnostic, DiagnosticCode } from '../../../shared/diagnostics/diagnostic';
+import type { CompilerDiagnostic, DiagnosticCode, DiagnosticSeverity } from '../../../shared/diagnostics/diagnostic';
 import { DIAGNOSTIC_REGISTRY } from '../../../shared/diagnostics/registry';
 import type { DfmFdmMetadata } from '../../../shared/intent/dfmSpecRecord';
 import { meshShapeForExport, type OcctBackend } from '../../../kernel/backends/occt/occtBackend';
@@ -102,6 +102,11 @@ export interface FdmCheckOptions {
   bvh?: TriangleBvh;
   /** Part-local → reported frame (world); identity when omitted. */
   toWorld?: ToWorld;
+  /** Severity of the too-small-HOLE diagnostic. The dfmSpec gate keeps the
+   *  registry default ('warn'); dfm_review, whose fdm.min-hole check FAILS,
+   *  passes 'error' so its diagnostic agrees with the check status. Pins
+   *  stay at the registry default (fdm.min-pin is a warning). */
+  smallHoleSeverity?: DiagnosticSeverity;
 }
 
 type ToWorld = (p: Vec3) => readonly [number, number, number];
@@ -134,7 +139,7 @@ export function checkFdmPrintability(shape: OcctBackend, opts: FdmCheckOptions):
   const smallFeatures = findSmallFeatures(shape, settings.nozzleMm);
 
   const report: FdmPartReport = { settings, orientation, ranking, walls, smallFeatures, verdict: 'pass' };
-  const diagnostics = fdmDiagnostics(report, opts.part, profile.name, profile.bedSizeMm, opts.toWorld ?? (p => p));
+  const diagnostics = fdmDiagnostics(report, opts.part, profile.name, profile.bedSizeMm, opts.toWorld ?? (p => p), opts.smallHoleSeverity);
   if (diagnostics.some(d => d.severity === 'error')) report.verdict = 'fail';
   return { report, diagnostics };
 }
@@ -228,6 +233,7 @@ function fdmDiagnostics(
   printer: string,
   bed: { x: number; y: number; z: number },
   toWorld: ToWorld,
+  smallHoleSeverity?: DiagnosticSeverity,
 ): CompilerDiagnostic[] {
   const out: CompilerDiagnostic[] = [];
   const o = report.orientation;
@@ -299,13 +305,7 @@ function fdmDiagnostics(
 
   // Small holes and pins.
   for (const f of report.smallFeatures.slice(0, MAX_REPORTED)) {
-    const nozzles = f.kind === 'hole' ? MIN_HOLE_NOZZLES : MIN_PIN_NOZZLES;
-    const effect = f.kind === 'hole' ? 'it will print undersized or close up' : 'it will be fragile and lose roundness';
-    out.push(emit(
-      'dfm.fdm.feature-too-small',
-      `dfm.fdm: part '${part}' has a Ø${mm2(f.diameterMm)} mm ${f.kind} at ${xyz(toWorld(f.location))} — below ` +
-        `the ${mm2(f.minDiameterMm)} mm minimum (${nozzles} × ${settings.nozzleMm} mm nozzle); ${effect}.`,
-    ));
+    out.push(smallFeatureDiagnostic(f, part, settings.nozzleMm, toWorld, smallHoleSeverity));
   }
 
   // Bed contact and tip risk.
@@ -330,6 +330,19 @@ function fdmDiagnostics(
     ));
   }
   return out;
+}
+
+function smallFeatureDiagnostic(
+  f: FdmSmallFeature, part: string, nozzleMm: number, toWorld: ToWorld, holeSeverity?: DiagnosticSeverity,
+): CompilerDiagnostic {
+  const nozzles = f.kind === 'hole' ? MIN_HOLE_NOZZLES : MIN_PIN_NOZZLES;
+  const effect = f.kind === 'hole' ? 'it will print undersized or close up' : 'it will be fragile and lose roundness';
+  const d = emit(
+    'dfm.fdm.feature-too-small',
+    `dfm.fdm: part '${part}' has a Ø${mm2(f.diameterMm)} mm ${f.kind} at ${xyz(toWorld(f.location))} — below ` +
+      `the ${mm2(f.minDiameterMm)} mm minimum (${nozzles} × ${nozzleMm} mm nozzle); ${effect}.`,
+  );
+  return f.kind === 'hole' && holeSeverity !== undefined ? { ...d, severity: holeSeverity } : d;
 }
 
 function emit(code: DiagnosticCode, message: string, advice = ''): CompilerDiagnostic {
