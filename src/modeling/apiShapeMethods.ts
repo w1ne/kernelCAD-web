@@ -11,13 +11,16 @@ import {
   spurGearOutline,
   spurGearRadii,
   SpurGearProfileError,
+  type PlanetaryToothCompatibility,
   type SpurGearOutline,
 } from './spurGear';
 import { isValidEditableNumber, type Param } from '../shared/intent/types';
 import { invalidArgs } from '../shared/intent/invalidArgs';
 import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import { KernelError } from '../shared/intent/kernelError';
-import { toParam } from '../shared/runtime/editableHelpers';
+import { currentValue, toParam } from '../shared/runtime/editableHelpers';
+import { isParamRef } from '../shared/runtime/paramRef';
+import { collectParamRefs } from '../shared/runtime/resolveParams';
 import { mm, ul, assertEditableNumber, assertPositiveFinite } from './apiSupport';
 import type {
   KernelCadApi,
@@ -289,6 +292,19 @@ function assertSpurGearOptsObject(opts: SpurGearOptions): void {
   }
 }
 
+/** Gear maths (involute outline, radii, bore/rim checks) runs at capture
+ *  time, so a numeric ParamRef in a gear slot is read through the live
+ *  ParamTable with `currentValue`, the capture-time resolver `helix()`,
+ *  rotate, scale and `path().circle` use. The params it reads are noted on
+ *  the session so a warm edit of one is refused rather than left stale.
+ *  Anything else passes through untouched so the slot's own check still
+ *  rejects strings, NaN and non-numeric refs. */
+function gearArg(session: CaptureSession, value: unknown): unknown {
+  if (!isParamRef(value) || value._type !== 'number') return value;
+  for (const name of collectParamRefs(value)) session.captureResolvedParams.add(name);
+  return currentValue(value, session.paramTable);
+}
+
 function resolveSpurGearTeeth(teeth: unknown): number {
   if (typeof teeth !== 'number' || !Number.isInteger(teeth) || teeth < 6 || teeth > 400) {
     invalidArgs({
@@ -362,7 +378,7 @@ function resolveSpurGearBore(value: unknown, module: number, root: number): numb
 
 /** Validate `spurGear()` options and apply defaults (20° pressure angle,
  *  backlash 0.05·module, no bore). */
-function resolveSpurGearOpts(opts: SpurGearOptions): {
+function resolveSpurGearOpts(opts: SpurGearOptions, session: CaptureSession): {
   module: number;
   teeth: number;
   pressureAngle: number;
@@ -371,12 +387,16 @@ function resolveSpurGearOpts(opts: SpurGearOptions): {
   backlash: number;
 } {
   assertSpurGearOptsObject(opts);
-  const module = assertPositiveFinite('spurGear', 'module', opts.module);
-  const faceWidth = assertPositiveFinite('spurGear', 'faceWidth', opts.faceWidth);
-  const teeth = resolveSpurGearTeeth(opts.teeth);
-  const pressureAngle = resolveSpurGearPressureAngle(opts.pressureAngle);
-  const backlash = resolveSpurGearBacklash(opts.backlash, module);
-  const bore = resolveSpurGearBore(opts.bore, module, spurGearRadii(module, teeth, pressureAngle).root);
+  const module = assertPositiveFinite('spurGear', 'module', gearArg(session, opts.module));
+  const faceWidth = assertPositiveFinite('spurGear', 'faceWidth', gearArg(session, opts.faceWidth));
+  const teeth = resolveSpurGearTeeth(gearArg(session, opts.teeth));
+  const pressureAngle = resolveSpurGearPressureAngle(gearArg(session, opts.pressureAngle));
+  const backlash = resolveSpurGearBacklash(gearArg(session, opts.backlash), module);
+  const bore = resolveSpurGearBore(
+    gearArg(session, opts.bore),
+    module,
+    spurGearRadii(module, teeth, pressureAngle).root,
+  );
   return { module, teeth, pressureAngle, faceWidth, bore, backlash };
 }
 
@@ -385,7 +405,7 @@ export function makeSpurGearMethod(
   self: () => KernelCadApi,
 ): KernelCadApi['spurGear'] {
   return (opts) => {
-    const { module, teeth, pressureAngle, faceWidth, bore, backlash } = resolveSpurGearOpts(opts);
+    const { module, teeth, pressureAngle, faceWidth, bore, backlash } = resolveSpurGearOpts(opts, session);
     let outline: SpurGearOutline;
     try {
       outline = spurGearOutline({ module, teeth, pressureAngleDeg: pressureAngle, backlash });
@@ -441,7 +461,7 @@ function assertInternalSpurGearOptsObject(opts: InternalSpurGearOptions): void {
   }
 }
 
-function resolveInternalSpurGearOpts(opts: InternalSpurGearOptions): {
+function resolveInternalSpurGearOpts(opts: InternalSpurGearOptions, session: CaptureSession): {
   module: number;
   teeth: number;
   pressureAngle: number;
@@ -450,17 +470,18 @@ function resolveInternalSpurGearOpts(opts: InternalSpurGearOptions): {
   rimThickness: number;
 } {
   assertInternalSpurGearOptsObject(opts);
-  const module = assertPositiveFinite('internalSpurGear', 'module', opts.module);
-  const faceWidth = assertPositiveFinite('internalSpurGear', 'faceWidth', opts.faceWidth);
-  const teeth = resolveSpurGearTeeth(opts.teeth);
+  const module = assertPositiveFinite('internalSpurGear', 'module', gearArg(session, opts.module));
+  const faceWidth = assertPositiveFinite('internalSpurGear', 'faceWidth', gearArg(session, opts.faceWidth));
+  const teeth = resolveSpurGearTeeth(gearArg(session, opts.teeth));
   // Reuse spurGear tooth-count message but retarget the feature name.
-  const pressureAngle = resolveSpurGearPressureAngle(opts.pressureAngle);
-  const backlash = resolveSpurGearBacklash(opts.backlash, module);
-  if (opts.profileShift !== undefined && opts.profileShift !== 0) {
+  const pressureAngle = resolveSpurGearPressureAngle(gearArg(session, opts.pressureAngle));
+  const backlash = resolveSpurGearBacklash(gearArg(session, opts.backlash), module);
+  const profileShift = gearArg(session, opts.profileShift);
+  if (profileShift !== undefined && profileShift !== 0) {
     invalidArgs({
       api: 'internalSpurGear({ profileShift })',
       path: 'opts.profileShift',
-      got: opts.profileShift,
+      got: profileShift,
       requires:
         '0, or omit it — this version generates an unshifted basic rack, so a non-zero profile shift is not yet supported',
       unit: 'ratio',
@@ -470,7 +491,7 @@ function resolveInternalSpurGearOpts(opts: InternalSpurGearOptions): {
   }
   const rimThickness = opts.rimThickness === undefined
     ? 2.5 * module
-    : assertPositiveFinite('internalSpurGear', 'rimThickness', opts.rimThickness);
+    : assertPositiveFinite('internalSpurGear', 'rimThickness', gearArg(session, opts.rimThickness));
   return { module, teeth, pressureAngle, faceWidth, backlash, rimThickness };
 }
 
@@ -491,7 +512,7 @@ export function makeInternalSpurGearMethod(
 ): KernelCadApi['internalSpurGear'] {
   return (opts) => {
     const { module, teeth, pressureAngle, faceWidth, backlash, rimThickness } =
-      resolveInternalSpurGearOpts(opts);
+      resolveInternalSpurGearOpts(opts, session);
     let boreOutline: SpurGearOutline;
     try {
       boreOutline = internalSpurGearBoreOutline({
@@ -523,10 +544,20 @@ export function makeInternalGearAlias(self: () => KernelCadApi): KernelCadApi['i
   return (opts) => self().internalSpurGear(opts);
 }
 
-export function makePlanetaryToothCompatibilityMethod(): KernelCadApi['planetaryToothCompatibility'] {
+export function makePlanetaryToothCompatibilityMethod(
+  session: CaptureSession,
+): KernelCadApi['planetaryToothCompatibility'] {
   return (opts: PlanetaryToothCompatibilityOpts) => {
+    // The checker re-validates each count, so unresolved values still fail there.
+    const counts = (opts && typeof opts === 'object'
+      ? {
+        sunTeeth: gearArg(session, opts.sunTeeth),
+        planetTeeth: gearArg(session, opts.planetTeeth),
+        ringTeeth: gearArg(session, opts.ringTeeth),
+      }
+      : opts) as PlanetaryToothCompatibility;
     try {
-      assertPlanetaryToothCompatibility(opts);
+      assertPlanetaryToothCompatibility(counts);
     } catch (err) {
       if (err instanceof SpurGearProfileError) {
         throw new KernelError(

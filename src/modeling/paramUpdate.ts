@@ -17,6 +17,7 @@ import type { CaptureSession } from './capture/captureSession';
 import type { BuiltModel, BuiltModelParamUpdate, ParamUpdateEdit } from './buildModel';
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { KernelError } from '../shared/intent/kernelError';
+import { invalidArgs } from '../shared/intent/invalidArgs';
 import { affectedFeatureIds } from './paramAffect';
 import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
 import { stampFingerprint } from '../kernel/backends/occt/analysisMemo';
@@ -239,9 +240,28 @@ function stampAnalyses(
   }
 }
 
+/**
+ * A gear's involute outline is computed from this param's value when the script
+ * runs, and its records carry plain numbers — so an in-place update would
+ * silently return the OLD gear. Refuse before any re-lower work starts.
+ */
+function assertParamIsNotCaptureResolved(session: CaptureSession, name: string): void {
+  if (!session.captureResolvedParams.has(name)) return;
+  invalidArgs({
+    api: 'params.update',
+    path: `edits.${name}`,
+    gotText: `param '${name}' read at capture time by a gear builder`,
+    requires:
+      'a param that does not shape a spurGear/internalSpurGear profile; that profile is computed when the script runs, so re-run the script with the new value instead of an in-place update',
+    hintSlug: 'invalid-args.param.capture-resolved',
+    example: 'change gear teeth in the script source and rebuild, not via params.update',
+  });
+}
+
 function validateParamEdits(session: CaptureSession, edits: ParamUpdateEdit[]): void {
   for (const edit of edits) {
     const entry = session.paramTable.get(edit.name);
+    assertParamIsNotCaptureResolved(session, edit.name);
     // 'choice', 'string' and 'color' params are all JS strings — only 'number' and
     // 'boolean' map 1:1 to their JS typeof. Full validation (choice
     // membership, maxLength, numeric bounds) happens in `paramTable.set`
