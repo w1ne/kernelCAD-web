@@ -18,7 +18,8 @@ const BLOCK = /\/\/ @board-begin\n[\s\S]*?\n\/\/ @board-end/;
 
 export function enclosureSource(board: unknown, template = readFileSync(TEMPLATE, 'utf8')): string {
   if (!BLOCK.test(template)) throw new Error('enclosure.kcad.ts lost its @board-begin/@board-end markers');
-  const { note: _note, ...data } = board as Record<string, unknown>;
+  const data = { ...(board as Record<string, unknown>) };
+  delete data.note; // provenance prose stays in the JSON, not the model
   const block = `// @board-begin\nconst BOARD = ${JSON.stringify(data, null, 2)};\n// @board-end`;
   return template.replace(BLOCK, () => block);
 }
