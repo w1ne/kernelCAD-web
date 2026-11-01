@@ -24,6 +24,51 @@ Low-poly street furniture, traffic pieces and road tiles for town and city scene
 | parking-meter | Post with a single or twin meter head | heads, post, head, display | 124 |
 | bike-rack | Row of inverted-U stands on two rails | loops, loop shape, stands, rails | 180 |
 | shop-front | One-storey shop with window, door, sign band, striped awning | width, wall, awning, stripe, door/sign, glass | 276 |
+| phone-booth | Telephone kiosk with glazed sides, glazing bars, header band and stepped roof | rows, body, glass, header | 300 |
+| news-kiosk | Street kiosk with front counter, magazine rack, stocked shelves and striped awning | width, stripes, body, roof, awning, stripe, goods | 280 |
+| manhole-cover | Round or square cast-iron lid with grip bars in a square frame | shape, bars, frame, lid | 212 |
+| storm-drain | Gully grate in a concrete frame with optional kerb inlet | bars, kerb yes/no, concrete, grate, pit | 172 |
+| recycling-bins | Row of colour-coded wheelie bins with lids, handles and wheels | count, bin1, bin2, bin3, lid, wheel | 348 |
+| picnic-table | Plank table with attached benches on splayed A-frame legs | length, boards, wood, legs | 168 |
+| chain-barrier | Short posts with ball tops linked by sagging two-tone chains | posts, sag, post, chain, chain2 | 408 |
+| metal-fence-section | 2 m railing panel with posts, rails and spear or flat bar tops | height, bars, top, metal, tips | 360 |
+| street-sign-post | Street-name post with one or two blade signs, no lettering | blades, height, face, border, post | 156 |
+| bus-stop-sign | Bus stop pole with flag or round sign, ring emblem and timetable case | style, sign, emblem, table, pole | 192 |
+| street-clock | Two-faced post clock on a tapered column with settable time | time, casing, face, hands | 380 |
+| street-tree | Young tree in an iron tree grate with optional barred guard | height, guard yes/no, grate, metal, bark, leaves | 480 |
+| vending-machine | Drinks machine with stocked display shelves, button panel and pickup flap | rows, cabinet, panel, product1, product2 | 424 |
+| utility-pole | Timber power pole with crossarms, braces, insulators and optional transformer | height, arms, transformer yes/no, wood, insulator, drum | 344 |
+| advertising-column | Round poster pillar with plinth, cornice and dome, plain posters | height, column, poster1, poster2, poster3 | 540 |
+| crossing-beacon | Banded pole with a faceted amber globe for zebra crossings | height, bands, band1, band2, globe | 312 |
+| ticket-machine | Pay station with visor hood, screen, keypad ledge, card slot and ticket tray | body, panel, accent | 108 |
+| bicycle | City bike with diamond frame, faceted wheels, saddle, handlebar and optional rack | rack yes/no, frame, tyre, saddle | 544 |
+| bollard-light | Low path light with glowing lens band, louvre rings and cap, round or square | height, shape, post, light | 168 |
+| flag-pole | Tapered flagpole on a stepped plinth with ball finial and waving flag | height, style, pole, flag, stripe | 156 |
+| water-barrier | Row of interlocking water-filled road barriers in alternating colours | units, colorA, colorB, cap | 192 |
+| speed-bump | Modular rubber speed bump in alternating segments with end caps | segments, colorA, colorB | 96 |
+| cafe-table-set | Round bistro table with one to three chairs and optional parasol | chairs, parasol yes/no, metal, top, canopy | 388 |
+| food-cart | Push-along food cart with wheels, counter, goods and valanced canopy | canopy yes/no, body, canopy, trim, wheel, goods | 400 |
+| drinking-fountain | Pedestal fountain with water-filled bowl, spout and optional dog bowl | dog bowl yes/no, pedestal, bowl, water | 276 |
+| billboard | 4 x 2 m billboard on a pole with catwalk, lamps and a plain landscape poster | height, frame, sky, ground, sun | 168 |
+| dumpster | Waste dumpster with sloped front, two lids, lifting pockets and casters | lids, body, lid, caster | 244 |
+| scaffolding-section | One bay of tube scaffolding with plank decks, toe boards, rails and bracing | lifts, tube, boards | 384 |
+| ev-charger | EV charging post with screen, light strips, holstered plug and looping cable | body, light, screen | 156 |
+| fire-alarm-box | Gabled fire alarm call box on a pedestal post with pull handle and lamp | body, panel, lamp | 192 |
+| e-scooter | Parked electric kick scooter with deck, raked stem, T bar and kickstand | body, deck, wheel, grip | 192 |
+| parked-car | Sedan or hatchback with glass cabin, pillars, bumpers, lights and faceted wheels | style, body, glass, tyre, lights, tail | 352 |
+| delivery-van | High-roof panel van with cab glass, livery stripe, bumpers, lights and wheels | body, glass, stripe, tyre, lights, tail | 376 |
+| city-bus | 12 m city bus with window band, glazed doors, destination display and roof unit | doors, body, glass, stripe, tyre, lights | 464 |
+| pedestrian-signal | Crosswalk signal post with stop and walk lamps under visors and a push button | heads, housing, stop, walk, button, pole | 280 |
+| bike-share-dock | Bike share terminal with screen and canopy plus a row of docking posts on a rail | docks, frame, accent, panel | 252 |
+| public-toilet | Chamfered automatic toilet cabin with roof overhang, accent band, sliding door and ramp | body, door, roof, accent | 160 |
+| guard-rail | W-beam guard rail on posts with spacer blocks and flared ends | length, rail, post | 132 |
+| chain-link-fence | 2.5 m chain-link panel with posts, top rail, diamond mesh, optional barbed top | height, mesh, barbed yes/no, post, wire | 416 |
+| brick-wall-section | 2 m brick wall with end piers, stone coping, caps and accent bricks | height, brick, brick2, coping | 216 |
+| garden-gate | Picket garden gate between capped posts, closed, ajar or open | state, pickets, wood, posts, iron | 232 |
+| playground-slide | Roofed slide tower with ladder, railings and trough chute with run-out | roof yes/no, frame, deck, slide, roof | 256 |
+| swing-set | A-frame swing set with top beam and one to three chain swings | swings, frame, seat, chain | 156 |
+| seesaw | Seesaw on a pivot stand with handles, seat pads and bumpers, level or tilted | pose, plank, stand, seat | 132 |
+| traffic-island | Kerbed traffic island with grass, shrubs and a keep-left bollard with disc and arrow | length, shrubs, kerb, grass, bollard, sign | 220 |
 
 ## Licence
 

@@ -23,7 +23,7 @@ import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { releaseWorldFrameParts, sceneToWorldFrameParts } from './sceneToWorldFrame';
-import { writeStepAssembly } from './stepAssemblyExport';
+import { reproducibleOcctStep, writeStepAssembly } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
 import { memoBox, memoMass, memoVolume } from './analysisMemo';
 import { disposeOcctHandles } from './occtDispose';
@@ -1015,6 +1015,9 @@ export class OcctBackend implements ShapeBackend {
       throw new Error(`OcctBackend.shell: thickness must be positive (got ${thickness})`);
     }
     const result = this.shape.shell(thickness, (f) => f.inList([face])) as ReplicadShape3D;
+    // OCCT 8 can return the input unchanged instead of raising (7.6); that is a failure.
+    const v0 = Math.abs(replicad.measureVolume(this.shape)), v1 = Math.abs(replicad.measureVolume(result));
+    if (!(v1 > 0) || Math.abs(v1 - v0) <= v0 * 1e-9) throw new Error(`OcctBackend.shell: OCCT did not produce a shell (thickness ${thickness})`);
     return new OcctBackend(result);
   }
 
@@ -1283,7 +1286,7 @@ export class OcctBackend implements ShapeBackend {
   async exportSTEPAsync(): Promise<Uint8Array> {
     const blob = this.shape.blobSTEP();
     const buf = await blob.arrayBuffer();
-    return new Uint8Array(buf);
+    return reproducibleOcctStep(getOC(), new Uint8Array(buf));
   }
 
   /**

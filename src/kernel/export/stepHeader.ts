@@ -8,8 +8,11 @@
 // preprocessor_version, originating_system, authorization) with
 // originating_system = 'Open CASCADE <ver>'. kernelCAD is the originating
 // system of a kernelCAD export, and OCCT stays named as the preprocessor, so
-// only the 6th argument changes. The DATA section is never touched.
+// only the 6th argument changes. The 2nd (time_stamp) can be pinned for
+// reproducible output. The DATA section is never touched.
 
+/** Index of FILE_NAME's `time_stamp` argument (0-based). */
+const TIME_STAMP_ARG = 1;
 /** Index of FILE_NAME's `originating_system` argument (0-based). */
 const ORIGINATING_SYSTEM_ARG = 5;
 
@@ -70,12 +73,13 @@ function argumentSpans(
 }
 
 /**
- * Locate FILE_NAME's originating_system argument in the HEADER section. The
- * header ends at the first ENDSEC and is plain ASCII, so only a bounded prefix
- * is decoded; a large DATA section is never copied into a string.
+ * Locate FILE_NAME argument `arg` in the HEADER section. The header ends at
+ * the first ENDSEC and is plain ASCII, so only a bounded prefix is decoded; a
+ * large DATA section is never copied into a string.
  */
-function locateOriginatingSystem(
+function locateFileNameArg(
   bytes: Uint8Array,
+  arg: number,
 ): { header: string; headerEnd: number; start: number; end: number } | undefined {
   const prefix = bytesToLatin1(bytes.subarray(0, Math.min(bytes.length, 16384)));
   const headerEnd = prefix.indexOf('ENDSEC;');
@@ -84,9 +88,21 @@ function locateOriginatingSystem(
   const fileName = /FILE_NAME\s*\(/.exec(header);
   if (!fileName) return undefined;
   const parsed = argumentSpans(header, fileName.index + fileName[0].length - 1);
-  if (!parsed || parsed.spans.length <= ORIGINATING_SYSTEM_ARG) return undefined;
-  const [start, end] = parsed.spans[ORIGINATING_SYSTEM_ARG]!;
+  if (!parsed || parsed.spans.length <= arg) return undefined;
+  const [start, end] = parsed.spans[arg]!;
   return { header, headerEnd, start, end };
+}
+
+/** Return `bytes` with FILE_NAME argument `arg` set to the string `value`. */
+function stampFileNameArg(bytes: Uint8Array, arg: number, value: string): Uint8Array {
+  const loc = locateFileNameArg(bytes, arg);
+  if (!loc) return bytes;
+  const { header, headerEnd, start, end } = loc;
+  const head = latin1ToBytes(header.slice(0, start) + stepString(value) + header.slice(end));
+  const out = new Uint8Array(head.length + bytes.length - headerEnd);
+  out.set(head, 0);
+  out.set(bytes.subarray(headerEnd), head.length);
+  return out;
 }
 
 /**
@@ -94,19 +110,21 @@ function locateOriginatingSystem(
  * Input that is not a recognizable Part 21 header comes back unchanged.
  */
 export function stampStepOriginatingSystem(bytes: Uint8Array, generator: string): Uint8Array {
-  const loc = locateOriginatingSystem(bytes);
-  if (!loc) return bytes;
-  const { header, headerEnd, start, end } = loc;
-  const head = latin1ToBytes(header.slice(0, start) + stepString(generator) + header.slice(end));
-  const out = new Uint8Array(head.length + bytes.length - headerEnd);
-  out.set(head, 0);
-  out.set(bytes.subarray(headerEnd), head.length);
-  return out;
+  return stampFileNameArg(bytes, ORIGINATING_SYSTEM_ARG, generator);
+}
+
+/**
+ * Return `bytes` with FILE_NAME's time_stamp set to `timeStamp` (an ISO 8601
+ * date-time). OCCT writes the wall clock there, which is the only header
+ * field that differs between two exports of the same shape.
+ */
+export function stampStepTimeStamp(bytes: Uint8Array, timeStamp: string): Uint8Array {
+  return stampFileNameArg(bytes, TIME_STAMP_ARG, timeStamp);
 }
 
 /** Read FILE_NAME's originating_system back (unquoted), or undefined. */
 export function readStepOriginatingSystem(bytes: Uint8Array): string | undefined {
-  const loc = locateOriginatingSystem(bytes);
+  const loc = locateFileNameArg(bytes, ORIGINATING_SYSTEM_ARG);
   if (!loc) return undefined;
   const raw = loc.header.slice(loc.start, loc.end).trim();
   if (!raw.startsWith("'") || !raw.endsWith("'")) return undefined;

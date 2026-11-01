@@ -118,3 +118,6 @@ eval/benchmarks/cadgenbench/runs/
 
 # Local TypeScript build cache
 .cache/
+
+# Static catalog SEO pages (npm run catalog:pages)
+site-build/

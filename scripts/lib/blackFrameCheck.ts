@@ -19,6 +19,14 @@ function probeDurationSeconds(path: string): Promise<number> {
     let out = ''; let err = '';
     proc.stdout.on('data', (d) => { out += d.toString(); });
     proc.stderr.on('data', (d) => { err += d.toString(); });
+    // Without this, a missing ffprobe leaves the promise pending forever and the
+    // caller hangs until its own timeout, which hides the real cause (ENOENT).
+    proc.on('error', (e) => {
+      const code = (e as NodeJS.ErrnoException).code;
+      reject(new Error(code === 'ENOENT'
+        ? 'ffprobe not found on PATH: install ffmpeg (provides ffprobe) to check gallery videos'
+        : `ffprobe spawn failed: ${e.message}`));
+    });
     proc.on('close', (code) => {
       if (code !== 0) return reject(new Error(`ffprobe failed: ${err}`));
       const d = Number.parseFloat(out.trim());
