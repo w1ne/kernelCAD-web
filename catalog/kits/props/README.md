@@ -31,6 +31,16 @@ Low-poly crates, barrels, containers, tools, carts and market pieces at real-wor
 | well | Round stone village well with gabled roof, winch and hanging bucket | roof, stone, cap, wood, shingles, water | 460 |
 | cauldron | Pot-bellied iron cauldron on three legs with bubbling brew, optional fire | fire, size, iron, brew, wood | 364 |
 | hand-truck | Two-wheeled dolly with looped handle and toe plate, empty or with boxes | load, frame, tyre, plate, boxes | 372 |
+| barrel-stack | Pyramid of barrels lying on their sides on wooden chocks | count, wood, iron, lid, chock | 408 |
+| cardboard-boxes | Askew pile of taped cardboard boxes with labels, optional open top box | count, open, card, tape, label | 352 |
+| water-trough | Splayed livestock water trough, planked on legs or carved stone | style, lengthMm, body, band, water | 112 |
+| beehive | Stacked wooden box hive with gabled roof on a stand, or a straw skep on a stool | style, supers, boxC, roof, stand, entrance | 188 |
+| notice-board | Village quest board on two posts with pitched roof and pinned notices | widthM, notices, roof, wood, board, roofC, paper | 156 |
+| axe | Woodcutter or double-bitted battle axe lying flat as a pickup | style, length, head, edge, haft | 100 |
+| tool-rack | Free-standing rack with shovel, pitchfork, rake and pickaxe | tools, frame, handle, metal | 380 |
+| weapon-rack | Armoury rack of swords and spears with a leaning round shield | swords, spears, shield, wood, steel, grip, shieldC | 332 |
+| scarecrow | Pole scarecrow with shirt, straw tufts, sack head and straw hat | hatStyle, pole, shirt, patch, head, hat, straw | 324 |
+| covered-wagon | Pioneer wagon with arched canvas, driver seat, tongue and four spoked wheels | cover, wood, wheel, canvas, opening | 524 |
 
 ## Licence
 
