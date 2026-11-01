@@ -3,7 +3,7 @@ title: The 10 biggest challenges design engineers face, and how to overcome them
 summary: Late manufacturing feedback, lost design intent, revision chaos, fastener mistakes, drawings out of sync and more. Why each one costs you time and money, and how kernelCAD removes it from your week.
 date: 2026-11-01
 kind: guide
-status: draft
+status: published
 model: examples/gallery/cover-plate-pocket.kcad.ts
 ---
 

@@ -3,7 +3,7 @@ title: "Metric clearance hole sizes (ISO 273): chart and how to choose close, no
 summary: The ISO 273 clearance hole chart for M2 to M20 in close, normal and loose fit, with tap drills, how to pick a fit class, and how kernelCAD reads the fit back from your holes.
 date: 2026-11-01
 kind: guide
-status: draft
+status: published
 model: examples/gallery/clearance-hole-plate.kcad.ts
 ---
 

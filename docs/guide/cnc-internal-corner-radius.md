@@ -3,7 +3,7 @@ title: CNC internal corner radius design rules, and how to check them
 summary: Why end mills leave a radius in every inside corner, how big to make it, how deep a pocket can go, when to use dogbone reliefs, and how to catch tight corners and undercuts before you ask for a quote.
 date: 2026-11-01
 kind: guide
-status: draft
+status: published
 model: examples/gallery/cnc-corner-examples.kcad.ts
 ---
 

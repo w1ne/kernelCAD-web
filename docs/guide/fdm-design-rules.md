@@ -3,7 +3,7 @@ title: FDM 3D printing design rules for overhangs, bridges, walls and holes
 summary: The numbers that decide whether an FDM part prints cleanly (45° overhangs, short bridges, walls in nozzle multiples, holes of 2 mm and up) and how to check a model against them before you slice.
 date: 2026-11-01
 kind: guide
-status: draft
+status: published
 model: examples/gallery/fdm-bracket.kcad.ts
 ---
 
