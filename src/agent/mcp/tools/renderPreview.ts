@@ -701,7 +701,9 @@ async function runHeadlessRenderPhase(
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    const isModelFault = /failed to compile/.test(message);
+    // Model faults raised while building the scene (an import that will not read, parts that
+    // overlap) are the script's to fix; only the rest points at the browser or render server.
+    const isModelFault = /failed to compile|\blib\.\w+:|\boverlap by\b/.test(message);
     return {
       refusal: {
         sceneSummary,
