@@ -20,6 +20,7 @@ const NOT_A_PATH: Record<string, string> = {
   'mcp --api-base-url': 'only used with --cloud, which is refused in sandbox mode',
   'sandbox check <path>': 'the probe itself — it reports the verdict instead of acting on the path',
   'print send --filename': 'name the file is uploaded under on the printer (command refused anyway)',
+  'cfd run --mesh-size': 'a cell size in mm or a preset name, not a mesh file',
   'collab check --base': 'git revision',
   'export --part': 'assembly part name',
   'export --manifest-part-id': 'catalog part id',

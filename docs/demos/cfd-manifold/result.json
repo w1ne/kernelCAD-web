@@ -1,0 +1,71 @@
+{
+  "invocation": {
+    "tool": "run_cfd",
+    "arguments": {
+      "file": "docs/demos/cfd-manifold/manifold.kcad.ts"
+    },
+    "study": "declared shape.cfdStudy({ name: \"splitter-0.3lpm\", ... })"
+  },
+  "ok": true,
+  "openfoam": {
+    "mode": "docker",
+    "version": "2406",
+    "image": "opencfd/openfoam-run:2406"
+  },
+  "reynolds": {
+    "value": 794.084994609243,
+    "lengthMm": 7.985082741994785,
+    "speed": 0.09984384136619641,
+    "basis": "mean inlet speed x equivalent inlet diameter"
+  },
+  "turbulence": {
+    "model": "laminar",
+    "chosen": "auto",
+    "reason": "Re 794 < 2300: laminar internal flow."
+  },
+  "mesh": {
+    "cells": 17504,
+    "ok": true,
+    "maxNonOrthogonality": 53.844635,
+    "maxSkewness": 2.4632846,
+    "patchFaces": {
+      "inlet": 156,
+      "outlet_1": 63,
+      "outlet_2": 38,
+      "walls": 5190
+    },
+    "surfaceCellMm": 0.5703630529996275
+  },
+  "convergence": {
+    "verdict": "converged",
+    "criterion": "monitors",
+    "reason": "monitors steady: the monitored quantity stayed within a 0.53% band over the last 20% of iterations and mass balanced to 0.009%; residuals plateaued at 1.39e-2 (above the 0.0001 target)",
+    "monitor": {
+      "quantity": "inlet static pressure (Pa gauge)",
+      "mean": 48.69283728194434,
+      "band": 0.005335101937802427
+    }
+  },
+  "pressureDropPa": 48.69083156042001,
+  "outlets": [
+    {
+      "patch": "outlet_1",
+      "lpm": 0.179005584,
+      "share": 0.5966321367823125
+    },
+    {
+      "patch": "outlet_2",
+      "lpm": 0.12102113760000001,
+      "share": 0.4033678632176874
+    }
+  ],
+  "massBalance": {
+    "inflowKgs": 0.004991000000000001,
+    "outflowKgs": 0.004991444558352,
+    "imbalance": 0.0000890640668853683
+  },
+  "maxVelocity": 0.291785501,
+  "meshMs": 7098,
+  "solveMs": 32067,
+  "disclaimer": "Engineering estimate from a steady incompressible OpenFOAM solve on a snapped hex mesh; not a certification or a substitute for test. Domain: interior extraction kept 1 wetted channel region(s); 4 unconnected void(s) and 0 exterior region(s) dropped."
+}

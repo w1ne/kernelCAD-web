@@ -9,7 +9,7 @@ import { noShape, type LowerOutcome } from './context';
  * invoke the lowerer directly.
  *
  * Covers `referenceImage`, `renderEnvironment`, `cameraTarget`, `dfmSpec`
- * (print-prep gate), `feaStudy` (the solver run happens in the FEA runner,
+ * (print-prep gate), `feaStudy` / `cfdStudy` (the solver run happens in the FEA / CFD runner,
  * which reads this record's metadata and the shape it points at) and the
  * GD&T declarations `drawingDatum` / `drawingTolerance`, which the
  * svg-drawing exporter resolves against the exported geometry.

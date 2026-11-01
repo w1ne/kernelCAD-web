@@ -38,6 +38,7 @@ import { assetManifestToolEntries } from './registry/assetManifestTools';
 import { assetCatalogToolEntries } from './registry/assetCatalogTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
+import { cfdToolEntries } from './registry/cfdTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 import { guardMcpToolArgs } from './sandboxArgs';
 export { runClosedLoop } from '../loop/closedLoop.js';
@@ -116,6 +117,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...assetManifestToolEntries,
   // Appended at the tail: read-only low-poly asset catalog.
   ...assetCatalogToolEntries,
+  // Appended at the tail: steady CFD through OpenFOAM (run_cfd, cfd_summary).
+  ...cfdToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

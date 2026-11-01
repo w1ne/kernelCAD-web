@@ -40,6 +40,7 @@ import { ANIMATION_CODES } from './animation';
 import { DRAWING_CODES } from './drawing';
 import { REFERENCE_CODES } from './reference';
 import { FEA_CODES } from './fea';
+import { CFD_CODES } from './cfd';
 import { DIFF_CODES } from './diff';
 import { BOM_CODES } from './bom';
 import { RENDER_CODES } from './render';
@@ -86,6 +87,7 @@ export const DIAGNOSTIC_REGISTRY = {
   ...TUBE_CODES,
   ...COLLAB_CODES,
   ...LATTICE_CODES,
+  ...CFD_CODES,
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;

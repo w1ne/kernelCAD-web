@@ -98,6 +98,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   cameraTarget: lowerVirtualRecord,
   dfmSpec: lowerVirtualRecord,
   feaStudy: lowerVirtualRecord,
+  cfdStudy: lowerVirtualRecord,
   drawingDatum: lowerVirtualRecord,
   drawingTolerance: lowerVirtualRecord,
   drawingDimension: lowerVirtualRecord,

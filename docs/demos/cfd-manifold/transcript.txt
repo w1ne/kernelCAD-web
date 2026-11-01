@@ -1,0 +1,13 @@
+$ kernelcad cfd run docs/demos/cfd-manifold/manifold.kcad.ts
+splitter-0.3lpm: internal flow of water, Re 794 (mean inlet speed x equivalent inlet diameter) -> laminar.
+Mesh: 17504 cells, checkMesh OK, max non-orthogonality 53.8 deg.
+Pressure drop inlet -> outlet: 48.69 Pa.
+  inlet: -0.3000 L/min, 48.69 Pa
+  outlet_1: 0.1790 L/min, 0.000 Pa
+  outlet_2: 0.1210 L/min, 0.000 Pa
+Mass balance: in 0.004991 kg/s, out 0.004991 kg/s (0.009%).
+Max velocity 0.2918 m/s. 600 iterations: converged (monitors steady: the monitored quantity stayed within a 0.53% band over the last 20% of iterations and mass balanced to 0.009%; residuals plateaued at 1.39e-2 (above the 0.0001 target)).
+Mesh 7.1 s, solve 32.1 s.
+Engineering estimate from a steady incompressible OpenFOAM solve on a snapped hex mesh; not a certification or a substitute for test. Domain: interior extraction kept 1 wetted channel region(s); 4 unconnected void(s) and 0 exterior region(s) dropped.
+Preview: <work>/manifold/velocity-midplane.png
+Run directory: <work>/manifold

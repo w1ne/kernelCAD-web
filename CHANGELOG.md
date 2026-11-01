@@ -1,5 +1,28 @@
 # Unreleased
 
+- CFD connector (OpenFOAM): `run_cfd` / `cfd_summary` MCP tools,
+  `kernelcad cfd run|status`, and the script declaration
+  `shape.cfdStudy({ flow, fluid, inlet, outlet, velocity | flowRateLpm, ... })`.
+  Steady incompressible flow with simpleFoam on a snappyHexMesh mesh built
+  from the model: internal flow fills the part's channels (bounding box minus
+  part, wetted regions only) between inlet / outlet faces named on the fluid
+  volume, or the solid is the fluid; external flow puts a box of fluid around
+  the part. Returns pressure drop, per-outlet flow and mass balance, drag /
+  lift with Cd / Cl, max velocity, the Reynolds number with the laminar or
+  k-omega SST model it implied, residual history with a convergence verdict
+  (`ok` only when converged), checkMesh quality, a mid-plane velocity PNG and
+  optional VTK fields. OpenFOAM is found natively or as a local
+  `opencfd/openfoam-run` Docker image (run with `--network none`); absent, the
+  run fails with `cfd.solver.unavailable` and the install command. Runs are
+  keyed by a hash of the case, so an identical re-call returns the finished
+  result or joins the live run. New codes: `cfd.solver.unavailable`,
+  `cfd.study.patch-unresolved`, `cfd.domain.no-fluid`, `cfd.mesh.failed`,
+  `cfd.mesh.quality-low`, `cfd.solve.not-converged`, `cfd.solve.diverged`,
+  `cfd.solve.timeout`, `cfd.flow.regime-caveat`, `cfd.mass-balance.off`.
+  Validated against Hagen-Poiseuille (+4.2%) and sphere drag at Re 50
+  (+3.4%). Docs: `docs/cfd.md`, skill `kernelcad-cfd`. Demo bundle:
+  `docs/demos/cfd-manifold/`.
+
 - PLY export: `kernelcad export ply`, MCP `export({ format: 'ply' })` and
   `runAndExport` write a Stanford PLY triangle mesh (mm, Z up). The default is
   binary little-endian with per-vertex `nx ny nz` normals (split at creases

@@ -33,6 +33,7 @@ import { nurbsToolEntries } from './registry/nurbsTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
+import { cfdToolEntries } from './registry/cfdTools';
 import { blockoutToolEntries } from './registry/blockoutTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { explodeViewToolEntries } from './registry/explodeViewTools';
@@ -107,6 +108,8 @@ const EXPECTED_TOOL_NAMES = [
   'get_variant',
   'list_kits',
   'get_kit',
+  'run_cfd',
+  'cfd_summary',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -417,8 +420,10 @@ describe('toolRegistry public contract', () => {
        'get_variant',
        'list_kits',
        'get_kit',
+       'run_cfd',
+       'cfd_summary',
      ]);
-    expect(TOOL_REGISTRY).toHaveLength(65);
+    expect(TOOL_REGISTRY).toHaveLength(67);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -476,20 +481,26 @@ describe('toolRegistry public contract', () => {
 
   it('appends the generic blockout assembly generator at the registry tail', () => {
     expect(blockoutToolEntries.map(entry => entry.definition.name)).toEqual(['blockout_assembly']);
-    expect(TOOL_REGISTRY.slice(-8, -7)).toEqual(blockoutToolEntries);
+    expect(TOOL_REGISTRY.slice(-10, -9)).toEqual(blockoutToolEntries);
     expect(blockoutToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
   it('appends the read-only asset manifest tool after the historical blockout tail', () => {
     expect(assetManifestToolEntries.map(entry => entry.definition.name)).toEqual(['asset_manifest']);
-    expect(TOOL_REGISTRY.slice(-7, -6)).toEqual(assetManifestToolEntries);
+    expect(TOOL_REGISTRY.slice(-9, -8)).toEqual(assetManifestToolEntries);
   });
 
-  it('appends the read-only asset catalog family at the registry tail', () => {
-    expect(TOOL_REGISTRY.slice(-assetCatalogToolEntries.length)).toEqual(assetCatalogToolEntries);
+  it('appends the read-only asset catalog family before the CFD tail', () => {
+    expect(TOOL_REGISTRY.slice(-assetCatalogToolEntries.length - cfdToolEntries.length, -cfdToolEntries.length)).toEqual(assetCatalogToolEntries);
     expect(assetCatalogToolEntries.map(entry => entry.definition.name)).toEqual([
       'search_assets', 'get_asset', 'find_matching', 'get_variant', 'list_kits', 'get_kit',
     ]);
+  });
+
+  it('appends the CFD family (run_cfd, cfd_summary) at the registry tail', () => {
+    expect(cfdToolEntries.map(entry => entry.definition.name)).toEqual(['run_cfd', 'cfd_summary']);
+    expect(TOOL_REGISTRY.slice(-cfdToolEntries.length)).toEqual(cfdToolEntries);
+    expect(cfdToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

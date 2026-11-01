@@ -36,6 +36,8 @@ export interface CliSandboxSpec {
 
 /** Keyed by the full command path, e.g. `render inspect`. */
 export const CLI_SANDBOX_ARGS: Readonly<Record<string, CliSandboxSpec>> = {
+  'cfd run': { args: { file: 'read' }, options: { out: 'write' } },
+  'cfd status': { options: { out: 'read' } },
   animate: { args: { file: 'read', out: 'write' }, options: { frames: 'write', environment: 'environment', baseUrl: 'url' } },
   'collab check': { options: { file: 'read', yours: 'read', out: 'write' } },
   dfm: { args: { file: 'read' } },

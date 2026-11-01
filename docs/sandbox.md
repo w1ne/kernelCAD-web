@@ -68,7 +68,7 @@ The check runs at three layers that share one decision
 Scratch locations move into the workspace. `TMPDIR` (and therefore
 `os.tmpdir()`), `KERNELCAD_CACHE_DIR` and `KERNELCAD_CONFIG_HOME` point under
 `<workspace>/.kernelcad-sandbox/`. Default output directories for
-`render_preview`, `import_step`, `run_fea` and `diff_geometry` are created
+`render_preview`, `import_step`, `run_fea`, `run_cfd` and `diff_geometry` are created
 there. You can delete that directory at any time.
 
 ### Network
@@ -172,7 +172,8 @@ or script that must not leak data or reach outside the workspace. It does not
 replace OS isolation against hostile native code. These are not covered by the
 in-process guard:
 
-- Child processes other than Chromium (`ffmpeg`, CalculiX/gmsh, slicer CLIs,
+- Child processes other than Chromium (`ffmpeg`, CalculiX/gmsh, OpenFOAM (native,
+  or a Docker container that always runs with `--network none`), slicer CLIs,
   `git` for `collab check`). They inherit the sandbox environment, including
   the dead proxy, `TMPDIR` and `KERNELCAD_SANDBOX=1`, but not the patched
   modules.

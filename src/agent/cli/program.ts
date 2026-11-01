@@ -22,6 +22,7 @@ import { telemetryCommand } from './commands/telemetry';
 import { validateCommand } from './commands/validate';
 import { dynamicsCommand } from './commands/dynamics';
 import { collabCheckCommand } from './commands/collabCheck';
+import { cfdCommand } from './commands/cfd';
 import { installCliSandboxHook, sandboxCommand, SANDBOX_HELP } from './lib/sandboxCli';
 
 const requireFromHere = createRequire(import.meta.url);
@@ -71,6 +72,7 @@ export function buildProgram(): Command {
   program.addCommand(validateCommand());
   program.addCommand(dynamicsCommand());
   program.addCommand(collabCheckCommand());
+  program.addCommand(cfdCommand());
 
   program.addCommand(sandboxCommand());
   program.addHelpText('after', SANDBOX_HELP);

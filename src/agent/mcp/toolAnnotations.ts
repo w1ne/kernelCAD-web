@@ -162,6 +162,11 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // disk, so it is neither read-only nor sandbox-local.
   run_fea: WRITES_FILE,
   fea_summary: READ,
+  // run_cfd shells out to OpenFOAM (natively or in a container) and writes a
+  // case directory, logs, summary JSON and a PNG; a re-call with the same
+  // inputs returns the stored run, but the first call writes files.
+  run_cfd: WRITES_FILE,
+  cfd_summary: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
   ray_pick: READ,

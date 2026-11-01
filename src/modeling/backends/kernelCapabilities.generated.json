@@ -14,6 +14,7 @@
         "boolean",
         "box",
         "cameraTarget",
+        "cfdStudy",
         "chamfer",
         "curve3d",
         "cutout",
