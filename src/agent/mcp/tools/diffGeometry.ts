@@ -56,6 +56,8 @@ import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 import { runMcpScript } from '../runMcpScript';
 import { returnedBodies } from './diffScripts';
 import { renderDiffOverlay, type DiffOverlayRender } from './diffGeometryRender';
+import { diffBodyFaces, describeFaceChanges, type BodyFaceChanges } from './diffGeometryFaces';
+import { resolveRootId } from '../../../composition/buildModel';
 
 export interface DiffGeometryInput {
   /** Baseline script — path on disk. One of baseFile / baseCode is required. */
@@ -116,6 +118,12 @@ export interface DiffGeometryBody {
   holeCount: { base: number; revised: number; delta: number };
   /** Two-sided discrete Hausdorff distance between the two surfaces (mm). */
   maxDeviationMm: number;
+  /**
+   * WHICH faces changed: added / removed / modified (moved | resized |
+   * reshaped) face lists plus the unchanged count. Faces pair by lineage
+   * (the feature + role that made them) first, then by geometry.
+   */
+  faces: BodyFaceChanges;
 }
 
 export interface DiffGeometrySideHeader {
@@ -141,6 +149,10 @@ export type DiffGeometryOutput =
         totalAddedMm3: number;
         totalRemovedMm3: number;
         maxDeviationMm: number;
+        /** Face-change totals across all matched bodies. */
+        faces: { added: number; removed: number; modified: number; unchanged: number };
+        /** Plain-language account of the diff, one line per changed body. */
+        text: string;
       };
       render?: DiffOverlayRender;
       diagnostics: CompilerDiagnostic[];
@@ -163,6 +175,9 @@ const REL_VOL_TOL = 1e-9;
 export interface SideBody {
   name: string;
   shape: OcctBackend;
+  /** Root feature id of a single-shape model — the owner segment of the
+   *  `@kc[<owner>/face/<name>]` refs reported for its faces. */
+  refOwner?: string;
 }
 
 export interface SideSummary {
@@ -261,7 +276,7 @@ async function assembleDiffGeometryResult(
     bodies.push(compareBody(pair.base, pair.revised, pair.matchedBy));
   }
 
-  const summary = diffGeometrySummary(bodies, unmatchedBase.length + unmatchedRevised.length);
+  const summary = diffGeometrySummary(bodies, unmatchedBase, unmatchedRevised);
 
   let renderOverlay: DiffOverlayRender | undefined;
   if (render) {
@@ -292,8 +307,10 @@ function sideHeader(side: SideSummary): DiffGeometrySideHeader {
 
 function diffGeometrySummary(
   bodies: DiffGeometryBody[],
-  unmatchedCount: number,
+  unmatchedBase: SideBody[],
+  unmatchedRevised: SideBody[],
 ): Extract<DiffGeometryOutput, { ok: true }>['summary'] {
+  const unmatchedCount = unmatchedBase.length + unmatchedRevised.length;
   return {
     identical: bodies.filter((b) => b.verdict === 'identical').length,
     moved: bodies.filter((b) => b.verdict === 'moved').length,
@@ -303,7 +320,30 @@ function diffGeometrySummary(
     totalAddedMm3: bodies.reduce((s, b) => s + b.addedMm3, 0),
     totalRemovedMm3: bodies.reduce((s, b) => s + b.removedMm3, 0),
     maxDeviationMm: bodies.reduce((s, b) => Math.max(s, b.maxDeviationMm), 0),
+    faces: {
+      added: bodies.reduce((s, b) => s + b.faces.addedCount, 0),
+      removed: bodies.reduce((s, b) => s + b.faces.removedCount, 0),
+      modified: bodies.reduce((s, b) => s + b.faces.modifiedCount, 0),
+      unchanged: bodies.reduce((s, b) => s + b.faces.unchangedCount, 0),
+    },
+    text: summaryText(bodies, unmatchedBase, unmatchedRevised),
   };
+}
+
+/** Plain-language account: one line per body that changed, then unmatched
+ *  bodies. "Body 'root' topology-changed: 1 face added (cylinder r=3 at …)". */
+function summaryText(bodies: DiffGeometryBody[], unmatchedBase: SideBody[], unmatchedRevised: SideBody[]): string {
+  const lines: string[] = [];
+  for (const b of bodies) {
+    if (b.verdict === 'identical') continue;
+    const faces = describeFaceChanges(b.faces);
+    lines.push(`Body '${b.name}' ${b.verdict}${faces !== undefined ? `: ${faces}` : ' (no face-level change)'}.`);
+  }
+  for (const b of unmatchedBase) lines.push(`Body '${b.name}' removed (no counterpart in the revision).`);
+  for (const b of unmatchedRevised) lines.push(`Body '${b.name}' added (no counterpart in the baseline).`);
+  const identical = bodies.filter((b) => b.verdict === 'identical').length;
+  if (identical > 0) lines.push(`${identical} bod${identical === 1 ? 'y' : 'ies'} identical.`);
+  return lines.join('\n');
 }
 
 function unmatchedEntries(
@@ -450,7 +490,11 @@ function solidSideFromShapes(
   returnValue: unknown,
 ): SideResult {
   const tailId = records.length > 0 ? records[records.length - 1].id : undefined;
-  const bodies = returnedBodies(returnValue, shapes, tailId);
+  const bodies: SideBody[] = returnedBodies(returnValue, shapes, tailId);
+  if (bodies.length === 1) {
+    const owner = resolveRootId(returnValue, tailId);
+    if (owner !== undefined) bodies[0] = { ...bodies[0], refOwner: owner };
+  }
   if (bodies.length === 0) {
     return {
       ok: false,
@@ -553,6 +597,11 @@ function extents(b: DiffBbox): [number, number, number] {
   return [b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]];
 }
 
+/** Characteristic length of a body pair: the larger bbox diagonal. */
+function bboxScale(a: DiffBbox, b: DiffBbox): number {
+  return Math.max(Math.hypot(...extents(a)), Math.hypot(...extents(b)));
+}
+
 function deviation(a: OcctBackend, b: OcctBackend): number {
   try {
     return meshDeviation(a.getMesh(), b.getMesh()).maxDeviationMm;
@@ -613,6 +662,7 @@ function compareBody(base: SideBody, revised: SideBody, matchedBy: 'name' | 'pos
     edgeCount: { base: edgesBase, revised: edgesRevised, delta: edgesRevised - edgesBase },
     holeCount: { base: holesBase, revised: holesRevised, delta: holesRevised - holesBase },
     maxDeviationMm: (added <= volTol && removed <= volTol) ? 0 : deviation(base.shape, revised.shape),
+    faces: diffBodyFaces(base.shape, revised.shape, bboxScale(bboxBase, bboxRevised), revised.refOwner),
   };
 }
 
