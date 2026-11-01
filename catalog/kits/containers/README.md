@@ -6,7 +6,9 @@ Low-poly crates, jars, baskets, barrels, trunks and churns for storage, market, 
 | --- | --- | --- | --- |
 | `ammo-crate` | Military wooden ammunition crate with battened lid, end cleats, rope handles, steel latches and a stencil paint band, short or long, single or stacked | length, stack, wood, band, rope, metal | 268 |
 | `amphora` | Two-handled clay amphora with a swelling belly, painted band and narrow neck, on a flat foot or a pointed toe in a wooden stand | style, size, clay, band, stand | 404 |
+| `cooler-box` | Camping cool box with a tapered tub, stepped lid, front latches and swing carry handle, shut or open with ice inside | size, lid, tub, top, grip, ice | 180 |
 | `fruit-crate` | Open wooden slatted fruit crate with solid end boards and hand-holds, empty or heaped with apples, oranges or lemons | fill, slats, wood, ends, fruit | 416 |
+| `ibc-tote` | 1000-litre IBC tank in a steel grid cage on a steel or wooden pallet, with filler cap, drain valve and a visible fill level | fill, grid, pallet, tank, liquid, cage, base, valve | 556 |
 | `mason-jar` | Glass mason preserving jar with shoulder, screw band and lid, empty or filled with jam, pickles or honey | size, fill, glass, contents, band, lid | 240 |
 | `milk-churn` | Steel dairy milk churn with conical shoulder, narrow neck, mushroom lid and two side handles, lidded or open | size, lid, steel, band, lidColor, grip | 440 |
 | `picnic-basket` | Rectangular wicker picnic hamper with a hinged lid, carry handle and two buckled leather straps, shut or open over a cloth | size, lid, wicker, band, strap, cloth | 244 |
@@ -14,3 +16,11 @@ Low-poly crates, jars, baskets, barrels, trunks and churns for storage, market, 
 | `steamer-trunk` | Vintage travel steamer trunk with wooden slats, brass corners, lock plate, end handles and leather straps, with a flat or domed lid | size, top, straps, canvas, slat, brass, strap | 424 |
 | `storage-tote` | Plastic storage tote box with tapered walls, stepped rim, end hand-grips and a clip-on lid, closed or open, single or stacked | size, lid, stack, body, top, clip | 216 |
 | `wicker-basket` | Round woven wicker basket with a flared body, rolled rim and arched carry handle, empty or filled with apples or bread | size, handle, fill, wicker, rim, grip, goods | 432 |
+
+## Licence
+
+Every asset in this kit — the `.kcad.ts` source and any GLB or ES module exported from it — is dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Use, modify and ship it in commercial games without attribution. The catalog metadata carries `license: "CC0-1.0"` per asset.
+
+## Provenance
+
+Geometry is original kernelCAD `.kcad.ts` source written for this catalog. No downloaded meshes, no external meshes, textures or palettes, and no mesh decimation are involved.
