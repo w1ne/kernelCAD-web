@@ -116,6 +116,63 @@
       ]
     },
     {
+      "id": "containers",
+      "title": "Containers",
+      "description": "Low-poly crates, jars, baskets, barrels, trunks and churns for storage, market, farm and adventure scenes at real-world scale, flat-shaded on one palette material.",
+      "assets": [
+        "ammo-crate",
+        "amphora",
+        "cooler-box",
+        "fruit-crate",
+        "ibc-tote",
+        "mason-jar",
+        "milk-churn",
+        "picnic-basket",
+        "rain-barrel",
+        "steamer-trunk",
+        "storage-tote",
+        "wicker-basket"
+      ]
+    },
+    {
+      "id": "electronics",
+      "title": "Electronics",
+      "description": "Low-poly consumer electronics - screens, computers, phones, audio and networking gear - for home, office and retro scenes at real-world scale, flat-shaded on one palette material.",
+      "assets": [
+        "bookshelf-speaker",
+        "boombox",
+        "computer-monitor",
+        "crt-television",
+        "desk-phone",
+        "desktop-tower",
+        "game-console",
+        "keyboard",
+        "laptop",
+        "retro-radio",
+        "smartphone",
+        "wifi-router"
+      ]
+    },
+    {
+      "id": "food-kitchen",
+      "title": "Food & Kitchen",
+      "description": "Low-poly food, produce and table pieces for kitchen, market, picnic and tavern scenes at real-world scale, flat-shaded on one palette material.",
+      "assets": [
+        "apple",
+        "bread-loaf",
+        "carrot",
+        "cheese-wheel",
+        "coffee-mug",
+        "cooking-pot",
+        "cutting-board",
+        "dinner-plate",
+        "frying-pan",
+        "kettle",
+        "watermelon",
+        "wine-bottle"
+      ]
+    },
+    {
       "id": "interior",
       "title": "Interior",
       "description": "Low-poly furniture and room pieces for homes and offices at real-world scale, flat-shaded on one palette material.",
@@ -192,6 +249,25 @@
         "wardrobe",
         "washing-machine",
         "window"
+      ]
+    },
+    {
+      "id": "lighting",
+      "title": "Lighting",
+      "description": "Low-poly lamps, lanterns, torches and fixtures for interior, dungeon, camp and outdoor scenes at real-world scale, flat-shaded on one palette material.",
+      "assets": [
+        "brazier",
+        "chandelier",
+        "flashlight",
+        "hurricane-lantern",
+        "lava-lamp",
+        "oil-lamp",
+        "paper-lantern",
+        "stage-spotlight",
+        "tiki-torch",
+        "tripod-work-light",
+        "wall-sconce",
+        "wall-torch"
       ]
     },
     {
@@ -354,6 +430,25 @@
         "waterfall-tile",
         "wooden-bridge",
         "wooden-dock"
+      ]
+    },
+    {
+      "id": "tools-equipment",
+      "title": "Tools & Equipment",
+      "description": "Low-poly hand tools, power tools and workshop pieces for garage, farm, construction and survival scenes at real-world scale, flat-shaded on one palette material.",
+      "assets": [
+        "adjustable-wrench",
+        "chainsaw",
+        "claw-hammer",
+        "garden-spade",
+        "hand-saw",
+        "pickaxe",
+        "pliers",
+        "power-drill",
+        "rolling-tool-chest",
+        "sawhorse",
+        "screwdriver",
+        "sledgehammer"
       ]
     }
   ],
@@ -16893,6 +16988,4955 @@
       ]
     },
     {
+      "id": "ammo-crate",
+      "kit": "containers",
+      "title": "Ammo crate",
+      "description": "Military wooden ammunition crate with battened lid, end cleats, rope handles, steel latches and a stencil paint band, short or long, single or stacked. Knobs: length, stack, wood, band, rope and latch colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "ammo crate",
+        "ammo box",
+        "crate",
+        "military",
+        "army",
+        "supply",
+        "munitions",
+        "box"
+      ],
+      "compat": [
+        "outdoor",
+        "indoor",
+        "military",
+        "warehouse",
+        "bunker",
+        "camp"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/ammo-crate.kcad.ts",
+      "sourceSha256": "11e8ef789607bac55c47f83a5b21ae160ac5e6517d04fa6959ac707baf484775",
+      "triangleBudget": 560,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "short",
+          "label": "Length",
+          "choices": [
+            "short",
+            "long"
+          ]
+        },
+        {
+          "name": "stack",
+          "type": "choice",
+          "default": "1",
+          "label": "Stacked crates",
+          "choices": [
+            "1",
+            "2"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#58613a",
+          "label": "Painted wood"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#e0b830",
+          "label": "Stencil band"
+        },
+        {
+          "name": "rope",
+          "type": "color",
+          "default": "#b8a070",
+          "label": "Rope handles"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#3a3c3e",
+          "label": "Latches"
+        }
+      ],
+      "presets": {
+        "desert": {
+          "wood": "#b09a6a",
+          "band": "#3a3a2a"
+        },
+        "raw": {
+          "wood": "#a8804a",
+          "band": "#2a2a2a",
+          "rope": "#7a6040"
+        },
+        "winter": {
+          "wood": "#d8dad6",
+          "band": "#c8302a"
+        }
+      },
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.81,
+          0.318,
+          0.448
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wood",
+          "color": "#58613a",
+          "parts": [
+            "box-1",
+            "lid-1",
+            "cleat-1-l",
+            "cleat-1-r"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "rope",
+          "color": "#b8a070",
+          "parts": [
+            "rope-1-l",
+            "rope-1-r"
+          ],
+          "param": "rope"
+        },
+        {
+          "name": "band",
+          "color": "#e0b830",
+          "parts": [
+            "band-1"
+          ],
+          "param": "band"
+        },
+        {
+          "name": "metal",
+          "color": "#3a3c3e",
+          "parts": [
+            "latch-1-l",
+            "latch-1-r"
+          ],
+          "param": "metal"
+        }
+      ]
+    },
+    {
+      "id": "amphora",
+      "kit": "containers",
+      "title": "Amphora",
+      "description": "Two-handled clay amphora with a swelling belly, painted band and narrow neck, on a flat foot or a pointed toe in a wooden stand. Knobs: style, size, clay, band and stand colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amphora",
+        "vase",
+        "jar",
+        "pottery",
+        "clay",
+        "greek",
+        "roman",
+        "ancient",
+        "wine"
+      ],
+      "compat": [
+        "indoor",
+        "outdoor",
+        "ancient",
+        "medieval",
+        "fantasy",
+        "dungeon",
+        "market"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/amphora.kcad.ts",
+      "sourceSha256": "184d4bdcb84ab1d07c7605554dfa55a09d3e1edd737ec0bc8cb0cd8848e4a48f",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "foot",
+          "label": "Style",
+          "choices": [
+            "foot",
+            "pointed"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "clay",
+          "type": "color",
+          "default": "#c0683a",
+          "label": "Clay"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#2a2420",
+          "label": "Painted band"
+        },
+        {
+          "name": "stand",
+          "type": "color",
+          "default": "#6e4a2c",
+          "label": "Stand"
+        }
+      ],
+      "presets": {
+        "black-figure": {
+          "clay": "#d0743c",
+          "band": "#1e1a18"
+        },
+        "pale": {
+          "clay": "#d8c09a",
+          "band": "#8a4a2a"
+        },
+        "glazed": {
+          "clay": "#2f6a8a",
+          "band": "#e8d8a8"
+        }
+      },
+      "stats": {
+        "triangles": 404,
+        "sizeM": [
+          0.342,
+          0.69,
+          0.325261
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "clay",
+          "color": "#c0683a",
+          "parts": [
+            "body",
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "clay"
+        },
+        {
+          "name": "band",
+          "color": "#2a2420",
+          "parts": [
+            "band",
+            "lip-band"
+          ],
+          "param": "band"
+        }
+      ]
+    },
+    {
+      "id": "cooler-box",
+      "kit": "containers",
+      "title": "Cooler box",
+      "description": "Camping cool box with tapered tub, stepped lid, front latches and a swing carry handle, shut or open with ice inside. Knobs: size, lid, tub, lid, handle and ice colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cooler",
+        "cool box",
+        "ice chest",
+        "cooler box",
+        "picnic",
+        "camping",
+        "beach",
+        "container"
+      ],
+      "compat": [
+        "outdoor",
+        "camp",
+        "beach",
+        "picnic",
+        "garage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/cooler-box.kcad.ts",
+      "sourceSha256": "e906a2bb80c2a5b5e50091c4f3f4c123c34fa0418eb97345f4cab8c41a9ec29f",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "lid",
+          "type": "choice",
+          "default": "closed",
+          "label": "Lid",
+          "choices": [
+            "closed",
+            "open"
+          ]
+        },
+        {
+          "name": "tub",
+          "type": "color",
+          "default": "#c8302a",
+          "label": "Tub"
+        },
+        {
+          "name": "top",
+          "type": "color",
+          "default": "#f0ece2",
+          "label": "Lid"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#2a2a2c",
+          "label": "Handle and latches"
+        },
+        {
+          "name": "ice",
+          "type": "color",
+          "default": "#cfe6f0",
+          "label": "Ice"
+        }
+      ],
+      "presets": {
+        "blue": {
+          "tub": "#2f6fc0",
+          "top": "#f0ece2"
+        },
+        "army": {
+          "tub": "#4f5a32",
+          "top": "#3b4226",
+          "grip": "#1c1c1e"
+        },
+        "steel": {
+          "tub": "#b8c0c4",
+          "top": "#8a9296",
+          "grip": "#2a2a2c"
+        }
+      },
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.612,
+          0.389,
+          0.424
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "tub",
+          "color": "#c8302a",
+          "parts": [
+            "tub"
+          ],
+          "param": "tub"
+        },
+        {
+          "name": "top",
+          "color": "#f0ece2",
+          "parts": [
+            "lid"
+          ],
+          "param": "top"
+        },
+        {
+          "name": "grip",
+          "color": "#2a2a2c",
+          "parts": [
+            "latch-1",
+            "latch-2",
+            "handle"
+          ],
+          "param": "grip"
+        }
+      ]
+    },
+    {
+      "id": "fruit-crate",
+      "kit": "containers",
+      "title": "Fruit crate",
+      "description": "Open wooden slatted fruit crate with solid end boards and hand-holds, empty or heaped with apples, oranges or lemons. Knobs: fill, slats, wood, end board and fruit colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fruit crate",
+        "crate",
+        "apple crate",
+        "produce",
+        "slatted",
+        "market",
+        "orchard",
+        "farm"
+      ],
+      "compat": [
+        "outdoor",
+        "indoor",
+        "farm",
+        "market",
+        "shop",
+        "kitchen",
+        "warehouse"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/fruit-crate.kcad.ts",
+      "sourceSha256": "fc1fcf57951c92accd5d674f50efae262bd06e0d9391b94ba8c722019dac08a9",
+      "triangleBudget": 460,
+      "params": [
+        {
+          "name": "fill",
+          "type": "choice",
+          "default": "full",
+          "label": "Fill",
+          "choices": [
+            "empty",
+            "full"
+          ]
+        },
+        {
+          "name": "slats",
+          "type": "choice",
+          "default": "3",
+          "label": "Side slats",
+          "choices": [
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#c8a06a",
+          "label": "Slats"
+        },
+        {
+          "name": "ends",
+          "type": "color",
+          "default": "#a87e4a",
+          "label": "End boards"
+        },
+        {
+          "name": "fruit",
+          "type": "color",
+          "default": "#c8302a",
+          "label": "Fruit"
+        }
+      ],
+      "presets": {
+        "oranges": {
+          "fruit": "#ee8a1e"
+        },
+        "lemons": {
+          "fruit": "#ecd23a"
+        },
+        "weathered": {
+          "wood": "#9a9080",
+          "ends": "#7a7062",
+          "fruit": "#7ac043"
+        }
+      },
+      "stats": {
+        "triangles": 416,
+        "sizeM": [
+          0.526,
+          0.3764,
+          0.364
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "ends",
+          "color": "#a87e4a",
+          "parts": [
+            "end-l",
+            "end-r"
+          ],
+          "param": "ends"
+        },
+        {
+          "name": "wood",
+          "color": "#c8a06a",
+          "parts": [
+            "slat-f1",
+            "slat-f2",
+            "slat-f3",
+            "slat-b1",
+            "slat-b2",
+            "slat-b3",
+            "floor-1",
+            "floor-2",
+            "floor-3"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "fruit",
+          "color": "#c8302a",
+          "parts": [
+            "heap",
+            "fruit-1",
+            "fruit-2",
+            "fruit-3",
+            "fruit-4",
+            "fruit-5",
+            "fruit-6",
+            "fruit-7"
+          ],
+          "param": "fruit"
+        }
+      ]
+    },
+    {
+      "id": "ibc-tote",
+      "kit": "containers",
+      "title": "IBC tote",
+      "description": "Intermediate bulk container: 1000-litre plastic tank in a steel grid cage on a pallet, with filler cap and drain valve, empty to full. Knobs: fill level, cage grid, pallet type, tank, liquid, cage, pallet and valve colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "ibc",
+        "ibc tote",
+        "tote tank",
+        "bulk container",
+        "water tank",
+        "chemical",
+        "industrial",
+        "warehouse",
+        "farm"
+      ],
+      "compat": [
+        "warehouse",
+        "industrial",
+        "farm",
+        "outdoor",
+        "factory",
+        "dock"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/ibc-tote.kcad.ts",
+      "sourceSha256": "9b0785f38d0fab1218d8e9846afdad6600f6e1f419de3af54621ece6f4f2d052",
+      "triangleBudget": 620,
+      "params": [
+        {
+          "name": "fill",
+          "type": "choice",
+          "default": "60",
+          "label": "Fill level (%)",
+          "choices": [
+            "0",
+            "30",
+            "60",
+            "100"
+          ]
+        },
+        {
+          "name": "grid",
+          "type": "choice",
+          "default": "4",
+          "label": "Cage bars per side",
+          "choices": [
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "pallet",
+          "type": "choice",
+          "default": "steel",
+          "label": "Pallet",
+          "choices": [
+            "steel",
+            "wood"
+          ]
+        },
+        {
+          "name": "tank",
+          "type": "color",
+          "default": "#e8eae2",
+          "label": "Tank"
+        },
+        {
+          "name": "liquid",
+          "type": "color",
+          "default": "#5a8ab0",
+          "label": "Liquid"
+        },
+        {
+          "name": "cage",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Cage"
+        },
+        {
+          "name": "base",
+          "type": "color",
+          "default": "#5a6066",
+          "label": "Pallet"
+        },
+        {
+          "name": "valve",
+          "type": "color",
+          "default": "#2a2a2c",
+          "label": "Valve and cap"
+        }
+      ],
+      "presets": {
+        "diesel": {
+          "liquid": "#c8a03a",
+          "base": "#3a3d40"
+        },
+        "rainwater": {
+          "liquid": "#3a6a5a",
+          "tank": "#2a2a2c",
+          "base": "#8a5a33",
+          "pallet": "wood"
+        },
+        "rusty": {
+          "cage": "#8a6a52",
+          "base": "#5a3d2c"
+        }
+      },
+      "stats": {
+        "triangles": 556,
+        "sizeM": [
+          1.236,
+          1.19,
+          1.138
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "base",
+          "color": "#5a6066",
+          "parts": [
+            "pallet"
+          ],
+          "param": "base"
+        },
+        {
+          "name": "liquid",
+          "color": "#5a8ab0",
+          "parts": [
+            "liquid"
+          ],
+          "param": "liquid"
+        },
+        {
+          "name": "tank",
+          "color": "#e8eae2",
+          "parts": [
+            "tank"
+          ],
+          "param": "tank"
+        },
+        {
+          "name": "valve",
+          "color": "#2a2a2c",
+          "parts": [
+            "cap",
+            "valve"
+          ],
+          "param": "valve"
+        },
+        {
+          "name": "cage",
+          "color": "#9aa2a8",
+          "parts": [
+            "cage-1",
+            "cage-2",
+            "cage-3",
+            "cage-4",
+            "cage-5",
+            "cage-6",
+            "cage-7",
+            "cage-8",
+            "cage-9",
+            "cage-10",
+            "cage-11",
+            "cage-12",
+            "cage-13",
+            "cage-14",
+            "cage-15",
+            "cage-16",
+            "cage-17",
+            "cage-18",
+            "cage-19",
+            "cage-20",
+            "cage-21",
+            "cage-22",
+            "cage-23",
+            "cage-24",
+            "cage-25",
+            "cage-26",
+            "cage-27",
+            "cage-28",
+            "cage-29",
+            "cage-30",
+            "cage-31",
+            "cage-32"
+          ],
+          "param": "cage"
+        }
+      ]
+    },
+    {
+      "id": "mason-jar",
+      "kit": "containers",
+      "title": "Mason jar",
+      "description": "Glass mason preserving jar with shoulder, screw band and lid, empty or filled with jam, pickles or honey. Knobs: size, fill, glass, contents, band and lid colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "jar",
+        "mason jar",
+        "preserves",
+        "jam",
+        "pickles",
+        "kitchen",
+        "pantry",
+        "glass"
+      ],
+      "compat": [
+        "indoor",
+        "kitchen",
+        "farm",
+        "shop",
+        "cellar"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/mason-jar.kcad.ts",
+      "sourceSha256": "7f22589629160875d18f8dd4c1fa9b0be08f6a420d982a824b1f7c6a2cf5e10b",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "quart",
+          "label": "Size",
+          "choices": [
+            "half-pint",
+            "pint",
+            "quart"
+          ]
+        },
+        {
+          "name": "fill",
+          "type": "choice",
+          "default": "full",
+          "label": "Fill",
+          "choices": [
+            "empty",
+            "half",
+            "full"
+          ]
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#cfe3e0",
+          "label": "Glass"
+        },
+        {
+          "name": "contents",
+          "type": "color",
+          "default": "#b8323f",
+          "label": "Contents"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#c9a43a",
+          "label": "Screw band"
+        },
+        {
+          "name": "lid",
+          "type": "color",
+          "default": "#d8d4c8",
+          "label": "Lid"
+        }
+      ],
+      "presets": {
+        "pickles": {
+          "contents": "#7a9a3a",
+          "band": "#9aa2a8",
+          "lid": "#9aa2a8"
+        },
+        "honey": {
+          "contents": "#e0a020",
+          "band": "#d8d4c8",
+          "lid": "#c8302a"
+        }
+      },
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.086,
+          0.173,
+          0.081791
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "contents",
+          "color": "#b8323f",
+          "parts": [
+            "contents"
+          ],
+          "param": "contents"
+        },
+        {
+          "name": "glass",
+          "color": "#cfe3e0",
+          "parts": [
+            "heel",
+            "glass"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "band",
+          "color": "#c9a43a",
+          "parts": [
+            "band"
+          ],
+          "param": "band"
+        },
+        {
+          "name": "lid",
+          "color": "#d8d4c8",
+          "parts": [
+            "lid"
+          ],
+          "param": "lid"
+        }
+      ]
+    },
+    {
+      "id": "milk-churn",
+      "kit": "containers",
+      "title": "Milk churn",
+      "description": "Steel dairy milk churn with conical shoulder, narrow neck, mushroom lid and two side handles, lidded or open. Knobs: size, lid, steel, band, lid and handle colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "milk churn",
+        "milk can",
+        "churn",
+        "dairy",
+        "farm",
+        "milk",
+        "can",
+        "rustic"
+      ],
+      "compat": [
+        "outdoor",
+        "indoor",
+        "farm",
+        "barn",
+        "dairy",
+        "rustic"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/milk-churn.kcad.ts",
+      "sourceSha256": "64e5173c42a21dba54482be6251276f4963434835df9546e1119eec3bce48b1f",
+      "triangleBudget": 480,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "40",
+          "label": "Capacity (litres)",
+          "choices": [
+            "20",
+            "40"
+          ]
+        },
+        {
+          "name": "lid",
+          "type": "choice",
+          "default": "on",
+          "label": "Lid",
+          "choices": [
+            "on",
+            "off"
+          ]
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#b8c0c4",
+          "label": "Steel"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#8a9296",
+          "label": "Bands"
+        },
+        {
+          "name": "lidColor",
+          "type": "color",
+          "default": "#a0a8ac",
+          "label": "Lid"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#6e767c",
+          "label": "Handles"
+        }
+      ],
+      "presets": {
+        "painted": {
+          "steel": "#3f6a8a",
+          "band": "#2a3f52",
+          "lidColor": "#2a3f52",
+          "grip": "#2a2a2c"
+        },
+        "rusty": {
+          "steel": "#8a6a52",
+          "band": "#5a3d2c",
+          "lidColor": "#7a5a42",
+          "grip": "#4a3226"
+        },
+        "red": {
+          "steel": "#b2302a",
+          "band": "#d8d4c8",
+          "lidColor": "#d8d4c8",
+          "grip": "#2a2a2c"
+        }
+      },
+      "stats": {
+        "triangles": 440,
+        "sizeM": [
+          0.416,
+          0.73,
+          0.330968
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#b8c0c4",
+          "parts": [
+            "body"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "band",
+          "color": "#8a9296",
+          "parts": [
+            "foot",
+            "waist"
+          ],
+          "param": "band"
+        },
+        {
+          "name": "lidColor",
+          "color": "#a0a8ac",
+          "parts": [
+            "lid"
+          ],
+          "param": "lidColor"
+        },
+        {
+          "name": "grip",
+          "color": "#6e767c",
+          "parts": [
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "grip"
+        }
+      ]
+    },
+    {
+      "id": "picnic-basket",
+      "kit": "containers",
+      "title": "Picnic basket",
+      "description": "Rectangular wicker picnic hamper with a hinged lid, carry handle and two buckled leather straps, shut or open over a cloth. Knobs: size, lid, wicker, band, strap and cloth colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "picnic basket",
+        "hamper",
+        "basket",
+        "wicker",
+        "picnic",
+        "park",
+        "summer"
+      ],
+      "compat": [
+        "outdoor",
+        "indoor",
+        "park",
+        "garden",
+        "kitchen",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/picnic-basket.kcad.ts",
+      "sourceSha256": "e591a76adac972cf60b696673280cea9a0d55db2e700306d43e917c763f7e895",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "lid",
+          "type": "choice",
+          "default": "closed",
+          "label": "Lid",
+          "choices": [
+            "closed",
+            "open"
+          ]
+        },
+        {
+          "name": "wicker",
+          "type": "color",
+          "default": "#c99a58",
+          "label": "Wicker"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#a87a40",
+          "label": "Woven bands"
+        },
+        {
+          "name": "strap",
+          "type": "color",
+          "default": "#6a3a22",
+          "label": "Straps and handle"
+        },
+        {
+          "name": "cloth",
+          "type": "color",
+          "default": "#d8403a",
+          "label": "Cloth"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "wicker": "#8a6440",
+          "band": "#6e4c2e",
+          "strap": "#3a2418"
+        },
+        "blue": {
+          "cloth": "#3a6ac8",
+          "strap": "#2a2a2c"
+        }
+      },
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          0.48,
+          0.335,
+          0.326
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wicker",
+          "color": "#c99a58",
+          "parts": [
+            "body",
+            "lid"
+          ],
+          "param": "wicker"
+        },
+        {
+          "name": "band",
+          "color": "#a87a40",
+          "parts": [
+            "weave-1",
+            "weave-2",
+            "weave-3",
+            "rim",
+            "buckle-l",
+            "buckle-r"
+          ],
+          "param": "band"
+        },
+        {
+          "name": "strap",
+          "color": "#6a3a22",
+          "parts": [
+            "handle",
+            "strap-l",
+            "lid-strap-l",
+            "strap-r",
+            "lid-strap-r"
+          ],
+          "param": "strap"
+        }
+      ]
+    },
+    {
+      "id": "rain-barrel",
+      "kit": "containers",
+      "title": "Rain barrel",
+      "description": "Plastic garden water butt with moulded ribs, a lid with downpipe inlet and a tap near the base, standing on the ground or on a stand. Knobs: size, stand, body, lid, tap and stand colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "rain barrel",
+        "water butt",
+        "water tank",
+        "barrel",
+        "garden",
+        "rainwater",
+        "tap"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "farm",
+        "house",
+        "allotment"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/rain-barrel.kcad.ts",
+      "sourceSha256": "ee77f914270f8f35f758fddca30f3c81380f0c082c00cda0d8bde9fdca9bb1b3",
+      "triangleBudget": 460,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "200",
+          "label": "Capacity (litres)",
+          "choices": [
+            "100",
+            "200",
+            "300"
+          ]
+        },
+        {
+          "name": "stand",
+          "type": "choice",
+          "default": "stand",
+          "label": "Stand",
+          "choices": [
+            "none",
+            "stand"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#3f8a4a",
+          "label": "Body"
+        },
+        {
+          "name": "lid",
+          "type": "color",
+          "default": "#2b5e33",
+          "label": "Lid"
+        },
+        {
+          "name": "tap",
+          "type": "color",
+          "default": "#c9a43a",
+          "label": "Tap"
+        },
+        {
+          "name": "standColor",
+          "type": "color",
+          "default": "#5e4a36",
+          "label": "Stand"
+        }
+      ],
+      "presets": {
+        "black": {
+          "body": "#2e3033",
+          "lid": "#222426",
+          "standColor": "#222426"
+        },
+        "terracotta": {
+          "body": "#b8603a",
+          "lid": "#8a4428",
+          "standColor": "#8a4428",
+          "tap": "#2a2a2c"
+        },
+        "blue": {
+          "body": "#2f5f9a",
+          "lid": "#244a7a",
+          "standColor": "#244a7a"
+        }
+      },
+      "stats": {
+        "triangles": 428,
+        "sizeM": [
+          0.604,
+          1.26,
+          0.616108
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#3f8a4a",
+          "parts": [
+            "body",
+            "rib-1",
+            "rib-2",
+            "rib-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "lid",
+          "color": "#2b5e33",
+          "parts": [
+            "lid"
+          ],
+          "param": "lid"
+        },
+        {
+          "name": "tap",
+          "color": "#c9a43a",
+          "parts": [
+            "tap"
+          ],
+          "param": "tap"
+        },
+        {
+          "name": "standColor",
+          "color": "#5e4a36",
+          "parts": [
+            "stand",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "leg-4"
+          ],
+          "param": "standColor"
+        }
+      ]
+    },
+    {
+      "id": "steamer-trunk",
+      "kit": "containers",
+      "title": "Steamer trunk",
+      "description": "Vintage travel steamer trunk with wooden slats, brass corners, lock plate, end handles and leather straps, with a flat or domed lid. Knobs: size, top, straps, canvas, slat, brass and strap colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "trunk",
+        "steamer trunk",
+        "luggage",
+        "chest",
+        "travel",
+        "vintage",
+        "attic",
+        "storage"
+      ],
+      "compat": [
+        "indoor",
+        "attic",
+        "house",
+        "harbour",
+        "train",
+        "victorian"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/steamer-trunk.kcad.ts",
+      "sourceSha256": "3172f831d1d0b65de485a154ecf2281588b2d803b887f5276e9871c94858e8d4",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "top",
+          "type": "choice",
+          "default": "flat",
+          "label": "Lid",
+          "choices": [
+            "flat",
+            "domed"
+          ]
+        },
+        {
+          "name": "straps",
+          "type": "choice",
+          "default": "2",
+          "label": "Straps",
+          "choices": [
+            "0",
+            "2"
+          ]
+        },
+        {
+          "name": "canvas",
+          "type": "color",
+          "default": "#3f5a48",
+          "label": "Canvas"
+        },
+        {
+          "name": "slat",
+          "type": "color",
+          "default": "#a8743f",
+          "label": "Wooden slats"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c9a43a",
+          "label": "Brass fittings"
+        },
+        {
+          "name": "strap",
+          "type": "color",
+          "default": "#6a3a22",
+          "label": "Leather straps"
+        }
+      ],
+      "presets": {
+        "red-canvas": {
+          "canvas": "#8a2a24",
+          "slat": "#7a4a2a"
+        },
+        "black": {
+          "canvas": "#2a2a2c",
+          "slat": "#6a4a30",
+          "brass": "#a8a8a0"
+        },
+        "tan": {
+          "canvas": "#b88a5a",
+          "slat": "#6a4428",
+          "strap": "#3a2418"
+        }
+      },
+      "stats": {
+        "triangles": 424,
+        "sizeM": [
+          0.96,
+          0.54,
+          0.567
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "canvas",
+          "color": "#3f5a48",
+          "parts": [
+            "body",
+            "lid"
+          ],
+          "param": "canvas"
+        },
+        {
+          "name": "slat",
+          "color": "#a8743f",
+          "parts": [
+            "slats",
+            "lid-slats"
+          ],
+          "param": "slat"
+        },
+        {
+          "name": "brass",
+          "color": "#c9a43a",
+          "parts": [
+            "corner-1",
+            "corner-2",
+            "corner-3",
+            "corner-4",
+            "corner-5",
+            "corner-6",
+            "corner-7",
+            "corner-8",
+            "lock",
+            "buckle-l",
+            "buckle-r"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "strap",
+          "color": "#6a3a22",
+          "parts": [
+            "handle-l",
+            "handle-r",
+            "strap-l",
+            "strap-r"
+          ],
+          "param": "strap"
+        }
+      ]
+    },
+    {
+      "id": "storage-tote",
+      "kit": "containers",
+      "title": "Storage tote",
+      "description": "Plastic storage tote box with tapered walls, stepped rim, end hand-grips and a clip-on lid, closed or open, single or stacked. Knobs: size, lid, stack, box, lid and clip colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tote",
+        "storage box",
+        "plastic box",
+        "bin",
+        "container",
+        "clip lid",
+        "garage",
+        "warehouse"
+      ],
+      "compat": [
+        "indoor",
+        "warehouse",
+        "garage",
+        "office",
+        "house",
+        "shop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/storage-tote.kcad.ts",
+      "sourceSha256": "75577b88a71f9fc9ae6436a0508949c5d51bc12f04e5c13aeef5551d3552c6f0",
+      "triangleBudget": 440,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "lid",
+          "type": "choice",
+          "default": "closed",
+          "label": "Lid",
+          "choices": [
+            "closed",
+            "open"
+          ]
+        },
+        {
+          "name": "stack",
+          "type": "choice",
+          "default": "1",
+          "label": "Stacked totes",
+          "choices": [
+            "1",
+            "2"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#d9dde0",
+          "label": "Box"
+        },
+        {
+          "name": "top",
+          "type": "color",
+          "default": "#2f6fc0",
+          "label": "Lid"
+        },
+        {
+          "name": "clip",
+          "type": "color",
+          "default": "#f0c23a",
+          "label": "Clips"
+        }
+      ],
+      "presets": {
+        "black": {
+          "body": "#2e3033",
+          "top": "#e8c33a",
+          "clip": "#e8c33a"
+        },
+        "clear": {
+          "body": "#e6eef0",
+          "top": "#e6eef0",
+          "clip": "#2f6fc0"
+        },
+        "red": {
+          "body": "#c8302a",
+          "top": "#2a2a2c",
+          "clip": "#2a2a2c"
+        }
+      },
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          0.66,
+          0.368,
+          0.41
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#d9dde0",
+          "parts": [
+            "box-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "top",
+          "color": "#2f6fc0",
+          "parts": [
+            "lid-1"
+          ],
+          "param": "top"
+        },
+        {
+          "name": "clip",
+          "color": "#f0c23a",
+          "parts": [
+            "clip-1-l",
+            "clip-1-r"
+          ],
+          "param": "clip"
+        }
+      ]
+    },
+    {
+      "id": "wicker-basket",
+      "kit": "containers",
+      "title": "Wicker basket",
+      "description": "Round woven wicker basket with a flared body, rolled rim and arched carry handle, empty or filled with apples or bread. Knobs: size, handle, contents, wicker, rim, handle and contents colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "basket",
+        "wicker basket",
+        "woven",
+        "picnic",
+        "market",
+        "harvest",
+        "farm",
+        "container"
+      ],
+      "compat": [
+        "indoor",
+        "outdoor",
+        "farm",
+        "market",
+        "medieval",
+        "kitchen",
+        "garden"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/containers/wicker-basket.kcad.ts",
+      "sourceSha256": "720a8fd37beac7fa4477b9f35f40f4f876ceaae042c5c08119b445a7fec2490e",
+      "triangleBudget": 460,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "handle",
+          "type": "choice",
+          "default": "arch",
+          "label": "Handle",
+          "choices": [
+            "arch",
+            "none"
+          ]
+        },
+        {
+          "name": "fill",
+          "type": "choice",
+          "default": "apples",
+          "label": "Contents",
+          "choices": [
+            "empty",
+            "apples"
+          ]
+        },
+        {
+          "name": "wicker",
+          "type": "color",
+          "default": "#c89a5a",
+          "label": "Wicker"
+        },
+        {
+          "name": "rim",
+          "type": "color",
+          "default": "#9a6e3a",
+          "label": "Rim"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#8a5e30",
+          "label": "Handle"
+        },
+        {
+          "name": "goods",
+          "type": "color",
+          "default": "#c8302a",
+          "label": "Contents"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "wicker": "#8a6a44",
+          "rim": "#5e4428",
+          "grip": "#5e4428"
+        },
+        "bread": {
+          "goods": "#d8a050"
+        },
+        "pale": {
+          "wicker": "#e0c48e",
+          "rim": "#c09a5e",
+          "grip": "#c09a5e",
+          "goods": "#7ac043"
+        }
+      },
+      "stats": {
+        "triangles": 432,
+        "sizeM": [
+          0.432,
+          0.45,
+          0.412
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wicker",
+          "color": "#c89a5a",
+          "parts": [
+            "body"
+          ],
+          "param": "wicker"
+        },
+        {
+          "name": "rim",
+          "color": "#9a6e3a",
+          "parts": [
+            "rim"
+          ],
+          "param": "rim"
+        },
+        {
+          "name": "grip",
+          "color": "#8a5e30",
+          "parts": [
+            "handle"
+          ],
+          "param": "grip"
+        },
+        {
+          "name": "goods",
+          "color": "#c8302a",
+          "parts": [
+            "heap",
+            "apple-1",
+            "apple-2",
+            "apple-3"
+          ],
+          "param": "goods"
+        }
+      ]
+    },
+    {
+      "id": "bookshelf-speaker",
+      "kit": "electronics",
+      "title": "Bookshelf speaker",
+      "description": "Bookshelf hi-fi loudspeaker box with a woofer cone, dome tweeter and bass port on a front baffle, or a cloth grille cover. Knobs: size, grille, cabinet, baffle, cone, trim and grille colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "speaker",
+        "loudspeaker",
+        "bookshelf speaker",
+        "hi-fi",
+        "stereo",
+        "audio",
+        "woofer",
+        "music"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "office",
+        "desk",
+        "study"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/bookshelf-speaker.kcad.ts",
+      "sourceSha256": "5b5f6092901defd9bf6810e1cc47d98d311c55153ada1ddb41b5c46cfba5c74c",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "grille",
+          "type": "choice",
+          "default": "off",
+          "label": "Grille",
+          "choices": [
+            "off",
+            "on"
+          ]
+        },
+        {
+          "name": "cabinet",
+          "type": "color",
+          "default": "#6a4126",
+          "label": "Cabinet"
+        },
+        {
+          "name": "baffle",
+          "type": "color",
+          "default": "#202124",
+          "label": "Baffle"
+        },
+        {
+          "name": "cone",
+          "type": "color",
+          "default": "#34363a",
+          "label": "Cone"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#b1b5bb",
+          "label": "Trim"
+        },
+        {
+          "name": "cloth",
+          "type": "color",
+          "default": "#3a3c40",
+          "label": "Grille cloth"
+        }
+      ],
+      "presets": {
+        "black": {
+          "cabinet": "#1d1e20",
+          "trim": "#7a7d82"
+        },
+        "white": {
+          "cabinet": "#ecebe7",
+          "baffle": "#ecebe7",
+          "cone": "#c9a24a",
+          "trim": "#2b2c2e",
+          "cloth": "#d6d4cf"
+        }
+      },
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          0.18,
+          0.31,
+          0.263
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "cabinet",
+          "color": "#6a4126",
+          "parts": [
+            "cabinet"
+          ],
+          "param": "cabinet"
+        },
+        {
+          "name": "baffle",
+          "color": "#202124",
+          "parts": [
+            "foot--1--1",
+            "foot-1--1",
+            "foot--1-1",
+            "foot-1-1",
+            "baffle"
+          ],
+          "param": "baffle"
+        },
+        {
+          "name": "trim",
+          "color": "#b1b5bb",
+          "parts": [
+            "woofer-ring",
+            "woofer-cap",
+            "tweeter-ring"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "cone",
+          "color": "#34363a",
+          "parts": [
+            "woofer-cone",
+            "tweeter-dome",
+            "port"
+          ],
+          "param": "cone"
+        }
+      ]
+    },
+    {
+      "id": "boombox",
+      "kit": "electronics",
+      "title": "Boombox",
+      "description": "Retro portable stereo boombox with two round speakers, a single or twin cassette deck, tuning strip, top buttons and a carry handle. Knobs: deck, body, speaker, trim and deck colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "boombox",
+        "ghetto blaster",
+        "stereo",
+        "cassette player",
+        "radio",
+        "speakers",
+        "retro",
+        "music"
+      ],
+      "compat": [
+        "indoor",
+        "outdoor",
+        "retro",
+        "bedroom",
+        "street",
+        "living-room"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/boombox.kcad.ts",
+      "sourceSha256": "f61fb6f4e333bcae12096362688573f158c4df3a645e900a16baa30e82a17513",
+      "triangleBudget": 480,
+      "params": [
+        {
+          "name": "decks",
+          "type": "choice",
+          "default": "twin",
+          "label": "Cassette decks",
+          "choices": [
+            "single",
+            "twin"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#2c2e32",
+          "label": "Body"
+        },
+        {
+          "name": "speaker",
+          "type": "color",
+          "default": "#17181a",
+          "label": "Speakers"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#b8bcc2",
+          "label": "Trim"
+        },
+        {
+          "name": "deck",
+          "type": "color",
+          "default": "#50555c",
+          "label": "Deck"
+        }
+      ],
+      "presets": {
+        "silver": {
+          "body": "#b9bdc2",
+          "trim": "#2c2e31",
+          "speaker": "#2a2b2e",
+          "deck": "#8a8f96"
+        },
+        "red": {
+          "body": "#b4302a",
+          "trim": "#e6e6e2",
+          "deck": "#3a3c40"
+        }
+      },
+      "stats": {
+        "triangles": 428,
+        "sizeM": [
+          0.738,
+          0.368,
+          0.178
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#2c2e32",
+          "parts": [
+            "body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "speaker",
+          "color": "#17181a",
+          "parts": [
+            "foot--1",
+            "foot-1",
+            "cone--1",
+            "cone-1",
+            "window-0",
+            "window-1",
+            "needle"
+          ],
+          "param": "speaker"
+        },
+        {
+          "name": "trim",
+          "color": "#b8bcc2",
+          "parts": [
+            "ring--1",
+            "cap--1",
+            "ring-1",
+            "cap-1",
+            "tuner",
+            "button-0",
+            "button-1",
+            "button-2",
+            "button-3",
+            "button-4",
+            "button-5",
+            "button-6",
+            "button-7",
+            "post--1",
+            "post-1",
+            "handle"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "deck",
+          "color": "#50555c",
+          "parts": [
+            "deck-0",
+            "deck-1"
+          ],
+          "param": "deck"
+        }
+      ]
+    },
+    {
+      "id": "computer-monitor",
+      "kit": "electronics",
+      "title": "Computer monitor",
+      "description": "Flat-screen desktop computer monitor with a thin bezel, power light, rear housing and a neck on a pedestal foot. Knobs: screen size, aspect, frame, screen, stand and light colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "monitor",
+        "computer monitor",
+        "display",
+        "screen",
+        "computer",
+        "pc",
+        "office",
+        "desk"
+      ],
+      "compat": [
+        "indoor",
+        "office",
+        "desk",
+        "bedroom",
+        "study"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/computer-monitor.kcad.ts",
+      "sourceSha256": "10571a6b65ddf91470d01a7458dc94c74cea9b510686f815023aa41384c8dc2b",
+      "triangleBudget": 90,
+      "params": [
+        {
+          "name": "sizeIn",
+          "type": "choice",
+          "default": "24",
+          "label": "Screen (in)",
+          "choices": [
+            "22",
+            "24",
+            "27",
+            "32"
+          ]
+        },
+        {
+          "name": "aspect",
+          "type": "choice",
+          "default": "16:9",
+          "label": "Aspect",
+          "choices": [
+            "16:9",
+            "21:9"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#232427",
+          "label": "Frame"
+        },
+        {
+          "name": "screen",
+          "type": "color",
+          "default": "#2b5a86",
+          "label": "Screen"
+        },
+        {
+          "name": "stand",
+          "type": "color",
+          "default": "#3a3c40",
+          "label": "Stand"
+        },
+        {
+          "name": "light",
+          "type": "color",
+          "default": "#5fd4ff",
+          "label": "Power light"
+        }
+      ],
+      "presets": {
+        "white": {
+          "frame": "#e6e6e3",
+          "stand": "#cfd0cc",
+          "light": "#5fd38a"
+        },
+        "gamer": {
+          "frame": "#141416",
+          "stand": "#b8232c",
+          "light": "#ff3b3b",
+          "screen": "#3a2a6a"
+        },
+        "off": {
+          "screen": "#15181c"
+        }
+      },
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.551312,
+          0.452863,
+          0.19
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stand",
+          "color": "#3a3c40",
+          "parts": [
+            "foot",
+            "neck"
+          ],
+          "param": "stand"
+        },
+        {
+          "name": "frame",
+          "color": "#232427",
+          "parts": [
+            "housing",
+            "panel"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "screen",
+          "color": "#2b5a86",
+          "parts": [
+            "screen"
+          ],
+          "param": "screen"
+        },
+        {
+          "name": "light",
+          "color": "#5fd4ff",
+          "parts": [
+            "light"
+          ],
+          "param": "light"
+        }
+      ]
+    },
+    {
+      "id": "crt-television",
+      "kit": "electronics",
+      "title": "CRT television",
+      "description": "Boxy retro cathode-ray tube television with a bulging 4:3 screen, tapered back, two channel dials, speaker slots and optional rabbit-ear antenna. Knobs: screen size, antenna, cabinet, bezel, screen, dial and antenna colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tv",
+        "television",
+        "crt",
+        "tube tv",
+        "retro",
+        "vintage",
+        "screen",
+        "antenna"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "retro"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/crt-television.kcad.ts",
+      "sourceSha256": "317281001530bedd335f82cd818cc8e9972369843fb68ac826bc38265f83bfd8",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "sizeIn",
+          "type": "choice",
+          "default": "21",
+          "label": "Screen (in)",
+          "choices": [
+            "14",
+            "21",
+            "28"
+          ]
+        },
+        {
+          "name": "antenna",
+          "type": "choice",
+          "default": "rabbit-ears",
+          "label": "Antenna",
+          "choices": [
+            "rabbit-ears",
+            "none"
+          ]
+        },
+        {
+          "name": "cabinet",
+          "type": "color",
+          "default": "#6e4a2e",
+          "label": "Cabinet"
+        },
+        {
+          "name": "bezel",
+          "type": "color",
+          "default": "#2a2a2c",
+          "label": "Bezel"
+        },
+        {
+          "name": "screen",
+          "type": "color",
+          "default": "#40534d",
+          "label": "Screen"
+        },
+        {
+          "name": "dials",
+          "type": "color",
+          "default": "#c9c1b0",
+          "label": "Dials"
+        },
+        {
+          "name": "rods",
+          "type": "color",
+          "default": "#a7aaae",
+          "label": "Antenna"
+        }
+      ],
+      "presets": {
+        "beige": {
+          "cabinet": "#d6cdb6",
+          "bezel": "#bdb39c",
+          "dials": "#5a554c"
+        },
+        "black": {
+          "cabinet": "#1f1f21",
+          "bezel": "#2f3033",
+          "dials": "#8a8d92"
+        },
+        "on": {
+          "screen": "#7fb8d8"
+        }
+      },
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.620728,
+          0.8395,
+          0.44672
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "cabinet",
+          "color": "#6e4a2e",
+          "parts": [
+            "cabinet",
+            "tube"
+          ],
+          "param": "cabinet"
+        },
+        {
+          "name": "bezel",
+          "color": "#2a2a2c",
+          "parts": [
+            "foot--1",
+            "foot-1",
+            "bezel",
+            "panel",
+            "antenna-base"
+          ],
+          "param": "bezel"
+        },
+        {
+          "name": "screen",
+          "color": "#40534d",
+          "parts": [
+            "screen"
+          ],
+          "param": "screen"
+        },
+        {
+          "name": "dials",
+          "color": "#c9c1b0",
+          "parts": [
+            "dial-0",
+            "dial-1",
+            "slot-0",
+            "slot-1",
+            "slot-2",
+            "slot-3"
+          ],
+          "param": "dials"
+        },
+        {
+          "name": "rods",
+          "color": "#a7aaae",
+          "parts": [
+            "rod--1",
+            "rod-1"
+          ],
+          "param": "rods"
+        }
+      ]
+    },
+    {
+      "id": "desk-phone",
+      "kit": "electronics",
+      "title": "Desk phone",
+      "description": "Landline desk telephone, an office phone with a sloped keypad, display and side handset or a classic rotary dial phone with the handset across the top. Knobs: style, body, handset, keys and display colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telephone",
+        "phone",
+        "desk phone",
+        "landline",
+        "office phone",
+        "rotary phone",
+        "handset",
+        "keypad"
+      ],
+      "compat": [
+        "indoor",
+        "office",
+        "desk",
+        "retro",
+        "hotel",
+        "reception"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/desk-phone.kcad.ts",
+      "sourceSha256": "9d34024a4b1439f768959a8a8177cfa6abbf66ae46578ef063f314e3090d76dc",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "office",
+          "label": "Style",
+          "choices": [
+            "office",
+            "rotary"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#2c2d31",
+          "label": "Body"
+        },
+        {
+          "name": "handset",
+          "type": "color",
+          "default": "#45484f",
+          "label": "Handset"
+        },
+        {
+          "name": "keys",
+          "type": "color",
+          "default": "#c8cbd0",
+          "label": "Keys and dial"
+        },
+        {
+          "name": "display",
+          "type": "color",
+          "default": "#9cc4a8",
+          "label": "Display"
+        }
+      ],
+      "presets": {
+        "white": {
+          "body": "#e8e6e0",
+          "handset": "#dedcd5",
+          "keys": "#8a8e94",
+          "display": "#a8c8e8"
+        },
+        "retro": {
+          "body": "#a8322b",
+          "handset": "#a8322b",
+          "keys": "#efe8d8",
+          "display": "#efe8d8"
+        }
+      },
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          0.24,
+          0.084,
+          0.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#2c2d31",
+          "parts": [
+            "body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "keys",
+          "color": "#c8cbd0",
+          "parts": [
+            "key-0-0",
+            "key-0-1",
+            "key-0-2",
+            "key-1-0",
+            "key-1-1",
+            "key-1-2",
+            "key-2-0",
+            "key-2-1",
+            "key-2-2",
+            "key-3-0",
+            "key-3-1",
+            "key-3-2"
+          ],
+          "param": "keys"
+        },
+        {
+          "name": "display",
+          "color": "#9cc4a8",
+          "parts": [
+            "fkey-0",
+            "fkey-1",
+            "fkey-2",
+            "display"
+          ],
+          "param": "display"
+        },
+        {
+          "name": "handset",
+          "color": "#45484f",
+          "parts": [
+            "handset"
+          ],
+          "param": "handset"
+        }
+      ]
+    },
+    {
+      "id": "desktop-tower",
+      "kit": "electronics",
+      "title": "Desktop PC tower",
+      "description": "Desktop computer tower case on feet with a front panel, drive bays, vent slots and power button, or a gamer mesh front with light strips and a glass side window. Knobs: style, size, case, front, accent light and vent or window colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "computer",
+        "pc",
+        "desktop",
+        "tower",
+        "pc case",
+        "gaming pc",
+        "workstation",
+        "office"
+      ],
+      "compat": [
+        "indoor",
+        "office",
+        "desk",
+        "bedroom",
+        "study"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/desktop-tower.kcad.ts",
+      "sourceSha256": "b0ed0ba6a5e67b2e083cf5160e8b7e01b2f5736b4ad62d21ae8dd61679f58bcc",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "office",
+          "label": "Style",
+          "choices": [
+            "office",
+            "gamer"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "mid",
+          "label": "Size",
+          "choices": [
+            "mini",
+            "mid",
+            "full"
+          ]
+        },
+        {
+          "name": "case",
+          "type": "color",
+          "default": "#2b2d31",
+          "label": "Case"
+        },
+        {
+          "name": "front",
+          "type": "color",
+          "default": "#3c3f45",
+          "label": "Front panel"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#39c0ff",
+          "label": "Accent light"
+        },
+        {
+          "name": "dark",
+          "type": "color",
+          "default": "#17191c",
+          "label": "Vents and window"
+        }
+      ],
+      "presets": {
+        "retro": {
+          "case": "#d9cfb4",
+          "front": "#e6dec8",
+          "accent": "#5ad15a",
+          "dark": "#8a8270"
+        },
+        "white": {
+          "case": "#e8e8e5",
+          "front": "#f4f4f2",
+          "accent": "#7a8cff",
+          "dark": "#2a2d33"
+        },
+        "gamer": {
+          "case": "#141416",
+          "front": "#1e1f23",
+          "accent": "#ff2e7a",
+          "dark": "#2a2236"
+        }
+      },
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.214,
+          0.466,
+          0.445
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "case",
+          "color": "#2b2d31",
+          "parts": [
+            "case",
+            "bay-0",
+            "bay-1"
+          ],
+          "param": "case"
+        },
+        {
+          "name": "dark",
+          "color": "#17191c",
+          "parts": [
+            "foot--1--1",
+            "foot-1--1",
+            "foot--1-1",
+            "foot-1-1",
+            "slot",
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "vent-4"
+          ],
+          "param": "dark"
+        },
+        {
+          "name": "front",
+          "color": "#3c3f45",
+          "parts": [
+            "front"
+          ],
+          "param": "front"
+        },
+        {
+          "name": "accent",
+          "color": "#39c0ff",
+          "parts": [
+            "power",
+            "led"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "game-console",
+      "kit": "electronics",
+      "title": "Game console",
+      "description": "Home video game console box, a modern slab with a disc slot and light bar or a retro cartridge wedge, with one or two gamepad controllers beside it. Knobs: style, controllers, console, accent, controller and button colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "game console",
+        "video game",
+        "console",
+        "gamepad",
+        "controller",
+        "gaming",
+        "retro",
+        "tv"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "retro"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/game-console.kcad.ts",
+      "sourceSha256": "138b49457e1c2fac8850734a86a33773d439f9675fa4394fe98da9c3bd993786",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "modern",
+          "label": "Style",
+          "choices": [
+            "modern",
+            "retro"
+          ]
+        },
+        {
+          "name": "controllers",
+          "type": "choice",
+          "default": "1",
+          "label": "Controllers",
+          "choices": [
+            "1",
+            "2"
+          ]
+        },
+        {
+          "name": "console",
+          "type": "color",
+          "default": "#1e1f23",
+          "label": "Console"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#2f8cff",
+          "label": "Accent light"
+        },
+        {
+          "name": "pad",
+          "type": "color",
+          "default": "#2b2d32",
+          "label": "Controller"
+        },
+        {
+          "name": "buttons",
+          "type": "color",
+          "default": "#cfd2d8",
+          "label": "Buttons and sticks"
+        }
+      ],
+      "presets": {
+        "white": {
+          "console": "#ecebe8",
+          "pad": "#f2f1ee",
+          "buttons": "#2a2b2f",
+          "accent": "#4a9cff"
+        },
+        "retro": {
+          "console": "#bdb8ae",
+          "accent": "#c4342c",
+          "pad": "#8a857c",
+          "buttons": "#3a3a3e"
+        }
+      },
+      "stats": {
+        "triangles": 252,
+        "sizeM": [
+          0.483315,
+          0.074,
+          0.307564
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "console",
+          "color": "#1e1f23",
+          "parts": [
+            "console"
+          ],
+          "param": "console"
+        },
+        {
+          "name": "buttons",
+          "color": "#cfd2d8",
+          "parts": [
+            "band",
+            "stick-0-0",
+            "stick-0-1",
+            "dpad-0"
+          ],
+          "param": "buttons"
+        },
+        {
+          "name": "pad",
+          "color": "#2b2d32",
+          "parts": [
+            "slot",
+            "pad-0"
+          ],
+          "param": "pad"
+        },
+        {
+          "name": "accent",
+          "color": "#2f8cff",
+          "parts": [
+            "light",
+            "btn-0-0",
+            "btn-0-1",
+            "btn-0-2",
+            "btn-0-3"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "keyboard",
+      "kit": "electronics",
+      "title": "Keyboard",
+      "description": "Desktop computer keyboard with a wedge case, raised key rows, accent Esc, Enter and space keys, and an optional arrow cluster and number pad. Knobs: layout, case, keys and accent key colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "keyboard",
+        "computer keyboard",
+        "keys",
+        "typing",
+        "computer",
+        "pc",
+        "peripheral",
+        "desk"
+      ],
+      "compat": [
+        "indoor",
+        "office",
+        "desk",
+        "bedroom",
+        "study"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/keyboard.kcad.ts",
+      "sourceSha256": "ae8f0eaa624ca146bc16c7a9ed16d37e92c609ec0fc382a2dec7f012a5df5349",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "layout",
+          "type": "choice",
+          "default": "tenkeyless",
+          "label": "Layout",
+          "choices": [
+            "compact",
+            "tenkeyless",
+            "full"
+          ]
+        },
+        {
+          "name": "case",
+          "type": "color",
+          "default": "#1f2023",
+          "label": "Case"
+        },
+        {
+          "name": "keys",
+          "type": "color",
+          "default": "#5d616a",
+          "label": "Keys"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d0533e",
+          "label": "Accent keys"
+        }
+      ],
+      "presets": {
+        "retro": {
+          "case": "#d8cfb8",
+          "keys": "#ece6d6",
+          "accent": "#8a8478"
+        },
+        "white": {
+          "case": "#e9e9e6",
+          "keys": "#f7f7f5",
+          "accent": "#9fb8d8"
+        },
+        "gamer": {
+          "case": "#141416",
+          "keys": "#26272b",
+          "accent": "#38e07b"
+        }
+      },
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.373663,
+          0.031999,
+          0.149825
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "case",
+          "color": "#1f2023",
+          "parts": [
+            "case"
+          ],
+          "param": "case"
+        },
+        {
+          "name": "keys",
+          "color": "#5d616a",
+          "parts": [
+            "key-0",
+            "key-2",
+            "key-3",
+            "key-4",
+            "key-5",
+            "key-6",
+            "key-7",
+            "key-9",
+            "key-10",
+            "key-11",
+            "key-12",
+            "key-14",
+            "key-15",
+            "key-16",
+            "key-17",
+            "key-18",
+            "key-19",
+            "key-20"
+          ],
+          "param": "keys"
+        },
+        {
+          "name": "accent",
+          "color": "#d0533e",
+          "parts": [
+            "key-1",
+            "key-8",
+            "key-13"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "laptop",
+      "kit": "electronics",
+      "title": "Laptop",
+      "description": "Open laptop computer with a thin base, key rows, touchpad and a hinged bezelled screen lid at an adjustable angle. Knobs: screen size, lid angle, body, keys, bezel and screen colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "laptop",
+        "notebook",
+        "computer",
+        "pc",
+        "screen",
+        "keyboard",
+        "portable",
+        "office"
+      ],
+      "compat": [
+        "indoor",
+        "office",
+        "desk",
+        "bedroom",
+        "study",
+        "cafe"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/laptop.kcad.ts",
+      "sourceSha256": "08613e4d2ef0080970494b83fc81d35376bef4296870657e01220c0446bd2483",
+      "triangleBudget": 160,
+      "params": [
+        {
+          "name": "sizeIn",
+          "type": "choice",
+          "default": "15",
+          "label": "Screen (in)",
+          "choices": [
+            "13",
+            "15",
+            "17"
+          ]
+        },
+        {
+          "name": "lidAngle",
+          "type": "choice",
+          "default": "110",
+          "label": "Lid angle (deg)",
+          "choices": [
+            "90",
+            "110",
+            "130"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#b9bcc1",
+          "label": "Body"
+        },
+        {
+          "name": "keys",
+          "type": "color",
+          "default": "#2a2b2f",
+          "label": "Keys"
+        },
+        {
+          "name": "bezel",
+          "type": "color",
+          "default": "#1b1c1f",
+          "label": "Bezel"
+        },
+        {
+          "name": "screen",
+          "type": "color",
+          "default": "#2f6aa0",
+          "label": "Screen"
+        }
+      ],
+      "presets": {
+        "black": {
+          "body": "#2c2d31",
+          "keys": "#151618",
+          "bezel": "#151618"
+        },
+        "rose": {
+          "body": "#d9b3a6",
+          "keys": "#f1ede8",
+          "bezel": "#2a2526",
+          "screen": "#7a5ea8"
+        },
+        "off": {
+          "screen": "#141619"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.347087,
+          0.232285,
+          0.316892
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#b9bcc1",
+          "parts": [
+            "base",
+            "lid"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "keys",
+          "color": "#2a2b2f",
+          "parts": [
+            "keys-0",
+            "keys-1",
+            "keys-2",
+            "keys-3",
+            "keys-4",
+            "touchpad"
+          ],
+          "param": "keys"
+        },
+        {
+          "name": "bezel",
+          "color": "#1b1c1f",
+          "parts": [
+            "bezel",
+            "hinge"
+          ],
+          "param": "bezel"
+        },
+        {
+          "name": "screen",
+          "color": "#2f6aa0",
+          "parts": [
+            "screen"
+          ],
+          "param": "screen"
+        }
+      ]
+    },
+    {
+      "id": "retro-radio",
+      "kit": "electronics",
+      "title": "Retro valve radio",
+      "description": "Vintage tabletop valve radio in a wooden cathedral-arch or wide chamfered cabinet with a cloth speaker grille, fret bars, tuning dial and knobs. Knobs: style, wood, grille cloth, dial and knob colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "radio",
+        "valve radio",
+        "tube radio",
+        "wireless",
+        "vintage",
+        "retro",
+        "antique",
+        "cathedral radio"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "retro",
+        "kitchen",
+        "bedroom"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/retro-radio.kcad.ts",
+      "sourceSha256": "47ba9e15a82b2d38ec7800c7cdaad51e55a4bc5e2fa5893e72fbdf57ee68acc6",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "cathedral",
+          "label": "Style",
+          "choices": [
+            "cathedral",
+            "tabletop"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#7a4524",
+          "label": "Wood"
+        },
+        {
+          "name": "cloth",
+          "type": "color",
+          "default": "#d9c79a",
+          "label": "Grille cloth"
+        },
+        {
+          "name": "dial",
+          "type": "color",
+          "default": "#efdca6",
+          "label": "Dial"
+        },
+        {
+          "name": "knobs",
+          "type": "color",
+          "default": "#2e2119",
+          "label": "Knobs"
+        }
+      ],
+      "presets": {
+        "bakelite": {
+          "wood": "#3a2418",
+          "cloth": "#b89a6a",
+          "knobs": "#1c1410"
+        },
+        "ivory": {
+          "wood": "#e8dcc0",
+          "cloth": "#9c4a3a",
+          "dial": "#f6eed8",
+          "knobs": "#7a5a3a"
+        }
+      },
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.354,
+          0.42,
+          0.224
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wood",
+          "color": "#7a4524",
+          "parts": [
+            "plinth",
+            "cabinet",
+            "fret-0",
+            "fret-1",
+            "fret-2"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "cloth",
+          "color": "#d9c79a",
+          "parts": [
+            "grille"
+          ],
+          "param": "cloth"
+        },
+        {
+          "name": "dial",
+          "color": "#efdca6",
+          "parts": [
+            "dial"
+          ],
+          "param": "dial"
+        },
+        {
+          "name": "knobs",
+          "color": "#2e2119",
+          "parts": [
+            "knob--105",
+            "knob-105",
+            "knob-mid"
+          ],
+          "param": "knobs"
+        }
+      ]
+    },
+    {
+      "id": "smartphone",
+      "kit": "electronics",
+      "title": "Smartphone",
+      "description": "Modern touchscreen smartphone with a large screen, side buttons and rear camera bump, lying flat or leaning on a desk stand. Knobs: pose, size, body, screen, camera and stand colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "smartphone",
+        "phone",
+        "mobile phone",
+        "cell phone",
+        "touchscreen",
+        "device",
+        "gadget"
+      ],
+      "compat": [
+        "indoor",
+        "office",
+        "desk",
+        "bedroom",
+        "living-room",
+        "cafe"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/smartphone.kcad.ts",
+      "sourceSha256": "03ff26045966f06d4c1ae357838c6bcecfc728073f63df23f88e4ded143d0aab",
+      "triangleBudget": 140,
+      "params": [
+        {
+          "name": "pose",
+          "type": "choice",
+          "default": "stand",
+          "label": "Pose",
+          "choices": [
+            "flat",
+            "stand"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "compact",
+            "standard",
+            "max"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#2a2c30",
+          "label": "Body"
+        },
+        {
+          "name": "screen",
+          "type": "color",
+          "default": "#3a78c2",
+          "label": "Screen"
+        },
+        {
+          "name": "camera",
+          "type": "color",
+          "default": "#121315",
+          "label": "Camera"
+        },
+        {
+          "name": "stand",
+          "type": "color",
+          "default": "#c9ccd1",
+          "label": "Stand"
+        }
+      ],
+      "presets": {
+        "white": {
+          "body": "#e9e8e4",
+          "camera": "#2a2b2e",
+          "stand": "#9aa0a8"
+        },
+        "gold": {
+          "body": "#d2b48a",
+          "screen": "#e06a4a",
+          "stand": "#3a3c40"
+        },
+        "off": {
+          "screen": "#101114"
+        }
+      },
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.0732,
+          0.153131,
+          0.070176
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#2a2c30",
+          "parts": [
+            "body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "screen",
+          "color": "#3a78c2",
+          "parts": [
+            "screen"
+          ],
+          "param": "screen"
+        },
+        {
+          "name": "camera",
+          "color": "#121315",
+          "parts": [
+            "front-camera",
+            "buttons",
+            "rear-camera"
+          ],
+          "param": "camera"
+        },
+        {
+          "name": "stand",
+          "color": "#c9ccd1",
+          "parts": [
+            "stand-base",
+            "stand-lip",
+            "stand-back"
+          ],
+          "param": "stand"
+        }
+      ]
+    },
+    {
+      "id": "wifi-router",
+      "kit": "electronics",
+      "title": "Wi-Fi router",
+      "description": "Home wireless internet router with a chamfered front, status lights, top vents and two to four tilted antennas along the back. Knobs: antennas, body, antenna, vent and light colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "router",
+        "wifi",
+        "wireless",
+        "modem",
+        "network",
+        "internet",
+        "antenna",
+        "gadget"
+      ],
+      "compat": [
+        "indoor",
+        "office",
+        "desk",
+        "living-room",
+        "bedroom"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/electronics/wifi-router.kcad.ts",
+      "sourceSha256": "06e6b95a3cc5a32b8a7634e42701f4df3a570ebcc9cd8b303b1d926d80a57d3a",
+      "triangleBudget": 290,
+      "params": [
+        {
+          "name": "antennas",
+          "type": "choice",
+          "default": "3",
+          "label": "Antennas",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#1f2124",
+          "label": "Body"
+        },
+        {
+          "name": "rod",
+          "type": "color",
+          "default": "#2c2e33",
+          "label": "Antennas"
+        },
+        {
+          "name": "vent",
+          "type": "color",
+          "default": "#3c3f45",
+          "label": "Vents"
+        },
+        {
+          "name": "light",
+          "type": "color",
+          "default": "#3cf07a",
+          "label": "Status lights"
+        }
+      ],
+      "presets": {
+        "white": {
+          "body": "#eeeeec",
+          "rod": "#e2e2df",
+          "vent": "#c9cacc",
+          "light": "#4aa8ff"
+        },
+        "gamer": {
+          "body": "#18181b",
+          "rod": "#b8232c",
+          "vent": "#b8232c",
+          "light": "#ff3b3b"
+        }
+      },
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          0.291683,
+          0.199435,
+          0.174251
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#1f2124",
+          "parts": [
+            "body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "vent",
+          "color": "#3c3f45",
+          "parts": [
+            "foot--1--1",
+            "foot-1--1",
+            "foot--1-1",
+            "foot-1-1",
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "vent-3"
+          ],
+          "param": "vent"
+        },
+        {
+          "name": "light",
+          "color": "#3cf07a",
+          "parts": [
+            "light-0",
+            "light-1",
+            "light-2",
+            "light-3",
+            "light-4"
+          ],
+          "param": "light"
+        },
+        {
+          "name": "rod",
+          "color": "#2c2e33",
+          "parts": [
+            "hinge-0",
+            "antenna-0",
+            "hinge-1",
+            "antenna-1",
+            "hinge-2",
+            "antenna-2"
+          ],
+          "param": "rod"
+        }
+      ]
+    },
+    {
+      "id": "apple",
+      "kit": "food-kitchen",
+      "title": "Apple",
+      "description": "Faceted apple with a short stem and a leaf, round or tall in shape, whole or with a bite showing the pale flesh, as a food pickup or market produce. Knobs: shape, bite, skin, flesh, stem and leaf colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "apple",
+        "fruit",
+        "food",
+        "pickup",
+        "produce",
+        "healthy",
+        "snack"
+      ],
+      "compat": [
+        "kitchen",
+        "food",
+        "market",
+        "farm",
+        "tavern",
+        "indoor",
+        "medieval"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/apple.kcad.ts",
+      "sourceSha256": "7555fd3316217da9e542d4af66bbe47da831a2d6f996807f0ee6973dcf3f4d19",
+      "triangleBudget": 380,
+      "params": [
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "round",
+          "label": "Variety shape",
+          "choices": [
+            "round",
+            "tall"
+          ]
+        },
+        {
+          "name": "bite",
+          "type": "choice",
+          "default": "no",
+          "label": "Bitten",
+          "choices": [
+            "no",
+            "yes"
+          ]
+        },
+        {
+          "name": "skin",
+          "type": "color",
+          "default": "#c8262a",
+          "label": "Skin"
+        },
+        {
+          "name": "flesh",
+          "type": "color",
+          "default": "#f3e6b8",
+          "label": "Flesh"
+        },
+        {
+          "name": "stem",
+          "type": "color",
+          "default": "#6a4526",
+          "label": "Stem"
+        },
+        {
+          "name": "leaf",
+          "type": "color",
+          "default": "#4f9a34",
+          "label": "Leaf"
+        }
+      ],
+      "presets": {
+        "granny smith": {
+          "skin": "#8cc63e",
+          "leaf": "#3d7f2a"
+        },
+        "golden": {
+          "skin": "#e8c443"
+        }
+      },
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.086,
+          0.087866,
+          0.081791
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "skin",
+          "color": "#c8262a",
+          "parts": [
+            "skin"
+          ],
+          "param": "skin"
+        },
+        {
+          "name": "stem",
+          "color": "#6a4526",
+          "parts": [
+            "stem"
+          ],
+          "param": "stem"
+        },
+        {
+          "name": "leaf",
+          "color": "#4f9a34",
+          "parts": [
+            "leaf"
+          ],
+          "param": "leaf"
+        }
+      ]
+    },
+    {
+      "id": "bread-loaf",
+      "kit": "food-kitchen",
+      "title": "Bread loaf",
+      "description": "Faceted crusty bread loaf as a bloomer, long baguette or round boule with pale scored slashes on top, for bakeries, kitchens, taverns and food pickups. Knobs: style, crust and score colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "bread",
+        "loaf",
+        "baguette",
+        "boule",
+        "bloomer",
+        "bakery",
+        "food",
+        "pickup"
+      ],
+      "compat": [
+        "kitchen",
+        "food",
+        "market",
+        "tavern",
+        "bakery",
+        "medieval",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/bread-loaf.kcad.ts",
+      "sourceSha256": "ab7a89be7392667e0e35062a69bf9220433343be9a958bd390ca1fcbd7c24613",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "bloomer",
+          "label": "Style",
+          "choices": [
+            "bloomer",
+            "baguette",
+            "round"
+          ]
+        },
+        {
+          "name": "crust",
+          "type": "color",
+          "default": "#c98a3e",
+          "label": "Crust"
+        },
+        {
+          "name": "score",
+          "type": "color",
+          "default": "#f0d9a2",
+          "label": "Scores"
+        }
+      ],
+      "presets": {
+        "rye": {
+          "crust": "#6e4026",
+          "score": "#b08a5c"
+        },
+        "pale white": {
+          "crust": "#e2b872",
+          "score": "#fbf0d2"
+        }
+      },
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.3,
+          0.1015,
+          0.1431
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "crust",
+          "color": "#c98a3e",
+          "parts": [
+            "crust"
+          ],
+          "param": "crust"
+        },
+        {
+          "name": "score",
+          "color": "#f0d9a2",
+          "parts": [
+            "score-1",
+            "score-2",
+            "score-3",
+            "score-4"
+          ],
+          "param": "score"
+        }
+      ]
+    },
+    {
+      "id": "carrot",
+      "kit": "food-kitchen",
+      "title": "Carrot",
+      "description": "Tapered faceted carrot lying on its side with a leafy green top, single or a bunch of three, leafy or trimmed, as a food pickup or market produce. Knobs: count, tops, root and leaf colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "carrot",
+        "vegetable",
+        "root",
+        "food",
+        "pickup",
+        "produce",
+        "harvest",
+        "garden"
+      ],
+      "compat": [
+        "kitchen",
+        "food",
+        "market",
+        "farm",
+        "garden",
+        "tavern",
+        "medieval"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/carrot.kcad.ts",
+      "sourceSha256": "0d68d0453a3d7faea26932cfac8f48bad3416503ae56b8bdeb54a2d12c08f349",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "count",
+          "type": "choice",
+          "default": "1",
+          "label": "Carrots",
+          "choices": [
+            "1",
+            "3"
+          ]
+        },
+        {
+          "name": "tops",
+          "type": "choice",
+          "default": "leafy",
+          "label": "Tops",
+          "choices": [
+            "leafy",
+            "trimmed"
+          ]
+        },
+        {
+          "name": "root",
+          "type": "color",
+          "default": "#ea7a1e",
+          "label": "Root"
+        },
+        {
+          "name": "leaves",
+          "type": "color",
+          "default": "#4a9a32",
+          "label": "Leaves"
+        }
+      ],
+      "presets": {
+        "purple": {
+          "root": "#6a2a6e"
+        },
+        "yellow": {
+          "root": "#f0c23a",
+          "leaves": "#5aa83a"
+        }
+      },
+      "stats": {
+        "triangles": 194,
+        "sizeM": [
+          0.265308,
+          0.073866,
+          0.09796
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "root",
+          "color": "#ea7a1e",
+          "parts": [
+            "root-1"
+          ],
+          "param": "root"
+        },
+        {
+          "name": "leaves",
+          "color": "#4a9a32",
+          "parts": [
+            "frond-1-1",
+            "frond-1-2",
+            "frond-1-3",
+            "frond-1-4"
+          ],
+          "param": "leaves"
+        }
+      ]
+    },
+    {
+      "id": "cheese-wheel",
+      "kit": "food-kitchen",
+      "title": "Cheese wheel",
+      "description": "Faceted cheese wheel with a waxed rind, whole or with a wedge cut out showing the pale paste, optionally with the wedge served beside it, for taverns, markets and food pickups. Knobs: cut, size, rind and paste colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "cheese",
+        "wheel",
+        "wedge",
+        "gouda",
+        "cheddar",
+        "food",
+        "dairy",
+        "pickup"
+      ],
+      "compat": [
+        "kitchen",
+        "food",
+        "market",
+        "tavern",
+        "farm",
+        "medieval",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/cheese-wheel.kcad.ts",
+      "sourceSha256": "4d5f04a0f32f2b69461cf9c1d95979631ff8b1deaecac009eee139a0ade8e5b1",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "cut",
+          "type": "choice",
+          "default": "cut",
+          "label": "Cut",
+          "choices": [
+            "whole",
+            "cut",
+            "served"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "rind",
+          "type": "color",
+          "default": "#e0962a",
+          "label": "Rind"
+        },
+        {
+          "name": "paste",
+          "type": "color",
+          "default": "#fce9a6",
+          "label": "Paste"
+        }
+      ],
+      "presets": {
+        "red wax": {
+          "rind": "#c3282c",
+          "paste": "#f4d470"
+        },
+        "blue": {
+          "rind": "#c8c6b2",
+          "paste": "#ece6cc"
+        }
+      },
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.32,
+          0.11,
+          0.32
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "rind",
+          "color": "#e0962a",
+          "parts": [
+            "rind"
+          ],
+          "param": "rind"
+        },
+        {
+          "name": "paste",
+          "color": "#fce9a6",
+          "parts": [
+            "paste"
+          ],
+          "param": "paste"
+        }
+      ]
+    },
+    {
+      "id": "coffee-mug",
+      "kit": "food-kitchen",
+      "title": "Coffee mug",
+      "description": "Ceramic coffee mug with a painted band and C handle, as an espresso cup, standard mug or tall mug, empty or filled with coffee or latte. Knobs: size, fill, mug, band, coffee and foam colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "mug",
+        "coffee mug",
+        "cup",
+        "coffee",
+        "tea",
+        "latte",
+        "espresso",
+        "kitchen",
+        "office"
+      ],
+      "compat": [
+        "kitchen",
+        "indoor",
+        "food",
+        "office",
+        "cafe",
+        "desk"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/coffee-mug.kcad.ts",
+      "sourceSha256": "7f26e7a47f75dd961bafe66153c66ff76e9df45ea5fc3a66c13ed872e12caec7",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "mug",
+          "label": "Size",
+          "choices": [
+            "espresso",
+            "mug",
+            "tall"
+          ]
+        },
+        {
+          "name": "fill",
+          "type": "choice",
+          "default": "coffee",
+          "label": "Fill",
+          "choices": [
+            "empty",
+            "coffee",
+            "latte"
+          ]
+        },
+        {
+          "name": "mug",
+          "type": "color",
+          "default": "#f0ece2",
+          "label": "Mug"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#2f6fc0",
+          "label": "Band"
+        },
+        {
+          "name": "coffee",
+          "type": "color",
+          "default": "#4a2c1a",
+          "label": "Coffee"
+        },
+        {
+          "name": "foam",
+          "type": "color",
+          "default": "#d8b88a",
+          "label": "Foam"
+        }
+      ],
+      "presets": {
+        "diner": {
+          "mug": "#f4f1e8",
+          "band": "#c8302a"
+        },
+        "black": {
+          "mug": "#2a2a2c",
+          "band": "#e8c33a"
+        },
+        "enamel": {
+          "mug": "#e8ece8",
+          "band": "#1f3a5a"
+        }
+      },
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          0.1135,
+          0.095,
+          0.081791
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "mug",
+          "color": "#f0ece2",
+          "parts": [
+            "mug",
+            "handle"
+          ],
+          "param": "mug"
+        },
+        {
+          "name": "band",
+          "color": "#2f6fc0",
+          "parts": [
+            "band"
+          ],
+          "param": "band"
+        },
+        {
+          "name": "coffee",
+          "color": "#4a2c1a",
+          "parts": [
+            "coffee"
+          ],
+          "param": "coffee"
+        }
+      ]
+    },
+    {
+      "id": "cooking-pot",
+      "kit": "food-kitchen",
+      "title": "Cooking pot",
+      "description": "Stock pot with rolled rim, two loop handles and a domed lid with knob, lidded or open and full of soup or empty. Knobs: size, lid and contents, pot, handle, lid and soup colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cooking pot",
+        "stock pot",
+        "saucepan",
+        "pot",
+        "soup",
+        "cookware",
+        "kitchen",
+        "stew"
+      ],
+      "compat": [
+        "kitchen",
+        "indoor",
+        "food",
+        "restaurant",
+        "tavern",
+        "camp"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/cooking-pot.kcad.ts",
+      "sourceSha256": "767b3f9b98e7165bb44de89061f143c99baba9f3a5e9a26aab306dea286a337f",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "state",
+          "type": "choice",
+          "default": "lidded",
+          "label": "Lid and contents",
+          "choices": [
+            "lidded",
+            "soup",
+            "empty"
+          ]
+        },
+        {
+          "name": "pot",
+          "type": "color",
+          "default": "#a9b0b5",
+          "label": "Pot"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#2b2b2e",
+          "label": "Handles and knob"
+        },
+        {
+          "name": "lidColor",
+          "type": "color",
+          "default": "#bcc3c8",
+          "label": "Lid"
+        },
+        {
+          "name": "soup",
+          "type": "color",
+          "default": "#c9772b",
+          "label": "Soup"
+        }
+      ],
+      "presets": {
+        "copper": {
+          "pot": "#b8693a",
+          "lidColor": "#c87a48",
+          "grip": "#3a2a20"
+        },
+        "enamel": {
+          "pot": "#c8302a",
+          "lidColor": "#c8302a",
+          "grip": "#f0ece2"
+        },
+        "cast-iron": {
+          "pot": "#2e3033",
+          "lidColor": "#3a3d40",
+          "grip": "#1c1c1e"
+        }
+      },
+      "stats": {
+        "triangles": 344,
+        "sizeM": [
+          0.324,
+          0.264,
+          0.241568
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "pot",
+          "color": "#a9b0b5",
+          "parts": [
+            "body"
+          ],
+          "param": "pot"
+        },
+        {
+          "name": "grip",
+          "color": "#2b2b2e",
+          "parts": [
+            "handle-left",
+            "handle-right",
+            "knob"
+          ],
+          "param": "grip"
+        },
+        {
+          "name": "lidColor",
+          "color": "#bcc3c8",
+          "parts": [
+            "lid"
+          ],
+          "param": "lidColor"
+        }
+      ]
+    },
+    {
+      "id": "cutting-board",
+      "kit": "food-kitchen",
+      "title": "Cutting board",
+      "description": "Wooden chopping board, chamfered rectangle or paddle with a hanging hole, bare or with a chef's knife and chopped vegetables. Knobs: shape, extras, wood, blade, knife handle and vegetable colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cutting board",
+        "chopping board",
+        "board",
+        "knife",
+        "chef knife",
+        "chopped vegetables",
+        "kitchen",
+        "cooking"
+      ],
+      "compat": [
+        "kitchen",
+        "indoor",
+        "food",
+        "restaurant",
+        "tavern"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/cutting-board.kcad.ts",
+      "sourceSha256": "5b30de699b024e0c231261e7ae76f284752e4ec1b98dd0979b661015b8eee46e",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "rectangle",
+          "label": "Shape",
+          "choices": [
+            "rectangle",
+            "paddle"
+          ]
+        },
+        {
+          "name": "extras",
+          "type": "choice",
+          "default": "knife-and-veg",
+          "label": "On the board",
+          "choices": [
+            "none",
+            "knife",
+            "knife-and-veg"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#c69c6d",
+          "label": "Wood"
+        },
+        {
+          "name": "blade",
+          "type": "color",
+          "default": "#c8ced2",
+          "label": "Blade"
+        },
+        {
+          "name": "knifeHandle",
+          "type": "color",
+          "default": "#2a2a2c",
+          "label": "Knife handle"
+        },
+        {
+          "name": "veg",
+          "type": "color",
+          "default": "#e07a22",
+          "label": "Vegetables"
+        }
+      ],
+      "presets": {
+        "walnut": {
+          "wood": "#6b4428"
+        },
+        "bamboo": {
+          "wood": "#d8b878"
+        },
+        "cucumber": {
+          "veg": "#7aa84a"
+        }
+      },
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.38,
+          0.04,
+          0.25
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wood",
+          "color": "#c69c6d",
+          "parts": [
+            "board"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "blade",
+          "color": "#c8ced2",
+          "parts": [
+            "blade"
+          ],
+          "param": "blade"
+        },
+        {
+          "name": "knifeHandle",
+          "color": "#2a2a2c",
+          "parts": [
+            "knife-handle"
+          ],
+          "param": "knifeHandle"
+        },
+        {
+          "name": "veg",
+          "color": "#e07a22",
+          "parts": [
+            "coin-1",
+            "coin-2",
+            "coin-3",
+            "coin-4",
+            "coin-5",
+            "coin-6"
+          ],
+          "param": "veg"
+        }
+      ]
+    },
+    {
+      "id": "dinner-plate",
+      "kit": "food-kitchen",
+      "title": "Dinner plate",
+      "description": "Faceted dinner plate, empty or served with steak and vegetables or a mound of pasta with tomato sauce and meatballs, for dining tables, restaurants and food pickups. Knobs: meal, plate, meat, sear, greens, side, pasta and sauce colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "plate",
+        "dinner",
+        "meal",
+        "steak",
+        "pasta",
+        "food",
+        "dish",
+        "restaurant",
+        "tableware"
+      ],
+      "compat": [
+        "kitchen",
+        "food",
+        "dining",
+        "restaurant",
+        "tavern",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/dinner-plate.kcad.ts",
+      "sourceSha256": "4ca270640ecb96ffbe020ab598ec05f4218f19049bf8dabf87e64c5e560321ae",
+      "triangleBudget": 440,
+      "params": [
+        {
+          "name": "meal",
+          "type": "choice",
+          "default": "steak",
+          "label": "Meal",
+          "choices": [
+            "empty",
+            "steak",
+            "pasta"
+          ]
+        },
+        {
+          "name": "plate",
+          "type": "color",
+          "default": "#f4f2ec",
+          "label": "Plate"
+        },
+        {
+          "name": "meat",
+          "type": "color",
+          "default": "#8a4a2c",
+          "label": "Meat"
+        },
+        {
+          "name": "sear",
+          "type": "color",
+          "default": "#3a2216",
+          "label": "Grill marks"
+        },
+        {
+          "name": "greens",
+          "type": "color",
+          "default": "#3f8f34",
+          "label": "Greens"
+        },
+        {
+          "name": "side",
+          "type": "color",
+          "default": "#ee8a2a",
+          "label": "Carrots"
+        },
+        {
+          "name": "pasta",
+          "type": "color",
+          "default": "#f0d27a",
+          "label": "Pasta"
+        },
+        {
+          "name": "sauce",
+          "type": "color",
+          "default": "#c8321e",
+          "label": "Sauce"
+        }
+      ],
+      "presets": {
+        "rustic": {
+          "plate": "#d8b48a"
+        },
+        "blue china": {
+          "plate": "#cfe0f0"
+        }
+      },
+      "stats": {
+        "triangles": 388,
+        "sizeM": [
+          0.272,
+          0.037,
+          0.272
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "plate",
+          "color": "#f4f2ec",
+          "parts": [
+            "plate"
+          ],
+          "param": "plate"
+        },
+        {
+          "name": "meat",
+          "color": "#8a4a2c",
+          "parts": [
+            "steak"
+          ],
+          "param": "meat"
+        },
+        {
+          "name": "sear",
+          "color": "#3a2216",
+          "parts": [
+            "grill-1",
+            "grill-2",
+            "grill-3"
+          ],
+          "param": "sear"
+        },
+        {
+          "name": "greens",
+          "color": "#3f8f34",
+          "parts": [
+            "broccoli-1",
+            "broccoli-2",
+            "broccoli-3"
+          ],
+          "param": "greens"
+        },
+        {
+          "name": "side",
+          "color": "#ee8a2a",
+          "parts": [
+            "carrot-1",
+            "carrot-2",
+            "carrot-3"
+          ],
+          "param": "side"
+        }
+      ]
+    },
+    {
+      "id": "frying-pan",
+      "kit": "food-kitchen",
+      "title": "Frying pan",
+      "description": "Skillet frying pan with flared walls and a long handle, empty or cooking a fried egg or egg and bacon breakfast. Knobs: size, contents, pan, handle, egg white, yolk and bacon colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "frying pan",
+        "skillet",
+        "pan",
+        "fried egg",
+        "breakfast",
+        "bacon",
+        "cookware",
+        "kitchen"
+      ],
+      "compat": [
+        "kitchen",
+        "indoor",
+        "food",
+        "restaurant",
+        "camp",
+        "diner"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/frying-pan.kcad.ts",
+      "sourceSha256": "41dc597469742683500a99fc198158233c5eb2ab5a90c6783fdacde7dc546717",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "26",
+          "label": "Diameter (cm)",
+          "choices": [
+            "20",
+            "26",
+            "32"
+          ]
+        },
+        {
+          "name": "contents",
+          "type": "choice",
+          "default": "egg",
+          "label": "Contents",
+          "choices": [
+            "empty",
+            "egg",
+            "egg-and-bacon"
+          ]
+        },
+        {
+          "name": "pan",
+          "type": "color",
+          "default": "#2e3033",
+          "label": "Pan"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#1a1a1c",
+          "label": "Handle"
+        },
+        {
+          "name": "white",
+          "type": "color",
+          "default": "#f4f1e8",
+          "label": "Egg white"
+        },
+        {
+          "name": "yolk",
+          "type": "color",
+          "default": "#f2b51c",
+          "label": "Yolk"
+        },
+        {
+          "name": "bacon",
+          "type": "color",
+          "default": "#b5483a",
+          "label": "Bacon"
+        }
+      ],
+      "presets": {
+        "cast-iron": {
+          "pan": "#3a3634",
+          "grip": "#3a3634"
+        },
+        "copper": {
+          "pan": "#b8693a",
+          "grip": "#8a8f94"
+        },
+        "wooden": {
+          "grip": "#8a5a33"
+        }
+      },
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.472,
+          0.076,
+          0.26
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "pan",
+          "color": "#2e3033",
+          "parts": [
+            "pan"
+          ],
+          "param": "pan"
+        },
+        {
+          "name": "grip",
+          "color": "#1a1a1c",
+          "parts": [
+            "handle"
+          ],
+          "param": "grip"
+        },
+        {
+          "name": "white",
+          "color": "#f4f1e8",
+          "parts": [
+            "egg-white"
+          ],
+          "param": "white"
+        },
+        {
+          "name": "yolk",
+          "color": "#f2b51c",
+          "parts": [
+            "yolk"
+          ],
+          "param": "yolk"
+        }
+      ]
+    },
+    {
+      "id": "kettle",
+      "kit": "food-kitchen",
+      "title": "Kettle",
+      "description": "Stovetop kettle with a pot-bellied body, lid with knob, angled spout and an arched over-the-top or side handle. Knobs: size, handle style, body, handle and knob colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "kettle",
+        "tea kettle",
+        "teakettle",
+        "stovetop",
+        "tea",
+        "boil",
+        "cookware",
+        "kitchen"
+      ],
+      "compat": [
+        "kitchen",
+        "indoor",
+        "food",
+        "cottage",
+        "camp",
+        "cafe"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/kettle.kcad.ts",
+      "sourceSha256": "ced23de5f03232c3752f244578ac2c0a4813fc0ba4be6690537e816e81469dfe",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "2",
+          "label": "Capacity (litres)",
+          "choices": [
+            "1.2",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "handle",
+          "type": "choice",
+          "default": "arched",
+          "label": "Handle",
+          "choices": [
+            "arched",
+            "side"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c8302a",
+          "label": "Body"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#2a2a2c",
+          "label": "Handle"
+        },
+        {
+          "name": "knob",
+          "type": "color",
+          "default": "#d8d4c8",
+          "label": "Lid and knob"
+        }
+      ],
+      "presets": {
+        "steel": {
+          "body": "#b8c0c4",
+          "grip": "#2a2a2c",
+          "knob": "#8a9296"
+        },
+        "enamel": {
+          "body": "#f0ece2",
+          "grip": "#1f3a5a",
+          "knob": "#1f3a5a"
+        },
+        "copper": {
+          "body": "#b8693a",
+          "grip": "#3a2a20",
+          "knob": "#d8a070"
+        }
+      },
+      "stats": {
+        "triangles": 286,
+        "sizeM": [
+          0.290249,
+          0.25,
+          0.190211
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c8302a",
+          "parts": [
+            "body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "knob",
+          "color": "#d8d4c8",
+          "parts": [
+            "lid",
+            "knob"
+          ],
+          "param": "knob"
+        },
+        {
+          "name": "grip",
+          "color": "#2a2a2c",
+          "parts": [
+            "handle"
+          ],
+          "param": "grip"
+        }
+      ]
+    },
+    {
+      "id": "watermelon",
+      "kit": "food-kitchen",
+      "title": "Watermelon",
+      "description": "Faceted striped watermelon lying whole, or a wedge slice standing on its rind showing red flesh, pale pith and black seeds, as food or market produce. Knobs: cut, rind, stripe, pith, flesh and seed colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "watermelon",
+        "melon",
+        "fruit",
+        "slice",
+        "wedge",
+        "food",
+        "produce",
+        "summer",
+        "pickup"
+      ],
+      "compat": [
+        "kitchen",
+        "food",
+        "market",
+        "farm",
+        "picnic",
+        "beach"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/watermelon.kcad.ts",
+      "sourceSha256": "1c5c4a7e16af61ed74ca11039656cf98f4a7e5538016bae18a040242bf6b21dd",
+      "triangleBudget": 440,
+      "params": [
+        {
+          "name": "cut",
+          "type": "choice",
+          "default": "whole",
+          "label": "Cut",
+          "choices": [
+            "whole",
+            "wedge"
+          ]
+        },
+        {
+          "name": "rind",
+          "type": "color",
+          "default": "#5fa83c",
+          "label": "Rind"
+        },
+        {
+          "name": "stripe",
+          "type": "color",
+          "default": "#24572a",
+          "label": "Stripes"
+        },
+        {
+          "name": "pith",
+          "type": "color",
+          "default": "#e4efc4",
+          "label": "Pith"
+        },
+        {
+          "name": "flesh",
+          "type": "color",
+          "default": "#e8383e",
+          "label": "Flesh"
+        },
+        {
+          "name": "seed",
+          "type": "color",
+          "default": "#1e1a18",
+          "label": "Seeds"
+        }
+      ],
+      "presets": {
+        "yellow": {
+          "flesh": "#f2cc3a"
+        },
+        "dark rind": {
+          "rind": "#2e6a30",
+          "stripe": "#1c3e20"
+        }
+      },
+      "stats": {
+        "triangles": 396,
+        "sizeM": [
+          0.36,
+          0.211325,
+          0.2222
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "rind",
+          "color": "#5fa83c",
+          "parts": [
+            "rind"
+          ],
+          "param": "rind"
+        },
+        {
+          "name": "stripe",
+          "color": "#24572a",
+          "parts": [
+            "stripe-1",
+            "stripe-2",
+            "stripe-3",
+            "stripe-4",
+            "stripe-5"
+          ],
+          "param": "stripe"
+        }
+      ]
+    },
+    {
+      "id": "wine-bottle",
+      "kit": "food-kitchen",
+      "title": "Wine bottle",
+      "description": "Faceted 750 ml wine bottle in Bordeaux or Burgundy shape with a label band and a foil capsule or cork, optionally with a filled wine glass beside it, for taverns, dinners and kitchens. Knobs: shape, closure, glass, bottle, label, capsule, cork, wine and glassware colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "wine",
+        "bottle",
+        "drink",
+        "alcohol",
+        "glass",
+        "cork",
+        "tavern",
+        "dinner",
+        "pickup"
+      ],
+      "compat": [
+        "kitchen",
+        "food",
+        "tavern",
+        "restaurant",
+        "indoor",
+        "medieval",
+        "market"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/food-kitchen/wine-bottle.kcad.ts",
+      "sourceSha256": "d1078ac5de8988f1275aecae6318bcff61bdbc0672533c419e479a1f4b72933f",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "bordeaux",
+          "label": "Bottle shape",
+          "choices": [
+            "bordeaux",
+            "burgundy"
+          ]
+        },
+        {
+          "name": "closure",
+          "type": "choice",
+          "default": "capsule",
+          "label": "Closure",
+          "choices": [
+            "capsule",
+            "cork"
+          ]
+        },
+        {
+          "name": "glass",
+          "type": "choice",
+          "default": "yes",
+          "label": "Glass beside",
+          "choices": [
+            "no",
+            "yes"
+          ]
+        },
+        {
+          "name": "bottle",
+          "type": "color",
+          "default": "#2c5a2e",
+          "label": "Bottle"
+        },
+        {
+          "name": "label",
+          "type": "color",
+          "default": "#f1e6c8",
+          "label": "Label"
+        },
+        {
+          "name": "capsule",
+          "type": "color",
+          "default": "#8a1e2a",
+          "label": "Foil capsule"
+        },
+        {
+          "name": "cork",
+          "type": "color",
+          "default": "#b8864e",
+          "label": "Cork"
+        },
+        {
+          "name": "wine",
+          "type": "color",
+          "default": "#7a1426",
+          "label": "Wine"
+        },
+        {
+          "name": "glassware",
+          "type": "color",
+          "default": "#d6e6ea",
+          "label": "Wine glass"
+        }
+      ],
+      "presets": {
+        "white wine": {
+          "bottle": "#b9c98a",
+          "wine": "#e8d46a",
+          "capsule": "#d8c070"
+        },
+        "rose": {
+          "bottle": "#e8b0a8",
+          "wine": "#e87a86",
+          "capsule": "#c9c9c9"
+        }
+      },
+      "stats": {
+        "triangles": 480,
+        "sizeM": [
+          0.1742,
+          0.298,
+          0.137281
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bottle",
+          "color": "#2c5a2e",
+          "parts": [
+            "bottle"
+          ],
+          "param": "bottle"
+        },
+        {
+          "name": "label",
+          "color": "#f1e6c8",
+          "parts": [
+            "label"
+          ],
+          "param": "label"
+        },
+        {
+          "name": "capsule",
+          "color": "#8a1e2a",
+          "parts": [
+            "capsule"
+          ],
+          "param": "capsule"
+        },
+        {
+          "name": "glassware",
+          "color": "#d6e6ea",
+          "parts": [
+            "glass"
+          ],
+          "param": "glassware"
+        },
+        {
+          "name": "wine",
+          "color": "#7a1426",
+          "parts": [
+            "wine"
+          ],
+          "param": "wine"
+        }
+      ]
+    },
+    {
       "id": "aquarium",
       "kit": "interior",
       "title": "Aquarium",
@@ -26338,6 +31382,1782 @@
             "curtain-right"
           ],
           "param": "cloth"
+        }
+      ]
+    },
+    {
+      "id": "brazier",
+      "kit": "lighting",
+      "title": "Brazier",
+      "description": "Iron brazier fire bowl full of glowing coals and flames on splayed legs or a pedestal, burning, smouldering or cold, for temples, castle gates and dungeon halls. Knobs: stand, legs, fire, iron, coal, flame and core colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "brazier",
+        "fire bowl",
+        "fire pit",
+        "fire",
+        "flames",
+        "coals",
+        "temple",
+        "medieval",
+        "dungeon"
+      ],
+      "compat": [
+        "indoor",
+        "outdoor",
+        "medieval",
+        "dungeon",
+        "castle",
+        "temple",
+        "fantasy",
+        "camp"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/brazier.kcad.ts",
+      "sourceSha256": "0d51cbb1b8c3ac18b12cf07cb95fec910921b8e0058588a29b40818569f9631e",
+      "triangleBudget": 560,
+      "params": [
+        {
+          "name": "stand",
+          "type": "choice",
+          "default": "legs",
+          "label": "Stand",
+          "choices": [
+            "legs",
+            "pedestal"
+          ]
+        },
+        {
+          "name": "legs",
+          "type": "choice",
+          "default": "3",
+          "label": "Legs",
+          "choices": [
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "fire",
+          "type": "choice",
+          "default": "burning",
+          "label": "Fire",
+          "choices": [
+            "burning",
+            "smouldering",
+            "cold"
+          ]
+        },
+        {
+          "name": "iron",
+          "type": "color",
+          "default": "#3a3a3e",
+          "label": "Iron"
+        },
+        {
+          "name": "coal",
+          "type": "color",
+          "default": "#d8481e",
+          "label": "Coals"
+        },
+        {
+          "name": "flame",
+          "type": "color",
+          "default": "#f08a1e",
+          "label": "Flame"
+        },
+        {
+          "name": "core",
+          "type": "color",
+          "default": "#ffd84a",
+          "label": "Flame core"
+        }
+      ],
+      "presets": {
+        "bronze": {
+          "iron": "#8a5a2a"
+        },
+        "holy-fire": {
+          "flame": "#f0e0a0",
+          "core": "#ffffff",
+          "iron": "#c9a43a"
+        },
+        "hellfire": {
+          "flame": "#c01e1e",
+          "core": "#ff7a2a",
+          "coal": "#5a1010",
+          "iron": "#1e1a1a"
+        }
+      },
+      "stats": {
+        "triangles": 494,
+        "sizeM": [
+          0.631218,
+          1.26,
+          0.622544
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "iron",
+          "color": "#3a3a3e",
+          "parts": [
+            "bowl",
+            "leg-1-1",
+            "leg-1-2",
+            "leg-1-3",
+            "foot-1",
+            "leg-2-1",
+            "leg-2-2",
+            "leg-2-3",
+            "foot-2",
+            "leg-3-1",
+            "leg-3-2",
+            "leg-3-3",
+            "foot-3",
+            "brace"
+          ],
+          "param": "iron"
+        },
+        {
+          "name": "coal",
+          "color": "#d8481e",
+          "parts": [
+            "coals"
+          ],
+          "param": "coal"
+        },
+        {
+          "name": "flame",
+          "color": "#f08a1e",
+          "parts": [
+            "flame-1",
+            "flame-2",
+            "flame-3",
+            "flame-4",
+            "flame-5"
+          ],
+          "param": "flame"
+        },
+        {
+          "name": "core",
+          "color": "#ffd84a",
+          "parts": [
+            "flame-core"
+          ],
+          "param": "core"
+        }
+      ]
+    },
+    {
+      "id": "chandelier",
+      "kit": "lighting",
+      "title": "Chandelier",
+      "description": "Hanging chandelier for ceiling mounting, with one or two tiers of curved arms carrying candles or glowing tulip shades, a central stem and a chain to a ceiling canopy, for castle halls, manors and ballrooms. Knobs: lower arms, tiers, lights, metal, candle and flame colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "chandelier",
+        "ceiling light",
+        "hanging light",
+        "candles",
+        "castle",
+        "manor",
+        "ballroom",
+        "medieval",
+        "gothic"
+      ],
+      "compat": [
+        "indoor",
+        "medieval",
+        "castle",
+        "fantasy",
+        "gothic",
+        "dining-room",
+        "living-room",
+        "tavern"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/chandelier.kcad.ts",
+      "sourceSha256": "86f78cf4b8f9afac72dc7850c8b29a1b95cd016cb7bcec9c604abd6d70d61ca2",
+      "triangleBudget": 820,
+      "params": [
+        {
+          "name": "arms",
+          "type": "choice",
+          "default": "6",
+          "label": "Lower arms",
+          "choices": [
+            "4",
+            "5",
+            "6"
+          ]
+        },
+        {
+          "name": "tiers",
+          "type": "choice",
+          "default": "2",
+          "label": "Tiers",
+          "choices": [
+            "1",
+            "2"
+          ]
+        },
+        {
+          "name": "lights",
+          "type": "choice",
+          "default": "candles",
+          "label": "Lights",
+          "choices": [
+            "candles",
+            "shades"
+          ]
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#c9a43a",
+          "label": "Metal"
+        },
+        {
+          "name": "wax",
+          "type": "color",
+          "default": "#f2ecd8",
+          "label": "Candles and sleeves"
+        },
+        {
+          "name": "flame",
+          "type": "color",
+          "default": "#ff8c2a",
+          "label": "Flames and glowing shades"
+        }
+      ],
+      "presets": {
+        "iron": {
+          "metal": "#2e2e32",
+          "wax": "#e8dcb8"
+        },
+        "electric": {
+          "lights": "shades",
+          "metal": "#c4c8cc",
+          "wax": "#e8e8e8",
+          "flame": "#fff0c0"
+        },
+        "haunted": {
+          "metal": "#2a2a2c",
+          "wax": "#5a5a5e",
+          "flame": "#7af0c8"
+        }
+      },
+      "stats": {
+        "triangles": 780,
+        "sizeM": [
+          0.828743,
+          0.83,
+          0.73046
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "metal",
+          "color": "#c9a43a",
+          "parts": [
+            "hub",
+            "stem",
+            "knop",
+            "link-1",
+            "link-2",
+            "link-3",
+            "canopy",
+            "low-arm-1a",
+            "low-arm-1b",
+            "low-cup-1",
+            "low-arm-2a",
+            "low-arm-2b",
+            "low-cup-2",
+            "low-arm-3a",
+            "low-arm-3b",
+            "low-cup-3",
+            "low-arm-4a",
+            "low-arm-4b",
+            "low-cup-4",
+            "low-arm-5a",
+            "low-arm-5b",
+            "low-cup-5",
+            "low-arm-6a",
+            "low-arm-6b",
+            "low-cup-6",
+            "up-arm-1a",
+            "up-arm-1b",
+            "up-cup-1",
+            "up-arm-2a",
+            "up-arm-2b",
+            "up-cup-2",
+            "up-arm-3a",
+            "up-arm-3b",
+            "up-cup-3"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "wax",
+          "color": "#f2ecd8",
+          "parts": [
+            "low-candle-1",
+            "low-candle-2",
+            "low-candle-3",
+            "low-candle-4",
+            "low-candle-5",
+            "low-candle-6",
+            "up-candle-1",
+            "up-candle-2",
+            "up-candle-3"
+          ],
+          "param": "wax"
+        },
+        {
+          "name": "flame",
+          "color": "#ff8c2a",
+          "parts": [
+            "low-flame-1",
+            "low-flame-2",
+            "low-flame-3",
+            "low-flame-4",
+            "low-flame-5",
+            "low-flame-6",
+            "up-flame-1",
+            "up-flame-2",
+            "up-flame-3"
+          ],
+          "param": "flame"
+        }
+      ]
+    },
+    {
+      "id": "flashlight",
+      "kit": "lighting",
+      "title": "Flashlight",
+      "description": "Handheld flashlight torch with a ribbed grip, push button, flared head and glowing lens, lying on its side as a pickup or standing on its tail. Knobs: pose, size, lit, body, bezel, button and lens colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "flashlight",
+        "torch",
+        "handheld light",
+        "pickup",
+        "item",
+        "survival",
+        "tool",
+        "horror"
+      ],
+      "compat": [
+        "indoor",
+        "outdoor",
+        "camp",
+        "survival",
+        "horror",
+        "construction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/flashlight.kcad.ts",
+      "sourceSha256": "585ad236d61df47e9db445eac195e6c0f48107beee7c3cf4689ffc5acee7f4d4",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "pose",
+          "type": "choice",
+          "default": "lying",
+          "label": "Pose",
+          "choices": [
+            "lying",
+            "standing"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "pocket",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "lit",
+          "type": "choice",
+          "default": "on",
+          "label": "Switched on",
+          "choices": [
+            "on",
+            "off"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#2b2d31",
+          "label": "Body"
+        },
+        {
+          "name": "bezel",
+          "type": "color",
+          "default": "#a9adb3",
+          "label": "Bezel and tail cap"
+        },
+        {
+          "name": "button",
+          "type": "color",
+          "default": "#d83a2a",
+          "label": "Button"
+        },
+        {
+          "name": "lens",
+          "type": "color",
+          "default": "#fff2b0",
+          "label": "Lens (lit)"
+        },
+        {
+          "name": "lensOff",
+          "type": "color",
+          "default": "#8a9aa6",
+          "label": "Lens (off)"
+        }
+      ],
+      "presets": {
+        "safety": {
+          "body": "#f2c21a",
+          "bezel": "#2b2d31",
+          "button": "#2b2d31"
+        },
+        "police": {
+          "body": "#1a1c22",
+          "bezel": "#1a1c22",
+          "lens": "#dff0ff"
+        },
+        "vintage": {
+          "body": "#8a2a22",
+          "bezel": "#c9a43a",
+          "button": "#c9a43a"
+        }
+      },
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          0.205,
+          0.054,
+          0.054
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bezel",
+          "color": "#a9adb3",
+          "parts": [
+            "tail",
+            "bezel"
+          ],
+          "param": "bezel"
+        },
+        {
+          "name": "body",
+          "color": "#2b2d31",
+          "parts": [
+            "grip",
+            "band-1",
+            "band-2"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "button",
+          "color": "#d83a2a",
+          "parts": [
+            "button"
+          ],
+          "param": "button"
+        },
+        {
+          "name": "lens",
+          "color": "#fff2b0",
+          "parts": [
+            "lens"
+          ],
+          "param": "lens"
+        }
+      ]
+    },
+    {
+      "id": "hurricane-lantern",
+      "kit": "lighting",
+      "title": "Hurricane lantern",
+      "description": "Kerosene hurricane storm lantern with a fuel tank, glowing glass globe in a wire guard, side air tubes, vented cap and bail handle, lit or unlit. Knobs: lit, size, guard bars, body, globe, wire and handle colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "hurricane lantern",
+        "storm lantern",
+        "kerosene lamp",
+        "lantern",
+        "camping lantern",
+        "oil lantern",
+        "farm",
+        "light"
+      ],
+      "compat": [
+        "outdoor",
+        "indoor",
+        "camp",
+        "farm",
+        "western",
+        "survival",
+        "horror"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/hurricane-lantern.kcad.ts",
+      "sourceSha256": "05d6b1adae23ddc57e39b08519045a1ff12dbc4aee5b0409b4fc1bb19e4541f3",
+      "triangleBudget": 580,
+      "params": [
+        {
+          "name": "lit",
+          "type": "choice",
+          "default": "on",
+          "label": "Lit",
+          "choices": [
+            "on",
+            "off"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "bars",
+          "type": "choice",
+          "default": "4",
+          "label": "Guard bars",
+          "choices": [
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#b8302a",
+          "label": "Tank and cap"
+        },
+        {
+          "name": "globe",
+          "type": "color",
+          "default": "#ffe07a",
+          "label": "Globe (lit)"
+        },
+        {
+          "name": "globeOff",
+          "type": "color",
+          "default": "#c8d4cc",
+          "label": "Globe (unlit)"
+        },
+        {
+          "name": "wire",
+          "type": "color",
+          "default": "#2c2c2e",
+          "label": "Wire guard and handle"
+        }
+      ],
+      "presets": {
+        "galvanised": {
+          "body": "#a6abb0",
+          "wire": "#6a6e72"
+        },
+        "green": {
+          "body": "#2f5a3a"
+        },
+        "rusty": {
+          "body": "#7a4a2c",
+          "wire": "#4a3426",
+          "globe": "#ffb04a"
+        }
+      },
+      "stats": {
+        "triangles": 520,
+        "sizeM": [
+          0.18063,
+          0.34495,
+          0.162603
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#b8302a",
+          "parts": [
+            "tank",
+            "tube-l",
+            "tube-r",
+            "cap"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "globe",
+          "color": "#ffe07a",
+          "parts": [
+            "globe"
+          ],
+          "param": "globe"
+        },
+        {
+          "name": "wire",
+          "color": "#2c2c2e",
+          "parts": [
+            "guard-1-1",
+            "guard-1-2",
+            "guard-1-3",
+            "guard-2-1",
+            "guard-2-2",
+            "guard-2-3",
+            "guard-3-1",
+            "guard-3-2",
+            "guard-3-3",
+            "guard-4-1",
+            "guard-4-2",
+            "guard-4-3",
+            "guard-ring",
+            "bail-1",
+            "bail-2",
+            "bail-3",
+            "bail-4",
+            "bail-5"
+          ],
+          "param": "wire"
+        }
+      ]
+    },
+    {
+      "id": "lava-lamp",
+      "kit": "lighting",
+      "title": "Lava lamp",
+      "description": "Retro lava lamp with a tapered metal base, faceted glass body full of floating wax blobs and a cone cap, for desks, shelves and 70s living rooms. Knobs: size, blobs, base, liquid and wax colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "lava lamp",
+        "lamp",
+        "retro",
+        "70s",
+        "groovy",
+        "desk lamp",
+        "light",
+        "decor"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "office",
+        "retro"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/lava-lamp.kcad.ts",
+      "sourceSha256": "027064eb2c735c70b106297673b7ec8a8aa478e08b073ba9f51e546069670d0b",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "classic",
+          "label": "Size",
+          "choices": [
+            "mini",
+            "classic",
+            "grande"
+          ]
+        },
+        {
+          "name": "blobs",
+          "type": "choice",
+          "default": "3",
+          "label": "Wax blobs",
+          "choices": [
+            "2",
+            "3",
+            "5"
+          ]
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#b9bcc2",
+          "label": "Base and cap"
+        },
+        {
+          "name": "liquid",
+          "type": "color",
+          "default": "#d8326a",
+          "label": "Liquid"
+        },
+        {
+          "name": "wax",
+          "type": "color",
+          "default": "#ffcf3a",
+          "label": "Wax"
+        }
+      ],
+      "presets": {
+        "ocean": {
+          "liquid": "#2a6ad8",
+          "wax": "#7af0d8"
+        },
+        "gold": {
+          "metal": "#c9a43a",
+          "liquid": "#f08a2a",
+          "wax": "#fff2a0"
+        },
+        "slime": {
+          "metal": "#2a2a2e",
+          "liquid": "#3a1a5a",
+          "wax": "#8af04a"
+        }
+      },
+      "stats": {
+        "triangles": 296,
+        "sizeM": [
+          0.156,
+          0.465,
+          0.156597
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "metal",
+          "color": "#b9bcc2",
+          "parts": [
+            "base",
+            "cap"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "liquid",
+          "color": "#d8326a",
+          "parts": [
+            "glass"
+          ],
+          "param": "liquid"
+        },
+        {
+          "name": "wax",
+          "color": "#ffcf3a",
+          "parts": [
+            "blob-1",
+            "blob-2",
+            "blob-3"
+          ],
+          "param": "wax"
+        }
+      ]
+    },
+    {
+      "id": "oil-lamp",
+      "kit": "lighting",
+      "title": "Oil lamp",
+      "description": "Genie-style brass oil lamp with a bellied body, long spout with a burning flame, domed lid and loop handle, or a squat Roman clay lamp, as a magic pickup or table light. Knobs: style, lit, size, metal, lid and flame colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "oil lamp",
+        "genie lamp",
+        "magic lamp",
+        "aladdin",
+        "brass",
+        "flame",
+        "pickup",
+        "treasure",
+        "arabian"
+      ],
+      "compat": [
+        "indoor",
+        "fantasy",
+        "medieval",
+        "desert",
+        "dungeon",
+        "treasure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/oil-lamp.kcad.ts",
+      "sourceSha256": "b65c4f8d8fb3e6de567899ade8545b72f9cc4e173fee59a17b5a3791e29a6929",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "genie",
+          "label": "Style",
+          "choices": [
+            "genie",
+            "roman"
+          ]
+        },
+        {
+          "name": "lit",
+          "type": "choice",
+          "default": "on",
+          "label": "Lit",
+          "choices": [
+            "on",
+            "off"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#c9992e",
+          "label": "Body"
+        },
+        {
+          "name": "lid",
+          "type": "color",
+          "default": "#e0b84a",
+          "label": "Lid and foot"
+        },
+        {
+          "name": "flame",
+          "type": "color",
+          "default": "#ff6a1a",
+          "label": "Flame"
+        }
+      ],
+      "presets": {
+        "silver": {
+          "metal": "#b8bcc4",
+          "lid": "#d8dce2"
+        },
+        "clay": {
+          "style": "roman",
+          "metal": "#b0603a",
+          "lid": "#8a4a2c"
+        },
+        "cursed": {
+          "metal": "#3a3442",
+          "lid": "#5a4a6a",
+          "flame": "#7af06a"
+        }
+      },
+      "stats": {
+        "triangles": 290,
+        "sizeM": [
+          0.254098,
+          0.131588,
+          0.081301
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "metal",
+          "color": "#c9992e",
+          "parts": [
+            "body",
+            "spout",
+            "handle-1",
+            "handle-2",
+            "handle-3",
+            "handle-4"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "lid",
+          "color": "#e0b84a",
+          "parts": [
+            "foot",
+            "lid"
+          ],
+          "param": "lid"
+        },
+        {
+          "name": "flame",
+          "color": "#ff6a1a",
+          "parts": [
+            "flame"
+          ],
+          "param": "flame"
+        }
+      ]
+    },
+    {
+      "id": "paper-lantern",
+      "kit": "lighting",
+      "title": "Paper lantern",
+      "description": "Ribbed paper lantern, round, cylinder or tall, with dark rims and hanging loop, hung from its cord with a tassel or standing on a wooden foot. Knobs: shape, ribs, mount, paper, rim and tassel colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "paper lantern",
+        "lantern",
+        "chinese lantern",
+        "japanese lantern",
+        "chochin",
+        "festival",
+        "lamp",
+        "decoration"
+      ],
+      "compat": [
+        "outdoor",
+        "indoor",
+        "festival",
+        "garden",
+        "asian",
+        "market",
+        "night"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/paper-lantern.kcad.ts",
+      "sourceSha256": "d6f608e497e6042692cb65b02da9ebea8ad8fa43fe72743d15bb725de6350cfd",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "round",
+          "label": "Shape",
+          "choices": [
+            "round",
+            "cylinder",
+            "tall"
+          ]
+        },
+        {
+          "name": "ribs",
+          "type": "choice",
+          "default": "10",
+          "label": "Ribs",
+          "choices": [
+            "8",
+            "10",
+            "12"
+          ]
+        },
+        {
+          "name": "mount",
+          "type": "choice",
+          "default": "hanging",
+          "label": "Mount",
+          "choices": [
+            "hanging",
+            "table"
+          ]
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#d8302a",
+          "label": "Paper"
+        },
+        {
+          "name": "rim",
+          "type": "color",
+          "default": "#2a2a2c",
+          "label": "Rims and loop"
+        },
+        {
+          "name": "tassel",
+          "type": "color",
+          "default": "#e8c33a",
+          "label": "Tassel or foot"
+        }
+      ],
+      "presets": {
+        "white": {
+          "paper": "#f2ead8",
+          "rim": "#5a3a27",
+          "tassel": "#5a3a27"
+        },
+        "festival": {
+          "paper": "#f0a020",
+          "rim": "#8a2a1a",
+          "tassel": "#c8302a"
+        },
+        "night": {
+          "paper": "#ffd27a",
+          "rim": "#1c1c1e",
+          "tassel": "#c8302a"
+        }
+      },
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.34,
+          0.482,
+          0.323359
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "paper",
+          "color": "#d8302a",
+          "parts": [
+            "paper"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "rim",
+          "color": "#2a2a2c",
+          "parts": [
+            "rim-bottom",
+            "rim-top",
+            "loop"
+          ],
+          "param": "rim"
+        },
+        {
+          "name": "tassel",
+          "color": "#e8c33a",
+          "parts": [
+            "tassel"
+          ],
+          "param": "tassel"
+        }
+      ]
+    },
+    {
+      "id": "stage-spotlight",
+      "kit": "lighting",
+      "title": "Stage spotlight",
+      "description": "Theatre stage spotlight: a lamp can with glowing lens and optional barn doors, tilted in a yoke on a tripod stand. Knobs: stand height, barn doors, tilt, body, lens and stand colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "spotlight",
+        "stage light",
+        "theatre light",
+        "fresnel",
+        "film light",
+        "studio light",
+        "tripod",
+        "concert"
+      ],
+      "compat": [
+        "indoor",
+        "theatre",
+        "stage",
+        "studio",
+        "concert",
+        "film-set"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/stage-spotlight.kcad.ts",
+      "sourceSha256": "6f65ae0bc1ed2d311338692bc081978e00d6562708426ec8ba318d3bb5c94006",
+      "triangleBudget": 460,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "1.6",
+          "label": "Stand height (m)",
+          "choices": [
+            "1.2",
+            "1.6",
+            "2"
+          ]
+        },
+        {
+          "name": "doors",
+          "type": "choice",
+          "default": "on",
+          "label": "Barn doors",
+          "choices": [
+            "on",
+            "off"
+          ]
+        },
+        {
+          "name": "tilt",
+          "type": "choice",
+          "default": "15",
+          "label": "Tilt down (deg)",
+          "choices": [
+            "0",
+            "15",
+            "30"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#2a2a2c",
+          "label": "Body"
+        },
+        {
+          "name": "lens",
+          "type": "color",
+          "default": "#fff2b0",
+          "label": "Lens"
+        },
+        {
+          "name": "stand",
+          "type": "color",
+          "default": "#4a4e54",
+          "label": "Stand and yoke"
+        }
+      ],
+      "presets": {
+        "silver": {
+          "body": "#b8c0c4",
+          "stand": "#2a2a2c"
+        },
+        "blue": {
+          "lens": "#7ab8ff"
+        },
+        "red": {
+          "body": "#8a1a1a",
+          "lens": "#ff8a6a"
+        }
+      },
+      "stats": {
+        "triangles": 372,
+        "sizeM": [
+          0.93681,
+          2.056657,
+          0.901142
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stand",
+          "color": "#4a4e54",
+          "parts": [
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "pole",
+            "yoke"
+          ],
+          "param": "stand"
+        },
+        {
+          "name": "body",
+          "color": "#2a2a2c",
+          "parts": [
+            "can",
+            "door-top",
+            "door-bottom",
+            "door-left",
+            "door-right"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "lens",
+          "color": "#fff2b0",
+          "parts": [
+            "lens"
+          ],
+          "param": "lens"
+        }
+      ]
+    },
+    {
+      "id": "tiki-torch",
+      "kit": "lighting",
+      "title": "Tiki torch",
+      "description": "Bamboo tiki torch stuck in an earth mound with a woven fuel basket, wick and burning flame, for beach bars, luaus and tropical gardens. Knobs: height, lit, bamboo, basket, mound and flame colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tiki torch",
+        "torch",
+        "bamboo",
+        "tropical",
+        "beach",
+        "luau",
+        "garden torch",
+        "fire"
+      ],
+      "compat": [
+        "outdoor",
+        "beach",
+        "tropical",
+        "garden",
+        "camp",
+        "island"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/tiki-torch.kcad.ts",
+      "sourceSha256": "4d7360e6570ca45babe8c0d7b9c022651b31c06bcb0db98cd1dc38bc445d1c66",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "standard",
+          "label": "Height",
+          "choices": [
+            "short",
+            "standard",
+            "tall"
+          ]
+        },
+        {
+          "name": "lit",
+          "type": "choice",
+          "default": "on",
+          "label": "Lit",
+          "choices": [
+            "on",
+            "off"
+          ]
+        },
+        {
+          "name": "bamboo",
+          "type": "color",
+          "default": "#c9a85a",
+          "label": "Bamboo"
+        },
+        {
+          "name": "basket",
+          "type": "color",
+          "default": "#8a6a3a",
+          "label": "Woven basket"
+        },
+        {
+          "name": "ground",
+          "type": "color",
+          "default": "#6a5236",
+          "label": "Earth mound"
+        },
+        {
+          "name": "flame",
+          "type": "color",
+          "default": "#f07a1e",
+          "label": "Flame"
+        },
+        {
+          "name": "core",
+          "type": "color",
+          "default": "#ffd84a",
+          "label": "Flame core and wick"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "bamboo": "#6a4a2a",
+          "basket": "#3a2a1a"
+        },
+        "sand": {
+          "ground": "#d8c08a"
+        },
+        "spirit": {
+          "flame": "#3a8af0",
+          "core": "#bfefff"
+        }
+      },
+      "stats": {
+        "triangles": 342,
+        "sizeM": [
+          0.291643,
+          1.975,
+          0.289246
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "ground",
+          "color": "#6a5236",
+          "parts": [
+            "mound"
+          ],
+          "param": "ground"
+        },
+        {
+          "name": "bamboo",
+          "color": "#c9a85a",
+          "parts": [
+            "pole",
+            "node-1",
+            "node-2",
+            "node-3",
+            "band-low",
+            "band-high"
+          ],
+          "param": "bamboo"
+        },
+        {
+          "name": "basket",
+          "color": "#8a6a3a",
+          "parts": [
+            "basket"
+          ],
+          "param": "basket"
+        },
+        {
+          "name": "core",
+          "color": "#ffd84a",
+          "parts": [
+            "wick",
+            "flame-core"
+          ],
+          "param": "core"
+        },
+        {
+          "name": "flame",
+          "color": "#f07a1e",
+          "parts": [
+            "flame-1",
+            "flame-2",
+            "flame-3"
+          ],
+          "param": "flame"
+        }
+      ]
+    },
+    {
+      "id": "tripod-work-light",
+      "kit": "lighting",
+      "title": "Tripod work light",
+      "description": "Construction site work light: one or two flood heads with glowing lenses on a T-bar atop a telescopic tripod stand. Knobs: heads, stand height, housing, lens and stand colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "work light",
+        "floodlight",
+        "site light",
+        "halogen",
+        "tripod light",
+        "construction",
+        "flood lamp",
+        "job site"
+      ],
+      "compat": [
+        "construction",
+        "garage",
+        "workshop",
+        "outdoor",
+        "industrial",
+        "night"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/tripod-work-light.kcad.ts",
+      "sourceSha256": "93fc080f00d4b8fd323d018df6892b23b50095796bbbd26e15f6be09a6b42cb1",
+      "triangleBudget": 480,
+      "params": [
+        {
+          "name": "heads",
+          "type": "choice",
+          "default": "2",
+          "label": "Flood heads",
+          "choices": [
+            "1",
+            "2"
+          ]
+        },
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "1.8",
+          "label": "Stand height (m)",
+          "choices": [
+            "1.2",
+            "1.8",
+            "2.4"
+          ]
+        },
+        {
+          "name": "housing",
+          "type": "color",
+          "default": "#e8b818",
+          "label": "Housing"
+        },
+        {
+          "name": "lens",
+          "type": "color",
+          "default": "#fff6d0",
+          "label": "Lens"
+        },
+        {
+          "name": "stand",
+          "type": "color",
+          "default": "#2a2a2c",
+          "label": "Stand"
+        }
+      ],
+      "presets": {
+        "orange": {
+          "housing": "#e07a22"
+        },
+        "black": {
+          "housing": "#2a2a2c",
+          "stand": "#5a6066"
+        },
+        "off": {
+          "lens": "#8a9296"
+        }
+      },
+      "stats": {
+        "triangles": 448,
+        "sizeM": [
+          0.944666,
+          2.161574,
+          0.824
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stand",
+          "color": "#2a2a2c",
+          "parts": [
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "mast",
+            "t-bar",
+            "bracket-1",
+            "bracket-2"
+          ],
+          "param": "stand"
+        },
+        {
+          "name": "housing",
+          "color": "#e8b818",
+          "parts": [
+            "head-1",
+            "head-2"
+          ],
+          "param": "housing"
+        },
+        {
+          "name": "lens",
+          "color": "#fff6d0",
+          "parts": [
+            "lens-1",
+            "lens-2"
+          ],
+          "param": "lens"
+        }
+      ]
+    },
+    {
+      "id": "wall-sconce",
+      "kit": "lighting",
+      "title": "Wall sconce",
+      "description": "Wall-mounted sconce lamp with a back plate and one or two bent arms holding drum, tulip or candle shades with glowing bulbs, for hallways, bedrooms and hotel corridors. Knobs: shade style, arms, metal, shade and bulb colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "wall sconce",
+        "wall lamp",
+        "wall light",
+        "sconce",
+        "lamp",
+        "hallway",
+        "interior lighting",
+        "hotel"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "hallway",
+        "hotel",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/wall-sconce.kcad.ts",
+      "sourceSha256": "20c4c21d50ef07aa2463fdfc8be18a7ed9e271839484b23cf2f8f465317b89f6",
+      "triangleBudget": 380,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "drum",
+          "label": "Shade style",
+          "choices": [
+            "drum",
+            "tulip",
+            "candle"
+          ]
+        },
+        {
+          "name": "arms",
+          "type": "choice",
+          "default": "1",
+          "label": "Arms",
+          "choices": [
+            "1",
+            "2"
+          ]
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#b8913f",
+          "label": "Plate and arm"
+        },
+        {
+          "name": "shade",
+          "type": "color",
+          "default": "#f2e6cc",
+          "label": "Shade"
+        },
+        {
+          "name": "bulb",
+          "type": "color",
+          "default": "#fff2b0",
+          "label": "Bulb"
+        }
+      ],
+      "presets": {
+        "black": {
+          "metal": "#232325",
+          "shade": "#232325",
+          "bulb": "#ffd98a"
+        },
+        "chrome": {
+          "metal": "#c4c8cc",
+          "shade": "#ffffff"
+        },
+        "art-deco": {
+          "style": "tulip",
+          "metal": "#2f2a24",
+          "shade": "#e8d8a8"
+        }
+      },
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.16,
+          0.27,
+          0.26
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "metal",
+          "color": "#b8913f",
+          "parts": [
+            "plate",
+            "arm-1a",
+            "arm-1b",
+            "cup-1"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "shade",
+          "color": "#f2e6cc",
+          "parts": [
+            "shade-1"
+          ],
+          "param": "shade"
+        },
+        {
+          "name": "bulb",
+          "color": "#fff2b0",
+          "parts": [
+            "bulb-1"
+          ],
+          "param": "bulb"
+        }
+      ]
+    },
+    {
+      "id": "wall-torch",
+      "kit": "lighting",
+      "title": "Wall torch",
+      "description": "Wall-mounted dungeon torch: a wooden torch with a wrapped burning head held in an iron ring bracket on a wall plate, lit or burnt out, for castle halls and dungeon corridors. Knobs: plate shape, lit, iron, wood, wrap, flame and core colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wall torch",
+        "torch",
+        "sconce",
+        "dungeon",
+        "castle",
+        "medieval",
+        "fire",
+        "flame",
+        "bracket"
+      ],
+      "compat": [
+        "indoor",
+        "medieval",
+        "dungeon",
+        "castle",
+        "fantasy",
+        "cave"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/lighting/wall-torch.kcad.ts",
+      "sourceSha256": "6adeaaea0b4ba01e5274d788e918c2382e3fd5c2ad5c28f4981f76a104f6afc9",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "plate",
+          "type": "choice",
+          "default": "shield",
+          "label": "Wall plate",
+          "choices": [
+            "shield",
+            "square",
+            "round"
+          ]
+        },
+        {
+          "name": "lit",
+          "type": "choice",
+          "default": "on",
+          "label": "Lit",
+          "choices": [
+            "on",
+            "off"
+          ]
+        },
+        {
+          "name": "iron",
+          "type": "color",
+          "default": "#34343a",
+          "label": "Iron bracket"
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#6e4a2c",
+          "label": "Torch handle"
+        },
+        {
+          "name": "wrap",
+          "type": "color",
+          "default": "#4a3a2a",
+          "label": "Wrapped head"
+        },
+        {
+          "name": "flame",
+          "type": "color",
+          "default": "#f07a1e",
+          "label": "Flame"
+        },
+        {
+          "name": "core",
+          "type": "color",
+          "default": "#ffd84a",
+          "label": "Flame core"
+        }
+      ],
+      "presets": {
+        "rusty": {
+          "iron": "#6a4030"
+        },
+        "magic-blue": {
+          "flame": "#3a7af0",
+          "core": "#bfe8ff"
+        },
+        "cursed": {
+          "flame": "#4ac03a",
+          "core": "#d8ff8a",
+          "iron": "#2a2a30"
+        }
+      },
+      "stats": {
+        "triangles": 292,
+        "sizeM": [
+          0.13,
+          0.622939,
+          0.248813
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "iron",
+          "color": "#34343a",
+          "parts": [
+            "plate",
+            "ring",
+            "arm",
+            "strut"
+          ],
+          "param": "iron"
+        },
+        {
+          "name": "wood",
+          "color": "#6e4a2c",
+          "parts": [
+            "handle"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "wrap",
+          "color": "#4a3a2a",
+          "parts": [
+            "head"
+          ],
+          "param": "wrap"
+        },
+        {
+          "name": "flame",
+          "color": "#f07a1e",
+          "parts": [
+            "flame-1",
+            "flame-2",
+            "flame-3"
+          ],
+          "param": "flame"
+        },
+        {
+          "name": "core",
+          "color": "#ffd84a",
+          "parts": [
+            "flame-core"
+          ],
+          "param": "core"
         }
       ]
     },
@@ -45382,6 +52202,1493 @@
             "rope-r"
           ],
           "param": "rope"
+        }
+      ]
+    },
+    {
+      "id": "adjustable-wrench",
+      "kit": "tools-equipment",
+      "title": "Adjustable wrench",
+      "description": "Adjustable spanner lying flat as a pickup or workshop prop, with fixed and sliding jaws, worm screw and a bare or rubber-dipped handle. Knobs: size, grip, steel, screw and grip colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "wrench",
+        "adjustable wrench",
+        "spanner",
+        "crescent wrench",
+        "tool",
+        "hand tool",
+        "plumbing",
+        "mechanic",
+        "item",
+        "pickup"
+      ],
+      "compat": [
+        "indoor",
+        "workshop",
+        "garage",
+        "construction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/adjustable-wrench.kcad.ts",
+      "sourceSha256": "9a7b9fafa63e6c76966a92a861e83d435f1a0f65fc298b906f9cf94f86c0c537",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "10in",
+          "label": "Size",
+          "choices": [
+            "6in",
+            "10in",
+            "12in"
+          ]
+        },
+        {
+          "name": "gripStyle",
+          "type": "choice",
+          "default": "dipped",
+          "label": "Handle grip",
+          "choices": [
+            "bare",
+            "dipped"
+          ]
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#a9afb6",
+          "label": "Steel"
+        },
+        {
+          "name": "screw",
+          "type": "color",
+          "default": "#4a4f56",
+          "label": "Worm screw"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#c8322a",
+          "label": "Grip"
+        }
+      ],
+      "presets": {
+        "blue": {
+          "grip": "#2d5ea8"
+        },
+        "black": {
+          "steel": "#3b3e43",
+          "screw": "#a9afb6",
+          "grip": "#d9a21b"
+        }
+      },
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          0.261,
+          0.014,
+          0.064
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#a9afb6",
+          "parts": [
+            "steel",
+            "jaw"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "screw",
+          "color": "#4a4f56",
+          "parts": [
+            "screw"
+          ],
+          "param": "screw"
+        },
+        {
+          "name": "grip",
+          "color": "#c8322a",
+          "parts": [
+            "grip"
+          ],
+          "param": "grip"
+        }
+      ]
+    },
+    {
+      "id": "chainsaw",
+      "kit": "tools-equipment",
+      "title": "Chainsaw",
+      "description": "Petrol chainsaw resting on its engine body with rear and wrap-around handles, hand guard and a guide bar with chain, for forestry, lumberjack and horror scenes. Knobs: bar length, chain teeth, body, trim, bar and chain colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "chainsaw",
+        "chain saw",
+        "saw",
+        "power tool",
+        "lumberjack",
+        "forestry",
+        "logging",
+        "tool",
+        "item"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "workshop",
+        "garage",
+        "construction",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/chainsaw.kcad.ts",
+      "sourceSha256": "c5f62cbe605b56ae2cf87bb89291219bf21b7e3f8f77ef97bc8eb47bfaeb9996",
+      "triangleBudget": 380,
+      "params": [
+        {
+          "name": "barLen",
+          "type": "choice",
+          "default": "450",
+          "label": "Bar length (mm)",
+          "choices": [
+            "350",
+            "450",
+            "600"
+          ]
+        },
+        {
+          "name": "teeth",
+          "type": "choice",
+          "default": "toothed",
+          "label": "Chain",
+          "choices": [
+            "plain",
+            "toothed"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#e8641c",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#2b2b2e",
+          "label": "Handles and cover"
+        },
+        {
+          "name": "bar",
+          "type": "color",
+          "default": "#a3a9b0",
+          "label": "Guide bar"
+        },
+        {
+          "name": "chain",
+          "type": "color",
+          "default": "#4a4d52",
+          "label": "Chain"
+        }
+      ],
+      "presets": {
+        "green": {
+          "body": "#3f8a3a",
+          "trim": "#e3b41f"
+        },
+        "red": {
+          "body": "#c22a24",
+          "trim": "#e8e8e8"
+        },
+        "rusty": {
+          "body": "#8a5a3a",
+          "bar": "#7a6a5a",
+          "chain": "#5a3e2c"
+        }
+      },
+      "stats": {
+        "triangles": 312,
+        "sizeM": [
+          0.872,
+          0.315,
+          0.177
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#e8641c",
+          "parts": [
+            "body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#2b2b2e",
+          "parts": [
+            "cover",
+            "rear-handle",
+            "top-handle",
+            "guard"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "bar",
+          "color": "#a3a9b0",
+          "parts": [
+            "bar"
+          ],
+          "param": "bar"
+        },
+        {
+          "name": "chain",
+          "color": "#4a4d52",
+          "parts": [
+            "chain"
+          ],
+          "param": "chain"
+        }
+      ]
+    },
+    {
+      "id": "claw-hammer",
+      "kit": "tools-equipment",
+      "title": "Claw hammer",
+      "description": "Claw hammer lying flat as a pickup or workshop prop, with a steel head, curved or straight rip claw and a wooden or fibreglass handle with grip. Knobs: claw style, size, head, handle and grip colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "hammer",
+        "claw hammer",
+        "tool",
+        "hand tool",
+        "carpentry",
+        "workshop",
+        "item",
+        "pickup"
+      ],
+      "compat": [
+        "indoor",
+        "workshop",
+        "garage",
+        "construction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/claw-hammer.kcad.ts",
+      "sourceSha256": "55719b925937fb809e86d85dd0fb05d6f0d2c80ea52bf7a5c54b921aa31a6b42",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "claw",
+          "type": "choice",
+          "default": "curved",
+          "label": "Claw style",
+          "choices": [
+            "curved",
+            "rip"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "16oz",
+          "label": "Size",
+          "choices": [
+            "12oz",
+            "16oz",
+            "20oz"
+          ]
+        },
+        {
+          "name": "head",
+          "type": "color",
+          "default": "#5b6066",
+          "label": "Head"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#c08a4e",
+          "label": "Handle"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#2a2a2c",
+          "label": "Grip"
+        }
+      ],
+      "presets": {
+        "fibreglass": {
+          "handle": "#e0b21e",
+          "grip": "#1f1f21"
+        },
+        "framing": {
+          "claw": "rip",
+          "size": "20oz",
+          "handle": "#2b2d31",
+          "grip": "#c83a2a"
+        }
+      },
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.33,
+          0.03,
+          0.166
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "handle",
+          "color": "#c08a4e",
+          "parts": [
+            "handle"
+          ],
+          "param": "handle"
+        },
+        {
+          "name": "grip",
+          "color": "#2a2a2c",
+          "parts": [
+            "grip"
+          ],
+          "param": "grip"
+        },
+        {
+          "name": "head",
+          "color": "#5b6066",
+          "parts": [
+            "head"
+          ],
+          "param": "head"
+        }
+      ]
+    },
+    {
+      "id": "garden-spade",
+      "kit": "tools-equipment",
+      "title": "Garden spade",
+      "description": "Garden spade or shovel standing upright with the blade planted, square digging or pointed shovel blade, wooden shaft and D or T handle. Knobs: blade style, handle style, blade, shaft and grip colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "spade",
+        "shovel",
+        "garden",
+        "digging",
+        "gardening",
+        "farm",
+        "tool",
+        "item"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "farm",
+        "construction",
+        "garage"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/garden-spade.kcad.ts",
+      "sourceSha256": "ac6b0c7c8bdcf4c482cbedd485c78d23bfc65ab432dfbecd760d4ab949e3028e",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "bladeStyle",
+          "type": "choice",
+          "default": "square",
+          "label": "Blade",
+          "choices": [
+            "square",
+            "pointed"
+          ]
+        },
+        {
+          "name": "gripStyle",
+          "type": "choice",
+          "default": "D",
+          "label": "Handle",
+          "choices": [
+            "D",
+            "T"
+          ]
+        },
+        {
+          "name": "blade",
+          "type": "color",
+          "default": "#6d737a",
+          "label": "Blade"
+        },
+        {
+          "name": "shaft",
+          "type": "color",
+          "default": "#b88a52",
+          "label": "Shaft"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#2f6b3a",
+          "label": "Grip"
+        }
+      ],
+      "presets": {
+        "rusty": {
+          "blade": "#7a4a2e",
+          "shaft": "#8a6a45",
+          "grip": "#6a5a3a"
+        },
+        "stainless": {
+          "blade": "#c9ced4",
+          "grip": "#2a2a2c"
+        }
+      },
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.19,
+          1,
+          0.055433
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "blade",
+          "color": "#6d737a",
+          "parts": [
+            "blade"
+          ],
+          "param": "blade"
+        },
+        {
+          "name": "shaft",
+          "color": "#b88a52",
+          "parts": [
+            "shaft"
+          ],
+          "param": "shaft"
+        },
+        {
+          "name": "grip",
+          "color": "#2f6b3a",
+          "parts": [
+            "grip"
+          ],
+          "param": "grip"
+        }
+      ]
+    },
+    {
+      "id": "hand-saw",
+      "kit": "tools-equipment",
+      "title": "Hand saw",
+      "description": "Carpenter hand saw lying flat as a pickup or workshop prop, with a tapered toothed steel blade and a closed wooden handle with brass screws. Knobs: length, tooth count, blade, handle and screw colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "saw",
+        "hand saw",
+        "handsaw",
+        "carpentry",
+        "woodworking",
+        "tool",
+        "hand tool",
+        "item",
+        "pickup"
+      ],
+      "compat": [
+        "indoor",
+        "workshop",
+        "garage",
+        "construction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/hand-saw.kcad.ts",
+      "sourceSha256": "8a97e640eef10bb232d92a71534aa3671b8fce11cfec48df21fb2c452f446971",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "550",
+          "label": "Blade length (mm)",
+          "choices": [
+            "400",
+            "550",
+            "650"
+          ]
+        },
+        {
+          "name": "teeth",
+          "type": "choice",
+          "default": "16",
+          "label": "Teeth",
+          "choices": [
+            "10",
+            "16",
+            "24"
+          ]
+        },
+        {
+          "name": "blade",
+          "type": "color",
+          "default": "#b9bfc6",
+          "label": "Blade"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#9c5f32",
+          "label": "Handle"
+        },
+        {
+          "name": "screws",
+          "type": "color",
+          "default": "#d1a43a",
+          "label": "Screws"
+        }
+      ],
+      "presets": {
+        "modern": {
+          "handle": "#d8402a",
+          "screws": "#2a2a2c"
+        },
+        "old": {
+          "blade": "#8a8478",
+          "handle": "#6b4226",
+          "screws": "#a07a3a"
+        }
+      },
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          0.7,
+          0.026,
+          0.19
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "blade",
+          "color": "#b9bfc6",
+          "parts": [
+            "blade"
+          ],
+          "param": "blade"
+        },
+        {
+          "name": "handle",
+          "color": "#9c5f32",
+          "parts": [
+            "handle"
+          ],
+          "param": "handle"
+        },
+        {
+          "name": "screws",
+          "color": "#d1a43a",
+          "parts": [
+            "screw-1",
+            "screw-2",
+            "screw-3"
+          ],
+          "param": "screws"
+        }
+      ]
+    },
+    {
+      "id": "pickaxe",
+      "kit": "tools-equipment",
+      "title": "Pickaxe",
+      "description": "Pickaxe lying flat as a pickup or mining prop, with a curved double-pointed steel head or a prospector pick and hammer poll on a wooden haft. Knobs: style, haft length, head, tip and haft colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "pickaxe",
+        "pick",
+        "mattock",
+        "mining",
+        "miner",
+        "dig",
+        "tool",
+        "item",
+        "pickup",
+        "fantasy"
+      ],
+      "compat": [
+        "outdoor",
+        "mine",
+        "cave",
+        "construction",
+        "medieval",
+        "fantasy"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/pickaxe.kcad.ts",
+      "sourceSha256": "0d918fff28da8f8e24c28ba037e96e12e7c492b095e9501cd706018fa04fe8a7",
+      "triangleBudget": 160,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "double",
+          "label": "Style",
+          "choices": [
+            "double",
+            "prospector"
+          ]
+        },
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "long",
+          "label": "Haft length",
+          "choices": [
+            "short",
+            "long"
+          ]
+        },
+        {
+          "name": "head",
+          "type": "color",
+          "default": "#55595f",
+          "label": "Head"
+        },
+        {
+          "name": "tips",
+          "type": "color",
+          "default": "#c4c9cf",
+          "label": "Sharpened tips"
+        },
+        {
+          "name": "haft",
+          "type": "color",
+          "default": "#a8743f",
+          "label": "Haft"
+        }
+      ],
+      "presets": {
+        "rusty": {
+          "head": "#6a4a36",
+          "tips": "#9a7a62"
+        },
+        "diamond": {
+          "head": "#3a8fa0",
+          "tips": "#a8f0ff",
+          "haft": "#6a4a2a"
+        }
+      },
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          0.9,
+          0.038,
+          0.57
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "haft",
+          "color": "#a8743f",
+          "parts": [
+            "haft"
+          ],
+          "param": "haft"
+        },
+        {
+          "name": "head",
+          "color": "#55595f",
+          "parts": [
+            "head"
+          ],
+          "param": "head"
+        },
+        {
+          "name": "tips",
+          "color": "#c4c9cf",
+          "parts": [
+            "tip-front",
+            "tip-back"
+          ],
+          "param": "tips"
+        }
+      ]
+    },
+    {
+      "id": "pliers",
+      "kit": "tools-equipment",
+      "title": "Pliers",
+      "description": "Pliers lying flat as a pickup or workshop prop: combination or needle-nose steel jaws on a riveted pivot with splayed dipped handle grips. Knobs: style, steel, grip and rivet colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "pliers",
+        "needle nose pliers",
+        "combination pliers",
+        "tool",
+        "hand tool",
+        "electrician",
+        "workshop",
+        "item",
+        "pickup"
+      ],
+      "compat": [
+        "indoor",
+        "workshop",
+        "garage",
+        "construction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/pliers.kcad.ts",
+      "sourceSha256": "0572e722ec82e573a6b1de466f7537c47f516f6f38a0711a6be1c3e1c13caf86",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "combination",
+          "label": "Style",
+          "choices": [
+            "combination",
+            "needle-nose"
+          ]
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#8f969e",
+          "label": "Steel"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#d0342a",
+          "label": "Grips"
+        },
+        {
+          "name": "rivet",
+          "type": "color",
+          "default": "#c9ced4",
+          "label": "Pivot rivet"
+        }
+      ],
+      "presets": {
+        "electrician": {
+          "grip": "#e8b21c"
+        },
+        "blue": {
+          "grip": "#2f5fa8",
+          "steel": "#3d4148"
+        }
+      },
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.25683,
+          0.017,
+          0.095624
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#8f969e",
+          "parts": [
+            "steel"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "grip",
+          "color": "#d0342a",
+          "parts": [
+            "grip-right",
+            "grip-left"
+          ],
+          "param": "grip"
+        },
+        {
+          "name": "rivet",
+          "color": "#c9ced4",
+          "parts": [
+            "rivet"
+          ],
+          "param": "rivet"
+        }
+      ]
+    },
+    {
+      "id": "power-drill",
+      "kit": "tools-equipment",
+      "title": "Cordless power drill",
+      "description": "Cordless drill-driver standing on its battery with pistol grip, trigger, keyless chuck and a drill or screwdriver bit. Knobs: battery size, bit, body, trim, chuck and bit colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "drill",
+        "power drill",
+        "cordless drill",
+        "drill driver",
+        "power tool",
+        "tool",
+        "diy",
+        "construction",
+        "item"
+      ],
+      "compat": [
+        "indoor",
+        "workshop",
+        "garage",
+        "construction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/power-drill.kcad.ts",
+      "sourceSha256": "353eb98499b633cadaaf0f3ad91decf654e408b3024205c309fe78ca5dc051c1",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "battery",
+          "type": "choice",
+          "default": "standard",
+          "label": "Battery",
+          "choices": [
+            "compact",
+            "standard",
+            "extended"
+          ]
+        },
+        {
+          "name": "bit",
+          "type": "choice",
+          "default": "drill",
+          "label": "Bit",
+          "choices": [
+            "drill",
+            "driver",
+            "none"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#e8b21c",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#2a2a2d",
+          "label": "Grip and battery"
+        },
+        {
+          "name": "chuck",
+          "type": "color",
+          "default": "#3d4045",
+          "label": "Chuck"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#c3c8ce",
+          "label": "Bit"
+        }
+      ],
+      "presets": {
+        "green": {
+          "body": "#2f8a4a"
+        },
+        "red": {
+          "body": "#c8322a",
+          "trim": "#1f1f21"
+        },
+        "teal": {
+          "body": "#1f8a9a",
+          "trim": "#3a3c40"
+        }
+      },
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.353,
+          0.262,
+          0.084
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "trim",
+          "color": "#2a2a2d",
+          "parts": [
+            "battery",
+            "grip"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "body",
+          "color": "#e8b21c",
+          "parts": [
+            "collar",
+            "housing",
+            "trigger"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "chuck",
+          "color": "#3d4045",
+          "parts": [
+            "chuck"
+          ],
+          "param": "chuck"
+        },
+        {
+          "name": "steel",
+          "color": "#c3c8ce",
+          "parts": [
+            "bit"
+          ],
+          "param": "steel"
+        }
+      ]
+    },
+    {
+      "id": "rolling-tool-chest",
+      "kit": "tools-equipment",
+      "title": "Rolling tool chest",
+      "description": "Mechanic's rolling tool chest: drawer cabinet on castors with pull bars, side push handle and optional top box with lid. Knobs: drawers, top box, width, body, pull, top and castor colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tool chest",
+        "tool cabinet",
+        "roller cabinet",
+        "toolbox",
+        "drawers",
+        "mechanic",
+        "garage",
+        "workshop"
+      ],
+      "compat": [
+        "indoor",
+        "garage",
+        "workshop",
+        "factory",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/rolling-tool-chest.kcad.ts",
+      "sourceSha256": "391828d5368568545f97d2c7ad7f5c98888fda93da6d120a497b97f908d4a426",
+      "triangleBudget": 540,
+      "params": [
+        {
+          "name": "drawers",
+          "type": "choice",
+          "default": "5",
+          "label": "Drawers",
+          "choices": [
+            "3",
+            "4",
+            "5",
+            "6"
+          ]
+        },
+        {
+          "name": "topBox",
+          "type": "choice",
+          "default": "yes",
+          "label": "Top chest",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "width",
+          "type": "choice",
+          "default": "680",
+          "label": "Width (mm)",
+          "choices": [
+            "520",
+            "680",
+            "900"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c8302a",
+          "label": "Body"
+        },
+        {
+          "name": "pull",
+          "type": "color",
+          "default": "#c8ced2",
+          "label": "Drawer pulls"
+        },
+        {
+          "name": "topColor",
+          "type": "color",
+          "default": "#2a2a2c",
+          "label": "Worktop and trim"
+        },
+        {
+          "name": "wheel",
+          "type": "color",
+          "default": "#1c1c1e",
+          "label": "Castors"
+        }
+      ],
+      "presets": {
+        "blue": {
+          "body": "#2f6fc0"
+        },
+        "black": {
+          "body": "#2a2a2c",
+          "topColor": "#c8302a"
+        },
+        "orange": {
+          "body": "#e07a22",
+          "pull": "#2a2a2c"
+        }
+      },
+      "stats": {
+        "triangles": 492,
+        "sizeM": [
+          0.765,
+          1.285,
+          0.502
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c8302a",
+          "parts": [
+            "cabinet",
+            "drawer-1",
+            "drawer-2",
+            "drawer-3",
+            "drawer-4",
+            "drawer-5",
+            "top-box",
+            "top-drawer-1",
+            "top-drawer-2"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "topColor",
+          "color": "#2a2a2c",
+          "parts": [
+            "worktop",
+            "lid"
+          ],
+          "param": "topColor"
+        },
+        {
+          "name": "pull",
+          "color": "#c8ced2",
+          "parts": [
+            "pull-1",
+            "pull-2",
+            "pull-3",
+            "pull-4",
+            "pull-5",
+            "handle",
+            "top-pull-1",
+            "top-pull-2"
+          ],
+          "param": "pull"
+        },
+        {
+          "name": "wheel",
+          "color": "#1c1c1e",
+          "parts": [
+            "castor-lf",
+            "castor-rf",
+            "castor-lb",
+            "castor-rb"
+          ],
+          "param": "wheel"
+        }
+      ]
+    },
+    {
+      "id": "sawhorse",
+      "kit": "tools-equipment",
+      "title": "Sawhorse",
+      "description": "Carpenter sawhorse trestle with a timber top beam, four splayed legs, steel corner brackets, end gussets and an optional tool shelf. Knobs: length, shelf, top, legs and bracket colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "sawhorse",
+        "trestle",
+        "saw horse",
+        "carpentry",
+        "woodworking",
+        "workshop",
+        "construction site",
+        "barrier"
+      ],
+      "compat": [
+        "indoor",
+        "outdoor",
+        "workshop",
+        "garage",
+        "construction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/sawhorse.kcad.ts",
+      "sourceSha256": "7376f0cdb5b4b2a900335008a348ce9b942f04d52a983ceb913ef97de806de28",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "900",
+          "label": "Length (mm)",
+          "choices": [
+            "600",
+            "900",
+            "1200"
+          ]
+        },
+        {
+          "name": "shelf",
+          "type": "choice",
+          "default": "none",
+          "label": "Tool shelf",
+          "choices": [
+            "none",
+            "shelf"
+          ]
+        },
+        {
+          "name": "top",
+          "type": "color",
+          "default": "#d2a86a",
+          "label": "Top beam and shelf"
+        },
+        {
+          "name": "legs",
+          "type": "color",
+          "default": "#c4955a",
+          "label": "Legs"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#5d6268",
+          "label": "Brackets"
+        }
+      ],
+      "presets": {
+        "painted": {
+          "top": "#e3b41f",
+          "legs": "#e3b41f",
+          "metal": "#2a2a2c"
+        },
+        "barrier": {
+          "top": "#e8e8e8",
+          "legs": "#c8322a",
+          "metal": "#3a3c40"
+        },
+        "weathered": {
+          "top": "#9a8a70",
+          "legs": "#8a7a60",
+          "metal": "#6a4a36"
+        }
+      },
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.9,
+          0.75,
+          0.562441
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "top",
+          "color": "#d2a86a",
+          "parts": [
+            "top"
+          ],
+          "param": "top"
+        },
+        {
+          "name": "legs",
+          "color": "#c4955a",
+          "parts": [
+            "legs-left",
+            "legs-right"
+          ],
+          "param": "legs"
+        },
+        {
+          "name": "metal",
+          "color": "#5d6268",
+          "parts": [
+            "bracket-left",
+            "bracket-right"
+          ],
+          "param": "metal"
+        }
+      ]
+    },
+    {
+      "id": "screwdriver",
+      "kit": "tools-equipment",
+      "title": "Screwdriver",
+      "description": "Screwdriver lying flat as a pickup or workshop prop, with a faceted two-tone handle, steel shaft and flat-blade or Phillips cross tip. Knobs: tip, size, handle, grip and shaft colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "screwdriver",
+        "phillips",
+        "flathead",
+        "tool",
+        "hand tool",
+        "diy",
+        "workshop",
+        "item",
+        "pickup"
+      ],
+      "compat": [
+        "indoor",
+        "workshop",
+        "garage",
+        "construction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/screwdriver.kcad.ts",
+      "sourceSha256": "a0e54fdfb4422a7696c919682aeb637847389f28d2f6b9d0cf4f9ded99f9cf26",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "tip",
+          "type": "choice",
+          "default": "flat",
+          "label": "Tip",
+          "choices": [
+            "flat",
+            "phillips"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Size",
+          "choices": [
+            "stubby",
+            "medium",
+            "long"
+          ]
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#d23a2a",
+          "label": "Handle"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#232325",
+          "label": "Grip bands"
+        },
+        {
+          "name": "shaft",
+          "type": "color",
+          "default": "#c4c9cf",
+          "label": "Shaft"
+        }
+      ],
+      "presets": {
+        "yellow": {
+          "handle": "#e8b21c"
+        },
+        "wooden": {
+          "handle": "#b07a42",
+          "grip": "#7a5030"
+        }
+      },
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.257,
+          0.028548,
+          0.028548
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "handle",
+          "color": "#d23a2a",
+          "parts": [
+            "handle"
+          ],
+          "param": "handle"
+        },
+        {
+          "name": "grip",
+          "color": "#232325",
+          "parts": [
+            "grip",
+            "grip-band"
+          ],
+          "param": "grip"
+        },
+        {
+          "name": "shaft",
+          "color": "#c4c9cf",
+          "parts": [
+            "shaft"
+          ],
+          "param": "shaft"
+        }
+      ]
+    },
+    {
+      "id": "sledgehammer",
+      "kit": "tools-equipment",
+      "title": "Sledgehammer",
+      "description": "Sledgehammer standing on its octagonal steel head with a long wooden or fibreglass handle, from short club hammer to heavy demolition sledge. Knobs: weight, head, handle and grip colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "sledgehammer",
+        "sledge",
+        "hammer",
+        "mallet",
+        "demolition",
+        "construction",
+        "tool",
+        "item"
+      ],
+      "compat": [
+        "outdoor",
+        "workshop",
+        "garage",
+        "construction",
+        "mine",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/tools-equipment/sledgehammer.kcad.ts",
+      "sourceSha256": "7f2503ef0e01a019a5c631bedce2c5199d5e270206671120f618d416f59862a7",
+      "triangleBudget": 140,
+      "params": [
+        {
+          "name": "weight",
+          "type": "choice",
+          "default": "8lb",
+          "label": "Weight",
+          "choices": [
+            "3lb",
+            "8lb",
+            "12lb"
+          ]
+        },
+        {
+          "name": "head",
+          "type": "color",
+          "default": "#4a4e54",
+          "label": "Head"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#c49556",
+          "label": "Handle"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#d8a520",
+          "label": "Grip"
+        }
+      ],
+      "presets": {
+        "rusty": {
+          "head": "#6b4632",
+          "handle": "#8f6a43",
+          "grip": "#5a3e2a"
+        },
+        "orange": {
+          "head": "#2d2f33",
+          "handle": "#e06a1c",
+          "grip": "#232323"
+        }
+      },
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          0.2,
+          0.936955,
+          0.07391
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "head",
+          "color": "#4a4e54",
+          "parts": [
+            "head"
+          ],
+          "param": "head"
+        },
+        {
+          "name": "handle",
+          "color": "#c49556",
+          "parts": [
+            "handle"
+          ],
+          "param": "handle"
+        },
+        {
+          "name": "grip",
+          "color": "#d8a520",
+          "parts": [
+            "grip"
+          ],
+          "param": "grip"
         }
       ]
     }
