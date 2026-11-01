@@ -1,0 +1,13 @@
+HTTP/2 200 
+server: nginx/1.24.0 (Ubuntu)
+date: Sun, 01 Nov 2026 11:58:42 GMT
+content-type: text/event-stream
+content-length: 184
+vary: Origin, Accept-Encoding
+access-control-expose-headers: mcp-session-id,Content-Disposition,Retry-After,X-KernelCAD-Export-Warning,X-KernelCAD-Mesh-Open-Edges
+mcp-session-id: kc1.eyJuIjoic3Bpa2UtYjJiLXByb2JlIiwidiI6IjAuMC4xIn0.<redacted>
+cache-control: no-cache
+
+event: message
+data: {"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{},"resources":{}},"serverInfo":{"name":"kernelcad","version":"1.0.0"}},"jsonrpc":"2.0","id":1}
+
