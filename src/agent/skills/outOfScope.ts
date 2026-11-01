@@ -116,12 +116,11 @@ export const OUT_OF_SCOPE_CLAIMS: readonly OutOfScopeClaim[] = [
   {
     id: 'nurbs-surface-ops',
     claim:
-      'NURBS surface extend/untrim/blend, lattice/quilt — deferred (surface-surface intersection ships as `surfaceIntersection`)',
+      'NURBS surface extend/untrim/blend/quilt — deferred (surface-surface intersection ships as `surfaceIntersection`)',
     probes: [
       { kind: 'enum-absent', tool: 'add_surface', property: 'kind', value: 'extend' },
       { kind: 'enum-absent', tool: 'add_surface', property: 'kind', value: 'untrim' },
       { kind: 'enum-absent', tool: 'add_surface', property: 'kind', value: 'blend' },
-      { kind: 'enum-absent', tool: 'add_surface', property: 'kind', value: 'lattice' },
     ],
   },
 ];

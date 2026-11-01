@@ -23,6 +23,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - Folded sheet-metal parts (brackets, channels, panels, bend tables, flat patterns) → also load `kernelcad-sheet-metal`.
 - Bent tubes and fluid lines between ports (hydraulic, fuel, oil, coolant; bend radius, clearance, tube bend tables) → also load `kernelcad-tubes`.
 - Signed-distance fields (smooth-blended primitives, organic shapes via `sdf.*` + `materialize`) → also load `kernelcad-fields`.
+- Lattice infill — gyroid / Schwarz-P / diamond TPMS cores inside a solid skin, graded by depth, hole walls or an FEA stress field (`body.lattice({...})`) → also load `kernelcad-fields`.
 - Exporting an assembly to URDF for a motion planner or simulator → also load `kernelcad-urdf`.
 - Exporting an assembly to a UsdPhysics stage for a GPU physics simulator (`format: 'usd-isaac'`) → also load `kernelcad-urdf` (USD section).
 - Adding planning groups / end-effectors / allowed-collision data on top of a URDF → also load `kernelcad-srdf`.

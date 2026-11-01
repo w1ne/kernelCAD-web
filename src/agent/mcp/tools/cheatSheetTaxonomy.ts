@@ -113,8 +113,8 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Finish edges',
-    blurb: 'Break edges, add draft, hollow out a wall, fold sheet metal.',
-    names: ['fillet', 'filletIntersection', 'chamfer', 'draft', 'shell', 'offsetFaces', 'moveFaces', 'bend', 'flattenPattern'],
+    blurb: 'Break edges, add draft, hollow out a wall or fill it with a lattice, fold sheet metal.',
+    names: ['fillet', 'filletIntersection', 'chamfer', 'draft', 'shell', 'lattice', 'offsetFaces', 'moveFaces', 'bend', 'flattenPattern'],
   },
   {
     task: 'Select geometry',

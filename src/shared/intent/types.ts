@@ -152,6 +152,8 @@ export type FeatureKind =
   | 'assemblyExport'
   // specialty (v0.13+)
   | 'sheetMetal' | 'sheetMetalBend' | 'sdf' | 'sdfMaterialize'
+  // TPMS lattice infill of a body (mesh-solid result).
+  | 'lattice'
   // W1.3 NURBS surfaces — escape paths from a `Surface` into the Shape pipeline.
   | 'surfaceThicken' | 'surfaceToShape'
   // Shell → solid: thicken a sewn multi-patch shell (or surfaceToShape shell).

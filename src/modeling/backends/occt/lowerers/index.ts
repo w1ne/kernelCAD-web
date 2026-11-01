@@ -14,6 +14,7 @@ import { lowerChamfer, lowerFillet } from './edgeFeatures';
 import { lowerFilletIntersection } from './filletIntersection';
 import { lowerCutout, lowerHole, lowerHoles } from './holes';
 import { lowerImported, lowerSdfMaterialize } from './imported';
+import { lowerLattice } from './lattice';
 import { lowerLoft } from './loft';
 import { lowerMirror, lowerPattern } from './mirrorPattern';
 import { lowerBox, lowerCylinder, lowerSphere } from './primitives';
@@ -48,6 +49,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   importedStl: lowerImported,
   importedMesh: lowerImported,
   sdfMaterialize: lowerSdfMaterialize,
+  lattice: lowerLattice,
   // 2D to 3D
   sketch: lowerSketch,
   extrude: lowerExtrude,

@@ -972,6 +972,7 @@ function configureRenderCommandOptions(cmd: Command): void {
         noMechanismCheck: opts.mechanismCheck === false,
         preset: opts.preset,
         background: opts.background,
+        screenshotTimeoutMs: opts.screenshotTimeout,
         // Forward shadow only when --no-shadow was actually passed, so the
         // engineering look can refuse it (commander always materializes true).
         ...(command.getOptionValueSource('shadow') === 'cli' ? { shadow: opts.shadow } : {}),

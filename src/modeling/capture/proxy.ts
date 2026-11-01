@@ -25,6 +25,7 @@ import {
   resolveCutoutOpts,
   type EditableCutoutOpts,
 } from '../validation/cutoutValidation';
+import { captureLattice, type LatticeOptions } from '../lattice/latticeCapture';
 import { isParamRef, isTypedParamRef, type Editable, type TypedParamRef } from '../../shared/runtime/paramRef';
 import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
@@ -861,6 +862,10 @@ export class Shape {
       params: { t: toParam(t, 'mm') },
     });
   }
+
+  /** TPMS lattice infill inside a solid skin (see latticeCapture.ts); the
+   *  result is a watertight mesh solid, so call it last. */
+  lattice(opts: LatticeOptions): Shape { return captureLattice(this.session, this, opts); }
 
   /**
    * Round the seam where `cutter` met this body. The seam is selected by
