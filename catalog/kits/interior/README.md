@@ -48,6 +48,21 @@ wood, fabric and metal zones, and a few presets (walnut, white, dark and similar
 | `desk-lamp` | Architect-style hinged-arm desk lamp with tilted cone shade | reach, arm and shade, base, bulb | 280 |
 | `bathtub` | Freestanding roll-top tub on feet or built-in tub, with tap and water | style, water, tub, feet and tap, water colour | 232 |
 | `toilet` | Close-coupled toilet with cistern, seat and closed or raised lid | lid, ceramic, seat, button | 334 |
+| `sink-vanity` | Bathroom vanity with sunken basin, mixer tap, doors or drawers and optional mirror | width, fronts, base, mirror, cabinet, top, tap and handles, mirror colour | 340 |
+| `washing-machine` | Front-loading washer or dryer with porthole door, dial and detergent drawer | type, body, door ring, glass, display | 272 |
+| `stove-oven` | Freestanding range with gas grates or electric rings, oven door and drawer | hob type, splashback, body, hob, oven glass, handle and knobs | 432 |
+| `kitchen-island` | Freestanding island with drawers, doors and optional breakfast-bar overhang | length (1.2/1.8/2.4 m), overhang, cabinets, worktop, handles | 228 |
+| `upper-cabinet` | Kitchen wall cabinet with solid or glass doors (`wall` origin) | doors (1–3), door style, cabinet, glass, handles | 60 |
+| `walk-in-shower` | Walk-in shower with tray, tiled walls, glass screen, rain head and mixer | tray length, screen, tray, tiles, glass, fittings | 192 |
+| `coat-rack` | Coat stand on splayed feet with angled pegs, optional coat, scarf and hat | pegs (4/6/8), clothes, wood, coat, scarf, hat | 280 |
+| `hall-bench` | Entryway bench with cushion, shoe shelf and optional hook back panel | width, back, shoes, wood, cushion, hooks, shoe colour | 308 |
+| `upright-piano` | Upright piano with white and black keys, music desk, pedals and optional bench | bench, case, white keys, black keys, pedals | 552 |
+| `ceiling-fan` | Ceiling fan with downrod, pitched blades and optional light (`ceiling` origin) | blades (3–5), light, downrod length, blades, body, light colour | 336 |
+| `radiator` | Column radiator on feet with thermostatic valve and lockshield | sections (6/10/14), height, body, valves | 320 |
+| `fireplace` | Fireplace with mantel or stone surround, hearth, logs and optional flames | style, fire, surround, hearth, firebox, logs, flames | 264 |
+| `window` | Interior window with mullions, glass, sill and optional curtains (`wall` origin) | width, panes, curtains, frame, glass, sill, curtains, rod | 284 |
+| `staircase` | Straight stair flight with treads, risers, stringers and optional handrails | steps (8–16), width, handrail side, treads, risers, handrail | 484 |
+| `room-divider` | Folding zig-zag screen of hinged framed panels, fabric or slatted | panels (3–5), infill, fold angle, frame, infill colour | 336 |
 
 ## Licence
 
