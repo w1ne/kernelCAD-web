@@ -56,6 +56,7 @@
     "catalog:build": "npx tsx scripts/buildAssetCatalog.ts",
     "catalog:check": "npx tsx scripts/buildAssetCatalog.ts --check",
     "catalog:previews": "npx tsx scripts/renderCatalogPreviews.ts",
+    "catalog:pages": "npx tsx scripts/buildCatalogPages.ts",
     "cookbook:evaluate": "npx tsx scripts/cookbookEvaluate.ts",
     "cookbook:build": "npx tsx scripts/buildCookbookIndex.ts && npx tsx scripts/buildAuthoringReferences.ts",
     "skill:references": "npx tsx scripts/buildAuthoringReferences.ts",
