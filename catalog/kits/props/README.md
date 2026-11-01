@@ -1,0 +1,26 @@
+# Props kit
+
+Low-poly crates, barrels, containers, tools, carts and market pieces at real-world scale, for village, farm, warehouse, dock and street scenes. Each asset is a parametric kernelCAD `.kcad.ts` program built from faceted polygon profiles (ruled lofts, extrusions, boxes), modelled in millimetres with Z up and the base on z = 0. It exports as a flat-shaded GLB in metres on one shared vertex-coloured palette material. Colour knobs become palette zones. Counts, sizes, styles and loads are choice knobs, and most assets ship presets such as weathered, painted or rusty.
+
+| id | what it is | knobs | triangles (default) |
+| --- | --- | --- | --- |
+| wooden-crate | Cubic shipping crate with raised edge battens and diagonal or cross face braces | size, brace, planks, battens | 204 |
+| barrel | Bulging stave barrel with iron hoops and a sunken lid | size, hoops, sides, wood, iron, lid | 316 |
+| sack | Slumped burlap sack, rope-tied or rolled open over its contents | size, style, cloth, rope, contents | 148 |
+| oil-drum | 200-litre steel drum with rolled rims, rolling hoops, band and bungs | top, sides, drum, rim, band | 388 |
+| toolbox | Metal toolbox with handle and latches, or an open wooden tote with tools | style, size, body, handle, trim | 124 |
+| anvil | Blacksmith anvil with face, heel and horn, on a log stump or the floor | stand, size, iron, face, stump | 128 |
+| ladder | Straight rung ladder or folding A-frame step ladder | style, rungs, rail, rung | 184 |
+| pallet | EUR 1200 x 800 pallet, empty or stacked with cardboard boxes | load, wood, blocks, boxes | 240 |
+| wheelbarrow | One-wheel barrow with flared tray, handles and legs, empty or heaped | load, tray, frame, tyre, soil | 248 |
+| hand-cart | Two-wheeled wooden cart with slatted sides, spoked wheels and shafts | sides, load, spokes, wood, wheel, iron, cargo | 556 |
+| market-stall | Counter stall on four posts under a striped sloping awning with valance | widthM, stripes, goods, wood, awningA, awningB, produce | 432 |
+| treasure-chest | Vaulted-lid chest with iron bands and lock, shut or open over gold | lid, size, wood, iron, gold | 168 |
+
+## Licence
+
+Every asset in this kit — the `.kcad.ts` source and any GLB or ES module exported from it — is dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Use, modify and ship it in commercial games without attribution. The catalog metadata carries `license: "CC0-1.0"` per asset.
+
+## Provenance
+
+Geometry is original kernelCAD `.kcad.ts` source written for this catalog. No Polyfork downloads or meshes, no external meshes, textures or palettes, and no mesh decimation are involved.
