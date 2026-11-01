@@ -81,7 +81,11 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts ' +
         '(files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default ' +
         'and fails the call with export.mesh.not-watertight; unknown part names fail with export.part.not-found listing the valid names.\n' +
-        'Pass { no_verify: true } to skip the watertight gate. All params except `target` are forwarded verbatim; each target fails closed on its own missing required params.',
+        'Pass { no_verify: true } to skip the watertight gate. ' +
+        "Geometry-quality gate (both targets; formats stl, step, 3mf, obj, ply, gcode): every solid body (each assembly part) is screened for BREP faces below tiny_face_area_mm2 (default 0.01 mm²) and edges below short_edge_length_mm (default 0.1 mm), the same thresholds as verify({ check: 'geometry-quality' }) without its symmetry sampling. " +
+        "qualityGate 'warn' (default) exports and returns geometryQuality { ok, tinyFaces, shortEdges, worst: up to 5 { part, kind, id, location, size, unit }, thresholds, parts } plus warn diagnostics export.geometry-quality.tiny-faces / export.geometry-quality.short-edges; " +
+        "'block' makes them errors and writes no file (ok: false); 'off' skips the screen. Shells, mesh bodies and bodies past the face budget are skipped with info export.geometry-quality.skipped. " +
+        'All params except `target` are forwarded verbatim; each target fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -138,6 +142,14 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
           part: { type: 'string', description: "target:'part' — part name for single-part export, or 'all'." },
           output_dir: { type: 'string', description: "target:'part' — destination directory (all-parts mode); files are <dir>/<part>.stl." },
           no_verify: { type: 'boolean', description: 'Skip the default STL/STEP validity and watertightness gates.', default: false },
+          qualityGate: {
+            type: 'string',
+            enum: ['warn', 'block', 'off'],
+            default: 'warn',
+            description: "Geometry-quality gate for stl/step/3mf/obj/ply/gcode (both targets): 'warn' exports and reports geometryQuality + warn diagnostics, 'block' fails the export (nothing written) when tiny faces or short edges are found, 'off' skips it.",
+          },
+          tiny_face_area_mm2: { type: 'number', minimum: 0, description: 'Quality gate threshold: faces with BREP area below this (mm²) are tiny. Default 0.01; 0 disables.' },
+          short_edge_length_mm: { type: 'number', minimum: 0, description: 'Quality gate threshold: edges shorter than this (mm) are short. Default 0.1; 0 disables.' },
         },
         required: ['target'],
       },

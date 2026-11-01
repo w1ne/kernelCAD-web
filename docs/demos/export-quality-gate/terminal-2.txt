@@ -1,0 +1,7 @@
+$ kernelcad export step docs/demos/export-quality-gate/plate-sliver.kcad.ts -o /tmp/out/plate-2.step --quality-gate block
+ERROR [export.geometry-quality.tiny-faces] boolean_5: Geometry quality: 2 face(s) smaller than 0.01 mm² in boolean_5. Worst: boolean_5 f3 0.0075 mm² at [60, 20, 6.002]. Export blocked (qualityGate: block).
+  Hint: Snap near-coincident steps/offsets to an exact shared value (or make them >= the threshold), then re-export; turn the gate off (qualityGate: "off" / --quality-gate off) only to ship knowingly.
+ERROR [export.geometry-quality.short-edges] boolean_5: Geometry quality: 4 edge(s) shorter than 0.1 mm in boolean_5. Worst: boolean_5 e10 0.005 mm at [60, 19.25, 6.002]. Export blocked (qualityGate: block).
+  Hint: Merge or lengthen the reported short edges (snap near-equal dimensions, remove micro-steps), then re-export; turn the gate off (qualityGate: "off" / --quality-gate off) only to ship knowingly.
+geometry quality (block): 2 tiny face(s), 4 short edge(s) — 1 body(ies) checked, thresholds 0.01 mm² / 0.1 mm, 82.5 ms
+[exit 1]

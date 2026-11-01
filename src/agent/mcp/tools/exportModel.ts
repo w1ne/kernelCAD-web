@@ -23,6 +23,9 @@ import {
   type ExportFormat,
   type ExportOptions,
   type ExportResult,
+  type ExportGeometryQualitySummary,
+  type QualityGateMode,
+  type ExportQualityGateInput,
 } from '../../script-runtime/export';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
@@ -42,6 +45,12 @@ export interface ExportModelInput {
   options?: ExportOptions;
   /** Skip the default STL/STEP validity and watertightness gates. */
   no_verify?: boolean;
+  /** Geometry-quality gate for stl/step/3mf/obj/ply/gcode: 'warn' (default), 'block' or 'off'. */
+  qualityGate?: QualityGateMode;
+  /** Gate threshold override: faces below this BREP area (mm²) are tiny. Default 0.01. */
+  tiny_face_area_mm2?: number;
+  /** Gate threshold override: edges below this length (mm) are short. Default 0.1. */
+  short_edge_length_mm?: number;
 }
 
 export interface ExportModelOutput {
@@ -71,6 +80,8 @@ export interface ExportModelOutput {
   sheet?: { thickness_mm: number; bend_count: number };
   /** Slicer predictions and generator identity from the retained G-code header. */
   gcode_stats?: GcodeStats;
+  /** Export-time tiny-face / short-edge screen (gated formats, qualityGate not 'off'). */
+  geometryQuality?: ExportGeometryQualitySummary;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -153,6 +164,15 @@ function exportMetadataFields(
   };
 }
 
+/** Gate settings from the tool's top-level keys (shared with target:'part'). */
+export function qualityGateInput(input: Pick<ExportModelInput, 'qualityGate' | 'tiny_face_area_mm2' | 'short_edge_length_mm'>): ExportQualityGateInput {
+  return {
+    ...(input.qualityGate === undefined ? {} : { mode: input.qualityGate }),
+    ...(input.tiny_face_area_mm2 === undefined ? {} : { tiny_face_area_mm2: input.tiny_face_area_mm2 }),
+    ...(input.short_edge_length_mm === undefined ? {} : { short_edge_length_mm: input.short_edge_length_mm }),
+  };
+}
+
 /**
  * MCP `export_model` tool — runs a kernelCAD script and writes the geometry
  * to `output_path` in the requested `format`. The single, unified write-side
@@ -201,6 +221,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
       feature_id,
       options: effectiveOptions,
       scriptDir: input.file !== undefined ? dirname(resolve(input.file)) : undefined,
+      qualityGate: qualityGateInput(input),
     });
   } catch (e) {
     return {
@@ -214,12 +235,14 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   // failing the call, same contract as export_part. Other fatal paths
   // return empty bytes and fail without writing.
   const errorDiagnostics = result.diagnostics.filter(d => d.severity === 'error');
+  const geometryQuality = result.geometryQuality === undefined ? {} : { geometryQuality: result.geometryQuality };
   if (errorDiagnostics.length > 0 && result.bytes.length === 0) {
     return {
       ok: false, sceneSummary,
       diagnostics: withNextActions(result.diagnostics),
       feature_count: result.featureCount,
       format,
+      ...geometryQuality,
     };
   }
 
@@ -248,6 +271,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     ...companionFilesField(format, meshFiles),
     ...exportMetadataFields(format, result, errorDiagnostics.length > 0),
     ...infill,
+    ...geometryQuality,
     diagnostics: withNextActions(diagnostics),
   };
 }
