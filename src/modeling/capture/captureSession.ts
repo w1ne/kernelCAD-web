@@ -93,6 +93,14 @@ import {
   type ConnectorEntry,
 } from '../../shared/parts/connectorManifestSchema';
 import type { CatalogConnectorEntry } from '../../shared/parts/types';
+import {
+  AssetMetadataInputSchema,
+  AssetMetadataSchema,
+  AssetPresetsSchema,
+  type AssetMetadata,
+  type AssetMetadataInput,
+  type AssetPresets,
+} from '../../shared/assets/assetSchema';
 
 export type { EncodedMateRecord, SolvedAssemblyMateMetadata } from './assemblyFeatureRecords';
 
@@ -180,6 +188,51 @@ export class CaptureSession {
   private records: FeatureRecord[] = [];
   /** Slice-3: session-owned param table populated by `kcad.param()`/`kcad.params()`. */
   readonly paramTable: ParamTable = new ParamTable();
+  private assetMetadataStore: AssetMetadata | undefined;
+  private assetPresetsStore: AssetPresets = {};
+  private assetPresetsDeclared = false;
+
+  /** Validated metadata authored with `meta()`; callers receive detached data. */
+  get assetMetadata(): AssetMetadata | undefined {
+    return this.assetMetadataStore === undefined ? undefined : cloneJson(this.assetMetadataStore);
+  }
+
+  /** Validated preset overrides authored with `presets()`; callers receive detached data. */
+  get assetPresets(): AssetPresets {
+    return cloneJson(this.assetPresetsStore);
+  }
+
+  setAssetMetadata(input: AssetMetadataInput): AssetMetadata {
+    if (this.assetMetadataStore !== undefined) {
+      throw new KernelError('feature.invalid-args', 'meta() may be declared only once per CaptureSession.');
+    }
+    const parsedInput = AssetMetadataInputSchema.parse(input);
+    const parsed = AssetMetadataSchema.parse(parsedInput);
+    this.assetMetadataStore = parsed;
+    return cloneJson(parsed);
+  }
+
+  setAssetPresets(input: unknown): AssetPresets {
+    if (this.assetPresetsDeclared) {
+      throw new KernelError('feature.invalid-args', 'presets() may be declared only once per CaptureSession.');
+    }
+    const parsed = AssetPresetsSchema.parse(input);
+    for (const [presetName, overrides] of Object.entries(parsed)) {
+      const candidate = ParamTable.deserialize(this.paramTable.serialize());
+      for (const [name, value] of Object.entries(overrides)) {
+        if (!candidate.has(name)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `presets(): preset '${presetName}' references undeclared param '${name}'.`,
+          );
+        }
+        candidate.set(name, value);
+      }
+    }
+    this.assetPresetsStore = cloneJson(parsed);
+    this.assetPresetsDeclared = true;
+    return this.assetPresets;
+  }
   /** Slice-3: append-only soft-warning log. Drained via `consumeWarnings()`. */
   readonly warnings: SoftWarning[] = [];
   /** Slice-3 Phase 4: current run's gated named features.
@@ -1053,6 +1106,9 @@ export class CaptureSession {
     this.records = [];
     this.idGen.reset();
     this.paramTable.clear();
+    this.assetMetadataStore = undefined;
+    this.assetPresetsStore = {};
+    this.assetPresetsDeclared = false;
     this.warnings.length = 0;
     this.gatedFeatureNames.clear();
     this.engineRef = undefined;

@@ -46,6 +46,7 @@ import type { SdfField } from './sdf/index';
 import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import type { ParamRef, TypedParamRef, Editable } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
+import type { AssetMetadataInput, AssetPresets } from '../shared/assets/assetSchema';
 import { q as queryNamespace } from '../kernel/naming/queryConstructors';
 import { makeJointNamespace } from './joints';
 import type {
@@ -325,6 +326,10 @@ export interface KernelCadApi {
   param(name: string, defaultValue: `#${string}`, meta?: ParamMetadata): TypedParamRef<`#${string}`>;
   param(name: string, defaultValue: string, meta?: ParamMetadata): TypedParamRef<string>;
   params<R extends Record<string, number | boolean>>(decl: R): { [K in keyof R]: ParamRef<R[K]> };
+  /** Set validated, asset-facing metadata; the content licence defaults to CC-BY-4.0. */
+  meta(metadata: AssetMetadataInput): void;
+  /** Declare named presets as maps of knob overrides. */
+  presets(presets: AssetPresets): void;
 
   path(): PathBuilder;
   /**

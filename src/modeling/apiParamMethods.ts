@@ -20,37 +20,17 @@ import {
 import { select } from './selection/shapeList';
 import { KernelError } from '../shared/intent/kernelError';
 import type { KernelCadApi } from './api';
+import type { AssetMetadataInput, AssetPresets } from '../shared/assets/assetSchema';
 
 export function makeParamMethods(
   session: CaptureSession,
-): Pick<KernelCadApi, 'param' | 'params' | 'path' | 'helix' | 'selectEdges' | 'select' | 'selectEdge'> {
+): Pick<KernelCadApi, 'param' | 'params' | 'meta' | 'presets' | 'path' | 'helix' | 'selectEdges' | 'select' | 'selectEdge'> {
   return {
     param: ((
       name: string,
       defaultValue: number | boolean | string,
       meta?: ParamMetadata,
-    ): ParamRef<number> | ParamRef<boolean> | TypedParamRef<string> => {
-      // Prevent re-wrapping if the agent accidentally passes a ParamRef
-      // (would otherwise silently shadow a previously declared name).
-      if (isParamRef(defaultValue)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `param('${name}'): defaultValue cannot be a ParamRef; pass a literal number, boolean, or string.`,
-          undefined,
-          `invalid-args.param.invalid-default — param '${name}' default cannot itself be a ParamRef.`,
-        );
-      }
-      if (typeof defaultValue === 'string') {
-        // A hex default ('#rgb' / '#rrggbb') without `choices` is a colour
-        // param (see shared/runtime/paramColor.ts); its value is normalised.
-        const type = meta?.choices ? 'choice' : isColorParamDefault(defaultValue, meta) ? 'color' : 'string';
-        const entry = session.paramTable.declare(name, type, defaultValue, meta);
-        return makeTypedParamRef(name, type, entry.value as string);
-      }
-      const type = typeof defaultValue === 'boolean' ? 'boolean' : 'number';
-      session.paramTable.declare(name, type, defaultValue, meta);
-      return makeParamRef(name, type as 'number' | 'boolean', defaultValue) as ParamRef<number> | ParamRef<boolean>;
-    }) as KernelCadApi['param'],
+    ): ParamRef<number> | ParamRef<boolean> | TypedParamRef<string> => declareParam(session, name, defaultValue, meta)) as KernelCadApi['param'],
     params(decl) {
       const out: Record<string, ParamRef<number | boolean>> = {};
       for (const [name, value] of Object.entries(decl)) {
@@ -59,6 +39,12 @@ export function makeParamMethods(
         out[name] = makeParamRef(name, type as 'number' | 'boolean', value);
       }
       return out as { [K in keyof typeof decl]: ParamRef<typeof decl[K]> };
+    },
+    meta(input: AssetMetadataInput) {
+      session.setAssetMetadata(input);
+    },
+    presets(input: AssetPresets) {
+      session.setAssetPresets(input);
     },
     path() {
       return makePath(session);
@@ -92,4 +78,31 @@ export function makeParamMethods(
       return selectEdgeBackend(lowered, query);
     },
   };
+}
+
+/** Declare one param; string/colour/choice defaults take the typed ref path. */
+function declareParam(
+  session: CaptureSession,
+  name: string,
+  defaultValue: number | boolean | string,
+  meta?: ParamMetadata,
+): ParamRef<number> | ParamRef<boolean> | TypedParamRef<string> {
+  if (isParamRef(defaultValue)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `param('${name}'): defaultValue cannot be a ParamRef; pass a literal number, boolean, or string.`,
+      undefined,
+      `invalid-args.param.invalid-default — param '${name}' default cannot itself be a ParamRef.`,
+    );
+  }
+  if (typeof defaultValue === 'string') {
+    // A hex default ('#rgb' / '#rrggbb') without `choices` is a colour
+    // param (see shared/runtime/paramColor.ts); its value is normalised.
+    const type = meta?.choices ? 'choice' : isColorParamDefault(defaultValue, meta) ? 'color' : 'string';
+    const entry = session.paramTable.declare(name, type, defaultValue, meta);
+    return makeTypedParamRef(name, type, entry.value as string);
+  }
+  const type = typeof defaultValue === 'boolean' ? 'boolean' : 'number';
+  session.paramTable.declare(name, type, defaultValue, meta);
+  return makeParamRef(name, type as 'number' | 'boolean', defaultValue) as ParamRef<number> | ParamRef<boolean>;
 }
