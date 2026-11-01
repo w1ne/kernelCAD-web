@@ -3,8 +3,10 @@
 Low-poly furniture and room pieces for homes and offices, modelled at real-world
 scale (seat height about 450 mm, tables 740–750 mm, doors 2040 mm) in millimetres
 with Z up and exported as flat-shaded GLB in metres on one shared vertex-coloured
-material. Every asset stands on z = 0 centred on x = y = 0 (the picture frame uses
-the `wall` origin: its back sits on the y = 0 plane, centred on its middle). Fronts
+material. Every asset stands on z = 0 centred on x = y = 0 (the picture frame and wall shelf use
+the `wall` origin: the back sits on the y = 0 plane, centred on the middle; the
+pendant lamp uses the `ceiling` origin: the canopy top sits on z = 0 and it hangs
+down along -Z). Fronts
 face -Y. Each piece has choice knobs for counts, sizes and styles, colour knobs for
 wood, fabric and metal zones, and a few presets (walnut, white, dark and similar).
 
@@ -31,6 +33,21 @@ wood, fabric and metal zones, and a few presets (walnut, white, dark and similar
 | `interior-door` | Interior door with lining, architraves and lever handles | leaf width (720/820/920), panel style, leaf, frame, handle | 312 |
 | `wall-segment` | 2 m interior wall panel with skirting | opening (none/window/doorway), height, wall, skirting, glass | 140 |
 | `picture-frame` | Wall-hung frame with mat and abstract picture | size, orientation, frame, mat, picture, accent | 128 |
+| `bar-stool` | Bar or counter stool on splayed legs or a pedestal with footrest | seat height, base style, back, seat, frame | 164 |
+| `rocking-chair` | Wooden rocking chair on curved rockers with armrests and spindle back | spindle count, cushion, wood, cushion colour | 364 |
+| `bunk-bed` | Two-tier single bunk bed with ladder, guard rails and bedding | ladder side, frame, sheets, top and bottom blankets | 360 |
+| `crib` | Baby crib with slatted sides, end boards, mattress and blanket | slats per side, wood, mattress, blanket | 420 |
+| `chest-of-drawers` | Dresser with proud drawer fronts on legs or a plinth | drawers (3–5), width, base, handles, body, fronts, handles colour | 216 |
+| `filing-cabinet` | Steel office filing cabinet with pulls, label holders and lock | drawers (2–4), body, fronts, handles | 168 |
+| `corner-sofa` | L-shaped sectional with seat and back cushions | main-run seats (2–4), return seats, return side, fabric, cushions, legs | 252 |
+| `ottoman` | Round faceted pouf or padded footstool on legs | style, size, fabric, accent | 112 |
+| `side-table` | Round top on tripod or pedestal, or square table with shelf | style, height, top, legs | 100 |
+| `round-table` | Round dining table on a pedestal with cross foot or four legs | diameter (0.8/1.1/1.4 m), base style, top, base | 260 |
+| `wall-shelf` | Wall-mounted boards on brackets or floating, with books, vase and plant (`wall` origin) | boards (1–3), width, mounting, decor, board, bracket, decor A/B, plant | 372 |
+| `pendant-lamp` | Ceiling pendant with dome, cone or drum shade and bulb (`ceiling` origin, hangs along -Z) | shade style, drop, shade, fitting, bulb | 300 |
+| `desk-lamp` | Architect-style hinged-arm desk lamp with tilted cone shade | reach, arm and shade, base, bulb | 280 |
+| `bathtub` | Freestanding roll-top tub on feet or built-in tub, with tap and water | style, water, tub, feet and tap, water colour | 232 |
+| `toilet` | Close-coupled toilet with cistern, seat and closed or raised lid | lid, ceramic, seat, button | 334 |
 
 ## Licence
 
