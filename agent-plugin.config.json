@@ -6,7 +6,7 @@
   "repo": "w1ne/kernelCAD-web",
   "versionFrom": "package.json",
   "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer, STEP/STL/3MF export, and electronics checks (netlist and ERC). No local OpenCASCADE install.",
-  "shortDescription": "CAD parts, STEP, drawings, schematics",
+  "shortDescription": "CAD parts, STEP, schematics",
   "author": {
     "name": "kernelCAD",
     "url": "https://kernelcad.com"

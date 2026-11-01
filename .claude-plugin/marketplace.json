@@ -5,7 +5,7 @@
     "url": "https://kernelcad.com"
   },
   "metadata": {
-    "description": "CAD parts, STEP, drawings, schematics",
+    "description": "CAD parts, STEP, schematics",
     "version": "0.17.4"
   },
   "plugins": [

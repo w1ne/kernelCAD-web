@@ -28,7 +28,7 @@
     "com.openai": {
       "interface": {
         "displayName": "kernelCAD",
-        "shortDescription": "CAD parts, STEP, drawings, schematics",
+        "shortDescription": "CAD parts, STEP, schematics",
         "longDescription": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer, STEP/STL/3MF export, and electronics checks (netlist and ERC). No local OpenCASCADE install.",
         "developerName": "kernelCAD",
         "category": "Creativity",
