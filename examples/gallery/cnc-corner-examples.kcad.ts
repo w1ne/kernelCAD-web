@@ -14,7 +14,7 @@
 //              a cutter circle whose edge passes through the sharp corner.
 //              Passes for a 6 mm end mill, and a square insert still seats
 //              fully.
-const variant: 'fillet' | 'groove' | 'square' | 'dogbone' = 'dogbone';
+const variant = 'dogbone' as 'fillet' | 'groove' | 'square' | 'dogbone';
 
 function filletPocket() {
   const cornerR = 2.5; // below R3 of a 6 mm end mill; fine for a 4 mm one
