@@ -232,11 +232,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-cad
 
-      - name: Install CalculiX (ccx) and gmsh wheel runtime libs
+      - name: Install CalculiX (ccx), gmsh runtime libs and ffmpeg
         run: |
           sudo apt-get update
+          # ffmpeg provides ffprobe, which scripts/lib/blackFrameCheck.ts shells
+          # out to. Without it those tests skip; installing it keeps them real.
           sudo apt-get install -y calculix-ccx libglu1-mesa libgl1 libxcursor1 \
-            libxinerama1 libxft2 libxrender1 libgomp1
+            libxinerama1 libxft2 libxrender1 libgomp1 ffmpeg
 
       - name: Cache pip
         uses: actions/cache@v4
