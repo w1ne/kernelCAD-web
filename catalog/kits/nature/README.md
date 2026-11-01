@@ -55,6 +55,21 @@ Low-poly trees, plants, rocks, wood and 2 m terrain tiles at real-world scale. E
 | hollow-log | Fallen hollow log with cut ends and moss patch | lengthM, diameter, moss, bark, wood, hollow, mossColor | 284 |
 | agave | Spiky agave rosette with optional flowering stalk | size, count, bloom, leaf, stalk, flower | 216 |
 | prickly-pear-cactus | Opuntia of branching flat pads with red fruit | tiers, fruits, pad, fruit | 272 |
+| acacia-tree | Savanna umbrella acacia with forked trunk and flat-topped canopy | heightM, pads, bark, leaves | 286 |
+| joshua-tree | Mojave Joshua tree with crooked forking arms and spiky tufts | heightM, arms, bark, spikes | 460 |
+| snowy-fir-tree | Winter fir of cone tiers with snow caps and a snow drift | heightM, tiers, drift, needles, snow, bark | 360 |
+| fan-palm | Bushy fan palm of short trunks with pleated fan leaves | heightM, trunks, fans, trunk, leaf | 492 |
+| termite-mound | Cathedral termite mound with side spires on a flared skirt | heightM, spires, earth, skirt | 302 |
+| dead-bush | Dry leafless shrub of forking branches from a root knot | size, branches, twig, knot | 224 |
+| tall-grass | Waist-high arching grass with feathery seed plumes | heightM, blades, plumes, blade, stalk, plume | 362 |
+| dandelion-patch | Jagged leaf rosette with yellow flowers and seed clocks | flowers, clocks, leaf, flower, seed | 344 |
+| rock-arch | Natural eroded rock arch with leaning legs and a curved span | spanM, heightM, stone, band | 142 |
+| vine-arch | Garden arch overgrown with vine clumps and flowers | widthM, growth, frame, leaves, flowers | 458 |
+| pumpkin-patch | Soil mound with ribbed pumpkins and vine leaves | count, size, pumpkin, stem, leaf, soil | 404 |
+| driftwood | Bleached driftwood log with root crown and branch stubs | lengthM, roots, wood, rootColor | 144 |
+| bird-nest | Woven twig nest with a hollow cup and eggs | size, eggs, nest, twig, egg | 284 |
+| seashells | Beach scatter of scallops, conches and a starfish on sand | count, starfish, sand, shell, conch, star, sandColor | 228 |
+| bramble | Blackberry thicket with arching canes, leaves and berries | size, canes, cane, leaf, ripe, unripe | 498 |
 
 ## Licence
 
