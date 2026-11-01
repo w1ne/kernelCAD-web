@@ -26,6 +26,16 @@ The tiles share the nature kit's grid: a 2 m x 2 m footprint with flat edges at 
 | stone-arch-bridge | Humped masonry bridge with voussoir arch, paved deck and capped parapets, 4 or 6 m | lengthM, parapets, stone, ring, deck, cap | 324 |
 | palisade-wall | 2 m section of sharpened log stakes on rear rails and an earth bank | heightM, logs, bank, log, point, rail, earth | 356 |
 | stone-wall-section | 2 m coursed stone wall with through-stones and capstones, intact or ruined | heightM, style, block, block2, mortar, cap | 516 |
+| river-bend-tile | Shallow river, bending round a corner or straight, with ragged banks, sandy ledges and rocks | layout, widthM, rocks, grass, bank, water, rock, dirt | 416 |
+| waterfall-tile | Stepped cliff with a plateau stream pouring over the lip into a foaming splash pool | heightM, fall, rock, rock2, grass, water, foam, dirt | 388 |
+| lava-tile | Cracked basalt crust plates over glowing lava, cracks or an open pool | layout, plates, crust, crust2, lava, base | 204 |
+| cave-entrance | Faceted rock hill with an arched cave mouth, dark interior and grass cap, natural or timber mine portal | style, heightM, rock, rock2, grass, shadow, timber | 288 |
+| rope-bridge | Sagging plank rope bridge slung between log posts for crossing between cliff tops, 4-8 m | spanM, endM, sag, plank, post, rope | 872 |
+| retaining-wall | Terrace tile: raised grass level held by a stone, timber-log or gabion wall | riseM, style, facing, accent, grass, dirt | 288 |
+| frozen-pond-tile | Snowy tile with an iced-over pond in a stony bank, cracks and a fishing hole | sizeM, hole, snow, ice, crack, bank, water, dirt | 348 |
+| brick-floor-tile | 2 m brick paving in basketweave or running bond, two-tone over mortar | pattern, brick, brick2, mortar, dirt | 624 |
+| ruins-column-tile | Cracked paving with broken classical columns, a capital and fallen drums | columns, fallen, stone, stone2, paving, moss, grass | 476 |
+| mountain-peak | Rugged 4 m (2 x 2 tile) mountain with shoulder peak, ridge spur, snow cap and scree | heightM, snowCap, rock, rock2, snow, grass, dirt | 354 |
 
 ## Licence
 
