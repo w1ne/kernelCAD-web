@@ -1,0 +1,140 @@
+{
+  "bracketGraded": {
+    "type": "gyroid",
+    "variant": "sheet",
+    "cellMm": 6,
+    "skinMm": 1.2,
+    "gridStepMm": 0.75,
+    "gridPoints": 578259,
+    "resolutionClamped": false,
+    "designWallMm": {
+      "min": 0.8999999761581421,
+      "max": 1.9328725337982178
+    },
+    "designFraction": {
+      "min": 0.40597667638483964,
+      "max": 0.7004373177842566
+    },
+    "rawTriangles": 676352,
+    "triangles": 310434,
+    "vertices": 153733,
+    "volumeMm3": 28580.997215395808,
+    "bodyVolumeMm3": 42074.58988401204,
+    "solidFraction": 0.6792935425915185,
+    "measuredWallMm": {
+      "samples": 2456,
+      "minMm": 0.7823506964641144,
+      "p5Mm": 0.82832319574769,
+      "medianMm": 0.9427651736129187
+    },
+    "measuredSkinMm": {
+      "samples": 2945,
+      "minMm": 0.20379423697228105,
+      "p5Mm": 1.2,
+      "medianMm": 1.2000621645574683
+    },
+    "watertight": true,
+    "consistentOrientation": true,
+    "timingsMs": {
+      "bodyDistanceMs": 237,
+      "tpmsFieldMs": 271,
+      "gradeMs": 110,
+      "meshMs": 800,
+      "decimateMs": 1698,
+      "measureMs": 286,
+      "totalMs": 3402
+    }
+  },
+  "bracketUniform": {
+    "type": "gyroid",
+    "variant": "sheet",
+    "cellMm": 6,
+    "skinMm": 1.2,
+    "gridStepMm": 0.75,
+    "gridPoints": 578259,
+    "resolutionClamped": false,
+    "designWallMm": {
+      "min": 0.8999999761581421,
+      "max": 0.8999999761581421
+    },
+    "designFraction": {
+      "min": 0.40597667638483964,
+      "max": 0.40597667638483964
+    },
+    "rawTriangles": 694520,
+    "triangles": 308802,
+    "vertices": 152887,
+    "volumeMm3": 27421.542672832704,
+    "bodyVolumeMm3": 42074.58988401204,
+    "solidFraction": 0.6517364221119274,
+    "measuredWallMm": {
+      "samples": 2505,
+      "minMm": 0.7823503964158544,
+      "p5Mm": 0.8208223216604541,
+      "medianMm": 0.8671358507640006
+    },
+    "measuredSkinMm": {
+      "samples": 2945,
+      "minMm": 0.20379423697228105,
+      "p5Mm": 1.2,
+      "medianMm": 1.2000000000000035
+    },
+    "watertight": true,
+    "consistentOrientation": true,
+    "timingsMs": {
+      "bodyDistanceMs": 254,
+      "tpmsFieldMs": 114,
+      "gradeMs": 5,
+      "meshMs": 601,
+      "decimateMs": 1769,
+      "measureMs": 249,
+      "totalMs": 2992
+    }
+  },
+  "cube60": {
+    "type": "gyroid",
+    "variant": "sheet",
+    "cellMm": 6,
+    "skinMm": 1.2,
+    "gridStepMm": 0.75,
+    "gridPoints": 614125,
+    "resolutionClamped": false,
+    "designWallMm": {
+      "min": 0.800000011920929,
+      "max": 0.800000011920929
+    },
+    "designFraction": {
+      "min": 0.38411078717201164,
+      "max": 0.38411078717201164
+    },
+    "rawTriangles": 3354896,
+    "triangles": 1757474,
+    "vertices": 865135,
+    "volumeMm3": 100238.1307713804,
+    "bodyVolumeMm3": 216000,
+    "solidFraction": 0.46406542023787223,
+    "measuredWallMm": {
+      "samples": 2850,
+      "minMm": 0.7111501782588138,
+      "p5Mm": 0.7422985904324435,
+      "medianMm": 0.7722556323238217
+    },
+    "measuredSkinMm": {
+      "samples": 3130,
+      "minMm": 1.199500274754195,
+      "p5Mm": 1.2,
+      "medianMm": 1.2
+    },
+    "watertight": true,
+    "consistentOrientation": true,
+    "timingsMs": {
+      "bodyDistanceMs": 43,
+      "tpmsFieldMs": 149,
+      "gradeMs": 12,
+      "meshMs": 1364,
+      "decimateMs": 7052,
+      "measureMs": 1401,
+      "totalMs": 10021
+    }
+  }
+}

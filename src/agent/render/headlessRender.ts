@@ -12,6 +12,8 @@ import { resolveRootId } from '../../composition/buildModel';
 // kernel WASM init); the screenshot itself is sub-second per view.
 
 import type { Browser, Page } from 'playwright';
+import { isSandboxEnabled } from '../../shared/sandbox/config';
+import { hardenSandboxBrowserContext, sandboxChromiumArgs } from './sandboxBrowser';
 import sharp from 'sharp';
 import { loadScriptFeatures } from '../../modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
@@ -281,7 +283,7 @@ export async function openDemoPlayerPage(opts: DemoPlayerPageOpts): Promise<Demo
   };
   try {
     let context;
-    if (opts.cdpUrl !== undefined) {
+    if (opts.cdpUrl !== undefined && !isSandboxEnabled()) {
       try {
         browser = await chromium.connectOverCDP(opts.cdpUrl);
         attachedOverCdp = true;
@@ -299,12 +301,13 @@ export async function openDemoPlayerPage(opts: DemoPlayerPageOpts): Promise<Demo
     }
     if (!browser) {
       try {
-        browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
+        browser = await chromium.launch({ args: ['--disable-dev-shm-usage', ...sandboxChromiumArgs()] });
       } catch (e) {
         throw formatPlaywrightLaunchError(e);
       }
       context = await browser.newContext({ viewport: opts.viewport });
     }
+    await hardenSandboxBrowserContext(context!);
     page = await context!.newPage();
     // Pin the screenshot size regardless of the attached Chrome window size.
     await page.setViewportSize(opts.viewport);

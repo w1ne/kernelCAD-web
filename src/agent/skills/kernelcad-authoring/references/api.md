@@ -433,6 +433,19 @@ shape, not a copy.
 // neutralPlane defaults to the selected face; pullDir defaults to face normal.
 .draft(angleDeg: Editable<number>, opts: { face: FaceSelector | string; neutralPlane?: string; pullDir?: [number, number, number] }): Shape
 
+// Lattice infill (TPMS) — LAST step of a body chain; the result is a mesh solid.
+// type: 'gyroid' | 'schwarzP' | 'diamond' | 'neovius' (default gyroid);
+// variant: 'sheet' (wall mm on the minimal surface) | 'network' (density = solid fraction);
+// skin: solid outer wall that follows every face, holes included (default 1.2; 0 = open cells);
+// grade: { from: 'surface' | 'holes', near, far?, over } (wall or density at the source,
+//   blending to far / the base value over `over` mm) or { from: 'fea', study?, bands? }
+//   (in-process solve of the body's feaStudy; stress bands -> solid fraction);
+// frame: 'part' (follows the primitive's rotations, default) | 'world' | 'cylindrical'.
+// Output: watertight, outward-wound triangle mesh (volume, mass properties, STL / 3MF / OBJ);
+// no booleans / fillets / holes / STEP after it (feature.lattice.mesh-input).
+.lattice({ type?, variant?, cell, wall?, density?, skin?, grade?, frame?, axis?, resolution?, tolerance? }): Shape
+//   bracket.lattice({ type: 'gyroid', cell: 6, wall: 0.8, skin: 1.2, grade: { from: 'holes', near: 2, over: 8 } })
+
 // Symmetry operations:
 // Pure reflection across a cardinal plane (no union — volume unchanged, handedness flipped):
 .reflect(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }): Shape

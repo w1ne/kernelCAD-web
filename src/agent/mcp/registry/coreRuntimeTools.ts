@@ -126,7 +126,10 @@ const setParamToolEntry: ToolRegistryEntry = {
     description:
       'Use this when you need to edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects). ' +
       'With preview: true it builds the edit in a scratch session instead and returns the diff_geometry summary plus the requirements-ledger and S1 binding diffs (which requirements flip, which margins shrink, which selectors moved or re-bound), without touching the active session, source, revision or caches. ' +
-      'A preview whose revised build fails returns ok:false and no diff. Inspect after.requirementsOk to see whether the edit preserves declared intent; preview.ok only says the preview could be computed.',
+      'A preview whose revised build fails returns ok:false and no diff. Inspect after.requirementsOk to see whether the edit preserves declared intent; preview.ok only says the preview could be computed. ' +
+      'FEATURE MODE: pass { feature, changes } instead of param_name/new_value to change a feature\'s own literal arguments in place, by feature id (inspect({ of: \'features\' }) lists ids and parameter names), e.g. { feature: \'cylinder_1\', changes: { r: 3.3 } }. ' +
+      'The argument is found from the feature\'s call site and each rewrite is verified by re-capturing the script; the whole model is rebuilt before and after, and the result carries new_code, edits (argument source before/after, line), changedParams (every feature parameter that moved) and the same geometry / requirementsDiff / bindings diff as preview. Writes nothing. ' +
+      'A value driven by param() is refused with a hint to use set_param on that param instead.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -134,8 +137,14 @@ const setParamToolEntry: ToolRegistryEntry = {
         param_name: { type: 'string', description: 'The string literal name of the param (first arg to param()).' },
         new_value: { type: ['number', 'boolean', 'string'], description: 'The new default value: number for numeric params, boolean for boolean params, or string for choice/string/color params (must be one of the declared choices for a choice param; a color param — one whose default is a hex literal — takes \'#rrggbb\', \'#rgb\' or a basic CSS colour name and is written back as \'#rrggbb\').' },
         preview: { type: 'boolean', description: 'S6 edit preview: evaluate the edit in a scratch session and return geometry + requirements-ledger + S1 binding diffs. Writes nothing. Default false (the normal source-edit result).' },
+        feature: { type: 'string', description: "Feature mode: id of the feature to edit in place (e.g. 'cylinder_1'). Use with `changes` instead of param_name/new_value." },
+        changes: {
+          type: 'object',
+          description: "Feature mode: the feature's parameters to set, by parameter name, in mm or deg (e.g. { r: 3.3 }).",
+          additionalProperties: { type: 'number' },
+        },
       },
-      required: ['code', 'param_name', 'new_value'],
+      required: ['code'],
     },
   },
   handler: input => setParamValueTool(input as unknown as Parameters<typeof setParamValueTool>[0]),

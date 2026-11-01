@@ -12,7 +12,7 @@ description of any entry, call `lookup_api(query)`.
 | [Add material](#add-material) | Turn a profile into a solid, or grow one along a path. |
 | [Remove material](#remove-material) | Cut into a solid: bolt holes, pockets, slots, plain subtraction. |
 | [Combine shapes](#combine-shapes) | Merge or intersect solids, or group them without paying for a boolean. |
-| [Finish edges](#finish-edges) | Break edges, add draft, hollow out a wall, fold sheet metal. |
+| [Finish edges](#finish-edges) | Break edges, add draft, hollow out a wall or fill it with a lattice, fold sheet metal. |
 | [Select geometry](#select-geometry) | Pick the edges or faces a feature acts on. Query first, then sort or group what comes back. |
 | [Place & transform](#place--transform) | Move a body into position, mirror it, or repeat it. |
 | [Assemble](#assemble) | Build a mechanism from parts: connectors, mates, joints, posed Scenes. |
@@ -119,7 +119,7 @@ Merge or intersect solids, or group them without paying for a boolean.
 
 ## Finish edges
 
-Break edges, add draft, hollow out a wall, fold sheet metal.
+Break edges, add draft, hollow out a wall or fill it with a lattice, fold sheet metal.
 
 | Call | What it does |
 |---|---|
@@ -128,6 +128,7 @@ Break edges, add draft, hollow out a wall, fold sheet metal.
 | `Shape.chamfer(distance, edges?: EdgeSelector) => Shape` | Bevel edges. |
 | `Shape.draft(angleDeg: Editable<number>, opts: { face: FaceSelector \| string; neutralPlane?: string; pullDir?: [number, number, number] }) => Shape` | Taper the selected face(s) for moldability. |
 | `Shape.shell(thickness, { face: FaceSelector }) => Shape` | Hollow the solid removing the named face. |
+| `Shape.lattice(opts: { type?: 'gyroid' \| 'schwarzP' \| 'diamond' \| 'neovius'; variant?: 'sheet' \| 'network'; cell: Editable<number>; wall?: Editable<number>; density?: Editable<number>; skin?: Editable<number>; grade?: { from: 'surface' \| 'holes' \| 'fea'; near?: number; far?: number; over?: number; study?: string; bands?: { name, fromYield, densityPercent }[] }; frame?: 'part' \| 'world' \| 'cylindrical'; axis?: { origin, direction }; resolution?: number; tolerance?: number }) => Shape` | Fill the body with a triply periodic minimal surface lattice inside a solid skin. |
 | `Shape.offsetFaces(faces: FaceSelector \| FaceSelector[], distance: Editable<number>) => Shape` | Push or pull planar faces along their outward normals. |
 | `Shape.moveFaces(faces: FaceSelector \| FaceSelector[], by: [number, number, number]) => Shape` | Move planar faces by `by` (mm). |
 | `Shape.bend(edgeRef: EdgeSelector \| string, angle: Editable<number>, radius: Editable<number>) => Shape` | Add a sheet-metal bend along a linear edge. |
@@ -243,6 +244,7 @@ Ask the kernel what you actually built, and check it before shipping.
 | `kinematic : KinematicFacade` | Namespace with in-process feasibility checks an agent can run before declaring a mechanism design done: `kinematic.checkMountingHoleConsistency(arm)` (fastener-side hole agreement; dispatches to the v0.7.4 substrate), `kinematic.checkSweptCollision(arm, opts?)` (sampled-pose collision sweep across declared joint ranges), `kinematic.checkReachable(arm, opts)` (IK reachability — analytical Pieper first, DLS numeric fallback), `kinematic.checkLoadCapacity(arm, opts?)` (closed-form Euler-Bernoulli beam load check), `kinematic.checkStaticHold(arm, opts?)` (gravitational holding torque/force at a sampled pose grid vs each joint's declared actuator capacity), `kinematic.motionLoad(arm, opts?)` (per-joint wrench along the animation tracks, a joint-limit range, or explicit `poses`; also returns `partLoads`, the worst wrench per part in that part's frame, for `feaStudy({ loadsFrom })`), `kinematic.sweepTolerance({ code\|file, params, gates?, boundaryTolerance?, boundaryBudget? |
 | `dfmSpec(spec: { minWall?: number; minClearance?: number; includeArticulatedMates?: boolean; ignore?: [string, string][]; exclude?: string[]; channels?: Array<{ part: string; name: string; openings: number; sealed?: boolean }>; process?: 'fdm'; buildDirection?: '+x' \| '-x' \| '+y' \| '-y' \| '+z' \| '-z' \| [number, number, number]; nozzleMm?: number; maxOverhangDeg?: number; maxBridgeMm?: number; printer?: string }) => DfmSpecHandle` | Declare printability (design-for-manufacture) gates for the model. |
 | `Shape.feaStudy(spec: { material: 'mild-steel' \| 'aluminum-6061' \| 'pla' \| 'petg' \| 'abs' \| 'nylon' \| { E: number; nu: number; yield: number }; fixed: FaceQuery \| string; loads?: Array<{ faces: FaceQuery \| string; force: [number, number, number]; pointMm?: [number, number, number]; momentNmm?: [number, number, number]; name?: string }>; loadsFrom?: { motion: { partLoads: MotionPartLoadSample[] }; part: string; joint?: string; pose?: Record<string, number>; faces?: FaceQuery \| string }; meshSize?: number; minSafetyFactor?: number; name?: string }) => FeaStudyHandle` | Declare a linear-static structural study on this shape: where it is held (`fixed`), what pushes on it (`loads`, force in TOTAL newtons over the selected faces, or `loadsFrom` to take the worst sampled wrench from `kinematic.motionLoad`), and what it is made of. |
+| `Shape.cfdStudy(spec: { flow: 'internal' \| 'external'; fluid?: 'water' \| 'air' \| { rho: number; nu: number }; fluidVolume?: 'interior' \| 'solid'; inlet?: FaceQuery \| string; outlet?: FaceQuery \| string \| Array<FaceQuery \| string>; velocity?: number; flowRateLpm?: number; outletPressurePa?: number; direction?: '+X' \| '-X' \| '+Y' \| '-Y' \| '+Z' \| '-Z'; meshSize?: number \| 'coarse' \| 'medium' \| 'fine'; iterations?: number; residualTarget?: number; turbulence?: 'auto' \| 'laminar' \| 'kOmegaSST'; referenceAreaMm2?: number; name?: string }) => CfdStudyHandle` | Declare a steady incompressible CFD study on this shape, run by the `run_cfd` MCP tool / `kernelcad cfd run` with OpenFOAM (snappyHexMesh + simpleFoam). |
 | `tube(name, { from, to, via?, od?, wall, bendRadius, system?, material?, density?, flow? }) => Shape` | Bent tube between two ends: straight legs joined by constant-radius bends, built as one hollow solid in assembly space. |
 | `tubeSpec({ minBendRadiusFactor?, minStraightBetweenBends?, minStraightAtEnd?, maxBendAngle?, clearance?: { default?, pairs? }, systems?: { [system]: { minBendRadiusFactor?, minStraightBetweenBends?, minStraightAtEnd?, maxBendAngle? } } }) => { id, metadata }` | Declare the rules every tube() in the script must meet. |
 | `require(name: string, predicate: RequirementPredicate) => void` | Declare a named, kernel-measured requirement, reported in the `requirements` ledger every evaluation returns. |

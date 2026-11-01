@@ -1,0 +1,28 @@
+{
+  "poiseuille": {
+    "case": "water pipe D 10 mm, L 200 mm, mean 2 mm/s (Re 20), laminar, plug inlet",
+    "ok": true,
+    "verdict": "converged",
+    "cells": 45241,
+    "pressureDropPa": 0.1326614358174,
+    "analyticPa": 0.12726238918802651,
+    "error": 0.04242452671068864,
+    "centrelineOverMean": 1.986168615,
+    "analyticCentrelineOverMean": 2,
+    "note": "includes the inlet development length (about 2-3% extra at Re 20)",
+    "solveMs": 8813,
+    "meshMs": 10240
+  },
+  "sphere": {
+    "case": "sphere D 10 mm in air at Re 50, laminar steady",
+    "ok": true,
+    "verdict": "converged",
+    "cells": 15000,
+    "cd": 1.594371072014604,
+    "schillerNaumannCd": 1.5416662291373213,
+    "error": 0.03418693481193724,
+    "cl": 3.326745502686523e-7,
+    "solveMs": 4806,
+    "meshMs": 3337
+  }
+}

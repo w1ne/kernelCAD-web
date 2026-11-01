@@ -15,6 +15,7 @@ import { TOOL_REGISTRY } from '../../src/agent/mcp/toolRegistry';
 // CLI subcommands (kept in sync with src/agent/cli/index.ts).
 const CLI_SUBCOMMANDS = new Set<string>([
   'animate',
+  'cfd',
   'collab',
   'dfm',
   'evaluate',
@@ -27,6 +28,7 @@ const CLI_SUBCOMMANDS = new Set<string>([
   'print',
   'reconstruct',
   'render',
+  'sandbox',
   'skill',
   'stats',
   'telemetry',
@@ -128,6 +130,12 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // render_preview tool name, which DOES resolve — params, not calls).
   'out_dir',
   'base_url',
+  // run_cfd outlet patch names and output-folder parameter (kernelcad-cfd skill).
+  'outlet_1',
+  'outlet_2',
+  'output_dir',
+  // import_step inline-bytes argument (named in the sandbox-mode notes).
+  'content_base64',
   'screenshot_timeout_ms',
   // Hosted-product tool that lives in kernelCAD-server's registry, not the
   // local TOOL_REGISTRY — referenced in prose to redirect hosted/remote

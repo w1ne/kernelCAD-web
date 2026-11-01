@@ -152,6 +152,8 @@ export type FeatureKind =
   | 'assemblyExport'
   // specialty (v0.13+)
   | 'sheetMetal' | 'sheetMetalBend' | 'sdf' | 'sdfMaterialize'
+  // TPMS lattice infill of a body (mesh-solid result).
+  | 'lattice'
   // W1.3 NURBS surfaces — escape paths from a `Surface` into the Shape pipeline.
   | 'surfaceThicken' | 'surfaceToShape'
   // Shell → solid: thicken a sewn multi-patch shell (or surfaceToShape shell).
@@ -175,6 +177,9 @@ export type FeatureKind =
   // Capture-only linear-static structural study declaration (shape.feaStudy),
   // no OCCT output. Enforced by the FEA runner at evaluate time.
   | 'feaStudy'
+  // Capture-only steady CFD study declaration (shape.cfdStudy), no OCCT
+  // output. Report-only: run by run_cfd, never by evaluate.
+  | 'cfdStudy'
   // Capture-only GD&T declarations (shape.datum / shape.tolerance), no OCCT
   // output. Read by the svg-drawing exporter.
   | 'drawingDatum'

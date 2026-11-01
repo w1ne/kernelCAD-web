@@ -48,3 +48,33 @@ than as a pass.
 The same payload is the data contract for a before/after parameter control:
 show `requirementsDiff.entries` beside the slider and use each entry's
 `margin.before` / `margin.after` for the measured change.
+
+## Edit a feature in place
+
+A literal argument is not a `param()`, so it has no name for `set_param` to
+rewrite. Feature mode edits it by feature id and returns the same diff:
+
+```typescript
+const code = `
+const t = 5;
+const base = box(60, 40, t);
+const hole = cylinder(t + 2, 4).translate(30, 20, -1);
+return base.subtract(hole).fillet(1);
+`;
+
+set_param({ code, feature: 'cylinder_1', changes: { r: 3.3 } });
+// new_code       -> ... cylinder(t + 2, 3.3) ...   (only that argument changed)
+// edits          -> [{ param: 'r', before: 4, after: 3.3, sourceBefore: '4', sourceAfter: '3.3', line: 4 }]
+// changedParams  -> [{ feature: 'cylinder_1', param: 'r', before: 4, after: 3.3 }]
+// geometry       -> resized; material added back where the hole shrank
+```
+
+`inspect({ of: 'features' })` lists feature ids and their parameter names. The
+argument is found from the feature's recorded call site: a property of an
+options object with the parameter's name, else the positional argument at the
+parameter's index. Each rewrite is kept only when capturing the edited script
+shows the feature at the requested value with its other parameters unchanged,
+so a wrong guess never comes back as an edit. `changedParams` lists every
+feature parameter that moved, which shows a call site shared by a loop or a
+helper. A value driven by `param()` is refused (`feature.edit.param-driven`)
+with a hint to `set_param` that param, because editing it here would detach it.

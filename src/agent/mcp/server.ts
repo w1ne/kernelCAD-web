@@ -21,6 +21,11 @@ import {
 } from './cloudClient';
 import { closeMcpViewer } from './liveViewer';
 import { recordToolCall, maybeShowFirstRunNotice, flushTelemetry } from '../../shared/telemetry';
+import { isSandboxEnabled } from '../../shared/sandbox/config';
+import { isSandboxError, sandboxCommandRefused } from '../../shared/sandbox/errors';
+import { sandboxAgentInstructions, sandboxStatus } from '../../shared/sandbox/status';
+import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { sandboxToolDefinition } from './sandboxArgs';
 
 const requireFromHere = createRequire(import.meta.url);
 // At source: src/agent/mcp/server.ts → ../../../package.json (3 up)
@@ -54,13 +59,18 @@ export function createMcpServer(options: McpServerOptions = {}): Server {
     capabilities.resources = {};
   }
 
+  const sandboxed = isSandboxEnabled();
+  if (sandboxed && options.cloud) {
+    throw sandboxCommandRefused('kernelcad mcp --cloud', 'cloud mode proxies every tool call to the hosted kernelCAD API');
+  }
+  const instructions = sandboxAgentInstructions();
   const server = new Server(
-    { name: 'kernelcad', version: pkg.version },
-    { capabilities },
+    { name: 'kernelcad', version: pkg.version, ...(sandboxed ? { title: 'kernelCAD (sandbox mode)' } : {}) },
+    { capabilities, ...(instructions !== '' ? { instructions } : {}) },
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: options.cloud ? await listCloudTools(options.cloudOptions) : TOOLS,
+    tools: options.cloud ? await listCloudTools(options.cloudOptions) : TOOLS.map(sandboxToolDefinition),
   }));
 
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
@@ -82,6 +92,7 @@ export function createMcpServer(options: McpServerOptions = {}): Server {
       };
     } catch (err) {
       recordToolCall({ toolName: name, mode, outcome: 'error', durationMs: Date.now() - startedAt, sessionId: SESSION_ID });
+      if (isSandboxError(err)) return sandboxRefusalResult(err);
       throw err;
     }
   });
@@ -105,6 +116,20 @@ export function createMcpServer(options: McpServerOptions = {}): Server {
 
   if (!options.cloud) server.onclose = () => { void closeMcpViewer(); };
   return server;
+}
+
+/** A sandbox refusal as a structured MCP tool error (isError results skip outputSchema validation). */
+function sandboxRefusalResult(err: Error & { code: keyof typeof NEXT_ACTIONS; hint?: string }) {
+  const status = sandboxStatus();
+  const body = {
+    ok: false,
+    error: err.message,
+    errorCode: err.code,
+    hint: err.hint,
+    nextAction: NEXT_ACTIONS[err.code],
+    sandbox: { workspaceRoot: status.workspaceRoot, network: status.network, docs: status.docs },
+  };
+  return { isError: true, content: [{ type: 'text' as const, text: JSON.stringify(body, null, 2) }] };
 }
 
 export async function runStdioServer(options: McpServerOptions = {}): Promise<void> {

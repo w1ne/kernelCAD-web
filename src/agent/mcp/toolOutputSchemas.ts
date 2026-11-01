@@ -28,6 +28,7 @@ import { MESH_RECONSTRUCT_OUTPUT_SCHEMAS } from './registry/meshReconstructTools
 import { MESH_BOOLEAN_OUTPUT_SCHEMAS } from './registry/meshBooleanTools.outputSchemas';
 import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
 import { FEA_OUTPUT_SCHEMAS } from './registry/feaTools.outputSchemas';
+import { CFD_OUTPUT_SCHEMAS } from './registry/cfdTools.outputSchemas';
 import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outputSchemas';
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
 import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputSchemas';
@@ -793,6 +794,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
   ...FEA_OUTPUT_SCHEMAS,
+  ...CFD_OUTPUT_SCHEMAS,
   fit_plane: {
     type: 'object',
     properties: {

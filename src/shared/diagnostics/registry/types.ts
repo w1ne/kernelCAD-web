@@ -33,7 +33,9 @@ export type DiagnosticGroup =
 
   | 'tube'
 
-  | 'collab';
+  | 'collab'
+
+  | 'cfd';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 

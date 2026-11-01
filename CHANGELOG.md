@@ -9,6 +9,79 @@
   and all inputs reused), not only an unchanged prefix. Demo:
   `docs/demos/params-plain-math/` (a 2-of-52-feature edit in ~0.15–0.2 s vs a
   2.2 s full rebuild locally).
+- CFD connector (OpenFOAM): `run_cfd` / `cfd_summary` MCP tools,
+  `kernelcad cfd run|status`, and the script declaration
+  `shape.cfdStudy({ flow, fluid, inlet, outlet, velocity | flowRateLpm, ... })`.
+  Steady incompressible flow with simpleFoam on a snappyHexMesh mesh built
+  from the model: internal flow fills the part's channels (bounding box minus
+  part, wetted regions only) between inlet / outlet faces named on the fluid
+  volume, or the solid is the fluid; external flow puts a box of fluid around
+  the part. Returns pressure drop, per-outlet flow and mass balance, drag /
+  lift with Cd / Cl, max velocity, the Reynolds number with the laminar or
+  k-omega SST model it implied, residual history with a convergence verdict
+  (`ok` only when converged), checkMesh quality, a mid-plane velocity PNG and
+  optional VTK fields. OpenFOAM is found natively or as a local
+  `opencfd/openfoam-run` Docker image (run with `--network none`); absent, the
+  run fails with `cfd.solver.unavailable` and the install command. Runs are
+  keyed by a hash of the case, so an identical re-call returns the finished
+  result or joins the live run. New codes: `cfd.solver.unavailable`,
+  `cfd.study.patch-unresolved`, `cfd.domain.no-fluid`, `cfd.mesh.failed`,
+  `cfd.mesh.quality-low`, `cfd.solve.not-converged`, `cfd.solve.diverged`,
+  `cfd.solve.timeout`, `cfd.flow.regime-caveat`, `cfd.mass-balance.off`.
+  Validated against Hagen-Poiseuille (+4.2%) and sphere drag at Re 50
+  (+3.4%). Docs: `docs/cfd.md`, skill `kernelcad-cfd`. Demo bundle:
+  `docs/demos/cfd-manifold/`.
+
+- PLY export: `kernelcad export ply`, MCP `export({ format: 'ply' })` and
+  `runAndExport` write a Stanford PLY triangle mesh (mm, Z up). The default is
+  binary little-endian with per-vertex `nx ny nz` normals (split at creases
+  over 30°, so flat faces stay flat) and `uchar red green blue` part colours.
+  The colour comes from `.finish()` / `.material()` / `.color()` through the
+  same lineage GLB and 3MF use. An assembly is one file with every part in
+  world space, listed as `comment part <i> <name>`. Options:
+  `encoding: 'ascii'`, `colors: 'face' | 'none'`, `normals: false`. A bad
+  option fails before the script runs with `export.ply.invalid-options`. Demo
+  bundle: `docs/demos/ply-export/`.
+- Sandbox mode for regulated and air-gapped deployments: `--sandbox` or
+  `KERNELCAD_SANDBOX=1`, with an optional `--workspace <dir>` /
+  `KERNELCAD_WORKSPACE` (the default is the cwd). The local CLI and the local
+  MCP server keep all file access inside the workspace. Paths are judged after
+  realpath, with symlinks and dangling links followed and `..` collapsed; the
+  kernelCAD package and the browser cache are read-only. Outbound network is
+  refused at runtime, loopback included unless
+  `KERNELCAD_SANDBOX_ALLOW_LOOPBACK=1`. Telemetry is forced off, and temp,
+  cache and config dirs move into `<workspace>/.kernelcad-sandbox/`.
+  Enforcement has one fs chokepoint (wrapped `node:fs` / `node:fs/promises`)
+  and one network chokepoint (`net.Socket#connect`, `fetch`, `http(s)`, DNS,
+  UDP). The headless Chromium gets host-resolver rules and request
+  interception. MCP and CLI arguments are checked up front from audited
+  tables. New codes: `cli.sandbox-path-denied`, `cli.sandbox-network-denied`
+  and `cli.sandbox-command-refused`. Status is reported by
+  `kernelcad sandbox status`, the MCP `initialize` instructions and
+  serverInfo title, and per-tool `SANDBOX MODE:` notes in `tools/list`. Docs:
+  `docs/sandbox.md`. Demo: `docs/demos/sandbox-mode/`.
+- Lattice infill: `body.lattice({ type, variant, cell, wall | density, skin,
+  grade, frame })` fills a finished B-rep body with a triply periodic minimal
+  surface lattice — gyroid, Schwarz-P, diamond or Neovius, as a sheet (wall
+  in mm) or network (solid fraction) — inside a solid skin that follows every
+  face, hole walls included. `grade` varies the wall / density by depth below
+  the skin, by distance to the hole walls, or from the body's `feaStudy`
+  (solved in process, von Mises mapped through the stress-graded infill band
+  table). `frame: 'part'` aligns cells with a rotated primitive;
+  `'cylindrical'` wraps a whole number of cells around the part axis. The
+  result is a watertight, consistently oriented mesh solid (new
+  `SolidMeshBackend`: volume, mass properties, STL / 3MF / OBJ export; STEP
+  and B-rep ops are refused with `export.mesh-body.format-unsupported` /
+  `feature.lattice.mesh-input`). It is built by meshing the outer surface and
+  the lattice's void networks separately with marching tetrahedra (closed and
+  manifold by construction, no wall-thin grid needed), Newton-projecting
+  vertices onto the analytic surface, and tolerance-bounded edge-collapse
+  decimation. `feature.lattice.report` gives the measured wall and skin,
+  solid fraction, triangle count and timings; with `dfmSpec`,
+  `dfm.lattice.wall-too-thin` gates the measured wall against `minWall` / 2 x
+  nozzle. 60 mm gyroid cube, 6 mm cells: ~1.6 s field + mesh, ~8 s total,
+  ~1.8 M triangles. Example `examples/lattice/graded-gyroid-bracket.kcad.ts`,
+  recipe `lattice-graded-gyroid-bracket`, demo `docs/demos/lattice-infill/`.
 
 - Catalog asset Studio link: `src/shared/assets/catalogStudioLink.ts` resolves
   `/studio?catalog=<kit>/<id>` (e.g. `nature/pine-tree`) against

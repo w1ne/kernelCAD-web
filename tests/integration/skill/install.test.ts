@@ -11,7 +11,7 @@ const CLI_BIN = join(__dirname, '..', '..', '..', 'dist', 'cli', 'index.js');
 
 const SKIP = !existsSync(CLI_BIN);
 const PUBLIC_SKILLS = [
-  'kernelcad', 'kernelcad-assemblies', 'kernelcad-authoring', 'kernelcad-drawings',
+  'kernelcad', 'kernelcad-assemblies', 'kernelcad-authoring', 'kernelcad-cfd', 'kernelcad-drawings',
   'kernelcad-fea', 'kernelcad-features', 'kernelcad-fields', 'kernelcad-from-reference',
   'kernelcad-kinematic', 'kernelcad-mcp', 'kernelcad-nurbs', 'kernelcad-params',
   'kernelcad-parts', 'kernelcad-patterns', 'kernelcad-print', 'kernelcad-repair',

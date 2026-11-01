@@ -94,6 +94,11 @@ contacted by an export.
 
 ## Sending it to a printer: `send_to_printer`
 
+In sandbox mode (`--sandbox` / `KERNELCAD_SANDBOX=1`), `send_to_printer` and
+`kernelcad print send` are refused with `cli.sandbox-command-refused` because
+they need the network. Slicing to G-code and exporting a slicer-ready 3MF into
+the workspace still work.
+
 ```
 send_to_printer({
   gcode_path: 'part.gcode',

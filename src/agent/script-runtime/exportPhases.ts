@@ -7,6 +7,7 @@ import { exportSceneDxf, exportShapeDxfProfile } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import { exportMeshObj, exportMeshUsd, type NamedMesh } from '../../kernel/export/meshFormats';
+import { exportScenePly, exportSinglePly, plyOptionsDiagnostic } from './exportPly';
 import { buildRigMetadata } from '../../kernel/export/rigHierarchy';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
@@ -72,6 +73,12 @@ export function optionsFormatMismatchDiagnostic(input: ExportInput): ExportResul
       nextAction: NEXT_ACTIONS['export.options-format-mismatch'],
     }],
   };
+}
+
+/** Refuse an options bag before the script runs: a mismatched
+ *  `options.format`, then format-specific checks (PLY). */
+export function exportOptionsRefusal(input: ExportInput): ExportResult | undefined {
+  return optionsFormatMismatchDiagnostic(input) ?? plyOptionsDiagnostic(input);
 }
 
 /** Validate and resolve the connector-manifest Scene. Throws the three
@@ -345,7 +352,7 @@ export function resolveExportTarget(
   return { targetId };
 }
 
-/** Scene-aware export dispatch: STEP/3MF/GLB/OBJ/USD keep per-part identity; STL and
+/** Scene-aware export dispatch: STEP/3MF/GLB/OBJ/PLY/USD keep per-part identity; STL and
  *  gcode auto-fuse. Returns `undefined` for formats that fall through to the
  *  single-shape path (urdf/srdf/sdf-gazebo). */
 /** Per-part STEP verify: B-rep validity (BRepCheck) first — invalid topology
@@ -421,6 +428,9 @@ export async function exportSceneBackend(
   }
   if (format === 'glb') {
     return exportSceneGlb(input, scene, targetId, diagnostics, featureCount);
+  }
+  if (format === 'ply') {
+    return exportScenePly(input, scene, diagnostics, featureCount);
   }
   if (format === 'obj' || format === 'usd') {
     const worldParts = sceneToWorldFrameParts(scene);
@@ -786,6 +796,8 @@ export async function exportSingleShape(
       return exportSingleMeshText(shape, 'obj', diagnostics, featureCount);
     case 'usd':
       return exportSingleMeshText(shape, 'usd', diagnostics, featureCount);
+    case 'ply':
+      return exportSinglePly(input, shape, targetId, run.records, diagnostics, featureCount);
   }
   // URDF / SRDF / SDF-Gazebo are dispatched in the early Assembly-aware
   // branch above, before targetId resolution. Unreachable here.

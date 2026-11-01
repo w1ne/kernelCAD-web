@@ -1,0 +1,53 @@
+{
+  "invocation": {
+    "tool": "set_param",
+    "arguments": {
+      "feature": "cylinder_1",
+      "changes": {
+        "r": 3.3
+      }
+    }
+  },
+  "ok": true,
+  "feature": "cylinder_1",
+  "kind": "cylinder",
+  "edits": [
+    {
+      "param": "r",
+      "before": 4,
+      "after": 3.3,
+      "unit": "mm",
+      "sourceBefore": "4",
+      "sourceAfter": "3.3",
+      "line": 5
+    }
+  ],
+  "changedParams": [
+    {
+      "feature": "cylinder_1",
+      "param": "r",
+      "before": 4,
+      "after": 3.3
+    }
+  ],
+  "geometry": {
+    "identical": 0,
+    "moved": 0,
+    "resized": 1,
+    "topologyChanged": 0,
+    "unmatched": 0,
+    "totalAddedMm3": 82.15542864850805,
+    "totalRemovedMm3": 0,
+    "maxDeviationMm": 0.6982180997606098
+  },
+  "before": {
+    "buildOk": true,
+    "featureCount": 4,
+    "requirementsOk": true
+  },
+  "after": {
+    "buildOk": true,
+    "featureCount": 4,
+    "requirementsOk": true
+  }
+}

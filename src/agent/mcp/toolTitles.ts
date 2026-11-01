@@ -48,6 +48,8 @@ export const TOOL_TITLES: Record<string, string> = {
   resolve_assumptions: 'Resolve Image Assumptions',
   run_fea: 'Run Structural FEA',
   fea_summary: 'Get FEA Summary',
+  run_cfd: 'Run CFD Flow Study',
+  cfd_summary: 'Get CFD Summary',
   send_to_printer: 'Send G-code to Printer',
   repair_script: 'Repair CAD Script',
   sweep_tolerance: 'Sweep Tolerance Range',

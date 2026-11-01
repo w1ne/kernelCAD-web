@@ -1,0 +1,134 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2406                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _be01ca78-20240625 OPENFOAM=2406 version=2406
+Arch   : "LSB;label=32;scalar=64"
+Exec   : simpleFoam -parallel
+Date   : Nov 01 2026
+Time   : 00:40:21
+Host   : 97d761823af2
+PID    : 221
+I/O    : uncollated
+Case   : /case
+nProcs : 2
+Hosts  :
+(
+    (97d761823af2 2)
+)
+Pstream initialized with:
+    floatTransfer      : false
+    maxCommsSize       : 0
+    nProcsSimpleSum    : 0
+    nonBlockingExchange: 0 (tuning: 0)
+    exchange algorithm : 0
+    commsType          : nonBlocking
+    polling iterations : 0
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+
+SIMPLE: convergence criteria
+    field p	 tolerance 0.0001
+    field U	 tolerance 0.0001
+
+Reading field p
+
+Reading field U
+
+Reading/calculating face flux field phi
+
+Selecting incompressible transport model Newtonian
+Selecting turbulence model type laminar
+Selecting laminar stress model Stokes
+No MRF models present
+
+No finite volume options present
+
+Starting time loop
+
+surfaceFieldValue inlet_flow:
+    operation     = sum
+
+
+surfaceFieldValue inlet_p:
+    operation     = areaAverage
+
+
+surfaceFieldValue outlet_flow:
+    operation     = sum
+
+
+surfaceFieldValue outlet_p:
+    operation     = areaAverage
+
+
+Sampled surface:
+    plane -> vtk
+        sampledCuttingPlane: plane : plane:(0 1 0) (0.10000506 5.0619721e-06 5.0619721e-06) offsets:(0)
+
+Time = 1
+
+smoothSolver:  Solving for Ux, Initial residual = 1, Final residual = 0.044703423, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 2.628904e-08, Final residual = 9.8591842e-10, No Iterations 1
+smoothSolver:  Solving for Uz, Initial residual = 1.1668855e-05, Final residual = 5.2162503e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 1, Final residual = 0.032391912, No Iterations 8
+GAMG:  Solving for p, Initial residual = 0.00026084466, Final residual = 7.955602e-06, No Iterations 3
+time step continuity errors : sum local = 6.2381475e-05, global = -3.4224943e-06, cumulative = -3.4224943e-06
+ExecutionTime = 1.37 s  ClockTime = 9 s
+
+Time = 2
+
+smoothSolver:  Solving for Ux, Initial residual = 0.28902131, Final residual = 0.026614352, No Iterations 3
+smoothSolver:  Solving for Uy, Initial residual = 0.47818178, Final residual = 0.023629331, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.47948508, Final residual = 0.023651264, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.0010512142, Final residual = 2.00759e-05, No Iterations 8
+GAMG:  Solving for p, Initial residual = 0.00029971731, Final residual = 6.9984941e-06, No Iterations 3
+time step continuity errors : sum local = 2.1265344e-05, global = 4.5190471e-07, cumulative = -2.9705896e-06
+ExecutionTime = 1.99 s  ClockTime = 16 s
+
+Time = 3
+
+smoothSolver:  Solving for Ux, Initial residual = 0.10919649, Final residual = 0.008732081, No Iterations 4
+smoothSolver:  Solving for Uy, Initial residual = 0.32270538, Final residual = 0.021035703, No Iterations 3
+smoothSolver:  Solving for Uz, Initial residual = 0.3197926, Final residual = 0.020728636, No Iterations 3
+GAMG:  Solving for p, Initial residual = 0.00096156446, Final residual = 1.4942257e-05, No Iterations 8
+GAMG:  Solving for p, Initial residual = 0.00022787805, Final residual = 5.3022464e-06, No Iterations 3
+time step continuity errors : sum local = 1.0560544e-05, global = 1.2478192e-06, cumulative = -1.7227705e-06
+ExecutionTime = 3.01 s  ClockTime = 24 s
+
+Time = 50
+
+smoothSolver:  Solving for Ux, Initial residual = 4.5132406e-07, Final residual = 1.1596698e-08, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.00010210376, Final residual = 8.7263661e-06, No Iterations 1
+smoothSolver:  Solving for Uz, Initial residual = 0.00010231365, Final residual = 8.8268433e-06, No Iterations 1
+GAMG:  Solving for p, Initial residual = 3.056707e-06, Final residual = 1.5030763e-07, No Iterations 1
+GAMG:  Solving for p, Initial residual = 1.4017413e-06, Final residual = 1.6936921e-08, No Iterations 2
+time step continuity errors : sum local = 2.1190052e-08, global = 1.1222191e-08, cumulative = 1.0985171e-06
+ExecutionTime = 22.2 s  ClockTime = 136 s
+
+Time = 51
+
+smoothSolver:  Solving for Ux, Initial residual = 4.0562386e-07, Final residual = 9.8269158e-09, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 9.306096e-05, Final residual = 7.8911358e-06, No Iterations 1
+smoothSolver:  Solving for Uz, Initial residual = 9.3462255e-05, Final residual = 7.9986248e-06, No Iterations 1
+GAMG:  Solving for p, Initial residual = 2.8327198e-06, Final residual = 1.4091395e-07, No Iterations 1
+GAMG:  Solving for p, Initial residual = 1.3447516e-06, Final residual = 1.5917943e-08, No Iterations 2
+time step continuity errors : sum local = 1.9915202e-08, global = 1.0597662e-08, cumulative = 1.1091148e-06
+ExecutionTime = 22.46 s  ClockTime = 137 s
+
+
+SIMPLE solution converged in 51 iterations
+
+End
+
+Finalising parallel run

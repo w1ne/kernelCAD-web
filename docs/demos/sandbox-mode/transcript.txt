@@ -1,0 +1,43 @@
+$ kernelcad --sandbox sandbox status
+sandbox: ON (via flag)
+  workspace (read/write): /tmp/cad-ws
+  scratch (tmp/cache/config): /tmp/cad-ws/.kernelcad-sandbox/tmp, /tmp/cad-ws/.kernelcad-sandbox/cache, /tmp/cad-ws/.kernelcad-sandbox/config
+  read-only runtime roots: 16 (package, node_modules, browser cache, PATH; --json lists them)
+  network: outbound refused, loopback refused
+  telemetry: forced-off
+  refusal codes: cli.sandbox-path-denied, cli.sandbox-network-denied, cli.sandbox-command-refused
+  docs: https://github.com/w1ne/kernelCAD-web/blob/develop/docs/sandbox.md
+[exit 0]
+
+$ kernelcad --sandbox export step nema17-plate.kcad.ts -o out/nema17-plate.step
+ Step File Name : blob.step(770 ents)  Write  Done
+Wrote 33740 bytes to out/nema17-plate.step
+[exit 0]
+
+$ kernelcad --sandbox inspect step out/nema17-plate.step
+solid #0 — bbox [0..60]×[0..60]×[0..5] mm, volume 15830 mm³, 11 faces, 5 holes:
+  Ø3.4 through, depth 5, axis (45.5, 14.5, 5) → (0, 0, -1)
+  Ø3.4 through, depth 5, axis (14.5, 14.5, 5) → (0, 0, -1)
+  Ø3.4 through, depth 5, axis (45.5, 45.5, 5) → (0, 0, -1)
+  Ø22.5 through, depth 5, axis (30, 30, 5) → (0, 0, -1)
+  Ø3.4 through, depth 5, axis (14.5, 45.5, 5) → (0, 0, -1)
+[exit 0]
+
+$ kernelcad --sandbox export step nema17-plate.kcad.ts -o ../leak.step
+ERROR [cli.sandbox-path-denied] kernelcad export: --out — got "../leak.step"; requires a path inside the sandbox workspace /tmp/cad-ws (it resolves to /tmp/leak.step). Example: --out: "out/part.step" (relative to the workspace)
+  Hint: Sandbox mode is on and this path resolves outside the workspace root. Use a path inside the workspace (see `kernelcad sandbox status`), or restart with a different --workspace / KERNELCAD_WORKSPACE.
+[exit 2]
+
+$ ln -s /etc escape && kernelcad --sandbox export stl nema17-plate.kcad.ts -o escape/plate.stl
+ERROR [cli.sandbox-path-denied] kernelcad export: --out — got "escape/plate.stl"; requires a path inside the sandbox workspace /tmp/cad-ws (it resolves to /etc/plate.stl). Example: --out: "out/part.step" (relative to the workspace)
+  Hint: Sandbox mode is on and this path resolves outside the workspace root. Use a path inside the workspace (see `kernelcad sandbox status`), or restart with a different --workspace / KERNELCAD_WORKSPACE.
+[exit 2]
+
+$ mcp-call.mjs   # drives: kernelcad mcp --sandbox '[{"name":"import_step","arguments":{"url":"https://example.com/nema17.step"}},{"name":"fetch_part","arguments":{"id":"nema-17","partsBaseUrl":"https://parts.example.com"}}]'
+initialize → kernelCAD (sandbox mode); instructions: "kernelCAD SANDBOX MODE is ON."
+import_step({"url":"https://example.com/nema17.step"})
+  → isError cli.sandbox-network-denied: sandbox: outbound network refused — import_step argument url to https://example.com/nema17.step. Sandbox mode blocks all network egress from the kernelCAD runtime.
+fetch_part({"id":"nema-17","partsBaseUrl":"https://parts.example.com"})
+  → isError cli.sandbox-network-denied: sandbox: outbound network refused — fetch_part argument partsBaseUrl to https://parts.example.com. Sandbox mode blocks all network egress from the kernelCAD runtime.
+[exit 0]
+

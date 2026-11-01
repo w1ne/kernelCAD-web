@@ -1,0 +1,27 @@
+{
+  "feature": "run_cfd — OpenFOAM CFD connector",
+  "demoKind": "local run of the tool on a development machine (OpenFOAM v2406 in Docker, not the hosted service, no physical flow test)",
+  "heroArtifact": "docs/demos/cfd-manifold/demo.mp4",
+  "source": "docs/demos/cfd-manifold/manifold.kcad.ts",
+  "record": "./docs/demos/cfd-manifold/record.sh",
+  "invocation": "kernelcad cfd run docs/demos/cfd-manifold/manifold.kcad.ts (run_cfd via record.ts)",
+  "settings": {
+    "openfoam": "opencfd/openfoam-run:2406, simpleFoam, 1 core, --network none",
+    "mesh": "snappyHexMesh, meshSize medium (14 cells across the 8 mm inlet), 17504 cells",
+    "render": "kernelcad render --preset publish --background dark 1200x800; frames composed with sharp; ffmpeg libx264 1280x720, 5 frames x 3.5 s"
+  },
+  "proof": {
+    "job": "pressure drop and flow split of a printed two-way coolant splitter at 0.3 L/min water",
+    "result": "docs/demos/cfd-manifold/result.json",
+    "validation": "docs/demos/cfd-manifold/validation.json (Hagen-Poiseuille +4.2%, sphere Cd +3.4%)",
+    "tests": "tests/integration/cfd/validation.live.test.ts"
+  },
+  "evidence": {
+    "ffprobe": "docs/demos/cfd-manifold/ffprobe.txt",
+    "transcript": "docs/demos/cfd-manifold/transcript.txt",
+    "framesInspected": "frames at 1.5 s, 5 s, 8.5 s, 12 s and 16 s extracted from demo.mp4 and inspected visually"
+  },
+  "catalogSource": null,
+  "overrideApprovedBy": null,
+  "limits": "Local validation and a steady laminar solve. Not a hosted-service run, not a certification, and the part was not printed or flow-tested."
+}

@@ -23,6 +23,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - Folded sheet-metal parts (brackets, channels, panels, bend tables, flat patterns) → also load `kernelcad-sheet-metal`.
 - Bent tubes and fluid lines between ports (hydraulic, fuel, oil, coolant; bend radius, clearance, tube bend tables) → also load `kernelcad-tubes`.
 - Signed-distance fields (smooth-blended primitives, organic shapes via `sdf.*` + `materialize`) → also load `kernelcad-fields`.
+- Lattice infill — gyroid / Schwarz-P / diamond TPMS cores inside a solid skin, graded by depth, hole walls or an FEA stress field (`body.lattice({...})`) → also load `kernelcad-fields`.
 - Exporting an assembly to URDF for a motion planner or simulator → also load `kernelcad-urdf`.
 - Exporting an assembly to a UsdPhysics stage for a GPU physics simulator (`format: 'usd-isaac'`) → also load `kernelcad-urdf` (USD section).
 - Adding planning groups / end-effectors / allowed-collision data on top of a URDF → also load `kernelcad-srdf`.
@@ -32,6 +33,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - Feasibility gates on moving assemblies — collision sweeps across joint ranges, IK reachability, mounting-hole consistency, static-load capacity, gravitational actuator-hold checks, tolerance-range sweeps (`checkSweptCollision`, `checkReachable`, `checkMountingHoleConsistency`, `checkLoadCapacity`, `checkStaticHold`, `sweepTolerance`) → also load `kernelcad-kinematic`.
 - An evaluation reported an error, a gate failed, or a feature came back degraded in `featureHealth` → load `kernelcad-repair` for the bounded repair loop (`why_did_this_fail` → `repair_script`).
 - Will this part hold this load? Structural evidence — peak von Mises stress, deflection, safety factor against yield, named hot-spot regions, stress heatmaps — and a gate that fails the build when the margin is not met (`shape.feaStudy({...})`, `run_fea`, `fea_summary`) → also load `kernelcad-fea`.
+- How much pressure does this duct, pipe or manifold cost, how does the flow split between outlets, or how much drag does this part see in a stream? Steady incompressible CFD evidence from OpenFOAM — pressure drop, per-outlet flow, Cd / Cl, Reynolds number and convergence verdict, mid-plane velocity PNG (`shape.cfdStudy({...})`, `run_cfd`, `cfd_summary`, `kernelcad cfd run`) → also load `kernelcad-cfd`.
 
 ## Key globals available today
 

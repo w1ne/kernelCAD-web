@@ -4,7 +4,7 @@
 import type { DiagnosticCodeSpec } from './types';
 
 export const CLI_CODES = {
-  // CLI / IO (5)
+  // CLI / IO (5) + sandbox (3)
   'cli.invalid-args': {
     hintTemplate: 'CLI was called with missing or malformed arguments. Run `kernelcad --help`.',
     nextAction: { kind: 'check-cli-args' },
@@ -51,5 +51,32 @@ export const CLI_CODES = {
     defaultSeverity: 'error',
     group: 'cli',
     description: 'An unhandled exception occurred during an export operation (STL, STEP, etc.).',
+  },
+  'cli.sandbox-path-denied': {
+    hintTemplate:
+      'Sandbox mode is on and this path resolves outside the workspace root. Use a path inside the workspace (see `kernelcad sandbox status`), or restart with a different --workspace / KERNELCAD_WORKSPACE.',
+    nextAction: { kind: 'check-file-path' },
+    defaultSeverity: 'error',
+    group: 'cli',
+    description:
+      'Sandbox mode (KERNELCAD_SANDBOX=1 / --sandbox) refused a file read or write whose path resolves — after realpath, following symlinks and collapsing `..` — outside the workspace root and the read-only runtime roots.',
+  },
+  'cli.sandbox-network-denied': {
+    hintTemplate:
+      'Sandbox mode is on and refuses outbound network. Use local inputs instead (a STEP/STL file inside the workspace, content_base64, a bundled HDRI preset, the local part catalog), or run without --sandbox.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'cli',
+    description:
+      'Sandbox mode refused an outbound network connection (fetch, http/https, raw TCP/TLS, DNS lookup or a URL argument) before any packet left the process.',
+  },
+  'cli.sandbox-command-refused': {
+    hintTemplate:
+      'This command or mode cannot run in sandbox mode because it needs the network or writes outside the workspace. Run it outside the sandbox, or use the local equivalent named in the message.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'cli',
+    description:
+      'A CLI command, MCP tool or server mode that is inherently online or writes outside the workspace (cloud proxy, printer upload, agent-config install, admin stats) was refused up front in sandbox mode.',
   },
 } as const satisfies Record<`cli.${string}`, DiagnosticCodeSpec>;

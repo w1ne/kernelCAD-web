@@ -63,9 +63,21 @@ export interface InProcessFeaOptions {
   targetElements?: number;
 }
 
+/** The solved nodal stress field (kept for stress-graded consumers such as
+ *  lattice infill). Nodes sit on the voxel grid's corner lattice. */
+export interface InProcessStressField {
+  grid: VoxelModel['grid'];
+  /** Node coordinates, xyz triples, mm. */
+  coords: Float64Array;
+  /** Nodal von Mises, MPa. */
+  vonMises: Float64Array;
+  yieldMPa: number;
+}
+
 export interface InProcessFeaResult {
   ok: boolean;
   summary?: FeaSummary;
+  field?: InProcessStressField;
   diagnostics: CompilerDiagnostic[];
   /** No solver deck to keep: only the summary JSON (same shape as the
    *  CalculiX path's artifacts so callers need no branch). */
@@ -540,6 +552,7 @@ export async function runInProcessFeaStudy(
   return {
     ok: !diagnostics.some(d => d.severity === 'error'),
     summary,
+    field: { grid: prep.model.grid, coords: prep.model.coords, vonMises: solved.vonMises, yieldMPa: material.props.yield },
     diagnostics: withNextActions(diagnostics),
     artifacts: { summaryPath },
   };

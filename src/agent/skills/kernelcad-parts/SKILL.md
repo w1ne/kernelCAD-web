@@ -378,6 +378,12 @@ Bytes returned from the remote tier are cached under
 `~/.cache/kernelcad/parts/<sha256>.step` with sha256 verification at write
 time, so a flaky upstream cannot poison the cache.
 
+**Sandbox mode** (`--sandbox` / `KERNELCAD_SANDBOX=1`): the remote tier, the
+`partsBaseUrl` argument and `fetch_part`'s `model.url` are refused with
+`cli.sandbox-network-denied`. Use the bundled seed, or put the vendor STEP file
+in the workspace and call `lib.fromSTEP('vendor/part.step')`. See
+`docs/sandbox.md`.
+
 ## License and provenance
 
 Every record carries `license` + optional `attribution`. The assembly's

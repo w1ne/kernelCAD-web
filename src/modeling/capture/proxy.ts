@@ -25,6 +25,7 @@ import {
   resolveCutoutOpts,
   type EditableCutoutOpts,
 } from '../validation/cutoutValidation';
+import { captureLattice, type LatticeOptions } from '../lattice/latticeCapture';
 import { isParamRef, isTypedParamRef, type Editable, type TypedParamRef } from '../../shared/runtime/paramRef';
 import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
@@ -41,11 +42,9 @@ import { isTextureProjection } from '../../shared/intent/textureProjection';
 import { validateBendArgs } from '../sheetMetal';
 import type { Region } from '../../shared/intent/region';
 import type { DrawingDimensionSpec, DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
-import type {
-  FeaStudyHandle,
-  FeaStudyMetadata,
-  FeaStudySpec,
-} from '../../shared/intent/feaStudyRecord';
+import type { FeaStudyHandle, FeaStudyMetadata, FeaStudySpec } from '../../shared/intent/feaStudyRecord';
+import type { CfdStudyHandle, CfdStudySpec } from '../../shared/intent/cfdStudyRecord';
+import { captureCfdStudy } from './cfdStudyRecord';
 import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
@@ -291,6 +290,25 @@ export class Shape {
     const id = this.session.addFeaStudy(spec, { kind: 'feature', id: this.id });
     const record = this.session.getRecords().find(r => r.id === id)!;
     return { id, metadata: record.metadata as unknown as FeaStudyMetadata };
+  }
+
+  /**
+   * Declare a steady incompressible CFD study (OpenFOAM simpleFoam) on this
+   * solid. Declaration-only, like `feaStudy`; `run_cfd` runs it.
+   *
+   * ```ts
+   * const pipe = cylinder(200, 7).rotate([0, 1, 0], 90).subtract(cylinder(200, 5).rotate([0, 1, 0], 90));
+   * pipe.cfdStudy({ flow: 'internal', fluid: 'water', inlet: { atX: 0 }, outlet: { atX: 200 }, velocity: 0.002 });
+   * return pipe;
+   * ```
+   *
+   * Internal flow fills the part's channels (they must open flush onto its
+   * bounding box) between `inlet` and `outlet`, named on the FLUID volume;
+   * external flow puts a box of fluid around the part. Malformed fields throw
+   * `feature.invalid-args` at capture.
+   */
+  cfdStudy(spec: CfdStudySpec): CfdStudyHandle {
+    return captureCfdStudy(this.session, spec, this.id);
   }
 
   /**
@@ -861,6 +879,10 @@ export class Shape {
       params: { t: toParam(t, 'mm') },
     });
   }
+
+  /** TPMS lattice infill inside a solid skin (see latticeCapture.ts); the
+   *  result is a watertight mesh solid, so call it last. */
+  lattice(opts: LatticeOptions): Shape { return captureLattice(this.session, this, opts); }
 
   /**
    * Round the seam where `cutter` met this body. The seam is selected by

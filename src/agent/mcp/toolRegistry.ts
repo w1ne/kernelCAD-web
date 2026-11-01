@@ -38,7 +38,9 @@ import { assetManifestToolEntries } from './registry/assetManifestTools';
 import { assetCatalogToolEntries } from './registry/assetCatalogTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
+import { cfdToolEntries } from './registry/cfdTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
+import { guardMcpToolArgs } from './sandboxArgs';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
 export * from '../loop/types.js';
@@ -115,6 +117,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...assetManifestToolEntries,
   // Appended at the tail: read-only low-poly asset catalog.
   ...assetCatalogToolEntries,
+  // Appended at the tail: steady CFD through OpenFOAM (run_cfd, cfd_summary).
+  ...cfdToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
@@ -161,6 +165,9 @@ export const TOOLS = TOOL_REGISTRY.map(entry => withMetadata(entry.definition));
 export async function callMcpTool(name: string, input: Record<string, unknown>): Promise<unknown> {
   const handler = toolHandlers.get(name);
   if (!handler) throw new Error(`Unknown tool: ${name}`);
+  // Sandbox mode: refuse out-of-workspace paths / network URLs before the
+  // handler runs (no-op when the sandbox is off). See ./sandboxArgs.ts.
+  guardMcpToolArgs(name, input);
   const previousViewer = getMcpViewerResult();
   const result = await handler(input);
   const viewer = getMcpViewerResult();

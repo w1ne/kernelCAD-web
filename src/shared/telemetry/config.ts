@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { homedir } from 'node:os';
+import { isSandboxEnabled } from '../sandbox/config';
 import { join } from 'node:path';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
@@ -58,6 +59,8 @@ function envTrue(v: string | undefined): boolean {
 
 /** Default ON. Any single off-switch forces OFF — opt-in cannot override an opt-out signal. */
 export function isTelemetryEnabled(): boolean {
+  // Sandbox mode forces telemetry off regardless of config (docs/sandbox.md).
+  if (isSandboxEnabled()) return false;
   if (process.env.KERNELCAD_TELEMETRY === '0') return false;
   if (envTrue(process.env.KERNELCAD_TELEMETRY_DISABLED)) return false;
   if (envTrue(process.env.DO_NOT_TRACK)) return false;
