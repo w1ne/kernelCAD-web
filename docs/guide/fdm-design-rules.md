@@ -45,7 +45,7 @@ An overhang is a face that points down and leans out past the layer below it. Mo
 
 Fix it with a 45° chamfer, a gusset, or by rotating the part so the face points sideways. Supports work too, but cost material and time and leave a rough surface.
 
-**How kernelCAD helps.** `dfm_review` finds every downward face steeper than your limit (45° by default, configurable). Each region comes back with its area, angle, reach and a selectable face reference, plus the fix by name ("rotate -90° about X", "chamfer to 45°") instead of a red patch in a slicer.
+**How kernelCAD helps.** `dfm_review` finds every downward face steeper than your limit (45° by default, configurable). Each region comes back with its area, angle, reach and a selectable face reference, plus the fix in plain words, down to the exact rotation that removes the overhang ("Rotate -90° about X"), instead of a red patch in a slicer.
 
 ## 2. Bridges
 

@@ -108,9 +108,9 @@ glance at the output instead of a caliper session with the drawing.
    question, not a clearance hole.
 2. **Drawing the hole at the nominal size.** A 4.0 mm hole for an M4 screw
    has no clearance at all. Machined holes need the chart value.
-3. **Mixing classes across mating parts.** If one part is drilled close and
-   the other loose, the stack behaves like the close one but you paid for
-   neither benefit.
+3. **Specifying close fit everywhere "to be safe".** Close holes need tight
+   hole positions on both parts. Use them only where the bolt really has to
+   locate; everywhere else, normal fit assembles faster and costs less.
 4. **Forgetting the process.** 3D-printed holes often come out undersize,
    and punched sheet metal holes have their own rules. Test a coupon or use
    a looser class.
