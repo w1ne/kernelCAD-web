@@ -25,6 +25,21 @@ Low-poly trees, plants, rocks, wood and 2 m terrain tiles at real-world scale. E
 | path-tile | 2 m grass tile with a sunken dirt path (straight, corner, tee, cross) | layout, widthM, grass, path, dirt | 64 |
 | water-tile | 2 m tile with a sunken pond or stream, sandy bank and water | shape, sizeM, grass, bank, water, dirt | 204 |
 | cliff-tile | 2 m tile with a stepped rock cliff up to a grassy ledge | heightM, steps, rock, grass, dirt | 120 |
+| maple-tree | Maple with straight trunk and full egg-shaped crown | heightM, crown, lumps, bark, leaves | 244 |
+| willow-tree | Weeping willow with domed crown and hanging foliage curtains | heightM, strands, bark, leaves | 388 |
+| spruce-tree | Narrow spruce of stacked spiky star-section tiers | heightM, tiers, spikes, bark, needles | 280 |
+| cypress-tree | Slender flame-shaped Mediterranean cypress | heightM, width, sides, bark, leaves | 104 |
+| apple-tree | Orchard apple tree with wide crown and fruit | heightM, apples, bark, leaves, fruit | 428 |
+| sapling | Young planted tree on a soil mound with optional stake | heightM, stake, bark, leaves, post, soil | 148 |
+| hedge | Tiling hedge run, clipped or wild | lengthM, heightM, style, leaves, shade | 220 |
+| lavender-clump | Silver-green mound with a fan of lavender spikes | size, count, flowers, leaves, stems | 416 |
+| stone-slab | Flat irregular slab or stepping stone, one or two layers | size, layers, sides, stone, top | 112 |
+| rock-pillar | Banded hoodoo spire under a wide cap rock | heightM, chunks, stone, band, cap | 190 |
+| sunflower | Tall sunflower with broad leaves and nodding heads | heightM, heads, petals, seeds, stem, leaves | 220 |
+| tulip-bed | Raised soil bed with rows of tulips | rows, perRow, flowers, leaves, soil | 380 |
+| lily-pads | Floating notched lily pads with an optional water lily | pads, bloom, leaf, petals, centre | 340 |
+| bamboo-clump | Bamboo culms with node rings and top leaves | heightM, count, culm, node, leaves | 504 |
+| fallen-branch | Crooked fallen branch with twigs and leaf clumps | lengthM, twigs, leafy, bark, leaves | 168 |
 
 ## Licence
 
