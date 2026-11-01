@@ -1,0 +1,11 @@
+HTTP/2 200 
+server: nginx/1.24.0 (Ubuntu)
+date: Sun, 01 Nov 2026 11:58:50 GMT
+content-type: text/event-stream
+vary: Origin, Accept-Encoding
+access-control-expose-headers: mcp-session-id,Content-Disposition,Retry-After,X-KernelCAD-Export-Warning,X-KernelCAD-Mesh-Open-Edges
+cache-control: no-cache
+
+event: message
+data: {"result":{"content":[{"type":"text","text":"Vendor evaluator failed: Unknown tool: search_assets"}],"isError":true},"jsonrpc":"2.0","id":3}
+

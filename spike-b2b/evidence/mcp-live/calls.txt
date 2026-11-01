@@ -1,0 +1,18 @@
+=== "name":"evaluate_script"
+HTTP/2 200 
+content-type: text/event-stream
+cache-control: no-cache
+
+event: message
+data: {"result":{"_meta":{"serverBuild":"0.1.0+fbd569a11844@2026-11-01T01:38:27.652Z"},"content":[{"type":"text","text":"{\"ok\":true,\"viewerMode\":\"hosted\",\"viewerHint\":\"Use open_in_studio to view this model in hosted Studio.\",\"step\":{\"validity\":{\"status\":\"valid\",\"checks\":[\"build\",\"feature-health\",\"finite-geometry\"],\"volume\":999.9999999999998},\"snapshots\":{\"status\":\"unavailable\",\"frame\":{\"view\":\"iso\",\"width\":512,\"height\":512,\"bounds\":{\"min\":[0,0,0],\"max\":[20,10,10]}},\"out_dir\":\"/tmp/kernelcad-step-8BsHBl\",\"error\":\"Step snapshots require an existing browser attachment (PW_CDP_URL).\"}},\"sceneSummary\":{\"valid\":true,\"volume\":999.9999999999998,\"faceCount\":6,\"size\":[20,10,5]},\"featureCount\":1,\"diagnostics\":[],\"featureHealth\":[],\"requirements\":{\"ok\":true,\"entries\":[],\"summary\":{\"pass\":0,\"fail\":0,\"notEvaluated\":0}},\"serverBuild\":\"0.1.0+fbd569a11844@2026-11-01T01:38:27.652Z\"}"}],"structuredContent":{"ok":true,"viewerMode":"hosted","viewerHint":"Use open_in_studio to view this model in hosted Studio.","step":{"validity":{"status":"valid","checks":["build","feature-health","finite-geometry"],"volume":999.9999999999998},"snapshots":{"status":"unavailable","frame":{"view":"iso","width":512,"height":512,"bounds":{"min":[0,0,0],"max":[20,10,10]}},"out_dir":"/tmp/kernelcad-step-8BsHBl","error":"Step snapshots require an existing browser attachment (PW_CDP_URL)."}},"sceneSummary":{"valid":true,"volume":9
+
+
+=== "name":"export"
+HTTP/2 200 
+content-type: text/event-stream
+cache-control: no-cache
+
+event: message
+data: {"result":{"content":[{"type":"text","text":"Vendor evaluator failed: Unknown export target: undefined. Valid: model, part."}],"isError":true},"jsonrpc":"2.0","id":5}
+
+
