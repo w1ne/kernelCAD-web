@@ -16,7 +16,8 @@
 //     3 mm plate does not; a 0.05 mm sliver is reported UNMEASURED, not passed,
 //   - sharp internal corner: an unfilleted L has a 90° radius-0 crease; an L
 //     filleted at r 0.3 has a tight fillet; an L filleted at r 1 is clean (and
-//     its B-spline vertex blends are not misread as undercuts),
+//     its B-spline vertex blends are not misread as undercuts or as creases);
+//     an unfilleted boss on a plate is still a 90° crease,
 //   - a fully compliant drafted plate produces no diagnostics at all,
 //   - the report reaches the CLI summary and the requirements ledger.
 
@@ -266,6 +267,20 @@ describe('injection-moulding check', () => {
     expect(withCode(report, 'dfm.moulding.sharp-corner')).toEqual([]);
     expect(m.sharpCorners).toEqual([]);
     expect(withCode(report, 'dfm.moulding.undercut')).toEqual([]);
+  }, 60000);
+
+  it('still flags the radius-0 crease where a curved face meets a plane', async () => {
+    // The exact-normal tangency test must not excuse every crease that
+    // touches a curved face: an unfilleted Ø6 boss on a plate is a real 90°
+    // corner all the way round (2π·3 mm).
+    const { m } = await check(`
+      dfmSpec({ process: 'moulding', minDraftDeg: 0 });
+      return box(20, 20, 3).union(cylinder(4, 3).translate(10, 10, 3));
+    `);
+    expect(m.sharpCorners).toHaveLength(1);
+    expect(m.sharpCorners[0]).toMatchObject({ kind: 'crease', radiusMm: 0 });
+    expect(m.sharpCorners[0].turnDeg).toBeCloseTo(90, 1);
+    expect(m.sharpCorners[0].lengthMm).toBeCloseTo(2 * Math.PI * 3, 1);
   }, 60000);
 
   // --- Whole gate ----------------------------------------------------------------

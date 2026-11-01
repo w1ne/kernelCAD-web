@@ -35,10 +35,11 @@
 //     limit by less than about one voxel can be missed.
 //   - Sharp internal corner: (a) concave creases between two BREP faces that
 //     are real corners rather than a curved face's tessellation meeting a
-//     tangent neighbour (radius 0), and (b) concave partial cylinders (fillet
-//     blends) with radius below minRadiusMm. Full bores are holes, not
-//     corners. Concave fillets that are not cylinders (torus/spline blends)
-//     are not radius-checked — the report says so in `limitations`.
+//     tangent neighbour (radius 0; on curved faces the turn is confirmed
+//     with the exact surface normals at the edge), and (b) concave partial
+//     cylinders (fillet blends) with radius below minRadiusMm. Full bores are
+//     holes, not corners. Concave fillets that are not cylinders (torus/spline
+//     blends) are not radius-checked — the report says so in `limitations`.
 //
 // Anything that cannot be measured is listed in `unmeasured` and surfaces as
 // a warn `dfm.moulding.unmeasured` diagnostic instead of passing silently.
@@ -56,7 +57,7 @@ import { TriangleBvh, type DfmMesh } from './meshBvh';
 import { checkMinWall, MAX_REPORTED_CLUSTERS, type MinWallResult } from './minWall';
 import { edt2, samplePoint, voxelize } from './voxelGrid';
 import { FDM_WALL_MAX_WEDGE_DEG, faceTaggedMeshOf } from './fdmCheck';
-import { faceFacetSteps, isTangentBlend, meshEdges, trianglesOf, type Tri, type Vec3 } from './cncCheck';
+import { faceFacetSteps, isTangentBlend, meshEdges, trianglesOf, type MeshEdge, type Tri, type Vec3 } from './cncCheck';
 
 /** Faces this close to perpendicular to the pull axis (normal parallel to
  *  it) are parting / shut-off faces, not draft faces. */
@@ -221,14 +222,14 @@ export function checkMouldability(shape: OcctBackend, opts: MouldingCheckOptions
     try {
       draft = measureDraft(tris, normals, faceOfTri, tagged.faceRefs, d, settings.minDraftDeg);
       undercut = findMouldUndercuts(tris, normals, faceOfTri, tagged.faceRefs, new TriangleBvh(taggedMesh), d);
+      sharpCorners = [
+        ...findConcaveCreases(tris, faceOfTri, tagged.faceRefs, normals),
+        ...findTightConcaveFillets(shape, settings.minRadiusMm),
+      ];
     } finally {
       normals.dispose();
     }
     if (draft.checkedFaces === 0) unmeasured.push('draft (no face with a normal off the pull axis was found)');
-    sharpCorners = [
-      ...findConcaveCreases(tris, faceOfTri, tagged.faceRefs),
-      ...findTightConcaveFillets(shape, settings.minRadiusMm),
-    ];
   }
 
   const walls = checkMinWall(mesh, settings.minWallMm, { bvh, maxWedgeDeg: FDM_WALL_MAX_WEDGE_DEG });
@@ -277,11 +278,17 @@ export class ExactNormals {
   get(i: number): Vec3 {
     const hit = this.memo.get(i);
     if (hit !== undefined) return hit;
-    const t = this.tris[i];
-    const n = this.evaluator(this.faceOfTri[i])?.normalAt(t.c);
-    const out: Vec3 = n === undefined ? t.n : dot(n, t.n) < 0 ? [-n[0], -n[1], -n[2]] : n;
+    const out = this.at(i, this.tris[i].c);
     this.memo.set(i, out);
     return out;
+  }
+
+  /** Outward unit normal of triangle i's face at the surface point nearest
+   *  p (exact when the face is curved; the facet normal otherwise). */
+  at(i: number, p: Vec3): Vec3 {
+    const t = this.tris[i];
+    const n = this.evaluator(this.faceOfTri[i])?.normalAt(p);
+    return n === undefined ? t.n : dot(n, t.n) < 0 ? [-n[0], -n[1], -n[2]] : n;
   }
 
   dispose(): void {
@@ -510,11 +517,39 @@ function climbInscribed(bvh: TriangleBvh, start: Vec3, voxelMm: number): { r: nu
 
 // --- Sharp internal corners ------------------------------------------------------
 
+/** Is mesh edge `e` (two triangles on different BREP faces) a concave crease
+ *  that turns the surface by at least MIN_CORNER_TURN_DEG? A crease touching
+ *  a curved face is confirmed with the exact surface normals of both faces at
+ *  the edge midpoint: coarse facets on a B-spline vertex blend can meet a
+ *  tangent fillet at a 20° facet angle where the surfaces themselves turn only
+ *  a few degrees. */
+function isConcaveCrease(
+  e: MeshEdge,
+  tris: readonly Tri[],
+  faceOfTri: ArrayLike<number>,
+  steps: Map<number, number>,
+  normals: ExactNormals,
+  minTurnCos: number,
+): boolean {
+  const [i1, i2] = e.tris;
+  const t1 = tris[i1];
+  const t2 = tris[i2];
+  const nd = dot(t1.n, t2.n);
+  if (nd > minTurnCos) return false; // shallow seam
+  if (isTangentBlend(nd, steps, faceOfTri[i1], faceOfTri[i2])) return false; // curved face meeting a tangent neighbour
+  // Concave: each triangle sits on the outward side of the other's plane.
+  if (dot(t2.n, sub(t1.c, e.a)) <= 1e-6) return false;
+  if (!normals.isCurved(i1) && !normals.isCurved(i2)) return true; // planar facets are exact
+  const mid: Vec3 = [(e.a[0] + e.b[0]) / 2, (e.a[1] + e.b[1]) / 2, (e.a[2] + e.b[2]) / 2];
+  return dot(normals.at(i1, mid), normals.at(i2, mid)) <= minTurnCos; // tangent at the surface otherwise
+}
+
 /** Concave creases between two BREP faces (radius-0 internal corners). */
 export function findConcaveCreases(
   tris: readonly Tri[],
   faceOfTri: ArrayLike<number>,
   faceRefs: readonly string[],
+  normals: ExactNormals,
 ): MouldingSharpCorner[] {
   const edges = meshEdges(tris as Tri[]);
   const steps = faceFacetSteps(edges, tris as Tri[], faceOfTri);
@@ -526,13 +561,8 @@ export function findConcaveCreases(
     const f1 = faceOfTri[i1];
     const f2 = faceOfTri[i2];
     if (f1 === f2) continue; // tessellation inside one face
-    const t1 = tris[i1];
-    const t2 = tris[i2];
-    const nd = dot(t1.n, t2.n);
-    if (nd > minTurnCos) continue; // shallow seam
-    if (isTangentBlend(nd, steps, f1, f2)) continue; // curved face meeting a tangent neighbour
-    // Concave: each triangle sits on the outward side of the other's plane.
-    if (dot(t2.n, sub(t1.c, e.a)) <= 1e-6) continue;
+    if (!isConcaveCrease(e, tris, faceOfTri, steps, normals, minTurnCos)) continue;
+    const nd = dot(tris[i1].n, tris[i2].n);
     const seg = sub(e.b, e.a);
     const l = Math.hypot(seg[0], seg[1], seg[2]);
     const key = f1 < f2 ? `${f1}|${f2}` : `${f2}|${f1}`;
