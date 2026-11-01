@@ -13,7 +13,7 @@ Regenerate with `npm run reference-parts:regenerate`; CI runs the same geometry 
 | Centered block | +0.0000% | +0.0000% | 0.000 mm | PASS |
 | Cylinder | +0.0000% | -0.0000% | 0.024 mm | PASS |
 | Sphere | -0.0000% | +0.0000% | 0.024 mm | PASS |
-| Revolved torus | -0.0000% | +0.0000% | 0.024 mm | PASS |
+| Revolved torus | +0.0000% | +0.0000% | 0.024 mm | PASS |
 | Revolved cone frustum | -0.0000% | +0.0000% | 0.024 mm | PASS |
 | Plate with through-hole | -0.0000% | +0.0000% | 0.000 mm | PASS |
 | Plate with blind hole | -0.0036% | +0.0060% | 0.000 mm | KNOWN FAIL |

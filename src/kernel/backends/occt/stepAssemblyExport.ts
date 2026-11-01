@@ -23,6 +23,7 @@
 // explicitly. Nothing is left to the finalizer.
 
 import { getOC } from 'replicad';
+import { makeStepReproducible } from '../../export/stepReproducible';
 
 export interface StepAssemblyPart {
   /** Raw TopoDS_Shape (replicad `shape.wrapped`). */
@@ -121,8 +122,18 @@ function writeDocument(oc: any, docHandle: any, filename: string, surfaceCurves:
 }
 
 /**
+ * Pin the export-order-dependent values (time stamp, auto PRODUCT name index)
+ * in STEP bytes OCCT just wrote, so identical input gives identical bytes.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function reproducibleOcctStep(oc: any, bytes: Uint8Array): Uint8Array {
+  return makeStepReproducible(bytes, oc.Interface_Static.CVal('write.step.product.name'));
+}
+
+/**
  * Write `parts` as one STEP file with a named, coloured body per part.
- * Output matches `replicad.exportSTEP(shapes)` without unit overrides.
+ * Output matches `replicad.exportSTEP(shapes)` without unit overrides, except
+ * that it is byte-reproducible (see `reproducibleOcctStep`).
  */
 export function writeStepAssembly(
   parts: readonly StepAssemblyPart[],
@@ -139,6 +150,6 @@ export function writeStepAssembly(
     if (!writeDocument(oc, docHandle, filename, opts.surfaceCurves !== false)) throw new Error('WRITE STEP FILE FAILED.');
     const bytes = oc.FS.readFile('/' + filename) as Uint8Array;
     oc.FS.unlink('/' + filename);
-    return bytes;
+    return reproducibleOcctStep(oc, bytes);
   });
 }
