@@ -792,41 +792,41 @@ export interface SpringOptions {
 
 export interface SpurGearOptions {
   /** Module m in mm (pitch diameter = m · teeth). */
-  module: number;
+  module: Editable<number>;
   /** Tooth count, integer in [6, 400]. */
-  teeth: number;
+  teeth: Editable<number>;
   /** Face width (extrude depth) in mm. */
-  faceWidth: number;
+  faceWidth: Editable<number>;
   /** Pressure angle in degrees, default 20. */
-  pressureAngle?: number;
+  pressureAngle?: Editable<number>;
   /** Optional through-bore diameter in mm. */
-  bore?: number;
+  bore?: Editable<number>;
   /** Circular backlash in mm at the pitch circle of a pair built with the
    *  same value (each gear thins its tooth by half). Default 0.05 · module. */
-  backlash?: number;
+  backlash?: Editable<number>;
 }
 
 export interface InternalSpurGearOptions {
   /** Module m in mm (pitch diameter = m · teeth). */
-  module: number;
+  module: Editable<number>;
   /** Tooth count, integer in [6, 400]. */
-  teeth: number;
+  teeth: Editable<number>;
   /** Face width (extrude depth) in mm. */
-  faceWidth: number;
+  faceWidth: Editable<number>;
   /** Pressure angle in degrees, default 20. */
-  pressureAngle?: number;
+  pressureAngle?: Editable<number>;
   /** Circular backlash in mm at the pitch circle. Default 0.05 · module. */
-  backlash?: number;
+  backlash?: Editable<number>;
   /** Radial rim stock outside the internal root circle. Default 2.5 · module. */
-  rimThickness?: number;
+  rimThickness?: Editable<number>;
   /** Profile shift coefficient x. v1 only accepts 0 / omitted. */
-  profileShift?: number;
+  profileShift?: Editable<number>;
 }
 
 export interface PlanetaryToothCompatibilityOpts {
-  sunTeeth: number;
-  planetTeeth: number;
-  ringTeeth: number;
+  sunTeeth: Editable<number>;
+  planetTeeth: Editable<number>;
+  ringTeeth: Editable<number>;
 }
 
 /** `helix()` options as scripts pass them: dimensions may be ParamRefs. */
@@ -848,7 +848,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     internalSpurGear: makeInternalSpurGearMethod(session, () => api),
     ringGear: makeRingGearAlias(() => api),
     internalGear: makeInternalGearAlias(() => api),
-    planetaryToothCompatibility: makePlanetaryToothCompatibilityMethod(),
+    planetaryToothCompatibility: makePlanetaryToothCompatibilityMethod(session),
     ...makeThreadMethods(session, () => api),
     ...makeExtrudeMethods(session),
     ...makePolygonMethods(() => api),

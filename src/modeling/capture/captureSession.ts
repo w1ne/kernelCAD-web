@@ -242,6 +242,11 @@ export class CaptureSession {
   /** Slice-3 Phase 4: current run's gated named features.
    *  Keyed by feature `metadata.name`; value is the param name that gated it. */
   readonly gatedFeatureNames: Map<string, string | undefined> = new Map();
+  /** Params a builder read as a number at capture time to compute geometry
+   *  (spurGear's involute outline). Its records hold no ParamRef for them, so
+   *  an in-place `params.update` cannot follow an edit: `updateModelParams`
+   *  refuses one instead of returning the old solid. */
+  readonly captureResolvedParams: Set<string> = new Set();
   /** Slice-3: per-record cached lowered shape from the most recent build,
    *  populated by `proxy.ts` after `engine.run()` and reused by `params.update`
    *  to skip re-lowering records before the first affected one. */
@@ -1174,6 +1179,7 @@ export class CaptureSession {
     this.assetPresetsDeclared = false;
     this.warnings.length = 0;
     this.gatedFeatureNames.clear();
+    this.captureResolvedParams.clear();
     this.engineRef = undefined;
   }
 
