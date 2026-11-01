@@ -63,6 +63,21 @@ wood, fabric and metal zones, and a few presets (walnut, white, dark and similar
 | `window` | Interior window with mullions, glass, sill and optional curtains (`wall` origin) | width, panes, curtains, frame, glass, sill, curtains, rod | 284 |
 | `staircase` | Straight stair flight with treads, risers, stringers and optional handrails | steps (8–16), width, handrail side, treads, risers, handrail | 484 |
 | `room-divider` | Folding zig-zag screen of hinged framed panels, fabric or slatted | panels (3–5), infill, fold angle, frame, infill colour | 336 |
+| `microwave` | Countertop microwave with windowed door, handle, display, buttons and dial | size, body, door window, controls, display | 196 |
+| `dishwasher` | Freestanding dishwasher, closed or open with racks and plates | door, body, interior, racks, controls, plates | 100 |
+| `range-hood` | Chimney cooker hood with tapered canopy, filter and lights (`wall` origin) | width, chimney height, body, filters, lights | 84 |
+| `towel-rail` | Heated towel ladder rail with valves and an optional folded towel (`wall` origin) | bars (7/10/13), height, towel, rail, towel, stripe | 376 |
+| `bar-cart` | Two-tier rolling bar cart with handle, wheels, bottles and glasses | bottles (0–4), frame, trays, bottles A/B, glasses | 424 |
+| `fiddle-leaf-fig` | Tall fiddle-leaf fig with violin-shaped leaves in a basket pot | height (1.2/1.6/2 m), leaves, pot, leaves, trunk, soil | 504 |
+| `cactus-pot` | Potted cactus: ribbed column with arm, barrel or prickly-pear pads | style, flower, pot, cactus, flower, soil | 324 |
+| `hanging-planter` | Ceiling-hung planter with cords, leafy mound and trailing vines (`ceiling` origin) | drop, vines (3/5/7), cord, pot, leaves | 468 |
+| `vase-with-flowers` | Bulb or tall vase holding tulip-like flowers with stems and leaves | flowers (5/7/9), vase shape, vase, flowers A/B, stems | 376 |
+| `plant-stand` | Mid-century three-leg plant stand with a potted snake plant | stand height, leaves, stand, pot, leaves, variegated leaves | 268 |
+| `recliner` | Overstuffed recliner, upright or reclined with raised footrest | position, upholstery, cushions, base | 148 |
+| `bean-bag` | Slouchy bean bag chair with backrest and seat hollow | size, seam band, fabric, seam | 208 |
+| `standing-desk` | Sit-stand desk on telescoping legs with optional monitor, keyboard and mouse | height, width, setup, top, frame, devices, screen | 204 |
+| `wall-clock` | Round wall clock with hour markers and hands set to a time (`wall` origin) | diameter, time shown, rim, face, hands | 276 |
+| `aquarium` | Fish tank on a cabinet stand with gravel, rocks, plants, fish and hood | tank length, fish (2/4/6), stand, frame, water, gravel, plants, fish | 384 |
 
 ## Licence
 
