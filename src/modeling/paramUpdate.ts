@@ -242,6 +242,17 @@ function stampAnalyses(
 function validateParamEdits(session: CaptureSession, edits: ParamUpdateEdit[]): void {
   for (const edit of edits) {
     const entry = session.paramTable.get(edit.name);
+    // A gear's involute outline is computed from this param's value when the
+    // script runs; its records carry numbers, so an in-place update would
+    // return the old gear. Refuse before any re-lower work starts.
+    if (session.captureResolvedParams.has(edit.name)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `params.update: param '${edit.name}' shapes a spurGear/internalSpurGear profile, which is computed when the script runs; re-run the script with the new value instead of an in-place update.`,
+        undefined,
+        `invalid-args.param.capture-resolved — param '${edit.name}' is read at capture time by a gear builder`,
+      );
+    }
     // 'choice', 'string' and 'color' params are all JS strings — only 'number' and
     // 'boolean' map 1:1 to their JS typeof. Full validation (choice
     // membership, maxLength, numeric bounds) happens in `paramTable.set`
