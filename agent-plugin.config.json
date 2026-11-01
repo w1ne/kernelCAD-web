@@ -5,8 +5,8 @@
   "displayName": "kernelCAD",
   "repo": "w1ne/kernelCAD-web",
   "versionFrom": "package.json",
-  "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
-  "shortDescription": "CAD parts, STEP and drawings",
+  "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer, STEP/STL/3MF export, and electronics checks (netlist and ERC). No local OpenCASCADE install.",
+  "shortDescription": "CAD parts, STEP, schematics",
   "author": {
     "name": "kernelCAD",
     "url": "https://kernelcad.com"
@@ -22,7 +22,12 @@
     "stl",
     "3mf",
     "opencascade",
-    "skills"
+    "skills",
+    "electronics",
+    "schematic",
+    "netlist",
+    "erc",
+    "pcb"
   ],
   "category": "Productivity",
   "codexCategory": "Creativity",
@@ -30,7 +35,8 @@
   "defaultPrompts": [
     "Design a 3D-printable phone stand with kernelCAD and open it in Studio.",
     "Find a kernelCAD cookbook for a NEMA 17 motor plate and build it.",
-    "Export my bracket as STEP and 3MF."
+    "Export my bracket as STEP and 3MF.",
+    "Check my schematic: export its netlist and run ERC."
   ],
   "mcp": {
     "serverName": "kernelcad",
@@ -46,7 +52,7 @@
     "dashboardPackageName": "app-6a2fcd20e8008191b0c688ca1bc7abb5",
     "dashboardMcpUrl": "https://mcp.kernelcad.com/chatgpt/mcp",
     "commerce": false,
-    "releaseNotes": "Hosted kernelCAD MCP: editable .kcad.ts models, design review, DFM checks, and STEP/STL/3MF/GLB/DXF/PDF export.",
+    "releaseNotes": "Hosted kernelCAD MCP: editable .kcad.ts models, design review, DFM checks, STEP/STL/3MF/GLB/DXF/PDF export, and electronics connectivity (netlist_export, netlist_query, erc_run).",
     "testCases": {
       "positive": [
         {
@@ -78,6 +84,12 @@
           "prompt": "Add a 10 mm hole through the middle of this. (attach bracket.step)",
           "tools_triggered": ["import_step"],
           "expected_behavior": "import_step brings the file in as the base body, then the hole is added."
+        },
+        {
+          "description": "Netlist and ERC on a schematic",
+          "prompt": "Here are my components and nets: export the netlist, then run ERC and tell me what is wrong.",
+          "tools_triggered": ["netlist_export", "erc_run"],
+          "expected_behavior": "netlist_export returns the nets and pin→net membership; erc_run returns zero or more structured diagnostics (e.g. an unconnected pin, or two outputs on one net) with the offending component and pin named."
         }
       ],
       "negative": [
