@@ -12,6 +12,42 @@
   (chandelier, torches, brazier, lanterns, sconce, lava lamp, spotlight,
   flashlight, oil lamp, work light). Each has choice and colour knobs,
   presets and a committed preview. The catalog grows from 313 to 373 assets.
+- Injection-moulding DFM check: `dfmSpec({ process: 'moulding', pullDirection,
+  minDraftDeg, minWallMm, maxWallMm, minRadiusMm })` (defaults '+z', 1°, 1 mm,
+  4 mm, 0.5 mm) checks each part on its actual geometry. It reports every face
+  whose normal is off the pull axis and has less than `minDraftDeg` of draft
+  (measured per BREP face, with the exact surface normal on curved faces) and
+  every face that material blocks from releasing into either mould half
+  (undercut area per face). It also reports walls under `minWallMm` (the
+  min-wall ray sampler), the thickest section over `maxWallMm` (largest
+  inscribed sphere, a lower bound within one voxel) and inside corners
+  sharper than `minRadiusMm` (radius-0 concave creases and tighter cylindrical
+  fillets). A quantity it cannot measure is a warn `dfm.moulding.unmeasured`,
+  not a pass. New codes: `dfm.moulding.undercut`,
+  `dfm.moulding.draft-insufficient`, `dfm.moulding.thin-wall` (error),
+  `dfm.moulding.thick-wall`, `dfm.moulding.sharp-corner`,
+  `dfm.moulding.unmeasured` (warn). The report reaches `kernelcad dfm`,
+  `verify({ check: 'dfm' })` (`moulding[]`) and the requirements ledger.
+  Cookbook: `injection-moulding-draft-and-walls`. Demo bundle:
+  `docs/demos/moulding-check/`.
+- `dfm_review` processes `'sheet-metal'` and `'injection-molding'` (default
+  stays `['fdm', 'cnc']`). Sheet metal reviews the flat pattern of a
+  `sheetMetal(...)` chain with the model's thickness: `sheet.min-bend-radius`
+  (R ≥ t), `sheet.hole-to-bend` (≥ 2.5 × t + R), `sheet.hole-to-edge`
+  (≥ 2 × t), `sheet.min-flange` (≥ 4 × t), located in flat-pattern
+  coordinates; a non-sheet part returns one `sheet.not-sheet-metal` warn.
+  Injection molding runs the moulding engine above as `mold.draft`,
+  `mold.wall-thickness` (plus a `max_wall_ratio` uniformity warning),
+  `mold.undercuts` and `mold.sharp-internal-corners`. Every limit is a call
+  option. Demo bundle: `docs/demos/dfm-sheetmetal-molding/`.
+- `dfm_review` fixes: `cnc.internal-corner-radius` no longer reports the
+  facets of a blind side hole's floor as sharp corners, nor checks the floor
+  edges of a closed top pocket as vertical corners for a side (`+x`) setup
+  (a corner only counts for an axis when both faces are walls along it and
+  the tool reaches it; an edge an allowed axis reaches as a floor corner is
+  cut sharp by a flat end mill). The `fdm.min-hole` diagnostic is now
+  error-level in `dfm_review`, matching the failed check (the `dfmSpec` gate
+  keeps it a warning).
 
 - CFD connector (OpenFOAM): `run_cfd` / `cfd_summary` MCP tools,
   `kernelcad cfd run|status`, and the script declaration

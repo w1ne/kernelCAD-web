@@ -23,6 +23,7 @@ import { Command } from 'commander';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import { evaluateAndBuildScript } from './evaluate';
 import type { DfmCheckReport } from '../../../modeling/runtime/dfm/runDfmChecks';
+import type { MouldingPartReport } from '../../../modeling/runtime/dfm/mouldingCheck';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
@@ -66,6 +67,7 @@ export function formatDfmSummary(report: DfmCheckReport): string {
   for (const w of report.walls) parts.add(w.part);
   for (const v of report.voids) parts.add(v.part);
   for (const f of report.fdm ?? []) parts.add(f.part);
+  for (const m of report.moulding ?? []) parts.add(m.part);
   for (const c of report.clearance) {
     parts.add(c.a);
     parts.add(c.b);
@@ -85,8 +87,22 @@ export function formatDfmSummary(report: DfmCheckReport): string {
         `${o.unsupportedAreaMm2.toFixed(1)} mm² unsupported ` +
         `(best ${directionLabel(best.label, best.buildDirection)} ${best.unsupportedAreaMm2.toFixed(1)} mm²)`;
     }).join('') +
+    (report.moulding ?? []).map(({ part, result }) => mouldingSegment(part, result)).join('') +
     ` — ${fail ? 'FAIL' : 'PASS'}`
   );
+}
+
+/** `, moulding[<part>] draft min 0.50° (4 faces < 1°), undercut 0.0 mm²,
+ *  wall 2.000–3.48 mm, 1 sharp corner(s)` — unmeasured quantities print `?`. */
+function mouldingSegment(part: string, r: MouldingPartReport): string {
+  const s = r.settings;
+  const draft = Number.isFinite(r.draft.minDraftDeg) ? `${r.draft.minDraftDeg.toFixed(2)}°` : '?';
+  const thin = Number.isFinite(r.walls.thinnestMm) ? r.walls.thinnestMm.toFixed(3) : '?';
+  const thick = r.thickest !== null ? r.thickest.thicknessMm.toFixed(2) : '?';
+  return `, moulding[${part}] draft min ${draft} (${r.draft.insufficient.length} faces < ${s.minDraftDeg}°), ` +
+    `undercut ${r.undercut.areaMm2.toFixed(1)} mm², wall ${thin}–${thick} mm, ` +
+    `${r.sharpCorners.length} sharp corner(s)` +
+    (r.unmeasured.length > 0 ? `, ${r.unmeasured.length} unmeasured` : '');
 }
 
 function directionLabel(label: string | undefined, dir: readonly number[]): string {
@@ -125,7 +141,7 @@ export async function dfmScript(input: DfmCliInput): Promise<DfmCliResult> {
 
 export function dfmCommand(): Command {
   const cmd = new Command('dfm')
-    .description('Run the print-readiness gates declared by dfmSpec(): clearance, min wall, void/channel topology, FDM printability')
+    .description('Run the manufacturability gates declared by dfmSpec(): clearance, min wall, void/channel topology, FDM printability, injection moulding')
     .argument('<file>', 'path to .kcad.ts script')
     .option('--json', 'emit the full DFM report as JSON')
     .action(async (file: string, opts: { json?: boolean }) => {

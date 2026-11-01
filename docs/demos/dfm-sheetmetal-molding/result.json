@@ -1,0 +1,280 @@
+{
+  "tray-undrafted": {
+    "call": {
+      "file": "tray-undrafted.kcad.ts",
+      "processes": [
+        "injection-molding"
+      ]
+    },
+    "verdict": "fail",
+    "checks": [
+      {
+        "id": "mold.draft",
+        "status": "fail",
+        "summary": "10 face(s) (5328 mm²) have less than 1° draft to the pull direction, as low as 0°: @kc[boolean_2/face/back], @kc[boolean_2/face/front], @kc[boolean_2/face/back], @kc[boolean_2/face/front] and more; the part will drag or stick on ejection. Add draft (Shape.draft).",
+        "value": 0,
+        "limit": 1
+      },
+      {
+        "id": "mold.wall-thickness",
+        "status": "pass",
+        "summary": "Walls are within 1–4 mm and uniform to 1.25×.",
+        "value": 2.51,
+        "limit": 4
+      },
+      {
+        "id": "mold.undercuts",
+        "status": "fail",
+        "summary": "56 mm² on 4 face(s) cannot release toward either mold half (±pull direction), largest @kc[boolean_2/face/top] at (31.7, 0.7, 11); it needs a side action / lifter or a redesign.",
+        "value": 56
+      },
+      {
+        "id": "mold.sharp-internal-corners",
+        "status": "warn",
+        "summary": "12 internal corner(s) below R0.5 mm, e.g. between @kc[boolean_2/face/back] and @kc[boolean_2/face/bottom] at (30, 38, 2); they concentrate stress and hinder flow. Fillet them.",
+        "value": 0,
+        "limit": 0.5
+      }
+    ],
+    "undraftedFaces": [
+      "@kc[boolean_2/face/back]",
+      "@kc[boolean_2/face/front]",
+      "@kc[boolean_2/face/back]",
+      "@kc[boolean_2/face/front]",
+      "@kc[boolean_2/face/left]",
+      "@kc[boolean_2/face/right]",
+      "@kc[boolean_2/face/right]",
+      "@kc[boolean_2/face/left]",
+      "@kc[boolean_2/face/right]",
+      "@kc[boolean_2/face/left]"
+    ],
+    "undercutFaces": [
+      {
+        "face": "@kc[boolean_2/face/top]",
+        "location": [
+          31.666666666666668,
+          0.6666666666666666,
+          11
+        ]
+      },
+      {
+        "face": "@kc[boolean_2/face/bottom]",
+        "location": [
+          31.666666666666668,
+          0.6666666666666666,
+          7
+        ]
+      },
+      {
+        "face": "@kc[boolean_2/face/right]",
+        "location": [
+          35,
+          1.3333333333333333,
+          8.333333333333334
+        ]
+      },
+      {
+        "face": "@kc[boolean_2/face/left]",
+        "location": [
+          25,
+          0.6666666666666666,
+          8.333333333333334
+        ]
+      }
+    ]
+  },
+  "tray-drafted": {
+    "call": {
+      "file": "tray-drafted.kcad.ts",
+      "processes": [
+        "injection-molding"
+      ]
+    },
+    "verdict": "pass",
+    "checks": [
+      {
+        "id": "mold.draft",
+        "status": "pass",
+        "summary": "All 8 face(s) off the pull axis have at least 1° draft.",
+        "value": 2,
+        "limit": 1
+      },
+      {
+        "id": "mold.wall-thickness",
+        "status": "pass",
+        "summary": "Walls are within 1–4 mm and uniform to 1.61×.",
+        "value": 2.93,
+        "limit": 4
+      },
+      {
+        "id": "mold.undercuts",
+        "status": "pass",
+        "summary": "No undercuts: every face releases into the mold half it faces.",
+        "value": 0
+      },
+      {
+        "id": "mold.sharp-internal-corners",
+        "status": "warn",
+        "summary": "8 internal corner(s) below R0.5 mm, e.g. between @kc[boolean_1/face/f8] and @kc[boolean_1/face/bottom] at (30, 2.5, 2); they concentrate stress and hinder flow. Fillet them.",
+        "value": 0,
+        "limit": 0.5
+      }
+    ],
+    "undraftedFaces": [],
+    "undercutFaces": []
+  },
+  "bracket-tight": {
+    "call": {
+      "file": "bracket-tight.kcad.ts",
+      "processes": [
+        "sheet-metal"
+      ]
+    },
+    "verdict": "fail",
+    "checks": [
+      {
+        "id": "sheet.min-bend-radius",
+        "status": "fail",
+        "summary": "1 bend(s) tighter than R2 mm (1 × 2 mm thickness): sheetMetalBend_1, as tight as R1 mm; the outside of the bend can crack. Increase the bend radius.",
+        "value": 1,
+        "limit": 2
+      },
+      {
+        "id": "sheet.hole-to-bend",
+        "status": "fail",
+        "summary": "1 hole(s) closer to a bend than 2.5 × t + R: the closest edge is 2 mm from bend #0 (needs 6 mm) at flat (58, 20); it will distort when bent. Move it away or add bend relief.",
+        "value": 2,
+        "limit": 6
+      },
+      {
+        "id": "sheet.hole-to-edge",
+        "status": "pass",
+        "summary": "Every hole is at least 4 mm (2 × t) from the blank edge.",
+        "value": 13,
+        "limit": 4
+      },
+      {
+        "id": "sheet.min-flange",
+        "status": "pass",
+        "summary": "Every flange is at least 8 mm (4 × t) from the outside of its bend.",
+        "value": 21.59,
+        "limit": 8
+      }
+    ],
+    "holeToBend": [
+      {
+        "hole": 0,
+        "bend": 0,
+        "distanceMm": 43,
+        "limitMm": 6,
+        "ok": true,
+        "location": [
+          17,
+          20
+        ]
+      },
+      {
+        "hole": 1,
+        "bend": 0,
+        "distanceMm": 2,
+        "limitMm": 6,
+        "ok": false,
+        "location": [
+          58,
+          20
+        ]
+      }
+    ],
+    "bends": [
+      {
+        "ordinal": 0,
+        "featureId": "sheetMetalBend_1",
+        "angleDeg": 90,
+        "radiusMm": 1,
+        "minRadiusMm": 2,
+        "ok": false,
+        "location": [
+          60,
+          20
+        ]
+      }
+    ]
+  },
+  "bracket-fixed": {
+    "call": {
+      "file": "bracket-fixed.kcad.ts",
+      "processes": [
+        "sheet-metal"
+      ]
+    },
+    "verdict": "pass",
+    "checks": [
+      {
+        "id": "sheet.min-bend-radius",
+        "status": "pass",
+        "summary": "All 1 bend(s) have an inner radius ≥ R2 mm (1 × 2 mm thickness).",
+        "value": 2,
+        "limit": 2
+      },
+      {
+        "id": "sheet.hole-to-bend",
+        "status": "pass",
+        "summary": "Every hole is at least 2.5 × t + R from the nearest bend line.",
+        "value": 12,
+        "limit": 7
+      },
+      {
+        "id": "sheet.hole-to-edge",
+        "status": "pass",
+        "summary": "Every hole is at least 4 mm (2 × t) from the blank edge.",
+        "value": 13,
+        "limit": 4
+      },
+      {
+        "id": "sheet.min-flange",
+        "status": "pass",
+        "summary": "Every flange is at least 8 mm (4 × t) from the outside of its bend.",
+        "value": 21.8,
+        "limit": 8
+      }
+    ],
+    "holeToBend": [
+      {
+        "hole": 0,
+        "bend": 0,
+        "distanceMm": 43,
+        "limitMm": 7,
+        "ok": true,
+        "location": [
+          17,
+          20
+        ]
+      },
+      {
+        "hole": 1,
+        "bend": 0,
+        "distanceMm": 12,
+        "limitMm": 7,
+        "ok": true,
+        "location": [
+          48,
+          20
+        ]
+      }
+    ],
+    "bends": [
+      {
+        "ordinal": 0,
+        "featureId": "sheetMetalBend_1",
+        "angleDeg": 90,
+        "radiusMm": 2,
+        "minRadiusMm": 2,
+        "ok": true,
+        "location": [
+          60,
+          20
+        ]
+      }
+    ]
+  }
+}

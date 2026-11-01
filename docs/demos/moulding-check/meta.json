@@ -1,0 +1,25 @@
+{
+  "feature": "dfmSpec({ process: 'moulding' }) — injection-moulding DFM check",
+  "demoKind": "local run of the evaluate / kernelcad dfm path on a development machine (not the hosted service, no moulded part)",
+  "heroArtifact": "docs/demos/moulding-check/demo.mp4",
+  "source": "docs/demos/moulding-check/enclosure.kcad.ts",
+  "record": "npx tsx docs/demos/moulding-check/demo.ts",
+  "invocation": "kernelcad dfm docs/demos/moulding-check/{straight-walls,wrong-draft,enclosure}.kcad.ts",
+  "settings": {
+    "dfmSpec": "process 'moulding', pullDirection '+z', minDraftDeg 1, minWallMm 1.2, maxWallMm 3.5, minRadiusMm 0.5",
+    "render": "software rasterizer over the kernel per-face tessellation, colours from the report's face refs; sharp; ffmpeg libx264 960x540, 24 fps, 3 x 4 s"
+  },
+  "proof": {
+    "job": "draft / undercut / wall / inside-corner review of an injection-moulded 80 x 50 x 25 mm enclosure base with a 2 mm wall",
+    "result": "docs/demos/moulding-check/result.json",
+    "transcript": "docs/demos/moulding-check/transcript.txt",
+    "tests": "tests/unit/dfm/mouldingCheck.test.ts, tests/integration/examples/mouldingEnclosureCookbook.test.ts"
+  },
+  "evidence": {
+    "ffprobe": "docs/demos/moulding-check/ffprobe.txt",
+    "framesInspected": "frames at 1 s, 2 s, 5 s, 6 s, 10 s and 11 s extracted from demo.mp4 and inspected visually"
+  },
+  "catalogSource": null,
+  "overrideApprovedBy": null,
+  "limits": "Local validation only. Geometry checks against declared limits. No parting line is constructed, nothing was moulded, and no flow or warp simulation was run."
+}

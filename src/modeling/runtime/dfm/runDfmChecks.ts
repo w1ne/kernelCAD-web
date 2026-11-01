@@ -22,6 +22,10 @@
 //     features, bed contact, bed fit, and the orientation ranking, in the
 //     part-local frame (the frame the part is printed in). Shares the part's
 //     mesh + BVH with min-wall and voids.
+//   - `checkMouldability`: per moulded part, when the spec declares
+//     `process: 'moulding'` — draft and undercuts against the pull
+//     direction, thin walls, the thickest section, and sharp internal
+//     corners, in the part-local frame. Shares the same mesh + BVH.
 //
 // Part resolution: the LAST record whose lowered shape is a SceneBackend
 // wins (assembly scripts); single-shape scripts fall back to
@@ -65,7 +69,7 @@
 
 import type { BuiltModel } from '../../buildModel';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
-import type { DfmFdmMetadata, DfmSpecMetadata } from '../../../shared/intent/dfmSpecRecord';
+import type { DfmFdmMetadata, DfmMouldingMetadata, DfmSpecMetadata } from '../../../shared/intent/dfmSpecRecord';
 import type { CompilerDiagnostic, DiagnosticCode } from '../../../shared/diagnostics/diagnostic';
 import { DIAGNOSTIC_REGISTRY } from '../../../shared/diagnostics/registry';
 import { isSceneBackend, type SceneBackend } from '../../../kernel/backends/sceneBackend';
@@ -80,6 +84,7 @@ import { checkMinWall, MAX_REPORTED_CLUSTERS, type MinWallResult } from './minWa
 import { analyzeVoids, type VoidTopologyResult } from './voidTopology';
 import { TriangleBvh, type DfmMesh } from './meshBvh';
 import { checkFdmPrintability, type FdmPartReport } from './fdmCheck';
+import { checkMouldability, type MouldingPartReport } from './mouldingCheck';
 import { checkIfLatticePart, type LatticeDfmResult } from './latticeCheck';
 
 export interface DfmCheckReport {
@@ -103,6 +108,10 @@ export interface DfmCheckReport {
    *  part-LOCAL (the print frame); the matching diagnostics report world
    *  frame. */
   fdm?: { part: string; result: FdmPartReport }[];
+  /** Injection-moulding check per moulded part; present only when the spec
+   *  declares `process: 'moulding'`. Face, wall, section and corner
+   *  locations are part-LOCAL; the matching diagnostics report world frame. */
+  moulding?: { part: string; result: MouldingPartReport }[];
   /** Lattice (mesh-solid) parts: measured wall vs the printable minimum.
    *  These parts skip the generic min-wall / void / FDM probes. */
   lattices?: LatticeDfmResult[];
@@ -111,7 +120,7 @@ export interface DfmCheckReport {
    *  single-shape models), so they compose with clearance findings on
    *  transformed assemblies. */
   diagnostics: CompilerDiagnostic[];
-  /** Per-phase wall time (ms): 'clearance', 'mesh', 'walls', 'voids', 'fdm'
+  /** Per-phase wall time (ms): 'clearance', 'mesh', 'walls', 'voids', 'fdm', 'moulding'
    *  (each present only when the phase ran) and 'total'. Perf evidence, surfaced
    *  in --json by Task 8. */
   timings: Record<string, number>;
@@ -153,80 +162,122 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
   }
 
   // --- Per printed part: mesh ONCE, share one BVH across wall + void -------
-  const walls: DfmCheckReport['walls'] = [];
-  const voids: DfmCheckReport['voids'] = [];
-  const fdm: NonNullable<DfmCheckReport['fdm']> = [];
+  const sweep = newPartSweep();
   const lattices: LatticeDfmResult[] = [];
   const excluded = excludeMatcher(spec.exclude);
-  let meshMs = 0;
-  let wallsMs = 0;
-  let voidsMs = 0;
-  let fdmMs = 0;
-  let meshedAny = false;
-
   for (const part of parts) {
     // Excluded parts are not printed; lattice parts get their own check.
     if (excluded(part.name) || checkIfLatticePart(part.name, part.shape, spec, diagnostics, lattices)) continue;
-
-    // Reported locations are world-frame: local mesh coords mapped through
-    // the part's FK worldTransform (identity for single-shape models).
-    const world = (p: readonly [number, number, number]): string =>
-      xyz(part.worldTransform.point(p));
-
-    // One try/catch around the part's WHOLE pipeline (mesh + min-wall +
-    // void analysis): never abort the sweep on a kernel failure — surface
-    // it and keep checking the remaining parts (the checkClearance
-    // resilience stance). Kernel-failed parts stay warn severity.
-    try {
-      const tMesh = performance.now();
-      const mesh = meshShapeForExport((part.shape as OcctBackend).getReplicadShape());
-      const bvh = new TriangleBvh(mesh);
-      meshMs += performance.now() - tMesh;
-      meshedAny = true;
-
-      // Min-wall (only when declared).
-      if (spec.minWall !== undefined) {
-        const phase = checkPartMinWall(part, spec.minWall, mesh, bvh, world, diagnostics);
-        wallsMs += phase.elapsedMs;
-        walls.push({ part: part.name, result: phase.result });
-      }
-
-      // FDM printability (only when declared).
-      if (spec.fdm !== undefined) {
-        const phase = checkPartFdm(part, spec.fdm, mesh, bvh);
-        fdmMs += phase.elapsedMs;
-        fdm.push({ part: part.name, result: phase.report });
-        diagnostics.push(...phase.diagnostics);
-      }
-
-      // Void/channel topology (always — undeclared cavities must be caught).
-      const voidPhase = checkPartVoids(part, spec, mesh, bvh, world, diagnostics);
-      voidsMs += voidPhase.elapsedMs;
-      voids.push({ part: part.name, result: voidPhase.result });
-    } catch (e) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.kernel-failed',
-        severity: 'warn',
-        message:
-          `dfm: checking part '${part.name}' failed (${e instanceof Error ? e.message : String(e)}); ` +
-          'min-wall, void, and FDM results for this part are incomplete.',
-        hint:
-          'The OCCT kernel could not process this part — check it for degenerate geometry with ' +
-          'evaluate; the remaining parts were still checked.',
-      });
-    }
+    checkPrintedPart(part, spec, sweep, diagnostics);
   }
-
-  if (meshedAny) {
-    timings.mesh = meshMs;
-    timings.voids = voidsMs;
-    if (spec.minWall !== undefined) timings.walls = wallsMs;
-    if (spec.fdm !== undefined) timings.fdm = fdmMs;
-  }
+  Object.assign(timings, sweepTimings(spec, sweep));
   timings.total = performance.now() - tStart;
 
-  return withLattices({ clearance, walls, voids, ...(spec.fdm !== undefined ? { fdm } : {}), diagnostics, timings }, lattices);
+  return withLattices({
+    clearance,
+    walls: sweep.walls,
+    voids: sweep.voids,
+    ...(spec.fdm !== undefined ? { fdm: sweep.fdm } : {}),
+    ...(spec.moulding !== undefined ? { moulding: sweep.moulding } : {}),
+    diagnostics,
+    timings,
+  }, lattices);
+}
+
+/** Per-part results and phase wall time accumulated over the part sweep. */
+interface PartSweep {
+  walls: DfmCheckReport['walls'];
+  voids: DfmCheckReport['voids'];
+  fdm: NonNullable<DfmCheckReport['fdm']>;
+  moulding: NonNullable<DfmCheckReport['moulding']>;
+  ms: { mesh: number; walls: number; voids: number; fdm: number; moulding: number };
+  meshedAny: boolean;
+}
+
+function newPartSweep(): PartSweep {
+  return {
+    walls: [], voids: [], fdm: [], moulding: [],
+    ms: { mesh: 0, walls: 0, voids: 0, fdm: 0, moulding: 0 },
+    meshedAny: false,
+  };
+}
+
+/** Timing entries for the phases that ran (only when any part was meshed). */
+function sweepTimings(spec: DfmSpecMetadata, sweep: PartSweep): Record<string, number> {
+  if (!sweep.meshedAny) return {};
+  const { ms } = sweep;
+  return {
+    mesh: ms.mesh,
+    voids: ms.voids,
+    ...(spec.minWall !== undefined ? { walls: ms.walls } : {}),
+    ...(spec.fdm !== undefined ? { fdm: ms.fdm } : {}),
+    ...(spec.moulding !== undefined ? { moulding: ms.moulding } : {}),
+  };
+}
+
+/** Mesh one printed part once and run every declared per-part gate on the
+ *  shared mesh + BVH. One try/catch around the WHOLE pipeline: never abort
+ *  the sweep on a kernel failure — surface it and keep checking the
+ *  remaining parts (the checkClearance resilience stance). Kernel-failed
+ *  parts stay warn severity. */
+function checkPrintedPart(
+  part: ResolvedPart,
+  spec: DfmSpecMetadata,
+  sweep: PartSweep,
+  diagnostics: CompilerDiagnostic[],
+): void {
+  // Reported locations are world-frame: local mesh coords mapped through
+  // the part's FK worldTransform (identity for single-shape models).
+  const world = (p: readonly [number, number, number]): string =>
+    xyz(part.worldTransform.point(p));
+  const { ms } = sweep;
+  try {
+    const tMesh = performance.now();
+    const mesh = meshShapeForExport((part.shape as OcctBackend).getReplicadShape());
+    const bvh = new TriangleBvh(mesh);
+    ms.mesh += performance.now() - tMesh;
+    sweep.meshedAny = true;
+
+    // Min-wall (only when declared).
+    if (spec.minWall !== undefined) {
+      const phase = checkPartMinWall(part, spec.minWall, mesh, bvh, world, diagnostics);
+      ms.walls += phase.elapsedMs;
+      sweep.walls.push({ part: part.name, result: phase.result });
+    }
+
+    // FDM printability (only when declared).
+    if (spec.fdm !== undefined) {
+      const phase = checkPartFdm(part, spec.fdm, mesh, bvh);
+      ms.fdm += phase.elapsedMs;
+      sweep.fdm.push({ part: part.name, result: phase.report });
+      diagnostics.push(...phase.diagnostics);
+    }
+
+    // Injection-moulding check (only when declared).
+    if (spec.moulding !== undefined) {
+      const phase = checkPartMoulding(part, spec.moulding, mesh, bvh);
+      ms.moulding += phase.elapsedMs;
+      sweep.moulding.push({ part: part.name, result: phase.report });
+      diagnostics.push(...phase.diagnostics);
+    }
+
+    // Void/channel topology (always — undeclared cavities must be caught).
+    const voidPhase = checkPartVoids(part, spec, mesh, bvh, world, diagnostics);
+    ms.voids += voidPhase.elapsedMs;
+    sweep.voids.push({ part: part.name, result: voidPhase.result });
+  } catch (e) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.kernel-failed',
+      severity: 'warn',
+      message:
+        `dfm: checking part '${part.name}' failed (${e instanceof Error ? e.message : String(e)}); ` +
+        'min-wall, void, FDM, and moulding results for this part are incomplete.',
+      hint:
+        'The OCCT kernel could not process this part — check it for degenerate geometry with ' +
+        'evaluate; the remaining parts were still checked.',
+    });
+  }
 }
 
 function withLattices(report: DfmCheckReport, lattices: LatticeDfmResult[]): DfmCheckReport {
@@ -317,6 +368,25 @@ function checkPartFdm(
   });
   const elapsedMs = performance.now() - t0;
   return { report: r.report, diagnostics: r.diagnostics, elapsedMs };
+}
+
+/** Injection-moulding phase for one moulded part. */
+function checkPartMoulding(
+  part: ResolvedPart,
+  settings: DfmMouldingMetadata,
+  mesh: DfmMesh,
+  bvh: TriangleBvh,
+): { report: MouldingPartReport; diagnostics: CompilerDiagnostic[]; elapsedMs: number } {
+  const t0 = performance.now();
+  const r = checkMouldability(part.shape as OcctBackend, {
+    settings,
+    part: part.name,
+    refOwner: part.refOwner,
+    mesh,
+    bvh,
+    toWorld: p => part.worldTransform.point(p),
+  });
+  return { report: r.report, diagnostics: r.diagnostics, elapsedMs: performance.now() - t0 };
 }
 
 /** Void/channel topology phase for one printed part; always runs, and emits
