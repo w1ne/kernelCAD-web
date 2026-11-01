@@ -40,6 +40,21 @@ Low-poly street furniture, traffic pieces and road tiles for town and city scene
 | utility-pole | Timber power pole with crossarms, braces, insulators and optional transformer | height, arms, transformer yes/no, wood, insulator, drum | 344 |
 | advertising-column | Round poster pillar with plinth, cornice and dome, plain posters | height, column, poster1, poster2, poster3 | 540 |
 | crossing-beacon | Banded pole with a faceted amber globe for zebra crossings | height, bands, band1, band2, globe | 312 |
+| ticket-machine | Pay station with visor hood, screen, keypad ledge, card slot and ticket tray | body, panel, accent | 108 |
+| bicycle | City bike with diamond frame, faceted wheels, saddle, handlebar and optional rack | rack yes/no, frame, tyre, saddle | 544 |
+| bollard-light | Low path light with glowing lens band, louvre rings and cap, round or square | height, shape, post, light | 168 |
+| flag-pole | Tapered flagpole on a stepped plinth with ball finial and waving flag | height, style, pole, flag, stripe | 156 |
+| water-barrier | Row of interlocking water-filled road barriers in alternating colours | units, colorA, colorB, cap | 192 |
+| speed-bump | Modular rubber speed bump in alternating segments with end caps | segments, colorA, colorB | 96 |
+| cafe-table-set | Round bistro table with one to three chairs and optional parasol | chairs, parasol yes/no, metal, top, canopy | 388 |
+| food-cart | Push-along food cart with wheels, counter, goods and valanced canopy | canopy yes/no, body, canopy, trim, wheel, goods | 400 |
+| drinking-fountain | Pedestal fountain with water-filled bowl, spout and optional dog bowl | dog bowl yes/no, pedestal, bowl, water | 276 |
+| billboard | 4 x 2 m billboard on a pole with catwalk, lamps and a plain landscape poster | height, frame, sky, ground, sun | 168 |
+| dumpster | Waste dumpster with sloped front, two lids, lifting pockets and casters | lids, body, lid, caster | 244 |
+| scaffolding-section | One bay of tube scaffolding with plank decks, toe boards, rails and bracing | lifts, tube, boards | 384 |
+| ev-charger | EV charging post with screen, light strips, holstered plug and looping cable | body, light, screen | 156 |
+| fire-alarm-box | Gabled fire alarm call box on a pedestal post with pull handle and lamp | body, panel, lamp | 192 |
+| e-scooter | Parked electric kick scooter with deck, raked stem, T bar and kickstand | body, deck, wheel, grip | 192 |
 
 ## Licence
 
