@@ -31,6 +31,16 @@ The kit is built from rigid parts: robots, a rover, an arm, a jointed artist's m
 | worker-npc | Construction worker in hard hat and hi-vis vest, optionally with a shovel | tool, height, skin, hat, vest, shirt, reflect, trousers, boots | waist, neck, shoulders, elbows, hips, knees (10) | 572 |
 | snowman | Three-ball snowman with carrot nose, scarf, top hat or beanie and twig arms | height, hatStyle, snow, scarf, hat, carrot, coal, twig | neck, hat tip, scarf, 2 shoulders, 2 wrists (7) | 708 |
 | frog | Squat frog with bulging eyes, opening mouth and folded webbed hind legs | size, skin, belly, spot, eye, pupil | jaw, 2 shoulders, 2 hips, 2 knees, 2 ankles (9) | 496 |
+| bear | Heavy bear with shoulder hump, round ears, pale muzzle and thick legs | size, fur, muzzle, nose, paw | neck, 2 ears, tail, 4 hips, 4 knees (12) | 364 |
+| house-cat | Domestic cat with pointed ears, white paws and a long curving tail | size, fur, chest, eye, nose, paw | neck, 2 ears, tail sweep, tail curl, 4 hips, 4 knees (13) | 404 |
+| rabbit | Sitting rabbit with tall or lop ears, big haunches and pom-pom tail | size, ears, fur, belly, nose, eye | neck, 2 ears, 2 shoulders, 2 hips, 2 ankles, tail (10) | 400 |
+| duck | Mallard-style duck with flat opening bill, neck ring and webbed feet | size, bodyColor, headColor, ringColor, wing, bill, eye | neck, bill, 2 wings, tail, 2 hips (7) | 272 |
+| owl | Upright owl with swivelling head, face disc, big eyes and ear tufts | size, tufts, feathers, chest, face, eye, beak | neck, 2 tufts, 2 wings, tail, 2 ankles (8) | 516 |
+| turtle | Tortoise with faceted domed shell, nodding head, opening jaw and stubby legs | size, shell, scute, rim, skin, eye | neck, jaw, tail, 4 legs (7) | 332 |
+| chef-npc | Chef in tall toque, double-breasted jacket and apron, optionally holding a pan | tool, height, skin, jacket, apron, scarf, trousers, buttons, clogs | waist, neck, shoulders, elbows, hips, knees (10) | 712 |
+| skeleton-figure | Skeleton with hinged jaw, hollow ribcage, bone limbs and optional helmet | height, hatStyle, bone, socket, hat | waist, neck, jaw, shoulders, elbows, hips, knees (11) | 760 |
+| drone-quadcopter | Four-rotor camera drone with landing skids, optional prop guards and pan-tilt gimbal | size, guards, body, arm, prop, accent, lens | 4 prop spins, gimbal pan, gimbal tilt (6) | 544 |
+| excavator | Tracked mini excavator with slewing cab, boom, stick, toothed bucket and sprockets | size, cab, body, arm, track, glass, steel | 4 sprocket spins, slew, boom, stick, bucket (8) | 572 |
 
 Every link is authored in the standing pose, and each joint connector sits at the same point on both links, so pose 0 is the as-built pose. Rig ranges are relative to that pose.
 
