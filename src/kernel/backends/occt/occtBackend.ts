@@ -23,7 +23,7 @@ import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { releaseWorldFrameParts, sceneToWorldFrameParts } from './sceneToWorldFrame';
-import { writeStepAssembly } from './stepAssemblyExport';
+import { reproducibleOcctStep, writeStepAssembly } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
 import { memoBox, memoMass, memoVolume } from './analysisMemo';
 import { disposeOcctHandles } from './occtDispose';
@@ -1283,7 +1283,7 @@ export class OcctBackend implements ShapeBackend {
   async exportSTEPAsync(): Promise<Uint8Array> {
     const blob = this.shape.blobSTEP();
     const buf = await blob.arrayBuffer();
-    return new Uint8Array(buf);
+    return reproducibleOcctStep(getOC(), new Uint8Array(buf));
   }
 
   /**
