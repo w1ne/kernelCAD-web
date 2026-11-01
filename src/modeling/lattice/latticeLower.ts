@@ -15,16 +15,13 @@
 // the root primitive, so the cells follow a rotated box or cylinder;
 // 'cylindrical' wraps the cells around that frame's Z axis (or opts.axis).
 
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { buildLatticeSolid, type LatticeBuildResult, type LatticeGrade } from '../../kernel/lattice/buildLattice';
 import type { BodyMesh } from '../../kernel/lattice/bodyDistance';
 import type { LatticeFrame } from '../../kernel/lattice/latticeField';
 import { sheetWallForFraction } from '../../kernel/lattice/tpms';
 import { classifyStress, DEFAULT_INFILL_BANDS } from '../../kernel/fea/infillBands';
-import { runInProcessFeaStudy, type InProcessStressField } from '../../kernel/fea/inProcess/runInProcessFea';
+import type { InProcessStressField } from '../../kernel/fea/inProcess/runInProcessFea';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { LatticeMetadata, LatticeStressBand } from '../../shared/intent/latticeRecord';
 import { Transform } from '../../shared/runtime/se3';
@@ -181,6 +178,14 @@ async function feaGrade(input: LatticeLowerInput, md: LatticeMetadata, toParam: 
     ? studies.find((s) => s.metadata.name === wanted)
     : [...studies].reverse().find((s) => s.shapeId === baseId) ?? studies.at(-1);
   if (!found) throw new LatticeGradeError(wanted ? `no feaStudy named '${wanted}'` : 'no feaStudy is declared');
+  // Node-only (temp dir + the gmsh/solver driver). Loaded lazily so the
+  // browser runtime, which never takes the FEA grade, does not bundle them.
+  const [{ mkdtemp, rm }, { tmpdir }, { join }, { runInProcessFeaStudy }] = await Promise.all([
+    import('node:fs/promises'),
+    import('node:os'),
+    import('node:path'),
+    import('../../kernel/fea/inProcess/runInProcessFea'),
+  ]);
   const outDir = await mkdtemp(join(tmpdir(), 'kcad-lattice-fea-'));
   try {
     const res = await runInProcessFeaStudy(input.base, found.metadata, input.record.id, input.records, { outDir, targetElements: 4000, solveTimeoutMs: 60_000 });
