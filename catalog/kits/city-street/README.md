@@ -55,6 +55,20 @@ Low-poly street furniture, traffic pieces and road tiles for town and city scene
 | ev-charger | EV charging post with screen, light strips, holstered plug and looping cable | body, light, screen | 156 |
 | fire-alarm-box | Gabled fire alarm call box on a pedestal post with pull handle and lamp | body, panel, lamp | 192 |
 | e-scooter | Parked electric kick scooter with deck, raked stem, T bar and kickstand | body, deck, wheel, grip | 192 |
+| parked-car | Sedan or hatchback with glass cabin, pillars, bumpers, lights and faceted wheels | style, body, glass, tyre, lights, tail | 352 |
+| delivery-van | High-roof panel van with cab glass, livery stripe, bumpers, lights and wheels | body, glass, stripe, tyre, lights, tail | 376 |
+| city-bus | 12 m city bus with window band, glazed doors, destination display and roof unit | doors, body, glass, stripe, tyre, lights | 464 |
+| pedestrian-signal | Crosswalk signal post with stop and walk lamps under visors and a push button | heads, housing, stop, walk, button, pole | 280 |
+| bike-share-dock | Bike share terminal with screen and canopy plus a row of docking posts on a rail | docks, frame, accent, panel | 252 |
+| public-toilet | Chamfered automatic toilet cabin with roof overhang, accent band, sliding door and ramp | body, door, roof, accent | 160 |
+| guard-rail | W-beam guard rail on posts with spacer blocks and flared ends | length, rail, post | 132 |
+| chain-link-fence | 2.5 m chain-link panel with posts, top rail, diamond mesh, optional barbed top | height, mesh, barbed yes/no, post, wire | 416 |
+| brick-wall-section | 2 m brick wall with end piers, stone coping, caps and accent bricks | height, brick, brick2, coping | 216 |
+| garden-gate | Picket garden gate between capped posts, closed, ajar or open | state, pickets, wood, posts, iron | 232 |
+| playground-slide | Roofed slide tower with ladder, railings and trough chute with run-out | roof yes/no, frame, deck, slide, roof | 256 |
+| swing-set | A-frame swing set with top beam and one to three chain swings | swings, frame, seat, chain | 156 |
+| seesaw | Seesaw on a pivot stand with handles, seat pads and bumpers, level or tilted | pose, plank, stand, seat | 132 |
+| traffic-island | Kerbed traffic island with grass, shrubs and a keep-left bollard with disc and arrow | length, shrubs, kerb, grass, bollard, sign | 220 |
 
 ## Licence
 
