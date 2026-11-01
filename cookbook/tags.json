@@ -118,5 +118,6 @@
   "requirement",
   "cli",
   "game-asset",
-  "low-poly"
+  "low-poly",
+  "lattice"
 ]

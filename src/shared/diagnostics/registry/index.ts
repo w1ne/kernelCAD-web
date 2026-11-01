@@ -50,6 +50,7 @@ import { UNION_CODES } from './union';
 import { SCRIPT_CODES } from './script';
 import { TUBE_CODES } from './tube';
 import { COLLAB_CODES } from './collab';
+import { LATTICE_CODES } from './lattice';
 
 export type { DiagnosticGroup, DiagnosticSeverityLevel, DiagnosticCodeSpec } from './types';
 
@@ -84,6 +85,7 @@ export const DIAGNOSTIC_REGISTRY = {
   ...SCRIPT_CODES,
   ...TUBE_CODES,
   ...COLLAB_CODES,
+  ...LATTICE_CODES,
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;

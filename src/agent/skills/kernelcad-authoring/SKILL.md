@@ -101,7 +101,7 @@ These are not available today; do not generate code that uses them. Anything not
 
 - Asymmetric chamfer (only symmetric 45° supported) — deferred
 - Param-bound (auto-updating) dimensions on `svg-drawing` — deferred; dimensions DO ship derived from the geometry (`options.autoAnnotate`: datums, hole callouts with position tolerances, positions, radii, chamfers, flatness, ISO 2768 note), authored (`options.annotations`), and as section views on any plane (`options.sections`)
-- NURBS surface extend/untrim/blend, lattice/quilt — deferred (surface-surface intersection ships as `surfaceIntersection`)
+- NURBS surface extend/untrim/blend/quilt — deferred (surface-surface intersection ships as `surfaceIntersection`)
 - Tracked face/edge refs (only canonical refs and inline queries work) — deferred
 
 <!-- OUT-OF-SCOPE:END -->

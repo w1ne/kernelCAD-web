@@ -15,7 +15,10 @@ import { applyVariableEdgeFeature } from './lowerers/edgeFeatures';
 import { normalizeAxis } from './lowerers/helpers';
 import { finishLowering } from './lowerers/transforms';
 import { MeshBackend } from '../../../kernel/backends/meshBackend';
+import { SolidMeshBackend } from '../../../kernel/backends/solidMeshBackend';
 import { invalidArgsText } from '../../../shared/intent/invalidArgs';
+import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 import { closeSelectionSink, openSelectionSink } from '../../../kernel/naming/selectionSink';
 
 // `normalizeAxis` and `applyVariableEdgeFeature` moved into lowerers/;
@@ -115,6 +118,9 @@ export class OcctLowerer implements FeatureLowerer {
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
     const ctx = this.contextFor(inputs);
+    if (requiresBrepInput(r.kind) && Object.values(inputs.byKey).some((shape) => shape instanceof SolidMeshBackend)) {
+      return { shape: undefined as unknown as ShapeBackend, diagnostics: [solidMeshInputDiagnostic(ctx.target, r)] };
+    }
     if (requiresBrepInput(r.kind) && Object.values(inputs.byKey).some((shape) => shape instanceof MeshBackend)) {
       return {
         shape: undefined as unknown as ShapeBackend,
@@ -163,6 +169,18 @@ export class OcctLowerer implements FeatureLowerer {
 const MESH_COMPATIBLE_INPUT_KINDS = new Set<FeatureKind>([
   'assemblyPart', 'assemblyJoint', 'assemblyConnect', 'assemblyModel', 'solvedAssembly', 'assemblyExport',
 ]);
+
+function solidMeshInputDiagnostic(target: LowerContext['target'], r: FeatureRecord): CompilerDiagnostic {
+  return {
+    target,
+    code: 'feature.lattice.mesh-input',
+    featureId: r.id,
+    severity: 'error',
+    message: `${r.kind}(...): this input is a lattice mesh solid, which has no B-rep faces or edges. Apply ${r.kind} to the host body before .lattice().`,
+    hint: HINT_TEMPLATES['feature.lattice.mesh-input'].template,
+    nextAction: NEXT_ACTIONS['feature.lattice.mesh-input'],
+  };
+}
 
 function requiresBrepInput(kind: FeatureKind): boolean {
   return !MESH_COMPATIBLE_INPUT_KINDS.has(kind);

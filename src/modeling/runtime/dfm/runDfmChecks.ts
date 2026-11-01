@@ -80,6 +80,7 @@ import { checkMinWall, MAX_REPORTED_CLUSTERS, type MinWallResult } from './minWa
 import { analyzeVoids, type VoidTopologyResult } from './voidTopology';
 import { TriangleBvh, type DfmMesh } from './meshBvh';
 import { checkFdmPrintability, type FdmPartReport } from './fdmCheck';
+import { checkIfLatticePart, type LatticeDfmResult } from './latticeCheck';
 
 export interface DfmCheckReport {
   /** Every part pair of the scene with its measured status — including
@@ -102,6 +103,9 @@ export interface DfmCheckReport {
    *  part-LOCAL (the print frame); the matching diagnostics report world
    *  frame. */
   fdm?: { part: string; result: FdmPartReport }[];
+  /** Lattice (mesh-solid) parts: measured wall vs the printable minimum.
+   *  These parts skip the generic min-wall / void / FDM probes. */
+  lattices?: LatticeDfmResult[];
   /** ALL locations embedded in diagnostic messages are WORLD-frame: each
    *  part's FK worldTransform is applied before formatting (identity for
    *  single-shape models), so they compose with clearance findings on
@@ -152,6 +156,7 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
   const walls: DfmCheckReport['walls'] = [];
   const voids: DfmCheckReport['voids'] = [];
   const fdm: NonNullable<DfmCheckReport['fdm']> = [];
+  const lattices: LatticeDfmResult[] = [];
   const excluded = excludeMatcher(spec.exclude);
   let meshMs = 0;
   let wallsMs = 0;
@@ -160,7 +165,8 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
   let meshedAny = false;
 
   for (const part of parts) {
-    if (excluded(part.name)) continue;
+    // Excluded parts are not printed; lattice parts get their own check.
+    if (excluded(part.name) || checkIfLatticePart(part.name, part.shape, spec, diagnostics, lattices)) continue;
 
     // Reported locations are world-frame: local mesh coords mapped through
     // the part's FK worldTransform (identity for single-shape models).
@@ -220,7 +226,11 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
   }
   timings.total = performance.now() - tStart;
 
-  return { clearance, walls, voids, ...(spec.fdm !== undefined ? { fdm } : {}), diagnostics, timings };
+  return withLattices({ clearance, walls, voids, ...(spec.fdm !== undefined ? { fdm } : {}), diagnostics, timings }, lattices);
+}
+
+function withLattices(report: DfmCheckReport, lattices: LatticeDfmResult[]): DfmCheckReport {
+  return lattices.length > 0 ? { ...report, lattices } : report;
 }
 
 // --- Per-phase runners ------------------------------------------------------

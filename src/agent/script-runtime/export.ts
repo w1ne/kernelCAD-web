@@ -55,6 +55,9 @@ import { withOcctPoisonRecovery } from '../../kernel/backends/occt/occtBackend';
 import { fileSafePartName } from './safeOutputPath';
 import { exportBendTable } from './exportBendTable';
 import { tubeExportDiagnostics } from './exportTubeChecks';
+import { exportMeshSolid } from './exportMeshSolid';
+import { SolidMeshBackend } from '../../kernel/backends/solidMeshBackend';
+import type { LatticeReport } from '../../kernel/lattice/buildLattice';
 import { invalidArgsText } from '../../shared/intent/invalidArgs';
 import {
   buildStressInfillExport,
@@ -303,6 +306,8 @@ export interface ExportResult {
   drawingReport?: DrawingReport;
   /** `3mf` with `infill`: band table, saving estimate and render scripts. */
   infillReport?: StressInfillReport;
+  /** Mesh-solid (lattice) export: the lattice build report. */
+  latticeReport?: LatticeReport;
 }
 
 /** 3MF options with stress-graded infill resolved into writer modifiers.
@@ -431,6 +436,31 @@ function exportMissingReturn(
   return featureId === undefined ? detectMissingReturn({ returnValue: run.returnValue, records: run.records }) : [];
 }
 
+/** Targets that bypass the B-rep / Scene dispatch: mesh solids (lattice)
+ *  carry their own triangles, and the drawing sheets own their Scene
+ *  handling — svg-drawing / pdf-drawing accept both a single body and a
+ *  multi-body Scene (Scene parts ship in world frame so the hidden-line pass
+ *  sees inter-part occlusion; no union / per-part split needed). */
+async function exportDirectTarget(
+  input: ExportInput,
+  lowered: ShapeBackend,
+  targetId: string,
+  run: Awaited<ReturnType<typeof runScript>>,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult | undefined> {
+  if (lowered instanceof SolidMeshBackend) {
+    return exportMeshSolid(input.format, input.options, lowered, targetId, diagnostics, featureCount);
+  }
+  if (input.format === 'svg-drawing') {
+    return exportSvgDrawing(input, input.fileName, lowered, targetId, run, diagnostics, featureCount);
+  }
+  if (input.format === 'pdf-drawing') {
+    return exportPdfDrawing(input, input.fileName, lowered, targetId, run, diagnostics, featureCount);
+  }
+  return undefined;
+}
+
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   if (!EXPORT_FORMATS.includes(input.format)) throw new Error(`Unsupported export format: ${String(input.format)}`);
   // Text derived from the tube report, not a solid: no occt recompute needed.
@@ -510,17 +540,8 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     throw new Error('connector-manifest export requires the Scene source to lower to a SceneBackend.');
   }
 
-  // svg-drawing entry path: the engineering-drawing sheet accepts both a
-  // single body and a multi-body Scene — Scene parts ship in world frame so
-  // the hidden-line pass sees inter-part occlusion. Dispatched before the
-  // Scene-aware block because the drawing exporter owns its own Scene
-  // handling (no union / per-part split needed).
-  if (format === 'svg-drawing') {
-    return await exportSvgDrawing(input, fileName, lowered, targetId, run, r.diagnostics, featureCount);
-  }
-  if (format === 'pdf-drawing') {
-    return await exportPdfDrawing(input, fileName, lowered, targetId, run, r.diagnostics, featureCount);
-  }
+  const direct = await exportDirectTarget(input, lowered, targetId, run, r.diagnostics, featureCount);
+  if (direct !== undefined) return direct;
 
   // Scene-aware path: STEP/3MF/GLB keep per-part identity. STL is a single
   // triangle mesh, so multi-body Scenes are auto-fused (world-frame boolean

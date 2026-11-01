@@ -4,6 +4,7 @@ import type { ShapeBackend } from './backend';
 import type { RuntimeMesh } from './runtimeMesh';
 import type { Vec3 } from '../../shared/intent/types';
 import type { Transform } from '../../shared/runtime/se3';
+import type { GyrationAxis, MassProperties } from '../properties/massProperties';
 
 /** Indexed triangle geometry for display and rigid assembly placement only. */
 export class MeshBackend implements ShapeBackend {
@@ -17,15 +18,17 @@ export class MeshBackend implements ShapeBackend {
     this.indices = indices;
     this.normals = computeNormals(positions, indices);
   }
-  clone(): MeshBackend { return new MeshBackend(this.positions, this.indices); }
+  clone(): MeshBackend { return this.withPositions(this.positions); }
+  /** Same mesh, new vertex positions; subclasses keep their own type. */
+  protected withPositions(p: Float32Array): MeshBackend { return new MeshBackend(p, this.indices); }
 
-  private unsupported(operation: string): never {
+  protected unsupported(operation: string): never {
     throw new Error(`Display mesh bodies do not support ${operation}; convert to BRep explicitly when solid operations are needed.`);
   }
   translate(x: number, y: number, z: number): MeshBackend {
     const p = this.positions.slice();
     for (let i = 0; i < p.length; i += 3) { p[i]! += x; p[i + 1]! += y; p[i + 2]! += z; }
-    return new MeshBackend(p, this.indices);
+    return this.withPositions(p);
   }
   rotate(axis: Vec3, degrees: number, pivot: Vec3 = [0, 0, 0]): MeshBackend {
     const [ax, ay, az] = axis; const n = Math.hypot(ax, ay, az);
@@ -39,13 +42,13 @@ export class MeshBackend implements ShapeBackend {
       p[i + 1] = pivot[1] + py * c + (z * px - x * pz) * s + y * (x * px + y * py + z * pz) * (1 - c);
       p[i + 2] = pivot[2] + pz * c + (x * py - y * px) * s + z * (x * px + y * py + z * pz) * (1 - c);
     }
-    return new MeshBackend(p, this.indices);
+    return this.withPositions(p);
   }
   scale(s: number | Vec3): MeshBackend {
     const v = typeof s === 'number' ? [s, s, s] : s;
     const p = this.positions.slice();
     for (let i = 0; i < p.length; i += 3) { p[i]! *= v[0]!; p[i + 1]! *= v[1]!; p[i + 2]! *= v[2]!; }
-    return new MeshBackend(p, this.indices);
+    return this.withPositions(p);
   }
   transform(t: Transform): MeshBackend { const d = t.decomposeToTranslateAndRotate(); return this.rotate([d.rotateAxis[0], d.rotateAxis[1], d.rotateAxis[2]], d.rotateDeg).translate(d.translate[0], d.translate[1], d.translate[2]); }
   union(): never { return this.unsupported('booleans'); }
@@ -57,13 +60,16 @@ export class MeshBackend implements ShapeBackend {
     for (let i = 0; i < this.positions.length; i += 3) for (let a = 0; a < 3; a++) { min[a] = Math.min(min[a], this.positions[i + a]!); max[a] = Math.max(max[a], this.positions[i + a]!); }
     return { min, max };
   }
-  volume(): never { return this.unsupported('volume queries'); }
-  surfaceArea(): never { return this.unsupported('surface area queries'); }
-  massProperties(): never { return this.unsupported('mass properties'); }
+  volume(): number { return this.unsupported('volume queries'); }
+  surfaceArea(): number { return this.unsupported('surface area queries'); }
+  massProperties(...args: [density?: number, gyrationAxis?: GyrationAxis]): MassProperties {
+    void args;
+    return this.unsupported('mass properties');
+  }
   isEmpty(): boolean { return this.indices.length === 0; }
-  solidComponents(): never { return this.unsupported('solid component queries'); }
+  solidComponents(): readonly ShapeBackend[] { return this.unsupported('solid component queries'); }
   getMesh(): RuntimeMesh { return { positions: this.positions, indices: this.indices, normals: this.normals }; }
-  exportSTL(): never { return this.unsupported('solid exports'); }
+  exportSTL(): Uint8Array { return this.unsupported('solid exports'); }
   exportSTEP(): never { return this.unsupported('STEP export'); }
 }
 

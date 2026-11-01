@@ -12,7 +12,7 @@ description of any entry, call `lookup_api(query)`.
 | [Add material](#add-material) | Turn a profile into a solid, or grow one along a path. |
 | [Remove material](#remove-material) | Cut into a solid: bolt holes, pockets, slots, plain subtraction. |
 | [Combine shapes](#combine-shapes) | Merge or intersect solids, or group them without paying for a boolean. |
-| [Finish edges](#finish-edges) | Break edges, add draft, hollow out a wall, fold sheet metal. |
+| [Finish edges](#finish-edges) | Break edges, add draft, hollow out a wall or fill it with a lattice, fold sheet metal. |
 | [Select geometry](#select-geometry) | Pick the edges or faces a feature acts on. Query first, then sort or group what comes back. |
 | [Place & transform](#place--transform) | Move a body into position, mirror it, or repeat it. |
 | [Assemble](#assemble) | Build a mechanism from parts: connectors, mates, joints, posed Scenes. |
@@ -119,7 +119,7 @@ Merge or intersect solids, or group them without paying for a boolean.
 
 ## Finish edges
 
-Break edges, add draft, hollow out a wall, fold sheet metal.
+Break edges, add draft, hollow out a wall or fill it with a lattice, fold sheet metal.
 
 | Call | What it does |
 |---|---|
@@ -128,6 +128,7 @@ Break edges, add draft, hollow out a wall, fold sheet metal.
 | `Shape.chamfer(distance, edges?: EdgeSelector) => Shape` | Bevel edges. |
 | `Shape.draft(angleDeg: Editable<number>, opts: { face: FaceSelector \| string; neutralPlane?: string; pullDir?: [number, number, number] }) => Shape` | Taper the selected face(s) for moldability. |
 | `Shape.shell(thickness, { face: FaceSelector }) => Shape` | Hollow the solid removing the named face. |
+| `Shape.lattice(opts: { type?: 'gyroid' \| 'schwarzP' \| 'diamond' \| 'neovius'; variant?: 'sheet' \| 'network'; cell: Editable<number>; wall?: Editable<number>; density?: Editable<number>; skin?: Editable<number>; grade?: { from: 'surface' \| 'holes' \| 'fea'; near?: number; far?: number; over?: number; study?: string; bands?: { name, fromYield, densityPercent }[] }; frame?: 'part' \| 'world' \| 'cylindrical'; axis?: { origin, direction }; resolution?: number; tolerance?: number }) => Shape` | Fill the body with a triply periodic minimal surface lattice inside a solid skin. |
 | `Shape.offsetFaces(faces: FaceSelector \| FaceSelector[], distance: Editable<number>) => Shape` | Push or pull planar faces along their outward normals. |
 | `Shape.moveFaces(faces: FaceSelector \| FaceSelector[], by: [number, number, number]) => Shape` | Move planar faces by `by` (mm). |
 | `Shape.bend(edgeRef: EdgeSelector \| string, angle: Editable<number>, radius: Editable<number>) => Shape` | Add a sheet-metal bend along a linear edge. |

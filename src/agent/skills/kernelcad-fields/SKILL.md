@@ -1,6 +1,6 @@
 ---
 name: kernelcad-fields
-description: Signed-distance fields — sdf.sphere/.box/.cylinder/.torus, sdf.smoothBlend, sdf.materialize. Use for smooth-blended primitives and organic shapes that BREP fillet cannot reach; result is a standard Shape.
+description: Signed-distance fields — sdf.sphere/.box/.cylinder/.torus, sdf.smoothBlend, sdf.materialize — and TPMS lattice infill (body.lattice — gyroid, Schwarz-P, diamond, Neovius; graded, conformal). Use for smooth-blended primitives, organic shapes and lightweight lattice cores.
 ---
 
 # kernelCAD — signed-distance fields
@@ -96,9 +96,67 @@ After authoring an SDF-rooted Shape, run before reporting done:
 | G-translate-after-materialize | Position the `SdfField` with `.translate(dx, dy, dz)` before `sdf.materialize`; once materialized the result is a `Shape`, not an `SdfField`, so only transform it with the Shape's own methods |
 | G-bind-name-typo | If using `evaluate_sdf`, the `fieldName` passed in matches a `sdf.bind('<name>', field)` call in the script; mismatch emits `feature.sdf.field-undefined` |
 
+## TPMS lattice infill — `body.lattice({...})`
+
+Fill a finished B-rep body with a triply periodic minimal surface lattice
+inside a solid skin. It is the LAST step of the body chain: holes, booleans,
+fillets and shells go on the body first.
+
+```ts
+const bracket = box(8, 40, 70)
+  .hole('left', { u: 0, v: -10, diameter: 5.5, depth: 'through' })
+  .union(box(70, 40, 8));
+return bracket.lattice({
+  type: 'gyroid',           // 'gyroid' | 'schwarzP' | 'diamond' | 'neovius'
+  variant: 'sheet',         // 'sheet': wall on the surface | 'network': filled labyrinth
+  cell: 6,                  // period, mm
+  wall: 0.8,                // sheet wall, mm (or density: solid fraction 0.05-0.9)
+  skin: 1.2,                // solid outer skin, mm — follows every face, holes too; 0 = open cells
+  grade: { from: 'holes', near: 2, over: 8 },   // 2 mm walls at the bores -> 0.8 mm 8 mm away
+});
+```
+
+| Option | Meaning |
+|---|---|
+| `grade: { from: 'surface', near, far?, over }` | wall / density by depth below the skin (smoothstep over `over` mm) |
+| `grade: { from: 'holes', near, far?, over }` | by distance to the body's hole walls (concave cylindrical faces) |
+| `grade: { from: 'fea', study?, bands? }` | the body's `feaStudy`, solved in process (voxel FEA); von Mises / yield -> the stress-graded infill bands (default <15 % 10 %, 15-40 % 25 %, >40 % 60 %) -> lattice solid fraction |
+| `frame: 'part'` (default) / `'world'` / `'cylindrical'` | cells follow the primitive's rotated frame, the world axes, or wrap a whole number of cells around the part Z axis (`axis` overrides) |
+| `resolution`, `tolerance` | sample-grid step (default cell / 8) and decimation tolerance (default step / 10) |
+
+**What you get.** A watertight, edge-manifold, consistently outward-wound
+triangle MESH solid, not a B-rep (kind `lattice`, backed by a solid mesh
+body). Volume, mass properties, bounding box, `render` / `render inspect`
+(use `--section` for a cut-away), STL / 3MF / OBJ export and `dfmSpec` work.
+STEP / DXF / drawings refuse it (`export.mesh-body.format-unsupported`) and
+booleans, fillets or holes after it fail with `feature.lattice.mesh-input`.
+Slicers (Orca / Bambu / Prusa / Cura) and mesh tools take the STL / 3MF.
+
+**How it is built.** The body's signed distance and the TPMS field are
+sampled on one grid; the solid is meshed as the outer surface plus the
+lattice VOID networks (each smooth, so the grid only resolves the cell, not
+the wall) by marching tetrahedra — closed and manifold by construction —
+then vertices are Newton-projected onto the analytic surface and the mesh
+is decimated under a tolerance with topology checks.
+
+**Report** (`feature.lattice.report`, info): designed wall / density range,
+measured wall (5th percentile and min across walls, sampled on the built
+mesh) and skin, volume and solid fraction of the host body, triangle count,
+watertight flag, timings. The sheet wall measures ~4 % under the design value
+(first-order surface distance). With `dfmSpec`, `dfm.lattice.wall-too-thin`
+fails a lattice whose measured p5 wall is under `minWall` or 2 x nozzle, and
+`dfm.lattice.enclosed-cavities` (info) notes that a skin seals the void
+network (fine for FDM; drain it for resin / powder).
+
+**Measured cost** (this machine): 60 mm gyroid sheet cube, 6 mm cells, 0.8 mm
+wall, 1.2 mm skin: field + mesh ~1.6 s, decimation ~5 s, ~1.8 M triangles
+(~88 MB binary STL; 3MF is ~4x smaller). A 30 mm cube: ~1 s, ~0.4 M triangles.
+
 ## Related skills
 
 - `kernelcad-authoring` — `sdf.materialize(...)` returns a standard `Shape`; chain `.translate`, `.rotate`, `.union`, `.subtract`, etc. as normal.
 - `kernelcad-features` — fillet / chamfer on a materialized result may emit `feature.kernel-failed`; check before relying on it.
 - `kernelcad-nurbs` — for freeform curved analytic surfaces, prefer NURBS; SDF is for smooth-blended primitives and organic shapes.
 - `kernelcad-mcp` — `evaluate_sdf` is the cheap probe before the expensive `materialize`.
+- `kernelcad-fea` — declare the `feaStudy` that `lattice({ grade: { from: 'fea' } })` grades from.
+- `kernelcad-print` — `dfmSpec({ process: 'fdm' })` checks the lattice walls against the nozzle.

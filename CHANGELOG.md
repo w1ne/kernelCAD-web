@@ -28,6 +28,28 @@
   `kernelcad sandbox status`, the MCP `initialize` instructions and
   serverInfo title, and per-tool `SANDBOX MODE:` notes in `tools/list`. Docs:
   `docs/sandbox.md`. Demo: `docs/demos/sandbox-mode/`.
+- Lattice infill: `body.lattice({ type, variant, cell, wall | density, skin,
+  grade, frame })` fills a finished B-rep body with a triply periodic minimal
+  surface lattice — gyroid, Schwarz-P, diamond or Neovius, as a sheet (wall
+  in mm) or network (solid fraction) — inside a solid skin that follows every
+  face, hole walls included. `grade` varies the wall / density by depth below
+  the skin, by distance to the hole walls, or from the body's `feaStudy`
+  (solved in process, von Mises mapped through the stress-graded infill band
+  table). `frame: 'part'` aligns cells with a rotated primitive;
+  `'cylindrical'` wraps a whole number of cells around the part axis. The
+  result is a watertight, consistently oriented mesh solid (new
+  `SolidMeshBackend`: volume, mass properties, STL / 3MF / OBJ export; STEP
+  and B-rep ops are refused with `export.mesh-body.format-unsupported` /
+  `feature.lattice.mesh-input`). It is built by meshing the outer surface and
+  the lattice's void networks separately with marching tetrahedra (closed and
+  manifold by construction, no wall-thin grid needed), Newton-projecting
+  vertices onto the analytic surface, and tolerance-bounded edge-collapse
+  decimation. `feature.lattice.report` gives the measured wall and skin,
+  solid fraction, triangle count and timings; with `dfmSpec`,
+  `dfm.lattice.wall-too-thin` gates the measured wall against `minWall` / 2 x
+  nozzle. 60 mm gyroid cube, 6 mm cells: ~1.6 s field + mesh, ~8 s total,
+  ~1.8 M triangles. Example `examples/lattice/graded-gyroid-bracket.kcad.ts`,
+  recipe `lattice-graded-gyroid-bracket`, demo `docs/demos/lattice-infill/`.
 
 - Catalog asset Studio link: `src/shared/assets/catalogStudioLink.ts` resolves
   `/studio?catalog=<kit>/<id>` (e.g. `nature/pine-tree`) against

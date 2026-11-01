@@ -35,6 +35,7 @@
         "importedMesh",
         "importedStep",
         "importedStl",
+        "lattice",
         "loft",
         "mirror",
         "moveFaces",

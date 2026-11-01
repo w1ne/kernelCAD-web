@@ -1,0 +1,57 @@
+{
+  "bundleVersion": 1,
+  "scriptPath": "/home/user/wt-lattice/examples/lattice/graded-gyroid-bracket.kcad.ts",
+  "generatedAt": "2026-11-01T00:30:28.273Z",
+  "requestedChannels": [
+    "rgb"
+  ],
+  "emittedChannels": [
+    "rgb"
+  ],
+  "viewport": {
+    "width": 768,
+    "height": 768
+  },
+  "views": [
+    "front",
+    "right",
+    "top",
+    "iso"
+  ],
+  "bounds": {
+    "min": [
+      0,
+      0,
+      0
+    ],
+    "max": [
+      70,
+      40,
+      70
+    ]
+  },
+  "command": {
+    "name": "kernelcad render inspect",
+    "channels": [
+      "rgb"
+    ],
+    "views": [
+      "front",
+      "right",
+      "top",
+      "iso"
+    ],
+    "screenshotTimeoutMs": 600000
+  },
+  "caveats": [
+    "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+  ],
+  "channels": {
+    "rgb": {
+      "front": "channels/rgb/front.png",
+      "right": "channels/rgb/right.png",
+      "top": "channels/rgb/top.png",
+      "iso": "channels/rgb/iso.png"
+    }
+  }
+}
