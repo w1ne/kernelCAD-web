@@ -16,3 +16,11 @@ Low-poly consumer electronics - screens, computers, phones, audio and networking
 | `retro-radio` | Vintage tabletop valve radio in a wooden cathedral-arch or wide chamfered cabinet with a cloth speaker grille, fret bars, tuning dial and knobs | style, wood, cloth, dial, knobs | 240 |
 | `smartphone` | Modern touchscreen smartphone with a large screen, side buttons and rear camera bump, lying flat or leaning on a desk stand | pose, size, body, screen, camera, stand | 124 |
 | `wifi-router` | Home wireless internet router with a chamfered front, status lights, top vents and two to four tilted antennas along the back | antennas, body, rod, vent, light | 244 |
+
+## Licence
+
+Every asset in this kit — the `.kcad.ts` source and any GLB or ES module exported from it — is dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Use, modify and ship it in commercial games without attribution. The catalog metadata carries `license: "CC0-1.0"` per asset.
+
+## Provenance
+
+Geometry is original kernelCAD `.kcad.ts` source written for this catalog. No downloaded meshes, no external meshes, textures or palettes, and no mesh decimation are involved.
