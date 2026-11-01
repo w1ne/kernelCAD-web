@@ -37,8 +37,6 @@ const ngon = (r: number, n: number, rot = 0) => {
   }
   return p.close();
 };
-const blk = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) =>
-  box(x1 - x0, y1 - y0, z1 - z0).translate(x0, y0, z0);
 
 const t = assembly('round-table');
 const sides = 12;

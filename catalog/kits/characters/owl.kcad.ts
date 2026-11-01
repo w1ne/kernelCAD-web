@@ -45,31 +45,6 @@ const fix = (parent: string, child: string, o: { kind: 'vec3'; value: [number, n
   refs[child].connector(child, { type: 'frame', origin: o });
   r.mate(child, `${parent}.${child}`, `${child}.${child}`, 'fastened');
 };
-// Chamfered-rectangle ring, w wide (X) and h tall, centred at (0, dz); mm, unscaled.
-const ring = (w: number, h: number, dz: number) => {
-  const a = (w / 2) * s;
-  const b = (h / 2) * s;
-  const c = Math.min(w, h) * 0.25 * s;
-  const z = dz * s;
-  return path().moveTo(-a + c, z - b).lineTo(a - c, z - b).lineTo(a, z - b + c).lineTo(a, z + b - c)
-    .lineTo(a - c, z + b).lineTo(-a + c, z + b).lineTo(-a, z + b - c).lineTo(-a, z - b + c).close();
-};
-// Sweep rings toward -Y from (x, y0, z0); stations are [distance, w, h, dz].
-const sweepY = (x: number, y0: number, z0: number, st: [number, number, number, number][]) =>
-  ring(st[0][1], st[0][2], st[0][3]).loft(st.slice(1).map(([, w, hh, dz]) => ring(w, hh, dz)), {
-    planes: st.map(([d]) => ({ plane: 'XY' as const, origin: [0, 0, d * s] as [number, number, number] })),
-    ruled: true,
-  }).rotateX(90).translate(x * s, y0 * s, z0 * s);
-// Square rod from p0 to p1, w0 to w1 thick.
-const rod = (p0: [number, number, number], p1: [number, number, number], w0: number, w1: number) => {
-  const d = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
-  const len = Math.hypot(d[0], d[1], d[2]);
-  const sq = (w: number) => path().moveTo(-w * s / 2, -w * s / 2).lineTo(w * s / 2, -w * s / 2).lineTo(w * s / 2, w * s / 2).lineTo(-w * s / 2, w * s / 2).close();
-  return sq(w0).loft(sq(w1), { spacing: len * s, ruled: true })
-    .rotateY((Math.acos(d[2] / len) * 180) / Math.PI)
-    .rotateZ((Math.atan2(d[1], d[0]) * 180) / Math.PI)
-    .translate(p0[0] * s, p0[1] * s, p0[2] * s);
-};
 // Corner-to-corner box.
 const blk = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) =>
   box((x1 - x0) * s, (y1 - y0) * s, (z1 - z0) * s).translate(x0 * s, y0 * s, z0 * s);

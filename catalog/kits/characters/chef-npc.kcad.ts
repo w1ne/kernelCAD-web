@@ -49,21 +49,6 @@ const fix = (parent: string, child: string, o: { kind: 'vec3'; value: [number, n
   refs[child].connector(child, { type: 'frame', origin: o });
   r.mate(child, `${parent}.${child}`, `${child}.${child}`, 'fastened');
 };
-// Chamfered-rectangle ring, w wide (X) and h tall, centred at (0, dz); mm, unscaled.
-const ring = (w: number, h: number, dz: number) => {
-  const a = (w / 2) * s;
-  const b = (h / 2) * s;
-  const c = Math.min(w, h) * 0.25 * s;
-  const z = dz * s;
-  return path().moveTo(-a + c, z - b).lineTo(a - c, z - b).lineTo(a, z - b + c).lineTo(a, z + b - c)
-    .lineTo(a - c, z + b).lineTo(-a + c, z + b).lineTo(-a, z + b - c).lineTo(-a, z - b + c).close();
-};
-// Sweep rings toward -Y from (x, y0, z0); stations are [distance, w, h, dz].
-const sweepY = (x: number, y0: number, z0: number, st: [number, number, number, number][]) =>
-  ring(st[0][1], st[0][2], st[0][3]).loft(st.slice(1).map(([, w, hh, dz]) => ring(w, hh, dz)), {
-    planes: st.map(([d]) => ({ plane: 'XY' as const, origin: [0, 0, d * s] as [number, number, number] })),
-    ruled: true,
-  }).rotateX(90).translate(x * s, y0 * s, z0 * s);
 // Square rod from p0 to p1, w0 to w1 thick.
 const rod = (p0: [number, number, number], p1: [number, number, number], w0: number, w1: number) => {
   const d = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
@@ -77,9 +62,6 @@ const rod = (p0: [number, number, number], p1: [number, number, number], w0: num
 // Corner-to-corner box.
 const blk = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) =>
   box((x1 - x0) * s, (y1 - y0) * s, (z1 - z0) * s).translate(x0 * s, y0 * s, z0 * s);
-// Side-profile prism: points are (y, z), thickness t starting at x0.
-const side = (pts: [number, number][], t: number, x0 = -t / 2) =>
-  extrudePolygon(pts.map(([y, z]) => [y * s, z * s] as [number, number]), t * s).rotateX(90).rotateZ(90).translate(x0 * s, 0, 0);
 // Faceted stack of rings [radius, z] with n sides.
 const ngon = (rad: number, n: number, rot = 0) => {
   let p = path().moveTo(rad * s * Math.cos(rot), rad * s * Math.sin(rot));
@@ -89,11 +71,6 @@ const ngon = (rad: number, n: number, rot = 0) => {
   }
   return p.close();
 };
-const stack = (rings: [number, number][], n: number) =>
-  ngon(rings[0][0], n, Math.PI / n).loft(rings.slice(1).map(([rr]) => ngon(rr, n, Math.PI / n)), {
-    planes: rings.map(([, z]) => ({ plane: 'XY' as const, origin: [0, 0, z * s] as [number, number, number] })),
-    ruled: true,
-  });
 const seg = (x: number, z0: number, z1: number, r0: number, r1: number, n = 6) =>
   ngon(r0, n, Math.PI / n).loft(ngon(r1, n, Math.PI / n), { spacing: (z1 - z0) * s, ruled: true }).translate(x * s, 0, z0 * s);
 

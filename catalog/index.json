@@ -388,7 +388,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/bear.kcad.ts",
-      "sourceSha256": "195f87c56e0e032fb64d44d933a24a67ac422264e8c3a49e69c72dfbe6031e51",
+      "sourceSha256": "a3f00a5449297c1f1b0d20685d060468379a4ed1eaaa381e988896c4645c7c42",
       "triangleBudget": 650,
       "params": [
         {
@@ -923,7 +923,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/chef-npc.kcad.ts",
-      "sourceSha256": "b9597c700b131367454ac3596b181000c3017ba916f6862600c3c69a3c8479ea",
+      "sourceSha256": "28c151d630c8af127647f9762f6d0c95595cf67c8babbbb09a0dae49a0c8ab15",
       "triangleBudget": 850,
       "params": [
         {
@@ -1214,7 +1214,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/chicken.kcad.ts",
-      "sourceSha256": "e3624771a90fddd09b4417142e49134756f005690f252e6016787068354ee126",
+      "sourceSha256": "39e4d9105d640d3bc366b1cdd24ede80215eafb9906a3fd4f05d15c0b8e28513",
       "triangleBudget": 500,
       "params": [
         {
@@ -1911,7 +1911,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/deer.kcad.ts",
-      "sourceSha256": "c89f072b172aff4dbdbce18e90537823cd161558bd8fcac852dc68a437372908",
+      "sourceSha256": "c68f54aafe092dbfed245848d63091fc1a108b64503fb55e2316a6bb008d7549",
       "triangleBudget": 750,
       "params": [
         {
@@ -2186,7 +2186,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/dog.kcad.ts",
-      "sourceSha256": "1e4dc3e6acfa316370662209e90fbc9beb3475708f9dd31acd6ae4a6d6a1b185",
+      "sourceSha256": "4cf499439a6072779abac4d41a3a6195e1c14663010e7aafac60440fc463d951",
       "triangleBudget": 650,
       "params": [
         {
@@ -2464,7 +2464,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/drone-quadcopter.kcad.ts",
-      "sourceSha256": "c56065b5af9588200d35f827c8ed144d7ecc8555f009405f48e4b5ab39e6ed85",
+      "sourceSha256": "5f8ed0a2ac60c47eba5fa07ccc2095ea2828315f4173ccea32d6c186e58a83e9",
       "triangleBudget": 900,
       "params": [
         {
@@ -2679,7 +2679,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/duck.kcad.ts",
-      "sourceSha256": "e28ab0fd7d8d393da4febe4175bb1a8225f38e04861fae9b589f0e0c0a43b2e7",
+      "sourceSha256": "0d59695c68ad745c3fcd576ce1d16a7e7438c5c74f1492bfb61eb2041339e6e8",
       "triangleBudget": 500,
       "params": [
         {
@@ -2912,7 +2912,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/excavator.kcad.ts",
-      "sourceSha256": "81d205e791b1ce78ce709b422b81c90e45e253b85776c632583e06795217c989",
+      "sourceSha256": "f55ef024191d989a009084c4530fc42cdbfabef5ff748891b4c4b4bb69c93ea7",
       "triangleBudget": 800,
       "params": [
         {
@@ -3141,7 +3141,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/fox.kcad.ts",
-      "sourceSha256": "6ad11839e09cd07b1f381af6d77be00b4e68f0254b30528b63e6fb196feb7114",
+      "sourceSha256": "b14d387dfb4c156b12ff48d138df5526dbb9041e70c7f23a1298437ee9d2d715",
       "triangleBudget": 650,
       "params": [
         {
@@ -3403,7 +3403,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/frog.kcad.ts",
-      "sourceSha256": "66c625105ed545a9d63d14de410d26799d748cb962ce8e28992e0ed03423f61c",
+      "sourceSha256": "64273e98bdc0860e514e8bc395e013b8f9b80ee247b06c8dd0256ef8f4ce04d3",
       "triangleBudget": 600,
       "params": [
         {
@@ -3908,7 +3908,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/house-cat.kcad.ts",
-      "sourceSha256": "7edba419fc29cb22de6f1dc9b0d84a8773fe994c9a10b88ca162702b9cb7fba8",
+      "sourceSha256": "e27a97512e17c49070a502d1158d9452ff206f46b1a2d4e582041a8269a07741",
       "triangleBudget": 650,
       "params": [
         {
@@ -4680,7 +4680,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/mech-walker.kcad.ts",
-      "sourceSha256": "f4d1487772d7ad57dde2a7402b65a24b5a01bf4732e76215eaaa9edc210b563d",
+      "sourceSha256": "885bb7838fa3976b38b50a325abaf0a902325c6d5e50700462e238c788c18b16",
       "triangleBudget": 800,
       "params": [
         {
@@ -4917,7 +4917,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/owl.kcad.ts",
-      "sourceSha256": "11db3ee97b3570c7ba6c8136f723561eacf4de6d3e24c7ee27eb489f11942988",
+      "sourceSha256": "09cde4d0c0db771481602affee7542f577e7e04cdeb2cc5d7091249e94c4b904",
       "triangleBudget": 650,
       "params": [
         {
@@ -5362,7 +5362,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/pig.kcad.ts",
-      "sourceSha256": "86a9d0883e641e3a1ac7e2903b77af002795142ec7382af44e1d481f0e88a466",
+      "sourceSha256": "360bd629089e9ca54246981eec37a7595267da09692e4e1d264e67f93dbe8188",
       "triangleBudget": 700,
       "params": [
         {
@@ -7150,7 +7150,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/sheep.kcad.ts",
-      "sourceSha256": "e934cd4861a217e9b665ff2b02b709a812c922c663a763532ee6159213b04494",
+      "sourceSha256": "ead93cdf097eef50afefcd9546fbca5e87930420ca93b293d56c82b80e39d009",
       "triangleBudget": 750,
       "params": [
         {
@@ -7416,7 +7416,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/skeleton-figure.kcad.ts",
-      "sourceSha256": "7315ca6942045707fdb94ce73f036c09c2ffbc426910840903337302a9c818fc",
+      "sourceSha256": "0bcfa8c1f5e834b49f9d9bf074449158fba98bb1e8ae8c6bfd4bee9208cb6e90",
       "triangleBudget": 900,
       "params": [
         {
@@ -7644,7 +7644,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/snowman.kcad.ts",
-      "sourceSha256": "b32c87ed61c80a755921e0a590f815fbfdebb3fbce4eac6e912cac262222f4b5",
+      "sourceSha256": "cc99631df4810bb25c430e55a590ca600a298da4458484414287d66548b55551",
       "triangleBudget": 850,
       "params": [
         {
@@ -8154,7 +8154,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/turtle.kcad.ts",
-      "sourceSha256": "4c3ed1777ccf84ff054d2d315479c619a1dfafd4f72dfa97723676152ee3baf8",
+      "sourceSha256": "76d1e7e37c0047de2d5fcd19d16a36656843a5fc7cfa2d9a69ddda12cbc97701",
       "triangleBudget": 600,
       "params": [
         {
@@ -8607,7 +8607,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/characters/worker-npc.kcad.ts",
-      "sourceSha256": "725f791f466f8765b9504821e6bff0c02c4a2f2a6bff31381c34c1072391adf2",
+      "sourceSha256": "48780c971d898eb7e3394425b9e5a3b6a2da818f33d9b4ebc22deb6aa1f1ffb9",
       "triangleBudget": 800,
       "params": [
         {
@@ -23002,7 +23002,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/interior/rocking-chair.kcad.ts",
-      "sourceSha256": "807efdca78625d8b6b3de955bc65d774f7323186391211fa990e120a904ebcab",
+      "sourceSha256": "a61debe53e48242cdbd2aa4e9f62a87a8382e426fadd6d2703994629c8058f0b",
       "triangleBudget": 500,
       "params": [
         {
@@ -23261,7 +23261,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/interior/round-table.kcad.ts",
-      "sourceSha256": "56bcd85c07bbb002115712e55b61d1e40212f516d7e61e277cf495fd9a31a644",
+      "sourceSha256": "30d930a4011e963d96ad8ad46e828322a2e077e30ac848b48501068c2c9db1ba",
       "triangleBudget": 400,
       "params": [
         {
@@ -44545,7 +44545,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/terrain/stone-wall-section.kcad.ts",
-      "sourceSha256": "3eb6317fb3f32685abbc97916860d09bbfca6e363124e75ff461a3c1e52d508a",
+      "sourceSha256": "0ba072fe03acb123c1ed008b9d416184d2db3704ff86c3741800e7f11437abf7",
       "triangleBudget": 1000,
       "params": [
         {

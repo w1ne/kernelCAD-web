@@ -48,7 +48,6 @@ const wall = assembly('stone-wall-section');
 let k = 0;
 const cutsEven = [-h, -h / 2, 0, h / 2, h];
 const cutsOdd = [-h, -3 * h / 4, -h / 4, h / 4, 3 * h / 4, h];
-let coreTop: [number, number][] = [];
 for (let c = 0; c < courses; c++) {
   const z0 = c * ch + (c === 0 ? 0 : g / 2);
   const z1 = (c + 1) * ch - g / 2;

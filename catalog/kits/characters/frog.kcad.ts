@@ -73,9 +73,6 @@ const rod = (p0: [number, number, number], p1: [number, number, number], w0: num
 // Corner-to-corner box.
 const blk = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) =>
   box((x1 - x0) * s, (y1 - y0) * s, (z1 - z0) * s).translate(x0 * s, y0 * s, z0 * s);
-// Side-profile prism: points are (y, z), thickness t starting at x0.
-const side = (pts: [number, number][], t: number, x0 = -t / 2) =>
-  extrudePolygon(pts.map(([y, z]) => [y * s, z * s] as [number, number]), t * s).rotateX(90).rotateZ(90).translate(x0 * s, 0, 0);
 // Faceted stack of rings [radius, z] with n sides.
 const ngon = (rad: number, n: number, rot = 0) => {
   let p = path().moveTo(rad * s * Math.cos(rot), rad * s * Math.sin(rot));

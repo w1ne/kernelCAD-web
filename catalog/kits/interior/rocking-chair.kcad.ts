@@ -38,7 +38,6 @@ const R = 1500;
 const half = 470;
 const rk = 50;
 const arcZ = (y: number) => R - Math.sqrt(R * R - y * y);
-const lift = arcZ(half);
 const rockerPts: [number, number][] = [];
 const segs = 8;
 for (let k = 0; k <= segs; k++) {
