@@ -21,6 +21,16 @@ The kit is built from rigid parts: robots, a rover, an arm, a jointed artist's m
 | cow | Life-size dairy cow with spots, udder, horns and swishing tail | horns, spots, hide, spot, muzzle, hoof | neck, tail, 4 hips, 4 knees (10) | 476 |
 | horse | Life-size horse with arched neck, mane, tail, blaze and optional saddle | saddle, blaze, coat, mane, hoof, saddleColor, blazeColor | neck, poll, tail, 4 hips, 4 knees (11) | 628 |
 | penguin | Waddling penguin with white belly, opening beak, flippers and feet | size, crest, back, belly, beak, eye | neck, beak, tail, shoulders, ankles (7) | 408 |
+| pig | Chunky farm pig with snout, floppy ears, curly tail and trotters | size, spots, skin, snout, spot, trotter | neck, 2 ears, tail, 4 hips, 4 knees (12) | 400 |
+| sheep | Fluffy sheep with lumpy wool, dark face, optional curled horns | size, horns, wool, face, horn, hoof | neck, 2 ears, tail, 4 hips, 4 knees (12) | 432 |
+| chicken | Plump farm chicken with comb, wattle, flapping wings and three-toed feet | size, feathers, comb, beak, eye | neck, beak, 2 wings, tail, 2 hips (7) | 344 |
+| dog | Friendly dog with boxy muzzle, floppy or pointed ears, collar and wagging tail | size, ears, coat, patch, collar, nose, paw | neck, 2 ears, tail, 4 hips, 4 knees (12) | 408 |
+| fox | Slim red fox with tall ears, white bib, dark socks and bushy white-tipped tail | size, coat, bib, sock, nose | neck, 2 ears, tail sweep, tail flick, 4 hips, 4 knees (13) | 464 |
+| deer | Long-legged deer with raised neck, big ears, flag tail and optional antlers | antlers, coat, belly, antler, nose, hoof | neck, poll, 2 ears, tail, 4 hips, 4 knees (13) | 672 |
+| mech-walker | Two-legged armoured mech with turning cabin, visor and shoulder weapon pods | size, pods, armour, frame, accent, visor | torso yaw, 2 pods, 2 hips, 2 knees, 2 ankles (9) | 516 |
+| worker-npc | Construction worker in hard hat and hi-vis vest, optionally with a shovel | tool, height, skin, hat, vest, shirt, reflect, trousers, boots | waist, neck, shoulders, elbows, hips, knees (10) | 572 |
+| snowman | Three-ball snowman with carrot nose, scarf, top hat or beanie and twig arms | height, hatStyle, snow, scarf, hat, carrot, coal, twig | neck, hat tip, scarf, 2 shoulders, 2 wrists (7) | 708 |
+| frog | Squat frog with bulging eyes, opening mouth and folded webbed hind legs | size, skin, belly, spot, eye, pupil | jaw, 2 shoulders, 2 hips, 2 knees, 2 ankles (9) | 496 |
 
 Every link is authored in the standing pose, and each joint connector sits at the same point on both links, so pose 0 is the as-built pose. Rig ranges are relative to that pose.
 
