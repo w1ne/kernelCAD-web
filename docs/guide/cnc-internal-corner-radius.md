@@ -1,5 +1,5 @@
 ---
-title: Internal corner radius for CNC machining: design rules and how to check them
+title: CNC internal corner radius design rules, and how to check them
 summary: Why end mills leave a radius in every inside corner, how big to make it, how deep a pocket can go, when to use dogbone reliefs, and how to catch tight corners and undercuts before you ask for a quote.
 date: 2026-11-01
 kind: guide
@@ -14,11 +14,10 @@ and at least one third of the pocket depth. Keep pockets no deeper than
 about four times their width. If a square part has to fit, add dogbone
 reliefs instead of asking for a sharp corner.
 
-Corners are one of the most common reasons a quote comes back with
-questions. One square corner can mean a smaller tool, a slower job or
-electrical discharge machining (EDM). If you find it after the quote, you
-also lose a day to a new revision. This guide gives the rules, where the
-numbers come from, and how to check a part as you design it.
+A square corner is a common reason a quote comes back with questions. It
+means a smaller tool, a slower job or EDM, plus a revision you didn't plan
+for. This guide gives the rules, their sources, and a way to check a part
+while you design it.
 
 ## Contents
 
@@ -46,21 +45,18 @@ Sources for each number are linked in the sections below.
 
 ## 1. Why internal corners can't be sharp
 
-An end mill is a spinning cylinder. Where two vertical walls meet, the
-cutter's edge leaves an arc with the same radius as the tool. It doesn't
-matter how small the tool is. A Ø1 mm cutter still leaves R0.5. As
+An end mill is a spinning cylinder. Where two walls meet, it leaves an arc
+with the tool's radius. A Ø1 mm cutter still leaves R0.5. As
 [Hubs' design guide](https://www.hubs.com/knowledge-base/how-design-parts-cnc-machining/)
 puts it, a milled internal corner always has some radius.
 
-A truly sharp corner needs a different process, such as EDM or a broach.
-Both add cost and lead time. Usually the better fix is to change the
-design, not the process.
+A truly sharp corner needs another process, such as EDM. That adds cost
+and lead time, so it is usually better to change the design.
 
 **How kernelCAD helps.** The model is a `.kcad.ts` source file, so the
-corner radius is a named value next to the reason for it, such as
-`cornerR = 4 // > R3 of a 6 mm end mill`. Whoever opens the file next sees
-why the number is what it is, and the fillet doesn't get dropped in a
-cleanup.
+corner radius is a named value with its reason beside it, such as
+`cornerR = 4 // > R3 of a 6 mm end mill`. The next person to edit the part
+sees why, and the fillet survives the cleanup.
 
 ## 2. Choosing the corner radius
 
@@ -79,9 +75,9 @@ changing direction, which marks the wall and loads the tool.
 suggests adding 0.02–0.05 in (about 0.5–1.3 mm) to the corner radius, so a
 0.25 in tool radius becomes a 0.27–0.30 in corner.
 
-In practice, pick the largest end mill the pocket allows, then make the
-corner 0.5–1 mm larger than that tool's radius. A bigger tool removes
-material faster and bends less, so a generous radius also lowers the price.
+In practice, pick the largest end mill the pocket allows and make the
+corner 0.5–1 mm larger than its radius. Bigger tools cut faster and bend
+less, so a generous radius also lowers the price.
 
 **How kernelCAD helps.** `dfm_review` checks every vertical inside corner
 against the end mill you name. It reports both sharp corners and fillets
@@ -100,12 +96,10 @@ tool diameter practical with standard tools, and recommends reduced-neck
 tools and through-spindle coolant from 3 to 5 ×
 ([Boze Metal](https://cnc.bozemetal.com/blog/titanium-cnc-design-guide-machinability-rules/)).
 
-Corner radius and depth are linked. A deep pocket needs a longer tool, a
-longer tool has to be thicker to stay stiff, and a thicker tool needs a
-bigger corner radius. That's why the ⅓-of-depth rule works.
-
-If a pocket must be deep, make it wider at the top or step it. Let a large
-tool clear most of the material and a smaller tool finish only the bottom.
+Depth and corner radius are linked: a deeper pocket needs a longer tool,
+which must be thicker to stay stiff, which needs a bigger corner. If a
+pocket must be deep, step it, so a large tool clears most of it and a
+small tool finishes only the bottom.
 
 **How kernelCAD helps.** Because the part is code, the depth can be
 computed from the tool, for example `const pocketDepth = 3 * toolD`. The
@@ -120,9 +114,8 @@ because those match standard tools
 ([Hubs](https://www.hubs.com/knowledge-base/how-design-parts-cnc-machining/)).
 
 Don't copy the vertical corner radius onto the floor edge. A large floor
-fillet needs a ball-nose cutter and many fine passes to produce, which
-costs time and leaves a scalloped finish. Ask for a floor radius only when
-you need it for stress or cleaning, and choose a standard size.
+fillet needs a ball-nose cutter and many fine passes. Ask for one only
+when stress or cleaning needs it.
 
 ## 5. Mating square parts: dogbone and T-bone reliefs
 
@@ -141,9 +134,7 @@ the corner.
   part by at least the cutter radius
   ([Get It Made](https://get-it-made.co.uk/resources/machining-square-corners-with-cnc-milling)).
 
-The relief radius follows the cutter, so choose the largest tool the
-design can take. If nothing mates with the corner, a plain fillet is
-simpler and looks better.
+If nothing mates with the corner, a plain fillet is simpler.
 
 **How kernelCAD helps.** A dogbone is four lines of code: one cylinder
 subtracted at each corner, positioned from the insert size and the tool
@@ -164,8 +155,7 @@ have three options:
   ([Hubs](https://www.hubs.com/knowledge-base/how-design-parts-cnc-machining/)).
 - **Redesign** so the feature opens upwards.
 
-Each setup costs fixturing time. Three or four setups are usually
-acceptable, and more gets expensive. Features that must line up closely
+Three or four setups are usually acceptable; more gets expensive. Features that must line up closely
 should be cut in the same setup
 ([Hubs](https://www.hubs.com/knowledge-base/how-design-parts-cnc-machining/)).
 
@@ -202,9 +192,8 @@ cnc.internal-corner-radius  fail
 The result lists the four tight fillets with radius, axis and location,
 for example `{ "location": [52.5, 37.5, 15], "radiusMm": 2.5, "axis":
 [0, 0, 1] }`. Run it again with `tool_diameter_mm: 4` and it passes: "All
-internal corners along the approach axes are ≥ R2 mm." Now you know your
-options: a smaller tool and a longer cycle, or R4 corners and a faster
-Ø6 job.
+internal corners along the approach axes are ≥ R2 mm." The choice is now
+clear: a smaller tool and a longer cycle, or R4 corners and a faster job.
 
 ### A square insert pocket with dogbones
 
@@ -242,20 +231,12 @@ cnc.undercuts  fail
 needs another setup, a 4/5-axis machine or a redesign.
 ```
 
-1300 mm² is the groove floor (500), its ceiling (500) and its back wall
-(300). With `approach_axes: ["+z", "+x"]`, which means a second setup from
-the side, the verdict is `pass`. The setup count you quote is now based on
-the geometry, not a guess.
-
-To run any of these yourself, ask your assistant to review the file for
-CNC with the tool you plan to use:
-
-```json
-{ "code": "…", "processes": ["cnc"], "tool_diameter_mm": 6, "approach_axes": ["+z", "+x"] }
-```
+That is the groove floor (500), ceiling (500) and back wall (300). With
+`approach_axes: ["+z", "+x"]`, a second setup from the side, the verdict
+is `pass`.
 
 For the other problems that come up late in a design, see
-[Ten problems design engineers keep running into](design-engineer-challenges.md).
+[The 10 biggest challenges design engineers face](design-engineer-challenges.md).
 
 ## Key takeaways
 
@@ -264,9 +245,8 @@ For the other problems that come up late in a design, see
 - Keep pockets within about 4 × their width, and lower in hard materials.
 - Leave floor corners sharp or use 0.5 mm or 1 mm.
 - Use dogbone or T-bone reliefs when a square part has to seat.
-- Count your setups. Every side feature may need one more.
-- Check corners and undercuts against the actual tool before you send the
-  part for a quote.
+- Count setups, and check corners and undercuts against the real tool
+  before you ask for a quote.
 
 ## 8. FAQ
 
@@ -287,10 +267,6 @@ special tools.
 **What is a dogbone fillet?**
 A round relief cut past the corner of a pocket, along the diagonal, so a
 square part can seat fully. Its radius follows the cutter.
-
-**Do floor-to-wall edges need a radius?**
-No. Sharp, 0.5 mm or 1 mm all match standard end mills. Large floor fillets
-take longer to machine.
 
 **Try kernelCAD free. Connect it to ChatGPT or Claude in a minute:
 https://app.kernelcad.com/connect**
