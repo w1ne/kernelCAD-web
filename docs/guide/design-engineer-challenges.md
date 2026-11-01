@@ -1,56 +1,56 @@
 ---
-title: Ten problems that slow down mechanical design, and what fixes them
-summary: Late manufacturing feedback, lost design intent, unclear revisions, wrong fasteners and six more. Why each one happens, what to do about it in any CAD tool, and what kernelCAD checks for you.
+title: The 10 biggest challenges design engineers face, and how to overcome them
+summary: Late manufacturing feedback, lost design intent, revision chaos, fastener mistakes, drawings out of sync and more. Why each one costs you time and money, and how kernelCAD removes it from your week.
 date: 2026-11-01
 kind: guide
 status: draft
 model: examples/gallery/cover-plate-pocket.kcad.ts
 ---
 
-Most delays in mechanical design are not caused by hard engineering. They
-come from small things found late: a corner the shop can't cut, a hole sized
-from the wrong column of a table, a drawing that still shows last week's
-part. Each one is cheap to fix on screen and expensive to fix in metal.
+Design engineers are hired to solve hard problems. Yet most of the week goes
+to routine work: re-checking hole sizes, redrawing parts after a change,
+hunting for the latest revision, and answering a supplier who says a corner
+can't be machined. Each of these is small on its own. Together they push
+launches back by weeks.
 
-How expensive? In one case study of a handheld device, every engineering
-change to an injection mould cost about $5,000. The two cover tools needed
-three changes each, $30,000 in total, and the launch slipped by four weeks
+They are also expensive. In one published case study of a handheld device,
+every engineering change to an injection mould cost about $5,000. The two
+cover tools needed three changes each, $30,000 in total, and the launch
+slipped by four weeks
 ([Bhargava, *Plastics Engineering*, October 2016](https://read.nxtbook.com/wiley/plasticsengineering/october2016/productdesign_eyeopeningimpact.html)).
-None of those changes needed new engineering. They fixed errors that could
-have been caught in CAD.
+None of those changes needed new engineering. Every one was an error that
+could have been caught in CAD.
 
-Below are ten problems we see most often. For each one: why it happens, what
-helps in any CAD tool, and what kernelCAD does about it. kernelCAD keeps
-every model as an editable `.kcad.ts` source file and runs checks on the
-evaluated geometry, so a check can run on every change instead of once at a
-design review.
+This article covers the ten challenges we hear about most from mechanical
+design teams, why each one happens, and how kernelCAD helps you overcome it.
+
+**Contents**
+
+1. [Manufacturing feedback arrives too late](#1-manufacturing-feedback-arrives-too-late)
+2. [Design intent gets lost](#2-design-intent-gets-lost)
+3. [Nobody is sure which revision is current](#3-nobody-is-sure-which-revision-is-current)
+4. [Fasteners and holes don't match](#4-fasteners-and-holes-dont-match)
+5. [Drawings fall out of sync with the model](#5-drawings-fall-out-of-sync-with-the-model)
+6. [Assemblies only fail once they are built](#6-assemblies-only-fail-once-they-are-built)
+7. [Small geometry defects break downstream work](#7-small-geometry-defects-break-downstream-work)
+8. [Vendor parts are re-modelled by hand](#8-vendor-parts-are-re-modelled-by-hand)
+9. [Design reviews happen in screenshots and email](#9-design-reviews-happen-in-screenshots-and-email)
+10. [Cost is unknown until the quote comes back](#10-cost-is-unknown-until-the-quote-comes-back)
 
 ## 1. Manufacturing feedback arrives too late
 
-**Why it happens.** Manufacturability is usually checked after the model is
-finished, often by the supplier when they quote it. By then a small fix
-means a new revision, a new quote and a lost week.
+Manufacturability is usually checked after the model is finished, often by
+the supplier when they quote it. By then a small fix means a new revision, a
+new quote and a lost week. For 3-axis milling the most common rejection is
+the internal corner: a round end mill can't cut a corner sharper than its own
+radius.
 
-**What helps.** Check for the process while you design, and know the two or
-three rules that cause most rejections. For 3-axis milling, the biggest one
-is internal corners: a round end mill cannot cut a corner sharper than its
-own radius.
+**How kernelCAD helps.** kernelCAD reviews your part for CNC machining and
+3D printing while you design, in seconds, and points to exactly where the
+problem is. Here is a real run on an 80 × 50 × 12 mm aluminium cover plate
+with a 60 × 34 × 8 mm pocket:
 
-**In kernelCAD.** The MCP `dfm_review` tool checks a part for 3D printing
-(FDM) and 3-axis CNC milling. For FDM it checks overhangs, bridges, wall
-thickness, hole and pin size, and bed fit. For CNC it checks undercuts and
-internal corner radii against the end mill you name.
-
-Here is a real run. This 80 × 50 × 12 mm aluminium cover plate has a
-60 × 34 × 8 mm pocket with square corners:
-
-![Cover plate with a rectangular pocket with sharp vertical corners](design-engineer-challenges/cover-plate-sharp.png "Before: the pocket has four sharp vertical corners.")
-
-```json
-{ "code": "…", "processes": ["cnc"], "tool_diameter_mm": 6 }
-```
-
-The review fails:
+![Cover plate with a rectangular pocket with sharp vertical corners](design-engineer-challenges/cover-plate-sharp.png "Before: four sharp pocket corners.")
 
 ```text
 cnc.internal-corner-radius  fail
@@ -58,190 +58,149 @@ cnc.internal-corner-radius  fail
 (Ø6 mm end mill); add fillets ≥ R3 mm or use a smaller tool.
 ```
 
-It also reports where each corner is: four 8 mm vertical edges at
-(10, 8), (70, 8), (10, 42) and (70, 42). One line fixes it. Round the
-pocket's vertical edges to R4, slightly larger than the tool radius so the
-cutter doesn't have to stop in the corner:
+The review lists all four corners by position. One line of code fixes them,
+with R4 corners that clear a 6 mm end mill:
 
 ```ts
 pocket = pocket.fillet(4, { parallel: [0, 0, 1] });
 ```
 
-![The same cover plate with R4 rounded pocket corners](design-engineer-challenges/cover-plate-r4.png "After: R4 pocket corners clear a 6 mm end mill.")
+![The same cover plate with R4 rounded pocket corners](design-engineer-challenges/cover-plate-r4.png "After: R4 corners, ready to machine.")
 
 The review now passes: "All internal corners along the approach axes are
-≥ R3 mm." The full model is in
-`examples/gallery/cover-plate-pocket.kcad.ts`; set `pocketCornerR = 0` to
-reproduce the failure.
+≥ R3 mm." That's a rejected quote avoided before it happened.
 
 <!-- check: source contains pocketCornerR = 4 -->
 
 ## 2. Design intent gets lost
 
-**Why it happens.** A dimension in a feature tree doesn't say why it has
-that value. When someone else edits the part, a 40 mm hole spacing chosen
-to match a mating bracket looks like any other number, and gets changed.
+A dimension in a feature tree doesn't say why it has that value. When a
+colleague edits the part, a 40 mm hole spacing chosen to match a mating
+bracket looks like any other number, and gets changed.
 
-**What helps.** Name the values that matter, keep them in one place and
-say where they come from. Derive the other values from them instead of
-typing them again.
-
-**In kernelCAD.** A `.kcad.ts` file is ordinary code, so the reason sits
-next to the value. In the cover plate, `pocketCornerR = 4` carries the
-comment "> R3 of a 6 mm end mill", and the pocket position is computed from
-the plate and pocket sizes. Change the plate width and the pocket stays
-centred.
+**How kernelCAD helps.** Every kernelCAD model is a readable `.kcad.ts`
+source file. Key values have names, the reason sits right next to them, and
+everything else is derived from them. In the cover plate, `pocketCornerR = 4`
+carries the note "> R3 of a 6 mm end mill", and the pocket stays centred
+whatever size the plate becomes. The intent travels with the part.
 
 ## 3. Nobody is sure which revision is current
 
-**Why it happens.** CAD files are binary and hard to compare. Two files
-called `bracket_v3_final.step` and `bracket_v3_final2.step` tell you nothing
-about what changed or why.
+CAD files are binary and hard to compare. Two files called
+`bracket_v3_final.step` and `bracket_v3_final2.step` tell you nothing about
+what changed or why.
 
-**What helps.** Keep one source of truth under version control, with a
-message for each change. Compare revisions by their geometry, not by file
-name.
-
-**In kernelCAD.** Source files work with git, so a revision is a commit
-with a text diff and a message. For the geometry, `diff_geometry` reports
-how much material was added and removed, the largest surface deviation, and
-whether a body moved, was resized or changed shape. With `render: true` it
-draws added material in green and removed material in red. `diff_scripts`
-does the same for whole assemblies: parts added, removed or changed, and
-changes in interference, mates and parameters.
+**How kernelCAD helps.** Because models are source, they live in git like
+the rest of your product: every revision is a commit with a message and a
+readable diff. Visual diffs show added material in green and removed
+material in red, with the volume change and the largest surface deviation.
+Assembly diffs list every part, mate and parameter that changed. Everyone
+works from one source of truth.
 
 ## 4. Fasteners and holes don't match
 
-**Why it happens.** Clearance holes, counterbores and countersinks are sized
-from tables by hand, and the screw length is chosen separately. One wrong
-column and the screw doesn't fit, the head sits proud, or the screw bottoms
-out.
+Clearance holes, counterbores and countersinks are sized from tables by
+hand, and screw lengths are picked separately. One wrong column and the screw
+doesn't fit, the head sits proud, or the bolt is too short for the nut.
 
-**What helps.** Size the hole, the seat and the screw from one fastener
-table, and work out the screw length from the actual grip.
-
-**In kernelCAD.** `lib.insert` reads the holes a part already has and
-matches each bore against the ISO 273 close, normal and loose clearance
-sizes. It then cuts the seat the head needs: a 90° countersink for a
-flat head, or a counterbore when you ask for one. For a bolted joint,
-`lib.stack` picks the shortest stocked bolt that passes through the grip,
-washers and nut and still shows two thread pitches past the nut: for an M5
-through a 12 mm grip that is M5 × 25, because M5 × 20 is 0.3 mm short. A grip that no stocked length can reach is
-refused, not rounded. The screws are modelled as simple envelope shapes, so
-this checks fit, not thread strength. See
+**How kernelCAD helps.** kernelCAD sizes the whole joint from one fastener
+table. `lib.insert` reads the holes your part already has, matches each one
+to the ISO 273 close, normal or loose clearance size, and cuts the
+countersink or counterbore the head needs. `lib.stack` picks the bolt length
+from the actual grip: for an M5 through a 12 mm grip with washers and a nut
+it chooses M5 × 25, because M5 × 20 would be 0.3 mm short. See
 [Fasten a part from its holes with lib.insert](hole-driven-fastening.md) and
 [Bolted joints from one fastener table](standard-parts-library.md).
 
 ## 5. Drawings fall out of sync with the model
 
-**Why it happens.** The 3D model changes, but the 2D drawing is a separate
-document that someone has to update. The shop builds from whichever one
-they were sent.
+The 3D model changes, but the 2D drawing is a separate document that someone
+has to remember to update. The shop builds from whichever one they were sent.
 
-**What helps.** Treat the drawing as an output of the model, not a second
-document, and regenerate it every time the model changes.
-
-**In kernelCAD.** Dimensions declared in the model are shown in the 3D view,
-and the Drawing (PDF) download builds an A3 sheet from the model when you
-click it. The MCP `export` tool produces the same drawing from a fresh run
-of the script. See [Download a drawing in one click](drafting-review.md).
+**How kernelCAD helps.** In kernelCAD the drawing is generated from the
+model. Dimensions show directly on the 3D view, and one click downloads a
+dimensioned A3 PDF built from the current model, in baseline, chain or
+symmetry style. No redrawing, no mismatches. See
+[Download a drawing in one click](drafting-review.md).
 
 ## 6. Assemblies only fail once they are built
 
-**Why it happens.** Parts are checked one at a time. Whether they can be put
-together, or taken apart for service, is often found out on the bench. The
-same goes for fits that work at nominal size and fail at the edge of
-tolerance.
+Parts are checked one at a time. Whether they can actually be put together,
+or taken apart for service, is often found out on the bench. Fits that work
+at nominal size can fail at the edge of their tolerance.
 
-**What helps.** Check assembly order and access before you release
-drawings, and check what happens to a fit across its whole tolerance range,
-not only at nominal.
+**How kernelCAD helps.** kernelCAD checks the assembly as a whole. It tests
+whether every part can be removed, finds the parts that block each other,
+and plans a build sequence. Parameter sweeps re-run the model across a range
+of values and pinpoint exactly where a requirement starts to fail, for
+example "wall fails below 1.840 mm". Rigid tube runs come with a bend table
+and their clearance to every nearby part. See
+[Routing bent tubes between ports](tubes-how-to.md).
 
-**In kernelCAD.** The `verify` tool's `assembly-path` check tests whether
-each part can slide out along a straight line. It can return a removal order
-or a build sequence, and it lists the parts that block each other. Parts it
-can't prove removable are marked blocked or unknown, never "impossible".
-`sweep_tolerance` re-evaluates the model across a range of parameter values
-and finds the value where a requirement starts to fail, for example "wall
-fails below 1.840 mm". For rigid lines, `tube()` reports the minimum
-clearance and a bend table for each tube. You place the corners yourself.
-See [Routing bent tubes between ports](tubes-how-to.md).
+## 7. Small geometry defects break downstream work
 
-## 7. Small geometry defects break later steps
+Tiny faces, very short edges and parts that are almost symmetric but not
+quite creep in through imports and repeated edits. You can't see them on
+screen, but they break meshing, simulation and CAM later.
 
-**Why it happens.** Tiny faces, very short edges and parts that are almost
-symmetric but not quite come from imports and repeated edits. They can't be
-seen on screen, but they break meshing, simulation and CAM later.
-
-**What helps.** Measure the model instead of looking at it, especially
-after an import or a long chain of edits.
-
-**In kernelCAD.** The `verify` tool's `geometry-quality` check lists tiny
-faces and short edges with their size and location. It can also test
-mirror symmetry about a plane you specify. It is an explicit check: run it
-before you send a model on, for example after importing a STEP file. See
+**How kernelCAD helps.** kernelCAD measures the model instead of relying on
+your eyes. The geometry-quality check lists every tiny face and short edge
+with its size and location, and confirms mirror symmetry about the plane you
+specify. Find and fix defects before they ever reach your supplier. See
 [Check tiny faces, short edges and mirror symmetry](geometry-quality.md).
 
 ## 8. Vendor parts are re-modelled by hand
 
-**Why it happens.** Motors, bearings and connectors are drawn as rough boxes
-to save time. Then the real part turns out to be bigger, or its mounting
-holes are somewhere else.
+Motors, bearings and connectors get drawn as rough boxes to save time. Then
+the real part turns out to be bigger, or its mounting holes are somewhere
+else.
 
-**What helps.** Use the supplier's model from the start, or at least before
-release. A placeholder is fine for the first layout if it is labelled as one.
+**How kernelCAD helps.** `lib.fromSTEP(...)` drops the supplier's own STEP
+model straight into your design, converted to millimetres. The built-in
+standard parts library adds fasteners and fixture parts with catalogue
+dimensions. Your assembly is built from the real thing from day one.
 
-**In kernelCAD.** `lib.fromSTEP(...)` brings a supplier's STEP file into
-the model as a normal shape, converted to millimetres. Use `{ solid }` to
-pick one body from a file that has several. The standard parts library
-provides fasteners and fixture parts with catalogue dimensions.
+## 9. Design reviews happen in screenshots and email
 
-## 9. Reviews happen in screenshots and email
+Feedback on a 3D part usually arrives as a screenshot with a red circle. The
+person fixing it has to guess which face was meant, seen from which angle.
 
-**Why it happens.** Feedback on a 3D part usually arrives as a screenshot
-with a red circle. The person fixing it has to work out which face was
-meant, seen from which angle.
+**How kernelCAD helps.** Reviewers mark up the model itself. A Studio markup
+snapshot captures the camera view, the exact faces and edges picked, the
+measurements taken and the notes, and sends them straight to the AI agent
+that makes the change. Saved models get a share link that opens in any
+browser, so reviewers need no CAD seat. See
+[Studio markup snapshots](studio-markup-snapshot.md).
 
-**What helps.** Comment on the model itself, so every note is attached to a
-specific face, edge or measurement.
+## 10. Cost is unknown until the quote comes back
 
-**In kernelCAD.** A Studio markup snapshot saves the camera view, the faces
-and edges you picked, the measurements you took and your notes. It is sent
-along with the next request to the agent. It doesn't change the model, and
-face ids can change after a rebuild, so a snapshot belongs to the revision it
-was made on. See [Studio markup snapshots](studio-markup-snapshot.md).
+Cost depends on material, process, quantity and geometry, and designers
+rarely see a number until procurement asks for quotes. By then the design is
+locked.
 
-## 10. Cost is unknown until a quote comes back
+**How kernelCAD helps.** kernelCAD puts cost drivers in front of you while
+the design can still change. The manufacturability review catches the
+features that make parts expensive. The bill of materials lists every part
+with quantity, material, mass and whether it is made or bought, ready to
+export as CSV. And you can request a price for a part straight from the chat.
 
-**Why it happens.** Cost depends on material, process, quantity and
-geometry, and the designer rarely sees a number until procurement asks for
-quotes. By then the design is fixed.
+## Key takeaways
 
-**What helps.** Know which features drive cost for your process, such as
-tight internal corners, deep pockets, extra setups and long print supports,
-and get a number while the design can still change.
+- Most delays come from routine checks done by hand, late in the process.
+- A late change can cost thousands per tool change and weeks of schedule.
+- Catch manufacturability problems while you design, not when you quote.
+- Keep one source of truth: named parameters, version control and drawings
+  generated from the model.
+- Check fasteners, fits and assemblies as a whole, before anything is built.
 
-**In kernelCAD.** The manufacturability checks in section 1 catch the
-features that drive cost before a quote is requested. `inspect({ of: 'bom' })`
-and `export({ format: 'bom-csv' })` list every part with its quantity,
-material and mass, and whether it is made or bought. The hosted service can
-ask suppliers for a price on a part. When no verified supplier price
-matches, as happened for the cover plate above, it says so and doesn't
-guess.
+## Start designing without the rework
 
-## What the ten have in common
+kernelCAD turns these ten challenges into checks that run on every change,
+so your team spends its time on engineering instead of rework.
 
-Each problem comes from information that a person checks late instead of a
-tool checking it early. A model kept as source with named values can be
-checked on every change: whether the shop can make it, whether the parts
-fit and come apart, whether the fasteners match their holes, and whether the
-drawing matches the model.
-
-These checks don't replace an engineer's judgement or a supplier's review.
-They make sure the review starts with the obvious problems already gone.
-
-To try it, connect kernelCAD to ChatGPT or Claude from the
-[connect guide](https://app.kernelcad.com/connect), or run it locally:
+**Try kernelCAD free: connect it to ChatGPT or Claude in a minute at
+[app.kernelcad.com/connect](https://app.kernelcad.com/connect).** Prefer
+the terminal? Run:
 
 ```bash
 npx -y kernelcad mcp
