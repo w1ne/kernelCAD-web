@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "kernelcad",
   "version": "0.17.4",
-  "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
+  "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer, STEP/STL/3MF export, and electronics checks (netlist and ERC). No local OpenCASCADE install.",
   "author": {
     "name": "kernelCAD",
     "url": "https://kernelcad.com"
@@ -17,14 +17,19 @@
     "stl",
     "3mf",
     "opencascade",
-    "skills"
+    "skills",
+    "electronics",
+    "schematic",
+    "netlist",
+    "erc",
+    "pcb"
   ],
   "extensions": {
     "com.openai": {
       "interface": {
         "displayName": "kernelCAD",
-        "shortDescription": "CAD parts, STEP and drawings",
-        "longDescription": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
+        "shortDescription": "CAD parts, STEP, drawings, schematics",
+        "longDescription": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer, STEP/STL/3MF export, and electronics checks (netlist and ERC). No local OpenCASCADE install.",
         "developerName": "kernelCAD",
         "category": "Creativity",
         "capabilities": [
@@ -36,7 +41,8 @@
         "defaultPrompt": [
           "Design a 3D-printable phone stand with kernelCAD and open it in Studio.",
           "Find a kernelCAD cookbook for a NEMA 17 motor plate and build it.",
-          "Export my bracket as STEP and 3MF."
+          "Export my bracket as STEP and 3MF.",
+          "Check my schematic: export its netlist and run ERC."
         ],
         "brandColor": "#2563EB",
         "privacyPolicyURL": "https://kernelcad.com/privacy",
@@ -76,6 +82,12 @@
               "prompt": "Add a 10 mm hole through the middle of this. (attach bracket.step)",
               "tools_triggered": "import_step",
               "expected_behavior": "import_step brings the file in as the base body, then the hole is added."
+            },
+            {
+              "description": "Netlist and ERC on a schematic",
+              "prompt": "Here are my components and nets: export the netlist, then run ERC and tell me what is wrong.",
+              "tools_triggered": "netlist_export, erc_run",
+              "expected_behavior": "netlist_export returns the nets and pin→net membership; erc_run returns zero or more structured diagnostics (e.g. an unconnected pin, or two outputs on one net) with the offending component and pin named."
             }
           ],
           "negative": [
@@ -101,7 +113,7 @@
         "demo_recording_url": "https://kernelcad.com/demos/chatgpt-walkthrough.mp4"
       },
       "publication": {
-        "release_notes": "Hosted kernelCAD MCP: editable .kcad.ts models, design review, DFM checks, and STEP/STL/3MF/GLB/DXF/PDF export."
+        "release_notes": "Hosted kernelCAD MCP: editable .kcad.ts models, design review, DFM checks, STEP/STL/3MF/GLB/DXF/PDF export, and electronics connectivity (netlist_export, netlist_query, erc_run)."
       }
     }
   }

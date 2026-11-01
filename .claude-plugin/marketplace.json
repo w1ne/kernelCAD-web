@@ -5,14 +5,14 @@
     "url": "https://kernelcad.com"
   },
   "metadata": {
-    "description": "CAD parts, STEP and drawings",
+    "description": "CAD parts, STEP, drawings, schematics",
     "version": "0.17.4"
   },
   "plugins": [
     {
       "name": "kernelcad",
       "source": "./plugins/kernelcad",
-      "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
+      "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer, STEP/STL/3MF export, and electronics checks (netlist and ERC). No local OpenCASCADE install.",
       "version": "0.17.4",
       "author": {
         "name": "kernelCAD",
@@ -28,7 +28,12 @@
         "stl",
         "3mf",
         "opencascade",
-        "skills"
+        "skills",
+        "electronics",
+        "schematic",
+        "netlist",
+        "erc",
+        "pcb"
       ],
       "category": "productivity"
     }

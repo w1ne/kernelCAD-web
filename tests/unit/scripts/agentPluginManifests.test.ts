@@ -26,7 +26,7 @@ describe('agent plugin manifests', () => {
     // The submission importer only resolves ./-prefixed paths, and the file must ship.
     expect(existsSync(`${ROOT}plugins/kernelcad/${ext.interface.logo.replace(/^\.\//, '')}`)).toBe(true);
     expect(existsSync(`${ROOT}plugins/kernelcad/${ext.interface.composerIcon.replace(/^\.\//, '')}`)).toBe(true);
-    expect(ext.review.test_cases.positive).toHaveLength(5);
+    expect(ext.review.test_cases.positive).toHaveLength(6);
     expect(ext.review.test_cases.negative).toHaveLength(3);
     // The dashboard rejects arrays here: tools_triggered must be a string, and
     // negative cases that trigger nothing omit the field.
@@ -44,8 +44,8 @@ describe('agent plugin manifests', () => {
     expect(ext.publication.release_notes).toBeTruthy();
   });
 
-  it('review cases are five positive and three negative, in the listing shape', () => {
-    expect(cfg.chatgpt.testCases.positive).toHaveLength(5);
+  it('review cases are six positive and three negative, in the listing shape', () => {
+    expect(cfg.chatgpt.testCases.positive).toHaveLength(6);
     expect(cfg.chatgpt.testCases.negative).toHaveLength(3);
     for (const c of [...cfg.chatgpt.testCases.positive, ...cfg.chatgpt.testCases.negative]) {
       expect(typeof c.description).toBe('string');
