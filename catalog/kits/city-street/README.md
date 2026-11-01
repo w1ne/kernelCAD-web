@@ -24,6 +24,22 @@ Low-poly street furniture, traffic pieces and road tiles for town and city scene
 | parking-meter | Post with a single or twin meter head | heads, post, head, display | 124 |
 | bike-rack | Row of inverted-U stands on two rails | loops, loop shape, stands, rails | 180 |
 | shop-front | One-storey shop with window, door, sign band, striped awning | width, wall, awning, stripe, door/sign, glass | 276 |
+| phone-booth | Telephone kiosk with glazed sides, glazing bars, header band and stepped roof | rows, body, glass, header | 300 |
+| news-kiosk | Street kiosk with front counter, magazine rack, stocked shelves and striped awning | width, stripes, body, roof, awning, stripe, goods | 280 |
+| manhole-cover | Round or square cast-iron lid with grip bars in a square frame | shape, bars, frame, lid | 212 |
+| storm-drain | Gully grate in a concrete frame with optional kerb inlet | bars, kerb yes/no, concrete, grate, pit | 172 |
+| recycling-bins | Row of colour-coded wheelie bins with lids, handles and wheels | count, bin1, bin2, bin3, lid, wheel | 348 |
+| picnic-table | Plank table with attached benches on splayed A-frame legs | length, boards, wood, legs | 168 |
+| chain-barrier | Short posts with ball tops linked by sagging two-tone chains | posts, sag, post, chain, chain2 | 408 |
+| metal-fence-section | 2 m railing panel with posts, rails and spear or flat bar tops | height, bars, top, metal, tips | 360 |
+| street-sign-post | Street-name post with one or two blade signs, no lettering | blades, height, face, border, post | 156 |
+| bus-stop-sign | Bus stop pole with flag or round sign, ring emblem and timetable case | style, sign, emblem, table, pole | 192 |
+| street-clock | Two-faced post clock on a tapered column with settable time | time, casing, face, hands | 380 |
+| street-tree | Young tree in an iron tree grate with optional barred guard | height, guard yes/no, grate, metal, bark, leaves | 480 |
+| vending-machine | Drinks machine with stocked display shelves, button panel and pickup flap | rows, cabinet, panel, product1, product2 | 424 |
+| utility-pole | Timber power pole with crossarms, braces, insulators and optional transformer | height, arms, transformer yes/no, wood, insulator, drum | 344 |
+| advertising-column | Round poster pillar with plinth, cornice and dome, plain posters | height, column, poster1, poster2, poster3 | 540 |
+| crossing-beacon | Banded pole with a faceted amber globe for zebra crossings | height, bands, band1, band2, globe | 312 |
 
 ## Licence
 
