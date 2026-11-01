@@ -398,6 +398,9 @@ function shapeVolume(oc: any, shape: unknown): number {
 function plausibleShellVolume(volume: number, bodyVolume: number, thickness: number): boolean {
   if (!Number.isFinite(volume) || volume <= 0) return false;
   if (thickness > 0 && Number.isFinite(bodyVolume) && volume > bodyVolume * (1 + 1e-6)) return false;
+  // OCCT 8 can report IsDone and hand back the input unchanged when the offset
+  // does not close (7.6 raised or left IsDone false); that is not a shell.
+  if (Number.isFinite(bodyVolume) && Math.abs(volume - bodyVolume) <= bodyVolume * 1e-9) return false;
   return true;
 }
 
