@@ -1,5 +1,17 @@
 # Unreleased
 
+- Asset catalog wave 1: 60 new original parametric low-poly assets (CC0) in
+  five new kits, 12 each: `catalog/kits/tools-equipment` (hammers, wrench,
+  drill, saws, chainsaw, pliers, spade, pickaxe, sawhorse, rolling tool
+  chest), `catalog/kits/containers` (tote, baskets, jar, amphora, trunk, ammo
+  and fruit crates, rain barrel, milk churn, cooler, IBC tote),
+  `catalog/kits/electronics` (monitor, keyboard, laptop, PC tower, CRT TV,
+  radio, boombox, speaker, smartphone, console, desk phone, router),
+  `catalog/kits/food-kitchen` (apple, carrot, watermelon, bread, cheese, wine,
+  plate, pot, pan, kettle, mug, cutting board) and `catalog/kits/lighting`
+  (chandelier, torches, brazier, lanterns, sconce, lava lamp, spotlight,
+  flashlight, oil lamp, work light). Each has choice and colour knobs,
+  presets and a committed preview. The catalog grows from 313 to 373 assets.
 - Injection-moulding DFM check: `dfmSpec({ process: 'moulding', pullDirection,
   minDraftDeg, minWallMm, maxWallMm, minRadiusMm })` (defaults '+z', 1°, 1 mm,
   4 mm, 0.5 mm) checks each part on its actual geometry. It reports every face
