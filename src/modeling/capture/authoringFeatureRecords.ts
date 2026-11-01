@@ -4,8 +4,10 @@ import { validateDrawingReviewPlan } from '../../shared/intent/drawingReview';
 import type { FeatureKind, FeatureId, FeatureRef, Param } from '../../shared/intent/types';
 import {
   FDM_DEFAULTS,
+  MOULDING_DEFAULTS,
   type DfmChannelSpec,
   type DfmFdmMetadata,
+  type DfmMouldingMetadata,
   type DfmSpec,
   type DfmSpecMetadata,
 } from '../../shared/intent/dfmSpecRecord';
@@ -74,21 +76,21 @@ export interface ProjectCurveCaptureArgs {
 
 type BadFn = (field: string, why: string) => never;
 
-// FDM fields first: a stray `nozzleMm` without `process: 'fdm'` deserves
+// Process fields first: a stray `nozzleMm` without `process: 'fdm'` deserves
 // the specific fix, not the generic "declares no checks".
-function validateDfmSpecCheckFields(args: DfmSpec, fdm: DfmFdmMetadata | undefined, bad: BadFn): void {
-  validateDfmSpecDeclaresChecks(args, fdm, bad);
+function validateDfmSpecCheckFields(args: DfmSpec, process: DfmProcessMetadata, bad: BadFn): void {
+  validateDfmSpecDeclaresChecks(args, process, bad);
   validateDfmSpecPositiveNumber('minWall', args.minWall, bad);
   validateDfmSpecPositiveNumber('minClearance', args.minClearance, bad);
   validateDfmSpecArticulatedMates(args, bad);
 }
 
-function validateDfmSpecDeclaresChecks(args: DfmSpec, fdm: DfmFdmMetadata | undefined, bad: BadFn): void {
+function validateDfmSpecDeclaresChecks(args: DfmSpec, process: DfmProcessMetadata, bad: BadFn): void {
   if (
     args.minWall === undefined && args.minClearance === undefined &&
-    !(args.channels?.length) && fdm === undefined
+    !(args.channels?.length) && process.fdm === undefined && process.moulding === undefined
   ) {
-    bad('spec', "declares no checks; pass minWall, minClearance, channels, and/or process: 'fdm'");
+    bad('spec', "declares no checks; pass minWall, minClearance, channels, and/or process: 'fdm' | 'moulding'");
   }
 }
 
@@ -187,7 +189,7 @@ function validateDfmSpecChannelEntries(args: DfmSpec, bad: BadFn): void {
   validateDfmSpecChannelDuplicates(args, bad);
 }
 
-function buildDfmSpecMetadata(args: DfmSpec, fdm: DfmFdmMetadata | undefined): DfmSpecMetadata {
+function buildDfmSpecMetadata(args: DfmSpec, { fdm, moulding }: DfmProcessMetadata): DfmSpecMetadata {
   return {
     virtual: true,
     ...(args.minWall !== undefined ? { minWall: args.minWall } : {}),
@@ -199,6 +201,7 @@ function buildDfmSpecMetadata(args: DfmSpec, fdm: DfmFdmMetadata | undefined): D
       part: c.part, name: c.name, openings: c.openings, sealed: c.sealed ?? false,
     })),
     ...(fdm !== undefined ? { fdm } : {}),
+    ...(moulding !== undefined ? { moulding } : {}),
   };
 }
 
@@ -212,14 +215,14 @@ export function buildDfmSpecFeatureSpec(args: DfmSpec): AuthoringFeatureSpec {
     );
   };
 
-  const fdm = normalizeFdmSettings(args, bad);
-  validateDfmSpecCheckFields(args, fdm, bad);
+  const process = normalizeProcessSettings(args, bad);
+  validateDfmSpecCheckFields(args, process, bad);
   validateDfmSpecArrayFieldShapes(args, bad);
   validateDfmSpecIgnoreEntries(args, bad);
   validateDfmSpecExcludeEntries(args, bad);
   validateDfmSpecChannelEntries(args, bad);
 
-  const metadata = buildDfmSpecMetadata(args, fdm);
+  const metadata = buildDfmSpecMetadata(args, process);
 
   return {
     kind: 'dfmSpec',
@@ -235,57 +238,88 @@ const FDM_AXIS_TOKENS: Record<string, [number, number, number]> = {
   '+z': [0, 0, 1], '-z': [0, 0, -1],
 };
 
-/** Validate + normalize the `process: 'fdm'` fields. FDM-only fields without
- *  the process are rejected: silently ignoring a declared nozzle or overhang
- *  limit would disable the gate the author asked for. */
-function normalizeFdmSettings(
-  args: DfmSpec,
-  bad: (field: string, why: string) => never,
-): DfmFdmMetadata | undefined {
-  const fdmOnly = ['buildDirection', 'nozzleMm', 'maxOverhangDeg', 'maxBridgeMm', 'printer'] as const;
-  if (args.process === undefined) {
-    const stray = fdmOnly.filter(k => args[k] !== undefined);
+interface DfmProcessMetadata {
+  fdm?: DfmFdmMetadata;
+  moulding?: DfmMouldingMetadata;
+}
+
+const FDM_ONLY_FIELDS = ['buildDirection', 'nozzleMm', 'maxOverhangDeg', 'maxBridgeMm', 'printer'] as const;
+const MOULDING_ONLY_FIELDS = ['pullDirection', 'minDraftDeg', 'minWallMm', 'maxWallMm', 'minRadiusMm'] as const;
+
+/** Validate + normalize the process-specific fields. Fields of a process
+ *  that is not declared are rejected: silently ignoring a declared nozzle,
+ *  overhang limit or draft angle would disable the gate the author asked for. */
+function normalizeProcessSettings(args: DfmSpec, bad: BadFn): DfmProcessMetadata {
+  if (args.process !== 'fdm') {
+    const stray = FDM_ONLY_FIELDS.filter(k => args[k] !== undefined);
     if (stray.length > 0) {
       bad(stray[0], "is an FDM setting; add process: 'fdm' to run the FDM printability check");
     }
-    return undefined;
   }
-  if (args.process !== 'fdm') {
-    bad('process', `must be 'fdm' (the only supported process); got ${JSON.stringify(args.process)}`);
+  if (args.process !== 'moulding') {
+    const stray = MOULDING_ONLY_FIELDS.filter(k => args[k] !== undefined);
+    if (stray.length > 0) {
+      bad(stray[0], "is an injection-moulding setting; add process: 'moulding' to run the moulding check");
+    }
   }
+  if (args.process === undefined) return {};
+  if (args.process === 'fdm') return { fdm: normalizeFdmSettings(args, bad) };
+  if (args.process === 'moulding') return { moulding: normalizeMouldingSettings(args, bad) };
+  return bad('process', `must be 'fdm' or 'moulding'; got ${JSON.stringify(args.process)}`);
+}
 
+function normalizeMouldingSettings(args: DfmSpec, bad: BadFn): DfmMouldingMetadata {
+  const pullDirection = normalizeAxisOrVector('pullDirection', args.pullDirection, MOULDING_DEFAULTS.pullDirection, bad);
+  const minDraftDeg = args.minDraftDeg ?? MOULDING_DEFAULTS.minDraftDeg;
+  if (!(typeof minDraftDeg === 'number' && Number.isFinite(minDraftDeg) && minDraftDeg >= 0 && minDraftDeg < 90)) {
+    bad('minDraftDeg', `must be a finite number of degrees in [0, 90); got ${args.minDraftDeg}`);
+  }
+  const minWallMm = readPositiveNumber('minWallMm', args.minWallMm, MOULDING_DEFAULTS.minWallMm, bad);
+  const maxWallMm = readPositiveNumber('maxWallMm', args.maxWallMm, MOULDING_DEFAULTS.maxWallMm, bad);
+  const minRadiusMm = readPositiveNumber('minRadiusMm', args.minRadiusMm, MOULDING_DEFAULTS.minRadiusMm, bad);
+  if (maxWallMm <= minWallMm) {
+    bad('maxWallMm', `must be greater than minWallMm (${minWallMm}); got ${maxWallMm}`);
+  }
+  return { pullDirection, minDraftDeg, minWallMm, maxWallMm, minRadiusMm };
+}
+
+function normalizeFdmSettings(args: DfmSpec, bad: BadFn): DfmFdmMetadata {
   const buildDirection = normalizeFdmBuildDirection(args, bad);
-  const nozzleMm = readPositiveFdmNumber('nozzleMm', args.nozzleMm, FDM_DEFAULTS.nozzleMm, bad);
-  const maxBridgeMm = readPositiveFdmNumber('maxBridgeMm', args.maxBridgeMm, FDM_DEFAULTS.maxBridgeMm, bad);
+  const nozzleMm = readPositiveNumber('nozzleMm', args.nozzleMm, FDM_DEFAULTS.nozzleMm, bad);
+  const maxBridgeMm = readPositiveNumber('maxBridgeMm', args.maxBridgeMm, FDM_DEFAULTS.maxBridgeMm, bad);
   const maxOverhangDeg = normalizeFdmOverhang(args, bad);
   const printer = normalizeFdmPrinter(args, bad);
   return { buildDirection, nozzleMm, maxOverhangDeg, maxBridgeMm, printer };
 }
 
 function normalizeFdmBuildDirection(args: DfmSpec, bad: BadFn): [number, number, number] {
-  let buildDirection: [number, number, number] = [...FDM_DEFAULTS.buildDirection];
-  const dir = args.buildDirection;
-  if (dir !== undefined) {
-    if (typeof dir === 'string') {
-      const token = FDM_AXIS_TOKENS[dir];
-      if (token === undefined) {
-        bad('buildDirection', `must be one of ${Object.keys(FDM_AXIS_TOKENS).join(', ')} or a [x, y, z] vector; got ${JSON.stringify(dir)}`);
-      }
-      buildDirection = [...token];
-    } else {
-      const ok = Array.isArray(dir) && dir.length === 3 && dir.every(c => typeof c === 'number' && Number.isFinite(c));
-      const len = ok ? Math.hypot(dir[0], dir[1], dir[2]) : 0;
-      if (!ok || len < 1e-9) {
-        bad('buildDirection', `must be an axis token or a non-zero finite [x, y, z] vector; got ${JSON.stringify(dir)}`);
-      }
-      buildDirection = [dir[0] / len, dir[1] / len, dir[2] / len];
-    }
-  }
-  return buildDirection;
+  return normalizeAxisOrVector('buildDirection', args.buildDirection, FDM_DEFAULTS.buildDirection, bad);
 }
 
-function readPositiveFdmNumber(
-  field: 'nozzleMm' | 'maxBridgeMm',
+function normalizeAxisOrVector(
+  field: 'buildDirection' | 'pullDirection',
+  dir: DfmSpec['buildDirection'],
+  dflt: readonly [number, number, number],
+  bad: BadFn,
+): [number, number, number] {
+  if (dir === undefined) return [...dflt];
+  if (typeof dir === 'string') {
+    const token = FDM_AXIS_TOKENS[dir];
+    if (token === undefined) {
+      bad(field, `must be one of ${Object.keys(FDM_AXIS_TOKENS).join(', ')} or a [x, y, z] vector; got ${JSON.stringify(dir)}`);
+    }
+    return [...token];
+  }
+  const ok = Array.isArray(dir) && dir.length === 3 && dir.every(c => typeof c === 'number' && Number.isFinite(c));
+  const len = ok ? Math.hypot(dir[0], dir[1], dir[2]) : 0;
+  if (!ok || len < 1e-9) {
+    bad(field, `must be an axis token or a non-zero finite [x, y, z] vector; got ${JSON.stringify(dir)}`);
+  }
+  return [dir[0] / len, dir[1] / len, dir[2] / len];
+}
+
+function readPositiveNumber(
+  field: 'nozzleMm' | 'maxBridgeMm' | 'minWallMm' | 'maxWallMm' | 'minRadiusMm',
   v: number | undefined,
   dflt: number,
   bad: BadFn,

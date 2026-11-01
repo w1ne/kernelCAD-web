@@ -658,6 +658,14 @@ export interface KernelCadApi {
    * `nozzleMm`, bed contact, bed fit on `printer`, and the six-orientation
    * ranking); the gcode export slices in the declared `buildDirection`.
    *
+   * `process: 'moulding'` adds the injection-moulding check against the
+   * mould `pullDirection` (default '+z'; the halves separate along ±it):
+   * faces with less than `minDraftDeg` of draft (default 1°), faces material
+   * blocks from releasing (undercuts), walls under `minWallMm` (default 1),
+   * the thickest section over `maxWallMm` (default 4, sink / warp), and
+   * inside corners sharper than `minRadiusMm` (default 0.5). Quantities it
+   * cannot measure are reported as `dfm.moulding.unmeasured`, never passed.
+   *
    * At least one of `minWall`, `minClearance`, `channels`, or `process` is
    * required.
    * `includeArticulatedMates: true` also measures non-fastened mate pairs at

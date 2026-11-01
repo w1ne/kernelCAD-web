@@ -32,7 +32,8 @@ function entry(
 }
 
 /** Convert a DFM report into ledger entries: one per measured clearance pair,
- *  thin-wall part, declared channel and FDM part. Declared exemptions
+ *  thin-wall part, declared channel and FDM part, and four per moulded part
+ *  (draft, undercut, min wall, max wall). Declared exemptions
  *  ('ignored' / 'mated' pairs) are not requirements in play and are skipped. */
 function clearanceEntries(report: DfmCheckReport, spec: DfmSpecMetadata): RequirementLedgerEntry[] {
   if (spec.minClearance === undefined) return [];
@@ -119,6 +120,48 @@ function fdmEntries(report: DfmCheckReport): RequirementLedgerEntry[] {
   });
 }
 
+/** Moulding: draft, undercut, min and max wall per part. Unmeasured
+ *  quantities are 'not-evaluated', never 'pass'. */
+function mouldingEntries(report: DfmCheckReport): RequirementLedgerEntry[] {
+  const out: RequirementLedgerEntry[] = [];
+  for (const { part, result } of report.moulding ?? []) {
+    const s = result.settings;
+    const base = `dfm.moulding.${part}`;
+
+    const draft = result.draft.minDraftDeg;
+    if (!Number.isFinite(draft)) {
+      out.push(entry(`${base}.draft`, 'not-evaluated', null, s.minDraftDeg, null, `${base}.draft: no draft face was measured.`));
+    } else {
+      const n = result.draft.insufficient.length;
+      out.push(entry(`${base}.draft`, n === 0 ? 'pass' : 'fail', draft, s.minDraftDeg, draft - s.minDraftDeg,
+        n > 0 ? `${base}.draft failed: ${n} face(s) below ${s.minDraftDeg}°, least ${draft.toFixed(2)}°.` : undefined));
+    }
+
+    const area = result.undercut.areaMm2;
+    out.push(entry(`${base}.undercut`, area > 0 ? 'fail' : 'pass', area, 0, -area,
+      area > 0 ? `${base}.undercut failed: ${area.toFixed(2)} mm² cannot release along the pull direction.` : undefined));
+
+    const thin = result.walls.thinnestMm;
+    if (!Number.isFinite(thin)) {
+      out.push(entry(`${base}.minWall`, 'not-evaluated', null, s.minWallMm, null, `${base}.minWall: no wall ray hit, thickness unmeasured.`));
+    } else {
+      const margin = thin - s.minWallMm;
+      out.push(entry(`${base}.minWall`, margin >= -eps ? 'pass' : 'fail', thin, s.minWallMm, margin,
+        margin < -eps ? `${base}.minWall failed: thinnest wall ${thin.toFixed(3)} mm, need ${s.minWallMm} mm.` : undefined));
+    }
+
+    const thick = result.thickest;
+    if (thick === null) {
+      out.push(entry(`${base}.maxWall`, 'not-evaluated', null, s.maxWallMm, null, `${base}.maxWall: thickest section unmeasured.`));
+    } else {
+      const margin = s.maxWallMm - thick.thicknessMm;
+      out.push(entry(`${base}.maxWall`, margin >= -eps ? 'pass' : 'fail', thick.thicknessMm, s.maxWallMm, margin,
+        margin < -eps ? `${base}.maxWall failed: ${thick.thicknessMm.toFixed(2)} mm section, limit ${s.maxWallMm} mm.` : undefined));
+    }
+  }
+  return out;
+}
+
 export function dfmRequirementEntries(
   report: DfmCheckReport | undefined,
   spec: DfmSpecMetadata | undefined,
@@ -129,5 +172,6 @@ export function dfmRequirementEntries(
     ...wallEntries(report, spec),
     ...voidEntries(report, spec),
     ...fdmEntries(report),
+    ...mouldingEntries(report),
   ];
 }

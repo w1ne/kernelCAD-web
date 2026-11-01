@@ -98,14 +98,14 @@ export function axisVector(token: string): Vec3 | undefined {
   return v;
 }
 
-interface Tri {
+export interface Tri {
   v: [Vec3, Vec3, Vec3];
   n: Vec3; // unit outward normal
   c: Vec3;
   area: number;
 }
 
-function trianglesOf(mesh: DfmMesh): Tri[] {
+export function trianglesOf(mesh: DfmMesh): Tri[] {
   const P = (i: number): Vec3 => [mesh.vertices[3 * i], mesh.vertices[3 * i + 1], mesh.vertices[3 * i + 2]];
   const tris: Tri[] = [];
   let signedVol = 0;
@@ -166,9 +166,9 @@ export function findUndercuts(
   return { areaMm2: area, samples: unreachable.slice(0, 5).map(t => t.c) };
 }
 
-type MeshEdge = { a: Vec3; b: Vec3; tris: number[] };
+export type MeshEdge = { a: Vec3; b: Vec3; tris: number[] };
 
-function meshEdges(tris: Tri[]): Map<string, MeshEdge> {
+export function meshEdges(tris: Tri[]): Map<string, MeshEdge> {
   const key = (p: Vec3): string => p.map(x => Math.round(x / WELD)).join(',');
   const edges = new Map<string, MeshEdge>();
   tris.forEach((t, i) => {
@@ -192,7 +192,7 @@ const angleOf = (cos: number): number => Math.acos(Math.min(1, Math.max(-1, cos)
 /** Per BREP face: largest normal step between adjacent facets of that face
  *  (0 for planes). A crease no larger than that is a tangent blend whose
  *  radius is the face's own (checked against the tool by findTightFillets). */
-function faceFacetSteps(edges: Map<string, MeshEdge>, tris: Tri[], faceOfTri: ArrayLike<number>): Map<number, number> {
+export function faceFacetSteps(edges: Map<string, MeshEdge>, tris: Tri[], faceOfTri: ArrayLike<number>): Map<number, number> {
   const steps = new Map<number, number>();
   for (const e of edges.values()) {
     if (e.tris.length !== 2) continue;
@@ -204,7 +204,7 @@ function faceFacetSteps(edges: Map<string, MeshEdge>, tris: Tri[], faceOfTri: Ar
   return steps;
 }
 
-function isTangentBlend(normalDot: number, steps: Map<number, number>, f1: number, f2: number): boolean {
+export function isTangentBlend(normalDot: number, steps: Map<number, number>, f1: number, f2: number): boolean {
   const step = Math.max(steps.get(f1) ?? 0, steps.get(f2) ?? 0);
   return angleOf(normalDot) <= FACET_STEP_FACTOR * step;
 }

@@ -1,5 +1,24 @@
 # Unreleased
 
+- Injection-moulding DFM check: `dfmSpec({ process: 'moulding', pullDirection,
+  minDraftDeg, minWallMm, maxWallMm, minRadiusMm })` (defaults '+z', 1°, 1 mm,
+  4 mm, 0.5 mm) checks each part on its actual geometry. It reports every face
+  whose normal is off the pull axis and has less than `minDraftDeg` of draft
+  (measured per BREP face, with the exact surface normal on curved faces) and
+  every face that material blocks from releasing into either mould half
+  (undercut area per face). It also reports walls under `minWallMm` (the
+  min-wall ray sampler), the thickest section over `maxWallMm` (largest
+  inscribed sphere, a lower bound within one voxel) and inside corners
+  sharper than `minRadiusMm` (radius-0 concave creases and tighter cylindrical
+  fillets). A quantity it cannot measure is a warn `dfm.moulding.unmeasured`,
+  not a pass. New codes: `dfm.moulding.undercut`,
+  `dfm.moulding.draft-insufficient`, `dfm.moulding.thin-wall` (error),
+  `dfm.moulding.thick-wall`, `dfm.moulding.sharp-corner`,
+  `dfm.moulding.unmeasured` (warn). The report reaches `kernelcad dfm`,
+  `verify({ check: 'dfm' })` (`moulding[]`) and the requirements ledger.
+  Cookbook: `injection-moulding-draft-and-walls`. Demo bundle:
+  `docs/demos/moulding-check/`.
+
 - CFD connector (OpenFOAM): `run_cfd` / `cfd_summary` MCP tools,
   `kernelcad cfd run|status`, and the script declaration
   `shape.cfdStudy({ flow, fluid, inlet, outlet, velocity | flowRateLpm, ... })`.
