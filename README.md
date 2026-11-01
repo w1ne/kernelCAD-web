@@ -71,6 +71,11 @@ in PowerShell. Builds are available for Linux x64/ARM64, macOS Intel/Apple
 Silicon, and Windows x64. Direct installs do not require a separately installed
 Node.js.
 
+For regulated or air-gapped machines, `kernelcad --sandbox …` and
+`kernelcad mcp --sandbox --workspace <dir>` (or `KERNELCAD_SANDBOX=1`) keep all
+file access inside one workspace directory and refuse outbound network at
+runtime, including telemetry. See [docs/sandbox.md](docs/sandbox.md).
+
 ### Coding agents: one command
 
 One command connects your agent to the hosted kernelCAD MCP server

@@ -27,6 +27,7 @@ const CLI_SUBCOMMANDS = new Set<string>([
   'print',
   'reconstruct',
   'render',
+  'sandbox',
   'skill',
   'stats',
   'telemetry',
@@ -128,6 +129,8 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // render_preview tool name, which DOES resolve — params, not calls).
   'out_dir',
   'base_url',
+  // import_step inline-bytes argument (named in the sandbox-mode notes).
+  'content_base64',
   'screenshot_timeout_ms',
   // Hosted-product tool that lives in kernelCAD-server's registry, not the
   // local TOOL_REGISTRY — referenced in prose to redirect hosted/remote

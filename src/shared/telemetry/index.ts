@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createRequire } from 'node:module';
 import { TelemetryEmitter } from './emitter';
+import { isSandboxEnabled } from '../sandbox/config';
 import {
   ensureInstallId, isTelemetryEnabled, isDebug, loadConfig, saveConfig,
 } from './config';
@@ -62,6 +63,9 @@ const FIRST_RUN_NOTICE =
   'Details: https://github.com/kernelcad/kernelcad/blob/main/TELEMETRY.md\n\n';
 
 export function maybeShowFirstRunNotice(): void {
+  // Sandbox mode: telemetry is forced off, so there is nothing to announce
+  // and no install id to write.
+  if (isSandboxEnabled()) return;
   try {
     const cfg = loadConfig();
     if (cfg?.notified) return;

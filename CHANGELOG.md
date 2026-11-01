@@ -10,6 +10,24 @@
   `encoding: 'ascii'`, `colors: 'face' | 'none'`, `normals: false`. A bad
   option fails before the script runs with `export.ply.invalid-options`. Demo
   bundle: `docs/demos/ply-export/`.
+- Sandbox mode for regulated and air-gapped deployments: `--sandbox` or
+  `KERNELCAD_SANDBOX=1`, with an optional `--workspace <dir>` /
+  `KERNELCAD_WORKSPACE` (the default is the cwd). The local CLI and the local
+  MCP server keep all file access inside the workspace. Paths are judged after
+  realpath, with symlinks and dangling links followed and `..` collapsed; the
+  kernelCAD package and the browser cache are read-only. Outbound network is
+  refused at runtime, loopback included unless
+  `KERNELCAD_SANDBOX_ALLOW_LOOPBACK=1`. Telemetry is forced off, and temp,
+  cache and config dirs move into `<workspace>/.kernelcad-sandbox/`.
+  Enforcement has one fs chokepoint (wrapped `node:fs` / `node:fs/promises`)
+  and one network chokepoint (`net.Socket#connect`, `fetch`, `http(s)`, DNS,
+  UDP). The headless Chromium gets host-resolver rules and request
+  interception. MCP and CLI arguments are checked up front from audited
+  tables. New codes: `cli.sandbox-path-denied`, `cli.sandbox-network-denied`
+  and `cli.sandbox-command-refused`. Status is reported by
+  `kernelcad sandbox status`, the MCP `initialize` instructions and
+  serverInfo title, and per-tool `SANDBOX MODE:` notes in `tools/list`. Docs:
+  `docs/sandbox.md`. Demo: `docs/demos/sandbox-mode/`.
 
 - Catalog asset Studio link: `src/shared/assets/catalogStudioLink.ts` resolves
   `/studio?catalog=<kit>/<id>` (e.g. `nature/pine-tree`) against
