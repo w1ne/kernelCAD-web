@@ -78,6 +78,12 @@ wood, fabric and metal zones, and a few presets (walnut, white, dark and similar
 | `standing-desk` | Sit-stand desk on telescoping legs with optional monitor, keyboard and mouse | height, width, setup, top, frame, devices, screen | 204 |
 | `wall-clock` | Round wall clock with hour markers and hands set to a time (`wall` origin) | diameter, time shown, rim, face, hands | 276 |
 | `aquarium` | Fish tank on a cabinet stand with gravel, rocks, plants, fish and hood | tank length, fish (2/4/6), stand, frame, water, gravel, plants, fish | 384 |
+| `chaise-lounge` | Upholstered chaise longue with sloped back end, optional arm and bolster | side arm, upholstery, bolster, legs | 168 |
+| `shoe-rack` | Slatted two- or three-tier shoe rack with pairs of shoes and boots | tiers, width, shoes, frame, shoes A/B, boots | 440 |
+| `laundry-basket` | Tapered hamper with rim and handles, open with clothes or lidded | lid, basket, rim and handles, clothes A/B | 242 |
+| `dining-bench` | Backless plank dining bench on trestles or four legs | length (1/1.4/1.8 m), leg style, cushion, seat, legs, cushion colour | 128 |
+| `dresser-with-mirror` | Dressing table with drawers, upright mirror, stool and toiletries | mirror shape, stool, wood, mirror, stool pad, toiletries | 352 |
+| `pedal-bin` | Round or square pedal bin with closed or raised lid | shape, capacity (5/30/50 L), lid, body, lid colour, pedal | 132 |
 
 ## Licence
 
