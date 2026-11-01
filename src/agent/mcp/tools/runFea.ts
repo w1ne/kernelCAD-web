@@ -179,9 +179,11 @@ async function resolveFeaStudy(input: RunFeaInput): Promise<FeaStudyResolution> 
 
 type LoweredStudyShape = { ok: false; output: RunFeaOutput } | { ok: true; shape: OcctBackend };
 
-async function lowerStudyShape(
+/** Lower the record list and return the OCCT shape the study is bound to.
+ *  Shared with run_cfd. */
+export async function lowerStudyShape(
   run: RunScriptResult,
-  study: FoundFeaStudy,
+  study: { shapeId: string },
 ): Promise<LoweredStudyShape> {
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });

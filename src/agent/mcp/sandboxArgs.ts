@@ -63,6 +63,8 @@ export const MCP_SANDBOX_ARGS: Readonly<Record<string, readonly SandboxArgSpec[]
   resolve_assumptions: [['ledgerPath', 'write']],
   run_fea: [['file', 'read'], ['output_dir', 'write']],
   fea_summary: [['output_dir', 'read']],
+  run_cfd: [['file', 'read'], ['output_dir', 'write']],
+  cfd_summary: [['output_dir', 'read']],
   send_to_printer: [['gcode_path', 'read'], ['model_3mf_path', 'read']],
   repair_script: [['file', 'read']],
   sweep_tolerance: [['file', 'read']],
