@@ -254,12 +254,19 @@ export function checkMouldability(shape: OcctBackend, opts: MouldingCheckOptions
 export class ExactNormals {
   private readonly evaluators = new Map<number, FaceNormalEvaluator | null>();
   private readonly memo = new Map<number, Vec3>();
+  private readonly tris: readonly Tri[];
+  private readonly faceOfTri: ArrayLike<number>;
+  private readonly faces: readonly unknown[];
 
   constructor(
-    private readonly tris: readonly Tri[],
-    private readonly faceOfTri: ArrayLike<number>,
-    private readonly faces: readonly unknown[],
-  ) {}
+    tris: readonly Tri[],
+    faceOfTri: ArrayLike<number>,
+    faces: readonly unknown[],
+  ) {
+    this.tris = tris;
+    this.faceOfTri = faceOfTri;
+    this.faces = faces;
+  }
 
   /** True when triangle i lies on a non-planar face OCCT can evaluate. */
   isCurved(i: number): boolean {
