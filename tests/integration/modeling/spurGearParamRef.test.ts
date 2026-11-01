@@ -134,7 +134,10 @@ return gear.union(box(4, 4, h).translate(-2, -2, 5));`);
     expect(errors(m), JSON.stringify(m.diagnostics)).toEqual([]);
     const before = m.rootShape!.volume();
     await expect(updateModelParams(m, [{ name: 'z', value: 30 }])).rejects.toThrow(
-      /params\.update: param 'z' shapes a spurGear\/internalSpurGear profile/,
+      // The refusal comes from the shared invalidArgs() helper, so the message
+      // carries the api/path/received/requires/example shape every other
+      // invalid-argument error has.
+      /params\.update:.*\bz\b.*spurGear\/internalSpurGear profile/s,
     );
     expect(m.session.paramTable.get('z').value).toBe(20);
     const up = await updateModelParams(m, [{ name: 'h', value: 8 }]);
