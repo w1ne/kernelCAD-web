@@ -88,9 +88,12 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'part_files',
   // export result field carrying the svg-drawing placement report.
   'drawing_report',
-  // dfm_review injection-molding option name (an option, not a call).
+  // dfm_review injection-molding option names (options, not calls).
   'pull_direction',
   'max_wall_ratio',
+  // export geometry-quality gate threshold options (option names, not calls).
+  'tiny_face_area_mm2',
+  'short_edge_length_mm',
   // export result field carrying slicer estimates, not an MCP tool call.
   'gcode_stats',
   'binding_name',

@@ -207,6 +207,12 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
             edgeCount: { type: 'object', additionalProperties: true, description: '{ base, revised, delta } BREP edge count.' },
             holeCount: { type: 'object', additionalProperties: true, description: '{ base, revised, delta } cylindrical-hole count.' },
             maxDeviationMm: { type: 'number', description: 'Two-sided discrete Hausdorff distance between the two surfaces.' },
+            faces: {
+              type: 'object',
+              additionalProperties: true,
+              description:
+                "Which faces changed: { added, removed, modified, unchangedCount, addedCount, removedCount, modifiedCount, matchedByLineage, truncated }. Entries: { surfaceType, areaMm2, center, normal?, axis?, radiusMm?, ref? }; modified entries add { before, after, offsetMm, change: 'moved' | 'resized' | 'reshaped', matchedBy: 'lineage' | 'geometry' }. Lists capped at 50.",
+            },
           },
           required: ['name', 'verdict', 'addedMm3', 'removedMm3', 'commonMm3'],
           additionalProperties: true,
@@ -214,7 +220,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         description: 'Per matched body, the material-level delta (success).',
       },
       unmatched: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Bodies present on only one side; each also raises diff.body.unmatched.' },
-      summary: { type: 'object', additionalProperties: true, description: 'Verdict counts plus totalAddedMm3 / totalRemovedMm3 / maxDeviationMm.' },
+      summary: { type: 'object', additionalProperties: true, description: 'Verdict counts plus totalAddedMm3 / totalRemovedMm3 / maxDeviationMm, face-change totals { added, removed, modified, unchanged }, and text: a plain-language account naming the faces that changed.' },
       render: { type: 'object', additionalProperties: true, description: 'Overlay result when render: true — { ok, images, out_dir, script_path, error? }.' },
       side: { type: 'string', description: "Which side failed ('base' | 'revised') (failure)." },
       error: { type: 'string', description: 'Failure message (failure).' },

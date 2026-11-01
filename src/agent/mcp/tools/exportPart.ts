@@ -21,6 +21,8 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
+import type { ExportGeometryQualitySummary, QualityGateMode } from '../../script-runtime/export';
+import { qualityGateInput } from './exportModel';
 
 export interface ExportPartInput {
   file?: string;
@@ -33,6 +35,10 @@ export interface ExportPartInput {
   output_dir?: string;
   /** Skip the watertight verify gate (default: verify on). */
   no_verify?: boolean;
+  /** Per-part geometry-quality gate: 'warn' (default), 'block' or 'off'. */
+  qualityGate?: QualityGateMode;
+  tiny_face_area_mm2?: number;
+  short_edge_length_mm?: number;
 }
 
 export interface WrittenPartFile {
@@ -46,6 +52,8 @@ export interface ExportPartOutput {
   ok: boolean;
   sceneSummary?: SceneSummary;
   written?: WrittenPartFile[];
+  /** Per-part tiny-face / short-edge screen (qualityGate not 'off'). */
+  geometryQuality?: ExportGeometryQualitySummary;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -133,6 +141,7 @@ export async function exportPartTool(input: ExportPartInput): Promise<ExportPart
       fileName: source.fileName,
       scriptDir: input.file !== undefined ? dirname(resolve(input.file)) : undefined,
       ...(allParts ? {} : { parts: [input.part!] }),
+      qualityGate: qualityGateInput(input),
     });
   } catch (e) {
     return {
@@ -141,9 +150,10 @@ export async function exportPartTool(input: ExportPartInput): Promise<ExportPart
     };
   }
 
+  const geometryQuality = result.geometryQuality === undefined ? {} : { geometryQuality: result.geometryQuality };
   const errorDiagnostics = result.diagnostics.filter(d => d.severity === 'error');
   if (errorDiagnostics.length > 0) {
-    return { ok: false, sceneSummary, diagnostics: withNextActions(result.diagnostics) };
+    return { ok: false, sceneSummary, ...geometryQuality, diagnostics: withNextActions(result.diagnostics) };
   }
 
   const written: WrittenPartFile[] = [];
@@ -158,6 +168,7 @@ export async function exportPartTool(input: ExportPartInput): Promise<ExportPart
     ok: !gateFailed,
     sceneSummary,
     written,
+    ...geometryQuality,
     diagnostics: withNextActions(diagnostics),
   };
 }

@@ -26,7 +26,18 @@ const diffGeometryToolEntry: ToolRegistryEntry = {
       'edge / hole count deltas (hole counts reuse the cylindrical-hole detector), maxDeviationMm ' +
       '(two-sided discrete Hausdorff distance between the two surfaces), and a `verdict` — ' +
       'identical | moved | resized | topology-changed, precedence topology-changed > resized > ' +
-      'moved > identical. Branch on the verdict; cite the numbers. Optional { render: true } also ' +
+      'moved > identical. Branch on the verdict; cite the numbers. Each body also carries `faces` - ' +
+      'WHICH faces changed: { added, removed, modified, unchangedCount } where each entry is ' +
+      '{ surfaceType (plane | cylinder | cone | sphere | torus | bspline | other), areaMm2, center, ' +
+      'normal (planes), axis (cylinders/cones), radiusMm, ref (a stable @kc[...] face ref on the revised ' +
+      'model when the face has a lineage name) } and a modified entry adds { before, after, offsetMm, ' +
+      "change: 'moved' | 'resized' | 'reshaped', matchedBy: 'lineage' | 'geometry' }. Faces pair by " +
+      'lineage first (the feature and role that made them, so a translated box reports six moved faces, ' +
+      'not six removed + six added), then by geometry (same surface type, parallel normal/axis, nearest ' +
+      'centroid). Lists are deterministic and capped at 50 with a `truncated` flag and true totals ' +
+      '(addedCount / removedCount / modifiedCount). summary.text says it in plain language, e.g. ' +
+      "\"Body '(root)' topology-changed: 1 face added (cylinder r=3 at (20, 20, 3)), 2 faces resized (...)\". " +
+      'Optional { render: true } also ' +
       'writes an overlay PNG (added green, removed red, unchanged material as a translucent ghost; the ' +
       'scene is a re-runnable .kcad.ts over lossless BREP sidecars) through the render_preview pipeline and ' +
       'fails open (the numeric diff is still returned) when that pipeline is unavailable. ' +
