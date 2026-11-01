@@ -3,7 +3,8 @@
 // The #439 trap: JS arithmetic / string templating on a ParamRef used to
 // flow into geometry as "[object Object]4" or NaN and only fail deep in
 // primitive validation with a generic message. Two layers now catch it:
-//   1. ParamRef[Symbol.toPrimitive] throws at the coercion site itself.
+//   1. Inside a script run a numeric ParamRef now coerces to its current
+//      value (the param is recorded as coerced); outside a run it throws.
 //   2. assertEditableNumber emits a targeted repair hint when residue of
 //      the pattern (an "[object Object]" string, a stray string, NaN, or a
 //      non-numeric ParamRef) still lands in a dimension slot.
@@ -23,14 +24,11 @@ async function runAndCatch(code: string): Promise<unknown> {
 describe('ParamRef JS-arithmetic trap diagnostics (capture-time)', () => {
   beforeAll(async () => { await initOcct(); });
 
-  it('the original #439 repro — param + number — throws AT the arithmetic with the .add hint', async () => {
-    const caught = await runAndCatch(
-      `const w = param('fingerWidth', 18); return cylinder(w + 4, 5);`,
-    );
-    expect(caught).toBeDefined();
-    expect(String(caught)).toMatch(/JS arithmetic on a ParamRef/);
-    expect((caught as { hint?: string }).hint).toMatch(/\.add\(n\)/);
-    expect((caught as { hint?: string }).hint).toMatch(/param\('w', 18\)\.add\(4\)/);
+  it('the original #439 repro — param + number — now builds and records the param as coerced', async () => {
+    const run = await runScript({ code: `const w = param('fingerWidth', 18); return cylinder(w + 4, 5);`, fileName: 'trap.kcad.ts' });
+    expect([...run.session.coercedParams]).toEqual(['fingerWidth']);
+    const cyl = run.records.find((r) => r.kind === 'cylinder');
+    expect(JSON.stringify(cyl?.params)).toContain('22');
   });
 
   it('a literal "[object Object]" string in a dimension slot gets the js-arithmetic hint', async () => {

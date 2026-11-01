@@ -191,6 +191,10 @@ export class CaptureSession {
   private records: FeatureRecord[] = [];
   /** Slice-3: session-owned param table populated by `kcad.param()`/`kcad.params()`. */
   readonly paramTable: ParamTable = new ParamTable();
+  /** Params the script used as plain numbers (`w + 4`, `Math.sin(a)`). Their
+   *  value is baked into the captured records, so an edit to one re-runs the
+   *  script (`updateModelParams`) instead of re-lowering records in place. */
+  readonly coercedParams: Set<string> = new Set();
   private assetMetadataStore: AssetMetadata | undefined;
   private assetPresetsStore: AssetPresets = {};
   private assetPresetsDeclared = false;

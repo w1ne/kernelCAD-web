@@ -53,7 +53,8 @@ import { ParamTable } from '../../../shared/runtime/paramTable';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
-import { runMcpScript } from '../runMcpScript';
+import { loadMcpScriptSource, runMcpScript } from '../runMcpScript';
+import { setParamValue } from '../../../modeling/edits/setParamValue';
 import { returnedBodies } from './diffScripts';
 import { renderDiffOverlay, type DiffOverlayRender } from './diffGeometryRender';
 
@@ -346,6 +347,12 @@ export async function evaluateSide(
   const overrides = applyParamOverrides(run.paramTable, paramOverrides);
   if (!overrides.ok) return overrides;
   const paramTable = overrides.paramTable;
+  // A param the script used as a plain number is baked into its records;
+  // re-lowering against the overridden table would be stale. Write the
+  // values into the source and run it again instead.
+  if (paramOverrides && Object.keys(paramOverrides).some((name) => run.session.coercedParams.has(name))) {
+    return evaluateSideFromRewrittenSource(input, paramOverrides);
+  }
 
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const result = await engine.run(run.records, { paramTable });
@@ -365,6 +372,23 @@ export async function evaluateSide(
   }
 
   return solidSideResult(run, result, ret);
+}
+
+async function evaluateSideFromRewrittenSource(
+  input: { file?: string; code?: string },
+  paramOverrides: Record<string, number | boolean>,
+): Promise<SideResult> {
+  const source = await loadMcpScriptSource(input);
+  if (!source.ok) return { ok: false, error: source.error, ...(source.errorCode !== undefined ? { errorCode: source.errorCode } : {}) };
+  let code = source.code;
+  for (const [name, value] of Object.entries(paramOverrides)) {
+    const rewritten = setParamValue(code, name, value);
+    if (!rewritten.ok || rewritten.new_code === undefined) {
+      return { ok: false, error: `diff_geometry: could not set param '${name}' in the source: ${rewritten.error ?? 'unknown error'}.`, errorCode: 'feature.invalid-args' };
+    }
+    code = rewritten.new_code;
+  }
+  return evaluateSide({ ...input, code });
 }
 
 /** Build a diff side from a model that was already built by

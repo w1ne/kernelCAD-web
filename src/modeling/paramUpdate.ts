@@ -18,6 +18,8 @@ import type { BuiltModel, BuiltModelParamUpdate, ParamUpdateEdit } from './build
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { KernelError } from '../shared/intent/kernelError';
 import { affectedFeatureIds } from './paramAffect';
+import { setParamValue } from './edits/setParamValue';
+import { invalidArgs } from '../shared/intent/invalidArgs';
 import { selectionDriftDiagnostics } from '../kernel/naming/selectionDrift';
 import { stampFingerprint } from '../kernel/backends/occt/analysisMemo';
 import { featureFingerprints } from './warm/featureFingerprint';
@@ -79,6 +81,9 @@ export async function updateModelParams(
 ): Promise<BuiltModelParamUpdate> {
   const session = model.session;
   validateParamEdits(session, edits);
+  if (edits.some((edit) => session.coercedParams.has(edit.name))) {
+    return updateBySourceRewrite(model, edits);
+  }
   // Shapes in the cache still match the table. Captured before the edit so a
   // later failure can put the table back and a rigid placement has a baseline.
   captureBaseline(session, model.records);
@@ -89,6 +94,67 @@ export async function updateModelParams(
     restoreParamValues(session, saved);
     throw err;
   }
+}
+
+/**
+ * A param the script used as a plain number (`w + 4`) is baked into its
+ * captured records, so re-lowering against the edited table would leave
+ * those features stale. Instead: write the new defaults into the source,
+ * re-run the script and rebuild with dependency-aware reuse, so only the
+ * features whose inputs changed are lowered again. The model object is
+ * refreshed in place (callers hold it) and left untouched on failure.
+ */
+async function updateBySourceRewrite(model: BuiltModel, edits: ParamUpdateEdit[]): Promise<BuiltModelParamUpdate> {
+  const coerced = edits.filter((edit) => model.session.coercedParams.has(edit.name)).map((edit) => edit.name);
+  if (model.code === undefined || !model.rebuildFromSource) {
+    invalidArgs({
+      api: 'params.update(edits)',
+      path: 'edits[].name',
+      got: coerced.join(', '),
+      requires: 'a model built from script source, because these params are used as plain numbers and an edit re-runs the script',
+      example: "const model = await buildModel({ code, fileName: 'part.kcad.ts' }); await updateModelParams(model, [{ name: 'w', value: 80 }]);",
+      hintSlug: 'invalid-args.param.js-arithmetic',
+    });
+  }
+  let code = model.code;
+  for (const edit of edits) {
+    const rewritten = setParamValue(code, edit.name, edit.value);
+    if (!rewritten.ok || rewritten.new_code === undefined) {
+      invalidArgs({
+        api: 'params.update(edits)',
+        path: 'edits[].name',
+        got: edit.name,
+        requires: `a param declared with a literal default that the source can be rewritten at (${rewritten.error ?? 'not found'})`,
+        example: "const w = param('w', 60);",
+        hintSlug: 'invalid-args.param.not-found',
+      });
+    }
+    code = rewritten.new_code;
+  }
+  const previousShapes = new Map(model.shapes);
+  const next = await model.rebuildFromSource(code);
+  const failure = next.diagnostics.find((d) => d.severity === 'error');
+  if (failure) {
+    throw new KernelError(failure.code, `params.update: ${failure.message}`, undefined, failure.hint);
+  }
+  const shape = next.rootShape ?? next.tailShape;
+  if (!shape) {
+    invalidArgs({
+      api: 'params.update(edits)',
+      path: '',
+      gotText: 'a rebuilt script with no returned shape',
+      requires: 'the script to return a shape or scene',
+      example: "return box(param('w', 60), 30, 5);",
+      hintSlug: 'invalid-args.param.js-arithmetic',
+    });
+  }
+  const relowered: string[] = [];
+  const skipped: string[] = [];
+  for (const record of next.records) {
+    (next.shapes.get(record.id) === previousShapes.get(record.id) ? skipped : relowered).push(record.id);
+  }
+  Object.assign(model, next);
+  return { model, result: { shape, relowered, skipped, warnings: next.warnings, rigidReused: [] } };
 }
 
 async function applyParamEdits(

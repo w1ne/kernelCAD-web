@@ -1,5 +1,14 @@
 # Unreleased
 
+- Params work in plain JS math: `param('w', 60) + 4`, `Math.tan(a * Math.PI / 180)`,
+  loops and point lists (numeric coercion used to throw). An edit to such a
+  param rewrites its default in the source and rebuilds with dependency-aware
+  reuse. `updateModelParams` and `diff_geometry` route these edits; other
+  params keep the in-place path. `.add()` / `.multiply()` still work.
+- Incremental rebuild reuses every feature an edit did not touch (same hash
+  and all inputs reused), not only an unchanged prefix. Demo:
+  `docs/demos/params-plain-math/` (a 2-of-52-feature edit in ~0.15–0.2 s vs a
+  2.2 s full rebuild locally).
 - CFD connector (OpenFOAM): `run_cfd` / `cfd_summary` MCP tools,
   `kernelcad cfd run|status`, and the script declaration
   `shape.cfdStudy({ flow, fluid, inlet, outlet, velocity | flowRateLpm, ... })`.

@@ -6,7 +6,7 @@
 // rejection, and dependency-collection over composed expressions.
 
 import { describe, it, expect } from 'vitest';
-import { makeParamRef, isParamRef, type ParamRefExpr } from '../../../src/shared/runtime/paramRef';
+import { bindParamCoercion, makeParamRef, isParamRef, type ParamRefExpr } from '../../../src/shared/runtime/paramRef';
 import { ParamTable } from '../../../src/shared/runtime/paramTable';
 import { resolveExpr, resolveParams, collectParamRefs } from '../../../src/shared/runtime/resolveParams';
 import { toParam } from '../../../src/shared/runtime/editableHelpers';
@@ -353,5 +353,38 @@ describe('ParamRef JS-coercion guard (Symbol.toPrimitive)', () => {
     expect(resolveExpr(derived._expr, t)).toBe(22);
     t.set('w', 30);
     expect(resolveExpr(derived._expr, t)).toBe(34);
+  });
+});
+
+describe('ParamRef bound to a script run (plain JS math)', () => {
+  function bound(values: Record<string, number>) {
+    const coerced = new Set<string>();
+    const coercion = { valueOf: (n: string) => values[n], noteCoerced: (n: string) => { coerced.add(n); } };
+    const ref = (name: string) => bindParamCoercion(makeParamRef<number>(name, 'number'), coercion);
+    return { ref, coerced };
+  }
+
+  it('JS operators and Math.* return numbers and record the params read', () => {
+    const { ref, coerced } = bound({ w: 60, a: 30 });
+    const w = ref('w');
+    const a = ref('a');
+    expect((w as unknown as number) + 4).toBe(64);
+    expect((w as unknown as number) / 2).toBe(30);
+    expect(Math.sin(((a as unknown as number) * Math.PI) / 180)).toBeCloseTo(0.5, 12);
+    expect([...coerced].sort()).toEqual(['a', 'w']);
+  });
+
+  it('a derived ref coerces to its evaluated expression and records every leaf', () => {
+    const { ref, coerced } = bound({ w: 60, m: 5 });
+    const inset = ref('w').subtract(ref('m').multiply(2)).clamp(0, 100);
+    expect(+(inset as unknown as number)).toBe(50);
+    expect([...coerced].sort()).toEqual(['m', 'w']);
+  });
+
+  it('methods alone do not record a coercion; the ref stays symbolic', () => {
+    const { ref, coerced } = bound({ w: 60 });
+    const half = ref('w').divide(2);
+    expect(half.$param).toBe('(w / 2)');
+    expect(coerced.size).toBe(0);
   });
 });

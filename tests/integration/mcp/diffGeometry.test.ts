@@ -73,6 +73,16 @@ describe('diff_geometry MCP tool', () => {
     expect(r.bodies[0].verdict).toBe('identical');
   });
 
+  it('a param used as a plain number (w + 4) is resized from the rewritten source, not left stale', async () => {
+    const code = `const w = param('w', 10); return box(w + 4, 10, 2);`;
+    const r = await diffGeometryTool({ baseCode: code, params: { w: 20 } });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.bodies[0].volumeMm3.base).toBeCloseTo(14 * 10 * 2, 3);
+    expect(r.bodies[0].volumeMm3.revised).toBeCloseTo(24 * 10 * 2, 3);
+    expect(r.bodies[0].verdict).toBe('resized');
+  });
+
   it('a param resize reports verdict resized with a correctly-signed volume delta', async () => {
     // lid 10 → 20 wide: +200 mm³ of material, all of it ADDED.
     const grew = await diffGeometryTool({ baseCode: BASE_RIG, params: { lidW: 20 } });
