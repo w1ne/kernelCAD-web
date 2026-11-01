@@ -1015,6 +1015,13 @@ export class OcctBackend implements ShapeBackend {
       throw new Error(`OcctBackend.shell: thickness must be positive (got ${thickness})`);
     }
     const result = this.shape.shell(thickness, (f) => f.inList([face])) as ReplicadShape3D;
+    // OCCT 8 can report IsDone and return the input unchanged when the offset
+    // does not close (7.6 raised). Keep the documented contract: that is a failure.
+    const before = Math.abs(replicad.measureVolume(this.shape));
+    const after = Math.abs(replicad.measureVolume(result));
+    if (!Number.isFinite(after) || after <= 0 || Math.abs(after - before) <= before * 1e-9) {
+      throw new Error(`OcctBackend.shell: OCCT did not produce a shell (thickness ${thickness})`);
+    }
     return new OcctBackend(result);
   }
 
