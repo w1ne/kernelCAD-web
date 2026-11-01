@@ -32,6 +32,8 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 import { readScriptOrDiagnostic } from '../lib/readScript';
+import type { ExportGeometryQualitySummary, ExportQualityGateInput } from '../../script-runtime/exportQualityGate';
+import { addQualityGateOptions, formatQualityGateLine, parseQualityGateFlags, type QualityGateCliOpts } from '../lib/qualityGateFlags';
 
 /** Structured `cli.file-write` diagnostic from an output mkdir/write failure. */
 function fileWriteDiagnostic(e: unknown): CompilerDiagnostic {
@@ -67,6 +69,8 @@ export interface ExportInput {
   /** Per-format options bag (the MCP export tool's `options`); `format` is
    *  filled in from the positional format when omitted. */
   options?: Record<string, unknown>;
+  /** Geometry-quality gate (`--quality-gate`, threshold flags); default warn. */
+  qualityGate?: ExportQualityGateInput;
 }
 
 export interface ExportCliResult {
@@ -81,6 +85,7 @@ export interface ExportCliResult {
   tableFiles?: string[];
   /** Predictions reported by the G-code generator. */
   gcodeStats?: GcodeStats;
+  geometryQuality?: ExportGeometryQualitySummary;
 }
 
 /** Parse `--options <json>`: a JSON object, `format` defaulted to the
@@ -574,6 +579,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
             },
           }),
       ...exportOptionsFor(input, drawingOptions),
+      qualityGate: input.qualityGate,
     });
   } catch (e) {
     const diag = kernelErrorToDiagnostic(e, 'cli.export-exception');
@@ -583,8 +589,9 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
     };
   }
   const fatal = result.diagnostics.filter(d => d.severity === 'error').length > 0;
+  const geometryQuality = result.geometryQuality === undefined ? {} : { geometryQuality: result.geometryQuality };
   if (result.bytes.length === 0) {
-    return { exitCode: 1, bytesWritten: 0, diagnostics: withNextActions(result.diagnostics) };
+    return { exitCode: 1, bytesWritten: 0, diagnostics: withNextActions(result.diagnostics), ...geometryQuality };
   }
   // Write-then-fail: a verify-gate failure (export.mesh.not-watertight)
   // still carries the mesh bytes, so the file is written for inspection
@@ -602,6 +609,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
     ...(tableFiles.length > 0 ? { tableFiles } : {}),
     ...(result.drawingReport !== undefined ? { drawingReport: result.drawingReport } : {}),
     ...gcodeStatsField(input.format, fatal, result),
+    ...geometryQuality,
   };
 }
 
@@ -615,6 +623,7 @@ export interface ExportPartsCliInput {
   outFile?: string;
   /** Watertight verify gate (STL/STEP); default-on (`--no-verify` to skip). */
   verify: boolean;
+  qualityGate?: ExportQualityGateInput;
 }
 
 export interface WrittenPart {
@@ -628,6 +637,7 @@ export interface ExportPartsCliResult {
   exitCode: number;
   written: WrittenPart[];
   diagnostics: CompilerDiagnostic[];
+  geometryQuality?: ExportGeometryQualitySummary;
 }
 
 function emptyPartsSelectionDiagnostic(input: ExportPartsCliInput): CompilerDiagnostic {
@@ -689,14 +699,16 @@ export async function exportPartsScript(input: ExportPartsCliInput): Promise<Exp
       fileName: filePath,
       scriptDir: dirname(filePath),
       ...(input.parts !== undefined ? { parts: input.parts } : {}),
+      qualityGate: input.qualityGate,
     });
   } catch (e) {
     const diag = kernelErrorToDiagnostic(e, 'cli.export-exception');
     return { exitCode: 1, written: [], diagnostics: [diag] };
   }
   const fatal = result.diagnostics.some(d => d.severity === 'error');
+  const geometryQuality = result.geometryQuality === undefined ? {} : { geometryQuality: result.geometryQuality };
   if (fatal) {
-    return { exitCode: 1, written: [], diagnostics: withNextActions(result.diagnostics) };
+    return { exitCode: 1, written: [], diagnostics: withNextActions(result.diagnostics), ...geometryQuality };
   }
   if (result.parts.length === 0) {
     // No error diagnostic explains the empty result (the part-not-found and
@@ -720,7 +732,7 @@ export async function exportPartsScript(input: ExportPartsCliInput): Promise<Exp
     return { exitCode: 1, written, diagnostics: withNextActions(diagnostics) };
   }
   const gateFailed = input.verify && written.some(w => !w.watertight);
-  return { exitCode: gateFailed ? 1 : 0, written, diagnostics: withNextActions(diagnostics) };
+  return { exitCode: gateFailed ? 1 : 0, written, diagnostics: withNextActions(diagnostics), ...geometryQuality };
 }
 
 function collectParts(value: string, prev: string[]): string[] {
@@ -732,7 +744,7 @@ const SUPPORTED_FORMATS = new Set<ExportFormat>([
   'bom-csv', 'bom-json', 'bend-table',
 ]);
 
-interface ExportCommandOpts {
+interface ExportCommandOpts extends QualityGateCliOpts {
   out: string; json?: boolean; part?: string[]; parts?: string; verify?: boolean;
   connectorManifest?: string; manifestPartId?: string; manifestFamily?: string;
   explode?: number; explodeMode?: string; balloons?: boolean; partsList?: boolean;
@@ -745,6 +757,7 @@ async function runPartMode(
   format: string,
   file: string,
   opts: ExportCommandOpts,
+  qualityGate: ExportQualityGateInput,
 ): Promise<void> {
   if (format !== 'stl') {
     console.error('--part/--parts are only supported for stl exports.');
@@ -759,11 +772,13 @@ async function runPartMode(
     ...(opts.parts === 'all' ? {} : { parts: opts.part }),
     ...(opts.parts === 'all' ? { outDir: opts.out } : { outFile: opts.out }),
     verify: opts.verify !== false,
+    qualityGate,
   });
   if (opts.json) {
     console.log(JSON.stringify({
       ok: r.exitCode === 0,
       parts: r.written,
+      ...(r.geometryQuality !== undefined ? { geometryQuality: r.geometryQuality } : {}),
       diagnostics: r.diagnostics,
     }, null, 2));
   } else {
@@ -772,6 +787,7 @@ async function runPartMode(
       const gate = w.watertight ? 'watertight' : 'NOT watertight';
       console.log(`wrote ${w.name} -> ${w.path} (${w.triangleCount} tris, ${gate})`);
     }
+    if (r.geometryQuality !== undefined) console.log(formatQualityGateLine(r.geometryQuality));
   }
   process.exitCode = r.exitCode;
 }
@@ -794,9 +810,10 @@ async function runExportMode(
   file: string,
   opts: ExportCommandOpts,
   options: Record<string, unknown> | undefined,
+  qualityGate: ExportQualityGateInput,
 ): Promise<void> {
   const r = await exportScript({
-    file, format: format as ExportFormat, out: opts.out,
+    file, format: format as ExportFormat, out: opts.out, qualityGate,
     ...(options === undefined ? {} : { options }),
     ...(opts.connectorManifest === undefined
       ? {}
@@ -824,10 +841,12 @@ async function runExportMode(
       ...writtenFilesJson(r),
       ...(r.drawingReport !== undefined ? { drawingReport: r.drawingReport } : {}),
       ...(r.gcodeStats !== undefined ? { gcodeStats: r.gcodeStats } : {}),
+      ...(r.geometryQuality !== undefined ? { geometryQuality: r.geometryQuality } : {}),
       diagnostics: r.diagnostics,
     }, null, 2));
   } else {
     if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
+    if (r.geometryQuality !== undefined) console.log(formatQualityGateLine(r.geometryQuality));
     if (r.exitCode === 0) console.log(`Wrote ${r.bytesWritten} bytes to ${opts.out}`);
     printTableFiles(r);
     if (r.drawingReport !== undefined) {
@@ -840,7 +859,7 @@ async function runExportMode(
 }
 
 export function exportCommand(): Command {
-  const cmd = new Command('export')
+  const cmd = addQualityGateOptions(new Command('export'))
     .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, GLB, OBJ, PLY, USD, an SVG or PDF engineering-drawing sheet, a bill of materials, or tube bend tables')
     .argument('<format>', 'stl | step | dxf | 3mf | glb | obj | ply | usd | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | bend-table')
     .argument('<file>', 'path to .kcad.ts script')
@@ -877,16 +896,21 @@ export function exportCommand(): Command {
         console.error(manifestError);
         process.exitCode = 2; return;
       }
+      const gate = parseQualityGateFlags(opts);
+      if (!gate.ok) {
+        console.error(gate.error);
+        process.exitCode = 2; return;
+      }
       const partMode = (opts.part?.length ?? 0) > 0 || opts.parts !== undefined;
       if (partMode) {
-        return runPartMode(format, file, opts);
+        return runPartMode(format, file, opts, gate.gate);
       }
       const parsedOptions = parseExportOptionsFlag(opts.options, format);
       if (!parsedOptions.ok) {
         console.error(parsedOptions.error);
         process.exitCode = 2; return;
       }
-      return runExportMode(format, file, opts, parsedOptions.options);
+      return runExportMode(format, file, opts, parsedOptions.options, gate.gate);
     });
   return cmd;
 }

@@ -66,6 +66,8 @@ import {
 } from './stressInfillExport';
 import type { Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { resolvePrinterProfile } from '../../kernel/export/gcode/printerProfiles';
+import { qualityGateOptionsError, runExportQualityGate, runQualityGateOnBodies, type ExportGeometryQualitySummary, type ExportQualityGateInput } from './exportQualityGate';
+export type { ExportGeometryQualitySummary, ExportQualityGateInput, QualityGateMode } from './exportQualityGate';
 export type { StressInfillExportOptions, StressInfillReport } from './stressInfillExport';
 export { stlNotWatertightDiagnostic, brepInvalidDiagnostic } from './exportDiagnostics';
 
@@ -271,6 +273,9 @@ export interface ExportInput {
   options?: ExportOptions;
   /** Request a numeric authored connector sidecar for a static assembly STEP export. */
   connectorManifest?: { partId: string; family: string };
+  /** Export-time geometry-quality gate (tiny faces / short edges) for solid
+   *  and mesh fabrication formats; default mode 'warn'. */
+  qualityGate?: ExportQualityGateInput;
 }
 
 /** Companion mesh file for robot-description exports (URDF / SDF). The
@@ -308,6 +313,8 @@ export interface ExportResult {
   infillReport?: StressInfillReport;
   /** Mesh-solid (lattice) export: the lattice build report. */
   latticeReport?: LatticeReport;
+  /** Export-time geometry-quality summary (gated formats, mode not 'off'). */
+  geometryQuality?: ExportGeometryQualitySummary;
 }
 
 /** 3MF options with stress-graded infill resolved into writer modifiers.
@@ -465,6 +472,8 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   if (!EXPORT_FORMATS.includes(input.format)) throw new Error(`Unsupported export format: ${String(input.format)}`);
   // Text derived from the tube report, not a solid: no occt recompute needed.
   if (input.format === 'bend-table') return exportBendTable(input);
+  const gateError = qualityGateOptionsError(input.qualityGate);
+  if (gateError !== undefined) throw new Error(`Invalid quality gate option: ${gateError}`);
   return withOcctPoisonRecovery(async () => {
 
   const { code, fileName, format, feature_id, scriptDir, connectorManifest: manifestRequest } = input;
@@ -540,6 +549,28 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     throw new Error('connector-manifest export requires the Scene source to lower to a SceneBackend.');
   }
 
+  const gate = runExportQualityGate(format, lowered, targetId, input.qualityGate);
+  r.diagnostics.push(...gate.diagnostics);
+  if (gate.blocked) {
+    return { bytes: new Uint8Array(), featureCount, diagnostics: r.diagnostics, geometryQuality: gate.summary };
+  }
+  const out = await exportLoweredTarget(input, lowered, targetId, manifestScene, run, r, featureCount);
+  return gate.summary === undefined ? out : { ...out, geometryQuality: gate.summary };
+
+  });
+}
+
+/** Dispatch a resolved, lowered target to its writer (direct, Scene or single shape). */
+async function exportLoweredTarget(
+  input: ExportInput,
+  lowered: ShapeBackend,
+  targetId: string,
+  manifestScene: Scene | undefined,
+  run: Awaited<ReturnType<typeof runScript>>,
+  r: Awaited<ReturnType<typeof lowerScriptRun>>,
+  featureCount: number,
+): Promise<ExportResult> {
+  const { format, scriptDir, connectorManifest: manifestRequest } = input;
   const direct = await exportDirectTarget(input, lowered, targetId, run, r.diagnostics, featureCount);
   if (direct !== undefined) return direct;
 
@@ -559,8 +590,6 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
 
   const shape = lowered as OcctBackend;
   return exportShapeOrInfill(input, format, shape, targetId, scriptDir, run, r.shapes, r.diagnostics, featureCount);
-
-  });
 }
 
 
@@ -580,12 +609,15 @@ export interface ExportPartsInput {
   scriptDir?: string;
   /** Part names to export; omit for all parts. */
   parts?: string[];
+  /** Per-part geometry-quality gate; default mode 'warn'. */
+  qualityGate?: ExportQualityGateInput;
 }
 
 export interface ExportPartsResult {
   parts: PartStlExport[];
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
+  geometryQuality?: ExportGeometryQualitySummary;
 }
 
 export { fileSafePartName };
@@ -658,6 +690,8 @@ export async function resolveWorldFrameScene(
  * callers decide whether a failing report is fatal (verify default-on).
  */
 export async function runAndExportParts(input: ExportPartsInput): Promise<ExportPartsResult> {
+  const gateError = qualityGateOptionsError(input.qualityGate);
+  if (gateError !== undefined) throw new Error(`Invalid quality gate option: ${gateError}`);
   return withOcctPoisonRecovery(async () => {
   const resolved = await resolveWorldFrameScene(input, 'stl');
   const { featureCount } = resolved;
@@ -687,6 +721,10 @@ export async function runAndExportParts(input: ExportPartsInput): Promise<Export
       ? worldParts
       : worldParts.filter(p => input.parts!.includes(p.name));
 
+    const gate = runQualityGateOnBodies(selected, input.qualityGate);
+    const diagnostics = [...resolved.diagnostics, ...gate.diagnostics];
+    const geometryQuality = gate.summary === undefined ? {} : { geometryQuality: gate.summary };
+    if (gate.blocked) return { parts: [], featureCount, diagnostics, ...geometryQuality };
     const parts: PartStlExport[] = [];
     for (const p of selected) {
       const mesh = meshShapeForExport(p.shape.getReplicadShape());
@@ -699,7 +737,7 @@ export async function runAndExportParts(input: ExportPartsInput): Promise<Export
         triangleCount: mesh.triangles.length / 3,
       });
     }
-    return { parts, featureCount, diagnostics: resolved.diagnostics };
+    return { parts, featureCount, diagnostics, ...geometryQuality };
   } finally {
     releaseWorldFrameParts(worldParts);
   }

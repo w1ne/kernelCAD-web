@@ -1,0 +1,4 @@
+$ kernelcad export step docs/demos/export-quality-gate/plate-fixed.kcad.ts -o /tmp/out/plate-3.step
+geometry quality (warn): ok — 1 body(ies) checked, thresholds 0.01 mm² / 0.1 mm, 18.4 ms
+Wrote 47882 bytes to /tmp/out/plate-3.step
+[exit 0]

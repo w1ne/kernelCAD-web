@@ -283,4 +283,28 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A PLY export received an unknown option key or an out-of-set encoding / normals / colors value; nothing was written.',
   },
+  'export.geometry-quality.tiny-faces': {
+    hintTemplate:
+      'Snap near-coincident steps/offsets to an exact shared value (or make them >= the threshold), then re-export. qualityGate: "off" skips the gate; tiny_face_area_mm2 changes the threshold.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'snap near-coincident steps or offsets to an exact shared value so no sliver face remains, then re-export' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'The export-time geometry-quality gate found BREP faces below tiny_face_area_mm2 (default 0.01 mm²) on a solid body of an STL/STEP/3MF/OBJ/PLY/G-code export. Warning with qualityGate "warn" (default); an error that stops the export with "block".',
+  },
+  'export.geometry-quality.short-edges': {
+    hintTemplate:
+      'Merge or lengthen the reported short edges (snap near-equal dimensions, remove micro-steps), then re-export. qualityGate: "off" skips the gate; short_edge_length_mm changes the threshold.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'snap near-equal dimensions or remove micro-steps so no edge is shorter than the threshold, then re-export' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'The export-time geometry-quality gate found BREP edges below short_edge_length_mm (default 0.1 mm) on a solid body of an STL/STEP/3MF/OBJ/PLY/G-code export. Warning with qualityGate "warn" (default); an error that stops the export with "block".',
+  },
+  'export.geometry-quality.skipped': {
+    hintTemplate:
+      "The export geometry-quality gate did not screen this body (not a single solid, a mesh body, or over the face budget). Run verify({ check: 'geometry-quality', feature_id }) on it directly if it must be screened.",
+    nextAction: { kind: 'call-tool', tool: 'verify', args: { check: 'geometry-quality' } },
+    defaultSeverity: 'info',
+    group: 'export',
+    description: 'The export-time geometry-quality gate skipped a body: a shell/face/wire or mixed compound, a mesh (lattice) body, a measurement failure, or a body that would exceed the face budget.',
+  },
 } as const satisfies Record<`export.${string}`, DiagnosticCodeSpec>;

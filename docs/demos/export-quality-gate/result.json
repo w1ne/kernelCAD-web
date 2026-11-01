@@ -1,0 +1,251 @@
+[
+  {
+    "invocation": "kernelcad export step docs/demos/export-quality-gate/plate-sliver.kcad.ts -o /tmp/out/plate-1.step",
+    "exitCode": 0,
+    "stepWritten": true,
+    "mcp": {
+      "ok": true,
+      "geometryQuality": {
+        "ok": false,
+        "mode": "warn",
+        "tinyFaces": 2,
+        "shortEdges": 4,
+        "worst": [
+          {
+            "part": "boolean_5",
+            "kind": "short-edge",
+            "id": "e10",
+            "location": [
+              60,
+              19.25,
+              6.0024999999999995
+            ],
+            "size": 0.004999999999999893,
+            "unit": "mm"
+          },
+          {
+            "part": "boolean_5",
+            "kind": "short-edge",
+            "id": "e12",
+            "location": [
+              60,
+              20.75,
+              6.0024999999999995
+            ],
+            "size": 0.004999999999999893,
+            "unit": "mm"
+          },
+          {
+            "part": "boolean_5",
+            "kind": "short-edge",
+            "id": "e34",
+            "location": [
+              30,
+              19.25,
+              6.0024999999999995
+            ],
+            "size": 0.004999999999999893,
+            "unit": "mm"
+          },
+          {
+            "part": "boolean_5",
+            "kind": "short-edge",
+            "id": "e38",
+            "location": [
+              30,
+              20.75,
+              6.0024999999999995
+            ],
+            "size": 0.004999999999999893,
+            "unit": "mm"
+          },
+          {
+            "part": "boolean_5",
+            "kind": "tiny-face",
+            "id": "f3",
+            "location": [
+              60,
+              20,
+              6.0024999999999995
+            ],
+            "size": 0.00749999999999984,
+            "unit": "mm2"
+          }
+        ],
+        "thresholds": {
+          "tinyFaceAreaMm2": 0.01,
+          "shortEdgeLengthMm": 0.1
+        },
+        "parts": [
+          {
+            "part": "boolean_5",
+            "ok": false,
+            "tinyFaces": 2,
+            "shortEdges": 4,
+            "faces": 18,
+            "edges": 44
+          }
+        ],
+        "budget": {
+          "maxFaces": 10000,
+          "facesChecked": 18
+        },
+        "elapsedMs": 42.5
+      },
+      "diagnostics": [
+        {
+          "code": "export.geometry-quality.tiny-faces",
+          "severity": "warn",
+          "message": "Geometry quality: 2 face(s) smaller than 0.01 mm² in boolean_5. Worst: boolean_5 f3 0.0075 mm² at [60, 20, 6.002]."
+        },
+        {
+          "code": "export.geometry-quality.short-edges",
+          "severity": "warn",
+          "message": "Geometry quality: 4 edge(s) shorter than 0.1 mm in boolean_5. Worst: boolean_5 e10 0.005 mm at [60, 19.25, 6.002]."
+        }
+      ]
+    }
+  },
+  {
+    "invocation": "kernelcad export step docs/demos/export-quality-gate/plate-sliver.kcad.ts -o /tmp/out/plate-2.step --quality-gate block",
+    "exitCode": 1,
+    "stepWritten": false,
+    "mcp": {
+      "ok": false,
+      "geometryQuality": {
+        "ok": false,
+        "mode": "block",
+        "tinyFaces": 2,
+        "shortEdges": 4,
+        "worst": [
+          {
+            "part": "boolean_5",
+            "kind": "short-edge",
+            "id": "e10",
+            "location": [
+              60,
+              19.25,
+              6.0024999999999995
+            ],
+            "size": 0.004999999999999893,
+            "unit": "mm"
+          },
+          {
+            "part": "boolean_5",
+            "kind": "short-edge",
+            "id": "e12",
+            "location": [
+              60,
+              20.75,
+              6.0024999999999995
+            ],
+            "size": 0.004999999999999893,
+            "unit": "mm"
+          },
+          {
+            "part": "boolean_5",
+            "kind": "short-edge",
+            "id": "e34",
+            "location": [
+              30,
+              19.25,
+              6.0024999999999995
+            ],
+            "size": 0.004999999999999893,
+            "unit": "mm"
+          },
+          {
+            "part": "boolean_5",
+            "kind": "short-edge",
+            "id": "e38",
+            "location": [
+              30,
+              20.75,
+              6.0024999999999995
+            ],
+            "size": 0.004999999999999893,
+            "unit": "mm"
+          },
+          {
+            "part": "boolean_5",
+            "kind": "tiny-face",
+            "id": "f3",
+            "location": [
+              60,
+              20,
+              6.0024999999999995
+            ],
+            "size": 0.00749999999999984,
+            "unit": "mm2"
+          }
+        ],
+        "thresholds": {
+          "tinyFaceAreaMm2": 0.01,
+          "shortEdgeLengthMm": 0.1
+        },
+        "parts": [
+          {
+            "part": "boolean_5",
+            "ok": false,
+            "tinyFaces": 2,
+            "shortEdges": 4,
+            "faces": 18,
+            "edges": 44
+          }
+        ],
+        "budget": {
+          "maxFaces": 10000,
+          "facesChecked": 18
+        },
+        "elapsedMs": 7
+      },
+      "diagnostics": [
+        {
+          "code": "export.geometry-quality.tiny-faces",
+          "severity": "error",
+          "message": "Geometry quality: 2 face(s) smaller than 0.01 mm² in boolean_5. Worst: boolean_5 f3 0.0075 mm² at [60, 20, 6.002]. Export blocked (qualityGate: block)."
+        },
+        {
+          "code": "export.geometry-quality.short-edges",
+          "severity": "error",
+          "message": "Geometry quality: 4 edge(s) shorter than 0.1 mm in boolean_5. Worst: boolean_5 e10 0.005 mm at [60, 19.25, 6.002]. Export blocked (qualityGate: block)."
+        }
+      ]
+    }
+  },
+  {
+    "invocation": "kernelcad export step docs/demos/export-quality-gate/plate-fixed.kcad.ts -o /tmp/out/plate-3.step",
+    "exitCode": 0,
+    "stepWritten": true,
+    "mcp": {
+      "ok": true,
+      "geometryQuality": {
+        "ok": true,
+        "mode": "warn",
+        "tinyFaces": 0,
+        "shortEdges": 0,
+        "worst": [],
+        "thresholds": {
+          "tinyFaceAreaMm2": 0.01,
+          "shortEdgeLengthMm": 0.1
+        },
+        "parts": [
+          {
+            "part": "boolean_5",
+            "ok": true,
+            "tinyFaces": 0,
+            "shortEdges": 0,
+            "faces": 14,
+            "edges": 36
+          }
+        ],
+        "budget": {
+          "maxFaces": 10000,
+          "facesChecked": 14
+        },
+        "elapsedMs": 6.3
+      },
+      "diagnostics": []
+    }
+  }
+]
