@@ -41,6 +41,14 @@ Low-poly crates, barrels, containers, tools, carts and market pieces at real-wor
 | weapon-rack | Armoury rack of swords and spears with a leaning round shield | swords, spears, shield, wood, steel, grip, shieldC | 332 |
 | scarecrow | Pole scarecrow with shirt, straw tufts, sack head and straw hat | hatStyle, pole, shirt, patch, head, hat, straw | 324 |
 | covered-wagon | Pioneer wagon with arched canvas, driver seat, tongue and four spoked wheels | cover, wood, wheel, canvas, opening | 524 |
+| rowboat | Beached wooden rowboat with pointed bow, thwart seats and oars | lengthM, seats, oars, hull, trim, inside, oar | 324 |
+| mine-cart | Flared steel mine cart on a track segment, empty or heaped with ore | load, track, cart, band, steel, sleeper, ore | 392 |
+| firewood-stack | Split firewood pyramid with pale cut ends between stakes, optional roof | rows, roof, bark, cut, stake | 352 |
+| sandbags | Staggered wall of pillowed sandbags, straight or curved | courses, perCourse, layout, bag, bag2 | 484 |
+| potion-bottles | Cluster of corked round, square and conical potion flasks | count, brewA, brewB, brewC, glass, cork | 332 |
+| candelabra | Brass candelabra or candlestick with drip cups, candles and flames | candles, height, metal, wax, flame | 296 |
+| hanging-sign | Shop sign hung from a bracket post, with mug, sword or boot emblem | emblem, shape, post, iron, board, mark | 204 |
+| trash-bags | Pile of tied bin bags slumped together | count, bag, bag2, tie | 300 |
 
 ## Licence
 

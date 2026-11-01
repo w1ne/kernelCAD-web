@@ -131,6 +131,7 @@
         "bunk-bed",
         "cactus-pot",
         "ceiling-fan",
+        "chaise-lounge",
         "chest-of-drawers",
         "coat-rack",
         "coffee-table",
@@ -138,9 +139,11 @@
         "crib",
         "desk-lamp",
         "desk",
+        "dining-bench",
         "dining-chair",
         "dining-table",
         "dishwasher",
+        "dresser-with-mirror",
         "fiddle-leaf-fig",
         "filing-cabinet",
         "fireplace",
@@ -151,10 +154,12 @@
         "interior-door",
         "kitchen-counter",
         "kitchen-island",
+        "laundry-basket",
         "microwave",
         "nightstand",
         "office-chair",
         "ottoman",
+        "pedal-bin",
         "pendant-lamp",
         "picture-frame",
         "plant-stand",
@@ -166,6 +171,7 @@
         "room-divider",
         "round-table",
         "rug",
+        "shoe-rack",
         "side-table",
         "sink-vanity",
         "sofa",
@@ -193,13 +199,16 @@
       "title": "Nature",
       "description": "Low-poly trees, rocks, plants and ground pieces at real-world scale, flat-shaded on one palette material.",
       "assets": [
+        "acacia-tree",
         "agave",
         "apple-tree",
         "bamboo-clump",
         "baobab-tree",
         "birch-tree",
+        "bird-nest",
         "bonsai-tree",
         "boulder-cluster",
+        "bramble",
         "bush",
         "cactus",
         "cairn",
@@ -208,8 +217,12 @@
         "clover-patch",
         "crystal-cluster",
         "cypress-tree",
+        "dandelion-patch",
+        "dead-bush",
         "dead-tree",
+        "driftwood",
         "fallen-branch",
+        "fan-palm",
         "fern",
         "flower-patch",
         "giant-mushroom",
@@ -218,6 +231,7 @@
         "hedge",
         "hill-tile",
         "hollow-log",
+        "joshua-tree",
         "lavender-clump",
         "lily-pads",
         "log",
@@ -230,17 +244,24 @@
         "pine-tree",
         "poplar-tree",
         "prickly-pear-cactus",
+        "pumpkin-patch",
         "reeds",
+        "rock-arch",
         "rock-pillar",
         "rock",
         "rose-bush",
         "sapling",
+        "seashells",
+        "snowy-fir-tree",
         "spruce-tree",
         "stone-slab",
         "sunflower",
+        "tall-grass",
+        "termite-mound",
         "tree-stump",
         "tulip-bed",
         "tumbleweed",
+        "vine-arch",
         "water-tile",
         "wheat-sheaf",
         "willow-tree"
@@ -258,28 +279,36 @@
         "beehive",
         "bucket",
         "campfire",
+        "candelabra",
         "cardboard-boxes",
         "cauldron",
         "covered-wagon",
+        "firewood-stack",
         "gas-cylinder",
         "hand-cart",
         "hand-truck",
+        "hanging-sign",
         "haybale",
         "jerrycan",
         "ladder",
         "lantern",
         "market-stall",
+        "mine-cart",
         "notice-board",
         "oil-drum",
         "pallet",
         "plastic-crate",
+        "potion-bottles",
+        "rowboat",
         "sack",
+        "sandbags",
         "scarecrow",
         "shipping-container",
         "signpost",
         "tent",
         "tool-rack",
         "toolbox",
+        "trash-bags",
         "treasure-chest",
         "water-trough",
         "watering-can",
@@ -18317,6 +18346,121 @@
       ]
     },
     {
+      "id": "chaise-lounge",
+      "kit": "interior",
+      "title": "Chaise longue",
+      "description": "Upholstered chaise longue day bed with a sloped back end, optional arm, bolster cushion and wooden feet. Knobs: arm, upholstery, bolster and leg colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "chaise longue",
+        "chaise lounge",
+        "daybed",
+        "fainting couch",
+        "lounge",
+        "sofa",
+        "bedroom",
+        "living room"
+      ],
+      "compat": [
+        "indoor",
+        "living-room",
+        "bedroom",
+        "hotel"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/chaise-lounge.kcad.ts",
+      "sourceSha256": "5ec5ff7397f280b7d66fc28d1d7da0e106817a0d86f4b3def0b7db725d96e119",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "arm",
+          "type": "choice",
+          "default": "yes",
+          "label": "Side arm",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#5f7f6a",
+          "label": "Upholstery"
+        },
+        {
+          "name": "bolster",
+          "type": "color",
+          "default": "#d9c08a",
+          "label": "Bolster"
+        },
+        {
+          "name": "legs",
+          "type": "color",
+          "default": "#5a3a27",
+          "label": "Legs"
+        }
+      ],
+      "presets": {
+        "velvet": {
+          "fabric": "#7a2f45",
+          "bolster": "#c9a24a",
+          "legs": "#2b2927"
+        },
+        "linen": {
+          "fabric": "#d9cfbd",
+          "bolster": "#8a9196",
+          "legs": "#a07548"
+        },
+        "navy": {
+          "fabric": "#2f3e57",
+          "bolster": "#e8e0d0"
+        }
+      },
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          1.7,
+          0.89,
+          0.68
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "legs",
+          "color": "#5a3a27",
+          "parts": [
+            "leg--1--1",
+            "leg-1--1",
+            "leg--1-1",
+            "leg-1-1"
+          ],
+          "param": "legs"
+        },
+        {
+          "name": "fabric",
+          "color": "#5f7f6a",
+          "parts": [
+            "base",
+            "seat",
+            "arm"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "bolster",
+          "color": "#d9c08a",
+          "parts": [
+            "bolster"
+          ],
+          "param": "bolster"
+        }
+      ]
+    },
+    {
       "id": "chest-of-drawers",
       "kit": "interior",
       "title": "Chest of drawers",
@@ -19243,6 +19387,129 @@
       ]
     },
     {
+      "id": "dining-bench",
+      "kit": "interior",
+      "title": "Dining bench",
+      "description": "Backless farmhouse dining bench with a plank seat on trestle legs and an optional cushion. Knobs: length, leg style, cushion, wood, leg and cushion colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "bench",
+        "dining bench",
+        "farmhouse bench",
+        "trestle bench",
+        "seat",
+        "kitchen",
+        "dining room"
+      ],
+      "compat": [
+        "indoor",
+        "kitchen",
+        "dining-room",
+        "hallway",
+        "tavern"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/dining-bench.kcad.ts",
+      "sourceSha256": "b79ac070c600b0a7bc7b4aa6b99afefb077de8ac41ec848891896022875dce49",
+      "triangleBudget": 250,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "1400",
+          "label": "Length (mm)",
+          "choices": [
+            "1000",
+            "1400",
+            "1800"
+          ]
+        },
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "trestle",
+          "label": "Leg style",
+          "choices": [
+            "trestle",
+            "legs"
+          ]
+        },
+        {
+          "name": "cushion",
+          "type": "choice",
+          "default": "no",
+          "label": "Cushion",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#a8703f",
+          "label": "Seat"
+        },
+        {
+          "name": "legs",
+          "type": "color",
+          "default": "#6b4a2f",
+          "label": "Legs"
+        },
+        {
+          "name": "pad",
+          "type": "color",
+          "default": "#8a9b6a",
+          "label": "Cushion"
+        }
+      ],
+      "presets": {
+        "white": {
+          "wood": "#c69c6d",
+          "legs": "#efeee9"
+        },
+        "black": {
+          "wood": "#8a5a33",
+          "legs": "#2b2927"
+        }
+      },
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          1.4,
+          0.46,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wood",
+          "color": "#a8703f",
+          "parts": [
+            "plank-front",
+            "plank-back"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "legs",
+          "color": "#6b4a2f",
+          "parts": [
+            "cleat",
+            "trestle-left",
+            "foot-left",
+            "trestle-right",
+            "foot-right",
+            "stretcher"
+          ],
+          "param": "legs"
+        }
+      ]
+    },
+    {
       "id": "dining-chair",
       "kit": "interior",
       "title": "Dining chair",
@@ -19582,6 +19849,152 @@
             "status-light"
           ],
           "param": "rack"
+        }
+      ]
+    },
+    {
+      "id": "dresser-with-mirror",
+      "kit": "interior",
+      "title": "Dressing table",
+      "description": "Vanity dressing table with drawers, tapered legs, an upright framed mirror, a padded stool and toiletries. Knobs: mirror shape, stool, wood, mirror, stool and bottle colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "dressing table",
+        "vanity table",
+        "makeup table",
+        "dresser",
+        "mirror",
+        "stool",
+        "bedroom"
+      ],
+      "compat": [
+        "indoor",
+        "bedroom",
+        "hotel"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/dresser-with-mirror.kcad.ts",
+      "sourceSha256": "b25b3ce07ed9217c352a7509ecd1b93ac8b3cc04473dc65805b84c146fe53dbd",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "mirror",
+          "type": "choice",
+          "default": "arched",
+          "label": "Mirror shape",
+          "choices": [
+            "arched",
+            "square",
+            "round"
+          ]
+        },
+        {
+          "name": "stool",
+          "type": "choice",
+          "default": "yes",
+          "label": "Stool",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#efeee9",
+          "label": "Wood"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#bcd3dc",
+          "label": "Mirror"
+        },
+        {
+          "name": "pad",
+          "type": "color",
+          "default": "#d9a3a0",
+          "label": "Stool pad"
+        },
+        {
+          "name": "bottles",
+          "type": "color",
+          "default": "#c9a24a",
+          "label": "Toiletries"
+        }
+      ],
+      "presets": {
+        "walnut": {
+          "wood": "#5a3a27",
+          "pad": "#c9b89a"
+        },
+        "oak": {
+          "wood": "#c69c6d",
+          "pad": "#5c7a8a",
+          "bottles": "#efeee9"
+        }
+      },
+      "stats": {
+        "triangles": 352,
+        "sizeM": [
+          1,
+          1.54,
+          0.88119
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wood",
+          "color": "#efeee9",
+          "parts": [
+            "top",
+            "drawer-box-left",
+            "drawer-box-right",
+            "apron",
+            "leg--1--1",
+            "leg-1--1",
+            "leg--1-1",
+            "leg-1-1",
+            "upright-left",
+            "upright-right",
+            "mirror-frame",
+            "stool-leg--1--1",
+            "stool-leg-1--1",
+            "stool-leg--1-1",
+            "stool-leg-1-1"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "bottles",
+          "color": "#c9a24a",
+          "parts": [
+            "knob-left",
+            "knob-right",
+            "bottle-1",
+            "jar"
+          ],
+          "param": "bottles"
+        },
+        {
+          "name": "glass",
+          "color": "#bcd3dc",
+          "parts": [
+            "mirror-glass",
+            "bottle-2"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "pad",
+          "color": "#d9a3a0",
+          "parts": [
+            "stool-pad"
+          ],
+          "param": "pad"
         }
       ]
     },
@@ -20945,6 +21358,127 @@
       ]
     },
     {
+      "id": "laundry-basket",
+      "kit": "interior",
+      "title": "Laundry basket",
+      "description": "Woven laundry hamper with a rim band and handles, open with a pile of clothes or closed with a lid. Knobs: lid, basket, rim and clothes colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "laundry basket",
+        "hamper",
+        "basket",
+        "clothes",
+        "laundry",
+        "bathroom",
+        "bedroom"
+      ],
+      "compat": [
+        "indoor",
+        "bathroom",
+        "bedroom",
+        "laundry"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/laundry-basket.kcad.ts",
+      "sourceSha256": "ed8b4106614a6912573716079c8123a198ed3dd9481b98142f9c95f454ab13ec",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "lid",
+          "type": "choice",
+          "default": "open",
+          "label": "Lid",
+          "choices": [
+            "open",
+            "closed"
+          ]
+        },
+        {
+          "name": "basket",
+          "type": "color",
+          "default": "#c9a46a",
+          "label": "Basket"
+        },
+        {
+          "name": "rim",
+          "type": "color",
+          "default": "#8a6a48",
+          "label": "Rim and handles"
+        },
+        {
+          "name": "clothA",
+          "type": "color",
+          "default": "#3c6e9f",
+          "label": "Clothes A"
+        },
+        {
+          "name": "clothB",
+          "type": "color",
+          "default": "#e8e2d6",
+          "label": "Clothes B"
+        }
+      ],
+      "presets": {
+        "grey": {
+          "basket": "#9aa0a6",
+          "rim": "#5c6066"
+        },
+        "white": {
+          "basket": "#efeee9",
+          "rim": "#c9b89a",
+          "clothA": "#c2553f"
+        }
+      },
+      "stats": {
+        "triangles": 242,
+        "sizeM": [
+          0.492,
+          0.67,
+          0.456536
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "basket",
+          "color": "#c9a46a",
+          "parts": [
+            "basket"
+          ],
+          "param": "basket"
+        },
+        {
+          "name": "rim",
+          "color": "#8a6a48",
+          "parts": [
+            "rim",
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "rim"
+        },
+        {
+          "name": "clothA",
+          "color": "#3c6e9f",
+          "parts": [
+            "clothes"
+          ],
+          "param": "clothA"
+        },
+        {
+          "name": "clothB",
+          "color": "#e8e2d6",
+          "parts": [
+            "sleeve",
+            "towel"
+          ],
+          "param": "clothB"
+        }
+      ]
+    },
+    {
       "id": "microwave",
       "kit": "interior",
       "title": "Microwave oven",
@@ -21432,6 +21966,139 @@
             "button"
           ],
           "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "pedal-bin",
+      "kit": "interior",
+      "title": "Pedal bin",
+      "description": "Kitchen or bathroom pedal bin, round or square, with a lid that is closed or raised and a front foot pedal. Knobs: shape, size, lid, body, lid and pedal colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "pedal bin",
+        "trash can",
+        "waste bin",
+        "garbage can",
+        "bin",
+        "kitchen",
+        "bathroom",
+        "office"
+      ],
+      "compat": [
+        "indoor",
+        "kitchen",
+        "bathroom",
+        "office"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/pedal-bin.kcad.ts",
+      "sourceSha256": "5a34f5e9e2aa8a5cdaccf3ce9342bb64476ff44cf7f72b5d8918056ac4e56870",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "round",
+          "label": "Shape",
+          "choices": [
+            "round",
+            "square"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "30",
+          "label": "Capacity (L)",
+          "choices": [
+            "5",
+            "30",
+            "50"
+          ]
+        },
+        {
+          "name": "lid",
+          "type": "choice",
+          "default": "closed",
+          "label": "Lid",
+          "choices": [
+            "closed",
+            "open"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c9ccd0",
+          "label": "Body"
+        },
+        {
+          "name": "top",
+          "type": "color",
+          "default": "#b9bcbf",
+          "label": "Lid"
+        },
+        {
+          "name": "pedal",
+          "type": "color",
+          "default": "#2b2d30",
+          "label": "Pedal and trim"
+        }
+      ],
+      "presets": {
+        "white": {
+          "body": "#f2f1ec",
+          "top": "#f2f1ec",
+          "pedal": "#9aa0a6"
+        },
+        "black": {
+          "body": "#2b2d30",
+          "top": "#2b2d30",
+          "pedal": "#9aa0a6"
+        },
+        "red": {
+          "body": "#b8342c",
+          "top": "#c9ccd0"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.306,
+          0.643,
+          0.395
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "pedal",
+          "color": "#2b2d30",
+          "parts": [
+            "base-trim",
+            "hinge",
+            "pedal"
+          ],
+          "param": "pedal"
+        },
+        {
+          "name": "body",
+          "color": "#c9ccd0",
+          "parts": [
+            "body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "top",
+          "color": "#b9bcbf",
+          "parts": [
+            "lid"
+          ],
+          "param": "top"
         }
       ]
     },
@@ -22775,6 +23442,171 @@
             "field"
           ],
           "param": "field"
+        }
+      ]
+    },
+    {
+      "id": "shoe-rack",
+      "kit": "interior",
+      "title": "Shoe rack",
+      "description": "Hallway shoe rack with two or three slatted tiers holding pairs of shoes and boots. Knobs: tiers, width, shoes, frame, shoe and boot colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "shoe rack",
+        "shoe shelf",
+        "shoes",
+        "boots",
+        "storage",
+        "hallway",
+        "entryway",
+        "mudroom"
+      ],
+      "compat": [
+        "indoor",
+        "hallway",
+        "bedroom",
+        "closet"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/interior/shoe-rack.kcad.ts",
+      "sourceSha256": "f55882672fffd95831e0f38719f89b15203239ca2af1021d8f91dad358d95611",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "tiers",
+          "type": "choice",
+          "default": "3",
+          "label": "Tiers",
+          "choices": [
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "width",
+          "type": "choice",
+          "default": "800",
+          "label": "Width (mm)",
+          "choices": [
+            "600",
+            "800",
+            "1000"
+          ]
+        },
+        {
+          "name": "shoes",
+          "type": "choice",
+          "default": "yes",
+          "label": "Shoes",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#c69c6d",
+          "label": "Frame"
+        },
+        {
+          "name": "shoeA",
+          "type": "color",
+          "default": "#2b2d30",
+          "label": "Shoes A"
+        },
+        {
+          "name": "shoeB",
+          "type": "color",
+          "default": "#b8342c",
+          "label": "Shoes B"
+        },
+        {
+          "name": "boot",
+          "type": "color",
+          "default": "#7a5236",
+          "label": "Boots"
+        }
+      ],
+      "presets": {
+        "black": {
+          "frame": "#2b2927",
+          "shoeA": "#efeee9"
+        },
+        "bamboo": {
+          "frame": "#d9b77e",
+          "shoeB": "#3c6e9f"
+        }
+      },
+      "stats": {
+        "triangles": 440,
+        "sizeM": [
+          0.8,
+          0.86,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#c69c6d",
+          "parts": [
+            "side-left",
+            "side-right",
+            "top",
+            "slat-1-1",
+            "slat-1-2",
+            "slat-1-3",
+            "slat-2-1",
+            "slat-2-2",
+            "slat-2-3",
+            "slat-3-1",
+            "slat-3-2",
+            "slat-3-3"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "shoeA",
+          "color": "#2b2d30",
+          "parts": [
+            "shoe-1-1-l",
+            "shoe-1-1-r",
+            "shoe-2-2-l",
+            "shoe-2-2-r",
+            "shoe-3-1-l",
+            "shoe-3-1-r",
+            "shoe-3-3-l",
+            "shoe-3-3-r"
+          ],
+          "param": "shoeA"
+        },
+        {
+          "name": "shoeB",
+          "color": "#b8342c",
+          "parts": [
+            "shoe-1-2-l",
+            "shoe-1-2-r",
+            "shoe-2-1-l",
+            "shoe-2-1-r",
+            "shoe-2-3-l",
+            "shoe-2-3-r",
+            "shoe-3-2-l",
+            "shoe-3-2-r"
+          ],
+          "param": "shoeB"
+        },
+        {
+          "name": "boot",
+          "color": "#7a5236",
+          "parts": [
+            "shoe-1-3-l",
+            "shoe-1-3-r"
+          ],
+          "param": "boot"
         }
       ]
     },
@@ -25510,6 +26342,115 @@
       ]
     },
     {
+      "id": "acacia-tree",
+      "kit": "nature",
+      "title": "Acacia tree",
+      "description": "Savanna umbrella-thorn acacia with a slender forked trunk and a wide flat-topped canopy. Knobs: height, canopy pads, bark and leaf colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "tree",
+        "acacia",
+        "umbrella thorn",
+        "savanna",
+        "africa",
+        "safari",
+        "desert",
+        "flat top",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "savanna",
+        "desert",
+        "meadow"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/acacia-tree.kcad.ts",
+      "sourceSha256": "73201c17f9e6bf1efe99a5c6e6d2b73d3d497f64c17bc750ed6ab39a46039e9f",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "6",
+          "label": "Height (m)",
+          "choices": [
+            "4",
+            "6",
+            "9"
+          ]
+        },
+        {
+          "name": "pads",
+          "type": "choice",
+          "default": "4",
+          "label": "Canopy pads",
+          "choices": [
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "bark",
+          "type": "color",
+          "default": "#5a4636",
+          "label": "Bark"
+        },
+        {
+          "name": "leaves",
+          "type": "color",
+          "default": "#7a9a3a",
+          "label": "Leaves"
+        }
+      ],
+      "presets": {
+        "dry": {
+          "leaves": "#a8a04a"
+        },
+        "lush": {
+          "leaves": "#5a8a34"
+        }
+      },
+      "stats": {
+        "triangles": 286,
+        "sizeM": [
+          4.896373,
+          5.64,
+          5.63698
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bark",
+          "color": "#5a4636",
+          "parts": [
+            "trunk",
+            "limb-1",
+            "limb-2",
+            "limb-3",
+            "limb-4"
+          ],
+          "param": "bark"
+        },
+        {
+          "name": "leaves",
+          "color": "#7a9a3a",
+          "parts": [
+            "canopy",
+            "pad-1",
+            "pad-2",
+            "pad-3",
+            "pad-4"
+          ],
+          "param": "leaves"
+        }
+      ]
+    },
+    {
       "id": "agave",
       "kit": "nature",
       "title": "Agave",
@@ -26166,6 +27107,133 @@
       ]
     },
     {
+      "id": "bird-nest",
+      "kit": "nature",
+      "title": "Bird nest",
+      "description": "Woven twig bird nest with a hollow cup, stray twigs and a clutch of eggs, for trees, rooftops and egg hunts. Knobs: size, eggs, nest and egg colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "nest",
+        "bird nest",
+        "eggs",
+        "twigs",
+        "bird",
+        "spring",
+        "easter",
+        "forest",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "garden",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/bird-nest.kcad.ts",
+      "sourceSha256": "f12934dc2efef48233113c2ac1ac9fff50afae24484c0c67a1b8a7e00a6369ce",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "songbird",
+          "label": "Size",
+          "choices": [
+            "songbird",
+            "crow",
+            "stork"
+          ]
+        },
+        {
+          "name": "eggs",
+          "type": "choice",
+          "default": "3",
+          "label": "Eggs",
+          "choices": [
+            "0",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "nest",
+          "type": "color",
+          "default": "#8a6a44",
+          "label": "Nest"
+        },
+        {
+          "name": "twig",
+          "type": "color",
+          "default": "#a88a5e",
+          "label": "Stray twigs"
+        },
+        {
+          "name": "egg",
+          "type": "color",
+          "default": "#9ad0e0",
+          "label": "Eggs"
+        }
+      ],
+      "presets": {
+        "white": {
+          "egg": "#f2efe6"
+        },
+        "speckled": {
+          "egg": "#d8c8a8"
+        },
+        "dark": {
+          "nest": "#5a4632",
+          "twig": "#7a6248"
+        }
+      },
+      "stats": {
+        "triangles": 284,
+        "sizeM": [
+          0.24234,
+          0.072962,
+          0.243253
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "nest",
+          "color": "#8a6a44",
+          "parts": [
+            "nest"
+          ],
+          "param": "nest"
+        },
+        {
+          "name": "twig",
+          "color": "#a88a5e",
+          "parts": [
+            "twig-1",
+            "twig-2",
+            "twig-3",
+            "twig-4",
+            "twig-5",
+            "twig-6"
+          ],
+          "param": "twig"
+        },
+        {
+          "name": "egg",
+          "color": "#9ad0e0",
+          "parts": [
+            "egg-1",
+            "egg-2",
+            "egg-3"
+          ],
+          "param": "egg"
+        }
+      ]
+    },
+    {
       "id": "bonsai-tree",
       "kit": "nature",
       "title": "Bonsai tree",
@@ -26424,6 +27492,170 @@
             "rock-3"
           ],
           "param": "stone2"
+        }
+      ]
+    },
+    {
+      "id": "bramble",
+      "kit": "nature",
+      "title": "Bramble",
+      "description": "Blackberry bramble of arching thorny canes with small leaves and clusters of ripe and red berries, for hedgerows and overgrown forests. Knobs: size, canes, cane, leaf, ripe and unripe berry colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "bramble",
+        "blackberry",
+        "berries",
+        "thorns",
+        "briar",
+        "hedgerow",
+        "shrub",
+        "forest",
+        "overgrown",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "meadow",
+        "farm",
+        "swamp"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/bramble.kcad.ts",
+      "sourceSha256": "42ab5542a7ceef337b18f10aaccd1b9d385d36daea39a1d2e1d6f7607cd64f78",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Height (m)",
+          "choices": [
+            "0.7",
+            "1",
+            "1.4"
+          ]
+        },
+        {
+          "name": "canes",
+          "type": "choice",
+          "default": "5",
+          "label": "Canes",
+          "choices": [
+            "4",
+            "5",
+            "6"
+          ]
+        },
+        {
+          "name": "cane",
+          "type": "color",
+          "default": "#7a3a3e",
+          "label": "Canes"
+        },
+        {
+          "name": "leaf",
+          "type": "color",
+          "default": "#3f7a34",
+          "label": "Leaves"
+        },
+        {
+          "name": "ripe",
+          "type": "color",
+          "default": "#2a1a3a",
+          "label": "Ripe berries"
+        },
+        {
+          "name": "unripe",
+          "type": "color",
+          "default": "#c83a3a",
+          "label": "Unripe berries"
+        }
+      ],
+      "presets": {
+        "raspberry": {
+          "ripe": "#c8304a",
+          "unripe": "#f0a0a0"
+        },
+        "autumn": {
+          "leaf": "#a85a2e"
+        }
+      },
+      "stats": {
+        "triangles": 498,
+        "sizeM": [
+          1.591596,
+          0.51028,
+          1.842561
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "leaf",
+          "color": "#3f7a34",
+          "parts": [
+            "thicket",
+            "leaf-1-1",
+            "leaf-1-2",
+            "leaf-1-3",
+            "leaf-2-1",
+            "leaf-2-2",
+            "leaf-2-3",
+            "leaf-3-1",
+            "leaf-3-2",
+            "leaf-3-3",
+            "leaf-4-1",
+            "leaf-4-2",
+            "leaf-4-3",
+            "leaf-5-1",
+            "leaf-5-2",
+            "leaf-5-3"
+          ],
+          "param": "leaf"
+        },
+        {
+          "name": "cane",
+          "color": "#7a3a3e",
+          "parts": [
+            "cane-1-a",
+            "cane-1-b",
+            "cane-1-c",
+            "cane-2-a",
+            "cane-2-b",
+            "cane-2-c",
+            "cane-3-a",
+            "cane-3-b",
+            "cane-3-c",
+            "cane-4-a",
+            "cane-4-b",
+            "cane-4-c",
+            "cane-5-a",
+            "cane-5-b",
+            "cane-5-c"
+          ],
+          "param": "cane"
+        },
+        {
+          "name": "ripe",
+          "color": "#2a1a3a",
+          "parts": [
+            "berries-1",
+            "berries-2",
+            "berries-4",
+            "berries-5"
+          ],
+          "param": "ripe"
+        },
+        {
+          "name": "unripe",
+          "color": "#c83a3a",
+          "parts": [
+            "berries-3"
+          ],
+          "param": "unripe"
         }
       ]
     },
@@ -27385,6 +28617,257 @@
       ]
     },
     {
+      "id": "dandelion-patch",
+      "kit": "nature",
+      "title": "Dandelion patch",
+      "description": "Dandelion rosette of jagged leaves with yellow flower heads and fluffy white seed clocks on slim stems, for lawns and meadows. Knobs: flowers, seed clocks, leaf, flower and seed colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "dandelion",
+        "weed",
+        "wildflower",
+        "seed head",
+        "lawn",
+        "meadow",
+        "spring",
+        "flower",
+        "plant",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "meadow",
+        "garden",
+        "park"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/dandelion-patch.kcad.ts",
+      "sourceSha256": "8c9510be1d05c3223aef5bca8ed754f86a6de558a353e4b525ff03547def0c09",
+      "triangleBudget": 480,
+      "params": [
+        {
+          "name": "flowers",
+          "type": "choice",
+          "default": "3",
+          "label": "Flowers",
+          "choices": [
+            "1",
+            "3",
+            "5"
+          ]
+        },
+        {
+          "name": "clocks",
+          "type": "choice",
+          "default": "2",
+          "label": "Seed clocks",
+          "choices": [
+            "0",
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "leaf",
+          "type": "color",
+          "default": "#4f8f34",
+          "label": "Leaves and stems"
+        },
+        {
+          "name": "flower",
+          "type": "color",
+          "default": "#f4c41a",
+          "label": "Flowers"
+        },
+        {
+          "name": "seed",
+          "type": "color",
+          "default": "#f2f2ec",
+          "label": "Seed clocks"
+        }
+      ],
+      "presets": {
+        "late": {
+          "flowers": "1",
+          "clocks": "3"
+        },
+        "orange": {
+          "flower": "#f09a1a"
+        }
+      },
+      "stats": {
+        "triangles": 344,
+        "sizeM": [
+          0.393098,
+          0.3608,
+          0.420223
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "leaf",
+          "color": "#4f8f34",
+          "parts": [
+            "leaf-1",
+            "leaf-2",
+            "leaf-3",
+            "leaf-4",
+            "leaf-5",
+            "leaf-6",
+            "stem-1",
+            "stem-2",
+            "stem-3",
+            "clock-stem-1",
+            "clock-stem-2"
+          ],
+          "param": "leaf"
+        },
+        {
+          "name": "flower",
+          "color": "#f4c41a",
+          "parts": [
+            "flower-1",
+            "flower-2",
+            "flower-3"
+          ],
+          "param": "flower"
+        },
+        {
+          "name": "seed",
+          "color": "#f2f2ec",
+          "parts": [
+            "clock-1",
+            "clock-2"
+          ],
+          "param": "seed"
+        }
+      ]
+    },
+    {
+      "id": "dead-bush",
+      "kit": "nature",
+      "title": "Dead bush",
+      "description": "Dry leafless shrub of thin forking branches fanning from a root knot, for deserts, wastelands and spooky scenes. Knobs: size, branches, branch and root colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "dead bush",
+        "dry bush",
+        "shrub",
+        "brush",
+        "twigs",
+        "desert",
+        "wasteland",
+        "spooky",
+        "halloween",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "desert",
+        "prairie",
+        "swamp",
+        "spooky"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/dead-bush.kcad.ts",
+      "sourceSha256": "1efbe58431e7809be884f0fa68b20f7452f754de491f14ae3f0541fcb0b4a6a3",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Height (m)",
+          "choices": [
+            "0.6",
+            "1",
+            "1.5"
+          ]
+        },
+        {
+          "name": "branches",
+          "type": "choice",
+          "default": "8",
+          "label": "Branches",
+          "choices": [
+            "6",
+            "8",
+            "11"
+          ]
+        },
+        {
+          "name": "twig",
+          "type": "color",
+          "default": "#8a6e52",
+          "label": "Branches"
+        },
+        {
+          "name": "knot",
+          "type": "color",
+          "default": "#5e4a38",
+          "label": "Root knot"
+        }
+      ],
+      "presets": {
+        "bleached": {
+          "twig": "#c8bca8",
+          "knot": "#9a8e7a"
+        },
+        "dark": {
+          "twig": "#4a3e34",
+          "knot": "#2f2822"
+        }
+      },
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.933885,
+          0.80574,
+          0.99265
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "knot",
+          "color": "#5e4a38",
+          "parts": [
+            "knot"
+          ],
+          "param": "knot"
+        },
+        {
+          "name": "twig",
+          "color": "#8a6e52",
+          "parts": [
+            "branch-1",
+            "fork-1",
+            "branch-2",
+            "fork-2",
+            "branch-3",
+            "fork-3",
+            "branch-4",
+            "fork-4",
+            "branch-5",
+            "fork-5",
+            "branch-6",
+            "fork-6",
+            "branch-7",
+            "fork-7",
+            "branch-8",
+            "fork-8"
+          ],
+          "param": "twig"
+        }
+      ]
+    },
+    {
       "id": "dead-tree",
       "kit": "nature",
       "title": "Dead tree",
@@ -27493,6 +28976,118 @@
             "limb-16"
           ],
           "param": "bark"
+        }
+      ]
+    },
+    {
+      "id": "driftwood",
+      "kit": "nature",
+      "title": "Driftwood",
+      "description": "Sun-bleached driftwood log lying on its side with a splayed root crown and snapped branch stubs, for beaches, rivers and lakeshores. Knobs: length, roots, wood and root colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "driftwood",
+        "log",
+        "beach",
+        "shore",
+        "river",
+        "deadwood",
+        "root",
+        "weathered",
+        "wood",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "beach",
+        "water",
+        "swamp"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/driftwood.kcad.ts",
+      "sourceSha256": "59cc300ba83cf06a8df1a5b537f6136c8dbcefa3bfafd816bf9d26d2bdc671af",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "lengthM",
+          "type": "choice",
+          "default": "2.5",
+          "label": "Length (m)",
+          "choices": [
+            "1.5",
+            "2.5",
+            "4"
+          ]
+        },
+        {
+          "name": "roots",
+          "type": "choice",
+          "default": "5",
+          "label": "Roots",
+          "choices": [
+            "3",
+            "5",
+            "7"
+          ]
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#cfc4b0",
+          "label": "Weathered wood"
+        },
+        {
+          "name": "rootColor",
+          "type": "color",
+          "default": "#b0a48e",
+          "label": "Roots"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "wood": "#8a7a64",
+          "rootColor": "#6e604e"
+        },
+        "wet": {
+          "wood": "#9a8e7a",
+          "rootColor": "#7a6e5c"
+        }
+      },
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          2.731266,
+          0.620494,
+          0.378444
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "wood",
+          "color": "#cfc4b0",
+          "parts": [
+            "log",
+            "log-tip",
+            "stub-35",
+            "stub-62",
+            "stub-80"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "rootColor",
+          "color": "#b0a48e",
+          "parts": [
+            "root-1",
+            "root-2",
+            "root-3",
+            "root-4",
+            "root-5"
+          ],
+          "param": "rootColor"
         }
       ]
     },
@@ -27611,6 +29206,144 @@
             "leaves-3"
           ],
           "param": "leaves"
+        }
+      ]
+    },
+    {
+      "id": "fan-palm",
+      "kit": "nature",
+      "title": "Fan palm",
+      "description": "Bushy Mediterranean fan palm: short clustered trunks with stiff pleated fan leaves on thin stalks, for gardens, beaches and resorts. Knobs: height, trunks, fans per trunk, trunk and leaf colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "palm",
+        "fan palm",
+        "chamaerops",
+        "tropical",
+        "mediterranean",
+        "beach",
+        "resort",
+        "garden",
+        "plant",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "beach",
+        "tropical",
+        "garden",
+        "desert"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/fan-palm.kcad.ts",
+      "sourceSha256": "6c9c1db95a607c94b0db05710e7c0a50a98ac8103bbb68836df6025aa1fda4fb",
+      "triangleBudget": 550,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "2",
+          "label": "Height (m)",
+          "choices": [
+            "1.2",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "trunks",
+          "type": "choice",
+          "default": "3",
+          "label": "Trunks",
+          "choices": [
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "fans",
+          "type": "choice",
+          "default": "4",
+          "label": "Fans per trunk",
+          "choices": [
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "trunk",
+          "type": "color",
+          "default": "#6a5640",
+          "label": "Trunks"
+        },
+        {
+          "name": "leaf",
+          "type": "color",
+          "default": "#4f8a4a",
+          "label": "Fan leaves"
+        }
+      ],
+      "presets": {
+        "silver": {
+          "leaf": "#7a9a92"
+        },
+        "dry": {
+          "leaf": "#9a9a4a"
+        }
+      },
+      "stats": {
+        "triangles": 492,
+        "sizeM": [
+          1.478348,
+          1.642303,
+          1.538331
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "trunk",
+          "color": "#6a5640",
+          "parts": [
+            "trunk-1",
+            "stalk-1-1",
+            "stalk-1-2",
+            "stalk-1-3",
+            "stalk-1-4",
+            "trunk-2",
+            "stalk-2-1",
+            "stalk-2-2",
+            "stalk-2-3",
+            "stalk-2-4",
+            "trunk-3",
+            "stalk-3-1",
+            "stalk-3-2",
+            "stalk-3-3",
+            "stalk-3-4"
+          ],
+          "param": "trunk"
+        },
+        {
+          "name": "leaf",
+          "color": "#4f8a4a",
+          "parts": [
+            "fan-1-1",
+            "fan-1-2",
+            "fan-1-3",
+            "fan-1-4",
+            "fan-2-1",
+            "fan-2-2",
+            "fan-2-3",
+            "fan-2-4",
+            "fan-3-1",
+            "fan-3-2",
+            "fan-3-3",
+            "fan-3-4"
+          ],
+          "param": "leaf"
         }
       ]
     },
@@ -28625,6 +30358,121 @@
             "moss"
           ],
           "param": "mossColor"
+        }
+      ]
+    },
+    {
+      "id": "joshua-tree",
+      "kit": "nature",
+      "title": "Joshua tree",
+      "description": "Mojave Joshua tree with a shaggy trunk, crooked forking arms and spiky leaf tufts at every tip, for desert scenes. Knobs: height, arms, bark and spike colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "joshua tree",
+        "yucca",
+        "desert",
+        "mojave",
+        "western",
+        "succulent",
+        "tree",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "desert",
+        "prairie"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/joshua-tree.kcad.ts",
+      "sourceSha256": "94714bd344087a3da57127a39891a8c1e9f75a2f74ddad518b8eaf0e35566276",
+      "triangleBudget": 560,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "5",
+          "label": "Height (m)",
+          "choices": [
+            "3",
+            "5",
+            "8"
+          ]
+        },
+        {
+          "name": "arms",
+          "type": "choice",
+          "default": "3",
+          "label": "Arms",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "bark",
+          "type": "color",
+          "default": "#7a6a52",
+          "label": "Bark"
+        },
+        {
+          "name": "spikes",
+          "type": "color",
+          "default": "#6a8a3e",
+          "label": "Spiky leaves"
+        }
+      ],
+      "presets": {
+        "dry": {
+          "spikes": "#9a9a4e",
+          "bark": "#8a7a62"
+        },
+        "dusk": {
+          "bark": "#5a4a3e",
+          "spikes": "#4f6a3a"
+        }
+      },
+      "stats": {
+        "triangles": 460,
+        "sizeM": [
+          2.569006,
+          4.398258,
+          2.492072
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bark",
+          "color": "#7a6a52",
+          "parts": [
+            "trunk",
+            "arm-1",
+            "arm-1-up",
+            "twig-1-a",
+            "twig-1-b",
+            "arm-2",
+            "arm-2-up",
+            "arm-3",
+            "arm-3-up",
+            "twig-3-a",
+            "twig-3-b"
+          ],
+          "param": "bark"
+        },
+        {
+          "name": "spikes",
+          "color": "#6a8a3e",
+          "parts": [
+            "tuft-1-a",
+            "tuft-1-b",
+            "tuft-2",
+            "tuft-3-a",
+            "tuft-3-b"
+          ],
+          "param": "spikes"
         }
       ]
     },
@@ -30100,6 +31948,147 @@
       ]
     },
     {
+      "id": "pumpkin-patch",
+      "kit": "nature",
+      "title": "Pumpkin patch",
+      "description": "Low soil mound with ribbed pumpkins, stubby stems and broad vine leaves, for farms, autumn and Halloween scenes. Knobs: pumpkins, size, pumpkin, stem, leaf and soil colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "pumpkin",
+        "pumpkins",
+        "squash",
+        "harvest",
+        "autumn",
+        "halloween",
+        "farm",
+        "garden",
+        "vegetable",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "farm",
+        "garden",
+        "meadow"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/pumpkin-patch.kcad.ts",
+      "sourceSha256": "c8b6459275d33d88c2b3991955ef31aebae8a779b3580f4a41f374d902ec7834",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "count",
+          "type": "choice",
+          "default": "3",
+          "label": "Pumpkins",
+          "choices": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Pumpkin size",
+          "choices": [
+            "small",
+            "medium",
+            "giant"
+          ]
+        },
+        {
+          "name": "pumpkin",
+          "type": "color",
+          "default": "#e8822a",
+          "label": "Pumpkins"
+        },
+        {
+          "name": "stem",
+          "type": "color",
+          "default": "#6a5a32",
+          "label": "Stems"
+        },
+        {
+          "name": "leaf",
+          "type": "color",
+          "default": "#4f8a3a",
+          "label": "Vine leaves"
+        },
+        {
+          "name": "soil",
+          "type": "color",
+          "default": "#5e4430",
+          "label": "Soil"
+        }
+      ],
+      "presets": {
+        "white": {
+          "pumpkin": "#ece6d6"
+        },
+        "green": {
+          "pumpkin": "#6a8a3a"
+        },
+        "halloween": {
+          "pumpkin": "#f07a1a",
+          "leaf": "#6a7a3a"
+        }
+      },
+      "stats": {
+        "triangles": 404,
+        "sizeM": [
+          1.2696,
+          0.303607,
+          0.956772
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "soil",
+          "color": "#5e4430",
+          "parts": [
+            "soil"
+          ],
+          "param": "soil"
+        },
+        {
+          "name": "pumpkin",
+          "color": "#e8822a",
+          "parts": [
+            "pumpkin-1",
+            "pumpkin-2",
+            "pumpkin-3"
+          ],
+          "param": "pumpkin"
+        },
+        {
+          "name": "stem",
+          "color": "#6a5a32",
+          "parts": [
+            "stem-1",
+            "stem-2",
+            "stem-3"
+          ],
+          "param": "stem"
+        },
+        {
+          "name": "leaf",
+          "color": "#4f8a3a",
+          "parts": [
+            "leaf-1",
+            "leaf-2",
+            "leaf-3"
+          ],
+          "param": "leaf"
+        }
+      ]
+    },
+    {
       "id": "reeds",
       "kit": "nature",
       "title": "Reeds",
@@ -30218,6 +32207,112 @@
             "head-7"
           ],
           "param": "heads"
+        }
+      ]
+    },
+    {
+      "id": "rock-arch",
+      "kit": "nature",
+      "title": "Rock arch",
+      "description": "Natural eroded rock arch of two leaning legs and a heavy faceted span, for desert canyons, coasts and adventure maps. Knobs: span, height, stone and band colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "rock arch",
+        "arch",
+        "natural arch",
+        "canyon",
+        "desert",
+        "landmark",
+        "cliff",
+        "coast",
+        "rock",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "desert",
+        "canyon",
+        "mountain",
+        "beach"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/rock-arch.kcad.ts",
+      "sourceSha256": "1467cf3a7b30759c37bfda2bf41d05cb2e45d271ab45d0a091cf156e3f8a3716",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "spanM",
+          "type": "choice",
+          "default": "4",
+          "label": "Span (m)",
+          "choices": [
+            "3",
+            "4",
+            "6"
+          ]
+        },
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "3.5",
+          "label": "Height (m)",
+          "choices": [
+            "2.5",
+            "3.5",
+            "5"
+          ]
+        },
+        {
+          "name": "stone",
+          "type": "color",
+          "default": "#c47a4e",
+          "label": "Stone"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#a85f3c",
+          "label": "Span band"
+        }
+      ],
+      "presets": {
+        "grey": {
+          "stone": "#8e9094",
+          "band": "#74777c"
+        },
+        "sandstone": {
+          "stone": "#d8b07a",
+          "band": "#c49660"
+        }
+      },
+      "stats": {
+        "triangles": 142,
+        "sizeM": [
+          6.549026,
+          3.513591,
+          1.988224
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stone",
+          "color": "#c47a4e",
+          "parts": [
+            "leg-left",
+            "leg-right"
+          ],
+          "param": "stone"
+        },
+        {
+          "name": "band",
+          "color": "#a85f3c",
+          "parts": [
+            "span"
+          ],
+          "param": "band"
         }
       ]
     },
@@ -30729,6 +32824,281 @@
       ]
     },
     {
+      "id": "seashells",
+      "kit": "nature",
+      "title": "Seashells",
+      "description": "Beach scatter of ribbed scallop shells, spiral conches and a starfish on a low patch of sand. Knobs: shell count, starfish, sand patch, shell, conch and starfish colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "seashell",
+        "shells",
+        "scallop",
+        "conch",
+        "starfish",
+        "beach",
+        "coast",
+        "sea",
+        "ocean",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "beach",
+        "water"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/seashells.kcad.ts",
+      "sourceSha256": "6a43db0b99dd1e31ce6132de637f5db4a24f4f5b6d5571ad4f18e23cc514d5cf",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "count",
+          "type": "choice",
+          "default": "4",
+          "label": "Shells",
+          "choices": [
+            "2",
+            "4",
+            "6"
+          ]
+        },
+        {
+          "name": "starfish",
+          "type": "choice",
+          "default": "yes",
+          "label": "Starfish",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "sand",
+          "type": "choice",
+          "default": "yes",
+          "label": "Sand patch",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#f0dcc8",
+          "label": "Scallops"
+        },
+        {
+          "name": "conch",
+          "type": "color",
+          "default": "#e8b89a",
+          "label": "Conches"
+        },
+        {
+          "name": "star",
+          "type": "color",
+          "default": "#e8743a",
+          "label": "Starfish"
+        },
+        {
+          "name": "sandColor",
+          "type": "color",
+          "default": "#e2cfa0",
+          "label": "Sand"
+        }
+      ],
+      "presets": {
+        "tropical": {
+          "shell": "#f4c8d0",
+          "conch": "#f0d8a8",
+          "star": "#d84a6a"
+        },
+        "pale": {
+          "star": "#f0c27a"
+        }
+      },
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.459991,
+          0.067253,
+          0.37658
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "sandColor",
+          "color": "#e2cfa0",
+          "parts": [
+            "sand"
+          ],
+          "param": "sandColor"
+        },
+        {
+          "name": "shell",
+          "color": "#f0dcc8",
+          "parts": [
+            "scallop-1",
+            "scallop-3"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "conch",
+          "color": "#e8b89a",
+          "parts": [
+            "conch-2",
+            "conch-4"
+          ],
+          "param": "conch"
+        },
+        {
+          "name": "star",
+          "color": "#e8743a",
+          "parts": [
+            "starfish"
+          ],
+          "param": "star"
+        }
+      ]
+    },
+    {
+      "id": "snowy-fir-tree",
+      "kit": "nature",
+      "title": "Snowy fir tree",
+      "description": "Winter fir tree of stacked cone tiers with snow caps on every tier and an optional snow drift at its foot, for winter and Christmas scenes. Knobs: height, tiers, drift, needle, snow and bark colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "tree",
+        "fir",
+        "christmas tree",
+        "conifer",
+        "evergreen",
+        "snow",
+        "winter",
+        "snowy",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "mountain",
+        "snow",
+        "winter"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/snowy-fir-tree.kcad.ts",
+      "sourceSha256": "721f8bcf243d563a2f2a7e8b3eb7046fa1c9b94c8ba1e9a0e93f63beac1ca87e",
+      "triangleBudget": 450,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "5",
+          "label": "Height (m)",
+          "choices": [
+            "3",
+            "5",
+            "8"
+          ]
+        },
+        {
+          "name": "tiers",
+          "type": "choice",
+          "default": "4",
+          "label": "Tiers",
+          "choices": [
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "drift",
+          "type": "choice",
+          "default": "yes",
+          "label": "Snow drift",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "needles",
+          "type": "color",
+          "default": "#2f5e48",
+          "label": "Needles"
+        },
+        {
+          "name": "snow",
+          "type": "color",
+          "default": "#eef3f7",
+          "label": "Snow"
+        },
+        {
+          "name": "bark",
+          "type": "color",
+          "default": "#5a4232",
+          "label": "Bark"
+        }
+      ],
+      "presets": {
+        "frosty": {
+          "needles": "#5a7f78"
+        },
+        "dark": {
+          "needles": "#1f4434"
+        }
+      },
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          2.9402,
+          5.018275,
+          2.9402
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bark",
+          "color": "#5a4232",
+          "parts": [
+            "trunk"
+          ],
+          "param": "bark"
+        },
+        {
+          "name": "needles",
+          "color": "#2f5e48",
+          "parts": [
+            "tier-1",
+            "tier-2",
+            "tier-3",
+            "tier-4"
+          ],
+          "param": "needles"
+        },
+        {
+          "name": "snow",
+          "color": "#eef3f7",
+          "parts": [
+            "snow-1",
+            "snow-2",
+            "snow-3",
+            "snow-4",
+            "drift"
+          ],
+          "param": "snow"
+        }
+      ]
+    },
+    {
       "id": "spruce-tree",
       "kit": "nature",
       "title": "Spruce tree",
@@ -31106,6 +33476,266 @@
       ]
     },
     {
+      "id": "tall-grass",
+      "kit": "nature",
+      "title": "Tall grass",
+      "description": "Waist-high clump of long arching grass blades with feathery seed plumes on slim stalks, like pampas or wild oats. Knobs: height, blades, plumes, blade, stalk and plume colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "grass",
+        "tall grass",
+        "pampas",
+        "wild grass",
+        "reeds",
+        "meadow",
+        "field",
+        "savanna",
+        "plant",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "meadow",
+        "savanna",
+        "farm",
+        "garden",
+        "swamp"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/tall-grass.kcad.ts",
+      "sourceSha256": "1e80b27d630a7842159cf561e5d87c6bf111cd19f6f6e2b56db43380b8aa6c43",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "1.2",
+          "label": "Height (m)",
+          "choices": [
+            "0.8",
+            "1.2",
+            "1.8"
+          ]
+        },
+        {
+          "name": "blades",
+          "type": "choice",
+          "default": "12",
+          "label": "Blades",
+          "choices": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        {
+          "name": "plumes",
+          "type": "choice",
+          "default": "5",
+          "label": "Seed plumes",
+          "choices": [
+            "0",
+            "3",
+            "5",
+            "7"
+          ]
+        },
+        {
+          "name": "blade",
+          "type": "color",
+          "default": "#7a9a48",
+          "label": "Blades"
+        },
+        {
+          "name": "stalk",
+          "type": "color",
+          "default": "#a89a62",
+          "label": "Stalks"
+        },
+        {
+          "name": "plume",
+          "type": "color",
+          "default": "#e8dcbc",
+          "label": "Plumes"
+        }
+      ],
+      "presets": {
+        "dry": {
+          "blade": "#b8a660",
+          "stalk": "#c8b478"
+        },
+        "pink": {
+          "plume": "#e8b8c8"
+        },
+        "autumn": {
+          "blade": "#b8823a",
+          "plume": "#d8c8a0"
+        }
+      },
+      "stats": {
+        "triangles": 362,
+        "sizeM": [
+          1.280605,
+          1.355414,
+          1.327176
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "blade",
+          "color": "#7a9a48",
+          "parts": [
+            "blade-1",
+            "blade-2",
+            "blade-3",
+            "blade-4",
+            "blade-5",
+            "blade-6",
+            "blade-7",
+            "blade-8",
+            "blade-9",
+            "blade-10",
+            "blade-11",
+            "blade-12"
+          ],
+          "param": "blade"
+        },
+        {
+          "name": "stalk",
+          "color": "#a89a62",
+          "parts": [
+            "stalk-1",
+            "stalk-2",
+            "stalk-3",
+            "stalk-4",
+            "stalk-5"
+          ],
+          "param": "stalk"
+        },
+        {
+          "name": "plume",
+          "color": "#e8dcbc",
+          "parts": [
+            "plume-1",
+            "plume-2",
+            "plume-3",
+            "plume-4",
+            "plume-5"
+          ],
+          "param": "plume"
+        }
+      ]
+    },
+    {
+      "id": "termite-mound",
+      "kit": "nature",
+      "title": "Termite mound",
+      "description": "Tall cathedral termite mound of baked earth with lumpy side spires on a flared skirt, for savanna and outback scenes. Knobs: height, side spires, earth and skirt colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "termite mound",
+        "anthill",
+        "mound",
+        "savanna",
+        "outback",
+        "africa",
+        "australia",
+        "desert",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "savanna",
+        "desert"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/termite-mound.kcad.ts",
+      "sourceSha256": "a198270d11a4862eece6a6186b9c3f80d1394a152e54f00de9ba2ec3e7127090",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "heightM",
+          "type": "choice",
+          "default": "2.5",
+          "label": "Height (m)",
+          "choices": [
+            "1.2",
+            "2.5",
+            "4"
+          ]
+        },
+        {
+          "name": "spires",
+          "type": "choice",
+          "default": "3",
+          "label": "Side spires",
+          "choices": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "earth",
+          "type": "color",
+          "default": "#b8724a",
+          "label": "Earth"
+        },
+        {
+          "name": "skirt",
+          "type": "color",
+          "default": "#9a5e3c",
+          "label": "Skirt"
+        }
+      ],
+      "presets": {
+        "grey": {
+          "earth": "#9a8e80",
+          "skirt": "#7a7064"
+        },
+        "ochre": {
+          "earth": "#d29a52",
+          "skirt": "#b07a3e"
+        }
+      },
+      "stats": {
+        "triangles": 302,
+        "sizeM": [
+          1.414099,
+          2.5,
+          1.318472
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "skirt",
+          "color": "#9a5e3c",
+          "parts": [
+            "skirt"
+          ],
+          "param": "skirt"
+        },
+        {
+          "name": "earth",
+          "color": "#b8724a",
+          "parts": [
+            "spire",
+            "side-spire-1",
+            "side-spire-2",
+            "side-spire-3"
+          ],
+          "param": "earth"
+        }
+      ]
+    },
+    {
       "id": "tree-stump",
       "kit": "nature",
       "title": "Tree stump",
@@ -31471,6 +34101,146 @@
             "brush-3"
           ],
           "param": "twig"
+        }
+      ]
+    },
+    {
+      "id": "vine-arch",
+      "kit": "nature",
+      "title": "Vine arch",
+      "description": "Rustic garden arch overgrown with climbing vine clumps and flowers, a gateway for paths and gardens. Knobs: width, overgrowth, frame, leaf and flower colours.",
+      "category": "nature",
+      "origin": "base",
+      "tags": [
+        "arch",
+        "garden arch",
+        "arbor",
+        "pergola",
+        "vine",
+        "ivy",
+        "roses",
+        "climbing plant",
+        "gateway",
+        "garden",
+        "nature"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "park",
+        "meadow"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/nature/vine-arch.kcad.ts",
+      "sourceSha256": "66fdebe515cfe62e7bff81dbe858957ce221326feb772e8f3aba0c7034898485",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "widthM",
+          "type": "choice",
+          "default": "1.4",
+          "label": "Width (m)",
+          "choices": [
+            "1",
+            "1.4",
+            "2"
+          ]
+        },
+        {
+          "name": "growth",
+          "type": "choice",
+          "default": "medium",
+          "label": "Overgrowth",
+          "choices": [
+            "light",
+            "medium",
+            "heavy"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#7a5a3e",
+          "label": "Frame"
+        },
+        {
+          "name": "leaves",
+          "type": "color",
+          "default": "#3f7f3a",
+          "label": "Vine leaves"
+        },
+        {
+          "name": "flowers",
+          "type": "color",
+          "default": "#d8507a",
+          "label": "Flowers"
+        }
+      ],
+      "presets": {
+        "white": {
+          "frame": "#e8e6e0"
+        },
+        "wisteria": {
+          "flowers": "#9a7ad8"
+        },
+        "ivy": {
+          "leaves": "#2f5f2e",
+          "flowers": "#3f7f3a"
+        }
+      },
+      "stats": {
+        "triangles": 458,
+        "sizeM": [
+          1.739293,
+          2.31574,
+          0.518666
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#7a5a3e",
+          "parts": [
+            "post-l-f",
+            "post-l-b",
+            "post-r-f",
+            "post-r-b",
+            "arch-front",
+            "arch-back",
+            "slat-1",
+            "slat-2",
+            "slat-3",
+            "slat-4",
+            "slat-5"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "leaves",
+          "color": "#3f7f3a",
+          "parts": [
+            "vine-1",
+            "vine-2",
+            "vine-3",
+            "vine-4",
+            "vine-5",
+            "vine-6",
+            "vine-7"
+          ],
+          "param": "leaves"
+        },
+        {
+          "name": "flowers",
+          "color": "#d8507a",
+          "parts": [
+            "flower-1",
+            "flower-3",
+            "flower-5",
+            "flower-7"
+          ],
+          "param": "flowers"
         }
       ]
     },
@@ -32759,6 +35529,144 @@
       ]
     },
     {
+      "id": "candelabra",
+      "kit": "props",
+      "title": "Candelabra",
+      "description": "Brass candelabra or single candlestick with drip cups, wax candles and lit flames, for tables, altars and haunted halls. Knobs: candles, height, metal, wax and flame colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "candelabra",
+        "candlestick",
+        "candle holder",
+        "candles",
+        "candle",
+        "light",
+        "medieval",
+        "gothic",
+        "fantasy",
+        "church",
+        "table decor"
+      ],
+      "compat": [
+        "indoor",
+        "medieval",
+        "fantasy",
+        "gothic",
+        "dungeon",
+        "church",
+        "dining-room"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/props/candelabra.kcad.ts",
+      "sourceSha256": "52e261def35275af90a253d65df783434edfad62c8e39e12be3484c9442b7f17",
+      "triangleBudget": 480,
+      "params": [
+        {
+          "name": "candles",
+          "type": "choice",
+          "default": "3",
+          "label": "Candles",
+          "choices": [
+            "1",
+            "3",
+            "5"
+          ]
+        },
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "table",
+          "label": "Height",
+          "choices": [
+            "table",
+            "floor"
+          ]
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#c9a43a",
+          "label": "Metal"
+        },
+        {
+          "name": "wax",
+          "type": "color",
+          "default": "#f2ecd8",
+          "label": "Wax"
+        },
+        {
+          "name": "flame",
+          "type": "color",
+          "default": "#ffb43a",
+          "label": "Flame"
+        }
+      ],
+      "presets": {
+        "silver": {
+          "metal": "#c4c8cc"
+        },
+        "iron": {
+          "metal": "#3a3a3e",
+          "wax": "#e8dcb8"
+        },
+        "black": {
+          "metal": "#2a2a2c",
+          "wax": "#2a2a2c",
+          "flame": "#8a4af0"
+        }
+      },
+      "stats": {
+        "triangles": 296,
+        "sizeM": [
+          0.284,
+          0.434,
+          0.15
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "metal",
+          "color": "#c9a43a",
+          "parts": [
+            "stand-1",
+            "stand-2",
+            "stand-3",
+            "stand-4",
+            "stand-5",
+            "stand-6",
+            "stand-7",
+            "stand-8",
+            "stand-9",
+            "stand-10"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "wax",
+          "color": "#f2ecd8",
+          "parts": [
+            "candle-1",
+            "candle-2",
+            "candle-3"
+          ],
+          "param": "wax"
+        },
+        {
+          "name": "flame",
+          "color": "#ffb43a",
+          "parts": [
+            "flame-1",
+            "flame-2",
+            "flame-3"
+          ],
+          "param": "flame"
+        }
+      ]
+    },
+    {
       "id": "cardboard-boxes",
       "kit": "props",
       "title": "Cardboard boxes",
@@ -33141,6 +36049,141 @@
             "opening"
           ],
           "param": "opening"
+        }
+      ]
+    },
+    {
+      "id": "firewood-stack",
+      "kit": "props",
+      "title": "Firewood stack",
+      "description": "Pile of split firewood logs with pale cut ends between two stakes, optionally under a plank roof. Knobs: rows, roof, bark, cut wood and stake colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "firewood",
+        "wood pile",
+        "log pile",
+        "logs",
+        "woodpile",
+        "lumber",
+        "cabin",
+        "farm",
+        "forest"
+      ],
+      "compat": [
+        "outdoor",
+        "forest",
+        "farm",
+        "cabin",
+        "medieval",
+        "village",
+        "camp"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/props/firewood-stack.kcad.ts",
+      "sourceSha256": "3f85f4e24bf2cf5e7b3ae7a64e42150058ca6be5817bf8e4ee37d919edcc63c6",
+      "triangleBudget": 580,
+      "params": [
+        {
+          "name": "rows",
+          "type": "choice",
+          "default": "3",
+          "label": "Rows",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "roof",
+          "type": "choice",
+          "default": "no",
+          "label": "Plank roof",
+          "choices": [
+            "no",
+            "yes"
+          ]
+        },
+        {
+          "name": "bark",
+          "type": "color",
+          "default": "#6a4a2e",
+          "label": "Bark"
+        },
+        {
+          "name": "cut",
+          "type": "color",
+          "default": "#dcb67e",
+          "label": "Cut ends"
+        },
+        {
+          "name": "stake",
+          "type": "color",
+          "default": "#4f3a26",
+          "label": "Stakes and roof"
+        }
+      ],
+      "presets": {
+        "birch": {
+          "bark": "#e8e4dc",
+          "cut": "#e6cf9a"
+        },
+        "snowy": {
+          "stake": "#3a2e22"
+        }
+      },
+      "stats": {
+        "triangles": 352,
+        "sizeM": [
+          0.862,
+          0.60569,
+          0.710871
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bark",
+          "color": "#6a4a2e",
+          "parts": [
+            "log-1",
+            "log-2",
+            "log-3",
+            "log-4",
+            "log-5",
+            "log-6",
+            "log-7",
+            "log-8",
+            "log-9"
+          ],
+          "param": "bark"
+        },
+        {
+          "name": "cut",
+          "color": "#dcb67e",
+          "parts": [
+            "end-1",
+            "end-2",
+            "end-3",
+            "end-4",
+            "end-5",
+            "end-6",
+            "end-7",
+            "end-8",
+            "end-9"
+          ],
+          "param": "cut"
+        },
+        {
+          "name": "stake",
+          "color": "#4f3a26",
+          "parts": [
+            "stake-left",
+            "stake-right"
+          ],
+          "param": "stake"
         }
       ]
     },
@@ -33554,6 +36597,152 @@
             "box-3"
           ],
           "param": "boxes"
+        }
+      ]
+    },
+    {
+      "id": "hanging-sign",
+      "kit": "props",
+      "title": "Hanging shop sign",
+      "description": "Tavern or shop sign board hung from a bracket arm on a post, with a mug, sword or boot emblem. Knobs: emblem, board shape, post, iron, board and emblem colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "sign",
+        "hanging sign",
+        "shop sign",
+        "tavern sign",
+        "inn",
+        "shop",
+        "medieval",
+        "fantasy",
+        "village",
+        "emblem"
+      ],
+      "compat": [
+        "outdoor",
+        "medieval",
+        "fantasy",
+        "village",
+        "town",
+        "street",
+        "tavern"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/props/hanging-sign.kcad.ts",
+      "sourceSha256": "b45c3cc16b0ae8f7abc48fe070304f2db1a1a1634c7c6806aaba1cd131eaa85c",
+      "triangleBudget": 240,
+      "params": [
+        {
+          "name": "emblem",
+          "type": "choice",
+          "default": "mug",
+          "label": "Emblem",
+          "choices": [
+            "mug",
+            "sword",
+            "boot",
+            "none"
+          ]
+        },
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "notched",
+          "label": "Board shape",
+          "choices": [
+            "notched",
+            "plain"
+          ]
+        },
+        {
+          "name": "post",
+          "type": "color",
+          "default": "#5a3e28",
+          "label": "Post"
+        },
+        {
+          "name": "iron",
+          "type": "color",
+          "default": "#2e2e30",
+          "label": "Bracket and rings"
+        },
+        {
+          "name": "board",
+          "type": "color",
+          "default": "#a8302a",
+          "label": "Board"
+        },
+        {
+          "name": "mark",
+          "type": "color",
+          "default": "#e8c33a",
+          "label": "Emblem"
+        }
+      ],
+      "presets": {
+        "tavern": {
+          "emblem": "mug",
+          "board": "#2f5a3a"
+        },
+        "smithy": {
+          "emblem": "sword",
+          "board": "#3a3a3e",
+          "mark": "#c4c8cc"
+        },
+        "cobbler": {
+          "emblem": "boot",
+          "board": "#c9a77a",
+          "mark": "#5a3a2a"
+        }
+      },
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          1.07,
+          2.6,
+          0.22
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "post",
+          "color": "#5a3e28",
+          "parts": [
+            "post"
+          ],
+          "param": "post"
+        },
+        {
+          "name": "iron",
+          "color": "#2e2e30",
+          "parts": [
+            "bracket",
+            "ring-a",
+            "ring-b"
+          ],
+          "param": "iron"
+        },
+        {
+          "name": "board",
+          "color": "#a8302a",
+          "parts": [
+            "board"
+          ],
+          "param": "board"
+        },
+        {
+          "name": "mark",
+          "color": "#e8c33a",
+          "parts": [
+            "emblem-front-1",
+            "emblem-back-1",
+            "emblem-front-2",
+            "emblem-back-2"
+          ],
+          "param": "mark"
         }
       ]
     },
@@ -34186,6 +37375,170 @@
       ]
     },
     {
+      "id": "mine-cart",
+      "kit": "props",
+      "title": "Mine cart",
+      "description": "Steel mine cart on a straight track segment with sleepers, empty or heaped with ore or gold. Knobs: load, track, cart, band, wheel and rail, sleeper and ore colours.",
+      "category": "vehicle",
+      "origin": "base",
+      "tags": [
+        "mine cart",
+        "minecart",
+        "tub",
+        "ore",
+        "mine",
+        "mining",
+        "rails",
+        "track",
+        "dwarf",
+        "fantasy",
+        "cave"
+      ],
+      "compat": [
+        "outdoor",
+        "indoor",
+        "mine",
+        "cave",
+        "fantasy",
+        "industrial",
+        "western"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/props/mine-cart.kcad.ts",
+      "sourceSha256": "38064b98b3fda6ae740277d1a0fde349d0f16860db053ed2d2ae325b468327f8",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "ore",
+          "label": "Load",
+          "choices": [
+            "empty",
+            "ore"
+          ]
+        },
+        {
+          "name": "track",
+          "type": "choice",
+          "default": "yes",
+          "label": "Track segment",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "cart",
+          "type": "color",
+          "default": "#7a5a3a",
+          "label": "Cart tub"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#3d3f42",
+          "label": "Bands"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#6a6e73",
+          "label": "Wheels and rails"
+        },
+        {
+          "name": "sleeper",
+          "type": "color",
+          "default": "#5a3e28",
+          "label": "Sleepers"
+        },
+        {
+          "name": "ore",
+          "type": "color",
+          "default": "#e8b830",
+          "label": "Ore"
+        }
+      ],
+      "presets": {
+        "coal": {
+          "ore": "#2a2a2c"
+        },
+        "crystal": {
+          "ore": "#5ad0e8",
+          "cart": "#4a4e53"
+        },
+        "rusty": {
+          "cart": "#8a4f2c",
+          "band": "#5a3a26"
+        }
+      },
+      "stats": {
+        "triangles": 392,
+        "sizeM": [
+          1.1,
+          1.04,
+          2.4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "sleeper",
+          "color": "#5a3e28",
+          "parts": [
+            "sleeper-1",
+            "sleeper-2",
+            "sleeper-3",
+            "sleeper-4",
+            "sleeper-5"
+          ],
+          "param": "sleeper"
+        },
+        {
+          "name": "steel",
+          "color": "#6a6e73",
+          "parts": [
+            "rail-left",
+            "rail-right",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "band",
+          "color": "#3d3f42",
+          "parts": [
+            "axle-1",
+            "axle-2",
+            "rim",
+            "strap-1",
+            "strap-2"
+          ],
+          "param": "band"
+        },
+        {
+          "name": "cart",
+          "color": "#7a5a3a",
+          "parts": [
+            "tub"
+          ],
+          "param": "cart"
+        },
+        {
+          "name": "ore",
+          "color": "#e8b830",
+          "parts": [
+            "ore"
+          ],
+          "param": "ore"
+        }
+      ]
+    },
+    {
       "id": "notice-board",
       "kit": "props",
       "title": "Notice board",
@@ -34716,6 +38069,304 @@
       ]
     },
     {
+      "id": "potion-bottles",
+      "kit": "props",
+      "title": "Potion bottles",
+      "description": "Cluster of corked potion flasks in round, square and conical shapes with coloured brews, for alchemists, shops and loot. Knobs: count, three brew colours, glass and cork colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "potion",
+        "potions",
+        "bottles",
+        "flask",
+        "alchemy",
+        "elixir",
+        "magic",
+        "fantasy",
+        "loot",
+        "shop"
+      ],
+      "compat": [
+        "indoor",
+        "fantasy",
+        "medieval",
+        "shop",
+        "dungeon",
+        "tavern"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/props/potion-bottles.kcad.ts",
+      "sourceSha256": "d979e0c6e8123cb72a7c3a570a0c023802e713fadb912b48f6866b92e17bf8af",
+      "triangleBudget": 480,
+      "params": [
+        {
+          "name": "count",
+          "type": "choice",
+          "default": "4",
+          "label": "Bottles",
+          "choices": [
+            "1",
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "brewA",
+          "type": "color",
+          "default": "#d8302a",
+          "label": "Brew A (health)"
+        },
+        {
+          "name": "brewB",
+          "type": "color",
+          "default": "#2f6fd0",
+          "label": "Brew B (mana)"
+        },
+        {
+          "name": "brewC",
+          "type": "color",
+          "default": "#5ad04a",
+          "label": "Brew C (poison)"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#cfe4ea",
+          "label": "Glass necks"
+        },
+        {
+          "name": "cork",
+          "type": "color",
+          "default": "#a8743f",
+          "label": "Corks"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "brewA": "#6a2a8a",
+          "brewB": "#2a2a2c",
+          "brewC": "#c8a43a"
+        },
+        "pastel": {
+          "brewA": "#f08ab0",
+          "brewB": "#8ac8f0",
+          "brewC": "#c8f08a"
+        }
+      },
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          0.319698,
+          0.232,
+          0.246631
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "brewA",
+          "color": "#d8302a",
+          "parts": [
+            "bottle-1"
+          ],
+          "param": "brewA"
+        },
+        {
+          "name": "glass",
+          "color": "#cfe4ea",
+          "parts": [
+            "neck-1",
+            "neck-2",
+            "neck-3",
+            "neck-4"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "cork",
+          "color": "#a8743f",
+          "parts": [
+            "cork-1",
+            "cork-2",
+            "cork-3",
+            "cork-4"
+          ],
+          "param": "cork"
+        },
+        {
+          "name": "brewB",
+          "color": "#2f6fd0",
+          "parts": [
+            "bottle-2",
+            "bottle-4"
+          ],
+          "param": "brewB"
+        },
+        {
+          "name": "brewC",
+          "color": "#5ad04a",
+          "parts": [
+            "bottle-3"
+          ],
+          "param": "brewC"
+        }
+      ]
+    },
+    {
+      "id": "rowboat",
+      "kit": "props",
+      "title": "Rowboat",
+      "description": "Small wooden rowboat with pointed bow, transom stern, thwart seats and oars, beached on its keel. Knobs: length, seats, oars, hull, trim, interior and oar colours.",
+      "category": "vehicle",
+      "origin": "base",
+      "tags": [
+        "rowboat",
+        "boat",
+        "dinghy",
+        "skiff",
+        "oars",
+        "lake",
+        "river",
+        "harbour",
+        "fishing",
+        "beach"
+      ],
+      "compat": [
+        "outdoor",
+        "harbour",
+        "lake",
+        "river",
+        "beach",
+        "medieval",
+        "fantasy"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/props/rowboat.kcad.ts",
+      "sourceSha256": "fed62da085a8a71101c384e1fedfc1b7dc176330168ab71f3d6dc92fd3243c64",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "lengthM",
+          "type": "choice",
+          "default": "3.6",
+          "label": "Length (m)",
+          "choices": [
+            "2.8",
+            "3.6",
+            "4.4"
+          ]
+        },
+        {
+          "name": "seats",
+          "type": "choice",
+          "default": "2",
+          "label": "Seats",
+          "choices": [
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "oars",
+          "type": "choice",
+          "default": "yes",
+          "label": "Oars",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "hull",
+          "type": "color",
+          "default": "#2f6a8a",
+          "label": "Hull"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#efe9dc",
+          "label": "Gunwale trim"
+        },
+        {
+          "name": "inside",
+          "type": "color",
+          "default": "#b08050",
+          "label": "Interior and seats"
+        },
+        {
+          "name": "oar",
+          "type": "color",
+          "default": "#c49a5c",
+          "label": "Oars"
+        }
+      ],
+      "presets": {
+        "red": {
+          "hull": "#a8302a"
+        },
+        "natural": {
+          "hull": "#9a6a3c",
+          "trim": "#6e4a2c"
+        },
+        "white": {
+          "hull": "#efe9dc",
+          "trim": "#2f5a8a"
+        }
+      },
+      "stats": {
+        "triangles": 324,
+        "sizeM": [
+          1.326,
+          0.48,
+          3.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "hull",
+          "color": "#2f6a8a",
+          "parts": [
+            "hull"
+          ],
+          "param": "hull"
+        },
+        {
+          "name": "inside",
+          "color": "#b08050",
+          "parts": [
+            "floor",
+            "seat-1",
+            "seat-2"
+          ],
+          "param": "inside"
+        },
+        {
+          "name": "trim",
+          "color": "#efe9dc",
+          "parts": [
+            "strake"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "oar",
+          "color": "#c49a5c",
+          "parts": [
+            "oar-left",
+            "oar-right"
+          ],
+          "param": "oar"
+        }
+      ]
+    },
+    {
       "id": "sack",
       "kit": "props",
       "title": "Sack",
@@ -34829,6 +38480,128 @@
             "tie"
           ],
           "param": "rope"
+        }
+      ]
+    },
+    {
+      "id": "sandbags",
+      "kit": "props",
+      "title": "Sandbags",
+      "description": "Staggered wall of pillow-shaped sandbags for trenches, checkpoints and flood defences, straight or curved. Knobs: courses, bags per course, layout, bag and second bag colours.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "sandbags",
+        "sandbag",
+        "barricade",
+        "cover",
+        "wall",
+        "military",
+        "trench",
+        "flood",
+        "bunker"
+      ],
+      "compat": [
+        "outdoor",
+        "military",
+        "post-apocalyptic",
+        "street",
+        "beach",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/props/sandbags.kcad.ts",
+      "sourceSha256": "9f641b8e548a39d934573ee77af029a1622e9550e46818938c0d93d27238959d",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "courses",
+          "type": "choice",
+          "default": "3",
+          "label": "Courses",
+          "choices": [
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "perCourse",
+          "type": "choice",
+          "default": "4",
+          "label": "Bags per course",
+          "choices": [
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "layout",
+          "type": "choice",
+          "default": "straight",
+          "label": "Layout",
+          "choices": [
+            "straight",
+            "curved"
+          ]
+        },
+        {
+          "name": "bag",
+          "type": "color",
+          "default": "#b8a47a",
+          "label": "Bags"
+        },
+        {
+          "name": "bag2",
+          "type": "color",
+          "default": "#97835a",
+          "label": "Second bag shade"
+        }
+      ],
+      "presets": {
+        "military": {
+          "bag": "#7a7a52",
+          "bag2": "#626240"
+        },
+        "white": {
+          "bag": "#e4e0d4",
+          "bag2": "#c4bfac"
+        }
+      },
+      "stats": {
+        "triangles": 484,
+        "sizeM": [
+          1.976292,
+          0.546,
+          0.329998
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bag",
+          "color": "#b8a47a",
+          "parts": [
+            "bag-1",
+            "bag-2",
+            "bag-4",
+            "bag-5",
+            "bag-7",
+            "bag-8",
+            "bag-10",
+            "bag-11"
+          ],
+          "param": "bag"
+        },
+        {
+          "name": "bag2",
+          "color": "#97835a",
+          "parts": [
+            "bag-3",
+            "bag-6",
+            "bag-9"
+          ],
+          "param": "bag2"
         }
       ]
     },
@@ -35626,6 +39399,121 @@
             "latch-2"
           ],
           "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "trash-bags",
+      "kit": "props",
+      "title": "Trash bags",
+      "description": "Pile of tied black bin bags slumped together on the kerb or in an alley. Knobs: count, bag, second bag and tie colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "trash",
+        "trash bags",
+        "garbage",
+        "bin bags",
+        "rubbish",
+        "litter",
+        "alley",
+        "street",
+        "urban"
+      ],
+      "compat": [
+        "outdoor",
+        "street",
+        "alley",
+        "urban",
+        "post-apocalyptic",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/props/trash-bags.kcad.ts",
+      "sourceSha256": "cd0091c12d9397dd363771fab0acff2805b47367b1db1c8ef70de888ec55f122",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "count",
+          "type": "choice",
+          "default": "3",
+          "label": "Bags",
+          "choices": [
+            "1",
+            "3",
+            "5"
+          ]
+        },
+        {
+          "name": "bag",
+          "type": "color",
+          "default": "#2a2b2e",
+          "label": "Bags"
+        },
+        {
+          "name": "bag2",
+          "type": "color",
+          "default": "#3a4a6a",
+          "label": "Second bag"
+        },
+        {
+          "name": "tie",
+          "type": "color",
+          "default": "#d0a030",
+          "label": "Ties"
+        }
+      ],
+      "presets": {
+        "green": {
+          "bag": "#2f4a2f",
+          "bag2": "#4a4a4a"
+        },
+        "white": {
+          "bag": "#e4e4e0",
+          "bag2": "#c8c8c0",
+          "tie": "#c8302a"
+        }
+      },
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          1.119495,
+          0.5824,
+          0.598277
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bag",
+          "color": "#2a2b2e",
+          "parts": [
+            "bag-1",
+            "ears-1",
+            "bag-3",
+            "ears-3"
+          ],
+          "param": "bag"
+        },
+        {
+          "name": "tie",
+          "color": "#d0a030",
+          "parts": [
+            "tie-1",
+            "tie-2",
+            "tie-3"
+          ],
+          "param": "tie"
+        },
+        {
+          "name": "bag2",
+          "color": "#3a4a6a",
+          "parts": [
+            "bag-2",
+            "ears-2"
+          ],
+          "param": "bag2"
         }
       ]
     },
