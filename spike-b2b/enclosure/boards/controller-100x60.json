@@ -1,0 +1,21 @@
+{
+  "name": "controller-100x60",
+  "note": "Realistic I/O controller board: 100 x 60 mm, one 8 mm chamfered corner, 4 x M3 holes, barrel jack on -X, RJ45 on +X, 4-pole 5.08 mm terminal block on +Y. Synthetic fixture, not exported from a real ECAD file.",
+  "thickness": 1.6,
+  "outline": [[0, 0], [100, 0], [100, 52], [92, 60], [0, 60]],
+  "holes": [
+    { "x": 4, "y": 4, "d": 3.2 },
+    { "x": 96, "y": 4, "d": 3.2 },
+    { "x": 4, "y": 56, "d": 3.2 },
+    { "x": 86, "y": 54, "d": 3.2 }
+  ],
+  "components": [
+    { "ref": "J1", "kind": "barrel-jack-5.5x2.1", "x": 7.2, "y": 18, "w": 14.4, "d": 9, "h": 11, "side": "top", "port": true },
+    { "ref": "J2", "kind": "rj45-magjack", "x": 89.35, "y": 32, "w": 21.3, "d": 16, "h": 13.5, "side": "top", "port": true },
+    { "ref": "J3", "kind": "terminal-block-4p-5.08", "x": 45, "y": 56.2, "w": 20.3, "d": 7.6, "h": 10, "side": "top", "port": true },
+    { "ref": "C1", "kind": "electrolytic-8x11", "x": 26, "y": 40, "w": 8, "d": 8, "h": 11, "side": "top" },
+    { "ref": "U1", "kind": "mcu-lqfp64", "x": 50, "y": 25, "w": 12, "d": 12, "h": 1.6, "side": "top" },
+    { "ref": "U2", "kind": "buck-module", "x": 26, "y": 14, "w": 12, "d": 10, "h": 4, "side": "top" },
+    { "ref": "Q1", "kind": "mosfet-dpak", "x": 70, "y": 12, "w": 6.6, "d": 10, "h": 2.4, "side": "bottom" }
+  ]
+}
