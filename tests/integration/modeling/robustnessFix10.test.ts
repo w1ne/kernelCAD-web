@@ -74,7 +74,7 @@ describe('FIX-10 fillet / chamfer max-feasible probe', () => {
 describe('FIX-10 shell after fillet-all', () => {
   beforeAll(async () => { await initOcct(); }, 60_000);
 
-  it('reproduces: every MakeThickSolid join mode fails on the filleted box; shellWithHistory falls back', async () => {
+  it('reproduces: no MakeThickSolid join mode yields a usable shell on the filleted box; shellWithHistory falls back', async () => {
     const body = (await build(`return box(60, 40, 30).fillet(5);`)).tailShape as OcctBackend;
      
     const oc = getOC() as any;
@@ -106,7 +106,12 @@ describe('FIX-10 shell after fillet-all', () => {
       try {
         builder.MakeThickSolidByJoin(solid, faces, -1.5, 1e-3, oc.BRepOffset_Mode.BRepOffset_Skin, intersection, false, join, false, progress);
         builder.Build(progress);
-        done = builder.IsDone();
+        // OCCT 7.6 raised or left IsDone false; OCCT 8 can report IsDone and
+        // return the input unchanged or an invalid solid. Neither is a shell.
+        if (builder.IsDone()) {
+          const out = builder.Shape();
+          done = isValidShape(oc, out) && Math.abs(volumeOf(oc, out) - volumeOf(oc, solid)) > 1e-6 * volumeOf(oc, solid);
+        }
       } catch {
         done = false;
       }
