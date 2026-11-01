@@ -193,17 +193,23 @@ function importManifoldStl(
     const wrapped = replicad.cast((solid ?? shell) as any) as replicad.Shape3D;
     return { backend: new OcctBackend(wrapped), isSolid: solid !== null };
   }
+  // Several components: a part exported body by body. Each closed shell is promoted on its
+  // own; when every one becomes a valid solid the file IS solid (volume and booleans are
+  // well-defined), returned as a compound of solids. If any shell fails, keep the shells.
+  const solids = built.shells.map((shell) => promoteClosedShell(shell));
+  const allSolid = solids.every((s) => s !== null);
   const compound = new oc.TopoDS_Compound();
   const builder = new oc.TopoDS_Builder();
   builder.MakeCompound(compound);
-  for (const shell of built.shells) {
-    builder.Add(compound, shell);
+  built.shells.forEach((shell, i) => {
+    builder.Add(compound, allSolid ? solids[i] : shell);
     (shell as { delete?: () => void }).delete?.();
-  }
+  });
+  if (!allSolid) for (const s of solids) (s as { delete?: () => void } | null)?.delete?.();
   builder.delete?.();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrapped = replicad.cast(compound as any) as replicad.Shape3D;
-  return { backend: new OcctBackend(wrapped), isSolid: false };
+  return { backend: new OcctBackend(wrapped), isSolid: allSolid };
 }
 
 /**

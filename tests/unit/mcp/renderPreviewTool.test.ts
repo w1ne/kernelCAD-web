@@ -254,6 +254,23 @@ describe('render_preview — happy path (mocked render)', () => {
     expect(r.errorCode).toBe('cli.script-exception');
     expect(r.errorHint).toMatch(/evaluate_script/);
   });
+
+  // Seen from the hosted server: model errors raised while building the scene came back with
+  // "Ensure playwright chromium is installed", which sends the agent after the wrong fault.
+  it.each([
+    "lib.fromSTL: /tmp/x.stl is not watertight — its 41940 triangles sewed into an open shell",
+    "lib.meshFromSTL: cannot read file at /tmp/kernelcad-preview-1/asset:abc.",
+    "Parts 'trunk' and 'neck_pitch_servo' overlap by 94.60 mm³ (0.27 mm thick) near (38.9, -0.2, 138.9).",
+  ])('maps a model error to cli.script-exception, not the playwright hint: %s', async (message) => {
+    const r = await renderPreviewTool(
+      { code: 'return box(1,1,1);' },
+      makeDeps({ render: async () => { throw new Error(message); } }),
+    );
+    trackOutDir(r);
+    expect(r.errorCode).toBe('cli.script-exception');
+    expect(r.errorHint).toMatch(/evaluate_script/);
+    expect(r.errorHint).not.toMatch(/playwright/);
+  });
 });
 
 describe('render_preview — mechanism truth protocol', () => {

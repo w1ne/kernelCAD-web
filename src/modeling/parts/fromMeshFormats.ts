@@ -209,7 +209,7 @@ export async function fromSTL(
       `lib.fromSTL: ${absPath} is not watertight — its ${result.triangleCount} triangles ` +
         'sewed into an open shell, not a closed solid. Volume and booleans would be undefined.',
       undefined,
-      'kernel-failed.lib.fromSTL.open-mesh — repair the mesh (close holes, fix flipped normals) in the source tool, raise { tolerance } if shared vertices are not bit-identical, or pass { allowOpen: true } to accept the open shell deliberately.',
+      'kernel-failed.lib.fromSTL.open-mesh — repair the mesh (close holes, fix flipped normals) in the source tool, raise { tolerance } if shared vertices are not bit-identical, pass { allowOpen: true } to accept the open shell deliberately, or use lib.meshFromSTL(path) for a display-only part (no BRep, fast, any mesh).',
     );
   }
 
