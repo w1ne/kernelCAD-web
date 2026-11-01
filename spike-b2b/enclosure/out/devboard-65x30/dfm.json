@@ -1,0 +1,85 @@
+{
+  "ok": true,
+  "report": {
+    "clearance": [
+      {
+        "a": "base",
+        "b": "lid",
+        "distanceMm": null,
+        "status": "mated",
+        "exact": false
+      },
+      {
+        "a": "base",
+        "b": "pcb",
+        "distanceMm": null,
+        "status": "mated",
+        "exact": false
+      },
+      {
+        "a": "lid",
+        "b": "pcb",
+        "distanceMm": null,
+        "status": "ignored",
+        "exact": false
+      }
+    ],
+    "walls": [
+      {
+        "part": "base",
+        "result": {
+          "violations": [],
+          "truncated": false,
+          "sampleCount": 8160,
+          "thinnestMm": 1.9998999999999965
+        }
+      },
+      {
+        "part": "lid",
+        "result": {
+          "violations": [],
+          "truncated": false,
+          "sampleCount": 12188,
+          "thinnestMm": 1.9997368238414581
+        }
+      }
+    ],
+    "voids": [
+      {
+        "part": "base",
+        "result": {
+          "sealedVoids": [],
+          "detectedSealedVoidCount": 0,
+          "voxelMm": 0.4269933759130331,
+          "crackedColumns": 0,
+          "phases": {
+            "sealedVoids": true,
+            "mouthCount": false
+          }
+        }
+      },
+      {
+        "part": "lid",
+        "result": {
+          "sealedVoids": [],
+          "detectedSealedVoidCount": 0,
+          "voxelMm": 0.4,
+          "crackedColumns": 0,
+          "phases": {
+            "sealedVoids": true,
+            "mouthCount": false
+          }
+        }
+      }
+    ],
+    "diagnostics": [],
+    "timings": {
+      "clearance": 1.3701919999984966,
+      "mesh": 1302.2431190000007,
+      "voids": 263.3628439999993,
+      "walls": 149.4241699999984,
+      "total": 1717.2593960000013
+    }
+  },
+  "diagnostics": []
+}

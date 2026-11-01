@@ -225,6 +225,11 @@ for (const h of BOARD.holes) {
   pcb = pcb.subtract(cylinder(t + 0.2, h.d / 2).translate(h.x, h.y, boardZ - 0.1));
 }
 
+// Single-part views (tests probe these) carry no assembly dfmSpec.
+if (VIEW === 'base') return base;
+if (VIEW === 'lid') return lid;
+if (VIEW === 'pcb') return pcb;
+
 // ---- DFM declaration ----------------------------------------------------------
 // minWall is the nominal wall less 0.01 mm: the min-wall gate compares
 // strictly (t < minWall) on ray samples offset by 1e-4 mm, so a wall at
@@ -235,10 +240,6 @@ dfmSpec({
   exclude: ['pcb'],
   ignore: [['lid', 'pcb']], // lid bosses clamp the PCB: designed contact
 });
-
-if (VIEW === 'base') return base;
-if (VIEW === 'lid') return lid;
-if (VIEW === 'pcb') return pcb;
 
 const asm = assembly(BOARD.name + '-enclosure');
 const b = asm.part('base', base, { material: 'abs' });
