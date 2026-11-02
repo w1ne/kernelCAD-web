@@ -1,0 +1,4 @@
+02 / VALIDATE
+50 independent .kcad.ts assets
+50 / 50 passed asset checks
+One material each; every base Z = 0

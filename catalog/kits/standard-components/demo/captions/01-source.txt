@@ -1,0 +1,7 @@
+KERNELCAD
+STANDARD COMPONENTS
+
+01 / SOURCE
+Angle bracket
+Model size: compact / standard / large
+Editable finish and presets
