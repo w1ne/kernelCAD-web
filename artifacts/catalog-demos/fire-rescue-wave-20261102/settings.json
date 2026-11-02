@@ -1,0 +1,17 @@
+{
+  "kit": "fire-rescue",
+  "width": 1280,
+  "height": 720,
+  "frameRate": 2,
+  "videoFrameRate": 24,
+  "videoCodec": "libx264",
+  "pixelFormat": "yuv420p",
+  "crf": 23,
+  "render": "software-rendered GLB triangles from local catalog source and parameter resolution",
+  "assetsPerOverviewFrame": 20,
+  "variants": [
+    { "id": "municipal-fire-engine", "want": "scale 1.1 red body yellow accent" },
+    { "id": "aerial-ladder-fire-engine", "want": "scale 0.9 blue body white accent" },
+    { "id": "structural-fire-helmet", "want": "scale 1.15 black body yellow accent" }
+  ]
+}

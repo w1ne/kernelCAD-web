@@ -335,6 +335,73 @@
       ]
     },
     {
+      "id": "fire-rescue",
+      "title": "Fire & Rescue",
+      "description": "Original low-poly fire service apparatus, fireground equipment, rescue tools and protective gear with editable scale and palette controls.",
+      "assets": [
+        "aerial-ladder-fire-engine",
+        "collapsible-fire-water-tank",
+        "deck-gun-monitor",
+        "dry-chemical-fire-extinguisher",
+        "electric-fire-pumper",
+        "extension-fire-ladder",
+        "fire-apparatus-wheel-chock",
+        "fire-blanket-canister",
+        "fire-command-van",
+        "fire-hose-bridge",
+        "fire-hose-coupling",
+        "fire-hose-nozzle",
+        "fire-hose-roll",
+        "fire-utility-pickup",
+        "firefighter-facepiece",
+        "firefighter-gloves",
+        "firefighter-hood",
+        "firefighter-portable-radio",
+        "firefighter-turnout-coat",
+        "firefighter-turnout-pants",
+        "fireground-command-board",
+        "floating-draft-pump",
+        "foam-concentrate-canister",
+        "foam-eductor",
+        "fog-nozzle",
+        "folded-hose-pack",
+        "folding-attic-ladder",
+        "gated-wye-fire-connection",
+        "hazmat-response-truck",
+        "heavy-rescue-fire-truck",
+        "hose-reel-cart",
+        "hydraulic-rescue-cutter",
+        "hydraulic-rescue-ram",
+        "hydraulic-rescue-spreader",
+        "large-diameter-hose-roll",
+        "municipal-fire-engine",
+        "municipal-water-tender",
+        "personal-alert-safety-device",
+        "portable-fire-pump",
+        "portable-fire-scene-light",
+        "portable-ground-monitor",
+        "positive-pressure-ventilation-fan",
+        "quint-fire-apparatus",
+        "rescue-basket-stretcher",
+        "rescue-cribbing-blocks",
+        "rescue-sling-harness",
+        "rescue-tripod",
+        "roof-hook-ladder",
+        "roof-hook-pike-pole",
+        "self-contained-breathing-apparatus",
+        "smoke-ejector-fan",
+        "smooth-bore-nozzle",
+        "structural-fire-boots",
+        "structural-fire-helmet",
+        "thermal-imaging-camera",
+        "tiller-ladder-fire-truck",
+        "vehicle-stabilization-strut",
+        "wildland-brush-truck",
+        "wildland-fire-engine",
+        "wildland-fire-helmet"
+      ]
+    },
+    {
       "id": "food-kitchen",
       "title": "Food & Kitchen",
       "description": "Low-poly food, produce and table pieces for kitchen, market, picnic and tavern scenes at real-world scale, flat-shaded on one palette material.",
@@ -35672,6 +35739,5558 @@
             "star-rake-wheel-3",
             "star-rake-wheel-4"
           ]
+        }
+      ]
+    },
+    {
+      "id": "aerial-ladder-fire-engine",
+      "kit": "fire-rescue",
+      "title": "Aerial ladder fire engine",
+      "description": "Fire apparatus with telescoping aerial ladder, stabilizer legs and tip platform. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/aerial-ladder-fire-engine.kcad.ts",
+      "sourceSha256": "8c60ec983149e3860cbcb5e8fe53b29a2b3ad5291f9966157af59987cf059a19",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1032,
+        "sizeM": [
+          1.704,
+          1.67722,
+          0.8844
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "apparatus-body",
+            "compartment-handle--1-0",
+            "compartment-handle--1-1",
+            "compartment-handle--1-2",
+            "compartment-handle-1-0",
+            "compartment-handle-1-1",
+            "compartment-handle-1-2",
+            "stabilizer-foot--1",
+            "stabilizer-foot-1",
+            "ladder-fly",
+            "ladder-rung--1-0",
+            "ladder-rung--1-1",
+            "ladder-rung--1-2",
+            "ladder-rung--1-3",
+            "ladder-rung--1-4",
+            "ladder-rung--1-5",
+            "ladder-rung--1-6",
+            "ladder-rung-1-0",
+            "ladder-rung-1-1",
+            "ladder-rung-1-2",
+            "ladder-rung-1-3",
+            "ladder-rung-1-4",
+            "ladder-rung-1-5",
+            "ladder-rung-1-6"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "compartment--1-0",
+            "compartment--1-1",
+            "compartment--1-2",
+            "compartment-1-0",
+            "compartment-1-1",
+            "compartment-1-2",
+            "stabilizer-beam--1",
+            "stabilizer-beam-1",
+            "ladder-base",
+            "ladder-tip-platform"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "collapsible-fire-water-tank",
+      "kit": "fire-rescue",
+      "title": "Collapsible fire water tank",
+      "description": "Portable fold-flat water reservoir with rigid rim, corner supports and drain outlet. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/collapsible-fire-water-tank.kcad.ts",
+      "sourceSha256": "7382fb6281249e579dadd20b3ce518af2981d0a64028d59bb1b966c0deaf0a72",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          1.0316,
+          0.702,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "tank-floor",
+            "corner-post--1-a",
+            "corner-post--1-b",
+            "corner-post-1-a",
+            "corner-post-1-b",
+            "drain-outlet"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "tank-wall-x--1",
+            "tank-wall-y--1",
+            "tank-wall-x-1",
+            "tank-wall-y-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "deck-gun-monitor",
+      "kit": "fire-rescue",
+      "title": "Deck gun monitor",
+      "description": "Apparatus-mounted monitor with pedestal, transverse swivel and long water barrel. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/deck-gun-monitor.kcad.ts",
+      "sourceSha256": "fc3100667654f2bff2b217ea4c2d10b6cdf410e772b46edcaabf753cb1c3ced2",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          0.72,
+          0.337,
+          0.314
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "base-feet",
+            "elevation-yoke",
+            "nozzle-tip"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "swivel-pedestal",
+            "monitor-barrel",
+            "handwheel--1",
+            "handwheel-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "dry-chemical-fire-extinguisher",
+      "kit": "fire-rescue",
+      "title": "Dry chemical fire extinguisher",
+      "description": "Portable extinguisher with pressure cylinder, hose, gauge and squeeze handle. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/dry-chemical-fire-extinguisher.kcad.ts",
+      "sourceSha256": "a65f6588c068e8a918c0ed41c8d3fa76990041a8d9ed9f4720fd4a4b1bb5a974",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          0.377,
+          0.63,
+          0.264
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "pressure-vessel",
+            "squeeze-lever",
+            "nozzle"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "base-ring",
+            "valve-neck",
+            "handle-bracket",
+            "gauge",
+            "hose"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "electric-fire-pumper",
+      "kit": "fire-rescue",
+      "title": "Electric fire pumper",
+      "description": "Modern pumper with crew cab, compact pump body and roof-mounted battery equipment pod. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/electric-fire-pumper.kcad.ts",
+      "sourceSha256": "ccc46849993cf8f4509f481624434bcc43d5126626ff2a90990973300411839b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 916,
+        "sizeM": [
+          1.5527,
+          1.168,
+          0.6638
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "apparatus-body",
+            "compartment-handle--1-0",
+            "compartment-handle--1-1",
+            "compartment-handle--1-2",
+            "compartment-handle-1-0",
+            "compartment-handle-1-1",
+            "compartment-handle-1-2",
+            "deck-monitor-barrel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "compartment--1-0",
+            "compartment--1-1",
+            "compartment--1-2",
+            "compartment-1-0",
+            "compartment-1-1",
+            "compartment-1-2",
+            "hosebed",
+            "pump-control-panel--1",
+            "pump-control-panel-1",
+            "deck-monitor-base",
+            "roof-equipment-pod"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "extension-fire-ladder",
+      "kit": "fire-rescue",
+      "title": "Extension fire ladder",
+      "description": "Two-section extension ladder with parallel rails, repeated rungs and sliding locks. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/extension-fire-ladder.kcad.ts",
+      "sourceSha256": "ab5a0788997b2bb91e50998bb5d78ffd57a427cfa79e1d495e8a614d45db3dd4",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          1.38,
+          0.114,
+          0.3528
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "ladder-rail--1",
+            "ladder-rail-1",
+            "fly-rung-0",
+            "fly-rung-1",
+            "fly-rung-2",
+            "fly-rung-3",
+            "fly-rung-4",
+            "fly-rung-5",
+            "fly-rung-6",
+            "fly-rung-7"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rung-7",
+            "ladder-rung-8",
+            "ladder-rung-9",
+            "fly-rail--1",
+            "fly-rail-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "fire-apparatus-wheel-chock",
+      "kit": "fire-rescue",
+      "title": "Fire apparatus wheel chock",
+      "description": "High-visibility wedge chock with ribbed tread, pull loop and broad ground face. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/fire-apparatus-wheel-chock.kcad.ts",
+      "sourceSha256": "f5285bff5f96ce7591b90fae4b282c63ede3bd4a127a8c44a036dc324f899ac7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.482752,
+          0.266242,
+          0.24
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "wedge"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "tread-rib-0",
+            "tread-rib-1",
+            "tread-rib-2",
+            "tread-rib-3",
+            "tread-rib-4",
+            "tread-rib-5",
+            "pull-loop"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "fire-blanket-canister",
+      "kit": "fire-rescue",
+      "title": "Fire blanket canister",
+      "description": "Wall-mountable fire blanket case with pull tab, cover panel and mounting plate. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/fire-blanket-canister.kcad.ts",
+      "sourceSha256": "9fd1a0fa9e5a6dbb80a36779690152b710c2e173ba043e1afafb5ba916336010",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.37,
+          0.675,
+          0.29
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "mounting-plate",
+            "case-lid"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "case",
+            "pull-tab"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "fire-command-van",
+      "kit": "fire-rescue",
+      "title": "Fire command van",
+      "description": "Incident command van with high roof, side windows, roof antenna and warning light bar. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/fire-command-van.kcad.ts",
+      "sourceSha256": "efcff1d711588e74d70b140aec49c7cd75e8ae690c5e6028062fd4960d0f1dc8",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 880,
+        "sizeM": [
+          1.3925,
+          1.3314,
+          0.6126
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "apparatus-body",
+            "compartment-handle--1-0",
+            "compartment-handle--1-1",
+            "compartment-handle--1-2",
+            "compartment-handle-1-0",
+            "compartment-handle-1-1",
+            "compartment-handle-1-2",
+            "radio-antenna",
+            "roof-antenna"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "compartment--1-0",
+            "compartment--1-1",
+            "compartment--1-2",
+            "compartment-1-0",
+            "compartment-1-1",
+            "compartment-1-2",
+            "high-roof"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "fire-hose-bridge",
+      "kit": "fire-rescue",
+      "title": "Fire hose bridge",
+      "description": "Low protective road bridge with paired ramps and a recessed hose channel. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/fire-hose-bridge.kcad.ts",
+      "sourceSha256": "b361ea5ed77821f955f5de73128efa2e4bd3dc10cfa16d69a00d32faa537e236",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.7104,
+          0.12757,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "center-channel",
+            "outer-rail--1",
+            "outer-rail-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "approach-ramp--1",
+            "approach-ramp-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "fire-hose-coupling",
+      "kit": "fire-rescue",
+      "title": "Fire hose coupling",
+      "description": "Threaded fire-service coupling with grip ribs, flange and open bore. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/fire-hose-coupling.kcad.ts",
+      "sourceSha256": "f5789c7e5681c32eb50d3164d0b2f874f9964ab4f3d517dab922892c493db8bc",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          0.2244,
+          0.11408,
+          0.11408
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "coupling-barrel",
+            "flange"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "male-end",
+            "grip-rib-0",
+            "grip-rib-1",
+            "grip-rib-2"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "fire-hose-nozzle",
+      "kit": "fire-rescue",
+      "title": "Fire hose nozzle",
+      "description": "Straight hose nozzle with hand grip, barrel and adjustable front tip. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/fire-hose-nozzle.kcad.ts",
+      "sourceSha256": "f1bf4af06538ecdf02822c1b786dd77123ef13bb77dbbd013003ca7d14627501",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.2666,
+          0.099,
+          0.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "hose-tail",
+            "tip",
+            "handle"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "nozzle-body"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "fire-hose-roll",
+      "kit": "fire-rescue",
+      "title": "Fire hose roll",
+      "description": "Compact rolled attack hose with paired loop bundles and coupling ends. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/fire-hose-roll.kcad.ts",
+      "sourceSha256": "b4e7740c4b674bccc50ba50af6df6e7a75d751f041ba270e495ae434a8463efe",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 388,
+        "sizeM": [
+          0.604,
+          0.447,
+          0.428009
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "hose-loop-0-0",
+            "hose-loop-0-1",
+            "hose-loop-0-2",
+            "hose-loop-0-3",
+            "hose-loop-0-4",
+            "hose-loop-0-5",
+            "hose-loop-0-6",
+            "hose-loop-0-7",
+            "hose-loop-0-8",
+            "hose-loop-0-9",
+            "hose-loop-0-10",
+            "hose-loop-0-11",
+            "hose-loop-1-0",
+            "hose-loop-1-1",
+            "hose-loop-1-2",
+            "hose-loop-1-3",
+            "hose-loop-1-4",
+            "hose-loop-1-5",
+            "hose-loop-1-6",
+            "hose-loop-1-7",
+            "hose-loop-1-8",
+            "hose-loop-1-9",
+            "hose-loop-1-10",
+            "hose-loop-1-11"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "outer-coupling",
+            "inner-coupling",
+            "carry-strap"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "fire-utility-pickup",
+      "kit": "fire-rescue",
+      "title": "Fire utility pickup",
+      "description": "Crew pickup with utility bed, compartment boxes, ladder rack and beacon bar. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/fire-utility-pickup.kcad.ts",
+      "sourceSha256": "4ff6dad4f9305fbe52cb9109ec897918fe57f9149973349ec50d9ad709002c4c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 740,
+        "sizeM": [
+          1.259,
+          1.0506,
+          0.5998
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "utility-deck",
+            "ladder-rack",
+            "roof-antenna"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "utility-locker--1",
+            "utility-locker-1",
+            "rack-post--1",
+            "rack-post-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "firefighter-facepiece",
+      "kit": "fire-rescue",
+      "title": "Firefighter breathing facepiece",
+      "description": "Respiratory facepiece with broad lens, cheek ports, lower filter and straps. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/firefighter-facepiece.kcad.ts",
+      "sourceSha256": "6b4a9bc1223cb7387c9b5ae98d73e8b481b0c7301086e2c6dcb6374c315ab815",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.48,
+          0.34,
+          0.19
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "mask-frame",
+            "lower-regulator"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "lens",
+            "left-port",
+            "right-port",
+            "strap--1",
+            "strap-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "firefighter-gloves",
+      "kit": "fire-rescue",
+      "title": "Firefighter gloves",
+      "description": "Pair of gauntlet gloves with cuff guards, segmented fingers and palm patches. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/firefighter-gloves.kcad.ts",
+      "sourceSha256": "3370b8b31bd7feb9d35366a13400e33bf1e42a1d812a01d38e2b225e72921329",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.3975,
+          0.183,
+          0.558
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "gauntlet-cuff--1",
+            "finger--1-0",
+            "finger--1-1",
+            "finger--1-2",
+            "finger--1-3",
+            "gauntlet-cuff-1",
+            "finger-1-0",
+            "finger-1-1",
+            "finger-1-2",
+            "finger-1-3"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "palm--1",
+            "thumb--1",
+            "palm-1",
+            "thumb-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "firefighter-hood",
+      "kit": "fire-rescue",
+      "title": "Firefighter protective hood",
+      "description": "Folded protective hood with neck drape, face opening and layered fabric edges. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/firefighter-hood.kcad.ts",
+      "sourceSha256": "7362d049861cb22f6859a140948db1e895af1ecfc531ac861100eb95339db908",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.41,
+          0.512,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "hood-neck-drape",
+            "face-opening"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "hood-crown",
+            "hem-band"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "firefighter-portable-radio",
+      "kit": "fire-rescue",
+      "title": "Firefighter portable radio",
+      "description": "Handheld radio with antenna, channel knob, speaker grille and shoulder mic. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/firefighter-portable-radio.kcad.ts",
+      "sourceSha256": "092c29f078662cc4a9d8d49430b1060f3e7017958c261cb747fcfbfe99199fc3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          0.355,
+          0.58,
+          0.157
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "radio-body",
+            "shoulder-mic"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "antenna",
+            "channel-knob",
+            "speaker-slot-0",
+            "speaker-slot-1",
+            "speaker-slot-2",
+            "speaker-slot-3",
+            "speaker-slot-4",
+            "display"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "firefighter-turnout-coat",
+      "kit": "fire-rescue",
+      "title": "Firefighter turnout coat",
+      "description": "Protective coat form with raised collar, sleeves, front closure and reflective bands. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/firefighter-turnout-coat.kcad.ts",
+      "sourceSha256": "6e133a250ec4734fba1c814ce70760bd5be8ae48330fa52cab9c58e2e558a349",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.56,
+          0.61,
+          0.597058
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "coat-torso"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "raised-collar",
+            "coat-sleeve--1",
+            "coat-sleeve-1",
+            "coat-reflective-band-260",
+            "coat-reflective-band-370",
+            "coat-reflective-band-480",
+            "front-closure"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "firefighter-turnout-pants",
+      "kit": "fire-rescue",
+      "title": "Firefighter turnout pants",
+      "description": "Protective trouser form with suspenders, articulated legs and reflective cuffs. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/firefighter-turnout-pants.kcad.ts",
+      "sourceSha256": "1739e788d1b58468f0567004bf2ce9b1a991517151babaa6714fc6f89293df73",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.47,
+          0.826,
+          0.445
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "trouser-leg--1",
+            "trouser-leg-1",
+            "suspender--1",
+            "suspender-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "trouser-cuff--1",
+            "reflective-cuff--1",
+            "trouser-cuff-1",
+            "reflective-cuff-1",
+            "waistband"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "fireground-command-board",
+      "kit": "fire-rescue",
+      "title": "Fireground command board",
+      "description": "Portable incident board with framed panel, status tiles and folding easel. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/fireground-command-board.kcad.ts",
+      "sourceSha256": "a76b8e6e34a136aa3fc73ae50037ab440ddd62474ce5d56bc2aadf555f86514f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.647908,
+          1.198647,
+          0.111
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "board-frame",
+            "status-tile-0-0",
+            "status-tile-0-2",
+            "status-tile-1-1",
+            "status-tile-1-3",
+            "status-tile-2-0",
+            "status-tile-2-2"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "board-face",
+            "status-tile-0-1",
+            "status-tile-0-3",
+            "status-tile-1-0",
+            "status-tile-1-2",
+            "status-tile-2-1",
+            "status-tile-2-3",
+            "easel-leg--1",
+            "easel-leg-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "floating-draft-pump",
+      "kit": "fire-rescue",
+      "title": "Floating draft pump",
+      "description": "Floating water pump with guarded intake, motor pod and hose connection. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/floating-draft-pump.kcad.ts",
+      "sourceSha256": "91c4d2b6e5f2a1147638feecfe7ece4c49d955c9c4f8654f9e7e0ab994f84dbf",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.64,
+          0.455,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "pump-frame",
+            "pump-volute",
+            "intake-screen"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "engine-housing",
+            "hose-port--1",
+            "hose-port-1",
+            "float-pontoon-left",
+            "float-pontoon-right"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "foam-concentrate-canister",
+      "kit": "fire-rescue",
+      "title": "Foam concentrate canister",
+      "description": "Portable concentrate can with handle frame, cap and short pickup fitting. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/foam-concentrate-canister.kcad.ts",
+      "sourceSha256": "2221e787ad045bca9d4f8282ba1170ece40a224fabbb0ab5d0bd5b7a927416e0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.395,
+          0.445,
+          0.29
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "canister"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "handle",
+            "cap",
+            "pickup-fitting"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "foam-eductor",
+      "kit": "fire-rescue",
+      "title": "Fire foam eductor",
+      "description": "Inline foam proportioning body with pickup tube, selector dial and hose couplings. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/foam-eductor.kcad.ts",
+      "sourceSha256": "a16cb33b4db2f72c8c607ebcce25849a2b55204822b04b38091e63bec1e86ae3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.735,
+          0.262,
+          0.215
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "eductor-body",
+            "pickup-hose"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "inlet-coupling",
+            "outlet-coupling",
+            "proportioning-dial"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "fog-nozzle",
+      "kit": "fire-rescue",
+      "title": "Fog fire nozzle",
+      "description": "Compact fog nozzle with ribbed selector collar, barrel and pistol grip. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/fog-nozzle.kcad.ts",
+      "sourceSha256": "f627b50d22a7b37c2e2c82ac97c52a70490fe93e3af76e9f6ccf48887437de8d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 320,
+        "sizeM": [
+          0.2408,
+          0.106,
+          0.104
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "hose-tail",
+            "tip",
+            "selector-rib-0",
+            "selector-rib-1",
+            "selector-rib-2",
+            "selector-rib-3",
+            "pistol-grip"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "nozzle-body"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "folded-hose-pack",
+      "kit": "fire-rescue",
+      "title": "Folded fire hose pack",
+      "description": "Layered accordion fold of attack hose with a carrying strap and outlet coupling. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/folded-hose-pack.kcad.ts",
+      "sourceSha256": "5e2de1053e94b87aad44f82309872915b5d4ba0df8f7bd0c8b67ec4b5cddd14e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          0.59,
+          0.194,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "pack-base",
+            "carry-strap",
+            "coupling"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "fold-0-0",
+            "fold-0-1",
+            "fold-0-2",
+            "fold-0-3",
+            "fold-1-0",
+            "fold-1-1",
+            "fold-1-2",
+            "fold-1-3",
+            "fold-2-0",
+            "fold-2-1",
+            "fold-2-2",
+            "fold-2-3",
+            "fold-3-0",
+            "fold-3-1",
+            "fold-3-2",
+            "fold-3-3",
+            "fold-4-0",
+            "fold-4-1",
+            "fold-4-2",
+            "fold-4-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "folding-attic-ladder",
+      "kit": "fire-rescue",
+      "title": "Folding attic ladder",
+      "description": "Foldable attic ladder with paired hinged sections, rails and rung steps. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/folding-attic-ladder.kcad.ts",
+      "sourceSha256": "0c40ec0eed05bc98831b7a17c72803d581c00ca58a397c86ae09d411ec485160",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.663854,
+          0.224517,
+          0.485
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "section-0-rail--1",
+            "section-0-rail-1",
+            "section-1-rail--1",
+            "section-1-rail-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "section-0-rung-0",
+            "section-0-rung-1",
+            "section-0-rung-2",
+            "section-0-rung-3",
+            "section-0-rung-4",
+            "section-0-rung-5",
+            "section-1-rung-0",
+            "section-1-rung-1",
+            "section-1-rung-2",
+            "section-1-rung-3",
+            "section-1-rung-4",
+            "section-1-rung-5",
+            "hinge"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "gated-wye-fire-connection",
+      "kit": "fire-rescue",
+      "title": "Gated wye fire connection",
+      "description": "Branching hose fitting with two gated outlets and control handles. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/gated-wye-fire-connection.kcad.ts",
+      "sourceSha256": "eafa48b5de1749cb1d1e0f9d7a8e57754f021e9f3524cb4fe0b8b031b995e4c9",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.548,
+          0.157,
+          0.409769
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "branch-body",
+            "gate-wheel--1",
+            "gate-wheel-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "inlet",
+            "outlet--1",
+            "gate-stem--1",
+            "outlet-1",
+            "gate-stem-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "hazmat-response-truck",
+      "kit": "fire-rescue",
+      "title": "Hazmat response truck",
+      "description": "Hazard response vehicle with high equipment body, storage lockers and exhaust vents. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/hazmat-response-truck.kcad.ts",
+      "sourceSha256": "440e6ab87b18134e20752fdd27025f721b307f16de466d892a4169824fd7fb6f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 980,
+        "sizeM": [
+          1.615,
+          1.02,
+          0.6638
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "apparatus-body",
+            "compartment-handle--1-0",
+            "compartment-handle--1-1",
+            "compartment-handle--1-2",
+            "compartment-handle-1-0",
+            "compartment-handle-1-1",
+            "compartment-handle-1-2"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "compartment--1-0",
+            "compartment--1-1",
+            "compartment--1-2",
+            "compartment-1-0",
+            "compartment-1-1",
+            "compartment-1-2",
+            "hazmat-storage--1",
+            "hazmat-storage-1",
+            "roof-vent-0",
+            "roof-vent-1",
+            "roof-vent-2",
+            "roof-vent-3"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "heavy-rescue-fire-truck",
+      "kit": "fire-rescue",
+      "title": "Heavy rescue fire truck",
+      "description": "Rescue apparatus with tall equipment body, open side lockers and roof light mast. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/heavy-rescue-fire-truck.kcad.ts",
+      "sourceSha256": "7f2da4eb704f76248212bacf2fcd93c0eb17ec0d3427bacda24fb99c72810f3f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1164,
+        "sizeM": [
+          1.704,
+          1.5294,
+          0.6766
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "apparatus-body",
+            "compartment-handle--1-0",
+            "compartment-handle--1-1",
+            "compartment-handle--1-2",
+            "compartment-handle-1-0",
+            "compartment-handle-1-1",
+            "compartment-handle-1-2",
+            "rescue-drawer--1-0",
+            "rescue-drawer--1-1",
+            "rescue-drawer--1-2",
+            "rescue-drawer-1-0",
+            "rescue-drawer-1-1",
+            "rescue-drawer-1-2",
+            "mast-lamp"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1",
+            "road-wheel-2--1",
+            "road-wheel-2-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "road-wheel-2--1-hub--1",
+            "road-wheel-2--1-hub-1",
+            "road-wheel-2-1-hub--1",
+            "road-wheel-2-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "compartment--1-0",
+            "compartment--1-1",
+            "compartment--1-2",
+            "compartment-1-0",
+            "compartment-1-1",
+            "compartment-1-2",
+            "open-locker--1",
+            "open-locker-1",
+            "light-mast"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "hose-reel-cart",
+      "kit": "fire-rescue",
+      "title": "Fire hose reel cart",
+      "description": "Portable hose reel on a wheeled frame with axle, winding drum and push handle. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/hose-reel-cart.kcad.ts",
+      "sourceSha256": "600d73937781d5fcf965224c604aee0c29df0e94d73745bed8f2e5c057ce3e73",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 432,
+        "sizeM": [
+          0.413,
+          0.8056,
+          0.4457
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "reel-flange--1",
+            "reel-flange-1",
+            "cart-wheel--1-hub--1",
+            "cart-wheel--1-hub-1",
+            "cart-wheel-1-hub--1",
+            "cart-wheel-1-hub-1",
+            "push-handle"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "spool",
+            "frame-leg--1",
+            "frame-leg-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "cart-wheel--1",
+          "color": "#30363b",
+          "parts": [
+            "cart-wheel--1",
+            "cart-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hydraulic-rescue-cutter",
+      "kit": "fire-rescue",
+      "title": "Hydraulic rescue cutter",
+      "description": "Powered extrication cutter with crossed jaws, pivot, handles and hose ports. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/hydraulic-rescue-cutter.kcad.ts",
+      "sourceSha256": "c5743e163e39fcadc0d8bcd18626137092ac855b31df2568892a81ff5c4a144f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.8129,
+          0.27,
+          0.423442
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "tool-body",
+            "jaw--1",
+            "jaw-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "rear-handle",
+            "front-handle",
+            "pivot",
+            "jaw-tip--1",
+            "jaw-tip-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "hydraulic-rescue-ram",
+      "kit": "fire-rescue",
+      "title": "Hydraulic rescue ram",
+      "description": "Telescoping rescue ram with piston body, end plates and hose connection. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/hydraulic-rescue-ram.kcad.ts",
+      "sourceSha256": "0ed8c51516d08a05797f9b7516bce651ee3f25b0c60827df643cbc51682cf2df",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.9778,
+          0.22,
+          0.23
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "tool-body",
+            "ram-piston"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "rear-handle",
+            "front-handle",
+            "pivot",
+            "ram-cylinder",
+            "ram-foot"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "hydraulic-rescue-spreader",
+      "kit": "fire-rescue",
+      "title": "Hydraulic rescue spreader",
+      "description": "Powered rescue spreader with opening jaws, center pivot and hand grips. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/hydraulic-rescue-spreader.kcad.ts",
+      "sourceSha256": "6540b058880bbedbe6bd41f9d421f2ee8316e8d897cb7faac42a6dea5fd92313",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.7943,
+          0.27,
+          0.475388
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "tool-body",
+            "jaw--1",
+            "jaw-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "rear-handle",
+            "front-handle",
+            "pivot",
+            "jaw-tip--1",
+            "jaw-tip-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "large-diameter-hose-roll",
+      "kit": "fire-rescue",
+      "title": "Large diameter supply hose roll",
+      "description": "Wide supply hose rolled into a broad stacked bundle with heavy couplings. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/large-diameter-hose-roll.kcad.ts",
+      "sourceSha256": "8645e962a2d5ecf4f8877461c2b7dcbe5d67361474503617ab55a737ef4ff98c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 532,
+        "sizeM": [
+          0.724,
+          0.567,
+          0.550531
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "hose-loop-0-0",
+            "hose-loop-0-1",
+            "hose-loop-0-2",
+            "hose-loop-0-3",
+            "hose-loop-0-4",
+            "hose-loop-0-5",
+            "hose-loop-0-6",
+            "hose-loop-0-7",
+            "hose-loop-0-8",
+            "hose-loop-0-9",
+            "hose-loop-0-10",
+            "hose-loop-0-11",
+            "hose-loop-1-0",
+            "hose-loop-1-1",
+            "hose-loop-1-2",
+            "hose-loop-1-3",
+            "hose-loop-1-4",
+            "hose-loop-1-5",
+            "hose-loop-1-6",
+            "hose-loop-1-7",
+            "hose-loop-1-8",
+            "hose-loop-1-9",
+            "hose-loop-1-10",
+            "hose-loop-1-11",
+            "hose-loop-2-0",
+            "hose-loop-2-1",
+            "hose-loop-2-2",
+            "hose-loop-2-3",
+            "hose-loop-2-4",
+            "hose-loop-2-5",
+            "hose-loop-2-6",
+            "hose-loop-2-7",
+            "hose-loop-2-8",
+            "hose-loop-2-9",
+            "hose-loop-2-10",
+            "hose-loop-2-11"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "outer-coupling",
+            "inner-coupling",
+            "carry-strap"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "municipal-fire-engine",
+      "kit": "fire-rescue",
+      "title": "Municipal fire engine",
+      "description": "Structural pumper with crew cab, hosebed, side pump panel and deck monitor. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/municipal-fire-engine.kcad.ts",
+      "sourceSha256": "ad6b1b7a6b719bb0bfc14bcc4c65133c5d00a9bc61a80980d91c920b91fb80bc",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 904,
+        "sizeM": [
+          1.5705,
+          1.168,
+          0.651
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "apparatus-body",
+            "compartment-handle--1-0",
+            "compartment-handle--1-1",
+            "compartment-handle--1-2",
+            "compartment-handle-1-0",
+            "compartment-handle-1-1",
+            "compartment-handle-1-2",
+            "deck-monitor-barrel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "compartment--1-0",
+            "compartment--1-1",
+            "compartment--1-2",
+            "compartment-1-0",
+            "compartment-1-1",
+            "compartment-1-2",
+            "hosebed",
+            "pump-control-panel--1",
+            "pump-control-panel-1",
+            "deck-monitor-base"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "municipal-water-tender",
+      "kit": "fire-rescue",
+      "title": "Municipal fire water tender",
+      "description": "Water tender with large horizontal tank, rear hose connections and crew cab. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/municipal-water-tender.kcad.ts",
+      "sourceSha256": "02fff515f57ef6dffb29d7a8480407d65da2bf9900aaf06c04522fbeee144ae9",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1112,
+        "sizeM": [
+          1.704,
+          0.992,
+          0.725
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "apparatus-body",
+            "compartment-handle--1-0",
+            "compartment-handle--1-1",
+            "compartment-handle--1-2",
+            "compartment-handle-1-0",
+            "compartment-handle-1-1",
+            "compartment-handle-1-2",
+            "tank-cradle--1",
+            "tank-cradle-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1",
+            "road-wheel-2--1",
+            "road-wheel-2-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "road-wheel-2--1-hub--1",
+            "road-wheel-2--1-hub-1",
+            "road-wheel-2-1-hub--1",
+            "road-wheel-2-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "compartment--1-0",
+            "compartment--1-1",
+            "compartment--1-2",
+            "compartment-1-0",
+            "compartment-1-1",
+            "compartment-1-2",
+            "water-tank"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "personal-alert-safety-device",
+      "kit": "fire-rescue",
+      "title": "Personal alert safety device",
+      "description": "Compact firefighter alarm clipped to a harness with grille, controls and indicator. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/personal-alert-safety-device.kcad.ts",
+      "sourceSha256": "1f019061913714a71f4a400cf51a0b1b047156bbb1dcfb1fe852a5e43fa38d32",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.22,
+          0.195,
+          0.207
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "alarm-case"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "clip",
+            "alarm-grille",
+            "indicator",
+            "test-button"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "portable-fire-pump",
+      "kit": "fire-rescue",
+      "title": "Portable fire pump",
+      "description": "Compact portable pump with engine block, intake and discharge ports on a carrying frame. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/portable-fire-pump.kcad.ts",
+      "sourceSha256": "ad67bc1e355dae8253524dda34ff03b19b174d43c0c8d785d5d27a8bcc567d96",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.615,
+          0.36,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "pump-frame",
+            "pump-volute"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "engine-housing",
+            "hose-port--1",
+            "hose-port-1",
+            "carry-handle--1",
+            "carry-handle-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "portable-fire-scene-light",
+      "kit": "fire-rescue",
+      "title": "Portable fire scene light",
+      "description": "Tripod-mounted dual scene lamps with adjustable heads and cable-ready base. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/portable-fire-scene-light.kcad.ts",
+      "sourceSha256": "9f66a2ccebccf1593f9b63cd9f6832c76e095de2a7d86367a03dc3dedd565cfc",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.55,
+          1.347901,
+          0.41
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "tripod-leg--1",
+            "lamp-face--1",
+            "tripod-leg-1",
+            "lamp-face-1",
+            "ground-foot"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "lamp-head--1",
+            "lamp-head-1",
+            "mast-collar"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "portable-ground-monitor",
+      "kit": "fire-rescue",
+      "title": "Portable ground monitor",
+      "description": "Ground monitor with twin feet, swiveling barrel and directional hand wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/portable-ground-monitor.kcad.ts",
+      "sourceSha256": "07923777f018843c8958f6c7c00e5293d969dacbe299270a3b90b1d2697728d7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.765,
+          0.337,
+          0.405
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "base-feet",
+            "elevation-yoke",
+            "nozzle-tip"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "stabilizer-foot--1",
+            "stabilizer-foot-1",
+            "swivel-pedestal",
+            "monitor-barrel",
+            "handwheel--1",
+            "handwheel-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "positive-pressure-ventilation-fan",
+      "kit": "fire-rescue",
+      "title": "Positive pressure ventilation fan",
+      "description": "Angled fan assembly with protective ring, radial blades, handle and folding stand. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/positive-pressure-ventilation-fan.kcad.ts",
+      "sourceSha256": "0141ee4e86de19edacbb4eb64b7295a716943d4381c4261bb160b7b6beaf7af0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.51,
+          0.49,
+          0.292
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "fan-frame",
+            "fuel-tank"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "fan-hub",
+            "fan-blade-0",
+            "fan-blade-1",
+            "fan-blade-2",
+            "fan-blade-3",
+            "fan-blade-4",
+            "fan-blade-5",
+            "guard-ring",
+            "handle",
+            "angled-stand"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "quint-fire-apparatus",
+      "kit": "fire-rescue",
+      "title": "Quint fire apparatus",
+      "description": "Combined pumper and aerial apparatus with hosebed, pump panel and mounted ladder. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/quint-fire-apparatus.kcad.ts",
+      "sourceSha256": "56ee90c3009abf6d4bcbca795fe432f20126ba89824344b80faedda93539a229",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1156,
+        "sizeM": [
+          1.704,
+          1.65622,
+          0.8844
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "apparatus-body",
+            "compartment-handle--1-0",
+            "compartment-handle--1-1",
+            "compartment-handle--1-2",
+            "compartment-handle-1-0",
+            "compartment-handle-1-1",
+            "compartment-handle-1-2",
+            "deck-monitor-barrel",
+            "stabilizer-foot--1",
+            "stabilizer-foot-1",
+            "ladder-fly",
+            "ladder-rung--1-0",
+            "ladder-rung--1-1",
+            "ladder-rung--1-2",
+            "ladder-rung--1-3",
+            "ladder-rung--1-4",
+            "ladder-rung--1-5",
+            "ladder-rung--1-6",
+            "ladder-rung-1-0",
+            "ladder-rung-1-1",
+            "ladder-rung-1-2",
+            "ladder-rung-1-3",
+            "ladder-rung-1-4",
+            "ladder-rung-1-5",
+            "ladder-rung-1-6"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "compartment--1-0",
+            "compartment--1-1",
+            "compartment--1-2",
+            "compartment-1-0",
+            "compartment-1-1",
+            "compartment-1-2",
+            "hosebed",
+            "pump-control-panel--1",
+            "pump-control-panel-1",
+            "deck-monitor-base",
+            "stabilizer-beam--1",
+            "stabilizer-beam-1",
+            "ladder-base",
+            "ladder-tip-platform"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "rescue-basket-stretcher",
+      "kit": "fire-rescue",
+      "title": "Rescue basket stretcher",
+      "description": "Open-frame rescue basket with perimeter rails, cross supports and four carry handles. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/rescue-basket-stretcher.kcad.ts",
+      "sourceSha256": "57a63765b867f97d4c335cfe792c98a6a0e3103b1343359ee15f1337bac30187",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          1.05,
+          0.115,
+          0.4928
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "basket-bed",
+            "carry-handle--1-0",
+            "carry-handle--1-1",
+            "carry-handle--1-2",
+            "carry-handle-1-0",
+            "carry-handle-1-1",
+            "carry-handle-1-2"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "long-rail--1",
+            "long-rail-1",
+            "cross-support-0",
+            "cross-support-1",
+            "cross-support-2",
+            "cross-support-3",
+            "cross-support-4"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "rescue-cribbing-blocks",
+      "kit": "fire-rescue",
+      "title": "Rescue cribbing blocks",
+      "description": "Stackable timber cribbing blocks with alternating layers and hand grooves. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/rescue-cribbing-blocks.kcad.ts",
+      "sourceSha256": "de2dd5b71186d3d05c24a0f7249acf0bbeaa0f774c0ec3a8e77acfe48c880987",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.5152,
+          0.26,
+          0.4032
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "crib-layer-0-0",
+            "crib-layer-0-1",
+            "crib-layer-0-2",
+            "crib-layer-2-0",
+            "crib-layer-2-1",
+            "crib-layer-2-2"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "crib-layer-1-0",
+            "crib-layer-1-1",
+            "crib-layer-1-2",
+            "crib-layer-3-0",
+            "crib-layer-3-1",
+            "crib-layer-3-2"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "rescue-sling-harness",
+      "kit": "fire-rescue",
+      "title": "Rescue sling harness",
+      "description": "Folded rope rescue harness with shoulder loops, waist belt and leg straps. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/rescue-sling-harness.kcad.ts",
+      "sourceSha256": "343fd191df2440cae6e208248101f73a599517afb73aa391276379dc8bb76db3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.44,
+          0.66777,
+          0.123
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "waist-belt",
+            "leg-loop--1",
+            "leg-loop-1",
+            "front-buckle"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "shoulder-strap--1",
+            "shoulder-strap-1",
+            "back-pad"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "rescue-tripod",
+      "kit": "fire-rescue",
+      "title": "Rescue tripod",
+      "description": "Three-leg rescue tripod with top pulley housing, cable wheel and foot pads. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/rescue-tripod.kcad.ts",
+      "sourceSha256": "4edbdfbfba275d000ff8ab959c2b430bd0e1cbe33899ddc4f9b5889c640be78c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.802187,
+          1.651372,
+          0.882724
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "top-head",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "hook"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "pulley"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "roof-hook-ladder",
+      "kit": "fire-rescue",
+      "title": "Roof hook ladder",
+      "description": "Compact roof ladder with ridge hooks, reinforced rails and closely spaced rungs. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/roof-hook-ladder.kcad.ts",
+      "sourceSha256": "bdc7d6e8ed74cb5185b68b3bc0c940d200fd992955dfc762bda8c4d2a29504f3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.946662,
+          0.178559,
+          0.3084
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "ladder-rail--1",
+            "ladder-rail-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ridge-hook--1",
+            "ridge-hook-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "roof-hook-pike-pole",
+      "kit": "fire-rescue",
+      "title": "Roof hook pike pole",
+      "description": "Long fireground pole with protective grip bands and a hooked metal head. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/roof-hook-pike-pole.kcad.ts",
+      "sourceSha256": "8982cc2515c1e4ab93373e982bc5d7353372caace1f112c709951fae072d0751",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.1745,
+          1.52,
+          0.06
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "shaft",
+            "hook-tip"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "grip-band-0",
+            "grip-band-1",
+            "grip-band-2",
+            "grip-band-3",
+            "grip-band-4",
+            "hook-spine"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "self-contained-breathing-apparatus",
+      "kit": "fire-rescue",
+      "title": "Self-contained breathing apparatus",
+      "description": "Backpack assembly with air cylinder, harness straps, valve and regulator hose. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/self-contained-breathing-apparatus.kcad.ts",
+      "sourceSha256": "6b07ff9267aafebdc96bb28c3d91f1a34e85c5f3772283d2fb1f3b6004949606",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          0.61,
+          0.64,
+          0.265
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "backplate",
+            "valve",
+            "regulator"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "air-cylinder",
+            "shoulder-strap--1",
+            "waist-strap--1",
+            "shoulder-strap-1",
+            "waist-strap-1",
+            "air-hose"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "smoke-ejector-fan",
+      "kit": "fire-rescue",
+      "title": "Smoke ejector fan",
+      "description": "Portable square-frame exhaust fan with radial blades, guard ring and carry handle. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/smoke-ejector-fan.kcad.ts",
+      "sourceSha256": "3207afc26acf9b62a65d93b6ca7a2d07bd667c169a4cfb1e5a3a4c05ef3140d5",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          0.51,
+          0.495,
+          0.317
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "fan-frame"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "fan-hub",
+            "fan-blade-0",
+            "fan-blade-1",
+            "fan-blade-2",
+            "fan-blade-3",
+            "fan-blade-4",
+            "fan-blade-5",
+            "guard-ring",
+            "handle",
+            "floor-stand"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "smooth-bore-nozzle",
+      "kit": "fire-rescue",
+      "title": "Smooth bore fire nozzle",
+      "description": "Simple smooth-bore tip with tapered barrel and hose coupling tail. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/smooth-bore-nozzle.kcad.ts",
+      "sourceSha256": "27c53d7ff5acc6b97803922df8c0c37370abd0cd476c205218d1bed729138348",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.215,
+          0.09,
+          0.09
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "hose-tail",
+            "tip"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "nozzle-body"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "structural-fire-boots",
+      "kit": "fire-rescue",
+      "title": "Structural fire boots",
+      "description": "Pair of tall protective boots with raised shafts, soles and broad toe guards. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/structural-fire-boots.kcad.ts",
+      "sourceSha256": "331d8a2b9e2d394c3b149e1ba79dde5bc5d6e4a0d4c62344bf96156e23b3d547",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.41,
+          0.47,
+          0.49
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "boot-shaft--1",
+            "boot-toe--1",
+            "boot-shaft-1",
+            "boot-toe-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "boot-foot--1",
+            "boot-foot-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "structural-fire-helmet",
+      "kit": "fire-rescue",
+      "title": "Structural fire helmet",
+      "description": "Structural helmet with brim, raised shell, ear flaps, face shield and front shield plate. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/structural-fire-helmet.kcad.ts",
+      "sourceSha256": "37dce248c36f050aca0bba0f4d2ae2d322914537fe989a7234cbb3d878292511",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.5,
+          0.295,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "helmet-brim",
+            "front-shield",
+            "ear-flap--1",
+            "ear-flap-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "helmet-shell",
+            "face-shield",
+            "chin-strap--1",
+            "chin-strap-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "thermal-imaging-camera",
+      "kit": "fire-rescue",
+      "title": "Thermal imaging camera",
+      "description": "Handheld thermal camera with display, lens barrel, grip and top controls. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/thermal-imaging-camera.kcad.ts",
+      "sourceSha256": "845e598c2579e323ef45ded01cd2d01da09be6c1da93199b829f6c3dcc244724",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.43,
+          0.375,
+          0.2755
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "camera-body",
+            "top-control"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "display",
+            "thermal-lens",
+            "grip"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "tiller-ladder-fire-truck",
+      "kit": "fire-rescue",
+      "title": "Tiller ladder fire truck",
+      "description": "Long aerial ladder apparatus with rear tiller cab and multi-axle chassis. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/tiller-ladder-fire-truck.kcad.ts",
+      "sourceSha256": "e9d073756f614cc37e6c7ec5547a573975967af8f8b950994f5d1731057fe231",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1260,
+        "sizeM": [
+          2.1895,
+          1.74146,
+          0.6766
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "apparatus-body",
+            "compartment-handle--1-0",
+            "compartment-handle--1-1",
+            "compartment-handle--1-2",
+            "compartment-handle-1-0",
+            "compartment-handle-1-1",
+            "compartment-handle-1-2",
+            "ladder-fly",
+            "ladder-rung--1-0",
+            "ladder-rung--1-1",
+            "ladder-rung--1-2",
+            "ladder-rung--1-3",
+            "ladder-rung--1-4",
+            "ladder-rung--1-5",
+            "ladder-rung--1-6",
+            "ladder-rung-1-0",
+            "ladder-rung-1-1",
+            "ladder-rung-1-2",
+            "ladder-rung-1-3",
+            "ladder-rung-1-4",
+            "ladder-rung-1-5",
+            "ladder-rung-1-6"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1",
+            "road-wheel-2--1",
+            "road-wheel-2-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "road-wheel-2--1-hub--1",
+            "road-wheel-2--1-hub-1",
+            "road-wheel-2-1-hub--1",
+            "road-wheel-2-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "compartment--1-0",
+            "compartment--1-1",
+            "compartment--1-2",
+            "compartment-1-0",
+            "compartment-1-1",
+            "compartment-1-2",
+            "ladder-base",
+            "ladder-tip-platform",
+            "rear-tiller-cab"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "vehicle-stabilization-strut",
+      "kit": "fire-rescue",
+      "title": "Vehicle stabilization strut",
+      "description": "Adjustable rescue support strut with foot plates, telescoping sections and ratchet. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/vehicle-stabilization-strut.kcad.ts",
+      "sourceSha256": "f4a8ac8681111d102ea09ca9fa4aba5cfa38001afebacf854a3dfcb1eb0d797b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.305,
+          0.904,
+          0.25
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "base-plate",
+            "inner-strut",
+            "top-pad"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "outer-strut",
+            "ratchet-handle"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "wildland-brush-truck",
+      "kit": "fire-rescue",
+      "title": "Wildland brush truck",
+      "description": "Pickup-based brush response vehicle with skid tank, roll bar and roof lights. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/wildland-brush-truck.kcad.ts",
+      "sourceSha256": "83a26428ab8623275afe50ff135ad7b715e96f229f6d3e913a97429b8b66b146",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 704,
+        "sizeM": [
+          1.205,
+          0.866,
+          0.5998
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "utility-deck",
+            "hose-reel",
+            "brush-guard"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "skid-water-tank"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "wildland-fire-engine",
+      "kit": "fire-rescue",
+      "title": "Wildland fire engine",
+      "description": "Off-road fire engine with compact tank, hose reels, brush guard and four-wheel drive stance. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/wildland-fire-engine.kcad.ts",
+      "sourceSha256": "27d9512de93946bcd0f9a7825f7fb449a08349b00337269673b6535b4aac1b63",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 880,
+        "sizeM": [
+          1.42775,
+          0.908,
+          0.7364
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "frame",
+            "windshield",
+            "side-window--1",
+            "side-window-1",
+            "cab-roof",
+            "apparatus-body",
+            "compartment-handle--1-0",
+            "compartment-handle--1-1",
+            "compartment-handle--1-2",
+            "compartment-handle-1-0",
+            "compartment-handle-1-1",
+            "compartment-handle-1-2"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "road-wheel-0--1",
+          "color": "#30363b",
+          "parts": [
+            "road-wheel-0--1",
+            "road-wheel-0-1",
+            "road-wheel-1--1",
+            "road-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "road-wheel-0--1-hub--1",
+            "road-wheel-0--1-hub-1",
+            "road-wheel-0-1-hub--1",
+            "road-wheel-0-1-hub-1",
+            "road-wheel-1--1-hub--1",
+            "road-wheel-1--1-hub-1",
+            "road-wheel-1-1-hub--1",
+            "road-wheel-1-1-hub-1",
+            "crew-cab",
+            "front-bumper",
+            "warning-lightbar",
+            "compartment--1-0",
+            "compartment--1-1",
+            "compartment--1-2",
+            "compartment-1-0",
+            "compartment-1-1",
+            "compartment-1-2",
+            "high-clearance-guard",
+            "hose-drum--1",
+            "hose-drum-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "wildland-fire-helmet",
+      "kit": "fire-rescue",
+      "title": "Wildland fire helmet",
+      "description": "Lightweight field helmet with broad brim, shell ridge and chin strap. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire rescue",
+        "fire service",
+        "emergency scene",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "fire-rescue",
+        "fireground",
+        "emergency-scene",
+        "training-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-rescue/wildland-fire-helmet.kcad.ts",
+      "sourceSha256": "2d000f41fa545eff8ef2c058c088b519b15d20cbe4c1949ea6a4550064390e8f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d74735",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.47,
+          0.295,
+          0.47
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d74735",
+          "parts": [
+            "helmet-brim",
+            "front-shield",
+            "ear-flap--1",
+            "ear-flap-1",
+            "rear-neck-shroud"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "helmet-shell",
+            "face-shield",
+            "chin-strap--1",
+            "chin-strap-1"
+          ],
+          "param": "body"
         }
       ]
     },
