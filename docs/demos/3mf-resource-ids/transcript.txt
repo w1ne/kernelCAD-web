@@ -1,0 +1,15 @@
+$ node --import tsx docs/demos/3mf-resource-ids/run.ts
+Local SDK validation replay; not deployed/slicer/hardware acceptance
+INPUT  generic 10 x 10 x 10 mm cube; injected triangle mesh
+INPUT  8 vertices, 12 triangles; color #FF0000FF
+MODE   format=3mf; printUnit=mm; arrange=none; slicer=generic
+WRITE  generic-cube.3mf (1243 bytes)
+XML    <basematerials id="2">
+XML    <object id="1" pid="2" pindex="0">
+XML    <item objectid="1" />
+PASS   resource IDs are unique: 2, 1
+PASS   object material and build references resolve
+PASS   all vertex coordinates and triangle indices unchanged
+PASS   18 edges: two opposite uses each; closed mesh
+PASS   millimeter units and #FF0000FF color preserved
+RESULT local exporter validation passed
