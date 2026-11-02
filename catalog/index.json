@@ -318,6 +318,53 @@
       ]
     },
     {
+      "id": "medical",
+      "title": "Medical",
+      "description": "Original low-poly clinic, hospital, first-aid and laboratory props with editable colors, authored in millimetres and centred on the floor plane.",
+      "assets": [
+        "adhesive-bandage-box",
+        "bandage-roll",
+        "bedside-cabinet",
+        "blood-collection-tube",
+        "blood-pressure-monitor",
+        "centrifuge",
+        "defibrillator",
+        "diagnostic-monitor",
+        "digital-thermometer",
+        "erlenmeyer-flask",
+        "exam-table",
+        "examination-light",
+        "first-aid-kit",
+        "forceps",
+        "forearm-crutches",
+        "gauze-pads",
+        "hospital-bed",
+        "instrument-trolley",
+        "iv-stand",
+        "lab-incubator",
+        "medical-cart",
+        "microscope",
+        "nebulizer",
+        "otoscope",
+        "oxygen-cylinder",
+        "petri-dish",
+        "pill-blister-pack",
+        "pill-bottle",
+        "pulse-oximeter",
+        "reflex-hammer",
+        "sharps-container",
+        "specimen-cup",
+        "specimen-tube-rack",
+        "stethoscope",
+        "surgical-scissors",
+        "syringe",
+        "tongue-depressor-pack",
+        "walker-frame",
+        "walking-cane",
+        "wheelchair"
+      ]
+    },
+    {
       "id": "nature",
       "title": "Nature",
       "description": "Low-poly trees, rocks, plants and ground pieces at real-world scale, flat-shaded on one palette material.",
@@ -37437,6 +37484,3385 @@
             "flame-core"
           ],
           "param": "core"
+        }
+      ]
+    },
+    {
+      "id": "adhesive-bandage-box",
+      "kit": "medical",
+      "title": "Adhesive bandage box",
+      "description": "Small first-aid box with simple cross mark and an individual dressing shape for clinic and emergency scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "adhesive bandage box",
+        "adhesive bandage",
+        "bandage box",
+        "first aid",
+        "medical supplies",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/adhesive-bandage-box.kcad.ts",
+      "sourceSha256": "d8b6e0c1df78017b9ba0e8e031637359addf79155d3d32d204cf8c9f639e38b3",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#f4f0e6",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c8403a",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.15,
+          0.048,
+          0.1235
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#f4f0e6",
+          "parts": [
+            "carton",
+            "pad"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#c8403a",
+          "parts": [
+            "cross-vertical",
+            "cross-horizontal",
+            "dressing"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "bandage-roll",
+      "kit": "medical",
+      "title": "Bandage roll",
+      "description": "Rolled gauze bandage with a hollow core and wrapped end strip for first-aid or clinic scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "bandage roll",
+        "gauze roll",
+        "first aid",
+        "medical supplies",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/bandage-roll.kcad.ts",
+      "sourceSha256": "2e7a096b41673d34b53880e201d86cd0f6a53497ba5731f284a8ac051150ee87",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e8e1cf",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#bfa77b",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          0.056,
+          0.035,
+          0.056
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e8e1cf",
+          "parts": [
+            "roll"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#bfa77b",
+          "parts": [
+            "wrap-end",
+            "inner-core"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "bedside-cabinet",
+      "kit": "medical",
+      "title": "Bedside cabinet",
+      "description": "Compact bedside cabinet with two drawer fronts, small pulls and a lower plinth for hospital room scenes.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "bedside cabinet",
+        "hospital furniture",
+        "nightstand",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/bedside-cabinet.kcad.ts",
+      "sourceSha256": "7bc7e01358eb90c147d15ec7bc3e867cc47193e7f3c17322a87ce257cb1f5306",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e8ecee",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#5c7482",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.38,
+          0.44,
+          0.331
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e8ecee",
+          "parts": [
+            "cabinet-body",
+            "drawer-300",
+            "drawer-120"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#5c7482",
+          "parts": [
+            "top",
+            "pull-300",
+            "pull-120",
+            "plinth"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "blood-collection-tube",
+      "kit": "medical",
+      "title": "Blood collection tube",
+      "description": "Single low-poly blood collection tube with colored cap and sample barrel for diagnostic laboratory scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "blood collection tube",
+        "vacutainer",
+        "lab sample",
+        "medical",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/blood-collection-tube.kcad.ts",
+      "sourceSha256": "b4abb10f10391cfdb869539eef201458d8b9146ec3f53bb0b723020b2549978a",
+      "triangleBudget": 240,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#d7e4e4",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#855b9a",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.026,
+          0.112,
+          0.026
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#d7e4e4",
+          "parts": [
+            "tube",
+            "cap-ridge"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#855b9a",
+          "parts": [
+            "cap",
+            "label-band"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "blood-pressure-monitor",
+      "kit": "medical",
+      "title": "Blood pressure monitor",
+      "description": "Portable blood pressure monitor with digital readout, control buttons, attached cuff and connecting tube for clinic scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "blood pressure monitor",
+        "sphygmomanometer",
+        "cuff",
+        "healthcare",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/blood-pressure-monitor.kcad.ts",
+      "sourceSha256": "491edf8da44a8b5b9027c40229d77c7862a20751fcc4384de99c26fba385f8ff",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e9eef0",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#397c86",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.191094,
+          0.096,
+          0.217
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e9eef0",
+          "parts": [
+            "monitor",
+            "button--34",
+            "button-0",
+            "button-34",
+            "tube"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#397c86",
+          "parts": [
+            "foot-left",
+            "foot-right",
+            "screen",
+            "cuff"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "centrifuge",
+      "kit": "medical",
+      "title": "Laboratory centrifuge",
+      "description": "Compact bench-top centrifuge with lidded rotor housing, simple control panel and feet for laboratory scenes.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "centrifuge",
+        "lab equipment",
+        "sample processing",
+        "science",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/centrifuge.kcad.ts",
+      "sourceSha256": "f7a2a1cbd1a7c763c10405c3083733fa0696c87167462803c838fe6898501596",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#dfe5e6",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#347c84",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          0.19,
+          0.133,
+          0.195
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#dfe5e6",
+          "parts": [
+            "base",
+            "rotor-hub",
+            "display",
+            "button--34",
+            "button-0",
+            "button-34"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#347c84",
+          "parts": [
+            "lid",
+            "panel",
+            "foot--70",
+            "foot-70"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "defibrillator",
+      "kit": "medical",
+      "title": "Automated defibrillator",
+      "description": "Portable AED case with carry handle, simple screen, control buttons and two pad shapes for emergency response scenes.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "defibrillator",
+        "aed",
+        "emergency equipment",
+        "medical",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/defibrillator.kcad.ts",
+      "sourceSha256": "638da0b4533825655ece1cf2d0ff646c60b081e2ace072365fc32bdc3c41fd0a",
+      "triangleBudget": 450,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e9ecec",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d84b42",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.23,
+          0.247,
+          0.214
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e9ecec",
+          "parts": [
+            "case"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#d84b42",
+          "parts": [
+            "handle-left",
+            "handle-right",
+            "handle-grip",
+            "screen",
+            "button",
+            "pad-left",
+            "pad-right"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "diagnostic-monitor",
+      "kit": "medical",
+      "title": "Diagnostic monitor",
+      "description": "Freestanding patient monitor with display, control panel, upright support and broad base for clinic and ward scenes.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "diagnostic monitor",
+        "patient monitor",
+        "hospital equipment",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/diagnostic-monitor.kcad.ts",
+      "sourceSha256": "916c417f8183a08c5174297a0fd49a7d8775e5500cfe44f69359092927a06e18",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#4d5a62",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#39a3a5",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.21,
+          0.279,
+          0.12
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#4d5a62",
+          "parts": [
+            "base",
+            "bezel",
+            "control-strip"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#39a3a5",
+          "parts": [
+            "stem",
+            "screen",
+            "button--52",
+            "button-0",
+            "button-52"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "digital-thermometer",
+      "kit": "medical",
+      "title": "Digital thermometer",
+      "description": "Slim digital thermometer with tapered probe, small display and cap detail for first-aid and clinic scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "digital thermometer",
+        "temperature",
+        "medical tool",
+        "first aid",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/digital-thermometer.kcad.ts",
+      "sourceSha256": "b4c21fd227993721215d5e59c6b4fe7295cd6956e124c4b0bb50c61fa26d6927",
+      "triangleBudget": 240,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e4e9eb",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#4d9ca0",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.022,
+          0.138,
+          0.024
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e4e9eb",
+          "parts": [
+            "body",
+            "button"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#4d9ca0",
+          "parts": [
+            "probe",
+            "display",
+            "end-cap"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "erlenmeyer-flask",
+      "kit": "medical",
+      "title": "Erlenmeyer flask",
+      "description": "Low-poly Erlenmeyer flask built from stepped conical vessel bands and a narrow neck for laboratory scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "erlenmeyer flask",
+        "laboratory glassware",
+        "science",
+        "beaker",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/erlenmeyer-flask.kcad.ts",
+      "sourceSha256": "8d6dd164aba3caaca9e626df7e58bc9c6ddba91f561c55a1eab6049adb463f8a",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#b8d6d1",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#4b8790",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.084,
+          0.119,
+          0.084
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#b8d6d1",
+          "parts": [
+            "lower-body",
+            "shoulder",
+            "upper-neck"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#4b8790",
+          "parts": [
+            "rim",
+            "liquid-band"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "exam-table",
+      "kit": "medical",
+      "title": "Examination table",
+      "description": "Low-poly examination table with padded top, adjustable-looking base and paper roll support for clinic scenes.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "exam table",
+        "clinic furniture",
+        "medical bed",
+        "treatment room",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/exam-table.kcad.ts",
+      "sourceSha256": "88dd0adbbb26a6dce49337a12e8c761d94be800b86ac9157d6872f023cb62171",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#edf0f2",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#2d9b91",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.66,
+          0.705,
+          0.245
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#edf0f2",
+          "parts": [
+            "padded-top",
+            "head-cushion"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#2d9b91",
+          "parts": [
+            "underframe",
+            "leg--235--62",
+            "leg--235-62",
+            "leg-235--62",
+            "leg-235-62",
+            "paper-bar"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "examination-light",
+      "kit": "medical",
+      "title": "Examination light",
+      "description": "Clinic examination lamp with weighted base, tall support column, offset arm and broad low-poly lamp head.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "examination light",
+        "medical lamp",
+        "clinic equipment",
+        "treatment room",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/examination-light.kcad.ts",
+      "sourceSha256": "7251b2a058f2175f289786141b716bca8c5fac6dd38808a05ca3fe2387303256",
+      "triangleBudget": 450,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e5e9ea",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#6b8f98",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 368,
+        "sizeM": [
+          0.472,
+          0.879,
+          0.242
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e5e9ea",
+          "parts": [
+            "base",
+            "base-leg-x--1",
+            "base-leg-y--1",
+            "base-leg-x-1",
+            "base-leg-y-1",
+            "column",
+            "lamp-neck",
+            "light-face"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#6b8f98",
+          "parts": [
+            "caster--1",
+            "caster-1",
+            "arm",
+            "head"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "first-aid-kit",
+      "kit": "medical",
+      "title": "First aid kit",
+      "description": "Portable first-aid case with carry handle, front latches and raised medical cross for emergency and clinic scenes.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "first aid kit",
+        "medical case",
+        "emergency kit",
+        "healthcare",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/first-aid-kit.kcad.ts",
+      "sourceSha256": "bc34bc9d141569a0670cb742cdc4b475d0102cceb3fda8161bc3e39ed5ad5e52",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e8ecee",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c8403a",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.194,
+          0.134,
+          0.13
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e8ecee",
+          "parts": [
+            "case",
+            "handle-left",
+            "handle-right",
+            "handle-grip"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#c8403a",
+          "parts": [
+            "lid",
+            "cross-vertical",
+            "cross-horizontal",
+            "latch-left",
+            "latch-right"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "forceps",
+      "kit": "medical",
+      "title": "Forceps",
+      "description": "Long low-poly forceps with tapered jaws and broad finger grips for a surgical tray or clinic instrument set.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "forceps",
+        "tweezers",
+        "surgical tool",
+        "medical instrument",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/forceps.kcad.ts",
+      "sourceSha256": "b15739c5750befd8eb45a3d64d41b506df7158ca63f66581623bb794b643d20e",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#a5afb2",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#56646a",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 68,
+        "sizeM": [
+          0.062,
+          0.01,
+          0.195
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#a5afb2",
+          "parts": [
+            "left-arm",
+            "right-arm"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#56646a",
+          "parts": [
+            "grip-left",
+            "grip-right",
+            "jaw"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "forearm-crutches",
+      "kit": "medical",
+      "title": "Forearm crutches",
+      "description": "Pair of low-poly forearm crutches with cuffs, hand grips, narrow shafts and rubber tips for medical recovery scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "forearm crutches",
+        "crutches",
+        "forearm crutch",
+        "mobility aid",
+        "recovery",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/forearm-crutches.kcad.ts",
+      "sourceSha256": "1cfb2654da329d70e5c3bd43b770f9f69469354262fbfd0a9e20588c36a0d086",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#b8c3c8",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#2d858d",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.24,
+          0.882,
+          0.088
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#b8c3c8",
+          "parts": [
+            "shaft--1",
+            "shaft-1"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#2d858d",
+          "parts": [
+            "cuff--1",
+            "grip--1",
+            "tip--1",
+            "cuff-1",
+            "grip-1",
+            "tip-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "gauze-pads",
+      "kit": "medical",
+      "title": "Gauze pads",
+      "description": "Stack of folded gauze pads with layered edges for a first-aid cabinet or clinic supply tray.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "gauze pads",
+        "dressing",
+        "first aid",
+        "medical supplies",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/gauze-pads.kcad.ts",
+      "sourceSha256": "633bc6ce5099e89d3b96d6fbdf83d1d704b0a9d3d18403125a6b8c089ee3424d",
+      "triangleBudget": 240,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#f1eee7",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c8d0d1",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.088,
+          0.035,
+          0.089
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#f1eee7",
+          "parts": [
+            "pad-0",
+            "pad-1",
+            "pad-2",
+            "pad-3"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#c8d0d1",
+          "parts": [
+            "woven-center",
+            "fold-band"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "hospital-bed",
+      "kit": "medical",
+      "title": "Hospital bed",
+      "description": "Low-poly hospital bed with raised headboard, side rails, mattress, undercarriage and caster wheels for ward scenes.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "hospital bed",
+        "ward",
+        "clinic furniture",
+        "patient room",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/hospital-bed.kcad.ts",
+      "sourceSha256": "96c25f78b69c4d944036c173e60a8bb0d8c1a27db32f4854e4d3752362bc1697",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#eef1f2",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#4c9c9b",
+          "label": "Accent"
+        },
+        {
+          "name": "rails",
+          "type": "choice",
+          "default": "2",
+          "label": "Side rails",
+          "choices": [
+            "1",
+            "2"
+          ]
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 320,
+        "sizeM": [
+          0.76,
+          0.685,
+          0.25
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#eef1f2",
+          "parts": [
+            "mattress",
+            "rail--1-0",
+            "rail--1-1",
+            "rail-1-0",
+            "rail-1-1"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#4c9c9b",
+          "parts": [
+            "frame",
+            "headboard",
+            "footboard",
+            "support--300--96",
+            "caster--300--96",
+            "support--300-96",
+            "caster--300-96",
+            "support-300--96",
+            "caster-300--96",
+            "support-300-96",
+            "caster-300-96"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "instrument-trolley",
+      "kit": "medical",
+      "title": "Instrument trolley",
+      "description": "Narrow instrument trolley with a stainless-looking top tray, lower utility shelf, push handle and casters for clinic scenes.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "instrument trolley",
+        "medical cart",
+        "hospital tray",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/instrument-trolley.kcad.ts",
+      "sourceSha256": "8d0a277de0ee499860172989244cf65e96928fa8c1c2caa1d72023c27fc025cd",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#eef1f2",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#71838b",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.4,
+          0.72,
+          0.28
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#eef1f2",
+          "parts": [
+            "lower-shelf",
+            "top-tray",
+            "wheel--160",
+            "wheel-160"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#71838b",
+          "parts": [
+            "tray-lip",
+            "upright--160",
+            "upright-160",
+            "handle"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "iv-stand",
+      "kit": "medical",
+      "title": "IV stand",
+      "description": "Mobile IV stand with weighted star base, upright pole, hanging hooks and a simple fluid bag for ward scenes.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "iv stand",
+        "infusion pole",
+        "hospital equipment",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/iv-stand.kcad.ts",
+      "sourceSha256": "52a6f2e69fa59df7970bc5d6bd35a22c640b8970302ab7c39f65d376211263a5",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#b6c0c4",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#5da7ad",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 292,
+        "sizeM": [
+          0.196,
+          1.196,
+          0.196
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#b6c0c4",
+          "parts": [
+            "base-hub",
+            "base-leg-x--1",
+            "base-leg-y--1",
+            "base-leg-x-1",
+            "base-leg-y-1",
+            "pole",
+            "bag"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#5da7ad",
+          "parts": [
+            "caster--1",
+            "caster-1",
+            "hook-bar",
+            "bag-port"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "lab-incubator",
+      "kit": "medical",
+      "title": "Laboratory incubator",
+      "description": "Small laboratory incubator with square chamber door, viewing panel, top controls and short feet for bench scenes.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "lab incubator",
+        "laboratory equipment",
+        "science",
+        "medical lab",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/lab-incubator.kcad.ts",
+      "sourceSha256": "e93e0f2475f5908c3b0ad6e5ba1c7a61ce93b20a39998f05aa9e5527bbff8abe",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e6eaeb",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#4c8f93",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.24,
+          0.317,
+          0.209
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e6eaeb",
+          "parts": [
+            "cabinet",
+            "window",
+            "handle",
+            "screen"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#4c8f93",
+          "parts": [
+            "door",
+            "control-panel",
+            "foot--76",
+            "foot-76"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "medical-cart",
+      "kit": "medical",
+      "title": "Medical cart",
+      "description": "Rolling medical cart with two shelves, corner posts, raised tray lips and four low-poly casters for treatment scenes.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "medical cart",
+        "clinic trolley",
+        "hospital equipment",
+        "ward",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/medical-cart.kcad.ts",
+      "sourceSha256": "06da28a98b01f687a0296d8b362028b7e29ff92f367fa5ffb7221914fc7940a2",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e9eef0",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#3c7f87",
+          "label": "Accent"
+        },
+        {
+          "name": "shelves",
+          "type": "choice",
+          "default": "2",
+          "label": "Shelf count",
+          "choices": [
+            "1",
+            "2"
+          ]
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 400,
+        "sizeM": [
+          0.42,
+          0.73,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e9eef0",
+          "parts": [
+            "shelf-0",
+            "shelf-1",
+            "wheel--185--125",
+            "wheel--185-125",
+            "wheel-185--125",
+            "wheel-185-125"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#3c7f87",
+          "parts": [
+            "lip-0",
+            "lip-1",
+            "post--185--125",
+            "post--185-125",
+            "post-185--125",
+            "post-185-125"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "microscope",
+      "kit": "medical",
+      "title": "Microscope",
+      "description": "Compound microscope with base, upright arm, stage, objective cluster and angled eyepiece for a low-poly lab scene.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "microscope",
+        "laboratory equipment",
+        "science",
+        "diagnostics",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/microscope.kcad.ts",
+      "sourceSha256": "b68b447b3dae160087794d7cd031bbd711fbe9769e47cc485945cc8bcc7a8411",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#56636a",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#8bb5b4",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 292,
+        "sizeM": [
+          0.15,
+          0.405,
+          0.117
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#56636a",
+          "parts": [
+            "base",
+            "foot",
+            "stage",
+            "tube"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#8bb5b4",
+          "parts": [
+            "arm",
+            "stage-clip-left",
+            "stage-clip-right",
+            "eyepiece",
+            "objective--24",
+            "objective-0",
+            "objective-24"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "nebulizer",
+      "kit": "medical",
+      "title": "Nebulizer",
+      "description": "Compact tabletop nebulizer with compressor housing, airflow slots, control knob and medicine cup for respiratory care scenes.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "nebulizer",
+        "respiratory care",
+        "medical equipment",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/nebulizer.kcad.ts",
+      "sourceSha256": "ab8e1418f5e6606d3ef74185de643f36c671a94b99379c92fddb967a7a715aa7",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e6eaeb",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#56a0a5",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          0.196,
+          0.165,
+          0.167
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e6eaeb",
+          "parts": [
+            "compressor",
+            "medicine-cup"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#56a0a5",
+          "parts": [
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "knob",
+            "cup-base",
+            "cup-cap",
+            "connector"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "otoscope",
+      "kit": "medical",
+      "title": "Otoscope",
+      "description": "Handheld otoscope with a textured grip, narrow tapered head and removable-looking ear speculum for clinic scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "otoscope",
+        "ear exam tool",
+        "medical instrument",
+        "doctor",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/otoscope.kcad.ts",
+      "sourceSha256": "17f9fa9b8222b8b01137447d2a6f4e03790782cbf6e2af490486fd508d7beaa0",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#50636b",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e9bc4b",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.05,
+          0.19,
+          0.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#50636b",
+          "parts": [
+            "handle",
+            "head",
+            "lens-rim"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#e9bc4b",
+          "parts": [
+            "grip-band",
+            "speculum"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "oxygen-cylinder",
+      "kit": "medical",
+      "title": "Oxygen cylinder",
+      "description": "Portable oxygen cylinder with rounded-looking stepped body, valve neck and protective top guard for emergency scenes.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "oxygen cylinder",
+        "medical gas",
+        "hospital prop",
+        "emergency",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/oxygen-cylinder.kcad.ts",
+      "sourceSha256": "068c307d52d58698fdf5002d3ecbe93ab3402b3dc3cfcd720a779bd21fb3ebc8",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#7c9299",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d35b54",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.156,
+          0.53,
+          0.156
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#7c9299",
+          "parts": [
+            "tank",
+            "neck",
+            "gauge"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#d35b54",
+          "parts": [
+            "base-ring",
+            "valve",
+            "outlet"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "petri-dish",
+      "kit": "medical",
+      "title": "Petri dish",
+      "description": "Shallow low-poly Petri dish with separate-looking base and lid rims for biology and laboratory bench scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "petri dish",
+        "culture dish",
+        "laboratory",
+        "biology",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/petri-dish.kcad.ts",
+      "sourceSha256": "e3daae7cfdc05182d4313c3ca13e3ef94938a277015b34e0b0dbc3cb752874a6",
+      "triangleBudget": 240,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e1e8e7",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#9fc6c0",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.092,
+          0.021,
+          0.092
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e1e8e7",
+          "parts": [
+            "base",
+            "lid"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#9fc6c0",
+          "parts": [
+            "base-rim",
+            "lid-lip"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "pill-blister-pack",
+      "kit": "medical",
+      "title": "Pill blister pack",
+      "description": "Flat blister pack with a foil backing and repeated raised tablet pockets for medication scene dressing.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "pill blister pack",
+        "medicine",
+        "pharmacy",
+        "tablets",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/pill-blister-pack.kcad.ts",
+      "sourceSha256": "6811a7efca7044af0b68b90d3d6729204b268be0ad59c20c1e78e4ee0cb35e37",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#bfc9cd",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d6b95f",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.136,
+          0.019,
+          0.084
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#bfc9cd",
+          "parts": [
+            "foil-card"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#d6b95f",
+          "parts": [
+            "tablet--42--24",
+            "tablet--42-24",
+            "tablet-0--24",
+            "tablet-0-24",
+            "tablet-42--24",
+            "tablet-42-24",
+            "edge-band"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "pill-bottle",
+      "kit": "medical",
+      "title": "Pill bottle",
+      "description": "Small medicine bottle with screw cap, label band and broad stable base for pharmacy or bathroom props.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "pill bottle",
+        "medicine bottle",
+        "pharmacy",
+        "healthcare",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/pill-bottle.kcad.ts",
+      "sourceSha256": "5eb14042427b6cbef2da8b345f6427658b6f445471e0712f58113ac1f526e425",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#f0f2ed",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d8bd65",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.056,
+          0.12,
+          0.056
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#f0f2ed",
+          "parts": [
+            "bottle",
+            "neck",
+            "cap-rim"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#d8bd65",
+          "parts": [
+            "label",
+            "cap"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "pulse-oximeter",
+      "kit": "medical",
+      "title": "Pulse oximeter",
+      "description": "Compact fingertip pulse oximeter with hinged clamp, display panel and simple control button for first-aid scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "pulse oximeter",
+        "finger monitor",
+        "medical device",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/pulse-oximeter.kcad.ts",
+      "sourceSha256": "1cd9b6d8dc168624c5c094a40ddabb0692b93c93f80b36b5d603d3e22959c554",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#eef2f2",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#399da1",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.092157,
+          0.069907,
+          0.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#eef2f2",
+          "parts": [
+            "lower-jaw",
+            "upper-jaw",
+            "button"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#399da1",
+          "parts": [
+            "hinge",
+            "display"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "reflex-hammer",
+      "kit": "medical",
+      "title": "Reflex hammer",
+      "description": "Compact neurological reflex hammer with long handle and soft double-ended head for examination scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "reflex hammer",
+        "neurological exam",
+        "doctor tool",
+        "medical instrument",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/reflex-hammer.kcad.ts",
+      "sourceSha256": "0bcdfad000471c4c1eedf53bd604d8c86748119a4bdac3b57829d0497bfe7082",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#a7b0b3",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#596a70",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.112,
+          0.17,
+          0.028
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#a7b0b3",
+          "parts": [
+            "handle",
+            "tip-left",
+            "tip-right"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#596a70",
+          "parts": [
+            "head-bar",
+            "collar"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "sharps-container",
+      "kit": "medical",
+      "title": "Sharps container",
+      "description": "Rigid sharps disposal container with broad base, stepped lid and narrow drop slot for a clinic or laboratory scene.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "sharps container",
+        "medical waste",
+        "needle disposal",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/sharps-container.kcad.ts",
+      "sourceSha256": "a49f3a11593ddb8499e2ef770c54cffff62fca467f4d92b387806365dd4e0bb5",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#f1b944",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c9433d",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.126,
+          0.171,
+          0.133
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#f1b944",
+          "parts": [
+            "base",
+            "lid"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#c9433d",
+          "parts": [
+            "shoulder",
+            "slot",
+            "handle-tab"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "specimen-cup",
+      "kit": "medical",
+      "title": "Specimen cup",
+      "description": "Small specimen cup with screw lid, wide rim and tapered-looking base for a clinic or laboratory sample prop.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "specimen cup",
+        "sample container",
+        "laboratory",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/specimen-cup.kcad.ts",
+      "sourceSha256": "0d5769b8e6de573332314f2d5e9e215e1337382cee94782deacef88cdf633f8e",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e8eceb",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e6ba54",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.064,
+          0.074,
+          0.064
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e8eceb",
+          "parts": [
+            "cup",
+            "lid-rim"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#e6ba54",
+          "parts": [
+            "base-foot",
+            "lid"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "specimen-tube-rack",
+      "kit": "medical",
+      "title": "Specimen tube rack",
+      "description": "Bench-top tube rack with aligned sample tubes and contrasting caps for laboratory and blood-test scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "specimen tube rack",
+        "test tube rack",
+        "laboratory",
+        "sample tubes",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/specimen-tube-rack.kcad.ts",
+      "sourceSha256": "75f2936c1daaf6b4aea858d773c8e3483d7cd16077d109b7ca30b40c0fb7dbcd",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#d7dedf",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#508c98",
+          "label": "Accent"
+        },
+        {
+          "name": "tubeCount",
+          "type": "choice",
+          "default": "4",
+          "label": "Tube count",
+          "choices": [
+            "3",
+            "4",
+            "5"
+          ]
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 376,
+        "sizeM": [
+          0.19,
+          0.092,
+          0.096
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#d7dedf",
+          "parts": [
+            "base",
+            "tube-0",
+            "tube-1",
+            "tube-2",
+            "tube-3"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#508c98",
+          "parts": [
+            "top-rail",
+            "cap-0",
+            "cap-1",
+            "cap-2",
+            "cap-3"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "stethoscope",
+      "kit": "medical",
+      "title": "Stethoscope",
+      "description": "Low-poly stethoscope with flexible Y-shaped tubing, paired earpieces and round chestpiece for a doctor or nurse prop.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "stethoscope",
+        "doctor tool",
+        "medical instrument",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/stethoscope.kcad.ts",
+      "sourceSha256": "e8808c7a06b5c4f90f1d7ae2eb9b0ee87894e4da183153fcf9013512c2b5ca46",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#384b56",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#bfc8cb",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.156,
+          0.034,
+          0.212
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#384b56",
+          "parts": [
+            "tubing",
+            "diaphragm"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#bfc8cb",
+          "parts": [
+            "earpiece-left",
+            "earpiece-right",
+            "chestpiece"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "surgical-scissors",
+      "kit": "medical",
+      "title": "Surgical scissors",
+      "description": "Low-poly surgical scissors with two finger loops, central pivot and long straight blades for medical kit scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "surgical scissors",
+        "medical tool",
+        "instrument",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/surgical-scissors.kcad.ts",
+      "sourceSha256": "e9b158c9533af35a1a051b075941e2dcdcca997f6aef7580611f57b5ec2eb970",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#99a4a8",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#58656a",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.07,
+          0.014,
+          0.12
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#99a4a8",
+          "parts": [
+            "finger-loop-left",
+            "finger-loop-right"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#58656a",
+          "parts": [
+            "blade-left",
+            "blade-right",
+            "pivot"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "syringe",
+      "kit": "medical",
+      "title": "Syringe",
+      "description": "Disposable syringe prop with graduated barrel bands, plunger thumb pad and fine needle, built as simple low-poly geometry.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "syringe",
+        "injection",
+        "medical supply",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/syringe.kcad.ts",
+      "sourceSha256": "1ee46115bbb7fbffc97a2a7a573b2aade982409eaa83617a75d4adab61885504",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e9edef",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#7eacb0",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.05,
+          0.201,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e9edef",
+          "parts": [
+            "barrel",
+            "plunger-rod",
+            "needle"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#7eacb0",
+          "parts": [
+            "finger-flange",
+            "thumb-pad",
+            "needle-hub",
+            "mark-50",
+            "mark-76",
+            "mark-102",
+            "mark-128"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "tongue-depressor-pack",
+      "kit": "medical",
+      "title": "Tongue depressor pack",
+      "description": "Neatly stacked low-poly tongue depressors in a simple paper sleeve for examination room scenes.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "tongue depressor pack",
+        "tongue depressor",
+        "medical supplies",
+        "clinic",
+        "wooden spatula",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/tongue-depressor-pack.kcad.ts",
+      "sourceSha256": "6bc58f90b8e3d2fa9edb4b699c55d036d6618771f5336f931bfb097863325736",
+      "triangleBudget": 240,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#d9c29a",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#f1eee4",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.14,
+          0.0365,
+          0.041
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#f1eee4",
+          "parts": [
+            "sleeve"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "shell",
+          "color": "#d9c29a",
+          "parts": [
+            "depressor-0",
+            "depressor-1",
+            "depressor-2",
+            "depressor-3",
+            "depressor-4",
+            "end-band"
+          ],
+          "param": "shell"
+        }
+      ]
+    },
+    {
+      "id": "walker-frame",
+      "kit": "medical",
+      "title": "Walker frame",
+      "description": "Lightweight walking frame with twin hand grips, four legs and front glides for a clinic or recovery scene.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "walker frame",
+        "walker",
+        "walking frame",
+        "mobility aid",
+        "clinic",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/walker-frame.kcad.ts",
+      "sourceSha256": "20b9fdaec285075aa2c2636f811d57ca1e6017e51f195095d037c6389b791a7d",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#dce2e4",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#4a8991",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          0.49,
+          1.022,
+          0.432
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#dce2e4",
+          "parts": [
+            "side-rail--1",
+            "rear-leg--1",
+            "front-leg--1",
+            "side-rail-1",
+            "rear-leg-1",
+            "front-leg-1",
+            "top-bar"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#4a8991",
+          "parts": [
+            "grip--1",
+            "glide--1",
+            "grip-1",
+            "glide-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "walking-cane",
+      "kit": "medical",
+      "title": "Walking cane",
+      "description": "Simple walking cane with a long shaft, hooked handle and rubber foot for a medical or recovery scene.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "walking cane",
+        "mobility aid",
+        "cane",
+        "recovery",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/walking-cane.kcad.ts",
+      "sourceSha256": "0d7bc61dada4c4739b68e532d33a48b9e1896244cf1ede2caa7a870e04a674d5",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#8a6748",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#2a555d",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.061,
+          0.823,
+          0.034
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#8a6748",
+          "parts": [
+            "shaft"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#2a555d",
+          "parts": [
+            "handle-stem",
+            "crook",
+            "foot"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "wheelchair",
+      "kit": "medical",
+      "title": "Wheelchair",
+      "description": "Low-poly manual wheelchair with seat, backrest, armrests, footplates, large rear wheels and small front casters.",
+      "category": "vehicle",
+      "origin": "base",
+      "tags": [
+        "wheelchair",
+        "mobility aid",
+        "hospital",
+        "accessibility",
+        "low poly",
+        "medical prop"
+      ],
+      "compat": [
+        "medical",
+        "clinic",
+        "healthcare",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/medical/wheelchair.kcad.ts",
+      "sourceSha256": "3ae7b1aaa4d0215756eaadc5a71006a844f350edc777ae36520fe107c667d80a",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e9edf0",
+          "label": "Shell"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#367e8c",
+          "label": "Accent"
+        }
+      ],
+      "presets": {
+        "clinic": {
+          "shell": "#f1f3f4",
+          "accent": "#2d9893"
+        },
+        "emergency": {
+          "shell": "#ebe8df",
+          "accent": "#c9413b"
+        }
+      },
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          0.427,
+          0.87,
+          0.722
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e9edf0",
+          "parts": [
+            "seat",
+            "backrest",
+            "rear-support--1",
+            "front-caster--1",
+            "foot-hanger--1",
+            "rear-support-1",
+            "front-caster-1",
+            "foot-hanger-1",
+            "cross-frame"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "accent",
+          "color": "#367e8c",
+          "parts": [
+            "arm--1",
+            "arm-support--1",
+            "rear-wheel--1",
+            "footplate--1",
+            "arm-1",
+            "arm-support-1",
+            "rear-wheel-1",
+            "footplate-1"
+          ],
+          "param": "accent"
         }
       ]
     },

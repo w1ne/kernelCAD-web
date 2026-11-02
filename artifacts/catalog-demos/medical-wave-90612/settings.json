@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-02",
+  "assets": 40,
+  "resolution": "1280x720",
+  "frames": 6,
+  "secondsPerFrame": 4,
+  "encoding": "H.264, yuv420p, CRF 25",
+  "previewSource": "catalog/kits/medical/previews/*.png",
+  "catalogSource": "catalog/index.json",
+  "video": "artifacts/catalog-demos/medical-wave-90612/medical-kit.mp4"
+}
