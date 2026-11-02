@@ -149,6 +149,13 @@ const STYLE = `  <style>
     .catalog .grid { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
     .catalog .grid img { width: 100%; height: auto; background: var(--card-stage); border: 1px solid var(--rule); border-radius: 6px; }
     .catalog .grid a { text-decoration: none; font-size: 0.9rem; }
+    .catalog .finder { position: sticky; top: 0; z-index: 2; background: var(--paper, #fff); padding: 0.75rem 0 0.5rem; border-bottom: 1px solid var(--rule); margin-bottom: 0.5rem; }
+    .catalog .finder input { width: 100%; box-sizing: border-box; padding: 0.6rem 0.8rem; font-family: 'Inter', sans-serif; font-size: 1rem; color: var(--ink); background: var(--card-stage); border: 1px solid var(--rule); border-radius: 6px; }
+    .catalog .finder input:focus { outline: 2px solid var(--blueprint); outline-offset: 1px; }
+    .catalog .finder .count { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); }
+    .catalog .finder .hint { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); margin-left: 0.6rem; }
+    .catalog [hidden] { display: none !important; }
+    .catalog .empty { margin: 2rem 0; color: var(--ink-faint); }
     @media (max-width: 720px) { .catalog .hero { grid-template-columns: 1fr; } }
   </style>`;
 
@@ -353,9 +360,9 @@ export function renderHub(index: CatalogIndex): string {
 ${socialTags(HUB_TITLE, description, url, firstImage, 'kernelCAD low-poly asset catalog')}`;
     const kits = index.kits.map((kit) => {
         const cards = kit.assets.map((id) => byKey.get(`${kit.id}/${id}`)).filter((a): a is CatalogAsset => a !== undefined).map((a) =>
-            `          <li><a href="/${assetPath(a)}"><img src="/${assetPath(a)}preview.png" alt="${escapeHtml(previewAlt(a))}" width="512" height="512" loading="lazy" />${escapeHtml(a.title)}</a></li>`,
+            `          <li data-search="${escapeHtml(searchKey(a))}"><a href="/${assetPath(a)}"><img src="/${assetPath(a)}preview.png" alt="${escapeHtml(previewAlt(a))}" width="512" height="512" loading="lazy" />${escapeHtml(a.title)}</a></li>`,
         );
-        return `      <section id="kit-${escapeHtml(kit.id)}">
+        return `      <section id="kit-${escapeHtml(kit.id)}" data-kit>
         <h2>${escapeHtml(kit.title)} <small>(${cards.length})</small></h2>
         <p>${escapeHtml(kit.description)}</p>
         <ul class="grid">
@@ -365,9 +372,50 @@ ${cards.join('\n')}
     });
     const body = `      <h1>Low-poly 3D model catalog</h1>
       <p>${escapeHtml(description)}</p>
-${kits.join('\n')}`;
+${FINDER}
+${kits.join('\n')}
+      <p class="empty" id="catalog-empty" hidden>No model matches that. Try a kit name, or <a href="/catalog/">clear the search</a>.</p>`;
     return document(head, body);
 }
+
+/** Case-folded haystack for the hub search: title, kit id, kit title, category, tags. */
+export function searchKey(a: CatalogAsset): string {
+    return [a.title, a.id, a.kit, a.category, ...(a.tags ?? [])].join(' ').toLowerCase();
+}
+
+const FINDER = `      <div class="finder">
+        <label for="catalog-q" class="crumbs">Search the catalog</label>
+        <input id="catalog-q" type="search" autocomplete="off" spellcheck="false" placeholder="e.g. oak, traffic light, medical…" />
+        <p class="count"><span id="catalog-shown">loading</span><span class="hint">kit names work too</span></p>
+      </div>
+      <script>
+        (function () {
+          var q = document.getElementById('catalog-q');
+          if (!q) return;
+          var items = [].slice.call(document.querySelectorAll('[data-kit] li[data-search]'));
+          var sections = [].slice.call(document.querySelectorAll('[data-kit]'));
+          var shown = document.getElementById('catalog-shown');
+          var empty = document.getElementById('catalog-empty');
+          var total = items.length;
+          function apply() {
+            var t = q.value.trim().toLowerCase();
+            var hits = 0;
+            items.forEach(function (li) {
+              var hit = !t || li.getAttribute('data-search').indexOf(t) !== -1;
+              li.hidden = !hit;
+              if (hit) hits++;
+            });
+            sections.forEach(function (s) {
+              var any = s.querySelector('li[data-search]:not([hidden])');
+              s.hidden = !any;
+            });
+            shown.textContent = t ? hits + ' of ' + total + ' models' : total + ' models';
+            if (empty) empty.hidden = hits !== 0;
+          }
+          q.addEventListener('input', apply);
+          apply();
+        })();
+      </script>`;
 
 /** Same shape as kernelCAD-server site/scripts/build-sitemap.ts renderSitemap. */
 export function renderSitemap(urls: readonly string[]): string {
