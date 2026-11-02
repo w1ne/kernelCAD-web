@@ -22023,7 +22023,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/access-stair-tower.kcad.ts",
-      "sourceSha256": "857ca72c117e0237179ca1750a9d8b658a3b3237916ff4eb54a7f3a7e7b591cc",
+      "sourceSha256": "540c39de3ce6beeefc8001a98c17ddf4197a5380c5efc68035e519dcf687993f",
       "triangleBudget": 600,
       "params": [
         {
@@ -22159,7 +22159,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/agitated-reactor-vessel.kcad.ts",
-      "sourceSha256": "8d13ac2716083ce437c5bdac87241007dacac641a5deafaf84c91eac920ab26a",
+      "sourceSha256": "3093181f5702982647f658ca50c1685f00887d270d6170b8e2fd499b8f30f2e3",
       "triangleBudget": 600,
       "params": [
         {
@@ -22270,7 +22270,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/air-compressor.kcad.ts",
-      "sourceSha256": "365c1d248e65a83d89d3c6b9c87a59890e152823d4052b956c298abc01056527",
+      "sourceSha256": "5d29f813ffe24c04a58a1129cd824e7f1674d2fe1de8f60c40cee5f01f34c1af",
       "triangleBudget": 600,
       "params": [
         {
@@ -22375,7 +22375,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/air-cooled-condenser.kcad.ts",
-      "sourceSha256": "4e0af6bd2855220e1084c9d31ae8869c5ff59b0c77b07a9df7cdbbb7a8cbd3ac",
+      "sourceSha256": "2d849dd7a2ccc32a9074b999e321eee906603870035df882d5273b1dee9c95df",
       "triangleBudget": 600,
       "params": [
         {
@@ -22487,7 +22487,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/air-handling-unit.kcad.ts",
-      "sourceSha256": "f7fbeeb7c018ab8b4d04129ec3f2202b661d3484c0e24c20ba2d67f19e8cd26a",
+      "sourceSha256": "b6b17b17249ee231bcb6a08628d5895daf3678a2ecf4d0ffa8d70fc8f969b722",
       "triangleBudget": 600,
       "params": [
         {
@@ -22594,7 +22594,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/axial-exhaust-fan.kcad.ts",
-      "sourceSha256": "7e9a3fcd6e06ca0d3e44027296c51486ad380ba3a63d43d050f2e015f20f178f",
+      "sourceSha256": "5bde4f5f4c586b5748bcc852356272290502a21e74d090a73fcfce3900cadf97",
       "triangleBudget": 600,
       "params": [
         {
@@ -22703,7 +22703,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cable-reel.kcad.ts",
-      "sourceSha256": "16b9080a744220f53e78f7a6ed039fd42feb020be45b8128910b79e2d212b2b7",
+      "sourceSha256": "4e7e6bb6b0b233fd41e362b3e3f2660b73b1afada5267fcf03a417348cf924b6",
       "triangleBudget": 600,
       "params": [
         {
@@ -22811,7 +22811,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cable-tray-section.kcad.ts",
-      "sourceSha256": "3562ba4b769585e15edb26230cc6557d79d49b1cad81532006ff0f0dd256cc38",
+      "sourceSha256": "9a5d6b7eb920d630f4c0bdb112dc74bc962b5db44ac422ca59bef59f02f9dd1d",
       "triangleBudget": 600,
       "params": [
         {
@@ -22923,7 +22923,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/centrifugal-pump.kcad.ts",
-      "sourceSha256": "797f54794d586b925c6769a662903fb7cf24ceaa4c74f5955d2f2a002e0b1b56",
+      "sourceSha256": "2d055ab6eebd8da8f9e3ab978d2a07dfaa5464c91f1837b78db9e8c0e9573400",
       "triangleBudget": 600,
       "params": [
         {
@@ -23144,7 +23144,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/chiller-unit.kcad.ts",
-      "sourceSha256": "bc504f98a1721f1c034b7d97b68b7885254ed7a3173458f094a8e57f07d883d5",
+      "sourceSha256": "b48bdc89413c028baf997ee06c034960a4785ba30bfc4d81e20e0e1617705cdf",
       "triangleBudget": 600,
       "params": [
         {
@@ -23255,7 +23255,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/conveyor-belt-section.kcad.ts",
-      "sourceSha256": "07362ddfd96fb176e63fb763bc735d8b608345f60cbef4d3ab4129caa5a9ea5d",
+      "sourceSha256": "cab47a4ca31e2a092af28cefad8738f2f3ce1d5eb60c077129fd0183193e3a87",
       "triangleBudget": 600,
       "params": [
         {
@@ -23361,7 +23361,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cooling-tower-cell.kcad.ts",
-      "sourceSha256": "a5144de99713bcdf933221bc1c56823002f1144a0931e8df5595ab1a225e6c83",
+      "sourceSha256": "35fb5b4e61121881882de4a765a74e266a470b004c443f7b074ef94efb69472f",
       "triangleBudget": 600,
       "params": [
         {
@@ -23468,7 +23468,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cooling-tower.kcad.ts",
-      "sourceSha256": "83c25dc7a8ad32c17a233894496db8208a50aad974f6b594085c88ea3a5cb748",
+      "sourceSha256": "f7daa3bebb7c2adeaa8feb90cca031b6d247f74803b3fe23ab5ec84f2ba71cdd",
       "triangleBudget": 600,
       "params": [
         {
@@ -23577,7 +23577,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cooling-water-pump-skid.kcad.ts",
-      "sourceSha256": "7e8842e917bc1e09efaafe7991d58a30ceafbf1a2df3b4fa83c751ee10851bca",
+      "sourceSha256": "001c6b260fee77fb4ee41643ed343ccff2444b53756d4e1dff6a2adf8e7a4e53",
       "triangleBudget": 600,
       "params": [
         {
@@ -23683,7 +23683,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cyclone-separator.kcad.ts",
-      "sourceSha256": "304c27d849e002bf22b3e1a1cfae32a2acc28e560251cacedd0c9e5c726ae9a9",
+      "sourceSha256": "a12c4e2d4e9400d5191656adf07a1ace0af44b51518803ebb2c822a2a0f9c996",
       "triangleBudget": 600,
       "params": [
         {
@@ -23788,7 +23788,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/duct-elbow.kcad.ts",
-      "sourceSha256": "a0c95d93ed99802489fa579bff60559d5353a675a4d39453895f0a814ef226e7",
+      "sourceSha256": "0ccd6010796490cebc731027f0c36f75624490f149cce5a3faf2212c2bb83f09",
       "triangleBudget": 600,
       "params": [
         {
@@ -23892,7 +23892,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/dust-collector.kcad.ts",
-      "sourceSha256": "68d4898e24a73b2000f76a7642e0eadf0870fb0fd572ff75e5abf34105f5f6fa",
+      "sourceSha256": "4ed6ab6a441c01ed7898d1851200cf7a9c4d4ca266f01182cd4e1342cf3c1882",
       "triangleBudget": 600,
       "params": [
         {
@@ -24002,7 +24002,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/electric-motor.kcad.ts",
-      "sourceSha256": "90b9d5ecd83ade24c5f4a68fd9577acac401b809645f9906e938fca964b54244",
+      "sourceSha256": "a76694aca96d0e94f83bed2144a07df50320eb5535d02bd0f93e954427d7a2e8",
       "triangleBudget": 600,
       "params": [
         {
@@ -24111,7 +24111,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/eyewash-station.kcad.ts",
-      "sourceSha256": "6345425b918269b8b3d47b6fc0421dbab4c1f31f72e1cdd7cd67e7178877f3fb",
+      "sourceSha256": "3b28714d69a2e69a06d63641e460bfc7259085c5ac635d98d02426b00b77b4ef",
       "triangleBudget": 600,
       "params": [
         {
@@ -24217,7 +24217,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/floor-grating-platform.kcad.ts",
-      "sourceSha256": "fdf9faaf144fa557f6fcbd1960dbbd69a3abe257b1716bd84eadd998948449c2",
+      "sourceSha256": "37aebbf9f4ce5af15e951ef0c06b3ee2b8197ce6f935f35727f0f9885f0e1947",
       "triangleBudget": 600,
       "params": [
         {
@@ -24341,7 +24341,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/gear-reducer.kcad.ts",
-      "sourceSha256": "75635c03034cd535e7954a4194522da3b0f60b42ce047c2c2b93a82829be3097",
+      "sourceSha256": "a30fa5ff3529cb2d9f67d5bfb13f5f8fc4316030e2b44163c233507440f6be9e",
       "triangleBudget": 600,
       "params": [
         {
@@ -24445,7 +24445,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/generator-set.kcad.ts",
-      "sourceSha256": "4d01b85ae930d91159d46fec4a61406edffe7891e8a5143d1bfae43386287911",
+      "sourceSha256": "3ef70d6c8f0eb0d60d1de2081045cb54d7411e94d8c4844efc72f620c3faa9e1",
       "triangleBudget": 600,
       "params": [
         {
@@ -24556,7 +24556,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/heat-exchanger.kcad.ts",
-      "sourceSha256": "453c94cbb3ec91d585eaa83bb434a29bc5141934f96bbb5c8040a8da8375c7c7",
+      "sourceSha256": "a15710a03670d106a0b3d1253743140bedecbbd1728741ccdf8eea542aeb2d25",
       "triangleBudget": 600,
       "params": [
         {
@@ -24666,7 +24666,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/horizontal-pressure-vessel.kcad.ts",
-      "sourceSha256": "46c81acec3bc84b5b9b9bdd2061cb5061e697382536351f66c34d61436af5b44",
+      "sourceSha256": "a900f3e9c96f1b7d7d6097f2c5ddd83cf2704f06a5d739949568e90505d9973e",
       "triangleBudget": 600,
       "params": [
         {
@@ -24776,7 +24776,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/hydraulic-power-unit.kcad.ts",
-      "sourceSha256": "e5f20557421bdb61dedaf27eac9509dd890ee451525cc4eff6d98db607a9b5b5",
+      "sourceSha256": "7bedcb8d0b196834f2bb1826c84abcc70e06e5e96cfbe624d4a2686ae0d1fd29",
       "triangleBudget": 600,
       "params": [
         {
@@ -24882,7 +24882,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-blower.kcad.ts",
-      "sourceSha256": "10b3c39de8ee95c0d6a021782434ed4a116f58f593809109d7da03fffe12b638",
+      "sourceSha256": "8556d5b5be4ef15dd250a79a749ba354e100e2906dca5a01e257ece96b7c06d6",
       "triangleBudget": 600,
       "params": [
         {
@@ -24985,7 +24985,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-boiler.kcad.ts",
-      "sourceSha256": "4fad08eac38c6e7df72600a1722c4daed200ff69cde9804009e2457f84aa473c",
+      "sourceSha256": "34d0b6c2f94566fd0eda4e2bf9d9b96692a2a34a50985df16142d6ac45c80668",
       "triangleBudget": 600,
       "params": [
         {
@@ -25090,7 +25090,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-drum-mixer.kcad.ts",
-      "sourceSha256": "b8afcf8d6e0a42649549f2a53d842170bbfda58af1be92b64c488b17c8c2d3be",
+      "sourceSha256": "48ba62105f18d55c5f4b66d469f7e5e3fbab693f925bb136baff01d9d3950e97",
       "triangleBudget": 600,
       "params": [
         {
@@ -25195,7 +25195,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-flue-stack.kcad.ts",
-      "sourceSha256": "cb20422cd9d0ebfb246966d2c7fb39c5edbb9b3d411beab160407e9d80b338b6",
+      "sourceSha256": "0141f578d694d9008db27ae6c1d7918be7a8946a328b7f876bd80da55d946d2c",
       "triangleBudget": 600,
       "params": [
         {
@@ -25318,7 +25318,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-furnace.kcad.ts",
-      "sourceSha256": "ef090b2f1c6a85772f7cc3baaaff50f87aa091a391f7d71b38f789b22c38812d",
+      "sourceSha256": "8bcc1c6c18b45ea34630bd55e653867c813dec6f6472681c2c5c9c7d54ad2337",
       "triangleBudget": 600,
       "params": [
         {
@@ -25424,7 +25424,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-mixer.kcad.ts",
-      "sourceSha256": "0ab813d5d783278848ec4b602e2b15a492811e3d430043ae76690758efc78d08",
+      "sourceSha256": "cabec987c75fdb0f177ae38d1c55879b01671378eb2381d5e45e04bdc14d5cdf",
       "triangleBudget": 600,
       "params": [
         {
@@ -25528,7 +25528,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-pipe-bridge.kcad.ts",
-      "sourceSha256": "ad3058b4a77520c4c0d8803f6cc8b8c2658599e10e7912c0ae922cf6a1134ecf",
+      "sourceSha256": "301a10ae778adde118b1712fedb27af96a07720124104ad20bc714ab69d9be7d",
       "triangleBudget": 600,
       "params": [
         {
@@ -25635,7 +25635,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-wash-station.kcad.ts",
-      "sourceSha256": "b6335179be5bb613efb1a2cfcd90b278c9a558a59b39b2557a71a3f4d8d31d77",
+      "sourceSha256": "0716b65a0629005b72fbe7b6ab67b67e636267958aa27c0441564e2724efd39b",
       "triangleBudget": 600,
       "params": [
         {
@@ -25742,7 +25742,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/jib-crane.kcad.ts",
-      "sourceSha256": "d05891021ce4f9bce0704dcb5eece69a88ed2719fac96ffcf800e512d2dd222d",
+      "sourceSha256": "23946affad191f3e6df0c265761230bb302d9ecb86a25f698a838f0e6d24e3c9",
       "triangleBudget": 600,
       "params": [
         {
@@ -25846,7 +25846,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/junction-box.kcad.ts",
-      "sourceSha256": "6c6323d4698cd2c0254e5d76f12fd67820916c77a3c99d9c1099206dae205efb",
+      "sourceSha256": "c65d4d07d11eb70344d2624f343579a3a1a31dd89d598ceedc6f5f8753452ce9",
       "triangleBudget": 600,
       "params": [
         {
@@ -25952,7 +25952,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/loading-dock-leveler.kcad.ts",
-      "sourceSha256": "351fe6cb7b314af97d826d95b77c79e89fa1fb5c53f996cf2bea49cd51712a7a",
+      "sourceSha256": "e52b4bd32bc965c0dd23999cbcd2856f147c258bd740b6253174d9ae66029288",
       "triangleBudget": 600,
       "params": [
         {
@@ -26057,7 +26057,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/machine-foundation-skid.kcad.ts",
-      "sourceSha256": "c683672609cf79eb3e68da44e988a58ca157853326808c62fe675d0e216263e7",
+      "sourceSha256": "937d981755c2bdce20d0b1ea28659bf925d9d5b641df932c8036a18ad8db2f1f",
       "triangleBudget": 600,
       "params": [
         {
@@ -26166,7 +26166,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/machine-guard-cell.kcad.ts",
-      "sourceSha256": "eaf7a92516ff0495d7be2a3d289856a690d879aa9b5baa83831e282302a8c1ee",
+      "sourceSha256": "2e11d400d587f667b165b621b121d6a768a7135c6e2f8b173ae7fba1498907e9",
       "triangleBudget": 600,
       "params": [
         {
@@ -26284,7 +26284,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/material-handling-hopper.kcad.ts",
-      "sourceSha256": "979c47ca067b1ebb7cd23cb5625ce773b6dedd3d245c225a04860faab4648c41",
+      "sourceSha256": "7c29ec5c9ddc6ddf5f75b4798bc0abb68fd8e15a4107e1047a284e74106d8580",
       "triangleBudget": 600,
       "params": [
         {
@@ -26389,7 +26389,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/motor-control-cabinet.kcad.ts",
-      "sourceSha256": "6b498d088daeadf44087f95964a2b303553c14726cd6993a5f34b9e350c66394",
+      "sourceSha256": "17867637499edf8a078d707166e09f8a427f9324515c5be408eb524c7bb3a474",
       "triangleBudget": 600,
       "params": [
         {
@@ -26505,7 +26505,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/overhead-crane.kcad.ts",
-      "sourceSha256": "b467198acfc73fb2e7c6c082f1ac0345aec2cef54de2d40cd0f2994185196156",
+      "sourceSha256": "b963c5e285f64ae73fe7672b4fc024414f41e0acb7743246a60836f9cc091da2",
       "triangleBudget": 600,
       "params": [
         {
@@ -26613,7 +26613,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/pallet-wrapper.kcad.ts",
-      "sourceSha256": "aa92506b22f4d1843c0a27538441396bc9e58c5681e49702d1d18a6ce3b1abfb",
+      "sourceSha256": "6e1fa9ccd0afb7be191deacebbc7b2b304d925ce08d732d783acda140c41b699",
       "triangleBudget": 600,
       "params": [
         {
@@ -26716,7 +26716,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/panel-filter-unit.kcad.ts",
-      "sourceSha256": "d83d1d9c4b3896fbd8756fc455deab5c65626cda010986618f2688b9b5d14eae",
+      "sourceSha256": "82b9fee728e2c0fb9d9b87e35b1b27947401f336a85438d9b71ecafbc62c6660",
       "triangleBudget": 600,
       "params": [
         {
@@ -26827,7 +26827,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/pipe-rack-bay.kcad.ts",
-      "sourceSha256": "8dbd923a899f9cff2838052557193a21a393536039eeac17104c0b3cb56e2844",
+      "sourceSha256": "8218eafe1b128c57235dd4674b14bf4b5b5272646a89f8443f361769a3603d82",
       "triangleBudget": 600,
       "params": [
         {
@@ -26933,7 +26933,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/plate-heat-exchanger.kcad.ts",
-      "sourceSha256": "e6a35b130440b1ee73d58fe1d511e2348a4b7585762c0111bf992e496290a6c6",
+      "sourceSha256": "fd0256965390829486bccd97dca96f948521967654f6637c7fce96e9209b1b73",
       "triangleBudget": 600,
       "params": [
         {
@@ -27045,7 +27045,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/pneumatic-air-dryer.kcad.ts",
-      "sourceSha256": "4401747d06c21a27d1df60d3029f130131b7cbf88bb445d0816b4b5063eb81b0",
+      "sourceSha256": "0b699501e29f285259ed272f2c06343688951caa1acc0b26592847cc2dd33eee",
       "triangleBudget": 600,
       "params": [
         {
@@ -27150,7 +27150,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/process-mixing-tank.kcad.ts",
-      "sourceSha256": "4dfdfbd111062bef0fe7950314f05c1783cd67f3a79f1747bf4249a63161a950",
+      "sourceSha256": "6f001ffc26d5a69863c5f577224bc5066c2a89a0ac59f966277df113ff91ad51",
       "triangleBudget": 600,
       "params": [
         {
@@ -27259,7 +27259,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/rectangular-duct-section.kcad.ts",
-      "sourceSha256": "10146a91f1171b84b8fb3c92fd23141216fbb2aecf52b952f1d2bb77baf8d47f",
+      "sourceSha256": "c083287566a85c1aa27f900c0a02cd9f4e4927b2964219addc8e4698c0131d3e",
       "triangleBudget": 600,
       "params": [
         {
@@ -27364,7 +27364,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/roller-conveyor-section.kcad.ts",
-      "sourceSha256": "dc0338a87ecacc838bb9e549f752eeaf032651b86770b55cf2a61bf4b06f8b9c",
+      "sourceSha256": "ad37836c5f48ebe8938627f779f1833d948461cefec327fb6637711fe6830656",
       "triangleBudget": 600,
       "params": [
         {
@@ -27486,7 +27486,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/safety-cage-ladder.kcad.ts",
-      "sourceSha256": "aa39bf01a577f7a71f9ddf7d71f0bec3e83e3ace90c6cbdea6935b3a9e5ca618",
+      "sourceSha256": "89977f82697ad2dba996b8b2f0cca193392514769ae96fa3309192de80da33be",
       "triangleBudget": 600,
       "params": [
         {
@@ -27612,7 +27612,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/safety-shower.kcad.ts",
-      "sourceSha256": "009e2cdd30b861dd14b1fc9ab6b01605acf48723c929e7b21fa38feafccdf939",
+      "sourceSha256": "5fb720bc5ef872fe1bebbd5743af42f5e4dc9a89e25f58b41ce9b36ca703d774",
       "triangleBudget": 600,
       "params": [
         {
@@ -27717,7 +27717,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/screw-compressor-package.kcad.ts",
-      "sourceSha256": "f9f20de9cb9b01635f8226262973ed03ee35eebc39ad1b62c01eb46f53585156",
+      "sourceSha256": "22284e5d39f82faef0f47abd400bb4fc5a7996dc3127972ed24dd3689cd5c40d",
       "triangleBudget": 600,
       "params": [
         {
@@ -27825,7 +27825,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/screw-conveyor.kcad.ts",
-      "sourceSha256": "7f743beca1f2ba75dd35e9bff8d46a35c3ced51193ac882ddda2043a9a15eb30",
+      "sourceSha256": "646ff992111d536bae6abdbcb27ab4eb51eaeabcb6312ca8b767c6be0e677c62",
       "triangleBudget": 600,
       "params": [
         {
@@ -27946,7 +27946,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/service-platform.kcad.ts",
-      "sourceSha256": "5358b28e3d4e7961c3efa0831c7bb14843e73f02b2362a9a358adbcfb5b01267",
+      "sourceSha256": "11607079a83ecf71ed083dc4da5852cca59e862c86a3c802cebbed4bf3f04f9c",
       "triangleBudget": 600,
       "params": [
         {
@@ -28056,7 +28056,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/silo-bin.kcad.ts",
-      "sourceSha256": "ff3b4ef9f3279879961a2478a8923a209a613b8bd03096b526ac52027079e362",
+      "sourceSha256": "45966340e64086f248e71b10912d8641711ce43b0620837a3192f687c95aa010",
       "triangleBudget": 600,
       "params": [
         {
@@ -28162,7 +28162,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/transformer-substation-bay.kcad.ts",
-      "sourceSha256": "d78c38c88f2627050f64be3749ad60b0106cc9a266c64277d350e2ffa59aea8b",
+      "sourceSha256": "354becd59a1c5dff1ffbfbcabd646be576c78e5fb2e04b96b317021476911274",
       "triangleBudget": 600,
       "params": [
         {
@@ -28272,7 +28272,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/transformer.kcad.ts",
-      "sourceSha256": "8bb8459f4829ab0bf7b33dad9e2c1427b552ff46cdec109ea064f09eec4c625e",
+      "sourceSha256": "28d1206daef49b07c714b14b71ab511573e506a02d223d8388a412aa54af371c",
       "triangleBudget": 600,
       "params": [
         {
@@ -28384,7 +28384,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/vacuum-pump.kcad.ts",
-      "sourceSha256": "705a6610875fd05327f7253c1416a597059e7f76dbc3139a1d44f00d0f256021",
+      "sourceSha256": "6152dd67430094cee388939a97861c2bb5492d6a84ff12d41846cbcfa58413ce",
       "triangleBudget": 600,
       "params": [
         {
@@ -28491,7 +28491,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/water-filter-skid.kcad.ts",
-      "sourceSha256": "aa489c046363344a6fc39c6669fb86c866a2ecbc5cd6bd9503c8cbbd173d2088",
+      "sourceSha256": "3ec762e14865154666faddce96755123fe7b8c2e11d21502a00f46b88b0a1f4e",
       "triangleBudget": 600,
       "params": [
         {
