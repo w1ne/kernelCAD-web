@@ -537,6 +537,53 @@
       ]
     },
     {
+      "id": "sports",
+      "title": "Sports",
+      "description": "Original low-poly court, field, racket, skating, fitness and award props with editable size and color controls.",
+      "assets": [
+        "american-football",
+        "badminton-racket",
+        "barbell",
+        "baseball-bat",
+        "baseball-glove",
+        "baseball",
+        "basketball-hoop",
+        "basketball",
+        "batting-helmet",
+        "cricket-bat",
+        "cricket-wicket",
+        "dumbbell",
+        "exercise-ball",
+        "foam-roller",
+        "golf-bag",
+        "golf-club",
+        "gym-bench",
+        "hockey-puck",
+        "hockey-stick",
+        "inline-skate",
+        "jump-rope",
+        "kettlebell",
+        "lacrosse-stick",
+        "shuttlecock",
+        "skateboard",
+        "soccer-ball",
+        "soccer-goal",
+        "sports-water-bottle",
+        "starting-block",
+        "tennis-ball",
+        "tennis-net",
+        "tennis-racket",
+        "track-hurdle",
+        "treadmill",
+        "trophy-cup",
+        "volleyball-net",
+        "volleyball",
+        "weight-plate",
+        "yoga-block",
+        "yoga-mat"
+      ]
+    },
+    {
       "id": "standard-components",
       "title": "Standard Components",
       "description": "Original low-poly parametric brackets, fittings, couplings, motion hardware and mounting components for workshop, industrial and mechanical scenes.",
@@ -59350,6 +59397,2690 @@
             "saw"
           ],
           "param": "metal"
+        }
+      ]
+    },
+    {
+      "id": "american-football",
+      "kit": "sports",
+      "title": "American football",
+      "description": "Elongated low-poly football with a pointed oval profile.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "american football",
+        "football",
+        "ball",
+        "field sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/american-football.kcad.ts",
+      "sourceSha256": "cd48d4a79c00c50c2f1b47e978f5d39cf37901664bc0eaf768ea0a79eed26ed4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#98552f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 30,
+        "sizeM": [
+          0.148759,
+          0.07872,
+          0.068174
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#98552f",
+          "parts": [
+            "ball"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "badminton-racket",
+      "kit": "sports",
+      "title": "Badminton racket",
+      "description": "Lightweight low-poly badminton racket with a slim shaft and oval head.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "badminton racket",
+        "racket",
+        "badminton",
+        "court sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/badminton-racket.kcad.ts",
+      "sourceSha256": "e5d643aae668e19445a8b7ddb27d31f8e11989772b53d0bf52272a03ebc81d1b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596d62",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 312,
+        "sizeM": [
+          0.094107,
+          0.184,
+          0.02
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596d62",
+          "parts": [
+            "head-frame",
+            "throat",
+            "shaft",
+            "grip",
+            "string-vertical-left",
+            "string-vertical-centre",
+            "string-vertical-right",
+            "string-horizontal-1",
+            "string-horizontal-2",
+            "string-horizontal-3",
+            "string-horizontal-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "barbell",
+      "kit": "sports",
+      "title": "Barbell",
+      "description": "Low-poly barbell with a long horizontal shaft and stacked spherical plate forms.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "barbell",
+        "weight bar",
+        "gym",
+        "training",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/barbell.kcad.ts",
+      "sourceSha256": "1c37ac7fdccb00d7013ab947490734f4d459506a0eb6e656588e72ad8cb65041",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#56636c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.68,
+          0.148,
+          0.14789
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#56636c",
+          "parts": [
+            "shaft",
+            "left-inner-plate",
+            "left-outer-plate",
+            "right-inner-plate",
+            "right-outer-plate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "baseball-bat",
+      "kit": "sports",
+      "title": "Baseball bat",
+      "description": "Upright low-poly baseball bat with a narrow grip and widened barrel.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "baseball bat",
+        "bat",
+        "baseball",
+        "sports equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/baseball-bat.kcad.ts",
+      "sourceSha256": "f37a4d08c4f3949dc522d92f624581f073dc23f9377d028ecf5a9acba3f31a9d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9b7046",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.05,
+          0.445,
+          0.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9b7046",
+          "parts": [
+            "grip",
+            "taper",
+            "barrel",
+            "knob"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "baseball-glove",
+      "kit": "sports",
+      "title": "Baseball glove",
+      "description": "Open mitt-shaped glove prop with a broad palm, wrist cuff and raised finger pads.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "baseball glove",
+        "mitt",
+        "baseball",
+        "sports equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/baseball-glove.kcad.ts",
+      "sourceSha256": "2a3e903221023b35699ac2b7633ae039d9d0211200fba40c67a562206c321459",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9a5938",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 386,
+        "sizeM": [
+          0.170633,
+          0.178,
+          0.097168
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9a5938",
+          "parts": [
+            "wrist-cuff",
+            "palm",
+            "finger-one",
+            "finger-two",
+            "finger-three",
+            "finger-four",
+            "thumb"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "baseball",
+      "kit": "sports",
+      "title": "Baseball",
+      "description": "Compact low-poly baseball prop with a faceted spherical form.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "baseball",
+        "ball",
+        "bat and ball",
+        "field sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/baseball.kcad.ts",
+      "sourceSha256": "0801287efb39f53a82021dc0a490237cb045755d5b125407ef3a389ba9c7f838",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#eee9dd",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 78,
+        "sizeM": [
+          0.066336,
+          0.068,
+          0.063689
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#eee9dd",
+          "parts": [
+            "ball"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "basketball-hoop",
+      "kit": "sports",
+      "title": "Basketball hoop",
+      "description": "Freestanding court hoop with backboard, support arm, hollow rim and weighted floor base.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "basketball hoop",
+        "backboard",
+        "court",
+        "sports equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/basketball-hoop.kcad.ts",
+      "sourceSha256": "a2060e1809001fe1bb0dada519942b9c027c5d7e5ab492039a67cb69fd9ce95c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#647987",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.22,
+          0.415,
+          0.112
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#647987",
+          "parts": [
+            "base",
+            "upright",
+            "support-arm",
+            "backboard",
+            "rim"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "basketball",
+      "kit": "sports",
+      "title": "Basketball",
+      "description": "Low-poly basketball prop with a faceted spherical silhouette.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "basketball",
+        "ball",
+        "court",
+        "indoor sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/basketball.kcad.ts",
+      "sourceSha256": "387cbb8db98b480cfba0f0e958a99d2b9d13c26a3c59c328458b7b8334862301",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d47a32",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 78,
+        "sizeM": [
+          0.120966,
+          0.124,
+          0.116139
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d47a32",
+          "parts": [
+            "ball"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "batting-helmet",
+      "kit": "sports",
+      "title": "Batting helmet",
+      "description": "Protective batting helmet prop with a domed shell, face brim and side guards.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "batting helmet",
+        "helmet",
+        "baseball",
+        "sports equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/batting-helmet.kcad.ts",
+      "sourceSha256": "91866932e9502375d65e1f23182690a046e87bc664e540229bd3294fb36004be",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4c6f9d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 68,
+        "sizeM": [
+          0.16964,
+          0.11808,
+          0.130354
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4c6f9d",
+          "parts": [
+            "shell",
+            "brim",
+            "ear-guard-left",
+            "ear-guard-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cricket-bat",
+      "kit": "sports",
+      "title": "Cricket bat",
+      "description": "Low-poly cricket bat with a wide flat blade, shoulders and slim handle.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cricket bat",
+        "bat",
+        "cricket",
+        "field sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/cricket-bat.kcad.ts",
+      "sourceSha256": "fed6a89b487571d964ac95a12e148dc0e9499941903f3ae1547af1963ce52115",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9a754d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          0.082,
+          0.378,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9a754d",
+          "parts": [
+            "blade",
+            "shoulder",
+            "handle",
+            "grip-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cricket-wicket",
+      "kit": "sports",
+      "title": "Cricket wicket",
+      "description": "Three-stump wicket set on a low ground plate with two cross bails.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cricket wicket",
+        "stumps",
+        "cricket",
+        "field sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/cricket-wicket.kcad.ts",
+      "sourceSha256": "4acabc6ce95c82c296099e2857995c64ed12bc9167afce313861109ae5788420",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b18b5f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.116,
+          0.064,
+          0.058
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b18b5f",
+          "parts": [
+            "ground-plate",
+            "stump-left",
+            "stump-middle",
+            "stump-right",
+            "bail-left",
+            "bail-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dumbbell",
+      "kit": "sports",
+      "title": "Dumbbell",
+      "description": "Compact low-poly dumbbell with a horizontal handle and weighted ends.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "dumbbell",
+        "free weights",
+        "gym",
+        "training",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/dumbbell.kcad.ts",
+      "sourceSha256": "dfa6ff31e604e3a2b83bce4ec3879bfc61a268611f4498fad176f6cdd21c5878",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 88,
+        "sizeM": [
+          0.192721,
+          0.08,
+          0.069282
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#69747a",
+          "parts": [
+            "handle",
+            "left-weight",
+            "right-weight"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "exercise-ball",
+      "kit": "sports",
+      "title": "Exercise ball",
+      "description": "Large low-poly exercise ball for a studio or gym scene.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "exercise ball",
+        "fitness ball",
+        "gym",
+        "training",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/exercise-ball.kcad.ts",
+      "sourceSha256": "5e6a8dd3bd806b02da76d8e882af4980c9a314d42b3617fdf65fa3b3c03b3067",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5a9bb1",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 78,
+        "sizeM": [
+          0.210714,
+          0.216,
+          0.202307
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5a9bb1",
+          "parts": [
+            "ball"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "foam-roller",
+      "kit": "sports",
+      "title": "Foam roller",
+      "description": "Low-poly cylindrical foam roller laid horizontally on the floor.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "foam roller",
+        "fitness",
+        "gym",
+        "recovery",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/foam-roller.kcad.ts",
+      "sourceSha256": "51c55fe101360436e88cc8a314215565a543445f8702ded6c4c5ceb61b925750",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a16c60",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 44,
+        "sizeM": [
+          0.1,
+          0.1,
+          0.22
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a16c60",
+          "parts": [
+            "roller"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "golf-bag",
+      "kit": "sports",
+      "title": "Golf bag",
+      "description": "Upright golf bag with a broad lower body, tapered-looking rim and club tops.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "golf bag",
+        "golf",
+        "sports equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/golf-bag.kcad.ts",
+      "sourceSha256": "2b4a5a36a2e96b22578fb533c60b1af5184f879e113ed1307fcf8c3a9fc5afdc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#42675d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          0.152,
+          0.587,
+          0.152
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#42675d",
+          "parts": [
+            "bag-body",
+            "base",
+            "rim",
+            "club-a",
+            "club-b",
+            "club-c",
+            "strap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "golf-club",
+      "kit": "sports",
+      "title": "Golf club",
+      "description": "Low-poly golf club with a metal head, long shaft and top grip.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "golf club",
+        "golf",
+        "sports equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/golf-club.kcad.ts",
+      "sourceSha256": "56d48e1e99ccc7d2d4845353bd82eb9b26cc1dcfc793a0599c14173ff12abbe3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#77828a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 100,
+        "sizeM": [
+          0.118,
+          0.695,
+          0.044
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#77828a",
+          "parts": [
+            "club-head",
+            "shaft",
+            "grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "gym-bench",
+      "kit": "sports",
+      "title": "Gym bench",
+      "description": "Low-poly adjustable bench prop with padded top, support frame and floor feet.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "gym bench",
+        "weight bench",
+        "gym",
+        "training",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/gym-bench.kcad.ts",
+      "sourceSha256": "d2c0ced3944f05d3bb0526f15cb5537638e558ab94db2716fcedb4cf6db0d53c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555e65",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.33,
+          0.345,
+          0.112
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555e65",
+          "parts": [
+            "pad",
+            "front-leg",
+            "rear-leg",
+            "crossbar",
+            "front-foot",
+            "rear-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hockey-puck",
+      "kit": "sports",
+      "title": "Hockey puck",
+      "description": "Low-poly cylindrical ice hockey puck prop.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "hockey puck",
+        "puck",
+        "ice hockey",
+        "indoor sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/hockey-puck.kcad.ts",
+      "sourceSha256": "58225e4ce5ba8843ad3e7b2130bdbabc3067c439cddd6a5337635b3b1804838f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#383d42",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 44,
+        "sizeM": [
+          0.076,
+          0.024,
+          0.076
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#383d42",
+          "parts": [
+            "puck"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hockey-stick",
+      "kit": "sports",
+      "title": "Field hockey stick",
+      "description": "Low-poly field hockey stick with a long shaft and hooked blade.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "hockey stick",
+        "field hockey",
+        "stick",
+        "field sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/hockey-stick.kcad.ts",
+      "sourceSha256": "8205b121d4e415da8fd519b753909f40ed8650eeb46c3fb6a68fe2c3381a1400",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a6844",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 36,
+        "sizeM": [
+          0.112,
+          0.62,
+          0.022
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a6844",
+          "parts": [
+            "shaft",
+            "blade",
+            "heel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "inline-skate",
+      "kit": "sports",
+      "title": "Inline skate",
+      "description": "Low-poly inline skate boot with a cuff, chassis and three aligned wheels.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "inline skate",
+        "roller skate",
+        "skating",
+        "sports equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/inline-skate.kcad.ts",
+      "sourceSha256": "5941afb08470c26aa32855f9157bf74a9af9950e850b35492046854d29ea8127",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#465c70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 270,
+        "sizeM": [
+          0.17,
+          0.195,
+          0.084
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#465c70",
+          "parts": [
+            "boot",
+            "cuff",
+            "chassis",
+            "wheel-front",
+            "wheel-middle",
+            "wheel-rear"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "jump-rope",
+      "kit": "sports",
+      "title": "Jump rope",
+      "description": "Jump rope prop with a low-poly loop and two upright grip handles.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "jump rope",
+        "skipping rope",
+        "training",
+        "gym",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/jump-rope.kcad.ts",
+      "sourceSha256": "65b189bd9db7df969a9302fcd6221ae1bfd1b9be88f966c8aafb379447b81e00",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#bd5c4b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          0.358,
+          0.094,
+          0.336
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#bd5c4b",
+          "parts": [
+            "rope-loop",
+            "left-handle",
+            "right-handle",
+            "left-grip",
+            "right-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "kettlebell",
+      "kit": "sports",
+      "title": "Kettlebell",
+      "description": "Low-poly kettlebell with a rounded body and raised ring handle.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "kettlebell",
+        "free weights",
+        "gym",
+        "training",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/kettlebell.kcad.ts",
+      "sourceSha256": "bda6d6058089df8ed24eef33da2ea85c8ded3a958c932d15e561788cee4a578a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555e63",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 290,
+        "sizeM": [
+          0.095527,
+          0.138,
+          0.083138
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555e63",
+          "parts": [
+            "body",
+            "handle",
+            "handle-foot-left",
+            "handle-foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lacrosse-stick",
+      "kit": "sports",
+      "title": "Lacrosse stick",
+      "description": "Low-poly lacrosse stick with a long shaft and broad oval head.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "lacrosse stick",
+        "stick",
+        "lacrosse",
+        "field sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/lacrosse-stick.kcad.ts",
+      "sourceSha256": "e55d24f80816a63ce16cbba768ec407ca7f66890b2ad1c880c6a1ef18932e77a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78756c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 90,
+        "sizeM": [
+          0.073402,
+          0.62752,
+          0.123668
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78756c",
+          "parts": [
+            "shaft",
+            "head",
+            "throat"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "shuttlecock",
+      "kit": "sports",
+      "title": "Shuttlecock",
+      "description": "Low-poly badminton shuttlecock with a rounded cork tip and flared skirt.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shuttlecock",
+        "badminton",
+        "birdie",
+        "court sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/shuttlecock.kcad.ts",
+      "sourceSha256": "f01b5531d1ef4917fceae5963035d28af7ab8e10889bf6799735bfb0fa82d517",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e8e4d8",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.078,
+          0.099,
+          0.078
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e8e4d8",
+          "parts": [
+            "cork",
+            "skirt",
+            "crown"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "skateboard",
+      "kit": "sports",
+      "title": "Skateboard",
+      "description": "Low-poly skateboard deck with two trucks and four wheels.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "skateboard",
+        "skateboarding",
+        "board sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/skateboard.kcad.ts",
+      "sourceSha256": "00063352204f8e005fa9952b6e7505af9c869f796411ad277c5e791387c75ece",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a75e3b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 348,
+        "sizeM": [
+          0.31,
+          0.121,
+          0.140957
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a75e3b",
+          "parts": [
+            "deck",
+            "front-truck",
+            "rear-truck",
+            "wheel-front-left",
+            "wheel-front-right",
+            "wheel-rear-left",
+            "wheel-rear-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "soccer-ball",
+      "kit": "sports",
+      "title": "Soccer ball",
+      "description": "Low-poly spherical ball prop for a football pitch or training scene.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "soccer ball",
+        "football",
+        "ball",
+        "field sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/soccer-ball.kcad.ts",
+      "sourceSha256": "c466d58102430e87b813eec20f049d6c55e4ebde10f02ccc2055b6857db421b5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#ece8d6",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 78,
+        "sizeM": [
+          0.113161,
+          0.116,
+          0.108647
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#ece8d6",
+          "parts": [
+            "ball"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "soccer-goal",
+      "kit": "sports",
+      "title": "Soccer goal",
+      "description": "Small freestanding soccer goal with posts, crossbar and a simplified open net frame.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "soccer goal",
+        "football goal",
+        "net",
+        "field sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/soccer-goal.kcad.ts",
+      "sourceSha256": "57f78fc41cdc9b59cbca261a184fa80dc85755ea626136ebf593c1d33aec34ee",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e5e9e7",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.304,
+          0.217,
+          0.094
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e5e9e7",
+          "parts": [
+            "left-post",
+            "right-post",
+            "crossbar",
+            "net-roof",
+            "net-side-left",
+            "net-side-right",
+            "net-floor"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sports-water-bottle",
+      "kit": "sports",
+      "title": "Sports water bottle",
+      "description": "Reusable sports bottle with tapered neck and screw cap.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "sports bottle",
+        "water bottle",
+        "fitness",
+        "sports equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/sports-water-bottle.kcad.ts",
+      "sourceSha256": "1c2686d52c226c5a8e78c16e782394538740c714830dd90d8ac8ced09c7ba27a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4b8f9e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.076,
+          0.208,
+          0.076
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4b8f9e",
+          "parts": [
+            "body",
+            "shoulder",
+            "neck",
+            "cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "starting-block",
+      "kit": "sports",
+      "title": "Track starting block",
+      "description": "Track starting block prop with a low base rail and two angled-looking foot pads.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "starting block",
+        "track",
+        "athletics",
+        "field sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/starting-block.kcad.ts",
+      "sourceSha256": "791bc8352970d6dc1ff20994e831737bf8009945a6c20c96af338ff6e9b6b141",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5d6d79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.255,
+          0.095,
+          0.064
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5d6d79",
+          "parts": [
+            "base-rail",
+            "front-pedal",
+            "rear-pedal",
+            "front-heel-stop",
+            "rear-heel-stop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tennis-ball",
+      "kit": "sports",
+      "title": "Tennis ball",
+      "description": "Compact low-poly tennis ball prop.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tennis ball",
+        "ball",
+        "tennis",
+        "court sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/tennis-ball.kcad.ts",
+      "sourceSha256": "427794462962f3f2e12bc58dcee018d0265cb6e6202b0c541e589f3eba2a4c4a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b6c84c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 78,
+        "sizeM": [
+          0.066336,
+          0.068,
+          0.063689
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b6c84c",
+          "parts": [
+            "ball"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tennis-net",
+      "kit": "sports",
+      "title": "Tennis net",
+      "description": "Practice tennis net with upright posts and a simplified rectangular mesh panel.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tennis net",
+        "net",
+        "tennis court",
+        "court sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/tennis-net.kcad.ts",
+      "sourceSha256": "0b707076ae396d25be0b7f9a6534549b3b6b8e5a95ebbf88e8a19f94fa6b22d4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d7471",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.512,
+          0.151,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d7471",
+          "parts": [
+            "left-post",
+            "right-post",
+            "net-panel",
+            "top-band",
+            "base-left",
+            "base-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tennis-racket",
+      "kit": "sports",
+      "title": "Tennis racket",
+      "description": "Low-poly tennis racket with an oval head and long handle.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tennis racket",
+        "racket",
+        "tennis",
+        "court sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/tennis-racket.kcad.ts",
+      "sourceSha256": "7a5dbafe0cd6d0fed476b23d60d9fde7cb1a3909e9e559264225e0e165b32aef",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5b6870",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.120865,
+          0.214,
+          0.026
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5b6870",
+          "parts": [
+            "head-frame",
+            "throat",
+            "handle",
+            "butt-cap",
+            "string-vertical-left-outer",
+            "string-vertical-left-inner",
+            "string-vertical-centre",
+            "string-vertical-right-inner",
+            "string-vertical-right-outer",
+            "string-horizontal-1",
+            "string-horizontal-2",
+            "string-horizontal-3",
+            "string-horizontal-4",
+            "string-horizontal-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "track-hurdle",
+      "kit": "sports",
+      "title": "Track hurdle",
+      "description": "Portable low-poly running hurdle with two feet, uprights and a crossbar.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "track hurdle",
+        "hurdle",
+        "athletics",
+        "track",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/track-hurdle.kcad.ts",
+      "sourceSha256": "aeb0ad4d202a4117ddb2c749dc176b251f7359e29c9b71c2fbd633b83dd1fa69",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c95748",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.318,
+          0.177,
+          0.024
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c95748",
+          "parts": [
+            "left-upright",
+            "right-upright",
+            "crossbar",
+            "left-foot",
+            "right-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "treadmill",
+      "kit": "sports",
+      "title": "Treadmill",
+      "description": "Low-poly treadmill with running deck, front uprights, hand rails and console.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "treadmill",
+        "cardio",
+        "gym",
+        "training",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/treadmill.kcad.ts",
+      "sourceSha256": "76c2febcbfcc1a53e3911f78be7fee65aa98fd8cede29b4cfa96a85fc9b2f4e1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#46545c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.42,
+          0.388,
+          0.142
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#46545c",
+          "parts": [
+            "deck",
+            "front-upright-left",
+            "front-upright-right",
+            "console",
+            "console-screen",
+            "left-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "trophy-cup",
+      "kit": "sports",
+      "title": "Trophy cup",
+      "description": "Low-poly award cup with an open bowl, stem, handles and stepped base.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "trophy cup",
+        "trophy",
+        "award",
+        "sports",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/trophy-cup.kcad.ts",
+      "sourceSha256": "3c944a95a02edb41e03d3c9d9f090ba625ac30e9f03ad81626b74ca3522ae840",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c59a43",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 320,
+        "sizeM": [
+          0.163206,
+          0.1456,
+          0.114
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c59a43",
+          "parts": [
+            "base",
+            "stem",
+            "bowl",
+            "left-handle",
+            "right-handle",
+            "top-rim"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "volleyball-net",
+      "kit": "sports",
+      "title": "Volleyball net",
+      "description": "Portable volleyball net with posts, a broad mesh panel and ground feet.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "volleyball net",
+        "net",
+        "volleyball",
+        "court sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/volleyball-net.kcad.ts",
+      "sourceSha256": "49bfe36e48782d6c887217ccceca99b67aba155ed9a35fa921761692064ba706",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#697573",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.46,
+          0.206,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#697573",
+          "parts": [
+            "left-post",
+            "right-post",
+            "net-panel",
+            "top-band",
+            "base-left",
+            "base-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "volleyball",
+      "kit": "sports",
+      "title": "Volleyball",
+      "description": "Low-poly volleyball prop with a faceted spherical silhouette.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "volleyball",
+        "ball",
+        "court sport",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/volleyball.kcad.ts",
+      "sourceSha256": "fd0150fa839942655437a230d1f5cfba3d872e523f5ec32d857a8dd79d88ce7f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e7e2d6",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 78,
+        "sizeM": [
+          0.113161,
+          0.116,
+          0.108647
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e7e2d6",
+          "parts": [
+            "ball"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "weight-plate",
+      "kit": "sports",
+      "title": "Weight plate",
+      "description": "Low-poly round gym weight plate with a central bore.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "weight plate",
+        "weight",
+        "gym",
+        "training",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/weight-plate.kcad.ts",
+      "sourceSha256": "8c0fabd1aabc208b7bc98b32be4a6c9235d8f5a195d0aa86fec5786e2bf7adbc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5b666b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.164,
+          0.022,
+          0.164
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5b666b",
+          "parts": [
+            "plate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "yoga-block",
+      "kit": "sports",
+      "title": "Yoga block",
+      "description": "Simple low-poly foam yoga block with a broad rectangular profile.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "yoga block",
+        "fitness",
+        "yoga",
+        "training",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/yoga-block.kcad.ts",
+      "sourceSha256": "fda4f946ed3ec855765775675d646dad5156a6d496a9ac1ea93aff5249747dab",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8c6b78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 12,
+        "sizeM": [
+          0.18,
+          0.065,
+          0.105
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8c6b78",
+          "parts": [
+            "block"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "yoga-mat",
+      "kit": "sports",
+      "title": "Yoga mat",
+      "description": "Rolled yoga mat prop with a flat practice surface and cylindrical roll.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "yoga mat",
+        "fitness",
+        "yoga",
+        "training",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "indoor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/yoga-mat.kcad.ts",
+      "sourceSha256": "09e2b9b2df631815ac02d64ecca8077175be19f0278a1f348f2218c8ef245b8b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b8978",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 56,
+        "sizeM": [
+          0.3,
+          0.056,
+          0.21
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b8978",
+          "parts": [
+            "mat",
+            "rolled-edge"
+          ],
+          "param": "color"
         }
       ]
     },
