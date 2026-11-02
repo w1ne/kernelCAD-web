@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('pipe-flange');
 let flange=cylinder(6*s,28*s,8).subtract(cylinder(8*s,12*s,8).translate(0,0,-s));
 for (const [x,y] of [[-17,-17],[17,-17],[17,17],[-17,17]]) flange=flange.subtract(cylinder(8*s,3*s,8).translate(x*s,y*s,-s));

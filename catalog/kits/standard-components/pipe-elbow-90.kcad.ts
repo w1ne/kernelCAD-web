@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('pipe-elbow-90');
 const r=13*s, len=26*s, z0=0;
 a.part('upright',cylinder(28*s,r,12).subtract(cylinder(30*s,9*s,12).translate(0,0,-s)).translate(-len/2,0,z0).color(finish));

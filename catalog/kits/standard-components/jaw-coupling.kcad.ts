@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('jaw-coupling');
 a.part('hub-a',cylinder(16*s,18*s,14).subtract(cylinder(18*s,8*s,12).translate(0,0,-s)).color(finish));
 a.part('spider',cylinder(8*s,14*s,12).translate(0,0,16*s).color(finish));

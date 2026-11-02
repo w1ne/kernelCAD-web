@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('pipe-tee');
 const r=12*s;
 a.part('run',cylinder(44*s,r,12).subtract(cylinder(46*s,8*s,12).translate(0,0,-s)).color(finish));

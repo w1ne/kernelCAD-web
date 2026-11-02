@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('rubber-bumper');
 a.part('base',cylinder(12*s,18*s,12).translate(0,0,0).color(finish));
 a.part('crown',cylinder(5*s,15*s,12).translate(0,0,12*s).color(finish));

@@ -47636,7 +47636,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/blind-flange.kcad.ts",
-      "sourceSha256": "d08074d0eaa9a6637398b13c456dff08003cc15532eff33d0763fd5e05f23712",
+      "sourceSha256": "edacef521a70ce3e01a7985071e014fa67b758d2d08030dfa969b1ef3980b861",
       "triangleBudget": 340,
       "params": [
         {
@@ -47708,7 +47708,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/bulkhead-adapter.kcad.ts",
-      "sourceSha256": "323e99608b8efdb9b2606bcb6bdbe4e7262e368e2c5da2737ac9309b3fbc26bc",
+      "sourceSha256": "eeedda2088e2a4102404c0f9943f5dcb3f99717ba10a7876874f01c2362cb7d9",
       "triangleBudget": 340,
       "params": [
         {
@@ -47855,7 +47855,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/cable-gland.kcad.ts",
-      "sourceSha256": "2cb18af3e3c47f20548b8070b01adf7eefebd1591e77e1899b3140a23e5eef37",
+      "sourceSha256": "7608cd7d958ead5b2ade23016758c62ee62059c9485674db76e8eafa27f9237f",
       "triangleBudget": 420,
       "params": [
         {
@@ -48006,7 +48006,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/clevis-pin.kcad.ts",
-      "sourceSha256": "794114b42c3f0c5e8cd9376ec63e9893c9e5fbbb7c0a74f0e31e88865cb17320",
+      "sourceSha256": "c7eda74fdfc49e5c643876d58af3fbf89208733a47dd294bfa2f8fff580dab5c",
       "triangleBudget": 280,
       "params": [
         {
@@ -48666,7 +48666,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/handle-pull.kcad.ts",
-      "sourceSha256": "3cb2917ca814db02f8ddee8e77c235b3207920f82f46065d2f27c5dd503bbe9f",
+      "sourceSha256": "56a69819973037473df97f247b55f019f2b7d27f6ea563d8a70e01cc78e31598",
       "triangleBudget": 320,
       "params": [
         {
@@ -48741,7 +48741,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/handwheel.kcad.ts",
-      "sourceSha256": "eefe342b8236d8f22d24e6a0c335da414624f2a8ae99126455460eecae95e218",
+      "sourceSha256": "88c584cd10e2cb6a582d9c189f370bd638986800216416e93b021a0fea52f5c6",
       "triangleBudget": 340,
       "params": [
         {
@@ -48891,7 +48891,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/jaw-coupling.kcad.ts",
-      "sourceSha256": "49c1dc32ea1682bc3cfd0c7cd00425f5330723b077747d8e89ca268758c4b599",
+      "sourceSha256": "24ea8fd569b3df22011f530b6f91555c6aec906b0536c32abf570544b240eb26",
       "triangleBudget": 360,
       "params": [
         {
@@ -48964,7 +48964,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/knurled-knob.kcad.ts",
-      "sourceSha256": "baf53e20dfc8df97861cf3f28c82c8c837704edd04b3e54687ba84fb164c5402",
+      "sourceSha256": "b6a4fc3c6ad21630216934f05d5ee9e85e6a1cdbff8adbd4c09ed39ab3cb3a8b",
       "triangleBudget": 300,
       "params": [
         {
@@ -49045,7 +49045,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/leveling-foot.kcad.ts",
-      "sourceSha256": "1ef9bd2ad851a606056dfb877578dc110ca5f285bbd667067abe198b51702511",
+      "sourceSha256": "af7d6afa926bea95d697f0879a8a008e588aa4a68fe998b1b0e0304fff8932b8",
       "triangleBudget": 280,
       "params": [
         {
@@ -49118,7 +49118,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/linear-guide-carriage.kcad.ts",
-      "sourceSha256": "71ddedb8c8c3166fb716ada17deadbd87f1eecd4632ecb55b6f62ac29db2891c",
+      "sourceSha256": "f9e98c2586ab8ffbcfa8624360987220ccd92e16ea78e1c8ee4fc34d384b3f70",
       "triangleBudget": 340,
       "params": [
         {
@@ -49488,7 +49488,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-coupling.kcad.ts",
-      "sourceSha256": "c4b808c88fa9173fdcef76477b4eb0beba8ff9fd79326de6d52c08ec2a18513f",
+      "sourceSha256": "5e9607fcbfa2f981b521a87ea1d5ed44da65ac20f3d5704025eb5d9be06cb933",
       "triangleBudget": 320,
       "params": [
         {
@@ -49561,7 +49561,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-45.kcad.ts",
-      "sourceSha256": "2e1cae51163a57b2a65611139ca2d5003ea03634342af5eae9bb7f6c3fab3a09",
+      "sourceSha256": "1e2bcfd15041f2a5a8abeb52c7bb88dc204242145fe62c45d96d679586826b66",
       "triangleBudget": 360,
       "params": [
         {
@@ -49634,7 +49634,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-90.kcad.ts",
-      "sourceSha256": "5a523da65eddbfe5aa74e909260d84c77b21c803f84383eabdf1779af1da5f82",
+      "sourceSha256": "6f90228b0c933db35a12a04bb6c699c01a963a1aedc286dc97dea870d2bc0189",
       "triangleBudget": 380,
       "params": [
         {
@@ -49707,7 +49707,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-flange.kcad.ts",
-      "sourceSha256": "4e6131939918863b7d269ab49c189594e8521b9c5eff2b4ec0b4406602f5d071",
+      "sourceSha256": "8ba5919d6594feef3e4b66c2580d2cbd147d4d28f5133d64ea341d641d904b55",
       "triangleBudget": 450,
       "params": [
         {
@@ -49779,7 +49779,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-reducer.kcad.ts",
-      "sourceSha256": "0859de8d536948956c4ce46d1cb3b0946bbebd1c2c1ae342f226b472045df5d1",
+      "sourceSha256": "29383bc1ec2af8e226c4718921e00d70a1c1328097414363f8698d513c0a3c43",
       "triangleBudget": 340,
       "params": [
         {
@@ -49926,7 +49926,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-tee.kcad.ts",
-      "sourceSha256": "e639fe61908ebd92c85aee3cdea64c5598759dcac37a338345b2760d2581b40c",
+      "sourceSha256": "98168ca48ba56167bafb765b25622c72fd699d18d5f3d606ea7d0ca8faa722af",
       "triangleBudget": 360,
       "params": [
         {
@@ -50144,7 +50144,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/rubber-bumper.kcad.ts",
-      "sourceSha256": "8410055855f748888537975b992b0509187928cdca5cdb8a8cfd36d9f10ef334",
+      "sourceSha256": "30af91d7f05af67949d5576694c90babaae274f9225e1dad3d6dc60200b646a1",
       "triangleBudget": 260,
       "params": [
         {
@@ -50217,7 +50217,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/shaft-collar.kcad.ts",
-      "sourceSha256": "776baa2a8dc3f43815668607f5e77038b0a38afc37f6b6305c195a921c878b25",
+      "sourceSha256": "5b9886721e963c4cd2ca58fc3bec6f7d393d5ba2f67c5ab4671fd876602c82b5",
       "triangleBudget": 300,
       "params": [
         {
@@ -50289,7 +50289,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/shaft-coupling.kcad.ts",
-      "sourceSha256": "48cb7d587cb66485f53dfb716bc8f6b18fb3065a52d3f90522c09b54ced809ea",
+      "sourceSha256": "60ed1ac54a2d68ebe04a447f173c3b5d4cbb3170c5dbcb70d4796c4882cadfaf",
       "triangleBudget": 340,
       "params": [
         {
@@ -50730,7 +50730,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/timing-belt-pulley.kcad.ts",
-      "sourceSha256": "b227e20533fc3d82c8f72c9ae6064e3f62da1ff1f90b26ec12ab967f570e7406",
+      "sourceSha256": "cd315ea19b67a471731e4fe3c26eba3609cbae29799638c5560434167a682e19",
       "triangleBudget": 340,
       "params": [
         {
@@ -50877,7 +50877,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/tubular-spacer.kcad.ts",
-      "sourceSha256": "7b4ec72955addf10a199d4e03611927a78d93c183169bb842d43c90b1505a9b8",
+      "sourceSha256": "34a46d285e66c38b467c3e067a7cd2cf507163eb474abee6de54590b9f048326",
       "triangleBudget": 260,
       "params": [
         {
@@ -51022,7 +51022,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/v-belt-pulley.kcad.ts",
-      "sourceSha256": "757af0444e6077c41fb2eef4528e6beed6b0f12b0f1b498bc580cf3a67d1be34",
+      "sourceSha256": "5401d691ea8246e18b287d242b624dddfd78a6489959c013a0d17ab95979c548",
       "triangleBudget": 420,
       "params": [
         {

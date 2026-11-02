@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('v-belt-pulley');
 a.part('hub',cylinder(24*s,12*s,8).subtract(cylinder(26*s,7*s,8).translate(0,0,-s)).translate(0,0,2*s).color(finish));
 a.part('rim-lower',cylinder(5*s,24*s,8).subtract(cylinder(7*s,7*s,8).translate(0,0,-s)).color(finish));

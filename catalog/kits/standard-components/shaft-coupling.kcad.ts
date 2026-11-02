@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('shaft-coupling');
 a.part('left-hub',cylinder(15*s,17*s,14).subtract(cylinder(17*s,8*s,12).translate(0,0,-s)).color(finish));
 a.part('center-band',cylinder(8*s,19*s,14).subtract(cylinder(10*s,8*s,12).translate(0,0,-s)).translate(0,0,15*s).color(finish));

@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('handwheel');
 const rim=cylinder(6*s,30*s,16).subtract(cylinder(8*s,24*s,16).translate(0,0,-s));
 a.part('rim',rim.rotateX(90).translate(0,3*s,30*s).color(finish));

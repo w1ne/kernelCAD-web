@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('pipe-coupling');
 a.part('sleeve',cylinder(28*s,17*s,14).subtract(cylinder(30*s,12*s,12).translate(0,0,-s)).color(finish));
 a.part('collar-a',cylinder(4*s,19*s,14).subtract(cylinder(6*s,12*s,12).translate(0,0,-s)).color(finish));

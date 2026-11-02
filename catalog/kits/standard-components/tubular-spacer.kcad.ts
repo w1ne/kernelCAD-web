@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('tubular-spacer');
 a.part('spacer',cylinder(16*s,14*s,12).subtract(cylinder(18*s,6*s,10).translate(0,0,-s)).color(finish));
 return a.model();

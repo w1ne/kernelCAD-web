@@ -21,7 +21,7 @@ presets({
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
 const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('linear-guide-carriage');
-let shoe=block(-22*s,-20*s,0,44*s,40*s,20*s).subtract(block(-18*s,-8*s,-s,36*s,16*s,13*s));
+const shoe=block(-22*s,-20*s,0,44*s,40*s,20*s).subtract(block(-18*s,-8*s,-s,36*s,16*s,13*s));
 a.part('shoe',shoe.color(finish));
 a.part('top-pad',block(-16*s,-14*s,20*s,32*s,28*s,5*s).color(finish));
 return a.model();

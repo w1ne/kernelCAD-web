@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('shaft-collar');
 a.part('ring',cylinder(12*s,19*s,16).subtract(cylinder(14*s,10*s,16).translate(0,0,-s)).color(finish));
 a.part('boss',cylinder(8*s,5*s,10).rotateX(90).translate(0,19*s,8*s).color(finish));

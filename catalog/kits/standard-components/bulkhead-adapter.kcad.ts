@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('bulkhead-adapter');
 a.part('barrel',cylinder(30*s,12*s,12).subtract(cylinder(32*s,8*s,12).translate(0,0,-s)).color(finish));
 a.part('lower-flange',cylinder(5*s,21*s,14).subtract(cylinder(7*s,8*s,12).translate(0,0,-s)).color(finish));

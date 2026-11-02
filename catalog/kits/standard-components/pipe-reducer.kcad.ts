@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('pipe-reducer');
 a.part('large-end',cylinder(10*s,22*s,14).subtract(cylinder(12*s,16*s,12).translate(0,0,-s)).color(finish));
 a.part('transition',cylinder(24*s,16*s,12).subtract(cylinder(26*s,11*s,12).translate(0,0,-s)).translate(0,0,10*s).color(finish));

@@ -19,7 +19,6 @@ presets({
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
-const block = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h).translate(x, y, z);
 const a = assembly('cable-gland');
 a.part('body',cylinder(22*s,12*s,8).subtract(cylinder(24*s,7*s,8).translate(0,0,-s)).color(finish));
 a.part('flange',cylinder(4*s,20*s,8).subtract(cylinder(6*s,7*s,8).translate(0,0,-s)).color(finish));
