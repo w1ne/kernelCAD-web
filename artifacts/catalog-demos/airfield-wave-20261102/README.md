@@ -27,7 +27,7 @@ python3 artifacts/catalog-demos/airfield-wave-20261102/inspect_airfield_video.py
 
 ## Verification limits
 
-All checks are local to the feature branch. The static catalog hub and pages were generated from the committed index and preview PNGs; they were not deployed or checked on the live kernelCAD website. Verify the applicable public page after merge and deployment. The models are original stylized scene props and do not represent aircraft performance, airport procedures, airworthiness or physical hardware acceptance.
+All build, mesh, index, preview and page-generation checks are local to the feature branch. The current public routes `https://kernelcad.com/catalog/` and `https://kernelcad.com/catalog/airfield/single-engine-trainer/` returned 404 on 2026-11-02, so this branch has no live page to verify. Check the public route after the website build/deploy path includes these generated pages. The models are original stylized scene props and do not represent aircraft performance, airport procedures, airworthiness or physical hardware acceptance.
 
 ## Provenance
 
