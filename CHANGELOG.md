@@ -15,6 +15,12 @@
   635 assets. The kit README and reviewed local demo bundle are in
   `catalog/kits/music/README.md` and
   `artifacts/catalog-demos/music-wave-20261102/`.
+- Photo/video studio catalog wave: 40 original parametric low-poly CC0 camera,
+  lens, lighting, support and production props in the new
+  `catalog/kits/photo-video-studio` kit, growing the catalog from 635 to 675
+  audited assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/photo-video-studio/README.md` and
+  `artifacts/catalog-demos/photo-video-studio-wave-20261102/`.
 
 - Asset catalog wave 1: 60 new original parametric low-poly assets (CC0) in
   five new kits, 12 each: `catalog/kits/tools-equipment` (hammers, wrench,
