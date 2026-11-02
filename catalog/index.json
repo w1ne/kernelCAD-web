@@ -1332,6 +1332,69 @@
       ]
     },
     {
+      "id": "telecom-infrastructure",
+      "title": "Telecom infrastructure",
+      "description": "Original low-poly communications-site, rooftop, radio and fiber-network equipment props with editable scale and color controls.",
+      "assets": [
+        "antenna-sector-frame",
+        "battery-backup-cabinet",
+        "cable-entry-gland-plate",
+        "cable-ladder-section",
+        "cable-splice-pit-frame",
+        "cable-support-hanger",
+        "cable-tray-elbow",
+        "cell-site-cabinet",
+        "conduit-riser-frame",
+        "dual-sector-panel-array",
+        "equipment-fan-panel",
+        "fiber-coil-reel",
+        "fiber-distribution-cabinet",
+        "fiber-dome-closure",
+        "fiber-drop-terminal",
+        "fiber-handhole-cover",
+        "fiber-route-marker",
+        "fiber-service-loop-rack",
+        "fiber-splice-closure",
+        "fiber-terminal-box",
+        "gnss-timing-antenna",
+        "grounding-bar",
+        "grounding-rod-kit",
+        "guy-wire-mast-anchor",
+        "lattice-mast-section",
+        "lightning-air-terminal",
+        "mast-extension-section",
+        "mast-outrigger-frame",
+        "microwave-backhaul-shelter",
+        "microwave-dish-antenna",
+        "monopole-mast",
+        "omnidirectional-whip-antenna",
+        "optical-patch-panel",
+        "outdoor-network-cabinet",
+        "parapet-mast-clamp",
+        "pedestal-fiber-terminal",
+        "pole-mount-radio-cabinet",
+        "radome-cylinder",
+        "remote-power-shelf",
+        "remote-radio-unit",
+        "rf-hazard-marker",
+        "roof-penetration-seal",
+        "rooftop-microwave-dish",
+        "rooftop-network-cabinet",
+        "rooftop-tripod-mast",
+        "sector-panel-antenna",
+        "site-id-placard",
+        "split-cable-duct",
+        "surge-protector-enclosure",
+        "telecom-cable-marker-post",
+        "telecom-equipment-shelter",
+        "telecom-warning-sign",
+        "wall-mast-bracket",
+        "waveguide-bridge",
+        "weatherproof-junction-box",
+        "yagi-radio-antenna"
+      ]
+    },
+    {
       "id": "terrain",
       "title": "Terrain",
       "description": "Low-poly 2 m grid terrain pieces: floors, ramps, stairs, platforms, cliff corners, shorelines and bridges that line up with the nature tiles, flat-shaded on one palette material.",
@@ -116282,6 +116345,3834 @@
             "rim-upper"
           ],
           "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "antenna-sector-frame",
+      "kit": "telecom-infrastructure",
+      "title": "Sector antenna frame",
+      "description": "Triangular sector panel support frame with three vertical rails and top and bottom braces. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/antenna-sector-frame.kcad.ts",
+      "sourceSha256": "244f03a9fed9680bf08f386c6d1a1246a8a74b374622f1aea48525bca3adc1d8",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#677177",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.5,
+          1.15,
+          0.465
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#677177",
+          "parts": [
+            "rail-a",
+            "rail-b",
+            "rail-c",
+            "top",
+            "bottom",
+            "mount-arm",
+            "clamp"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "battery-backup-cabinet",
+      "kit": "telecom-infrastructure",
+      "title": "Battery backup cabinet",
+      "description": "Compact backup-power enclosure with double front doors, cable entry hood and bottom plinth. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/battery-backup-cabinet.kcad.ts",
+      "sourceSha256": "d8562d061387404355bce5669475169e37f915c21b9558f3835380308687b834",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#586b73",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.15,
+          1.325,
+          0.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#586b73",
+          "parts": [
+            "body",
+            "top",
+            "door-left",
+            "door-right",
+            "intake",
+            "plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cable-entry-gland-plate",
+      "kit": "telecom-infrastructure",
+      "title": "Cable entry gland plate",
+      "description": "Rectangular entry plate with four raised cable glands and corner bolt heads. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/cable-entry-gland-plate.kcad.ts",
+      "sourceSha256": "250af4b0fbd70ebd9cda42a488089157245c17e7d685935139c1109074453390",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6c7273",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 364,
+        "sizeM": [
+          0.68,
+          0.145,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6c7273",
+          "parts": [
+            "plate",
+            "gland-0",
+            "gland-1",
+            "gland-2",
+            "gland-3",
+            "bolt--290--160",
+            "bolt--290-160",
+            "bolt-290--160",
+            "bolt-290-160"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cable-ladder-section",
+      "kit": "telecom-infrastructure",
+      "title": "Cable ladder section",
+      "description": "Straight cable ladder tray with twin rails and six evenly spaced rungs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/cable-ladder-section.kcad.ts",
+      "sourceSha256": "51f80f28524974c08d58e21e78f3b30fcdc111e107e8c61b1c7f8f463d1e01cc",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747c7e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.5,
+          0.07,
+          0.505
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747c7e",
+          "parts": [
+            "rail-left",
+            "rail-right",
+            "rung-0",
+            "rung-1",
+            "rung-2",
+            "rung-3",
+            "rung-4",
+            "rung-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cable-splice-pit-frame",
+      "kit": "telecom-infrastructure",
+      "title": "Cable splice pit frame",
+      "description": "Square access pit frame with thick rim, inset lid and paired lifting recesses. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/cable-splice-pit-frame.kcad.ts",
+      "sourceSha256": "ecd72bcef34e7190ac7821eeec63cd4e7116b7e3d0ad6fff495da4621e5dc19b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#717571",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.85,
+          0.088,
+          0.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#717571",
+          "parts": [
+            "outer-rim",
+            "lid",
+            "slot-left",
+            "slot-right",
+            "inner-lip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cable-support-hanger",
+      "kit": "telecom-infrastructure",
+      "title": "Cable support hanger",
+      "description": "Two-hole wall plate with a projecting U-shaped cable support and end lips. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/cable-support-hanger.kcad.ts",
+      "sourceSha256": "a8bcc784897e4b5bdbeeff8661e5faf8037900153efaa3ba460c6130d8b8c9c7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b7478",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.38,
+          0.66,
+          0.4225
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b7478",
+          "parts": [
+            "backplate",
+            "arm-left",
+            "arm-right",
+            "crossbar",
+            "lip-left",
+            "lip-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cable-tray-elbow",
+      "kit": "telecom-infrastructure",
+      "title": "Cable tray elbow",
+      "description": "Right-angle cable tray elbow with raised side rails and corner floor panels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/cable-tray-elbow.kcad.ts",
+      "sourceSha256": "896c3bfe3107e3c112b7ba68ed9d1c0cdf39ac5e158a9692906ecfad3eb99104",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747c7e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.2125,
+          0.15,
+          0.94
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747c7e",
+          "parts": [
+            "run-a",
+            "run-b",
+            "rail-a1",
+            "rail-a2",
+            "rail-b1",
+            "rail-b2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cell-site-cabinet",
+      "kit": "telecom-infrastructure",
+      "title": "Cell site cabinet",
+      "description": "Outdoor base-station cabinet with raised roof, split access doors, plinth and vent banks. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/cell-site-cabinet.kcad.ts",
+      "sourceSha256": "f35d8a1b5c1d7ec9fd1b600588d1d7775e8bba524523dd531a63b833b7c3d7af",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71818a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.96,
+          1.58,
+          0.68
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71818a",
+          "parts": [
+            "cabinet",
+            "roof",
+            "left-door",
+            "right-door",
+            "vent-1",
+            "vent-2",
+            "plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "conduit-riser-frame",
+      "kit": "telecom-infrastructure",
+      "title": "Conduit riser frame",
+      "description": "Wall-mounted riser frame with three vertical conduits, stand-off brackets and top bridge. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/conduit-riser-frame.kcad.ts",
+      "sourceSha256": "2cf003945e5c33f2f6b092618fff87247d75d5702344d0a4f0d8040d309a8e4a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707b7e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.7,
+          1.3,
+          0.19
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707b7e",
+          "parts": [
+            "conduit-0",
+            "conduit-1",
+            "conduit-2",
+            "bridge-top",
+            "bridge-bottom",
+            "stand-off-a",
+            "stand-off-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dual-sector-panel-array",
+      "kit": "telecom-infrastructure",
+      "title": "Dual sector panel array",
+      "description": "Pair of side-by-side sector panels on a shared rear rail with clamp brackets. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/dual-sector-panel-array.kcad.ts",
+      "sourceSha256": "0d6f6a0c717217347d75473f7ce6bd75a66ef25dd0ceda6082fd341690a05792",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d9ddd7",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.64,
+          1.84,
+          0.3215
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d9ddd7",
+          "parts": [
+            "panel-left",
+            "panel-right",
+            "back-rail",
+            "clamp-upper",
+            "clamp-lower",
+            "connector-left",
+            "connector-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "equipment-fan-panel",
+      "kit": "telecom-infrastructure",
+      "title": "Equipment fan panel",
+      "description": "Ventilation panel with twin circular fan shrouds and four mounting tabs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/equipment-fan-panel.kcad.ts",
+      "sourceSha256": "e6e3142ff11e0dac94f3e6ae3ed7d8b3d9f68de9b27dde144d3868cf7e94c275",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687277",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.81,
+          0.87,
+          0.315
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687277",
+          "parts": [
+            "panel",
+            "fan-a",
+            "fan-b",
+            "tab-0",
+            "tab-1",
+            "tab-2",
+            "tab-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fiber-coil-reel",
+      "kit": "telecom-infrastructure",
+      "title": "Fiber slack storage reel",
+      "description": "Compact fiber slack reel with twin flanges, center hub and four cross spokes. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/fiber-coil-reel.kcad.ts",
+      "sourceSha256": "74d2b2dbbace2d4a17e97b23738e18da0907f9fb5457c951cd150023ca70cbc3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687c65",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.5,
+          0.22,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687c65",
+          "parts": [
+            "flange-front",
+            "flange-back",
+            "hub",
+            "spoke-0",
+            "spoke-1",
+            "spoke-2",
+            "spoke-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fiber-distribution-cabinet",
+      "kit": "telecom-infrastructure",
+      "title": "Fiber distribution cabinet",
+      "description": "Street-side fiber distribution cabinet with hinged-looking front, lock and cable plinth. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/fiber-distribution-cabinet.kcad.ts",
+      "sourceSha256": "6720e94156524f45a03fe5854053e7daa8a646adc10e19ee2b4e5d9a1bb51049",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b8077",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.67,
+          1.045,
+          0.496
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b8077",
+          "parts": [
+            "body",
+            "hood",
+            "door",
+            "lock",
+            "lower-skirt"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fiber-dome-closure",
+      "kit": "telecom-infrastructure",
+      "title": "Fiber dome closure",
+      "description": "Vertical dome splice enclosure with a domed-looking cap, lower collar and four cable ports. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/fiber-dome-closure.kcad.ts",
+      "sourceSha256": "917bf57dc4c2fabfde97c495f7fce8e38bd6940ad1ff38b75b02765c511666fa",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#68785d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          0.34,
+          0.79,
+          0.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#68785d",
+          "parts": [
+            "base",
+            "body",
+            "dome",
+            "port-a",
+            "port-b",
+            "port-c",
+            "port-d"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fiber-drop-terminal",
+      "kit": "telecom-infrastructure",
+      "title": "Fiber drop terminal",
+      "description": "Small multiport drop terminal with six connector caps and a shallow rain hood. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/fiber-drop-terminal.kcad.ts",
+      "sourceSha256": "e2e076e12b215438393cf637598fdd33494b5d1fa403066b57cb2e95b064ec23",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b927e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.47,
+          0.292,
+          0.238
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b927e",
+          "parts": [
+            "case",
+            "hood",
+            "face",
+            "port-0",
+            "port-1",
+            "port-2",
+            "port-3",
+            "port-4",
+            "port-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fiber-handhole-cover",
+      "kit": "telecom-infrastructure",
+      "title": "Fiber handhole cover",
+      "description": "Rectangular fiber handhole lid with raised rim, lift slots and a small network marker. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/fiber-handhole-cover.kcad.ts",
+      "sourceSha256": "03ed985048eb6ef3abbe34c35b6910e8eab78cecd8024d6cffc39c1607308d07",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747873",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.9,
+          0.088,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747873",
+          "parts": [
+            "rim",
+            "lid",
+            "slot-left",
+            "slot-right",
+            "marker"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fiber-route-marker",
+      "kit": "telecom-infrastructure",
+      "title": "Fiber route marker",
+      "description": "Low ground route marker with tapered post, broad cap and square footing. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/fiber-route-marker.kcad.ts",
+      "sourceSha256": "a1e798508db11dc6454bd687541adfdf4d16c01ddff88986c38c1d384fac7d0f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d5b242",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.25,
+          0.61,
+          0.25
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d5b242",
+          "parts": [
+            "foot",
+            "post",
+            "cap",
+            "face"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fiber-service-loop-rack",
+      "kit": "telecom-infrastructure",
+      "title": "Fiber service loop rack",
+      "description": "Wall rack for fiber service loops with four broad retaining fingers and a backplate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/fiber-service-loop-rack.kcad.ts",
+      "sourceSha256": "5a37164043e922491acda42ef2e949f86ef11b18f54c144fc052ab8120bf91c9",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626e62",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.4,
+          0.8,
+          0.72
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626e62",
+          "parts": [
+            "backplate",
+            "loop-left",
+            "loop-right",
+            "finger-0",
+            "finger-1",
+            "finger-2",
+            "finger-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fiber-splice-closure",
+      "kit": "telecom-infrastructure",
+      "title": "Fiber splice closure",
+      "description": "Inline fiber splice closure with tapered ends, raised center lid and two cable ports. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/fiber-splice-closure.kcad.ts",
+      "sourceSha256": "aa1e1681329ba6bcde40a7c1514cc5b845a634f3b3ce2929a0c40cc4686e0665",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667a60",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.33,
+          0.525,
+          0.444
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667a60",
+          "parts": [
+            "shell",
+            "lid",
+            "port-left",
+            "port-right",
+            "mount-foot-left",
+            "mount-foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fiber-terminal-box",
+      "kit": "telecom-infrastructure",
+      "title": "Fiber terminal box",
+      "description": "Wall-mounted fiber terminal enclosure with weather hood, door seam and cable glands. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/fiber-terminal-box.kcad.ts",
+      "sourceSha256": "dc5e348910bd6d50c28b2c8a00750ad0e215ffceb34264773feb6a57b55d3a33",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#89927e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.5,
+          0.63,
+          0.227
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#89927e",
+          "parts": [
+            "body",
+            "hood",
+            "door",
+            "gland-left",
+            "gland-right",
+            "latch"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "gnss-timing-antenna",
+      "kit": "telecom-infrastructure",
+      "title": "GNSS timing antenna",
+      "description": "Compact timing antenna puck on a short pole with a broad weather cap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/gnss-timing-antenna.kcad.ts",
+      "sourceSha256": "6400be23938b26c6edef552d3c9ee1ba07565761aae1382e952d02efa8600fcf",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#dedfd5",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.31,
+          0.49,
+          0.31
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#dedfd5",
+          "parts": [
+            "base",
+            "pole",
+            "puck",
+            "cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "grounding-bar",
+      "kit": "telecom-infrastructure",
+      "title": "Grounding busbar",
+      "description": "Wall-mounted bonding bar with a thick base rail and six rounded-looking terminal posts. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/grounding-bar.kcad.ts",
+      "sourceSha256": "5e6cc3d2e130006974433c48585166e669478d1f92cca1cdfe423727b7ea35ac",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b17c38",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.85,
+          0.22,
+          0.13
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b17c38",
+          "parts": [
+            "rail",
+            "insulator-left",
+            "insulator-right",
+            "terminal-0",
+            "terminal-1",
+            "terminal-2",
+            "terminal-3",
+            "terminal-4",
+            "terminal-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "grounding-rod-kit",
+      "kit": "telecom-infrastructure",
+      "title": "Grounding rod set",
+      "description": "Three vertical grounding rods with top clamps and a short bonding strap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/grounding-rod-kit.kcad.ts",
+      "sourceSha256": "b0ffb491fb4b23fd7241cafc3bb7dec264a0e4b30f54defc3521a229783a22f3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b7655",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          0.76,
+          1.2,
+          0.084
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b7655",
+          "parts": [
+            "rod-0",
+            "rod-1",
+            "rod-2",
+            "clamp-0",
+            "clamp-1",
+            "clamp-2",
+            "bonding-bar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "guy-wire-mast-anchor",
+      "kit": "telecom-infrastructure",
+      "title": "Guyed mast anchor set",
+      "description": "Three-point guy-wire anchor layout with a central mast stub and ground cleat blocks. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/guy-wire-mast-anchor.kcad.ts",
+      "sourceSha256": "2d55960c4754e2328d77c6721e37aecedf5c3e8887fef21f17336b0f77b1341f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747b70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          1.5,
+          1.07,
+          1.32
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747b70",
+          "parts": [
+            "mast",
+            "base",
+            "anchor-a",
+            "anchor-b",
+            "anchor-c",
+            "guy-a",
+            "guy-b",
+            "guy-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lattice-mast-section",
+      "kit": "telecom-infrastructure",
+      "title": "Lattice mast section",
+      "description": "Square lattice mast segment with four corner legs, diagonal braces and end flanges. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/lattice-mast-section.kcad.ts",
+      "sourceSha256": "2f7d210f87aa94c92468f55d0b7f883c1248f6d94a75a593cf21b3f96094c7f8",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70797c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.56,
+          1.21,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70797c",
+          "parts": [
+            "leg-a",
+            "leg-b",
+            "leg-c",
+            "leg-d",
+            "cross-x1",
+            "cross-x2",
+            "brace-a",
+            "flange"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lightning-air-terminal",
+      "kit": "telecom-infrastructure",
+      "title": "Lightning protection air terminal",
+      "description": "Tapered-looking lightning rod on a broad rooftop base plate with a collar. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/lightning-air-terminal.kcad.ts",
+      "sourceSha256": "a36d6d79676c475a60d9c1486bbcf38870c32c07c9d62326c750cb6aa154d5e4",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737b80",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.36,
+          1.14,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737b80",
+          "parts": [
+            "base",
+            "mast",
+            "collar",
+            "tip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mast-extension-section",
+      "kit": "telecom-infrastructure",
+      "title": "Mast extension section",
+      "description": "Tubular mast extension with overlap sleeve, cap plate and paired mounting tabs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/mast-extension-section.kcad.ts",
+      "sourceSha256": "1937c1e6a084deda771446c9d0a43bbd8e42157e990f8d8efc4be356aeda701d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737c80",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.188,
+          1.165,
+          0.14
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737c80",
+          "parts": [
+            "tube",
+            "sleeve",
+            "cap",
+            "tab-left",
+            "tab-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mast-outrigger-frame",
+      "kit": "telecom-infrastructure",
+      "title": "Mast outrigger frame",
+      "description": "Rooftop outrigger frame with two ballast rails, cross members and a central mast socket. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/mast-outrigger-frame.kcad.ts",
+      "sourceSha256": "044ef2ba0423e5ed1e1d10cf5a35399b16a86ff06eb5f9a4d8da2876e0342d9e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#657179",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          1.02,
+          0.545,
+          1.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#657179",
+          "parts": [
+            "rail-left",
+            "rail-right",
+            "cross-front",
+            "cross-rear",
+            "socket",
+            "brace-left",
+            "brace-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "microwave-backhaul-shelter",
+      "kit": "telecom-infrastructure",
+      "title": "Microwave backhaul shelter",
+      "description": "Narrow field shelter for radio backhaul equipment with door, roof lip and wall vents. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/microwave-backhaul-shelter.kcad.ts",
+      "sourceSha256": "c829119c59d85d6e7055af78f1eefdb848095e57dfacf1b779834b2ce8a92ba3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596a72",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.68,
+          3.185,
+          1.49
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596a72",
+          "parts": [
+            "base",
+            "shell",
+            "roof",
+            "door",
+            "vent",
+            "step"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "microwave-dish-antenna",
+      "kit": "telecom-infrastructure",
+      "title": "Microwave dish antenna",
+      "description": "Compact parabolic-looking dish on an offset bracket with feed arm and rear mount. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/microwave-dish-antenna.kcad.ts",
+      "sourceSha256": "d37eec84f006b9fed536cb1f1099d3ebe0835d81448b236b98a36a60393167ea",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#cfd5d6",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.84,
+          1.155,
+          0.967
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#cfd5d6",
+          "parts": [
+            "dish-rim",
+            "dish-face",
+            "feed-arm",
+            "feed",
+            "mount-post",
+            "base"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "monopole-mast",
+      "kit": "telecom-infrastructure",
+      "title": "Monopole antenna mast",
+      "description": "Freestanding tapered-looking monopole with base flange, access rung strip and top mounting plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/monopole-mast.kcad.ts",
+      "sourceSha256": "3c37a1b55899c99f71c70bb1920d399bec7cd6007b848db7b1d2d3810feaf3f3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b8487",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.48,
+          2.08,
+          0.48
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b8487",
+          "parts": [
+            "base",
+            "shaft-lower",
+            "shaft-upper",
+            "access-strip",
+            "top-plate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "omnidirectional-whip-antenna",
+      "kit": "telecom-infrastructure",
+      "title": "Omnidirectional whip antenna",
+      "description": "Short omnidirectional whip aerial with base puck and stepped connector collar. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/omnidirectional-whip-antenna.kcad.ts",
+      "sourceSha256": "54843a152963f6c2b467a5329d6e2ce1a1db1dae3169aa14a9ec42148ad79f7e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#454c50",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.19,
+          1.075,
+          0.19
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#454c50",
+          "parts": [
+            "base",
+            "collar",
+            "whip",
+            "tip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "optical-patch-panel",
+      "kit": "telecom-infrastructure",
+      "title": "Optical patch panel",
+      "description": "Rack-width optical patch panel with two connector rows and rack ears. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/optical-patch-panel.kcad.ts",
+      "sourceSha256": "5204c4001eefc4d2a504603d83bd7798db6160b54a1208f97de0754d933e35be",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555e61",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 476,
+        "sizeM": [
+          0.6,
+          0.35,
+          0.208
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555e61",
+          "parts": [
+            "panel",
+            "ear-left",
+            "ear-right",
+            "port-0-0",
+            "port-0-1",
+            "port-0-2",
+            "port-0-3",
+            "port-0-4",
+            "port-1-0",
+            "port-1-1",
+            "port-1-2",
+            "port-1-3",
+            "port-1-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "outdoor-network-cabinet",
+      "kit": "telecom-infrastructure",
+      "title": "Outdoor network cabinet",
+      "description": "Tall weatherproof network enclosure with sloped rain cap, side louvers and raised feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/outdoor-network-cabinet.kcad.ts",
+      "sourceSha256": "962e444aca7dd0499d93d232a9f154cbc2f716ebb0abaf081b1dfc8b39dbf262",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#77838a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.86,
+          1.715,
+          0.68
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#77838a",
+          "parts": [
+            "body",
+            "cap",
+            "side-louver-a",
+            "side-louver-b",
+            "door",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parapet-mast-clamp",
+      "kit": "telecom-infrastructure",
+      "title": "Parapet mast clamp",
+      "description": "Parapet clamp frame with twin jaws, vertical mast socket and tightening blocks. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/parapet-mast-clamp.kcad.ts",
+      "sourceSha256": "961fc663e9f2c0807808f4b272ecceac09402195b00f024fe57cbfb7c45b5c39",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73797a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.56,
+          0.62,
+          0.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73797a",
+          "parts": [
+            "base",
+            "jaw-left",
+            "jaw-right",
+            "socket",
+            "cross-bolt",
+            "pad-left",
+            "pad-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pedestal-fiber-terminal",
+      "kit": "telecom-infrastructure",
+      "title": "Pedestal fiber terminal",
+      "description": "Slim ground pedestal with removable cap, service door and two conduit entries. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/pedestal-fiber-terminal.kcad.ts",
+      "sourceSha256": "812b39fc2cac2324dc93dec747aa304a4763bbd07b22098f3d219063b26710f9",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707d72",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.43,
+          1.12,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707d72",
+          "parts": [
+            "base",
+            "pedestal",
+            "cap",
+            "door",
+            "conduit-a",
+            "conduit-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pole-mount-radio-cabinet",
+      "kit": "telecom-infrastructure",
+      "title": "Pole mount radio cabinet",
+      "description": "Compact pole-mounted radio enclosure with strap brackets, lid and front service panel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/pole-mount-radio-cabinet.kcad.ts",
+      "sourceSha256": "726833cc46cf49d7210509d68b5c5fb6697e1aa3c9156b222947c1efdd500957",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d7b82",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.62,
+          0.78,
+          0.463
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d7b82",
+          "parts": [
+            "box",
+            "lid",
+            "panel",
+            "strap-upper",
+            "strap-lower",
+            "lock"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "radome-cylinder",
+      "kit": "telecom-infrastructure",
+      "title": "Cylindrical antenna radome",
+      "description": "Smooth cylindrical radome with rounded-looking cap rings and a narrow mounting foot. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/radome-cylinder.kcad.ts",
+      "sourceSha256": "2c2887c0c50a92f46113cd326376a291cca7c1fbdb6c0bd06fa2f8cba6a06161",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d8dad4",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.24,
+          1.19,
+          0.24
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d8dad4",
+          "parts": [
+            "foot",
+            "shell",
+            "cap",
+            "collar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "remote-power-shelf",
+      "kit": "telecom-infrastructure",
+      "title": "Remote power shelf",
+      "description": "Rack power shelf with two module faces, handles and a raised top lip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/remote-power-shelf.kcad.ts",
+      "sourceSha256": "3a63e77c91beba2a40b7b2e278dc795abe40a8e322019aff4f40869ea3567d28",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.7,
+          0.34,
+          0.425
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626b70",
+          "parts": [
+            "shelf",
+            "top",
+            "module-left",
+            "module-right",
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "remote-radio-unit",
+      "kit": "telecom-infrastructure",
+      "title": "Remote radio unit",
+      "description": "Outdoor radio unit with finned body, upper mounting ears and two lower connectors. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/remote-radio-unit.kcad.ts",
+      "sourceSha256": "c6b64609b542dc16d47951e74f3b693c1007e2e8fe98b1568ee2dc70a49bcd07",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777d7c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.47,
+          1.21,
+          0.287
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777d7c",
+          "parts": [
+            "body",
+            "top-ear-left",
+            "top-ear-right",
+            "fin-a",
+            "fin-b",
+            "connector-a",
+            "connector-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rf-hazard-marker",
+      "kit": "telecom-infrastructure",
+      "title": "RF hazard marker",
+      "description": "Compact RF exposure marker on a post with a raised diamond-like center plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/rf-hazard-marker.kcad.ts",
+      "sourceSha256": "cc07c106c47820e861c1b4454342a7d04ce12c2723f699ae91ffe76fedc8d627",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d3aa37",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.45,
+          1.025,
+          0.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d3aa37",
+          "parts": [
+            "post",
+            "plate",
+            "center",
+            "foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "roof-penetration-seal",
+      "kit": "telecom-infrastructure",
+      "title": "Roof cable penetration seal",
+      "description": "Low roof cable penetration boot with a rectangular base, collar and capped conduit. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/roof-penetration-seal.kcad.ts",
+      "sourceSha256": "31623076fb78eec1570b35b8f67ee82f0f94b150ec261fe761dcb7ac5584e0f0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555c5a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.42,
+          0.695,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555c5a",
+          "parts": [
+            "base",
+            "boot",
+            "collar",
+            "conduit",
+            "cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rooftop-microwave-dish",
+      "kit": "telecom-infrastructure",
+      "title": "Rooftop microwave dish",
+      "description": "Medium rooftop microwave dish with upright post, offset arm and compact feed horn. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/rooftop-microwave-dish.kcad.ts",
+      "sourceSha256": "36665b6107e7811f9182bbccc5f36d48152166e44dd8a8fab7803c9476dbb661",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c7cdcf",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.72,
+          1.41,
+          0.858
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c7cdcf",
+          "parts": [
+            "dish-rim",
+            "dish",
+            "arm",
+            "feed-horn",
+            "post",
+            "foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rooftop-network-cabinet",
+      "kit": "telecom-infrastructure",
+      "title": "Rooftop network cabinet",
+      "description": "Low rooftop radio cabinet with raised curb, hinged lid and side ventilation slots. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/rooftop-network-cabinet.kcad.ts",
+      "sourceSha256": "b6b54fa8aa1ea62be758c5625ec5740b1d1f20395cb1fcc9ae5375a038c6f1d2",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b837d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.25,
+          1.02,
+          0.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b837d",
+          "parts": [
+            "curb",
+            "body",
+            "lid",
+            "front-panel",
+            "vent-left",
+            "vent-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rooftop-tripod-mast",
+      "kit": "telecom-infrastructure",
+      "title": "Rooftop tripod mast",
+      "description": "Short rooftop antenna mast on three splayed legs with a round base plate and collar. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/rooftop-tripod-mast.kcad.ts",
+      "sourceSha256": "1a25acca2d13edce2973bc9a2b6a6e9b71aeee5a2cfeffe4e175923dd3ae32fd",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626c70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.54,
+          1.335,
+          0.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626c70",
+          "parts": [
+            "base",
+            "mast",
+            "leg-front",
+            "leg-left",
+            "leg-right",
+            "collar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sector-panel-antenna",
+      "kit": "telecom-infrastructure",
+      "title": "Sector panel antenna",
+      "description": "Slim panel antenna with shallow radome, rear mounting rail and connector block. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/sector-panel-antenna.kcad.ts",
+      "sourceSha256": "8dffb1b256761899153fc0231d0adc61b8221989756e5d335aea9322d1d0a4d1",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e2e4dc",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.27,
+          1.86,
+          0.22
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e2e4dc",
+          "parts": [
+            "radome",
+            "top-cap",
+            "bottom-cap",
+            "rear-rail",
+            "connector"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "site-id-placard",
+      "kit": "telecom-infrastructure",
+      "title": "Site identification placard",
+      "description": "Small site identification plate with a raised frame, two posts and bolted feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/site-id-placard.kcad.ts",
+      "sourceSha256": "90bc5df7150576965dd30100d36141f71b1ce4791e195f897a895b86fb1fa7b2",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#63737c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.76,
+          1.07,
+          0.066
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#63737c",
+          "parts": [
+            "plate",
+            "inset",
+            "post--280",
+            "post-280",
+            "bolt--320",
+            "bolt-320"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "split-cable-duct",
+      "kit": "telecom-infrastructure",
+      "title": "Split cable duct",
+      "description": "Low split-duct cable cover with two channel shells and a bridging lid strip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/split-cable-duct.kcad.ts",
+      "sourceSha256": "1653c8126fac4e59be5b286d42d7dd1acf4e5486a9f89a09016282d81710e37f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a866e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.55,
+          0.11,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a866e",
+          "parts": [
+            "base-a",
+            "base-b",
+            "lid-a",
+            "lid-b",
+            "center-join"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "surge-protector-enclosure",
+      "kit": "telecom-infrastructure",
+      "title": "Surge protection enclosure",
+      "description": "Compact surge protection box with a front cover, conduit entry and top cap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/surge-protector-enclosure.kcad.ts",
+      "sourceSha256": "391b0693af1ad1a7196883f15cb7a52bba0c161d70fb355fbbd2b630919f88dc",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b817b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.42,
+          0.57,
+          0.265
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b817b",
+          "parts": [
+            "body",
+            "lid",
+            "cap",
+            "conduit",
+            "latch"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "telecom-cable-marker-post",
+      "kit": "telecom-infrastructure",
+      "title": "Telecom cable marker post",
+      "description": "Narrow marker post with a ribbed cap, tag plate and buried-end indicator band. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/telecom-cable-marker-post.kcad.ts",
+      "sourceSha256": "2d50090dcb9c1625d3d6f7ffbbd32fb5b6b1dfecaee00e8112e128b0bac4136b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#cb9e38",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.19,
+          0.88,
+          0.19
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#cb9e38",
+          "parts": [
+            "post",
+            "cap",
+            "tag",
+            "band",
+            "foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "telecom-equipment-shelter",
+      "kit": "telecom-infrastructure",
+      "title": "Telecom equipment shelter",
+      "description": "Small site shelter with two access doors, vent panels, corner posts and a broad roof. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/telecom-equipment-shelter.kcad.ts",
+      "sourceSha256": "e5a87590f316da9fcb87fe76dcf781cec81515e67dc9d6df50ea51971b29dfa3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6a7779",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          2.75,
+          3.605,
+          2.25
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6a7779",
+          "parts": [
+            "floor",
+            "rear",
+            "left",
+            "right",
+            "roof",
+            "door-a",
+            "door-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "telecom-warning-sign",
+      "kit": "telecom-infrastructure",
+      "title": "Telecom warning sign",
+      "description": "Site warning placard on two short posts with a broad rectangular sign panel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/telecom-warning-sign.kcad.ts",
+      "sourceSha256": "2cf437e982e85e002dde761be40e46cb3e5f459b6efe1dd40ded47b4d2da5f4f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d6a848",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.8,
+          1.53,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d6a848",
+          "parts": [
+            "panel",
+            "post--300",
+            "post-300",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wall-mast-bracket",
+      "kit": "telecom-infrastructure",
+      "title": "Wall mast stand-off bracket",
+      "description": "Wall stand-off bracket with backplate, two arms, mast clamps and bolt heads. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/wall-mast-bracket.kcad.ts",
+      "sourceSha256": "48f83e0527fff0a2cf603319c57f802b941b58fe00b9f4f496764a0946474d13",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687278",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.3,
+          1,
+          0.51
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687278",
+          "parts": [
+            "backplate",
+            "arm-upper",
+            "arm-lower",
+            "clamp-upper",
+            "clamp-lower",
+            "gusset-a",
+            "gusset-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "waveguide-bridge",
+      "kit": "telecom-infrastructure",
+      "title": "Waveguide bridge tray",
+      "description": "Raised rooftop waveguide bridge with two support frames and a broad crossing tray. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/waveguide-bridge.kcad.ts",
+      "sourceSha256": "1e87aba07533aa439a29035d5780013fa0eac3e13656f77dd38ad1b50a232be4",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70777a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.8,
+          0.695,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70777a",
+          "parts": [
+            "tray",
+            "rail-left",
+            "rail-right",
+            "leg--700--155",
+            "leg--700-155",
+            "leg-700--155",
+            "leg-700-155",
+            "cross-a",
+            "cross-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "weatherproof-junction-box",
+      "kit": "telecom-infrastructure",
+      "title": "Weatherproof junction box",
+      "description": "Small sealed junction box with screw-down lid, raised lip and three cable entries. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/weatherproof-junction-box.kcad.ts",
+      "sourceSha256": "e2ef6cc489b517c457c872b62b258118f0d35b2a2bdc6e150aa6a4b62a706728",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a9085",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          0.36,
+          0.225,
+          0.26
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a9085",
+          "parts": [
+            "base",
+            "lid",
+            "entry-0",
+            "entry-1",
+            "entry-2",
+            "screw--145--95",
+            "screw--145-95",
+            "screw-145--95",
+            "screw-145-95"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "yagi-radio-antenna",
+      "kit": "telecom-infrastructure",
+      "title": "Yagi radio antenna",
+      "description": "Directional Yagi antenna with a boom, reflector and four short director elements. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "telecom",
+        "network",
+        "communications",
+        "infrastructure",
+        "low poly"
+      ],
+      "compat": [
+        "telecom",
+        "network",
+        "infrastructure",
+        "industrial"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/telecom-infrastructure/yagi-radio-antenna.kcad.ts",
+      "sourceSha256": "c66f303e81b4e3edf9f43603730decb2115aca04e7ecc80a7a1d8c952d38a236",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b8483",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          1.05,
+          0.47,
+          0.136
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b8483",
+          "parts": [
+            "boom",
+            "reflector",
+            "driven",
+            "director-a",
+            "director-b",
+            "mast-clamp"
+          ],
+          "param": "color"
         }
       ]
     },

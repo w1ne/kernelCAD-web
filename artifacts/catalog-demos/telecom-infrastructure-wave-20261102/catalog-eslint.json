@@ -1,0 +1,8 @@
+{
+  "command": "npx eslint catalog/",
+  "status": "passed",
+  "exitCode": 0,
+  "checkedAt": "2026-11-02",
+  "scope": "catalog/",
+  "outputBytes": 0
+}
