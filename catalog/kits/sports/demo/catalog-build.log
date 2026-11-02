@@ -1,0 +1,5 @@
+
+> kernelcad@0.17.4 catalog:build
+> npx tsx scripts/buildAssetCatalog.ts
+
+wrote /home/andrii/worktrees/kernelCAD-web/catalog-wave-81347/catalog/index.json

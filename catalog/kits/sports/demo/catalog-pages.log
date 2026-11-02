@@ -1,0 +1,5 @@
+
+> kernelcad@0.17.4 catalog:pages
+> npx tsx scripts/buildCatalogPages.ts /tmp/catalog-pages-sports-final-81347
+
+wrote 413 asset page(s) + hub, sitemap.xml and robots.txt to /tmp/catalog-pages-sports-final-81347

@@ -1,0 +1,25 @@
+{
+  "purpose": "Show the authored sports models, their generated catalog previews, and local validation results.",
+  "date": "2026-11-02",
+  "resolution": "1920x1080",
+  "frameRate": 24,
+  "segmentsSeconds": [3, 8, 4],
+  "encoding": {
+    "container": "MP4",
+    "videoCodec": "H.264",
+    "crf": 24,
+    "preset": "slow",
+    "audio": false
+  },
+  "inputs": "catalog/kits/sports/previews/*.png",
+  "commands": [
+    "bash catalog/kits/sports/demo/validate-assets.sh",
+    "npm run catalog:build",
+    "npm run catalog:previews",
+    "npx vitest run tests/integration/catalog/catalogIndex.test.ts",
+    "npm run catalog:pages -- /tmp/catalog-pages-sports-final-81347",
+    "python3 catalog/kits/sports/demo/check-static-pages.py /tmp/catalog-pages-sports-final-81347",
+    "bash catalog/kits/sports/demo/make-demo.sh"
+  ],
+  "claimBoundary": "Local authoring, source checks, catalog build, preview generation, and integration tests only. Deployment and physical hardware acceptance are not shown."
+}
