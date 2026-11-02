@@ -1,0 +1,35 @@
+meta({
+  name: 'cyclone-separator',
+  license: 'CC0-1.0',
+  title: 'Cyclone separator',
+  description: 'Compact dust cyclone with cylindrical chamber, conical drop leg, side inlet and top exhaust. Knobs: size, body, steel and safety colours.',
+  tags: ['cyclone separator', 'dust collection', 'factory', 'industrial'],
+  kit: 'industrial-plant',
+  category: 'prop',
+  origin: 'base',
+  compat: ['industrial', 'factory'],
+  triangleBudget: 600,
+});
+
+const scale = param('size', '1', { choices: ['0.8', '1', '1.25'], label: 'Size scale' });
+const body = param('body', '#607478', { label: 'Main body' });
+const steel = param('steel', '#3f484b', { label: 'Steelwork' });
+const accent = param('accent', '#dda91f', { label: 'Safety accent' });
+
+presets({ stainless: { body: '#aeb9b9', steel: '#596468', accent: '#cc9d20' }, safety: { body: '#e4c34b', accent: '#cf3f31' } });
+const S = Number(scale.value);
+const a = assembly('cyclone-separator');
+const ngon = (r: number, n: number) => { let p = path().moveTo(r, 0); for (let i = 1; i < n; i++) { const t = 2 * Math.PI * i / n; p = p.lineTo(r * Math.cos(t), r * Math.sin(t)); } return p.close(); };
+const block = (name: string, w: number, d: number, h: number, x: number, y: number, z: number, c = steel) => a.part(name, box(w, d, h, true).translate(x, y, z + h / 2).color(c));
+const ringZ = (r: number, width: number, x: number, y: number, z: number, c = steel) => ngon(r, 8).extrude(width).subtract(ngon(r - 14 * S, 8).extrude(width + 2).translate(0, 0, -1)).translate(x, y, z).color(c);
+
+
+const R = 420 * S, H = 920 * S;
+a.part('chamber', ngon(R, 10).extrude(H).translate(0, 0, 640 * S).color(body));
+a.part('cone', ngon(R, 10).loft(ngon(95 * S, 10), { spacing: 640 * S, ruled: true }).color(steel));
+a.part('drop-leg', ngon(95 * S, 8).extrude(200 * S).translate(0, 0, 0).color(accent));
+a.part('top-exhaust', ngon(130 * S, 8).extrude(280 * S).translate(0, 0, 1560 * S).color(steel));
+block('inlet-duct', 540 * S, 240 * S, 180 * S, R * 0.85, 0, 1160 * S, accent);
+for (const z of [690, 1530]) a.part(`band-${z}`, ringZ(R + 18 * S, 24 * S, 0, 0, z * S, steel));
+
+return a.model();

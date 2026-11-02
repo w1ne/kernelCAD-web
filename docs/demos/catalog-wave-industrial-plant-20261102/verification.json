@@ -1,0 +1,129 @@
+{
+  "checkedAt": "2026-11-02T03:13:57.287Z",
+  "kit": "industrial-plant",
+  "assets": {
+    "count": 60,
+    "ids": [
+      "access-stair-tower",
+      "agitated-reactor-vessel",
+      "air-compressor",
+      "air-cooled-condenser",
+      "air-handling-unit",
+      "axial-exhaust-fan",
+      "cable-reel",
+      "cable-tray-section",
+      "centrifugal-pump",
+      "chemical-storage-tank",
+      "chiller-unit",
+      "conveyor-belt-section",
+      "cooling-tower-cell",
+      "cooling-tower",
+      "cooling-water-pump-skid",
+      "cyclone-separator",
+      "duct-elbow",
+      "dust-collector",
+      "electric-motor",
+      "eyewash-station",
+      "floor-grating-platform",
+      "gear-reducer",
+      "generator-set",
+      "heat-exchanger",
+      "horizontal-pressure-vessel",
+      "hydraulic-power-unit",
+      "industrial-blower",
+      "industrial-boiler",
+      "industrial-drum-mixer",
+      "industrial-flue-stack",
+      "industrial-furnace",
+      "industrial-mixer",
+      "industrial-pipe-bridge",
+      "industrial-wash-station",
+      "jib-crane",
+      "junction-box",
+      "loading-dock-leveler",
+      "machine-foundation-skid",
+      "machine-guard-cell",
+      "material-handling-hopper",
+      "motor-control-cabinet",
+      "overhead-crane",
+      "pallet-wrapper",
+      "panel-filter-unit",
+      "pipe-rack-bay",
+      "plate-heat-exchanger",
+      "pneumatic-air-dryer",
+      "process-mixing-tank",
+      "rectangular-duct-section",
+      "roller-conveyor-section",
+      "safety-cage-ladder",
+      "safety-shower",
+      "screw-compressor-package",
+      "screw-conveyor",
+      "service-platform",
+      "silo-bin",
+      "transformer-substation-bay",
+      "transformer",
+      "vacuum-pump",
+      "water-filter-skid"
+    ]
+  },
+  "commands": [
+    "for f in catalog/kits/industrial-plant/*.kcad.ts; do npx tsx scripts/checkCatalogAsset.ts \"$f\" || echo \"FAILED $f\"; done",
+    "npm run catalog:build",
+    "npm run catalog:previews",
+    "npx vitest run tests/integration/catalog/catalogIndex.test.ts",
+    "npx tsx docs/demos/catalog-wave-industrial-plant-20261102/generate.mts"
+  ],
+  "checks": {
+    "checkCatalogAsset": {
+      "passed": 60,
+      "total": 60,
+      "result": "pass"
+    },
+    "catalogIndexGate": {
+      "passed": 2,
+      "total": 2,
+      "result": "pass"
+    },
+    "defaultAssetStats": {
+      "minTriangles": 72,
+      "maxTriangles": 548,
+      "allWithinBudget": true,
+      "oneMaterialEach": true,
+      "allBaseGrounded": true
+    }
+  },
+  "demo": {
+    "file": "demo.mp4",
+    "showcase": [
+      "chemical-storage-tank",
+      "centrifugal-pump",
+      "axial-exhaust-fan",
+      "cooling-tower",
+      "conveyor-belt-section",
+      "overhead-crane",
+      "motor-control-cabinet",
+      "safety-shower"
+    ],
+    "stream": {
+      "codec_name": "h264",
+      "width": 1280,
+      "height": 720,
+      "r_frame_rate": "24/1"
+    },
+    "durationSeconds": 25.333333,
+    "sizeBytes": 134969,
+    "codecSettings": {
+      "codec": "libx264",
+      "crf": 27,
+      "preset": "medium",
+      "pixelFormat": "yuv420p",
+      "fps": 24
+    }
+  },
+  "scope": {
+    "source": "Local software-rendered previews from catalog GLBs",
+    "deployedPage": "not verified; PR awaits merge and deployment",
+    "hardwareAcceptance": "not demonstrated",
+    "simulationOrReplay": "not demonstrated"
+  }
+}

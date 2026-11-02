@@ -173,6 +173,73 @@
       ]
     },
     {
+      "id": "industrial-plant",
+      "title": "Industrial Plant",
+      "description": "Original low-poly factory and process-plant equipment for industrial scenes: vessels, machines, conveyors, electrical gear and access structures, with parametric size and colour knobs.",
+      "assets": [
+        "access-stair-tower",
+        "agitated-reactor-vessel",
+        "air-compressor",
+        "air-cooled-condenser",
+        "air-handling-unit",
+        "axial-exhaust-fan",
+        "cable-reel",
+        "cable-tray-section",
+        "centrifugal-pump",
+        "chemical-storage-tank",
+        "chiller-unit",
+        "conveyor-belt-section",
+        "cooling-tower-cell",
+        "cooling-tower",
+        "cooling-water-pump-skid",
+        "cyclone-separator",
+        "duct-elbow",
+        "dust-collector",
+        "electric-motor",
+        "eyewash-station",
+        "floor-grating-platform",
+        "gear-reducer",
+        "generator-set",
+        "heat-exchanger",
+        "horizontal-pressure-vessel",
+        "hydraulic-power-unit",
+        "industrial-blower",
+        "industrial-boiler",
+        "industrial-drum-mixer",
+        "industrial-flue-stack",
+        "industrial-furnace",
+        "industrial-mixer",
+        "industrial-pipe-bridge",
+        "industrial-wash-station",
+        "jib-crane",
+        "junction-box",
+        "loading-dock-leveler",
+        "machine-foundation-skid",
+        "machine-guard-cell",
+        "material-handling-hopper",
+        "motor-control-cabinet",
+        "overhead-crane",
+        "pallet-wrapper",
+        "panel-filter-unit",
+        "pipe-rack-bay",
+        "plate-heat-exchanger",
+        "pneumatic-air-dryer",
+        "process-mixing-tank",
+        "rectangular-duct-section",
+        "roller-conveyor-section",
+        "safety-cage-ladder",
+        "safety-shower",
+        "screw-compressor-package",
+        "screw-conveyor",
+        "service-platform",
+        "silo-bin",
+        "transformer-substation-bay",
+        "transformer",
+        "vacuum-pump",
+        "water-filter-skid"
+      ]
+    },
+    {
       "id": "interior",
       "title": "Interior",
       "description": "Low-poly furniture and room pieces for homes and offices at real-world scale, flat-shaded on one palette material.",
@@ -21933,6 +22000,6584 @@
             "wine"
           ],
           "param": "wine"
+        }
+      ]
+    },
+    {
+      "id": "access-stair-tower",
+      "kit": "industrial-plant",
+      "title": "Industrial access stair tower",
+      "description": "Open industrial stair flight with tread plates, twin stringers, landing guardrails and a top transition. Knobs: size, step count, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "industrial stairs",
+        "access tower",
+        "factory",
+        "industrial",
+        "maintenance"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/access-stair-tower.kcad.ts",
+      "sourceSha256": "540c39de3ce6beeefc8001a98c17ddf4197a5380c5efc68035e519dcf687993f",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        },
+        {
+          "name": "stepCount",
+          "type": "choice",
+          "default": "7",
+          "label": "Steps",
+          "choices": [
+            "5",
+            "7",
+            "9"
+          ]
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 548,
+        "sizeM": [
+          1.983,
+          2.511903,
+          0.48
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "tread-0",
+            "tread-2",
+            "tread-4",
+            "tread-6",
+            "handrail-0",
+            "handrail-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "tread-1",
+            "tread-3",
+            "tread-5"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "stringer-a",
+            "lower-anchor-a",
+            "stringer-b",
+            "lower-anchor-b",
+            "stanchion-0-0",
+            "stanchion-0-1",
+            "stanchion-0-2",
+            "stanchion-0-3",
+            "stanchion-0-4",
+            "stanchion-0-5",
+            "stanchion-0-6",
+            "stanchion-1-0",
+            "stanchion-1-1",
+            "stanchion-1-2",
+            "stanchion-1-3",
+            "stanchion-1-4",
+            "stanchion-1-5",
+            "stanchion-1-6"
+          ],
+          "param": "steel"
+        }
+      ]
+    },
+    {
+      "id": "agitated-reactor-vessel",
+      "kit": "industrial-plant",
+      "title": "Agitated reactor vessel",
+      "description": "Jacketed reactor vessel with domed-look top cap, drive assembly, support skirt and process nozzles. Knobs: size, vessel, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "reactor vessel",
+        "jacketed vessel",
+        "agitator",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/agitated-reactor-vessel.kcad.ts",
+      "sourceSha256": "3093181f5702982647f658ca50c1685f00887d270d6170b8e2fd499b8f30f2e3",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 328,
+        "sizeM": [
+          1.08,
+          2.35,
+          1.08
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "jacket",
+            "agitator-shaft",
+            "agitator-blade"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "reactor-shell",
+            "top-cap"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "drive",
+            "nozzle-0",
+            "nozzle-1",
+            "nozzle-2"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "air-compressor",
+      "kit": "industrial-plant",
+      "title": "Air compressor package",
+      "description": "Reciprocating compressor package with horizontal receiver, twin pump heads, motor, pressure switch and handle. Knobs: size, tank, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "air compressor",
+        "compressor",
+        "receiver tank",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/air-compressor.kcad.ts",
+      "sourceSha256": "5d29f813ffe24c04a58a1129cd824e7f1674d2fe1de8f60c40cee5f01f34c1af",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.35,
+          0.92,
+          0.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "receiver"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "tank-foot-a",
+            "tank-foot-b",
+            "motor"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "pump-head-0",
+            "pump-head-1",
+            "pressure-switch"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "air-cooled-condenser",
+      "kit": "industrial-plant",
+      "title": "Air-cooled condenser bank",
+      "description": "Compact air-cooled condenser bank with finned coil panels, twin top fans, end headers and skid rails. Knobs: size, coil, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "condenser",
+        "air cooled",
+        "heat rejection",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/air-cooled-condenser.kcad.ts",
+      "sourceSha256": "2d849dd7a2ccc32a9074b999e321eee906603870035df882d5273b1dee9c95df",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          1.9,
+          1.025,
+          1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "base",
+            "coil-fin-0",
+            "coil-fin-1",
+            "coil-fin-2",
+            "coil-fin-3",
+            "coil-fin-4",
+            "coil-fin-5",
+            "coil-fin-6",
+            "coil-fin-7",
+            "fan-hub-0",
+            "fan-hub-1"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "coil-bank"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "fan-ring-0",
+            "fan-ring-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "air-handling-unit",
+      "kit": "industrial-plant",
+      "title": "Air handling unit",
+      "description": "Modular air handling unit with filter bay, fan section, service doors, intake louvre and support plinth. Knobs: size, casing, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "air handling unit",
+        "AHU",
+        "HVAC",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/air-handling-unit.kcad.ts",
+      "sourceSha256": "b6b17b17249ee231bcb6a08628d5895daf3678a2ecf4d0ffa8d70fc8f969b722",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          2.234,
+          1.186,
+          0.92
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "plinth",
+            "fan-bay"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "filter-bay",
+            "coil-bay",
+            "service-door-1",
+            "service-door-2",
+            "service-door-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "service-door-0",
+            "fan-ring"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "axial-exhaust-fan",
+      "kit": "industrial-plant",
+      "title": "Axial exhaust fan",
+      "description": "Wall-mounted axial fan with square frame, round guard ring, central hub and four broad blades. Knobs: size, frame, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "axial fan",
+        "exhaust fan",
+        "ventilation",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/axial-exhaust-fan.kcad.ts",
+      "sourceSha256": "5bde4f5f4c586b5748bcc852356272290502a21e74d090a73fcfce3900cadf97",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.98,
+          0.98,
+          0.23
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "wall-frame"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "guard-ring",
+            "blade-0",
+            "blade-2",
+            "mount-0",
+            "mount-1",
+            "mount-2",
+            "mount-3"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "hub",
+            "blade-1",
+            "blade-3"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "cable-reel",
+      "kit": "industrial-plant",
+      "title": "Industrial cable reel",
+      "description": "Heavy cable reel with flanged drum, visible wound cable bands, central axle and freestanding support frame. Knobs: size, flange, steel and cable colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cable reel",
+        "wire reel",
+        "cable drum",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/cable-reel.kcad.ts",
+      "sourceSha256": "4e7e6bb6b0b233fd41e362b3e3f2660b73b1afada5267fcf03a417348cf924b6",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          1.3,
+          1.3,
+          1.07
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "frame-base",
+            "upright-0",
+            "upright-1"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "axle",
+            "cable-wrap-0",
+            "cable-wrap-1",
+            "cable-wrap-2",
+            "cable-wrap-3"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "flange-a",
+            "flange-b"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "cable-tray-section",
+      "kit": "industrial-plant",
+      "title": "Perforated cable tray section",
+      "description": "Straight industrial cable tray with folded side channels, repeating cross rungs and splice plates. Knobs: size, tray, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cable tray",
+        "cable management",
+        "electrical installation",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/cable-tray-section.kcad.ts",
+      "sourceSha256": "9a5d6b7eb920d630f4c0bdb112dc74bc962b5db44ac422ca59bef59f02f9dd1d",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          1.824,
+          0.13,
+          0.48
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "tray-bottom"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "left-flange",
+            "right-flange",
+            "splice-a",
+            "splice-b"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "rung-0",
+            "rung-1",
+            "rung-2",
+            "rung-3",
+            "rung-4",
+            "rung-5",
+            "rung-6",
+            "rung-7",
+            "rung-8"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "centrifugal-pump",
+      "kit": "industrial-plant",
+      "title": "Centrifugal pump",
+      "description": "End-suction centrifugal pump with volute housing, horizontal motor, baseplate, suction and discharge nozzles. Knobs: size, housing, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "centrifugal pump",
+        "water pump",
+        "process pump",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/centrifugal-pump.kcad.ts",
+      "sourceSha256": "2d055ab6eebd8da8f9e3ab978d2a07dfaa5464c91f1837b78db9e8c0e9573400",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          1.3,
+          0.74,
+          0.532592
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "baseplate",
+            "motor-cap",
+            "discharge"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "motor",
+            "volute"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "suction"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "chemical-storage-tank",
+      "kit": "industrial-plant",
+      "title": "Chemical storage tank",
+      "description": "Vertical factory storage tank with banded shell, access ladder and a top nozzle. Knobs: height, facets, tank and steel colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "chemical storage tank",
+        "vertical tank",
+        "factory",
+        "industrial",
+        "process plant",
+        "vessel"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/chemical-storage-tank.kcad.ts",
+      "sourceSha256": "e3ed2f49af401aa1e8d0d7e30ba790c04cae77aed3c6aadcfa56907209b451b1",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "2400",
+          "label": "Height (mm)",
+          "choices": [
+            "1800",
+            "2400",
+            "3200"
+          ]
+        },
+        {
+          "name": "facets",
+          "type": "choice",
+          "default": "10",
+          "label": "Facets",
+          "choices": [
+            "8",
+            "10",
+            "12"
+          ]
+        },
+        {
+          "name": "tank",
+          "type": "color",
+          "default": "#477d82",
+          "label": "Tank"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#4c5558",
+          "label": "Steel"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "tank": "#aeb9b9",
+          "steel": "#536066"
+        },
+        "safetyYellow": {
+          "tank": "#d8a921",
+          "steel": "#3a4246"
+        }
+      },
+      "stats": {
+        "triangles": 460,
+        "sizeM": [
+          1.096,
+          2.4,
+          1.073179
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "tank",
+          "color": "#477d82",
+          "parts": [
+            "shell",
+            "roof"
+          ],
+          "param": "tank"
+        },
+        {
+          "name": "steel",
+          "color": "#4c5558",
+          "parts": [
+            "base-skirt",
+            "top-rim",
+            "nozzle",
+            "support-leg-0",
+            "support-leg-1",
+            "support-leg-2",
+            "support-leg-3",
+            "ladder-rail-0",
+            "ladder-rail-1",
+            "ladder-rung-160",
+            "ladder-rung-380",
+            "ladder-rung-600",
+            "ladder-rung-820",
+            "ladder-rung-1040",
+            "ladder-rung-1260",
+            "ladder-rung-1480",
+            "ladder-rung-1700",
+            "ladder-rung-1920",
+            "ladder-rung-2140"
+          ],
+          "param": "steel"
+        }
+      ]
+    },
+    {
+      "id": "chiller-unit",
+      "kit": "industrial-plant",
+      "title": "Air-cooled chiller unit",
+      "description": "Packaged rooftop chiller with louvred side panels, two top condenser fans, skid base and service end. Knobs: size, casing, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "chiller",
+        "HVAC",
+        "air cooled chiller",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/chiller-unit.kcad.ts",
+      "sourceSha256": "b48bdc89413c028baf997ee06c034960a4785ba30bfc4d81e20e0e1617705cdf",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 292,
+        "sizeM": [
+          1.95,
+          1.084,
+          0.93
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "skid",
+            "louver-0",
+            "louver-1",
+            "louver-2",
+            "louver-3",
+            "louver-4",
+            "louver-5",
+            "fan-shroud-0",
+            "fan-shroud-1"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "cabinet"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "fan-hub-0",
+            "fan-hub-1",
+            "service-panel"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "conveyor-belt-section",
+      "kit": "industrial-plant",
+      "title": "Belt conveyor section",
+      "description": "Straight belt conveyor with driven end drum, side rails, two support frames and an adjustable belt width. Knobs: size, belt, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "belt conveyor",
+        "material handling",
+        "factory",
+        "industrial",
+        "production line"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/conveyor-belt-section.kcad.ts",
+      "sourceSha256": "cab47a4ca31e2a092af28cefad8738f2f3ce1d5eb60c077129fd0183193e3a87",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          2.3,
+          0.86,
+          0.668
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "belt"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "side-rail-a",
+            "side-rail-b",
+            "leg-a-a",
+            "leg-a-b",
+            "leg-b-a",
+            "leg-b-b"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "crossbar-a",
+            "crossbar-b"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "cooling-tower-cell",
+      "kit": "industrial-plant",
+      "title": "Modular cooling tower cell",
+      "description": "Modular cooling tower cell with louvred basin, tapered body, top fan deck and corner service supports. Knobs: size, casing, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cooling tower cell",
+        "cooling plant",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/cooling-tower-cell.kcad.ts",
+      "sourceSha256": "35fb5b4e61121881882de4a765a74e266a470b004c443f7b074ef94efb69472f",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          1.15,
+          2.199,
+          1.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "basin",
+            "fan-deck"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "tower"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "louvre-0",
+            "louvre-1",
+            "louvre-2",
+            "louvre-3",
+            "louvre-4",
+            "fan-ring"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "cooling-tower",
+      "kit": "industrial-plant",
+      "title": "Cooling tower",
+      "description": "Induced-draft cooling tower with tapered cell body, fan deck, top guardrail and access legs. Knobs: size, body, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cooling tower",
+        "HVAC",
+        "factory",
+        "industrial",
+        "power plant"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/cooling-tower.kcad.ts",
+      "sourceSha256": "f7daa3bebb7c2adeaa8feb90cca031b6d247f74803b3fe23ab5ec84f2ba71cdd",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          1.3,
+          2.37,
+          1.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "tower-body",
+            "fan-blade-1",
+            "fan-blade-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "fan-deck",
+            "support-0",
+            "support-1",
+            "support-2",
+            "support-3"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "fan-hub",
+            "fan-blade-0",
+            "fan-blade-2"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "cooling-water-pump-skid",
+      "kit": "industrial-plant",
+      "title": "Cooling water pump skid",
+      "description": "Dual cooling-water pump skid with two motor-pump sets, common base, suction header and discharge manifold. Knobs: size, housing, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "pump skid",
+        "cooling water",
+        "dual pump",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/cooling-water-pump-skid.kcad.ts",
+      "sourceSha256": "001c6b260fee77fb4ee41643ed343ccff2444b53756d4e1dff6a2adf8e7a4e53",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          1.7,
+          0.666,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "base",
+            "foot-0",
+            "foot-1",
+            "suction-header"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "motor-0",
+            "motor-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "pump-0",
+            "pump-1",
+            "discharge-header"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "cyclone-separator",
+      "kit": "industrial-plant",
+      "title": "Cyclone separator",
+      "description": "Compact dust cyclone with cylindrical chamber, conical drop leg, side inlet and top exhaust. Knobs: size, body, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cyclone separator",
+        "dust collection",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/cyclone-separator.kcad.ts",
+      "sourceSha256": "a12c4e2d4e9400d5191656adf07a1ace0af44b51518803ebb2c822a2a0f9c996",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          1.065,
+          1.84,
+          0.876
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "chamber"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "cone",
+            "top-exhaust",
+            "band-690",
+            "band-1530"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "drop-leg",
+            "inlet-duct"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "duct-elbow",
+      "kit": "industrial-plant",
+      "title": "Rectangular duct elbow",
+      "description": "Square ventilation duct elbow with segmented corner panels, flange rims and a side inspection plate. Knobs: size, duct, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "duct elbow",
+        "HVAC",
+        "ventilation",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/duct-elbow.kcad.ts",
+      "sourceSha256": "0ccd6010796490cebc731027f0c36f75624490f149cce5a3faf2212c2bb83f09",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.385,
+          0.9,
+          0.53
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "vertical-leg",
+            "horizontal-leg"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "elbow-outer",
+            "vertical-flange-180",
+            "vertical-flange-760"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "inspection-plate"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "dust-collector",
+      "kit": "industrial-plant",
+      "title": "Baghouse dust collector",
+      "description": "Baghouse collector with four filter compartments, hopper discharge and a top clean-air plenum. Knobs: size, shell, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "baghouse",
+        "dust collector",
+        "factory",
+        "industrial",
+        "filter"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/dust-collector.kcad.ts",
+      "sourceSha256": "4ed6ab6a441c01ed7898d1851200cf7a9c4d4ca266f01182cd4e1342cf3c1882",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          1.6,
+          2.23,
+          0.82
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "hopper",
+            "clean-air-plenum",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "filter-house",
+            "access-door-1",
+            "access-door-2",
+            "access-door-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "access-door-0",
+            "outlet"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "electric-motor",
+      "kit": "industrial-plant",
+      "title": "Industrial electric motor",
+      "description": "Ribbed induction motor with terminal box, cooling fan cover, mounting feet and projecting drive shaft. Knobs: size, housing, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "electric motor",
+        "induction motor",
+        "factory",
+        "industrial",
+        "machine"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/electric-motor.kcad.ts",
+      "sourceSha256": "a76694aca96d0e94f83bed2144a07df50320eb5535d02bd0f93e954427d7a2e8",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 376,
+        "sizeM": [
+          1.31,
+          0.74,
+          0.561123
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "mounting-feet",
+            "cooling-rib-0",
+            "cooling-rib-1",
+            "cooling-rib-2",
+            "cooling-rib-3",
+            "cooling-rib-4",
+            "cooling-rib-5",
+            "cooling-rib-6",
+            "fan-cover"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "stator"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "shaft",
+            "terminal-box"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "eyewash-station",
+      "kit": "industrial-plant",
+      "title": "Pedestal eyewash station",
+      "description": "Pedestal eyewash unit with foot plate, twin spray bowls, crossbar, water inlet and pull flag. Knobs: size, pipe, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "eyewash station",
+        "safety equipment",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/eyewash-station.kcad.ts",
+      "sourceSha256": "3b28714d69a2e69a06d63641e460bfc7259085c5ac635d98d02426b00b77b4ef",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.619,
+          1.29,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "floor-plate",
+            "bowl-0",
+            "bowl-1"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "pedestal"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "spray-header",
+            "nozzle-0",
+            "nozzle-1",
+            "pull-handle"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "floor-grating-platform",
+      "kit": "industrial-plant",
+      "title": "Floor grating platform panel",
+      "description": "Modular steel grating panel with perimeter frame, repeating cross bars and four locating tabs. Knobs: size, bar count, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "floor grating",
+        "walkway panel",
+        "industrial floor",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/floor-grating-platform.kcad.ts",
+      "sourceSha256": "37aebbf9f4ce5af15e951ef0c06b3ee2b8197ce6f935f35727f0f9885f0e1947",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 312,
+        "sizeM": [
+          1.8,
+          0.103,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "perimeter",
+            "cross-bar-2",
+            "cross-bar-4",
+            "cross-bar-6",
+            "cross-bar-8",
+            "cross-bar-10",
+            "cross-bar-12"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "long-bar-1",
+            "long-bar-2",
+            "long-bar-3",
+            "long-bar-4",
+            "long-bar-5",
+            "long-bar-6",
+            "long-bar-7",
+            "long-bar-8",
+            "long-bar-9"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "cross-bar-1",
+            "cross-bar-3",
+            "cross-bar-5",
+            "cross-bar-7",
+            "cross-bar-9",
+            "cross-bar-11",
+            "locating-tab-0",
+            "locating-tab-1",
+            "locating-tab-2",
+            "locating-tab-3"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "gear-reducer",
+      "kit": "industrial-plant",
+      "title": "Industrial gear reducer",
+      "description": "Floor-mounted gear reducer with stepped casing, inspection cover, feet and two keyed shafts. Knobs: size, casing, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "gear reducer",
+        "gearbox",
+        "drive reducer",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/gear-reducer.kcad.ts",
+      "sourceSha256": "a30fa5ff3529cb2d9f67d5bfb13f5f8fc4316030e2b44163c233507440f6be9e",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.34,
+          0.825,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "base",
+            "input-shaft"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "lower-case",
+            "upper-case"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "inspection-cover",
+            "output-shaft"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "generator-set",
+      "kit": "industrial-plant",
+      "title": "Diesel generator set",
+      "description": "Enclosed generator skid with louvred canopy, engine base, exhaust stack and service control panel. Knobs: size, canopy, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "generator set",
+        "diesel generator",
+        "power plant",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/generator-set.kcad.ts",
+      "sourceSha256": "3ef70d6c8f0eb0d60d1de2081045cb54d7411e94d8c4844efc72f620c3faa9e1",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          2.052,
+          1.578,
+          0.93
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "skid",
+            "side-louver-0",
+            "side-louver-1",
+            "side-louver-2",
+            "side-louver-3",
+            "side-louver-4",
+            "side-louver-5",
+            "side-louver-6",
+            "side-louver-7",
+            "exhaust"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "canopy"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "control-panel",
+            "exhaust-cap"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "heat-exchanger",
+      "kit": "industrial-plant",
+      "title": "Shell and tube heat exchanger",
+      "description": "Horizontal shell and tube exchanger with end channel covers, tie rods, feet and service nozzles. Knobs: size, shell, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "heat exchanger",
+        "shell and tube",
+        "process equipment",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/heat-exchanger.kcad.ts",
+      "sourceSha256": "a15710a03670d106a0b3d1253743140bedecbbd1728741ccdf8eea542aeb2d25",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          1.94,
+          1.108,
+          0.646718
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "channel-left",
+            "channel-right",
+            "saddle-a",
+            "saddle-b"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "tie-rod-0",
+            "tie-rod-1",
+            "tie-rod-2",
+            "tie-rod-3",
+            "nozzle-a",
+            "nozzle-b"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "horizontal-pressure-vessel",
+      "kit": "industrial-plant",
+      "title": "Horizontal pressure vessel",
+      "description": "Horizontal compressed-air receiver with saddle supports, end heads, top access hatch and gauge. Knobs: size, vessel, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "pressure vessel",
+        "air receiver",
+        "tank",
+        "factory",
+        "industrial",
+        "process plant"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/horizontal-pressure-vessel.kcad.ts",
+      "sourceSha256": "a900f3e9c96f1b7d7d6097f2c5ddd83cf2704f06a5d739949568e90505d9973e",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          2.476,
+          1.079,
+          0.84
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "left-head",
+            "right-head",
+            "saddle-foot-0",
+            "saddle-0",
+            "saddle-foot-1",
+            "saddle-1",
+            "hatch-neck"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "saddle-cap-0",
+            "saddle-cap-1",
+            "hatch-lid",
+            "gauge"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "hydraulic-power-unit",
+      "kit": "industrial-plant",
+      "title": "Hydraulic power unit",
+      "description": "Hydraulic power unit with reservoir, electric motor, pump head, manifold and return filter. Knobs: size, tank, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "hydraulic power unit",
+        "hydraulic pump",
+        "factory",
+        "industrial",
+        "machine"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/hydraulic-power-unit.kcad.ts",
+      "sourceSha256": "7bedcb8d0b196834f2bb1826c84abcc70e06e5e96cfbe624d4a2686ae0d1fd29",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          1.19,
+          1.03,
+          0.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "reservoir"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "lid",
+            "pump-head",
+            "manifold-port-0",
+            "manifold-port-1",
+            "manifold-port-2"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "motor",
+            "return-filter"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "industrial-blower",
+      "kit": "industrial-plant",
+      "title": "Industrial centrifugal blower",
+      "description": "Centrifugal blower with volute case, square discharge, inlet ring and motor drive. Knobs: size, housing, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "centrifugal blower",
+        "industrial fan",
+        "air handling",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/industrial-blower.kcad.ts",
+      "sourceSha256": "8556d5b5be4ef15dd250a79a749ba354e100e2906dca5a01e257ece96b7c06d6",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          1.25,
+          1.52,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "base",
+            "inlet-ring"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "blower-case",
+            "discharge"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "motor"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "industrial-boiler",
+      "kit": "industrial-plant",
+      "title": "Industrial boiler",
+      "description": "Packaged boiler with horizontal pressure shell, firebox, access door, stack and service platform. Knobs: size, shell, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "boiler",
+        "steam plant",
+        "industrial heater",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/industrial-boiler.kcad.ts",
+      "sourceSha256": "34d0b6c2f94566fd0eda4e2bf9d9b96692a2a34a50985df16142d6ac45c80668",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          1.744,
+          1.858,
+          0.88
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "boiler-shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "front-head",
+            "firebox",
+            "stack",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "fire-door",
+            "stack-cap"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "industrial-drum-mixer",
+      "kit": "industrial-plant",
+      "title": "Industrial drum mixer",
+      "description": "Tilting drum mixer with polygon mixing drum, side trunnion, drive housing, support legs and handwheel. Knobs: size, drum, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "drum mixer",
+        "industrial mixer",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/industrial-drum-mixer.kcad.ts",
+      "sourceSha256": "48ba62105f18d55c5f4b66d469f7e5e3fbab693f925bb136baff01d9d3950e97",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          1.5,
+          1.45,
+          1.545
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "drum"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "drum-rim-0",
+            "drum-rim-1",
+            "frame-base",
+            "drive-box"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "tilt-pivot",
+            "handwheel"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "industrial-flue-stack",
+      "kit": "industrial-plant",
+      "title": "Industrial exhaust stack",
+      "description": "Segmented exhaust stack with ring stiffeners, base plate, service ladder and rain cap. Knobs: size, stack height, body, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "exhaust stack",
+        "flue",
+        "industrial chimney",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/industrial-flue-stack.kcad.ts",
+      "sourceSha256": "0141f578d694d9008db27ae6c1d7918be7a8946a328b7f876bd80da55d946d2c",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        },
+        {
+          "name": "heightMm",
+          "type": "choice",
+          "default": "2800",
+          "label": "Height (mm)",
+          "choices": [
+            "2200",
+            "2800",
+            "3600"
+          ]
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 536,
+        "sizeM": [
+          0.75,
+          2.818,
+          0.75
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "stack-shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "stiffener-0",
+            "stiffener-1",
+            "stiffener-2",
+            "cap",
+            "ladder-rung-180",
+            "ladder-rung-680",
+            "ladder-rung-1180",
+            "ladder-rung-1680",
+            "ladder-rung-2180",
+            "ladder-rung-2680"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "base",
+            "ladder-rail-0",
+            "ladder-rail-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "industrial-furnace",
+      "kit": "industrial-plant",
+      "title": "Industrial heat-treatment furnace",
+      "description": "Box furnace with insulated body, front loading door, status lights, raised base and extraction stack. Knobs: size, body, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "industrial furnace",
+        "heat treatment",
+        "factory",
+        "industrial",
+        "kiln"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/industrial-furnace.kcad.ts",
+      "sourceSha256": "8bcc1c6c18b45ea34630bd55e653867c813dec6f6472681c2c5c9c7d54ad2337",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          1.45,
+          2.33,
+          1.327
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "base",
+            "door-frame",
+            "status-0",
+            "status-2",
+            "exhaust-stack"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "furnace-body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "hot-door",
+            "status-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "industrial-mixer",
+      "kit": "industrial-plant",
+      "title": "Industrial batch mixer",
+      "description": "Open-top batch mixer with angular bowl, crossbar drive, mixing paddle, side trunnions and service feet. Knobs: size, bowl, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "batch mixer",
+        "industrial mixer",
+        "factory",
+        "industrial",
+        "process"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/industrial-mixer.kcad.ts",
+      "sourceSha256": "cabec987c75fdb0f177ae38d1c55879b01671378eb2381d5e45e04bdc14d5cdf",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          1.3,
+          1.296,
+          1.07
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "stand",
+            "drive-bar",
+            "paddle"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "mixer-bowl"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "rim",
+            "mixing-shaft"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "industrial-pipe-bridge",
+      "kit": "industrial-plant",
+      "title": "Industrial pipe bridge",
+      "description": "Elevated pipe bridge module with two trestles, cross bracing, twin process pipes and shoe supports. Knobs: size, frame, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "pipe bridge",
+        "pipe support structure",
+        "process piping",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/industrial-pipe-bridge.kcad.ts",
+      "sourceSha256": "301a10ae778adde118b1712fedb27af96a07720124104ad20bc714ab69d9be7d",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 252,
+        "sizeM": [
+          2.185,
+          2.4,
+          1.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "column-0-0",
+            "column-0-1",
+            "column-1-0",
+            "column-1-1",
+            "lower-brace"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "cap-0",
+            "cap-1",
+            "pipe-0"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "pipe-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "industrial-wash-station",
+      "kit": "industrial-plant",
+      "title": "Parts wash station",
+      "description": "Factory parts wash station with deep tank, drain basket, hinged lid and front control box. Knobs: size, tank, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "parts washer",
+        "wash station",
+        "factory",
+        "industrial",
+        "maintenance"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/industrial-wash-station.kcad.ts",
+      "sourceSha256": "0716b65a0629005b72fbe7b6ab67b67e636267958aa27c0441564e2724efd39b",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.35,
+          1.565,
+          0.895
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "cabinet",
+            "lid"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "wash-tank",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "basket-rim",
+            "control"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "jib-crane",
+      "kit": "industrial-plant",
+      "title": "Wall-mounted jib crane",
+      "description": "Compact factory jib crane with mounting mast, triangular brace, outreach boom, trolley and lifting hook. Knobs: size, frame, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "jib crane",
+        "wall crane",
+        "factory",
+        "industrial",
+        "material handling"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/jib-crane.kcad.ts",
+      "sourceSha256": "23946affad191f3e6df0c265761230bb302d9ecb86a25f698a838f0e6d24e3c9",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.864249,
+          2.5,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "mast",
+            "trolley",
+            "hook"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "boom"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "brace",
+            "chain"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "junction-box",
+      "kit": "industrial-plant",
+      "title": "Industrial junction box",
+      "description": "Wall-mounted junction box with hinged lid, cable glands, mounting ears and a single status beacon. Knobs: size, enclosure, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "junction box",
+        "electrical enclosure",
+        "cable entry",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/junction-box.kcad.ts",
+      "sourceSha256": "c65d4d07d11eb70344d2624f343579a3a1a31dd89d598ceedc6f5f8753452ce9",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.68,
+          0.776,
+          0.323
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "back-plate",
+            "gland-0",
+            "gland-1",
+            "gland-2",
+            "gland-3"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "box"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "lid",
+            "status-lamp"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "loading-dock-leveler",
+      "kit": "industrial-plant",
+      "title": "Loading dock leveler",
+      "description": "Hydraulic dock leveler with pit frame, hinged ramp plate, front lip and warning-edge stripes. Knobs: size, deck, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "dock leveler",
+        "loading dock",
+        "warehouse",
+        "industrial",
+        "logistics"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/loading-dock-leveler.kcad.ts",
+      "sourceSha256": "e52b4bd32bc965c0dd23999cbcd2856f147c258bd740b6253174d9ae66029288",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.835,
+          0.29,
+          2.21
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "pit-frame",
+            "lift-arm--1",
+            "lift-arm-1"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "ramp-deck"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "lip",
+            "warning-edge--1",
+            "warning-edge-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "machine-foundation-skid",
+      "kit": "industrial-plant",
+      "title": "Machine foundation skid",
+      "description": "Heavy machine foundation skid with perimeter rails, crossmembers, anchor pads and a lifting lug set. Knobs: size, frame, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "machine skid",
+        "equipment base",
+        "factory",
+        "industrial",
+        "foundation"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/machine-foundation-skid.kcad.ts",
+      "sourceSha256": "937d981755c2bdce20d0b1ea28659bf925d9d5b641df932c8036a18ad8db2f1f",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          2.2,
+          0.23,
+          1.415
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "deck"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "side-rail-a",
+            "side-rail-b",
+            "crossmember-0",
+            "crossmember-1",
+            "crossmember-2",
+            "crossmember-3"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "anchor-pad-0",
+            "anchor-pad-1",
+            "anchor-pad-2",
+            "anchor-pad-3"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "machine-guard-cell",
+      "kit": "industrial-plant",
+      "title": "Machine guard cell",
+      "description": "Modular machine safety cell with base frame, mesh-like infill grid, corner posts and a swing access gate. Knobs: size, frame, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "machine guard",
+        "safety cell",
+        "factory",
+        "industrial",
+        "machine enclosure"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/machine-guard-cell.kcad.ts",
+      "sourceSha256": "2e11d400d587f667b165b621b121d6a768a7135c6e2f8b173ae7fba1498907e9",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 496,
+        "sizeM": [
+          2.21,
+          1.908,
+          1.51
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "corner-post-0",
+            "corner-post-1",
+            "corner-post-2",
+            "corner-post-3"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "top-rail-front",
+            "top-rail-back",
+            "floor-anchor-0",
+            "floor-anchor-1",
+            "floor-anchor-2",
+            "floor-anchor-3"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "mesh-bar-f-1",
+            "mesh-bar-f-2",
+            "mesh-bar-f-3",
+            "mesh-bar-f-4",
+            "mesh-bar-f-5",
+            "mesh-bar-b-1",
+            "mesh-bar-b-2",
+            "mesh-bar-b-3",
+            "mesh-bar-b-4",
+            "mesh-bar-b-5"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "material-handling-hopper",
+      "kit": "industrial-plant",
+      "title": "Mobile material hopper",
+      "description": "Forkliftable bulk-material hopper with sloped discharge body, four corner feet and a bottom gate. Knobs: size, body, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "material hopper",
+        "forklift hopper",
+        "bulk handling",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/material-handling-hopper.kcad.ts",
+      "sourceSha256": "7c29ec5c9ddc6ddf5f75b4798bc0abb68fd8e15a4107e1047a284e74106d8580",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.29,
+          1.255,
+          1.14
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "hopper-body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "top-rim",
+            "fork-foot-a-a",
+            "fork-foot-a-b",
+            "fork-foot-b-a",
+            "fork-foot-b-b"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "gate"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "motor-control-cabinet",
+      "kit": "industrial-plant",
+      "title": "Motor control cabinet",
+      "description": "Multi-bay motor control centre with recessed door panels, indicator lights, ventilation slots and plinth. Knobs: size, cabinet, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "motor control centre",
+        "MCC cabinet",
+        "electrical cabinet",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/motor-control-cabinet.kcad.ts",
+      "sourceSha256": "17867637499edf8a078d707166e09f8a427f9324515c5be408eb524c7bb3a474",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 408,
+        "sizeM": [
+          1.85,
+          2.124,
+          0.603
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "plinth",
+            "indicator-0-0",
+            "indicator-0-2",
+            "indicator-1-0",
+            "indicator-1-2",
+            "indicator-2-0",
+            "indicator-2-2",
+            "indicator-3-0",
+            "indicator-3-2"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "enclosure",
+            "door-1",
+            "door-2",
+            "door-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "door-0",
+            "indicator-0-1",
+            "indicator-1-1",
+            "indicator-2-1",
+            "indicator-3-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "overhead-crane",
+      "kit": "industrial-plant",
+      "title": "Overhead gantry crane",
+      "description": "Floor-mounted overhead gantry crane with tall end frames, bridge beam, travel trolley and hanging hook. Knobs: size, frame, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "overhead crane",
+        "gantry crane",
+        "factory",
+        "industrial",
+        "material handling"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/overhead-crane.kcad.ts",
+      "sourceSha256": "b963c5e285f64ae73fe7672b4fc024414f41e0acb7743246a60836f9cc091da2",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          2.47,
+          2.415,
+          1.45
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "leg--1-a",
+            "leg--1-b",
+            "leg-1-a",
+            "leg-1-b",
+            "hoist-chain",
+            "hook"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "end-beam--1",
+            "end-beam-1",
+            "trolley"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "bridge"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "pallet-wrapper",
+      "kit": "industrial-plant",
+      "title": "Pallet stretch wrapper",
+      "description": "Turntable stretch wrapper with pallet plate, film mast, carriage, control pendant and safety-colour stop buttons. Knobs: size, frame, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "pallet wrapper",
+        "stretch wrap machine",
+        "packaging",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/pallet-wrapper.kcad.ts",
+      "sourceSha256": "6e1fa9ccd0afb7be191deacebbc7b2b304d925ce08d732d783acda140c41b699",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          1.493,
+          2.14,
+          1.44
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "turntable",
+            "film-carriage"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "mast",
+            "film-roll"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "mast-base",
+            "pendant"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "panel-filter-unit",
+      "kit": "industrial-plant",
+      "title": "Panel filter unit",
+      "description": "Compact industrial panel filter with pleated filter pack, clamping frame and differential-pressure indicator. Knobs: size, filter, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "panel filter",
+        "industrial air filter",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/panel-filter-unit.kcad.ts",
+      "sourceSha256": "82b9fee728e2c0fb9d9b87e35b1b27947401f336a85438d9b71ecafbc62c6660",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          1.2,
+          0.99,
+          0.574
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "frame",
+            "clamp-a",
+            "clamp-b"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "filter-pleat-0",
+            "filter-pleat-2",
+            "filter-pleat-4",
+            "filter-pleat-6",
+            "filter-pleat-8",
+            "pressure-indicator"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "filter-pleat-1",
+            "filter-pleat-3",
+            "filter-pleat-5",
+            "filter-pleat-7"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "pipe-rack-bay",
+      "kit": "industrial-plant",
+      "title": "Pipe rack bay",
+      "description": "Two-bent pipe-rack bay with braced columns, cross beams and three colour-coded process lines. Knobs: size, frame, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "pipe rack",
+        "process piping",
+        "plant structure",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/pipe-rack-bay.kcad.ts",
+      "sourceSha256": "8218eafe1b128c57235dd4674b14bf4b5b5272646a89f8443f361769a3603d82",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          2.1,
+          2.31,
+          0.735
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "column-0",
+            "column-1",
+            "column-2",
+            "column-3"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "crossbeam-1550",
+            "crossbeam-2250",
+            "process-line-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "process-line-0",
+            "process-line-2"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "plate-heat-exchanger",
+      "kit": "industrial-plant",
+      "title": "Plate heat exchanger",
+      "description": "Compact plate heat exchanger with clamped plate pack, tie rods, end frame and four service ports. Knobs: size, plate pack, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "plate heat exchanger",
+        "process equipment",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/plate-heat-exchanger.kcad.ts",
+      "sourceSha256": "fd0256965390829486bccd97dca96f948521967654f6637c7fce96e9209b1b73",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          0.96,
+          1.27,
+          0.44
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "base",
+            "movable-frame",
+            "tie-0",
+            "tie-1",
+            "tie-2",
+            "tie-3"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "fixed-frame",
+            "plate-1",
+            "plate-3",
+            "plate-5",
+            "plate-7"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "plate-0",
+            "plate-2",
+            "plate-4",
+            "plate-6"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "pneumatic-air-dryer",
+      "kit": "industrial-plant",
+      "title": "Compressed air dryer",
+      "description": "Refrigerated compressed-air dryer with cabinet, condensate drain, pipe connections and status panel. Knobs: size, casing, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "air dryer",
+        "compressed air",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/pneumatic-air-dryer.kcad.ts",
+      "sourceSha256": "0b699501e29f285259ed272f2c06343688951caa1acc0b26592847cc2dd33eee",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.9,
+          2.21,
+          0.717
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "base",
+            "front-panel",
+            "air-port-0",
+            "air-port-1"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "cabinet"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "display",
+            "drain"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "process-mixing-tank",
+      "kit": "industrial-plant",
+      "title": "Process mixing tank",
+      "description": "Agitated process vessel with legs, top-mounted drive, shaft, discharge nozzle and safety rail. Knobs: size, vessel, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "mixing tank",
+        "agitator",
+        "process vessel",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/process-mixing-tank.kcad.ts",
+      "sourceSha256": "6f001ffc26d5a69863c5f577224bc5066c2a89a0ac59f966277df113ff91ad51",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          1.32,
+          2.234,
+          1.12
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "vessel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "base-ring",
+            "top-rim",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "shaft",
+            "impeller"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "drive",
+            "outlet"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "rectangular-duct-section",
+      "kit": "industrial-plant",
+      "title": "Rectangular ventilation duct",
+      "description": "Straight sheet-metal ventilation duct section with four corner seams, flanged ends and a top inspection hatch. Knobs: size, duct, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "rectangular duct",
+        "HVAC duct",
+        "ventilation",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/rectangular-duct-section.kcad.ts",
+      "sourceSha256": "c083287566a85c1aa27f900c0a02cd9f4e4927b2964219addc8e4698c0131d3e",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.5,
+          0.52,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "duct-shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "flange-x-a",
+            "flange-x-b",
+            "inspection-hatch"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "corner-seam-0",
+            "corner-seam-1",
+            "corner-seam-2",
+            "corner-seam-3"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "roller-conveyor-section",
+      "kit": "industrial-plant",
+      "title": "Gravity roller conveyor section",
+      "description": "Gravity roller conveyor with closely spaced faceted rollers, side guides and adjustable leg pairs. Knobs: size, roller count, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "roller conveyor",
+        "material handling",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/roller-conveyor-section.kcad.ts",
+      "sourceSha256": "ad37836c5f48ebe8938627f779f1833d948461cefec327fb6637711fe6830656",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        },
+        {
+          "name": "rollers",
+          "type": "choice",
+          "default": "6",
+          "label": "Rollers",
+          "choices": [
+            "4",
+            "6",
+            "8"
+          ]
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 316,
+        "sizeM": [
+          2.1,
+          0.89,
+          0.694
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "frame"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "roller-0",
+            "roller-1",
+            "roller-2",
+            "roller-3",
+            "roller-4",
+            "roller-5",
+            "leg-a-a",
+            "leg-a-b",
+            "leg-b-a",
+            "leg-b-b"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "guide-a",
+            "guide-b"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "safety-cage-ladder",
+      "kit": "industrial-plant",
+      "title": "Caged fixed access ladder",
+      "description": "Fixed steel access ladder with safety hoop cage, wall brackets, top handholds and non-slip feet. Knobs: size, rung count, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fixed ladder",
+        "caged ladder",
+        "industrial access",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/safety-cage-ladder.kcad.ts",
+      "sourceSha256": "89977f82697ad2dba996b8b2f0cca193392514769ae96fa3309192de80da33be",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        },
+        {
+          "name": "stepCount",
+          "type": "choice",
+          "default": "8",
+          "label": "Rungs",
+          "choices": [
+            "6",
+            "8",
+            "10"
+          ]
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 472,
+        "sizeM": [
+          0.74,
+          2.7,
+          0.640859
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "side-rail-0",
+            "side-rail-1",
+            "wall-bracket-0",
+            "wall-bracket-1",
+            "wall-bracket-2",
+            "wall-bracket-3"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "rung-1",
+            "rung-2",
+            "rung-3",
+            "rung-4",
+            "rung-5",
+            "rung-6",
+            "rung-7",
+            "rung-8"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "cage-hoop-900",
+            "cage-hoop-1500",
+            "cage-hoop-2100"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "safety-shower",
+      "kit": "industrial-plant",
+      "title": "Emergency safety shower",
+      "description": "Industrial emergency shower station with pull handle, overhead spray head, eyewash arms and floor plate. Knobs: size, pipe, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "safety shower",
+        "emergency shower",
+        "eyewash",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/safety-shower.kcad.ts",
+      "sourceSha256": "5fb720bc5ef872fe1bebbd5743af42f5e4dc9a89e25f58b41ce9b36ca703d774",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.7,
+          2.202,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "floor-plate",
+            "shower-arm"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "riser",
+            "eyewash-arm",
+            "pull-rod"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "shower-head",
+            "eyewash-bowl-0",
+            "eyewash-bowl-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "screw-compressor-package",
+      "kit": "industrial-plant",
+      "title": "Rotary screw compressor package",
+      "description": "Sound-attenuated screw compressor package with service cabinet, control screen, louvres and tank base. Knobs: size, casing, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "screw compressor",
+        "air plant",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/screw-compressor-package.kcad.ts",
+      "sourceSha256": "22284e5d39f82faef0f47abd400bb4fc5a7996dc3127972ed24dd3689cd5c40d",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.5,
+          1.97,
+          1.068
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "base",
+            "door"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "cabinet"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "louver-0",
+            "louver-1",
+            "louver-2",
+            "louver-3",
+            "louver-4",
+            "louver-5",
+            "control-screen"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "screw-conveyor",
+      "kit": "industrial-plant",
+      "title": "Screw conveyor",
+      "description": "Covered trough screw conveyor with end bearings, motor drive, support stands and a discharge spout. Knobs: size, flight count, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "screw conveyor",
+        "auger conveyor",
+        "bulk handling",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/screw-conveyor.kcad.ts",
+      "sourceSha256": "646ff992111d536bae6abdbcb27ab4eb51eaeabcb6312ca8b767c6be0e677c62",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        },
+        {
+          "name": "flights",
+          "type": "choice",
+          "default": "6",
+          "label": "Flight count",
+          "choices": [
+            "4",
+            "6",
+            "8"
+          ]
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          2.1,
+          0.928,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "trough"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "cover",
+            "flight-1",
+            "flight-3",
+            "flight-5",
+            "support-a",
+            "support-b"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "auger-shaft",
+            "flight-0",
+            "flight-2",
+            "flight-4",
+            "discharge"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "service-platform",
+      "kit": "industrial-plant",
+      "title": "Industrial service platform",
+      "description": "Raised service platform with toe boards, four columns, wraparound handrails and access opening. Knobs: size, deck, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "service platform",
+        "maintenance access",
+        "factory",
+        "industrial",
+        "walkway"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/service-platform.kcad.ts",
+      "sourceSha256": "11607079a83ecf71ed083dc4da5852cca59e862c86a3c802cebbed4bf3f04f9c",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.7,
+          2.4,
+          1.26
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "deck"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "toe-board-front",
+            "toe-board-back",
+            "column-0",
+            "column-1",
+            "column-2",
+            "column-3",
+            "mid-rail-front",
+            "mid-rail-back"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "top-rail-front",
+            "top-rail-back"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "silo-bin",
+      "kit": "industrial-plant",
+      "title": "Silo bin",
+      "description": "Tall bulk-material silo with a conical discharge hopper, support legs, top rim and outlet. Knobs: size, shell, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "silo",
+        "bulk storage",
+        "hopper",
+        "factory",
+        "industrial",
+        "grain"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/silo-bin.kcad.ts",
+      "sourceSha256": "45966340e64086f248e71b10912d8641711ce43b0620837a3192f687c95aa010",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          1.284,
+          3.136,
+          1.284
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "silo-shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "hopper",
+            "top-rim",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "outlet"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "transformer-substation-bay",
+      "kit": "industrial-plant",
+      "title": "Transformer substation bay",
+      "description": "Outdoor substation bay with two bus supports, insulator posts, overhead conductors and transformer pad. Knobs: size, frame, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "substation",
+        "transformer bay",
+        "electrical infrastructure",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/transformer-substation-bay.kcad.ts",
+      "sourceSha256": "354becd59a1c5dff1ffbfbcabd646be576c78e5fb2e04b96b317021476911274",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          2.2,
+          2.35,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "transformer-pad"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "insulator-0",
+            "insulator-1",
+            "insulator-2",
+            "insulator-3",
+            "guard-post-0",
+            "guard-post-1"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "cap-0",
+            "cap-1",
+            "cap-2",
+            "cap-3",
+            "busbar"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "transformer",
+      "kit": "industrial-plant",
+      "title": "Industrial power transformer",
+      "description": "Distribution transformer with tank, cooling banks, terminal bushings, lifting lugs and a safety-colour base. Knobs: size, tank, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "transformer",
+        "substation",
+        "power distribution",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/transformer.kcad.ts",
+      "sourceSha256": "28d1206daef49b07c714b14b71ab511573e506a02d223d8388a412aa54af371c",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          1.23,
+          1.358,
+          1.1536
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "base",
+            "radiator-0",
+            "radiator-1",
+            "radiator-2",
+            "radiator-3",
+            "radiator-4",
+            "radiator-5",
+            "radiator-6",
+            "bushing-cap-0",
+            "bushing-cap-1",
+            "bushing-cap-2"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "tank"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "bushing-0",
+            "bushing-1",
+            "bushing-2"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "vacuum-pump",
+      "kit": "industrial-plant",
+      "title": "Rotary vacuum pump",
+      "description": "Compact rotary vacuum pump with finned drive body, inlet chamber, exhaust cap and base feet. Knobs: size, housing, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "vacuum pump",
+        "rotary pump",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/vacuum-pump.kcad.ts",
+      "sourceSha256": "6152dd67430094cee388939a97861c2bb5492d6a84ff12d41846cbcfa58413ce",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 284,
+        "sizeM": [
+          1.02,
+          0.72,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "base",
+            "cooling-band-0",
+            "cooling-band-1",
+            "cooling-band-2",
+            "cooling-band-3",
+            "cooling-band-4",
+            "exhaust"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "pump-body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "inlet"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "water-filter-skid",
+      "kit": "industrial-plant",
+      "title": "Water filter skid",
+      "description": "Three-vessel water filtration skid with service frame, connecting headers, isolation handles and a pump block. Knobs: size, vessels, steel and safety colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water filter",
+        "filter skid",
+        "treatment plant",
+        "factory",
+        "industrial"
+      ],
+      "compat": [
+        "industrial",
+        "factory"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/industrial-plant/water-filter-skid.kcad.ts",
+      "sourceSha256": "3ec762e14865154666faddce96755123fe7b8c2e11d21502a00f46b88b0a1f4e",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "1",
+          "label": "Size scale",
+          "choices": [
+            "0.8",
+            "1",
+            "1.25"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#607478",
+          "label": "Main body"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3f484b",
+          "label": "Steelwork"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#dda91f",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#aeb9b9",
+          "steel": "#596468",
+          "accent": "#cc9d20"
+        },
+        "safety": {
+          "body": "#e4c34b",
+          "accent": "#cf3f31"
+        }
+      },
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          1.65,
+          1.405,
+          0.875
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#607478",
+          "parts": [
+            "filter-0",
+            "filter-1",
+            "filter-2"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "steel",
+          "color": "#3f484b",
+          "parts": [
+            "cap-0",
+            "foot-0",
+            "cap-1",
+            "foot-1",
+            "cap-2",
+            "foot-2",
+            "return-header"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "accent",
+          "color": "#dda91f",
+          "parts": [
+            "supply-header",
+            "pump"
+          ],
+          "param": "accent"
         }
       ]
     },
