@@ -163,6 +163,73 @@
       ]
     },
     {
+      "id": "construction-equipment",
+      "title": "Construction Equipment",
+      "description": "Original low-poly road paving, compaction, concrete placement and site logistics props with editable scale and palette controls.",
+      "assets": [
+        "adjustable-formwork-prop",
+        "articulated-dump-truck",
+        "asphalt-distributor-truck",
+        "asphalt-paver-screed",
+        "asphalt-transfer-conveyor",
+        "backhoe-loader",
+        "cold-planer-milling-machine",
+        "concrete-batch-plant",
+        "concrete-beam-form",
+        "concrete-column-form",
+        "concrete-form-tie",
+        "concrete-formwork-panel",
+        "concrete-placement-bucket",
+        "concrete-pump-truck",
+        "concrete-vibrator-needle",
+        "construction-personnel-elevator",
+        "crawler-dozer",
+        "drywall-panel-lift",
+        "grade-rod-and-prism-pole",
+        "jobsite-tile-saw",
+        "laser-level-tripod",
+        "lowboy-equipment-trailer",
+        "masonry-mixer",
+        "mast-climbing-work-platform",
+        "mobile-fuel-tank",
+        "modular-shoring-frame",
+        "motor-grader",
+        "pipe-roller-stand",
+        "pneumatic-tire-roller",
+        "portable-air-compressor",
+        "portable-core-drill-stand",
+        "portable-floor-grinder",
+        "portable-material-hoist",
+        "portable-site-water-tank",
+        "rebar-bending-machine",
+        "rebar-cage",
+        "rebar-cutting-machine",
+        "rebar-straightener-coil",
+        "ride-on-concrete-saw",
+        "ride-on-power-trowel",
+        "rigid-haul-truck",
+        "road-reclaimer",
+        "rough-terrain-forklift",
+        "single-drum-soil-compactor",
+        "skid-steer-loader",
+        "slab-edge-form",
+        "tandem-vibratory-roller",
+        "telescopic-handler",
+        "towable-light-tower",
+        "track-asphalt-paver",
+        "tracked-concrete-buggy",
+        "trailer-concrete-line-pump",
+        "transit-mixer-truck",
+        "trench-roller",
+        "vibrating-concrete-screed",
+        "walk-behind-concrete-saw",
+        "walk-behind-floor-scarifier",
+        "walk-behind-power-trowel",
+        "water-tanker-truck",
+        "wheel-asphalt-paver"
+      ]
+    },
+    {
       "id": "containers",
       "title": "Containers",
       "description": "Low-poly crates, jars, baskets, barrels, trunks and churns for storage, market, farm and adventure scenes at real-world scale, flat-shaded on one palette material.",
@@ -20765,6 +20832,5700 @@
             "unit-2"
           ],
           "param": "colorB"
+        }
+      ]
+    },
+    {
+      "id": "adjustable-formwork-prop",
+      "kit": "construction-equipment",
+      "title": "Adjustable formwork prop",
+      "description": "Telescoping floor support prop with top plate, screw collar and broad base plate. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/adjustable-formwork-prop.kcad.ts",
+      "sourceSha256": "cea6f70b07ff03dc8293b7ddaac1cfd4e613fdf61c62a6b314686e88d9b8e796",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.324,
+          1.401,
+          0.324
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "base-plate",
+            "inner-tube",
+            "head-plate"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "outer-tube",
+            "adjustment-collar"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "articulated-dump-truck",
+      "kit": "construction-equipment",
+      "title": "Articulated dump truck",
+      "description": "Off-road articulated hauler with forward cab, rear dump body and six large tires. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/articulated-dump-truck.kcad.ts",
+      "sourceSha256": "7662b43548c4adc76031584b375865ec771d065864d36c168732f5af68b3be51",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 660,
+        "sizeM": [
+          1.31525,
+          1,
+          0.7932
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "hauler-chassis",
+            "hauler-cab-window",
+            "hauler-roof",
+            "dump-body-side--1",
+            "dump-body-side-1",
+            "dump-body-front",
+            "lift-ram"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "hauler-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "hauler-wheel-0--1",
+            "hauler-wheel-0-1",
+            "hauler-wheel-1--1",
+            "hauler-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "hauler-wheel-0--1-hub--1",
+            "hauler-wheel-0--1-hub-1",
+            "hauler-wheel-0-1-hub--1",
+            "hauler-wheel-0-1-hub-1",
+            "hauler-wheel-1--1-hub--1",
+            "hauler-wheel-1--1-hub-1",
+            "hauler-wheel-1-1-hub--1",
+            "hauler-wheel-1-1-hub-1",
+            "hauler-cab",
+            "dump-body-floor",
+            "tailgate",
+            "articulation-joint"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "asphalt-distributor-truck",
+      "kit": "construction-equipment",
+      "title": "Asphalt distributor truck",
+      "description": "Paving tanker truck with insulated tank, rear spray bar and multiple road nozzles. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/asphalt-distributor-truck.kcad.ts",
+      "sourceSha256": "2ac0204b672f970e030c3f86ac1ca3f6f70b79d3d7fc1a5ece1b8b75cee8850f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1064,
+        "sizeM": [
+          1.5336,
+          0.839,
+          1.131
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "site-truck-chassis",
+            "site-truck-cab-window",
+            "site-truck-roof",
+            "tank-saddle-a",
+            "tank-saddle-b",
+            "spray-bar",
+            "hose-reel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "site-truck-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "site-truck-wheel-0--1",
+            "site-truck-wheel-0-1",
+            "site-truck-wheel-1--1",
+            "site-truck-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "site-truck-wheel-0--1-hub--1",
+            "site-truck-wheel-0--1-hub-1",
+            "site-truck-wheel-0-1-hub--1",
+            "site-truck-wheel-0-1-hub-1",
+            "site-truck-wheel-1--1-hub--1",
+            "site-truck-wheel-1--1-hub-1",
+            "site-truck-wheel-1-1-hub--1",
+            "site-truck-wheel-1-1-hub-1",
+            "site-truck-cab",
+            "tank",
+            "spray-nozzle-0",
+            "spray-nozzle-1",
+            "spray-nozzle-2",
+            "spray-nozzle-3",
+            "spray-nozzle-4",
+            "spray-nozzle-5",
+            "spray-nozzle-6",
+            "spray-nozzle-7",
+            "spray-nozzle-8"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "asphalt-paver-screed",
+      "kit": "construction-equipment",
+      "title": "Asphalt paver screed",
+      "description": "Wide finishing screed assembly with center beam, folding wings and adjustment links. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/asphalt-paver-screed.kcad.ts",
+      "sourceSha256": "317e18d90b16fca105e20076bc080e22ac779679ea7c533270bacba26752ef3c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.3382,
+          0.39,
+          1.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "screed-beam",
+            "eccentric-weight"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "vibrator-housing",
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "asphalt-transfer-conveyor",
+      "kit": "construction-equipment",
+      "title": "Road material transfer conveyor",
+      "description": "Mobile inclined conveyor with feed hopper, trussed belt frame and transport axle. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/asphalt-transfer-conveyor.kcad.ts",
+      "sourceSha256": "a43e5b72da360abe15ae249abe399447c3148cdb31044391ae4e8c0a4dba0cdf",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 348,
+        "sizeM": [
+          1.722,
+          1.2835,
+          0.5964
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "hopper",
+            "truss-rail--1",
+            "truss-rail-1",
+            "transport-wheel--1-hub--1",
+            "transport-wheel--1-hub-1",
+            "transport-wheel-1-hub--1",
+            "transport-wheel-1-hub-1",
+            "discharge-chute"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "conveyor-belt",
+            "support-leg--1",
+            "support-leg-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "transport-wheel--1",
+          "color": "#40474b",
+          "parts": [
+            "transport-wheel--1",
+            "transport-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "backhoe-loader",
+      "kit": "construction-equipment",
+      "title": "Backhoe loader",
+      "description": "Site loader with front bucket, rear digging boom, stabilizer legs and operator cab. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/backhoe-loader.kcad.ts",
+      "sourceSha256": "e851f607e4caa6707ae9b1bcf8e2557da072dd024e263a42f7d92675b84f2465",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 684,
+        "sizeM": [
+          2.0055,
+          0.958,
+          0.6972
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "backhoe-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "backhoe-wheel-0--1",
+            "backhoe-wheel-0-1",
+            "backhoe-wheel-1--1",
+            "backhoe-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "backhoe-wheel-0--1-hub--1",
+            "backhoe-wheel-0--1-hub-1",
+            "backhoe-wheel-0-1-hub--1",
+            "backhoe-wheel-0-1-hub-1",
+            "backhoe-wheel-1--1-hub--1",
+            "backhoe-wheel-1--1-hub-1",
+            "backhoe-wheel-1-1-hub--1",
+            "backhoe-wheel-1-1-hub-1",
+            "front-loader-arm",
+            "front-loader-arm-right",
+            "cab",
+            "stabilizer--1",
+            "stabilizer-1",
+            "rear-boom",
+            "digging-bucket"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "chassis",
+            "front-bucket",
+            "cab-roof",
+            "stabilizer-foot--1",
+            "stabilizer-foot-1",
+            "dipper"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "cold-planer-milling-machine",
+      "kit": "construction-equipment",
+      "title": "Cold planer milling machine",
+      "description": "Road milling machine with enclosed cutter housing, operator canopy and crawler undercarriage. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/cold-planer-milling-machine.kcad.ts",
+      "sourceSha256": "5803ad0e91fcf673d03bb8f6069cc447e4147434148cd6e241c4d12511a41bc3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1896,
+        "sizeM": [
+          1.25125,
+          0.908,
+          0.964197
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "milling-track--1-belt",
+            "milling-track-1-belt",
+            "main-frame",
+            "operator-deck",
+            "canopy",
+            "cutting-tooth-0",
+            "cutting-tooth-1",
+            "cutting-tooth-2",
+            "cutting-tooth-3",
+            "cutting-tooth-4",
+            "cutting-tooth-5",
+            "cutting-tooth-6"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "milling-track--1-roller-0",
+          "color": "#40474b",
+          "parts": [
+            "milling-track--1-roller-0",
+            "milling-track--1-roller-1",
+            "milling-track--1-roller-2",
+            "milling-track--1-roller-3",
+            "milling-track--1-idler-front",
+            "milling-track--1-idler-rear",
+            "milling-track-1-roller-0",
+            "milling-track-1-roller-1",
+            "milling-track-1-roller-2",
+            "milling-track-1-roller-3",
+            "milling-track-1-idler-front",
+            "milling-track-1-idler-rear"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "milling-track--1-roller-0-hub--1",
+            "milling-track--1-roller-0-hub-1",
+            "milling-track--1-roller-1-hub--1",
+            "milling-track--1-roller-1-hub-1",
+            "milling-track--1-roller-2-hub--1",
+            "milling-track--1-roller-2-hub-1",
+            "milling-track--1-roller-3-hub--1",
+            "milling-track--1-roller-3-hub-1",
+            "milling-track--1-idler-front-hub--1",
+            "milling-track--1-idler-front-hub-1",
+            "milling-track--1-idler-rear-hub--1",
+            "milling-track--1-idler-rear-hub-1",
+            "milling-track-1-roller-0-hub--1",
+            "milling-track-1-roller-0-hub-1",
+            "milling-track-1-roller-1-hub--1",
+            "milling-track-1-roller-1-hub-1",
+            "milling-track-1-roller-2-hub--1",
+            "milling-track-1-roller-2-hub-1",
+            "milling-track-1-roller-3-hub--1",
+            "milling-track-1-roller-3-hub-1",
+            "milling-track-1-idler-front-hub--1",
+            "milling-track-1-idler-front-hub-1",
+            "milling-track-1-idler-rear-hub--1",
+            "milling-track-1-idler-rear-hub-1",
+            "engine-cover",
+            "canopy-posts",
+            "milling-hood",
+            "cutter-drum-hub--1",
+            "cutter-drum-hub-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "cutter-drum",
+          "color": "#596166",
+          "parts": [
+            "cutter-drum"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "concrete-batch-plant",
+      "kit": "construction-equipment",
+      "title": "Compact concrete batch plant",
+      "description": "Portable batch plant with aggregate bins, central mixer, cement silo and service ladder. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/concrete-batch-plant.kcad.ts",
+      "sourceSha256": "714ecf3441679778ceb130a227ac258f7c99421d1300c6c4d35663dffa8a6476",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          1.456,
+          1.613,
+          1.1295
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "aggregate-bin-0",
+            "aggregate-bin-1",
+            "aggregate-bin-2",
+            "mixer-drum",
+            "silo-roof",
+            "silo-leg--1",
+            "silo-leg-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "bin-top-rim-0",
+            "bin-top-rim-1",
+            "bin-top-rim-2",
+            "batch-frame",
+            "cement-silo",
+            "service-platform"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "concrete-beam-form",
+      "kit": "construction-equipment",
+      "title": "Concrete beam form",
+      "description": "Raised beam shutter with paired supports, side panels and bottom soffit. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/concrete-beam-form.kcad.ts",
+      "sourceSha256": "9c9a32898c3e1978f35a01305b0bce9ac860c874dee2e40aa38993ec0a78c991",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.32,
+          1.0304,
+          0.51
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "soffit",
+            "support-leg--1--461-99999999999994",
+            "support-leg--1-461-99999999999994",
+            "support-leg-1--461-99999999999994",
+            "support-leg-1-461-99999999999994"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "beam-side--1",
+            "support-foot--1--461-99999999999994",
+            "support-foot--1-461-99999999999994",
+            "beam-side-1",
+            "support-foot-1--461-99999999999994",
+            "support-foot-1-461-99999999999994"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "concrete-column-form",
+      "kit": "construction-equipment",
+      "title": "Concrete column form",
+      "description": "Square column shutter with corner walers, vertical stiffeners and base shoes. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/concrete-column-form.kcad.ts",
+      "sourceSha256": "067cda4d66912ebd854083d1a5c26fd8a16489d81abe7a266b2e3dc9f28d3c96",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.6608,
+          1.581,
+          0.6608
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "column-face",
+            "column-clamp-0",
+            "column-clamp-1",
+            "column-clamp-2",
+            "column-clamp-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "column-waler-x--1",
+            "column-waler-y--1",
+            "column-waler-x-1",
+            "column-waler-y-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "concrete-form-tie",
+      "kit": "construction-equipment",
+      "title": "Concrete form tie",
+      "description": "Reusable form tie assembly with threaded rod, bearing plates and wing nuts. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/concrete-form-tie.kcad.ts",
+      "sourceSha256": "b93fac3b70ba1551d88ab0307e845684b1a8194c31c2585c3d22537f8fb284d6",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.6,
+          0.072,
+          0.14
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "tie-rod",
+            "wing-nut--1",
+            "wing-nut-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "bearing-plate--1",
+            "bearing-plate-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "concrete-formwork-panel",
+      "kit": "construction-equipment",
+      "title": "Concrete formwork panel",
+      "description": "Reusable wall-form panel with framed face, stiffeners and corner clamps. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/concrete-formwork-panel.kcad.ts",
+      "sourceSha256": "b87de6945d67512605a31e3c8eb5872a5205de331e31d6764c71bebf00999279",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.972,
+          1.55,
+          0.1287
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "form-face",
+            "horizontal-waler-0",
+            "horizontal-waler-1",
+            "horizontal-waler-2",
+            "horizontal-waler-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "vertical-strongback--1",
+            "vertical-strongback-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "concrete-placement-bucket",
+      "kit": "construction-equipment",
+      "title": "Concrete placement bucket",
+      "description": "Crane-suspended concrete bucket with tapered hopper, discharge gate and lifting frame. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/concrete-placement-bucket.kcad.ts",
+      "sourceSha256": "0d2adf5e2723382553e9338ff15502da04e1cb24ca5b3477d4ef0db042bf6cd3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.5616,
+          0.9975,
+          0.5103
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "bucket-floor",
+            "lifting-ear--1",
+            "lifting-ear-1",
+            "hopper-front"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "hopper-side--1",
+            "hopper-side-1",
+            "discharge-gate",
+            "lifting-crossbar"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "concrete-pump-truck",
+      "kit": "construction-equipment",
+      "title": "Concrete pump truck",
+      "description": "Concrete placing truck with hopper, multi-section boom, outriggers and delivery hose. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/concrete-pump-truck.kcad.ts",
+      "sourceSha256": "b2e87d23957988ec76657c5905c37fc4455dd2d252795456f447a8f611b6c578",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 708,
+        "sizeM": [
+          1.893796,
+          1.356488,
+          1.148
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "pump-chassis",
+            "pump-cab-window",
+            "pump-roof",
+            "outrigger-beam--1",
+            "outrigger-column--1",
+            "outrigger-beam-1",
+            "outrigger-column-1",
+            "boom-base",
+            "boom-section-b"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "pump-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "pump-wheel-0--1",
+            "pump-wheel-0-1",
+            "pump-wheel-1--1",
+            "pump-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "pump-wheel-0--1-hub--1",
+            "pump-wheel-0--1-hub-1",
+            "pump-wheel-0-1-hub--1",
+            "pump-wheel-0-1-hub-1",
+            "pump-wheel-1--1-hub--1",
+            "pump-wheel-1--1-hub-1",
+            "pump-wheel-1-1-hub--1",
+            "pump-wheel-1-1-hub-1",
+            "pump-cab",
+            "pump-hopper",
+            "outrigger-foot--1",
+            "outrigger-foot-1",
+            "boom-section-a",
+            "delivery-hose"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "concrete-vibrator-needle",
+      "kit": "construction-equipment",
+      "title": "Concrete vibrator and needle",
+      "description": "Portable concrete vibrator with motor case, flexible shaft and immersion head. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/concrete-vibrator-needle.kcad.ts",
+      "sourceSha256": "497ab8039b20fed8d3e9fcd53e1461715bddfb58917b69c249630fd3e6113b4e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.785,
+          0.274,
+          0.1736
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "motor-base",
+            "motor-shaft",
+            "vibrator-head"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "motor-case",
+            "flexible-shaft"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "construction-personnel-elevator",
+      "kit": "construction-equipment",
+      "title": "Construction personnel elevator",
+      "description": "Temporary mast elevator cage with guide rails, mesh walls and ground frame. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/construction-personnel-elevator.kcad.ts",
+      "sourceSha256": "8ba0868f2adcf8b655e2f31fe399ebeca5d26fbac1bf81b511b201b8c096e9a0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.6396,
+          1.938,
+          0.5904
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "ground-frame",
+            "cross-brace--1",
+            "cross-brace-1",
+            "elevator-platform"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "mast--1",
+            "mast-1",
+            "cage-side--1",
+            "cage-side-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "crawler-dozer",
+      "kit": "construction-equipment",
+      "title": "Crawler dozer",
+      "description": "Tracked earthmoving dozer with broad front blade, engine cover and operator canopy. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/crawler-dozer.kcad.ts",
+      "sourceSha256": "b2d9a0e78fc5f9901c249830be6214463b71cdd76d2d059d3713c8b073ef4b58",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1956,
+        "sizeM": [
+          1.26536,
+          0.876,
+          1.008
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "dozer-track--1-belt",
+            "dozer-track-1-belt",
+            "dozer-chassis",
+            "operator-cab",
+            "blade-lift-arm--1",
+            "blade-lift-arm-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "dozer-track--1-roller-0",
+          "color": "#40474b",
+          "parts": [
+            "dozer-track--1-roller-0",
+            "dozer-track--1-roller-1",
+            "dozer-track--1-roller-2",
+            "dozer-track--1-roller-3",
+            "dozer-track--1-roller-4",
+            "dozer-track--1-idler-front",
+            "dozer-track--1-idler-rear",
+            "dozer-track-1-roller-0",
+            "dozer-track-1-roller-1",
+            "dozer-track-1-roller-2",
+            "dozer-track-1-roller-3",
+            "dozer-track-1-roller-4",
+            "dozer-track-1-idler-front",
+            "dozer-track-1-idler-rear"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "dozer-track--1-roller-0-hub--1",
+            "dozer-track--1-roller-0-hub-1",
+            "dozer-track--1-roller-1-hub--1",
+            "dozer-track--1-roller-1-hub-1",
+            "dozer-track--1-roller-2-hub--1",
+            "dozer-track--1-roller-2-hub-1",
+            "dozer-track--1-roller-3-hub--1",
+            "dozer-track--1-roller-3-hub-1",
+            "dozer-track--1-roller-4-hub--1",
+            "dozer-track--1-roller-4-hub-1",
+            "dozer-track--1-idler-front-hub--1",
+            "dozer-track--1-idler-front-hub-1",
+            "dozer-track--1-idler-rear-hub--1",
+            "dozer-track--1-idler-rear-hub-1",
+            "dozer-track-1-roller-0-hub--1",
+            "dozer-track-1-roller-0-hub-1",
+            "dozer-track-1-roller-1-hub--1",
+            "dozer-track-1-roller-1-hub-1",
+            "dozer-track-1-roller-2-hub--1",
+            "dozer-track-1-roller-2-hub-1",
+            "dozer-track-1-roller-3-hub--1",
+            "dozer-track-1-roller-3-hub-1",
+            "dozer-track-1-roller-4-hub--1",
+            "dozer-track-1-roller-4-hub-1",
+            "dozer-track-1-idler-front-hub--1",
+            "dozer-track-1-idler-front-hub-1",
+            "dozer-track-1-idler-rear-hub--1",
+            "dozer-track-1-idler-rear-hub-1",
+            "engine-hood",
+            "cab-roof",
+            "blade-face"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "drywall-panel-lift",
+      "kit": "construction-equipment",
+      "title": "Drywall panel lift",
+      "description": "Foldable panel lift with telescoping mast, tilting cradle, tripod legs and casters. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/drywall-panel-lift.kcad.ts",
+      "sourceSha256": "288eee0cf6f2eeaff6b3d40e1cb8e871305265ed34915c3e9c00f611268cbb68",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 380,
+        "sizeM": [
+          0.8,
+          1.533,
+          0.736
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "base-crossbar",
+            "mast-collar",
+            "cradle-crossbar"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "caster--1",
+          "color": "#40474b",
+          "parts": [
+            "caster--1",
+            "caster-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "caster--1-hub--1",
+            "caster--1-hub-1",
+            "caster-1-hub--1",
+            "caster-1-hub-1",
+            "mast",
+            "tilt-cradle",
+            "base-leg-left",
+            "base-leg-right"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "grade-rod-and-prism-pole",
+      "kit": "construction-equipment",
+      "title": "Grade rod and prism pole",
+      "description": "Survey rod assembly with graduated segments, target prism and clamp mount. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/grade-rod-and-prism-pole.kcad.ts",
+      "sourceSha256": "9566e9daf3c8036d96bdb54044bf48d20cd5144ffcee478481cdabe094a3cf12",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.156,
+          1.626,
+          0.14
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "rod-foot",
+            "graduation-band-0",
+            "graduation-band-1",
+            "graduation-band-2",
+            "graduation-band-3",
+            "graduation-band-4",
+            "graduation-band-5",
+            "graduation-band-6",
+            "graduation-band-7",
+            "prism-bracket"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "survey-pole",
+            "prism"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "jobsite-tile-saw",
+      "kit": "construction-equipment",
+      "title": "Jobsite tile saw",
+      "description": "Water-cooled tile saw on a folding stand with sliding table and blade guard. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/jobsite-tile-saw.kcad.ts",
+      "sourceSha256": "b12d0a467cec8d335e332218619b2c8e462f6c5f74067b09ce453a3aa7e03eb9",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.95,
+          0.8096,
+          0.455
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "tool-table",
+            "sliding-carriage",
+            "water-pan"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "stand-leg--1",
+            "stand-leg-1",
+            "motor-head",
+            "tile-blade"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "laser-level-tripod",
+      "kit": "construction-equipment",
+      "title": "Laser level and tripod",
+      "description": "Survey tripod with compact rotating laser head and control panel. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/laser-level-tripod.kcad.ts",
+      "sourceSha256": "4844ff20b57903c3198f93222b3c7f3395456294ad396f10ba42cc6f8039f043",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.23,
+          1.4534,
+          0.23
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "tripod-leg-0",
+            "tripod-leg-1",
+            "tripod-leg-2",
+            "head-plate",
+            "display"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "tripod-column",
+            "laser-head"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "lowboy-equipment-trailer",
+      "kit": "construction-equipment",
+      "title": "Lowboy equipment trailer",
+      "description": "Heavy equipment trailer with a dropped deck, twin axle groups and loading ramps. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/lowboy-equipment-trailer.kcad.ts",
+      "sourceSha256": "054664391f5ac8f8269c0d31001e2236f503a5c40e5e97d8e8388d2743fec958",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 576,
+        "sizeM": [
+          1.924,
+          0.3,
+          0.80232
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "trailer-deck"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trailer-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "trailer-wheel-0--1",
+            "trailer-wheel-0-1",
+            "trailer-wheel-1--1",
+            "trailer-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "trailer-wheel-0--1-hub--1",
+            "trailer-wheel-0--1-hub-1",
+            "trailer-wheel-0-1-hub--1",
+            "trailer-wheel-0-1-hub-1",
+            "trailer-wheel-1--1-hub--1",
+            "trailer-wheel-1--1-hub-1",
+            "trailer-wheel-1-1-hub--1",
+            "trailer-wheel-1-1-hub-1",
+            "drawbar",
+            "loading-ramp--1",
+            "loading-ramp-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "masonry-mixer",
+      "kit": "construction-equipment",
+      "title": "Masonry mortar mixer",
+      "description": "Portable drum mixer with reinforced frame, tilting cradle and transport wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/masonry-mixer.kcad.ts",
+      "sourceSha256": "cde8137827b97e66f5b571ea580988dfc1d548dbb10d49014b28e7090209da54",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 356,
+        "sizeM": [
+          0.7978,
+          0.8971,
+          0.67752
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "mixer-wheel--1",
+          "color": "#40474b",
+          "parts": [
+            "mixer-wheel--1",
+            "mixer-wheel-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "mixer-wheel--1-hub--1",
+            "mixer-wheel--1-hub-1",
+            "mixer-wheel-1-hub--1",
+            "mixer-wheel-1-hub-1",
+            "mixing-drum",
+            "motor-housing"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "mixer-frame",
+            "tilting-cradle",
+            "push-handle"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "mast-climbing-work-platform",
+      "kit": "construction-equipment",
+      "title": "Mast-climbing work platform",
+      "description": "Twin-mast access platform with guardrails, deck and ground outriggers. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/mast-climbing-work-platform.kcad.ts",
+      "sourceSha256": "52226676ab5bd531093f010694eea94f17b2feef2bf30b5c4c731716a32c568f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          2.178,
+          1.755,
+          0.5212
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "ground-frame",
+            "mast--1",
+            "mast-1",
+            "guardrail--1",
+            "guardrail-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "outrigger--1",
+            "outrigger-1",
+            "working-platform"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "mobile-fuel-tank",
+      "kit": "construction-equipment",
+      "title": "Mobile site fuel tank",
+      "description": "Bunded fuel pod on a towable chassis with hose reel, pump box and filler neck. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/mobile-fuel-tank.kcad.ts",
+      "sourceSha256": "d10e82dc2d522b6f6a5614dc0d03b9d6e8cfd9625fef8bf677297ff849d5db3d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 368,
+        "sizeM": [
+          1.1312,
+          0.82,
+          0.6969
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "trailer-wheel--1",
+          "color": "#40474b",
+          "parts": [
+            "trailer-wheel--1",
+            "trailer-wheel-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "trailer-wheel--1-hub--1",
+            "trailer-wheel--1-hub-1",
+            "trailer-wheel-1-hub--1",
+            "trailer-wheel-1-hub-1",
+            "tow-frame",
+            "bunded-tank",
+            "pump-box"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "skid-base",
+            "outer-containment",
+            "filler-cap"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "modular-shoring-frame",
+      "kit": "construction-equipment",
+      "title": "Modular shoring frame",
+      "description": "Stackable shoring frame with paired standards, cross braces and foot plates. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/modular-shoring-frame.kcad.ts",
+      "sourceSha256": "6464b3473eb2874fb49af9fd4ddd999d8e8820a8f5685f5bb970be22540e9ef8",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 284,
+        "sizeM": [
+          0.8112,
+          1.25,
+          0.3984
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "standard--1--1",
+            "standard--1-1",
+            "standard-1--1",
+            "standard-1-1",
+            "head-plate"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "crossbar-front-0",
+            "crossbar-side-0",
+            "crossbar-front-1",
+            "crossbar-side-1",
+            "crossbar-front-2",
+            "crossbar-side-2",
+            "crossbar-front-3",
+            "crossbar-side-3"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "motor-grader",
+      "kit": "construction-equipment",
+      "title": "Motor grader",
+      "description": "Road grader with articulated chassis, six wheels, operator cab and center moldboard. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/motor-grader.kcad.ts",
+      "sourceSha256": "240e1b263b1969d56f732be23f3fccba51cc40df0ace204adc331620603ee1c7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 908,
+        "sizeM": [
+          1.84625,
+          0.904,
+          0.765
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "grader-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "grader-wheel-0--1",
+            "grader-wheel-0-1",
+            "grader-wheel-1--1",
+            "grader-wheel-1-1",
+            "grader-wheel-2--1",
+            "grader-wheel-2-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "grader-wheel-0--1-hub--1",
+            "grader-wheel-0--1-hub-1",
+            "grader-wheel-0-1-hub--1",
+            "grader-wheel-0-1-hub-1",
+            "grader-wheel-1--1-hub--1",
+            "grader-wheel-1--1-hub-1",
+            "grader-wheel-1-1-hub--1",
+            "grader-wheel-1-1-hub-1",
+            "grader-wheel-2--1-hub--1",
+            "grader-wheel-2--1-hub-1",
+            "grader-wheel-2-1-hub--1",
+            "grader-wheel-2-1-hub-1",
+            "engine-hood",
+            "cab-roof",
+            "moldboard"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "rear-frame",
+            "operator-cab",
+            "grader-front-frame",
+            "circle-drive"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "pipe-roller-stand",
+      "kit": "construction-equipment",
+      "title": "Pipe roller stand",
+      "description": "Adjustable pipe support stand with paired rollers, screw post and tripod feet. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/pipe-roller-stand.kcad.ts",
+      "sourceSha256": "0b659c7aaf5dfd47b1c42f7ca563c23544824af39b1f45872d1c69e70a66613a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.231,
+          0.886,
+          0.389
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "tripod-leg-0",
+            "tripod-leg-1",
+            "tripod-leg-2",
+            "roller-left",
+            "roller-right"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "upright-post"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "pneumatic-tire-roller",
+      "kit": "construction-equipment",
+      "title": "Pneumatic tire roller",
+      "description": "Road compactor with staggered banks of rubber tires and a raised operator station. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/pneumatic-tire-roller.kcad.ts",
+      "sourceSha256": "6f39ab156f15e37f03879c5ba61d3fdeddee3923af8bf9975fd1fa900438bc29",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1116,
+        "sizeM": [
+          1.275,
+          0.764,
+          0.7138
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "roller-frame",
+            "operator-platform",
+            "canopy-roof"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "pneumatic-tire-0--1",
+          "color": "#40474b",
+          "parts": [
+            "pneumatic-tire-0--1",
+            "pneumatic-tire-0-1",
+            "pneumatic-tire-1--1",
+            "pneumatic-tire-1-1",
+            "pneumatic-tire-2--1",
+            "pneumatic-tire-2-1",
+            "pneumatic-tire-3--1",
+            "pneumatic-tire-3-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "pneumatic-tire-0--1-hub--1",
+            "pneumatic-tire-0--1-hub-1",
+            "pneumatic-tire-0-1-hub--1",
+            "pneumatic-tire-0-1-hub-1",
+            "pneumatic-tire-1--1-hub--1",
+            "pneumatic-tire-1--1-hub-1",
+            "pneumatic-tire-1-1-hub--1",
+            "pneumatic-tire-1-1-hub-1",
+            "pneumatic-tire-2--1-hub--1",
+            "pneumatic-tire-2--1-hub-1",
+            "pneumatic-tire-2-1-hub--1",
+            "pneumatic-tire-2-1-hub-1",
+            "pneumatic-tire-3--1-hub--1",
+            "pneumatic-tire-3--1-hub-1",
+            "pneumatic-tire-3-1-hub--1",
+            "pneumatic-tire-3-1-hub-1",
+            "engine-cover",
+            "canopy-posts"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "portable-air-compressor",
+      "kit": "construction-equipment",
+      "title": "Portable site air compressor",
+      "description": "Towable compressor enclosure with access panels, hose ports and single axle. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/portable-air-compressor.kcad.ts",
+      "sourceSha256": "402b1ec55ba519fbccf9431bc362b4a2afb6a01bca0af7ca27046aa0fa8ff5e3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 404,
+        "sizeM": [
+          1.0605,
+          0.654,
+          0.6984
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "trailer-wheel--1",
+          "color": "#40474b",
+          "parts": [
+            "trailer-wheel--1",
+            "trailer-wheel-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "trailer-wheel--1-hub--1",
+            "trailer-wheel--1-hub-1",
+            "trailer-wheel-1-hub--1",
+            "trailer-wheel-1-hub-1",
+            "tow-frame",
+            "compressor-enclosure"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "skid-base",
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "vent-4",
+            "hose-reel"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "portable-core-drill-stand",
+      "kit": "construction-equipment",
+      "title": "Portable core drill stand",
+      "description": "Anchored core-drilling rig with guide column, sliding carriage and base plate. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/portable-core-drill-stand.kcad.ts",
+      "sourceSha256": "5c8651ffa2e15d041f44dfc2b92b15f266f1b49b3a336c7a73daec0e62a2848e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.5616,
+          1.1046,
+          0.4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "drill-base",
+            "drill-carriage",
+            "feed-handle"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "guide-column",
+            "core-bit"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "portable-floor-grinder",
+      "kit": "construction-equipment",
+      "title": "Portable floor grinder",
+      "description": "Concrete surface grinder with circular shroud, handlebar and motor enclosure. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/portable-floor-grinder.kcad.ts",
+      "sourceSha256": "c5c4cfa837cb7e4d79499a3ad8cffedd471286854d3f40f0d080f06a0acf41bb",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 664,
+        "sizeM": [
+          0.6328,
+          0.613,
+          0.42648
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "floor-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "floor-wheel-0--1",
+            "floor-wheel-0-1",
+            "floor-wheel-1--1",
+            "floor-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "floor-wheel-0--1-hub--1",
+            "floor-wheel-0--1-hub-1",
+            "floor-wheel-0-1-hub--1",
+            "floor-wheel-0-1-hub-1",
+            "floor-wheel-1--1-hub--1",
+            "floor-wheel-1--1-hub-1",
+            "floor-wheel-1-1-hub--1",
+            "floor-wheel-1-1-hub-1",
+            "motor-housing",
+            "handle-bar",
+            "grinding-head"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "machine-frame",
+            "handle-post",
+            "dust-shroud"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "portable-material-hoist",
+      "kit": "construction-equipment",
+      "title": "Portable material hoist",
+      "description": "Compact construction hoist with mast, carriage platform, winch and stabilizing feet. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/portable-material-hoist.kcad.ts",
+      "sourceSha256": "af10f5e7836e44beba00b33bc7d1a310696716bc660f9e06fd9c2f9e4cacedd3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.858,
+          1.57,
+          0.7572
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "ground-frame",
+            "carriage",
+            "stabilizer--1",
+            "stabilizer-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "mast",
+            "winch"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "portable-site-water-tank",
+      "kit": "construction-equipment",
+      "title": "Portable site water tank",
+      "description": "Skid-mounted water tank with fill cap, outlet valve and protective frame. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/portable-site-water-tank.kcad.ts",
+      "sourceSha256": "2fba37ffd70062cdb6fe3338b6e02c0d12fcfcf54eb8128f472cfc104c51e1f0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.9024,
+          1.075,
+          0.6536
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "skid-base",
+            "filler-neck",
+            "outlet-valve",
+            "tank-skid--1",
+            "tank-skid-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "tank-body"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "rebar-bending-machine",
+      "kit": "construction-equipment",
+      "title": "Rebar bending machine",
+      "description": "Portable rebar bender with flat work table, rotary pin plate and control pedal. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/rebar-bending-machine.kcad.ts",
+      "sourceSha256": "7fd2f220fe52093a349fe762085e512104048c97d2498d5b6afeaa310700621c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.76,
+          0.3668,
+          0.4368
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "machine-base",
+            "motor-case",
+            "bend-pin-0",
+            "bend-pin-1",
+            "bend-pin-2",
+            "bend-pin-3",
+            "bend-pin-4"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "work-table",
+            "bending-disc"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "rebar-cage",
+      "kit": "construction-equipment",
+      "title": "Reinforcing bar cage",
+      "description": "Short reinforcing cage assembled from longitudinal bars and repeating ties. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/rebar-cage.kcad.ts",
+      "sourceSha256": "98116e78eee9f5cd6f9362b41d3f00a75ab699b2de5c671e759a17fa8be3923c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 916,
+        "sizeM": [
+          1.26,
+          0.39,
+          0.558
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "assembly-skid",
+            "longitudinal-bar--1-0",
+            "longitudinal-bar--1-1",
+            "longitudinal-bar--1-2",
+            "longitudinal-bar--1-3",
+            "longitudinal-bar--1-4",
+            "longitudinal-bar--1-5",
+            "longitudinal-bar-1-0",
+            "longitudinal-bar-1-1",
+            "longitudinal-bar-1-2",
+            "longitudinal-bar-1-3",
+            "longitudinal-bar-1-4",
+            "longitudinal-bar-1-5"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "support-saddle--1",
+            "support-saddle-1",
+            "tie-ring-0",
+            "tie-ring-1",
+            "tie-ring-2",
+            "tie-ring-3",
+            "tie-ring-4",
+            "tie-ring-5",
+            "tie-ring-6",
+            "tie-ring-7"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "rebar-cutting-machine",
+      "kit": "construction-equipment",
+      "title": "Rebar cutting machine",
+      "description": "Jobsite bar cutter with reinforced base, cutting head, guard and foot control. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/rebar-cutting-machine.kcad.ts",
+      "sourceSha256": "b4be1350f1579215f57f0fc8f557ee2f39989eab389a765b5dea51e8ee0f2e6d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.72,
+          0.5276,
+          0.4056
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "machine-base",
+            "motor-case",
+            "blade-guard"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "work-table",
+            "cutting-head"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "rebar-straightener-coil",
+      "kit": "construction-equipment",
+      "title": "Rebar straightener and coil stand",
+      "description": "Portable rebar straightening unit with feed rollers, guide wheels and coil stand. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/rebar-straightener-coil.kcad.ts",
+      "sourceSha256": "8cd09b91e54d1013c5948cdf04ad3433df534f2ea3ec1a2ab2b03ba0d59a5e9f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          1.106,
+          0.52,
+          0.468
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "machine-base",
+            "motor-case",
+            "coil-hub"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "work-table",
+            "feed-roller-0",
+            "feed-roller-1",
+            "feed-roller-2",
+            "feed-roller-3",
+            "coil-support"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "ride-on-concrete-saw",
+      "kit": "construction-equipment",
+      "title": "Ride-on concrete saw",
+      "description": "Self-propelled slab saw with operator seat, blade guard and water tank. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/ride-on-concrete-saw.kcad.ts",
+      "sourceSha256": "3d4753f5e9fa1c4426e34bdfbd3abbbba7667f9803370cdd67a615eaba9b8047",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 632,
+        "sizeM": [
+          0.94,
+          0.5588,
+          0.50924
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "saw-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "saw-wheel-0--1",
+            "saw-wheel-0-1",
+            "saw-wheel-1--1",
+            "saw-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "saw-wheel-0--1-hub--1",
+            "saw-wheel-0--1-hub-1",
+            "saw-wheel-0-1-hub--1",
+            "saw-wheel-0-1-hub-1",
+            "saw-wheel-1--1-hub--1",
+            "saw-wheel-1--1-hub-1",
+            "saw-wheel-1-1-hub--1",
+            "saw-wheel-1-1-hub-1",
+            "engine-cover",
+            "blade-guard",
+            "operator-seat"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "saw-frame",
+            "blade",
+            "water-tank"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "ride-on-power-trowel",
+      "kit": "construction-equipment",
+      "title": "Ride-on power trowel",
+      "description": "Concrete finishing machine with twin guarded rotor pans, seat and control console. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/ride-on-power-trowel.kcad.ts",
+      "sourceSha256": "3415aead30554f2da2f4c10cb7202eac8e6d054811d816f63ca6200739af7ba4",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.936,
+          0.545,
+          0.504
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "operator-platform",
+            "seat"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "rotor-guard--1",
+            "rotor-guard-1",
+            "seat-post",
+            "control-console"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "rigid-haul-truck",
+      "kit": "construction-equipment",
+      "title": "Rigid-frame haul truck",
+      "description": "Large site haul truck with high-capacity open bed, tall chassis and oversized tires. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/rigid-haul-truck.kcad.ts",
+      "sourceSha256": "34d07a6b44cf85de2c13cfd1ffae856dda4dec315d13f91ad08220b1f8f85bf2",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 912,
+        "sizeM": [
+          1.587,
+          1.14,
+          0.9012
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "hauler-chassis",
+            "hauler-cab-window",
+            "hauler-roof",
+            "dump-body-side--1",
+            "dump-body-side-1",
+            "dump-body-front",
+            "lift-ram"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "hauler-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "hauler-wheel-0--1",
+            "hauler-wheel-0-1",
+            "hauler-wheel-1--1",
+            "hauler-wheel-1-1",
+            "hauler-wheel-2--1",
+            "hauler-wheel-2-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "hauler-wheel-0--1-hub--1",
+            "hauler-wheel-0--1-hub-1",
+            "hauler-wheel-0-1-hub--1",
+            "hauler-wheel-0-1-hub-1",
+            "hauler-wheel-1--1-hub--1",
+            "hauler-wheel-1--1-hub-1",
+            "hauler-wheel-1-1-hub--1",
+            "hauler-wheel-1-1-hub-1",
+            "hauler-wheel-2--1-hub--1",
+            "hauler-wheel-2--1-hub-1",
+            "hauler-wheel-2-1-hub--1",
+            "hauler-wheel-2-1-hub-1",
+            "hauler-cab",
+            "dump-body-floor",
+            "tailgate"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "road-reclaimer",
+      "kit": "construction-equipment",
+      "title": "Road reclaimer",
+      "description": "Road reclamation machine with high-clearance chassis, milling chamber and long operator deck. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/road-reclaimer.kcad.ts",
+      "sourceSha256": "ef63d32022d1b636496b8c991c8e5b0985ff1c3b0913d2696c2dccb03ddc019f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 816,
+        "sizeM": [
+          1.5415,
+          1.004,
+          1.089
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "milling-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "milling-wheel-0--1",
+            "milling-wheel-0-1",
+            "milling-wheel-1--1",
+            "milling-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "milling-wheel-0--1-hub--1",
+            "milling-wheel-0--1-hub-1",
+            "milling-wheel-0-1-hub--1",
+            "milling-wheel-0-1-hub-1",
+            "milling-wheel-1--1-hub--1",
+            "milling-wheel-1--1-hub-1",
+            "milling-wheel-1-1-hub--1",
+            "milling-wheel-1-1-hub-1",
+            "engine-cover",
+            "canopy-posts",
+            "milling-hood",
+            "cutter-drum-hub--1",
+            "cutter-drum-hub-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "main-frame",
+            "operator-deck",
+            "canopy",
+            "cutting-tooth-0",
+            "cutting-tooth-1",
+            "cutting-tooth-2",
+            "cutting-tooth-3",
+            "cutting-tooth-4",
+            "cutting-tooth-5",
+            "cutting-tooth-6"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "cutter-drum",
+          "color": "#596166",
+          "parts": [
+            "cutter-drum"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rough-terrain-forklift",
+      "kit": "construction-equipment",
+      "title": "Rough-terrain forklift",
+      "description": "Site forklift with wide tires, overhead guard, tall mast and long fork tines. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/rough-terrain-forklift.kcad.ts",
+      "sourceSha256": "7fd4c833977eb289187a387738f3874941ea337242a9c3ebe972afe5886091ae",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 636,
+        "sizeM": [
+          1.3144,
+          0.958,
+          0.57532
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "forklift-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "forklift-wheel-0--1",
+            "forklift-wheel-0-1",
+            "forklift-wheel-1--1",
+            "forklift-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "forklift-wheel-0--1-hub--1",
+            "forklift-wheel-0--1-hub-1",
+            "forklift-wheel-0-1-hub--1",
+            "forklift-wheel-0-1-hub-1",
+            "forklift-wheel-1--1-hub--1",
+            "forklift-wheel-1--1-hub-1",
+            "forklift-wheel-1-1-hub--1",
+            "forklift-wheel-1-1-hub-1",
+            "operator-cab",
+            "mast-inner",
+            "fork-carriage"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "forklift-frame",
+            "overhead-guard",
+            "mast-outer-left",
+            "mast-outer-right",
+            "fork-tine--1",
+            "fork-tine-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "single-drum-soil-compactor",
+      "kit": "construction-equipment",
+      "title": "Single-drum soil compactor",
+      "description": "Soil compactor with broad front drum, rear traction tires and enclosed operator cab. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/single-drum-soil-compactor.kcad.ts",
+      "sourceSha256": "654eed8a4b5c52fa1fa8de67b116be510c2f63f9a7ac44c5858b2aae115d9700",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 456,
+        "sizeM": [
+          1.22,
+          0.82,
+          0.782496
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "roller-frame",
+            "operator-platform",
+            "canopy-roof"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "front-drum",
+          "color": "#657078",
+          "parts": [
+            "front-drum"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "front-drum-hub--1",
+            "front-drum-hub-1",
+            "rear-tire--1-hub--1",
+            "rear-tire--1-hub-1",
+            "rear-tire-1-hub--1",
+            "rear-tire-1-hub-1",
+            "engine-cover",
+            "canopy-posts"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "rear-tire--1",
+          "color": "#40474b",
+          "parts": [
+            "rear-tire--1",
+            "rear-tire-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "skid-steer-loader",
+      "kit": "construction-equipment",
+      "title": "Skid-steer loader",
+      "description": "Compact four-wheel loader with protective operator cage, lift arms and front bucket. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/skid-steer-loader.kcad.ts",
+      "sourceSha256": "a195191f6af4ec5fa2e22cf2d96bcdb5797c2589dc0eb964073db505206f2516",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 712,
+        "sizeM": [
+          1.077,
+          0.787,
+          0.628
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "loader-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "loader-wheel-0--1",
+            "loader-wheel-0-1",
+            "loader-wheel-1--1",
+            "loader-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "loader-wheel-0--1-hub--1",
+            "loader-wheel-0--1-hub-1",
+            "loader-wheel-0-1-hub--1",
+            "loader-wheel-0-1-hub-1",
+            "loader-wheel-1--1-hub--1",
+            "loader-wheel-1--1-hub-1",
+            "loader-wheel-1-1-hub--1",
+            "loader-wheel-1-1-hub-1",
+            "operator-cab",
+            "lift-arm--1",
+            "lift-arm-1",
+            "bucket-floor"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "loader-chassis",
+            "cab-window",
+            "lift-pivot--1",
+            "lift-pivot-1",
+            "bucket-back",
+            "bucket-cutting-edge"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "slab-edge-form",
+      "kit": "construction-equipment",
+      "title": "Slab edge form system",
+      "description": "Straight slab edge form with steel stakes, brackets and adjustable clamps. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/slab-edge-form.kcad.ts",
+      "sourceSha256": "56ded729f6495c90d2dd01155ed6baf686bab80bf459f1b2df371092c8849c92",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.45,
+          0.52,
+          0.1612
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "edge-board",
+            "clamp-0",
+            "clamp-1",
+            "clamp-2",
+            "clamp-3",
+            "clamp-4"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "stake-0",
+            "stake-1",
+            "stake-2",
+            "stake-3",
+            "stake-4"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "tandem-vibratory-roller",
+      "kit": "construction-equipment",
+      "title": "Tandem vibratory roller",
+      "description": "Compaction roller with front and rear steel drums, operator canopy and central chassis. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/tandem-vibratory-roller.kcad.ts",
+      "sourceSha256": "6608e3f9453c0fa26b33589e9187a27c5ef67d84d665c82f7cf66d35eb46a03a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 324,
+        "sizeM": [
+          1.053,
+          0.764,
+          0.70224
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "roller-frame",
+            "operator-platform",
+            "canopy-roof"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "front-drum",
+          "color": "#657078",
+          "parts": [
+            "front-drum",
+            "rear-drum"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "front-drum-hub--1",
+            "front-drum-hub-1",
+            "rear-drum-hub--1",
+            "rear-drum-hub-1",
+            "engine-cover",
+            "canopy-posts"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "telescopic-handler",
+      "kit": "construction-equipment",
+      "title": "Telescopic handler",
+      "description": "Rough-terrain handler with long extending boom, front carriage and four-wheel chassis. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/telescopic-handler.kcad.ts",
+      "sourceSha256": "d9d31a800d59a9d7623c8bf9e912b3dbfeb0fa21b5ab685588a7120aba940a88",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 624,
+        "sizeM": [
+          1.8016,
+          0.95,
+          0.641592
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "handler-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "handler-wheel-0--1",
+            "handler-wheel-0-1",
+            "handler-wheel-1--1",
+            "handler-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "handler-wheel-0--1-hub--1",
+            "handler-wheel-0--1-hub-1",
+            "handler-wheel-0-1-hub--1",
+            "handler-wheel-0-1-hub-1",
+            "handler-wheel-1--1-hub--1",
+            "handler-wheel-1--1-hub-1",
+            "handler-wheel-1-1-hub--1",
+            "handler-wheel-1-1-hub-1",
+            "cab",
+            "telescopic-boom",
+            "boom-carriage"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "chassis",
+            "cab-glazing",
+            "inner-boom",
+            "fork-tine-left",
+            "fork-tine-right"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "towable-light-tower",
+      "kit": "construction-equipment",
+      "title": "Towable site light tower",
+      "description": "Mobile lighting mast with four floodlight heads, stabilizer legs and road trailer. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/towable-light-tower.kcad.ts",
+      "sourceSha256": "3418da187df387d15630bdf16654cb66a6b4f3aa0089775352610dd30477b521",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          1.2075,
+          1.9755,
+          0.9328
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "skid-base",
+            "telescoping-mast",
+            "floodlight-0",
+            "floodlight-1",
+            "floodlight-2",
+            "floodlight-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "tower-base",
+            "light-bar",
+            "stabilizer--1",
+            "stabilizer-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "track-asphalt-paver",
+      "kit": "construction-equipment",
+      "title": "Tracked asphalt paver",
+      "description": "Tracked paving machine with front material hopper, operator canopy, feeder deck and rear screed. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/track-asphalt-paver.kcad.ts",
+      "sourceSha256": "4f77dda1d8387d8012e00dfcf7d5caa6bfdd9044ba7db94bba1f248a4951da42",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1808,
+        "sizeM": [
+          1.55,
+          0.87,
+          1.098
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "crawler--1-belt",
+            "crawler-1-belt",
+            "main-deck",
+            "hopper-wing-left",
+            "hopper-wing-right",
+            "canopy-posts",
+            "feeder-deck",
+            "screed-wing--1",
+            "screed-wing-1",
+            "feed-auger"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "crawler--1-roller-0",
+          "color": "#40474b",
+          "parts": [
+            "crawler--1-roller-0",
+            "crawler--1-roller-1",
+            "crawler--1-roller-2",
+            "crawler--1-roller-3",
+            "crawler--1-idler-front",
+            "crawler--1-idler-rear",
+            "crawler-1-roller-0",
+            "crawler-1-roller-1",
+            "crawler-1-roller-2",
+            "crawler-1-roller-3",
+            "crawler-1-idler-front",
+            "crawler-1-idler-rear"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "crawler--1-roller-0-hub--1",
+            "crawler--1-roller-0-hub-1",
+            "crawler--1-roller-1-hub--1",
+            "crawler--1-roller-1-hub-1",
+            "crawler--1-roller-2-hub--1",
+            "crawler--1-roller-2-hub-1",
+            "crawler--1-roller-3-hub--1",
+            "crawler--1-roller-3-hub-1",
+            "crawler--1-idler-front-hub--1",
+            "crawler--1-idler-front-hub-1",
+            "crawler--1-idler-rear-hub--1",
+            "crawler--1-idler-rear-hub-1",
+            "crawler-1-roller-0-hub--1",
+            "crawler-1-roller-0-hub-1",
+            "crawler-1-roller-1-hub--1",
+            "crawler-1-roller-1-hub-1",
+            "crawler-1-roller-2-hub--1",
+            "crawler-1-roller-2-hub-1",
+            "crawler-1-roller-3-hub--1",
+            "crawler-1-roller-3-hub-1",
+            "crawler-1-idler-front-hub--1",
+            "crawler-1-idler-front-hub-1",
+            "crawler-1-idler-rear-hub--1",
+            "crawler-1-idler-rear-hub-1",
+            "material-hopper",
+            "operator-platform",
+            "canopy-roof",
+            "screed-main",
+            "screed-arm--1",
+            "screed-arm-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "tracked-concrete-buggy",
+      "kit": "construction-equipment",
+      "title": "Tracked concrete buggy",
+      "description": "Compact powered buggy with tracked undercarriage, skip hopper and operator handles. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/tracked-concrete-buggy.kcad.ts",
+      "sourceSha256": "b9ef45ab9824ef52fa9f9d05f1331f45247b44c3011e0d034a9c2c8c24e55198",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1404,
+        "sizeM": [
+          0.7415,
+          0.61,
+          0.618175
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "buggy-track--1-belt",
+            "buggy-track-1-belt",
+            "buggy-frame",
+            "skip-side--1",
+            "skip-side-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "buggy-track--1-roller-0",
+          "color": "#40474b",
+          "parts": [
+            "buggy-track--1-roller-0",
+            "buggy-track--1-roller-1",
+            "buggy-track--1-roller-2",
+            "buggy-track--1-idler-front",
+            "buggy-track--1-idler-rear",
+            "buggy-track-1-roller-0",
+            "buggy-track-1-roller-1",
+            "buggy-track-1-roller-2",
+            "buggy-track-1-idler-front",
+            "buggy-track-1-idler-rear"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "buggy-track--1-roller-0-hub--1",
+            "buggy-track--1-roller-0-hub-1",
+            "buggy-track--1-roller-1-hub--1",
+            "buggy-track--1-roller-1-hub-1",
+            "buggy-track--1-roller-2-hub--1",
+            "buggy-track--1-roller-2-hub-1",
+            "buggy-track--1-idler-front-hub--1",
+            "buggy-track--1-idler-front-hub-1",
+            "buggy-track--1-idler-rear-hub--1",
+            "buggy-track--1-idler-rear-hub-1",
+            "buggy-track-1-roller-0-hub--1",
+            "buggy-track-1-roller-0-hub-1",
+            "buggy-track-1-roller-1-hub--1",
+            "buggy-track-1-roller-1-hub-1",
+            "buggy-track-1-roller-2-hub--1",
+            "buggy-track-1-roller-2-hub-1",
+            "buggy-track-1-idler-front-hub--1",
+            "buggy-track-1-idler-front-hub-1",
+            "buggy-track-1-idler-rear-hub--1",
+            "buggy-track-1-idler-rear-hub-1",
+            "skip-floor",
+            "operator-handle"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "trailer-concrete-line-pump",
+      "kit": "construction-equipment",
+      "title": "Trailer concrete line pump",
+      "description": "Towable concrete pump with hopper, motor enclosure, hose connections and road wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/trailer-concrete-line-pump.kcad.ts",
+      "sourceSha256": "a8c87514e8a36cd8306afc44600c7ecd60c849d7d454e80d9d6d4b5a0ae2953e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 656,
+        "sizeM": [
+          1.092,
+          0.79,
+          0.70152
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "trailer-deck",
+            "pump-enclosure"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trailer-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "trailer-wheel-0--1",
+            "trailer-wheel-0-1",
+            "trailer-wheel-1--1",
+            "trailer-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "trailer-wheel-0--1-hub--1",
+            "trailer-wheel-0--1-hub-1",
+            "trailer-wheel-0-1-hub--1",
+            "trailer-wheel-0-1-hub-1",
+            "trailer-wheel-1--1-hub--1",
+            "trailer-wheel-1--1-hub-1",
+            "trailer-wheel-1-1-hub--1",
+            "trailer-wheel-1-1-hub-1",
+            "drawbar",
+            "loading-ramp--1",
+            "loading-ramp-1",
+            "hopper",
+            "hose-connection",
+            "control-panel"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "transit-mixer-truck",
+      "kit": "construction-equipment",
+      "title": "Transit concrete mixer truck",
+      "description": "Concrete mixer truck with rotating-looking drum, rear discharge chute and cab. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/transit-mixer-truck.kcad.ts",
+      "sourceSha256": "31505cb15f97a8430eb046ee4bb7977a43dd3d777551dcc56621673066e01e11",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 712,
+        "sizeM": [
+          1.7215,
+          0.881,
+          0.714
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "mixer-chassis",
+            "mixer-cab-window",
+            "mixer-roof",
+            "drum-neck",
+            "rear-chute-support"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "mixer-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "mixer-wheel-0--1",
+            "mixer-wheel-0-1",
+            "mixer-wheel-1--1",
+            "mixer-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "mixer-wheel-0--1-hub--1",
+            "mixer-wheel-0--1-hub-1",
+            "mixer-wheel-0-1-hub--1",
+            "mixer-wheel-0-1-hub-1",
+            "mixer-wheel-1--1-hub--1",
+            "mixer-wheel-1--1-hub-1",
+            "mixer-wheel-1-1-hub--1",
+            "mixer-wheel-1-1-hub-1",
+            "mixer-cab",
+            "mixing-drum",
+            "discharge-chute-0",
+            "discharge-chute-1",
+            "discharge-chute-2"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "trench-roller",
+      "kit": "construction-equipment",
+      "title": "Remote trench roller",
+      "description": "Compact trench compactor with paired steel drums and a protected remote-control mast. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/trench-roller.kcad.ts",
+      "sourceSha256": "cbc6e1b11ee7adee1073d14cd0d8d7c0eeb64cff57f926b48a9aeafcb264de17",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.6688,
+          0.66,
+          0.521664
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "roller-frame"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "front-drum",
+          "color": "#657078",
+          "parts": [
+            "front-drum",
+            "rear-drum"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "front-drum-hub--1",
+            "front-drum-hub-1",
+            "rear-drum-hub--1",
+            "rear-drum-hub-1",
+            "engine-cover",
+            "remote-control-mast"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "vibrating-concrete-screed",
+      "kit": "construction-equipment",
+      "title": "Vibrating concrete screed",
+      "description": "Finishing beam with engine housing, end handles and a straight leveling blade. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/vibrating-concrete-screed.kcad.ts",
+      "sourceSha256": "736102d504d32054c79862b5c44e43a62317d2a780599cb9930cc00d6fb09206",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.4142,
+          0.39,
+          1.55
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "screed-beam",
+            "eccentric-weight"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "vibrator-housing",
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "walk-behind-concrete-saw",
+      "kit": "construction-equipment",
+      "title": "Walk-behind concrete saw",
+      "description": "Push saw with guarded cutting blade, compact motor and adjustable handlebar. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/walk-behind-concrete-saw.kcad.ts",
+      "sourceSha256": "a062d193b40f68fac988fe93e512756e14944b118721725e05856189a0b0879d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 620,
+        "sizeM": [
+          0.632,
+          0.5488,
+          0.38788
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "saw-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "saw-wheel-0--1",
+            "saw-wheel-0-1",
+            "saw-wheel-1--1",
+            "saw-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "saw-wheel-0--1-hub--1",
+            "saw-wheel-0--1-hub-1",
+            "saw-wheel-0-1-hub--1",
+            "saw-wheel-0-1-hub-1",
+            "saw-wheel-1--1-hub--1",
+            "saw-wheel-1--1-hub-1",
+            "saw-wheel-1-1-hub--1",
+            "saw-wheel-1-1-hub-1",
+            "engine-cover",
+            "blade-guard",
+            "push-handle"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "saw-frame",
+            "blade"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "walk-behind-floor-scarifier",
+      "kit": "construction-equipment",
+      "title": "Walk-behind floor scarifier",
+      "description": "Surface-preparation machine with guarded drum, wheeled frame and push handle. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/walk-behind-floor-scarifier.kcad.ts",
+      "sourceSha256": "57e9b610c5b8bf4bbbb878307dda5fa69cfcf1356b59a27a222c7d10caae22a0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 664,
+        "sizeM": [
+          0.658,
+          0.6328,
+          0.43832
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "floor-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "floor-wheel-0--1",
+            "floor-wheel-0-1",
+            "floor-wheel-1--1",
+            "floor-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "floor-wheel-0--1-hub--1",
+            "floor-wheel-0--1-hub-1",
+            "floor-wheel-0-1-hub--1",
+            "floor-wheel-0-1-hub-1",
+            "floor-wheel-1--1-hub--1",
+            "floor-wheel-1--1-hub-1",
+            "floor-wheel-1-1-hub--1",
+            "floor-wheel-1-1-hub-1",
+            "motor-housing",
+            "handle-bar",
+            "scarifier-hood"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "machine-frame",
+            "handle-post",
+            "cutting-drum"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "walk-behind-power-trowel",
+      "kit": "construction-equipment",
+      "title": "Walk-behind power trowel",
+      "description": "Concrete finishing tool with circular blade guard, engine block and long control handle. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/walk-behind-power-trowel.kcad.ts",
+      "sourceSha256": "14db5be7328e712ca0e943de426d723ff94dd78866a452919b553a4603b32e9b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.5948,
+          0.517,
+          0.504
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "trowel-guard",
+            "handle-post",
+            "blade-guard"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "engine",
+            "control-handle"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "water-tanker-truck",
+      "kit": "construction-equipment",
+      "title": "Construction water tanker truck",
+      "description": "Site water truck with cylindrical tank, cab, hose reel and rear spray manifold. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/water-tanker-truck.kcad.ts",
+      "sourceSha256": "3703c83ba50932cd27aece915cd449d19886fb6dc3b638497df3413630d2ef23",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1064,
+        "sizeM": [
+          1.4441,
+          0.8306,
+          1.102
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "site-truck-chassis",
+            "site-truck-cab-window",
+            "site-truck-roof",
+            "tank-saddle-a",
+            "tank-saddle-b",
+            "spray-bar",
+            "hose-reel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "site-truck-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "site-truck-wheel-0--1",
+            "site-truck-wheel-0-1",
+            "site-truck-wheel-1--1",
+            "site-truck-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "site-truck-wheel-0--1-hub--1",
+            "site-truck-wheel-0--1-hub-1",
+            "site-truck-wheel-0-1-hub--1",
+            "site-truck-wheel-0-1-hub-1",
+            "site-truck-wheel-1--1-hub--1",
+            "site-truck-wheel-1--1-hub-1",
+            "site-truck-wheel-1-1-hub--1",
+            "site-truck-wheel-1-1-hub-1",
+            "site-truck-cab",
+            "tank",
+            "spray-nozzle-0",
+            "spray-nozzle-1",
+            "spray-nozzle-2",
+            "spray-nozzle-3",
+            "spray-nozzle-4",
+            "spray-nozzle-5",
+            "spray-nozzle-6",
+            "spray-nozzle-7",
+            "spray-nozzle-8"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "wheel-asphalt-paver",
+      "kit": "construction-equipment",
+      "title": "Wheeled asphalt paver",
+      "description": "Rubber-wheel paving machine with front hopper, raised operator station and adjustable rear screed. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "construction equipment",
+        "roadworks",
+        "jobsite",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "construction",
+        "roadworks",
+        "jobsite",
+        "site-plan"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/construction-equipment/wheel-asphalt-paver.kcad.ts",
+      "sourceSha256": "a1d98067f84c91634db9b6521f4c42a03ce1c915022e892e513db4fc0ba6db20",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#78828a",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d29a36",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 728,
+        "sizeM": [
+          1.45,
+          0.8444,
+          1.098
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "paver-wheel-0--1",
+          "color": "#40474b",
+          "parts": [
+            "paver-wheel-0--1",
+            "paver-wheel-0-1",
+            "paver-wheel-1--1",
+            "paver-wheel-1-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#d29a36",
+          "parts": [
+            "paver-wheel-0--1-hub--1",
+            "paver-wheel-0--1-hub-1",
+            "paver-wheel-0-1-hub--1",
+            "paver-wheel-0-1-hub-1",
+            "paver-wheel-1--1-hub--1",
+            "paver-wheel-1--1-hub-1",
+            "paver-wheel-1-1-hub--1",
+            "paver-wheel-1-1-hub-1",
+            "material-hopper",
+            "operator-platform",
+            "canopy-roof",
+            "screed-main",
+            "screed-arm--1",
+            "screed-arm-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#78828a",
+          "parts": [
+            "main-deck",
+            "hopper-wing-left",
+            "hopper-wing-right",
+            "canopy-posts",
+            "feeder-deck",
+            "screed-wing--1",
+            "screed-wing-1",
+            "feed-auger"
+          ],
+          "param": "body"
         }
       ]
     },

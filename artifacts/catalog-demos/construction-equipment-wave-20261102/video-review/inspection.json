@@ -1,0 +1,85 @@
+{
+  "reviewedAt": "2026-11-02T22:51:13.794597+00:00",
+  "method": "Decoded the encoded MP4 with ffmpeg into a 3x3 sheet sampled every two seconds, then visually inspected that sheet and the full 60-asset preview contact sheet.",
+  "video": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1",
+        "nb_frames": "432"
+      }
+    ],
+    "format": {
+      "duration": "18.000000"
+    }
+  },
+  "sha256": {
+    "demo.mp4": "9cd133676410503c2b63bf5bf560f4347eb87a80301742ab9a3adf5c2607f5b0",
+    "preview-contact-sheet.png": "89e1c3ba7d606ac2ea0827b841b4bf6419921cf826efd390710a28bc3021bbce",
+    "video-review/decoded-contact-sheet.png": "183602ccc9c3e9054d82054aef6c8f366a4fe064047cc4eddcebb3f8297d8876"
+  },
+  "visualReview": {
+    "all60AssetPreviewsReviewed": true,
+    "decodedVideoPanelsReviewed": true,
+    "allThreeOverviewPanelsPresent": true,
+    "variantPairComparisonsVisible": true
+  },
+  "variantAudit": [
+    {
+      "id": "track-asphalt-paver",
+      "want": "scale 1.15 blue body yellow accent",
+      "params": {
+        "scale": 1.15,
+        "body": "#2e6fd8",
+        "accent": "#f1c40f"
+      },
+      "unmatched": [],
+      "defaultTriangles": 1808,
+      "resolvedTriangles": 1808,
+      "triangleBudget": 2200,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0
+    },
+    {
+      "id": "motor-grader",
+      "want": "scale 0.85 green body orange accent",
+      "params": {
+        "scale": 0.85,
+        "body": "#2e8b57",
+        "accent": "#e67e22"
+      },
+      "unmatched": [],
+      "defaultTriangles": 908,
+      "resolvedTriangles": 908,
+      "triangleBudget": 2200,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0
+    },
+    {
+      "id": "concrete-pump-truck",
+      "want": "scale 1.1 red body yellow accent",
+      "params": {
+        "scale": 1.1,
+        "body": "#c0392b",
+        "accent": "#f1c40f"
+      },
+      "unmatched": [],
+      "defaultTriangles": 708,
+      "resolvedTriangles": 708,
+      "triangleBudget": 2200,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0
+    }
+  ],
+  "scope": "Local source, catalog search, variant resolution, GLB export, and software rendering only. No live deployment, equipment simulation, or hardware acceptance is claimed."
+}

@@ -1,5 +1,12 @@
 # Unreleased
 
+- Construction Equipment catalog wave: 60 original parametric low-poly CC0
+  assets for paving, compaction, concrete placement, formwork/rebar and site
+  logistics in the new `catalog/kits/construction-equipment` kit. The generated
+  catalog grows from 1,015 to 1,075 audited assets. Kit documentation and the
+  reproducible local demo bundle are in
+  `catalog/kits/construction-equipment/README.md` and
+  `artifacts/catalog-demos/construction-equipment-wave-20261102/`.
 - Farm Machinery catalog wave: 60 original parametric low-poly CC0 assets
   covering field tractors, implements, planting, crop care, forage, harvest,
   grain handling and irrigation in the new `catalog/kits/farm-machinery` kit.
