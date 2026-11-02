@@ -1126,6 +1126,61 @@
       ]
     },
     {
+      "id": "retail-store",
+      "title": "Retail store",
+      "description": "Original low-poly shop fixtures, checkout equipment, stock handling and customer-service props with editable scale and color controls.",
+      "assets": [
+        "aisle-sign",
+        "assisted-checkout-till",
+        "bakery-display-case",
+        "barcode-scanner",
+        "bottle-return-kiosk",
+        "bulk-food-bin",
+        "cash-drawer",
+        "checkout-bagging-stand",
+        "checkout-conveyor",
+        "checkout-counter",
+        "checkout-divider",
+        "chest-freezer",
+        "clothing-rail",
+        "customer-service-desk",
+        "deli-service-case",
+        "entry-security-gate",
+        "flatbed-stock-trolley",
+        "floor-display-stand",
+        "gondola-shelf",
+        "handbasket",
+        "hanging-wayfinding-sign",
+        "impulse-merchandiser",
+        "magazine-rack",
+        "pallet-display",
+        "parcel-locker-bank",
+        "payment-terminal",
+        "price-check-scale",
+        "produce-crate-stack",
+        "produce-display-table",
+        "queue-barrier",
+        "queue-stanchion",
+        "receipt-printer",
+        "recycling-station",
+        "refrigerated-display-case",
+        "returns-drop-bin",
+        "roll-cage-trolley",
+        "self-checkout-kiosk",
+        "shelf-endcap",
+        "shopping-bag-dispenser",
+        "shopping-basket",
+        "shopping-cart",
+        "stock-hand-truck",
+        "stock-ladder",
+        "trolley-corral",
+        "upright-drink-cooler",
+        "wall-shelf-unit",
+        "wire-grid-display",
+        "wooden-pallet"
+      ]
+    },
+    {
       "id": "solar-energy",
       "title": "Solar Energy",
       "description": "Original low-poly photovoltaic arrays, mounting, storage, conversion, grid and service props with editable size and color controls.",
@@ -103382,6 +103437,3461 @@
             "tie-4",
             "tie-5",
             "tie-6"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "aisle-sign",
+      "kit": "retail-store",
+      "title": "Aisle sign",
+      "description": "Single aisle marker with a broad hanging panel, two ceiling rods and compact end caps. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/aisle-sign.kcad.ts",
+      "sourceSha256": "dec98d1f4202dc1acb3db3fbe4bb492a670f84aa4d0b7d32685a237131c640fc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#dfaa40",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.76,
+          1.005,
+          0.09
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#dfaa40",
+          "parts": [
+            "sign-panel",
+            "top-border",
+            "bottom-border",
+            "rod-left",
+            "rod-right",
+            "cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "assisted-checkout-till",
+      "kit": "retail-store",
+      "title": "Assisted checkout till",
+      "description": "Cashier station with a register housing, customer-facing display, receipt printer and till top. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/assisted-checkout-till.kcad.ts",
+      "sourceSha256": "1472745fd90772a52019fa7b9c3de4021229f73803b54bb5b262b56568ea2012",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596776",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.5,
+          0.53,
+          0.35
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596776",
+          "parts": [
+            "register-base",
+            "register-body",
+            "keypad-deck",
+            "customer-display",
+            "display-screen",
+            "receipt-roll"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bakery-display-case",
+      "kit": "retail-store",
+      "title": "Bakery display case",
+      "description": "Counter-height bakery case with lower cabinet, display plinth, glass-frame posts and canopy. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/bakery-display-case.kcad.ts",
+      "sourceSha256": "75b2736694cbdbac5999bc6aec48d275ee27cb4b631d76e3c952a892520b091c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b7158",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          1.54,
+          1.5,
+          0.68
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b7158",
+          "parts": [
+            "cabinet",
+            "display-deck",
+            "canopy",
+            "post--710--275",
+            "post--710-275",
+            "post-710--275",
+            "post-710-275",
+            "front-rail",
+            "corner-trim"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "barcode-scanner",
+      "kit": "retail-store",
+      "title": "Barcode scanner",
+      "description": "Countertop barcode scanner with a sloped reading window, raised side housing and low base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/barcode-scanner.kcad.ts",
+      "sourceSha256": "f54c072b5c4fc0d44d4650e3d834e91dad443d4737c050833b9533e96cd9dd75",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#3e4a51",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.31,
+          0.176,
+          0.24
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#3e4a51",
+          "parts": [
+            "base",
+            "scanner-head",
+            "front-window",
+            "side-window",
+            "status-light"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bottle-return-kiosk",
+      "kit": "retail-store",
+      "title": "Bottle return kiosk",
+      "description": "Bottle return fixture with tapered-looking intake hood, bin body, status panel and service door. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/bottle-return-kiosk.kcad.ts",
+      "sourceSha256": "853c5896c35ce831fe7dd154fb5b789449b356950914a9d35e36305a8bcee695",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5a786b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.92,
+          1.31,
+          0.827
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5a786b",
+          "parts": [
+            "bin",
+            "intake-hood",
+            "opening",
+            "control-panel",
+            "service-door",
+            "status-light"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bulk-food-bin",
+      "kit": "retail-store",
+      "title": "Bulk goods bin",
+      "description": "Open-top bulk dispenser with tapered-look stand, front scoop tray and a shallow lid lip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/bulk-food-bin.kcad.ts",
+      "sourceSha256": "1c11afa284032dd024e15428e7c3a8b1eadc5b8ebbd5a207bae12dacbf079e31",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7f705a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.72,
+          1.07,
+          0.802
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7f705a",
+          "parts": [
+            "base",
+            "hopper",
+            "top-rim",
+            "scoop-tray",
+            "scoop-lip",
+            "dispense-knob"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cash-drawer",
+      "kit": "retail-store",
+      "title": "Cash drawer",
+      "description": "Retail till drawer with broad faceplate, recessed pull and compact lock cylinder. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/cash-drawer.kcad.ts",
+      "sourceSha256": "78faa4419742004f0885c843bb8883a128ad2a1339f55b66a5b2de12ccd56050",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#60676c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          0.45,
+          0.16,
+          0.482
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#60676c",
+          "parts": [
+            "drawer-box",
+            "faceplate",
+            "pull",
+            "lock"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "checkout-bagging-stand",
+      "kit": "retail-store",
+      "title": "Bagging stand",
+      "description": "Freestanding bagging station with broad work surface, four legs and lower storage brace. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/checkout-bagging-stand.kcad.ts",
+      "sourceSha256": "5ac87e34f6101614e62f7efa259ac983f5cbd65422cb0f45742278ce34fdca18",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#806a50",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.85,
+          0.865,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#806a50",
+          "parts": [
+            "top",
+            "lower-brace",
+            "leg--370--245",
+            "leg--370-245",
+            "leg-370--245",
+            "leg-370-245",
+            "bag-holder"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "checkout-conveyor",
+      "kit": "retail-store",
+      "title": "Checkout conveyor lane",
+      "description": "Short checkout belt with side rails, cashier end, scanner deck and a bagging platform. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/checkout-conveyor.kcad.ts",
+      "sourceSha256": "8ecb91dc397440854d0cd9ac5ed1f8e992dfd2b863b48d1fd09128b12af9734a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#46545e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          1.88,
+          0.84,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#46545e",
+          "parts": [
+            "belt-base",
+            "belt-surface",
+            "rail-left",
+            "rail-right",
+            "cashier-end",
+            "bagging-deck",
+            "scanner"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "checkout-counter",
+      "kit": "retail-store",
+      "title": "Checkout counter",
+      "description": "Retail checkout counter with customer ledge, cashier worktop, front kick panel and bagging return. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/checkout-counter.kcad.ts",
+      "sourceSha256": "9fc30efc604e5659e038e9febd50fbf7f42b7d091785be175b1413a5e8ad0475",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#53697a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          2.11,
+          0.548,
+          0.843
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#53697a",
+          "parts": [
+            "base",
+            "customer-ledge",
+            "worktop",
+            "bagging-return",
+            "scanner-window",
+            "front-panel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "checkout-divider",
+      "kit": "retail-store",
+      "title": "Checkout divider",
+      "description": "Low polygon checkout divider with long body, raised grip fin and beveled-looking end blocks. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/checkout-divider.kcad.ts",
+      "sourceSha256": "f5650fb5b853a5502256e073747d79d01e71d8b198f866c860d6590bc7ff04a0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#df973e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.262,
+          0.09,
+          0.076
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#df973e",
+          "parts": [
+            "body",
+            "grip-fin",
+            "end-left",
+            "end-right",
+            "top-button"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "chest-freezer",
+      "kit": "retail-store",
+      "title": "Chest freezer",
+      "description": "Lidded chest freezer with raised sliding cover rails, insulated tub and recessed foot plinth. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/chest-freezer.kcad.ts",
+      "sourceSha256": "c5f010c67118a86b9b15a74496fd1ab166a5451368416c472e11d587d167cb2c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#cad2d2",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          1.48,
+          0.78,
+          0.767
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#cad2d2",
+          "parts": [
+            "plinth",
+            "tub",
+            "lid-left",
+            "lid-right",
+            "handle",
+            "thermostat"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "clothing-rail",
+      "kit": "retail-store",
+      "title": "Clothing rail",
+      "description": "Retail garment rail with straight hanging bar, four corner posts and stabilizing feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/clothing-rail.kcad.ts",
+      "sourceSha256": "778cadcaf44a6a9501f2c188bdda8e8689f800e7eedfd02cb10c1690ade80d99",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5c6264",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          1.62,
+          1.55,
+          0.452
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5c6264",
+          "parts": [
+            "top-rail",
+            "post--700--205",
+            "post--700-205",
+            "post-700--205",
+            "post-700-205",
+            "foot--700",
+            "foot-700",
+            "end-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "customer-service-desk",
+      "kit": "retail-store",
+      "title": "Customer service desk",
+      "description": "Store service counter with lowered accessible return ledge, raised worktop and back display panel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/customer-service-desk.kcad.ts",
+      "sourceSha256": "fc023da7f0be65bf3b6db5349fe7c25399818393ae286b236101c26fd31bb3d3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#81705d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          1.95,
+          1.71,
+          0.951
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#81705d",
+          "parts": [
+            "main-counter",
+            "customer-ledge",
+            "accessible-return",
+            "back-display",
+            "screen",
+            "call-button"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "deli-service-case",
+      "kit": "retail-store",
+      "title": "Deli service case",
+      "description": "Customer-facing deli counter with raised display deck, sneeze-guard frame and base cabinet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/deli-service-case.kcad.ts",
+      "sourceSha256": "ced7c78163ddc2e4f99aa47460e5ce934d776c196e6f62df00af4e2ee26e7d6f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#858074",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          1.76,
+          1.59,
+          0.75
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#858074",
+          "parts": [
+            "base",
+            "display-deck",
+            "canopy",
+            "glass-post--800",
+            "glass-post-0",
+            "glass-post-800",
+            "customer-rail",
+            "scale-platform"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "entry-security-gate",
+      "kit": "retail-store",
+      "title": "Entry security gate",
+      "description": "One retail entrance security pedestal with sensing tower, status light and floor anchor plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/entry-security-gate.kcad.ts",
+      "sourceSha256": "fcdffed7725a9792dd577513c1347819fbd87850484808af89cf4bffbce65715",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#59646a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.35,
+          0.96,
+          0.286
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#59646a",
+          "parts": [
+            "base",
+            "pedestal",
+            "sensor-face",
+            "status-light",
+            "anchor--130--90",
+            "anchor--130-90",
+            "anchor-130--90",
+            "anchor-130-90"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "flatbed-stock-trolley",
+      "kit": "retail-store",
+      "title": "Flatbed stock trolley",
+      "description": "Warehouse-style retail flatbed trolley with deck, raised end handle and four swivel wheels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/flatbed-stock-trolley.kcad.ts",
+      "sourceSha256": "d17853a8cfb1a002f73dc0c93dd47bc23e40ffbf09bcbcb0450adb2f392588bb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#59666b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 448,
+        "sizeM": [
+          1.1,
+          1.127,
+          0.715
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#59666b",
+          "parts": [
+            "deck",
+            "handle-upright",
+            "handle-grip",
+            "toe-plate",
+            "caster--440--260",
+            "caster--440-260",
+            "caster-440--260",
+            "caster-440-260",
+            "caster-mount--440--260",
+            "caster-mount--440-260",
+            "caster-mount-440--260",
+            "caster-mount-440-260",
+            "corner-bumper--480--280",
+            "corner-bumper--480-280",
+            "corner-bumper-480--280",
+            "corner-bumper-480-280"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "floor-display-stand",
+      "kit": "retail-store",
+      "title": "Floor display stand",
+      "description": "Compact promotional floor stand with tiered shelves, side cheeks and broad header panel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/floor-display-stand.kcad.ts",
+      "sourceSha256": "0efe42215e7d2c5d0a6368359245cef03eb8d2552a7ff8f5daa3274db56c40b9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b67942",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.68,
+          1.554,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b67942",
+          "parts": [
+            "foot",
+            "back",
+            "shelf-0",
+            "shelf-1",
+            "shelf-2",
+            "shelf-3",
+            "header",
+            "top-bolt"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "gondola-shelf",
+      "kit": "retail-store",
+      "title": "Gondola shelf",
+      "description": "Double-sided supermarket gondola with perforated-look back panel, six shelves and stabilizing feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/gondola-shelf.kcad.ts",
+      "sourceSha256": "168c7b0c4230caad2eede1826d2849935bedcdd888f0e89280685ce95c2f7e7c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#59707a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.8,
+          2,
+          1.06
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#59707a",
+          "parts": [
+            "back-panel",
+            "shelf-0",
+            "shelf-1",
+            "shelf-2",
+            "shelf-0",
+            "shelf-1",
+            "shelf-2",
+            "upright--840",
+            "upright-840",
+            "foot--730",
+            "foot-730"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "handbasket",
+      "kit": "retail-store",
+      "title": "Hand basket",
+      "description": "Compact hand basket with open-frame sides, reinforced rim and raised swing handle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/handbasket.kcad.ts",
+      "sourceSha256": "9fa2e79a816f22b3ab01134d57308975b70f95928aa28d88a90cc209b8a62d56",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d18c42",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.5,
+          0.623,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d18c42",
+          "parts": [
+            "basket-base",
+            "rim",
+            "side-rib-x-0",
+            "side-rib-x-1",
+            "side-rib-x-2",
+            "side-rib-x-3",
+            "side-rib-x-4",
+            "side-rib-x-5",
+            "side-rib-x-6",
+            "side-rib-y-0",
+            "side-rib-y-1",
+            "side-rib-y-2",
+            "side-rib-y-3",
+            "side-rib-y-4",
+            "handle-side--220",
+            "handle-side-220",
+            "handle-grip",
+            "pivot-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hanging-wayfinding-sign",
+      "kit": "retail-store",
+      "title": "Hanging wayfinding sign",
+      "description": "Double-sided overhead store direction sign with a long panel and two ceiling suspension rods. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/hanging-wayfinding-sign.kcad.ts",
+      "sourceSha256": "4522e8cb769b9b38c6c91c4e9756b9849e8ff75238f6afd8c9a94ac7e7ee79ad",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#54707a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          1.64,
+          1.118,
+          0.1335
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#54707a",
+          "parts": [
+            "panel",
+            "top-edge",
+            "hanger-left",
+            "hanger-right",
+            "arrow-block"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "impulse-merchandiser",
+      "kit": "retail-store",
+      "title": "Impulse merchandiser",
+      "description": "Narrow checkout-side impulse display with four shallow trays and a signboard mast. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/impulse-merchandiser.kcad.ts",
+      "sourceSha256": "cbee4eccd6b8335f6ef39cd6a7358005d3b55192664f6fff39852fbf02c068e1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#bc7d3d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.44,
+          1.724,
+          0.39
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#bc7d3d",
+          "parts": [
+            "base",
+            "backboard",
+            "tray-0",
+            "tray-1",
+            "tray-2",
+            "tray-3",
+            "header",
+            "mast-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "magazine-rack",
+      "kit": "retail-store",
+      "title": "Magazine rack",
+      "description": "Angled multi-pocket magazine stand with four front lips, tall backboard and side supports. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/magazine-rack.kcad.ts",
+      "sourceSha256": "c120704298406605fc619b4588471ef7580a2a57657bf1e44f34026844f3e6b0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6c5e50",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.738,
+          1.42,
+          0.474
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6c5e50",
+          "parts": [
+            "backboard",
+            "pocket-0",
+            "pocket-1",
+            "pocket-2",
+            "pocket-3",
+            "side--350",
+            "side-350",
+            "floor-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pallet-display",
+      "kit": "retail-store",
+      "title": "Promotional pallet display",
+      "description": "Low promotional island with a pallet base, stacked riser blocks and a tall branded sign panel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/pallet-display.kcad.ts",
+      "sourceSha256": "fa16e5db04c320a6aece7c2bf4d349826bb0318ee1d135a0cc1abccb04468722",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8c704c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          1.2,
+          1.708,
+          1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8c704c",
+          "parts": [
+            "pallet-deck",
+            "runner--440",
+            "runner-0",
+            "runner-440",
+            "display-base",
+            "sign-mast",
+            "sign-panel",
+            "mast-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parcel-locker-bank",
+      "kit": "retail-store",
+      "title": "Parcel locker bank",
+      "description": "Self-service parcel locker bank with mixed-size door bays, keypad column and top sign panel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/parcel-locker-bank.kcad.ts",
+      "sourceSha256": "50f056fc1b8ffdcf614aeaa9f675acd40d35d5a053e7b2898c15ffcb768b7e28",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e7d84",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 708,
+        "sizeM": [
+          1.61,
+          2.64,
+          0.265
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e7d84",
+          "parts": [
+            "back",
+            "locker-0-0",
+            "locker-0-1",
+            "locker-0-2",
+            "locker-0-3",
+            "locker-1-0",
+            "locker-1-1",
+            "locker-1-2",
+            "locker-1-3",
+            "locker-2-0",
+            "locker-2-1",
+            "locker-2-2",
+            "locker-2-3",
+            "keypad-panel",
+            "header",
+            "lock-0-0",
+            "lock-0-1",
+            "lock-0-2",
+            "lock-0-3",
+            "lock-1-0",
+            "lock-1-1",
+            "lock-1-2",
+            "lock-1-3",
+            "lock-2-0",
+            "lock-2-1",
+            "lock-2-2",
+            "lock-2-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "payment-terminal",
+      "kit": "retail-store",
+      "title": "Payment terminal",
+      "description": "Handheld payment pin pad with angled display, keypad block, contactless area and stand. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/payment-terminal.kcad.ts",
+      "sourceSha256": "ee2d9aed663e0b77ea0d6177b3784316693545af39d1327f98444fe7d0b07293",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#42515d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.21,
+          0.1925,
+          0.19
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#42515d",
+          "parts": [
+            "base",
+            "housing",
+            "screen",
+            "keypad",
+            "contactless-mark"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "price-check-scale",
+      "kit": "retail-store",
+      "title": "Price-check scale",
+      "description": "Countertop produce scale with broad platform, raised readout head and four-key control pad. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/price-check-scale.kcad.ts",
+      "sourceSha256": "89cfe1858008c258abe3d79d5d1ae29afbeeb414776cbb081282cc6e40a38afb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6f777b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.38,
+          0.5225,
+          0.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6f777b",
+          "parts": [
+            "base",
+            "weigh-platform",
+            "post",
+            "display",
+            "screen",
+            "key-0",
+            "key-1",
+            "key-2",
+            "key-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "produce-crate-stack",
+      "kit": "retail-store",
+      "title": "Produce crate stack",
+      "description": "Stack of four ventilated produce crates with hand slots and reinforced corner posts. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/produce-crate-stack.kcad.ts",
+      "sourceSha256": "9a0cacea1af7e4698bd1042a5a87b132d5077c55262c1fbbefe044168421dc4c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71945a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          1.26,
+          1.398,
+          1.059
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71945a",
+          "parts": [
+            "crate-0",
+            "crate-1",
+            "crate-2",
+            "crate-3",
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "stack-pin"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "produce-display-table",
+      "kit": "retail-store",
+      "title": "Produce display table",
+      "description": "Tiered produce island with three broad sloped-look display decks and a stout lower frame. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/produce-display-table.kcad.ts",
+      "sourceSha256": "4ad1b7abbd391a0cc180b11160e3d8db26fd69b250c23bf843de40bbf789201e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6c7954",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          1.9,
+          1.41,
+          0.931
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6c7954",
+          "parts": [
+            "lower-deck",
+            "middle-deck",
+            "upper-deck",
+            "front-apron",
+            "leg--820--350",
+            "leg--820-350",
+            "leg-820--350",
+            "leg-820-350",
+            "corner-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "queue-barrier",
+      "kit": "retail-store",
+      "title": "Queue barrier",
+      "description": "Short retractable queue barrier with square weighted feet, posts and a taut cross strap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/queue-barrier.kcad.ts",
+      "sourceSha256": "092505a3152ed3c95113343afc20b2f9ae56c018993f93c1eef289fefe956a3a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#55595d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          1.28,
+          1,
+          0.28
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#55595d",
+          "parts": [
+            "foot-left",
+            "foot-right",
+            "post-left",
+            "post-right",
+            "strap",
+            "cap-left",
+            "cap-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "queue-stanchion",
+      "kit": "retail-store",
+      "title": "Queue stanchion",
+      "description": "Single retail queue post with a broad weighted base, slender pole and four-way strap cap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/queue-stanchion.kcad.ts",
+      "sourceSha256": "8ea4e1446ee4f21cfe467d99fb4554f793854508634b40624033ff44828b0ac1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5a5b58",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.35,
+          0.988,
+          0.35
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5a5b58",
+          "parts": [
+            "base",
+            "pole",
+            "top-cap",
+            "strap-slot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "receipt-printer",
+      "kit": "retail-store",
+      "title": "Receipt printer",
+      "description": "Small point-of-sale receipt printer with paper slot, lid seam and roll cover. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/receipt-printer.kcad.ts",
+      "sourceSha256": "5f85aa7a9433fd7fde20b56eae88aa484f808cbe7e890cecac1f31ee10f5ae17",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596167",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          0.255,
+          0.182,
+          0.2495
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596167",
+          "parts": [
+            "base",
+            "cover",
+            "paper-slot",
+            "status-button"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "recycling-station",
+      "kit": "retail-store",
+      "title": "Retail recycling station",
+      "description": "Three-stream recycling station with separate openings, top dividers and a shared removable base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/recycling-station.kcad.ts",
+      "sourceSha256": "40ae8c0e9c7cc94800a536d8ff7731fa53992c9cc348208a19ae999ae76c0437",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#527a65",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          1.21,
+          0.895,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#527a65",
+          "parts": [
+            "bin-0",
+            "bin-1",
+            "bin-2",
+            "opening-0",
+            "opening-1",
+            "opening-2",
+            "shared-top",
+            "base-plinth",
+            "corner-foot-0",
+            "corner-foot-1",
+            "corner-foot-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "refrigerated-display-case",
+      "kit": "retail-store",
+      "title": "Refrigerated display case",
+      "description": "Open-front chilled display with insulated base, three shelf decks and a raised top canopy. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/refrigerated-display-case.kcad.ts",
+      "sourceSha256": "c7393232eb8409b37ce72b5e88c7850b1b33338ab84a095ca478ee69e274dd56",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687a7c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          1.88,
+          1.845,
+          0.915
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687a7c",
+          "parts": [
+            "base-cabinet",
+            "bottom-deck",
+            "shelf-0",
+            "shelf-1",
+            "shelf-2",
+            "canopy",
+            "front-upright--840",
+            "front-upright-840",
+            "temperature-dial"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "returns-drop-bin",
+      "kit": "retail-store",
+      "title": "Returns drop bin",
+      "description": "Store returns collection bin with hinged-look lid, front deposit slot and lower label plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/returns-drop-bin.kcad.ts",
+      "sourceSha256": "09206fa41ae795a4548a9f8341f920f04e4308016f5832b47c7c09786abab6fb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#47736e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.72,
+          0.92,
+          0.644
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#47736e",
+          "parts": [
+            "bin",
+            "lid",
+            "deposit-slot",
+            "label-panel",
+            "lid-hinge-left",
+            "lid-hinge-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "roll-cage-trolley",
+      "kit": "retail-store",
+      "title": "Roll cage trolley",
+      "description": "Four-wheel roll cage with raised side grid, loading deck, swing door and pull handle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/roll-cage-trolley.kcad.ts",
+      "sourceSha256": "b7bab0a17a7584b97e2d0d3e58a59cc5fcd40844252881bc7ac77a3fb8ba7a4d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626c70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 380,
+        "sizeM": [
+          0.9,
+          1.54,
+          0.888
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626c70",
+          "parts": [
+            "base-deck",
+            "post--420--330",
+            "post--420-330",
+            "post-420--330",
+            "post-420-330",
+            "crossbar-0",
+            "crossbar-1",
+            "crossbar-2",
+            "crossbar-3",
+            "crossbar-4",
+            "crossbar-5",
+            "door-bar",
+            "pull-handle",
+            "caster--370--390",
+            "caster--370-390",
+            "caster-370--390",
+            "caster-370-390",
+            "caster-mount--370--350",
+            "caster-mount--370-350",
+            "caster-mount-370--350",
+            "caster-mount-370-350"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "self-checkout-kiosk",
+      "kit": "retail-store",
+      "title": "Self-checkout kiosk",
+      "description": "Compact self-checkout pedestal with tilted display housing, scanner deck, bag hook and payment shelf. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/self-checkout-kiosk.kcad.ts",
+      "sourceSha256": "d1b37ccb952b90de1ebb89f2f0d979e2fc67a1b6449c2833dc3159ac94dda677",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#556b73",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.605,
+          1.05,
+          0.555
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#556b73",
+          "parts": [
+            "foot",
+            "pedestal",
+            "scanner-deck",
+            "display",
+            "screen",
+            "scanner-window",
+            "bag-hook"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "shelf-endcap",
+      "kit": "retail-store",
+      "title": "Shelf endcap display",
+      "description": "Gondola endcap with stepped product decks, tall rear board and sign panel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/shelf-endcap.kcad.ts",
+      "sourceSha256": "3bc2c35dd3f98482a20d742d6accf6bba1d8b6d3783cff10af0b4c00252dc393",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#64747a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.92,
+          2.13,
+          0.625
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#64747a",
+          "parts": [
+            "rear-board",
+            "deck-0",
+            "deck-1",
+            "deck-2",
+            "deck-3",
+            "header",
+            "leg--405",
+            "leg-405",
+            "base-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "shopping-bag-dispenser",
+      "kit": "retail-store",
+      "title": "Shopping bag dispenser",
+      "description": "Wall-mounted bag dispenser with cover hood, stack cavity and lower pull slot. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/shopping-bag-dispenser.kcad.ts",
+      "sourceSha256": "4feb4f82f89febbe6a64d8235e7f0ecf01c2f315a1511f659b640799894eec4d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c776c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.52,
+          0.78,
+          0.299
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c776c",
+          "parts": [
+            "backplate",
+            "hood",
+            "bag-stack",
+            "pull-slot",
+            "mount-left",
+            "mount-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "shopping-basket",
+      "kit": "retail-store",
+      "title": "Shopping basket",
+      "description": "Rigid shopping basket with deep molded body, broad top rim and two short swing handles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/shopping-basket.kcad.ts",
+      "sourceSha256": "6a99377e955f069b170872647e500c581acde3d9cf7d71e8509a56e9bfccf6ff",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b56c3b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.6,
+          0.63,
+          0.43
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b56c3b",
+          "parts": [
+            "body",
+            "rim",
+            "handle-left",
+            "handle-right",
+            "grip",
+            "pivot-left",
+            "pivot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "shopping-cart",
+      "kit": "retail-store",
+      "title": "Shopping cart",
+      "description": "Low-poly wire basket cart with tubular frame, child seat panel, lower rack and four casters. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/shopping-cart.kcad.ts",
+      "sourceSha256": "694e69971e0ac717ea1c4848a80ddd60cf8498cb927cb54ee4b1c9d9a920500f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#627178",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 356,
+        "sizeM": [
+          0.84,
+          1.08,
+          0.67
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#627178",
+          "parts": [
+            "basket-floor",
+            "basket-front",
+            "basket-back",
+            "basket-side--400",
+            "basket-side-400",
+            "handlebar",
+            "handle-post--300",
+            "handle-post-300",
+            "lower-rack",
+            "wheel--390--250",
+            "wheel--390-250",
+            "wheel-390--250",
+            "wheel-390-250",
+            "wheel-mount--390--250",
+            "wheel-mount--390-250",
+            "wheel-mount-390--250",
+            "wheel-mount-390-250",
+            "frame--400",
+            "frame-400"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stock-hand-truck",
+      "kit": "retail-store",
+      "title": "Stock hand truck",
+      "description": "Two-wheel stock hand truck with toe plate, tall spine, upper grip and chunky tires. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/stock-hand-truck.kcad.ts",
+      "sourceSha256": "bc9fc6985e98caa371925a85d67051c1212cb12a9c52f2dd9d5778cf348ad76c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5f6870",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.56,
+          1.127,
+          0.455
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5f6870",
+          "parts": [
+            "spine",
+            "toe-plate",
+            "top-grip",
+            "wheel--235",
+            "wheel-235",
+            "wheel-guard--180",
+            "wheel-guard-180"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stock-ladder",
+      "kit": "retail-store",
+      "title": "Stock ladder",
+      "description": "Compact rolling stock ladder with three broad treads, side rails, top platform and caster feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/stock-ladder.kcad.ts",
+      "sourceSha256": "5569dcea3a48623c8327cc43285026c65821016b7049222a2c29d00b57fcc027",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#606d75",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.72,
+          0.92,
+          0.545
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#606d75",
+          "parts": [
+            "top-platform",
+            "tread-0",
+            "tread-1",
+            "tread-2",
+            "rail--300",
+            "rail-300",
+            "caster--280",
+            "caster-280"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "trolley-corral",
+      "kit": "retail-store",
+      "title": "Trolley corral",
+      "description": "Low cart-return bay with parallel divider rails, end stop and corner guard posts. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/trolley-corral.kcad.ts",
+      "sourceSha256": "04f147d9326b936b49e13e4a76ba1458fe22715427828a5915b2f6f4b2771c0b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5d6b70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          1.8,
+          0.692,
+          0.695
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5d6b70",
+          "parts": [
+            "floor-rail-left",
+            "floor-rail-right",
+            "end-stop",
+            "front-gate",
+            "divider-0",
+            "divider-1",
+            "divider-2",
+            "divider-3",
+            "divider-4",
+            "post-cap--850",
+            "post-cap-850"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "upright-drink-cooler",
+      "kit": "retail-store",
+      "title": "Upright drink cooler",
+      "description": "Tall single-door beverage cooler with framed door, handle, compressor plinth and top header. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/upright-drink-cooler.kcad.ts",
+      "sourceSha256": "a269b5eb923ca47f111d30605078f83c26e08f7971b7cde42593b78f8f64cf8b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#536d78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          0.78,
+          2,
+          0.885
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#536d78",
+          "parts": [
+            "cabinet",
+            "door-frame",
+            "door-window",
+            "handle",
+            "inner-shelf-0",
+            "inner-shelf-1",
+            "inner-shelf-2",
+            "inner-shelf-3",
+            "top-header",
+            "compressor-grille"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wall-shelf-unit",
+      "kit": "retail-store",
+      "title": "Wall shelf unit",
+      "description": "Single-sided wall shelving with four adjustable decks, side uprights and a header board. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/wall-shelf-unit.kcad.ts",
+      "sourceSha256": "239dcbf3b482e849cff493d151cefdbc1f5ded37ce41f5ab3317b18d0a81ee5f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#806e5b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          1.42,
+          2.24,
+          0.515
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#806e5b",
+          "parts": [
+            "back",
+            "deck-0",
+            "deck-1",
+            "deck-2",
+            "deck-3",
+            "side--674",
+            "side-674",
+            "header",
+            "foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wire-grid-display",
+      "kit": "retail-store",
+      "title": "Wire grid display",
+      "description": "Freestanding wire-grid merchandise panel with side feet, cross rails and hanging peg bars. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/wire-grid-display.kcad.ts",
+      "sourceSha256": "ef908b175f308756e5287eadf3bcc1f005520b6693d5050f2480f065d8ba7d6b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#60686a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1.2,
+          1.756,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#60686a",
+          "parts": [
+            "grid-frame",
+            "vertical-0",
+            "vertical-1",
+            "vertical-2",
+            "vertical-3",
+            "vertical-4",
+            "vertical-5",
+            "horizontal-0",
+            "horizontal-1",
+            "horizontal-2",
+            "horizontal-3",
+            "horizontal-4",
+            "horizontal-5",
+            "horizontal-6",
+            "foot--430",
+            "foot-430",
+            "hook-mount"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wooden-pallet",
+      "kit": "retail-store",
+      "title": "Wooden pallet",
+      "description": "Reusable three-runner pallet with spaced top boards and open forklift entry gaps. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "retail",
+        "grocery",
+        "shop",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "retail",
+        "shop",
+        "grocery",
+        "interior",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/retail-store/wooden-pallet.kcad.ts",
+      "sourceSha256": "5dab0141bfbcfacdd9bad5e404b0d6645689b93973ea01891564001cd6b8acb0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#96774f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          1.2,
+          0.184,
+          0.95
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#96774f",
+          "parts": [
+            "top-board-0",
+            "top-board-1",
+            "top-board-2",
+            "top-board-3",
+            "top-board-4",
+            "runner--440",
+            "runner-0",
+            "runner-440",
+            "block--440--335",
+            "block--440-335",
+            "block-0--335",
+            "block-0-335",
+            "block-440--335",
+            "block-440-335",
+            "nail-head"
           ],
           "param": "color"
         }
