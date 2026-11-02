@@ -1,5 +1,12 @@
 # Unreleased
 
+- Farm Machinery catalog wave: 60 original parametric low-poly CC0 assets
+  covering field tractors, implements, planting, crop care, forage, harvest,
+  grain handling and irrigation in the new `catalog/kits/farm-machinery` kit.
+  The generated catalog grows from 955 to 1,015 assets. Kit documentation and
+  the reproducible local demo bundle are in
+  `catalog/kits/farm-machinery/README.md` and
+  `artifacts/catalog-demos/farm-machinery-wave-20261102/`.
 - Laboratory infrastructure catalog wave: 60 original parametric low-poly
   laboratory benches, storage, service systems, extraction enclosures and
   cleanroom fixtures in the new `catalog/kits/lab-infrastructure` kit. The

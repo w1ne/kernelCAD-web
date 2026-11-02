@@ -201,6 +201,73 @@
       ]
     },
     {
+      "id": "farm-machinery",
+      "title": "Farm Machinery",
+      "description": "Original low-poly agricultural tractors, field implements, crop-care equipment, harvest machinery and irrigation props with editable scale and palette controls.",
+      "assets": [
+        "articulated-4wd-tractor",
+        "bale-accumulator",
+        "bale-spear-attachment",
+        "bale-wrapper",
+        "center-pivot-irrigation-span",
+        "chisel-plow",
+        "combine-harvester",
+        "compact-utility-tractor",
+        "corn-header",
+        "cotton-picker",
+        "drip-irrigation-filter-unit",
+        "farm-grain-auger",
+        "fertilizer-spreader",
+        "field-cultivator",
+        "flail-mower-implement",
+        "forage-harvester",
+        "forage-wagon",
+        "front-end-loader-frame",
+        "general-purpose-loader-bucket",
+        "grain-bin-aeration-fan",
+        "grain-cart",
+        "grain-dryer",
+        "grain-header",
+        "high-clearance-sprayer-tractor",
+        "irrigation-hose-reel",
+        "land-leveling-scraper",
+        "manure-spreader",
+        "moldboard-plow",
+        "no-till-seeder",
+        "offset-disc-harrow",
+        "orchard-air-blast-sprayer",
+        "orchard-tractor",
+        "pallet-fork-attachment",
+        "portable-grain-conveyor",
+        "potato-harvester",
+        "precision-planter",
+        "pto-shaft-guard",
+        "rear-landscape-rake",
+        "root-grapple-attachment",
+        "rotary-mower-implement",
+        "rotary-tedder",
+        "round-baler",
+        "row-crop-cultivator",
+        "row-crop-planter",
+        "row-crop-tractor",
+        "seed-drill",
+        "self-propelled-field-sprayer",
+        "sicklebar-mower",
+        "square-baler",
+        "stone-picker-implement",
+        "subsoiler-implement",
+        "sugar-beet-harvester",
+        "three-point-hitch-frame",
+        "tracked-field-tractor",
+        "tractor-ballast-weight",
+        "tractor-box-blade",
+        "tractor-drawbar-hitch",
+        "trailed-field-sprayer",
+        "traveling-sprinkler-cart",
+        "wheel-hay-rake"
+      ]
+    },
+    {
       "id": "food-kitchen",
       "title": "Food & Kitchen",
       "description": "Low-poly food, produce and table pieces for kitchen, market, picnic and tavern scenes at real-world scale, flat-shaded on one palette material.",
@@ -24124,6 +24191,5726 @@
             "antenna-2"
           ],
           "param": "rod"
+        }
+      ]
+    },
+    {
+      "id": "articulated-4wd-tractor",
+      "kit": "farm-machinery",
+      "title": "Articulated four-wheel-drive tractor",
+      "description": "Large articulated field tractor with equal-size tires, split chassis and high cab. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/articulated-4wd-tractor.kcad.ts",
+      "sourceSha256": "09a9b68883d6f4837fac3f2cd4071f58ba9b5185c87288d86f57b7a3a4a232f1",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 576,
+        "sizeM": [
+          1.6948,
+          1.0927,
+          1.7196
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "rear-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "rear-wheel--1",
+            "front-wheel--1",
+            "rear-wheel-1",
+            "front-wheel-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "rear-wheel--1-hub",
+            "front-wheel--1-hub",
+            "rear-wheel-1-hub",
+            "front-wheel-1-hub",
+            "engine-hood",
+            "rear-fender-left",
+            "rear-fender-right",
+            "cab-glazing-front",
+            "cab-glazing-rear",
+            "cab-roof",
+            "rear-hitch",
+            "articulation-joint"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "main-chassis",
+            "front-grille",
+            "cab-floor",
+            "cab-pillar--1",
+            "cab-pillar-1",
+            "exhaust-stack",
+            "front-weight-block",
+            "rear-frame"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "bale-accumulator",
+      "kit": "farm-machinery",
+      "title": "Bale accumulator",
+      "description": "Rear bale accumulator with twin collection decks, guide rails and discharge gate. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/bale-accumulator.kcad.ts",
+      "sourceSha256": "06553e34185947dce296c6162764768b8e93d946097c3936b6728160d2a6973a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.638,
+          1.1695,
+          2.393
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "hay-frame",
+            "guide-rail--1",
+            "guide-rail-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar",
+            "collection-deck-0",
+            "collection-deck-1",
+            "discharge-gate"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "bale-spear-attachment",
+      "kit": "farm-machinery",
+      "title": "Bale spear attachment",
+      "description": "Three-point bale frame with three long horizontal spears and a reinforced back plate. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/bale-spear-attachment.kcad.ts",
+      "sourceSha256": "370554c4e1e79c54c8ead8b7c2c14ca9d59f5646112805a6c9063efa0c477b3c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.76,
+          0.5284,
+          0.93
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mounting-frame",
+            "bale-spear-0",
+            "bale-spear-1",
+            "bale-spear-2"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "crossbar",
+            "spear-socket-0",
+            "spear-socket-1",
+            "spear-socket-2"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "bale-wrapper",
+      "kit": "farm-machinery",
+      "title": "Bale wrapper",
+      "description": "Trailed bale wrapper with circular cradle rollers, film mast and support wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/bale-wrapper.kcad.ts",
+      "sourceSha256": "f9ced7e0c143840bc3b07a495e647bcb93dcaa02bb7eab0c2b437d39a76c0a77",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          1.0151,
+          1.1,
+          1.285
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "hay-frame",
+            "film-mast"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar",
+            "roller-0",
+            "roller-1",
+            "film-roll"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "center-pivot-irrigation-span",
+      "kit": "farm-machinery",
+      "title": "Center-pivot irrigation span",
+      "description": "Modular irrigation truss with paired tower frames, drive wheels and a suspended spray line. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/center-pivot-irrigation-span.kcad.ts",
+      "sourceSha256": "e7b9d05151805302e54fef3df2a0c584b9f31eb890af7869943b38a82cb0c357",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 748,
+        "sizeM": [
+          4.4,
+          1.6275,
+          0.38
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "water-main",
+            "truss-web-0",
+            "sprinkler-head-0",
+            "truss-web-1",
+            "sprinkler-head-1",
+            "truss-web-2",
+            "sprinkler-head-2",
+            "truss-web-3",
+            "sprinkler-head-3",
+            "truss-web-4",
+            "sprinkler-head-4",
+            "truss-web-5",
+            "sprinkler-head-5",
+            "truss-web-6",
+            "sprinkler-head-6",
+            "tower-wheel--1-hub",
+            "tower-wheel-1-hub"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "truss-upper-chord",
+            "truss-lower-chord--1",
+            "truss-lower-chord-1",
+            "sprinkler-drop-0",
+            "sprinkler-drop-1",
+            "sprinkler-drop-2",
+            "sprinkler-drop-3",
+            "sprinkler-drop-4",
+            "sprinkler-drop-5",
+            "sprinkler-drop-6",
+            "tower-leg-left--1",
+            "tower-leg-right--1",
+            "tower-leg-left-1",
+            "tower-leg-right-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "tower-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "tower-wheel--1",
+            "tower-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chisel-plow",
+      "kit": "farm-machinery",
+      "title": "Chisel plow",
+      "description": "Wide chisel plow with a folding-looking frame, spring shanks and narrow soil points. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/chisel-plow.kcad.ts",
+      "sourceSha256": "c4fe54decdee8412062ca8477a58b17bc9e12b1306d4d41d4552051e735983f2",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          2.2,
+          0.5174,
+          1.047
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "main-toolbar",
+            "chisel-point-0",
+            "chisel-point-1",
+            "chisel-point-2",
+            "chisel-point-3",
+            "chisel-point-4",
+            "chisel-point-5",
+            "chisel-point-6"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar",
+            "standard-0",
+            "standard-1",
+            "standard-2",
+            "standard-3",
+            "standard-4",
+            "standard-5",
+            "standard-6"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "combine-harvester",
+      "kit": "farm-machinery",
+      "title": "Combine harvester",
+      "description": "Self-propelled combine with tall grain body, operator cab, large drive wheels and unloading auger. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/combine-harvester.kcad.ts",
+      "sourceSha256": "d449e3ef80107841da4263cb1976da6650cd1d0d188827dc36364464b2d7cf37",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 448,
+        "sizeM": [
+          2.2135,
+          3.72,
+          2.807
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "combine-chassis",
+            "grain-body",
+            "cab-roof",
+            "header-feeder",
+            "auger-discharge"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "engine-compartment",
+            "drive-tire--1-hub",
+            "steer-tire--1-hub",
+            "drive-tire-1-hub",
+            "steer-tire-1-hub",
+            "cab",
+            "unloading-auger"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "drive-tire--1",
+          "color": "#414848",
+          "parts": [
+            "drive-tire--1",
+            "steer-tire--1",
+            "drive-tire-1",
+            "steer-tire-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "compact-utility-tractor",
+      "kit": "farm-machinery",
+      "title": "Compact utility tractor",
+      "description": "Small utility tractor with compact bonnet, open operator station and rear implement hitch. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/compact-utility-tractor.kcad.ts",
+      "sourceSha256": "7e7af4696b44e6e5c0a5b9288787b33caa55254435abf6203ddd08960032c181",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 516,
+        "sizeM": [
+          1.0585,
+          0.723,
+          1.0988
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "rear-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "rear-wheel--1",
+            "front-wheel--1",
+            "rear-wheel-1",
+            "front-wheel-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "rear-wheel--1-hub",
+            "front-wheel--1-hub",
+            "rear-wheel-1-hub",
+            "front-wheel-1-hub",
+            "engine-hood",
+            "rear-fender-left",
+            "rear-fender-right",
+            "operator-platform",
+            "rear-hitch"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "main-chassis",
+            "front-grille",
+            "roll-bar-left",
+            "roll-bar-right",
+            "exhaust-stack",
+            "front-weight-block"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "corn-header",
+      "kit": "farm-machinery",
+      "title": "Corn header",
+      "description": "Row-crop corn header with multiple tapered snouts, gathering chains and cross auger. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/corn-header.kcad.ts",
+      "sourceSha256": "c8c8d35975d71857040283ab9ea77cfaca2495ed1e988bf692997980a7b8753f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 252,
+        "sizeM": [
+          3.6,
+          1.275,
+          1.509
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "header-floor",
+            "end-divider--1",
+            "end-divider-1",
+            "gathering-chain-0",
+            "gathering-chain-1",
+            "gathering-chain-2",
+            "gathering-chain-3",
+            "gathering-chain-4",
+            "gathering-chain-5",
+            "gathering-chain-6",
+            "gathering-chain-7",
+            "cross-auger"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "cutterbar",
+            "row-snout-0",
+            "row-snout-1",
+            "row-snout-2",
+            "row-snout-3",
+            "row-snout-4",
+            "row-snout-5",
+            "row-snout-6",
+            "row-snout-7"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "cotton-picker",
+      "kit": "farm-machinery",
+      "title": "Cotton picker",
+      "description": "Tall self-propelled cotton picker with harvesting towers, cab, basket and high-clearance wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/cotton-picker.kcad.ts",
+      "sourceSha256": "5381f8d169ac4666b59c663af32015868b85c01f62d52aeecc590af0871d3d32",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 544,
+        "sizeM": [
+          2.15525,
+          3.968,
+          2.936
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "combine-chassis",
+            "grain-body",
+            "cab-roof",
+            "header-feeder",
+            "auger-discharge",
+            "picker-door-0",
+            "picker-door-1",
+            "picker-door-2",
+            "picker-door-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "engine-compartment",
+            "drive-tire--1-hub",
+            "steer-tire--1-hub",
+            "drive-tire-1-hub",
+            "steer-tire-1-hub",
+            "cab",
+            "unloading-auger",
+            "picker-tower-0",
+            "picker-tower-1",
+            "picker-tower-2",
+            "picker-tower-3"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "drive-tire--1",
+          "color": "#414848",
+          "parts": [
+            "drive-tire--1",
+            "steer-tire--1",
+            "drive-tire-1",
+            "steer-tire-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "drip-irrigation-filter-unit",
+      "kit": "farm-machinery",
+      "title": "Drip-irrigation filter unit",
+      "description": "Field irrigation manifold with filter vessels, pressure chamber, valve branch and skid base. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/drip-irrigation-filter-unit.kcad.ts",
+      "sourceSha256": "e275bb2b5a948b6a26bbd6f8db84ef098506f9f510af8146f51621b1cacb8064",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 420,
+        "sizeM": [
+          1.3,
+          1.115,
+          0.73
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "irrigation-skid",
+            "vessel-rim-0",
+            "vessel-rim-1",
+            "vessel-rim-2",
+            "water-header"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "filter-vessel-0",
+            "filter-vessel-1",
+            "filter-vessel-2",
+            "valve-0",
+            "valve-1",
+            "valve-2"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "farm-grain-auger",
+      "kit": "farm-machinery",
+      "title": "Farm grain auger",
+      "description": "Portable grain auger with intake hopper, segmented tube, transport wheels and support stand. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/farm-grain-auger.kcad.ts",
+      "sourceSha256": "22ce777afa2a3060e4e7852eab2b8d99bc98258b09a851abf0d142fd9f2e95ca",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 284,
+        "sizeM": [
+          1.26,
+          2.966,
+          3.707
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "support-base",
+            "auger-lower-tube",
+            "grain-discharge",
+            "transport-wheel--1-hub",
+            "transport-wheel-1-hub"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "intake-hopper",
+            "auger-upper-tube",
+            "support-leg-0",
+            "support-leg-1",
+            "support-leg-2",
+            "support-leg-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "transport-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "transport-wheel--1",
+            "transport-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fertilizer-spreader",
+      "kit": "farm-machinery",
+      "title": "Fertilizer spreader",
+      "description": "Tractor-mounted fertilizer hopper with twin spinner discs, guard frame and support feet. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/fertilizer-spreader.kcad.ts",
+      "sourceSha256": "73527b027728bbf469bb7b3600eac46d1bd3b580ed52e993e5cde6453125cbb6",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.748,
+          1.246,
+          0.8126
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "spreader-frame",
+            "hopper-lid",
+            "spinner--1",
+            "spinner-1",
+            "mounting-tower"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "fertilizer-hopper",
+            "spinner-vane--1",
+            "spinner-vane-1"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "field-cultivator",
+      "kit": "farm-machinery",
+      "title": "Field cultivator",
+      "description": "Trailing field cultivator with a three-section toolbar, rows of tines and support wheels. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/field-cultivator.kcad.ts",
+      "sourceSha256": "74e65702248e4863bb89a1ea077b230a4539cdd350171d2984f9763fa3585fcf",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 416,
+        "sizeM": [
+          2.3,
+          0.5829,
+          1.06
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "main-toolbar",
+            "transport-wheel--1-hub",
+            "transport-wheel-1-hub",
+            "cultivator-sweep-0",
+            "cultivator-sweep-1",
+            "cultivator-sweep-2",
+            "cultivator-sweep-3",
+            "cultivator-sweep-4",
+            "cultivator-sweep-5",
+            "cultivator-sweep-6",
+            "cultivator-sweep-7",
+            "cultivator-sweep-8"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar",
+            "standard-0",
+            "standard-1",
+            "standard-2",
+            "standard-3",
+            "standard-4",
+            "standard-5",
+            "standard-6",
+            "standard-7",
+            "standard-8"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "transport-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "transport-wheel--1",
+            "transport-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "flail-mower-implement",
+      "kit": "farm-machinery",
+      "title": "Flail mower implement",
+      "description": "Heavy rear flail mower with enclosed cutter housing, roller and rear service shield. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/flail-mower-implement.kcad.ts",
+      "sourceSha256": "ae869fcef20129f8bb5f9533993bca18c75f95bfbfeadca5f26710ad06575ffd",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 324,
+        "sizeM": [
+          1.29,
+          0.713,
+          0.891
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mower-deck",
+            "blade-spindle-0",
+            "rear-roller"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "deck-lip",
+            "blade-housing-0",
+            "deck-wheel--1-hub",
+            "deck-wheel-1-hub",
+            "three-point-tower",
+            "rear-shield"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "deck-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "deck-wheel--1",
+            "deck-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forage-harvester",
+      "kit": "farm-machinery",
+      "title": "Forage harvester",
+      "description": "Self-propelled forage harvester with cab, crop-processing body, discharge spout and front pickup. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/forage-harvester.kcad.ts",
+      "sourceSha256": "6150be6b8e2994b9ed8daa6f97f984d8550edc76629a61f9792be84ce5d24fee",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 472,
+        "sizeM": [
+          1.80575,
+          3.808,
+          2.463
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "combine-chassis",
+            "grain-body",
+            "cab-roof",
+            "header-feeder",
+            "auger-discharge",
+            "spout-cap"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "engine-compartment",
+            "drive-tire--1-hub",
+            "steer-tire--1-hub",
+            "drive-tire-1-hub",
+            "steer-tire-1-hub",
+            "cab",
+            "unloading-auger",
+            "crop-spout"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "drive-tire--1",
+          "color": "#414848",
+          "parts": [
+            "drive-tire--1",
+            "steer-tire--1",
+            "drive-tire-1",
+            "steer-tire-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forage-wagon",
+      "kit": "farm-machinery",
+      "title": "Forage wagon",
+      "description": "High-sided forage wagon with slatted walls, walking beam wheels and drawbar. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/forage-wagon.kcad.ts",
+      "sourceSha256": "e26cd55a11d8ec508de4260e68edf3d4bfc62f8d4babece5bc0bc1ba7b30aaf1",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.296,
+          1.85,
+          3.24
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "wagon-chassis",
+            "wagon-side--1",
+            "wagon-side-1",
+            "drawbar"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "wagon-floor",
+            "wagon-front",
+            "wagon-rear",
+            "wagon-wheel--1-hub",
+            "wagon-wheel-1-hub"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "wagon-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "wagon-wheel--1",
+            "wagon-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "front-end-loader-frame",
+      "kit": "farm-machinery",
+      "title": "Front-end loader frame",
+      "description": "Tractor-mounted loader arms with paired lift links, pivot plates and quick-attach carrier. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/front-end-loader-frame.kcad.ts",
+      "sourceSha256": "c9311b90cb11c7f63f2446b2688ea5d51a1b2ef3c9c7b739cd5f2d6a0f9c60cf",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.828,
+          0.777,
+          0.7088
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mounting-frame",
+            "loader-upright--1",
+            "pivot--1",
+            "loader-upright-1",
+            "pivot-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "crossbar",
+            "loader-arm--1",
+            "loader-arm-1",
+            "quick-attach"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "general-purpose-loader-bucket",
+      "kit": "farm-machinery",
+      "title": "General-purpose loader bucket",
+      "description": "Wide front-loader bucket with rolled upper edge, side plates and cutting lip. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/general-purpose-loader-bucket.kcad.ts",
+      "sourceSha256": "0c5f7c1b52824962c705026e8934a5c27f714a407822b8c19cb962f6e24ee652",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.092,
+          0.4315,
+          0.5529
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mounting-frame",
+            "bucket-cheek--1",
+            "bucket-cheek-1",
+            "cutting-edge"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "crossbar",
+            "bucket-floor",
+            "back-shell"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "grain-bin-aeration-fan",
+      "kit": "farm-machinery",
+      "title": "Grain-bin aeration fan unit",
+      "description": "Low-profile aeration fan assembly with intake shroud, motor housing and transition duct. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/grain-bin-aeration-fan.kcad.ts",
+      "sourceSha256": "4edd8aa5ce291eb9ede95bb2b27432fd8c3e7677ba7d54655323410dda9cfabe",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.85,
+          0.5592,
+          0.7885
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "fan-base",
+            "fan-inlet",
+            "air-slot-0",
+            "air-slot-1",
+            "air-slot-2",
+            "air-slot-3",
+            "air-slot-4"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "fan-housing",
+            "motor"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "grain-cart",
+      "kit": "farm-machinery",
+      "title": "Grain cart",
+      "description": "Large grain cart with tapered hopper, tandem wheels, auger tube and tractor drawbar. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/grain-cart.kcad.ts",
+      "sourceSha256": "b83280c134f9ad185f1878137969845e2c8b76ee095e6d65503257b29ccf192e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 296,
+        "sizeM": [
+          1.842,
+          2.706,
+          3.1725
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "wagon-chassis",
+            "wagon-side--1",
+            "wagon-side-1",
+            "drawbar",
+            "auger-tube"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "wagon-floor",
+            "wagon-front",
+            "wagon-rear",
+            "wagon-wheel--1-hub",
+            "wagon-wheel-1-hub",
+            "grain-cover",
+            "auger-base"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "wagon-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "wagon-wheel--1",
+            "wagon-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grain-dryer",
+      "kit": "farm-machinery",
+      "title": "Farm grain dryer",
+      "description": "Vertical grain-drying tower with intake hopper, vented chamber, service ladder and exhaust cap. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/grain-dryer.kcad.ts",
+      "sourceSha256": "168294880671ce48e1e0bf39b7224c2efaf6d5df0231dc0f90232913a076a2ef",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.375,
+          2.332,
+          1.3125
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "dryer-base",
+            "inlet-hopper",
+            "ladder-rail--1",
+            "ladder-rail-1",
+            "drying-vent-0",
+            "drying-vent-1",
+            "drying-vent-2",
+            "drying-vent-3",
+            "drying-vent-4",
+            "drying-vent-5",
+            "drying-vent-6"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drying-column",
+            "exhaust-cap"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "grain-header",
+      "kit": "farm-machinery",
+      "title": "Grain header",
+      "description": "Wide grain platform header with reel, cutter bar, end dividers and center feeder opening. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/grain-header.kcad.ts",
+      "sourceSha256": "97f694f2eb51d5430dc572a623b9a3c480c813babc931088f93dcfadedcbd53c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 252,
+        "sizeM": [
+          4.2,
+          1.105,
+          1.5035
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "header-floor",
+            "end-divider--1",
+            "end-divider-1",
+            "reel-spoke-0",
+            "reel-spoke-1",
+            "reel-spoke-2",
+            "reel-spoke-3",
+            "reel-spoke-4",
+            "reel-spoke-5",
+            "reel-spoke-6",
+            "reel-spoke-7"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "cutterbar",
+            "reel-shaft",
+            "snout-0",
+            "snout-1",
+            "snout-2",
+            "snout-3",
+            "snout-4",
+            "snout-5",
+            "snout-6",
+            "snout-7"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "high-clearance-sprayer-tractor",
+      "kit": "farm-machinery",
+      "title": "High-clearance crop tractor",
+      "description": "Tall crop-care tractor with raised axle clearance, narrow tires and a central operator cab. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/high-clearance-sprayer-tractor.kcad.ts",
+      "sourceSha256": "588f448fe7340c672507420eef7cdd7fd40cba3cabd542687a55a17627eeb05a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 564,
+        "sizeM": [
+          1.311,
+          0.794,
+          1.242
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "rear-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "rear-wheel--1",
+            "front-wheel--1",
+            "rear-wheel-1",
+            "front-wheel-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "rear-wheel--1-hub",
+            "front-wheel--1-hub",
+            "rear-wheel-1-hub",
+            "front-wheel-1-hub",
+            "engine-hood",
+            "rear-fender-left",
+            "rear-fender-right",
+            "cab-glazing-front",
+            "cab-glazing-rear",
+            "cab-roof",
+            "rear-hitch"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "main-chassis",
+            "front-grille",
+            "cab-floor",
+            "cab-pillar--1",
+            "cab-pillar-1",
+            "exhaust-stack",
+            "front-weight-block",
+            "high-clearance-portal"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "irrigation-hose-reel",
+      "kit": "farm-machinery",
+      "title": "Irrigation hose reel",
+      "description": "Towable irrigation hose reel with wide spool, support frame, crank and wheeled axle. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/irrigation-hose-reel.kcad.ts",
+      "sourceSha256": "99f7bbae218d1e4d08d38fb799e4ac9bd05f632a190c3134b2bb1ff088494a1b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          1.3525,
+          2.294,
+          2.064
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "reel-frame",
+            "reel-drum",
+            "reel-wheel--1-hub",
+            "reel-wheel-1-hub",
+            "crank-handle"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "reel-side-a",
+            "reel-side-b"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "reel-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "reel-wheel--1",
+            "reel-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "land-leveling-scraper",
+      "kit": "farm-machinery",
+      "title": "Land-leveling scraper",
+      "description": "Tractor-pulled land scraper with a deep open bowl, side cheeks and cutting edge. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/land-leveling-scraper.kcad.ts",
+      "sourceSha256": "4116fd584d2580e23cd5eab35307ae232ff13e191b50290f8eb643d8bceb0ae0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.45,
+          0.771,
+          1.153
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "main-toolbar",
+            "bowl-side--1",
+            "bowl-side-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar",
+            "scraper-bowl-floor",
+            "cutting-edge"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "manure-spreader",
+      "kit": "farm-machinery",
+      "title": "Manure spreader wagon",
+      "description": "Farm spreader wagon with a tall bin, rear beater bars, apron bed and drawbar. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/manure-spreader.kcad.ts",
+      "sourceSha256": "f2e44c27081fc13e6ba97152d3a860a9d971dd95b2a1d11e505245ae126640d1",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 444,
+        "sizeM": [
+          1.02,
+          1.769,
+          2.69875
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "spreader-frame",
+            "apron-bed",
+            "rear-beater-0",
+            "rear-beater-1",
+            "rear-beater-2",
+            "rear-beater-3",
+            "rear-beater-4",
+            "wagon-wheel--1-hub",
+            "wagon-wheel-1-hub"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "spreader-bin",
+            "drawbar"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "wagon-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "wagon-wheel--1",
+            "wagon-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moldboard-plow",
+      "kit": "farm-machinery",
+      "title": "Moldboard plow",
+      "description": "Three-bottom moldboard plow with a heavy toolbar, curved-looking shares and gauge wheel. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/moldboard-plow.kcad.ts",
+      "sourceSha256": "f734d37293a521b19d4626a981151ae77fdcbb684d5031acd578829abefb55f5",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.65,
+          0.5864,
+          1.0565
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "main-toolbar",
+            "moldboard-share-0",
+            "moldboard-share-1",
+            "moldboard-share-2"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar",
+            "standard-0",
+            "moldboard-wing-0",
+            "standard-1",
+            "moldboard-wing-1",
+            "standard-2",
+            "moldboard-wing-2"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "no-till-seeder",
+      "kit": "farm-machinery",
+      "title": "No-till seeder",
+      "description": "Heavy no-till seeder with front coulter row, large seed box and rear closing wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/no-till-seeder.kcad.ts",
+      "sourceSha256": "6da2dd6d8d05820bb76969b0289dc27268045605c6e1903e6582cef99799947f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 712,
+        "sizeM": [
+          2.1,
+          1.44,
+          1.234
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "planter-frame",
+            "side-hopper--1",
+            "side-hopper-1",
+            "press-wheel-0",
+            "seed-tube-0",
+            "press-wheel-1",
+            "seed-tube-1",
+            "press-wheel-2",
+            "seed-tube-2",
+            "press-wheel-3",
+            "seed-tube-3",
+            "press-wheel-4",
+            "seed-tube-4",
+            "press-wheel-5",
+            "seed-tube-5",
+            "press-wheel-6",
+            "seed-tube-6",
+            "transport-wheel--1-hub",
+            "transport-wheel-1-hub"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "seed-hopper",
+            "row-unit-0",
+            "row-unit-1",
+            "row-unit-2",
+            "row-unit-3",
+            "row-unit-4",
+            "row-unit-5",
+            "row-unit-6",
+            "tongue"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "transport-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "transport-wheel--1",
+            "transport-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "offset-disc-harrow",
+      "kit": "farm-machinery",
+      "title": "Offset disc harrow",
+      "description": "Offset disc harrow with paired gangs, frame beam and transport wheels. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/offset-disc-harrow.kcad.ts",
+      "sourceSha256": "2e461f071b26235903133e1b32c2b990167a6053304c66ed94062fa2150183d0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 648,
+        "sizeM": [
+          1.85,
+          0.4916,
+          1.072
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "main-toolbar",
+            "transport-wheel--1-hub",
+            "transport-wheel-1-hub",
+            "disc-scraper--1-0",
+            "disc-scraper--1-1",
+            "disc-scraper--1-2",
+            "disc-scraper--1-3",
+            "disc-scraper-1-0",
+            "disc-scraper-1-1",
+            "disc-scraper-1-2",
+            "disc-scraper-1-3"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar",
+            "disc--1-0",
+            "disc--1-1",
+            "disc--1-2",
+            "disc--1-3",
+            "disc-1-0",
+            "disc-1-1",
+            "disc-1-2",
+            "disc-1-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "transport-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "transport-wheel--1",
+            "transport-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "orchard-air-blast-sprayer",
+      "kit": "farm-machinery",
+      "title": "Orchard air-blast sprayer",
+      "description": "Compact orchard sprayer with tank, axial fan ring, nozzle bank and trailer wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/orchard-air-blast-sprayer.kcad.ts",
+      "sourceSha256": "d9a9c0c5b54cd2e426ab3c310255472274b834aca9f319c42a770aa3d0e05690",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 400,
+        "sizeM": [
+          0.9964,
+          1.68,
+          1.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "sprayer-chassis",
+            "operator-cab"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "chemical-tank",
+            "high-wheel--352-0--460-0-hub",
+            "high-wheel--352-0-460-0-hub",
+            "high-wheel-352-0--460-0-hub",
+            "high-wheel-352-0-460-0-hub",
+            "cab-window"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "high-wheel--352-0--460-0",
+          "color": "#414848",
+          "parts": [
+            "high-wheel--352-0--460-0",
+            "high-wheel--352-0-460-0",
+            "high-wheel-352-0--460-0",
+            "high-wheel-352-0-460-0"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "orchard-tractor",
+      "kit": "farm-machinery",
+      "title": "Orchard tractor",
+      "description": "Low-profile orchard tractor with narrow wheel track, protective canopy and enclosed side panels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/orchard-tractor.kcad.ts",
+      "sourceSha256": "d95c9fbcefdc4b75ae0a38c4554f0a592f448adf538c6bb4c6720397fd2abe1d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 552,
+        "sizeM": [
+          1.2302,
+          0.845,
+          1.2332
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "rear-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "rear-wheel--1",
+            "front-wheel--1",
+            "rear-wheel-1",
+            "front-wheel-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "rear-wheel--1-hub",
+            "front-wheel--1-hub",
+            "rear-wheel-1-hub",
+            "front-wheel-1-hub",
+            "engine-hood",
+            "rear-fender-left",
+            "rear-fender-right",
+            "cab-glazing-front",
+            "cab-glazing-rear",
+            "cab-roof",
+            "rear-hitch"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "main-chassis",
+            "front-grille",
+            "cab-floor",
+            "cab-pillar--1",
+            "cab-pillar-1",
+            "exhaust-stack",
+            "front-weight-block"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "pallet-fork-attachment",
+      "kit": "farm-machinery",
+      "title": "Tractor pallet-fork attachment",
+      "description": "Quick-attach fork carriage with adjustable-looking tines and raised back guard. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/pallet-fork-attachment.kcad.ts",
+      "sourceSha256": "8d68fde6de6a85d11f1a7a82413fcc3769bc47605c3d0140e9d049b048f12e0d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.88,
+          0.5876,
+          0.947
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mounting-frame",
+            "fork-tine--1",
+            "fork-tine-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "crossbar",
+            "fork-carriage"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "portable-grain-conveyor",
+      "kit": "farm-machinery",
+      "title": "Portable grain conveyor",
+      "description": "Mobile belt conveyor with a raised delivery end, tubular frame, hopper and axle wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/portable-grain-conveyor.kcad.ts",
+      "sourceSha256": "0a4851b3ac221a0ba99dbf6469c84e421926e2adf1bde4436fac77fa6e1de2c9",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 380,
+        "sizeM": [
+          1.26,
+          2.606,
+          3.272
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "support-base",
+            "auger-lower-tube",
+            "grain-discharge",
+            "transport-wheel--1-hub",
+            "transport-wheel-1-hub",
+            "belt-roller-0",
+            "belt-roller-1",
+            "belt-roller-2",
+            "belt-roller-3",
+            "belt-roller-4",
+            "belt-roller-5",
+            "belt-roller-6",
+            "belt-roller-7"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "intake-hopper",
+            "auger-upper-tube",
+            "support-leg-0",
+            "support-leg-1",
+            "support-leg-2",
+            "support-leg-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "transport-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "transport-wheel--1",
+            "transport-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "potato-harvester",
+      "kit": "farm-machinery",
+      "title": "Potato harvester",
+      "description": "Trailed potato harvester with digging share, separator web, collection bunker and wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/potato-harvester.kcad.ts",
+      "sourceSha256": "0ce721bae1bcd0bbcafae4f7bd03d43f50d95d14a1eab1fec421cad0ea31d4b2",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 600,
+        "sizeM": [
+          1.209,
+          2.0825,
+          2.672
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "harvester-chassis",
+            "elevator-side--1",
+            "elevator-side-1",
+            "digging-share",
+            "transfer-conveyor"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "storage-bunker",
+            "field-wheel--1-hub",
+            "field-wheel-1-hub",
+            "separator-roller-0",
+            "separator-roller-1",
+            "separator-roller-2",
+            "separator-roller-3",
+            "separator-roller-4",
+            "separator-roller-5",
+            "separator-roller-6",
+            "separator-roller-7"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "field-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "field-wheel--1",
+            "field-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "precision-planter",
+      "kit": "farm-machinery",
+      "title": "Precision planter",
+      "description": "Precision planter with individual seed boxes, parallel-link row units and gauge wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/precision-planter.kcad.ts",
+      "sourceSha256": "8cd6a4d02a911cf64975c38f5139cf81accb9bdd1e23bd2040936d0e9f28a069",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 716,
+        "sizeM": [
+          2,
+          1.56,
+          1.234
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "planter-frame",
+            "side-hopper--1",
+            "side-hopper-1",
+            "seed-box-0",
+            "seed-box-1",
+            "seed-box-2",
+            "seed-box-3",
+            "seed-box-4",
+            "seed-box-5",
+            "press-wheel-0",
+            "seed-tube-0",
+            "press-wheel-1",
+            "seed-tube-1",
+            "press-wheel-2",
+            "seed-tube-2",
+            "press-wheel-3",
+            "seed-tube-3",
+            "press-wheel-4",
+            "seed-tube-4",
+            "press-wheel-5",
+            "seed-tube-5",
+            "transport-wheel--1-hub",
+            "transport-wheel-1-hub"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "seed-hopper",
+            "row-unit-0",
+            "row-unit-1",
+            "row-unit-2",
+            "row-unit-3",
+            "row-unit-4",
+            "row-unit-5",
+            "tongue"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "transport-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "transport-wheel--1",
+            "transport-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pto-shaft-guard",
+      "kit": "farm-machinery",
+      "title": "PTO shaft guard",
+      "description": "Protected power-take-off driveline cover with telescoping sections and end shields. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/pto-shaft-guard.kcad.ts",
+      "sourceSha256": "cbd46facf536d23b508b2b71e5edc21c1b5e6fbdf55bdf02090b920fa0256a8a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.86,
+          0.1818,
+          0.2408
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mounting-frame",
+            "guard-support",
+            "end-shield-a",
+            "end-shield-b"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "crossbar",
+            "shaft-cover"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "rear-landscape-rake",
+      "kit": "farm-machinery",
+      "title": "Rear landscape rake",
+      "description": "Three-point landscape rake with angled end plates, long toolbar and closely spaced tines. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/rear-landscape-rake.kcad.ts",
+      "sourceSha256": "cdd4c353b29151db0a1d18c29232574cace7d44a13f5f5408435f7b5b62c8137",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          1.35,
+          0.4644,
+          0.3742
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mounting-frame",
+            "rake-tooth-0",
+            "rake-tooth-1",
+            "rake-tooth-2",
+            "rake-tooth-3",
+            "rake-tooth-4",
+            "rake-tooth-5",
+            "rake-tooth-6",
+            "rake-tooth-7",
+            "rake-tooth-8",
+            "rake-tooth-9",
+            "rake-tooth-10",
+            "rake-tooth-11",
+            "rake-tooth-12"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "crossbar",
+            "rake-beam"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "root-grapple-attachment",
+      "kit": "farm-machinery",
+      "title": "Root grapple attachment",
+      "description": "Loader grapple bucket with lower scoop, split upper claws and hinge crossbar. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/root-grapple-attachment.kcad.ts",
+      "sourceSha256": "8de38f41acac86b32b7ab9687ee88fa123401ed9fbd40abc5e7615313e824e4a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.0192,
+          0.6352,
+          0.6345
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mounting-frame",
+            "bucket-cheek--1",
+            "bucket-cheek-1",
+            "cutting-edge",
+            "grapple-crossbar"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "crossbar",
+            "bucket-floor",
+            "back-shell",
+            "grapple-tine-0",
+            "grapple-tine-1",
+            "grapple-tine-2",
+            "grapple-tine-3",
+            "grapple-tine-4"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "rotary-mower-implement",
+      "kit": "farm-machinery",
+      "title": "Rotary mower implement",
+      "description": "Three-point rotary mower deck with paired blade housings, hitch frame and caster wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/rotary-mower-implement.kcad.ts",
+      "sourceSha256": "27121aee33ce489cd8b924fa37a79ea2e4818337084206fafb60176516a2796a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 324,
+        "sizeM": [
+          1.333,
+          0.552,
+          1.051
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mower-deck",
+            "blade-spindle-0",
+            "blade-spindle-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "deck-lip",
+            "blade-housing-0",
+            "blade-housing-1",
+            "deck-wheel--1-hub",
+            "deck-wheel-1-hub",
+            "three-point-tower"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "deck-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "deck-wheel--1",
+            "deck-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rotary-tedder",
+      "kit": "farm-machinery",
+      "title": "Rotary hay tedder",
+      "description": "Four-rotor hay tedder with radial tine arms, drawbar and folding transport frame. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/rotary-tedder.kcad.ts",
+      "sourceSha256": "8a6221d9bf9657b299b146f0900587b7ce999a92319eabc3b965d6775b97fb9b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 488,
+        "sizeM": [
+          1.981,
+          0.346,
+          1.126
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "hay-frame",
+            "tedder-arm-0-0",
+            "tedder-arm-0-1",
+            "tedder-arm-0-2",
+            "tedder-arm-0-3",
+            "tedder-arm-0-4",
+            "tedder-arm-0-5",
+            "tedder-arm-1-0",
+            "tedder-arm-1-1",
+            "tedder-arm-1-2",
+            "tedder-arm-1-3",
+            "tedder-arm-1-4",
+            "tedder-arm-1-5",
+            "tedder-arm-2-0",
+            "tedder-arm-2-1",
+            "tedder-arm-2-2",
+            "tedder-arm-2-3",
+            "tedder-arm-2-4",
+            "tedder-arm-2-5",
+            "tedder-arm-3-0",
+            "tedder-arm-3-1",
+            "tedder-arm-3-2",
+            "tedder-arm-3-3",
+            "tedder-arm-3-4",
+            "tedder-arm-3-5"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar",
+            "rotor-hub-0",
+            "rotor-hub-1",
+            "rotor-hub-2",
+            "rotor-hub-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "round-baler",
+      "kit": "farm-machinery",
+      "title": "Round baler",
+      "description": "Round baler with enclosed bale chamber, pickup reel, side panels and transport wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/round-baler.kcad.ts",
+      "sourceSha256": "60d5efdd6f939c17bad96f98371221a2221f0e01b9e162ad3e2dec0229d06873",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 600,
+        "sizeM": [
+          1.182,
+          2.204,
+          2.1675
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "baler-chassis",
+            "pickup-housing",
+            "side-access-panel--1",
+            "side-access-panel-1",
+            "bale-chamber"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "baler-chamber",
+            "pickup-tooth-0",
+            "pickup-tooth-1",
+            "pickup-tooth-2",
+            "pickup-tooth-3",
+            "pickup-tooth-4",
+            "pickup-tooth-5",
+            "pickup-tooth-6",
+            "baler-wheel--1-hub",
+            "baler-wheel-1-hub",
+            "drawbar"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "baler-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "baler-wheel--1",
+            "baler-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "row-crop-cultivator",
+      "kit": "farm-machinery",
+      "title": "Row-crop cultivator",
+      "description": "Inter-row cultivator with adjustable row units, gauge wheels and protective shields. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/row-crop-cultivator.kcad.ts",
+      "sourceSha256": "463f18964740a8b71bcfbfa2a3602a2cb9528e1079c45405eb1fed1b00416266",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 344,
+        "sizeM": [
+          1.7,
+          0.5655,
+          1.0412
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "main-toolbar",
+            "transport-wheel--1-hub",
+            "transport-wheel-1-hub",
+            "cultivator-sweep-0",
+            "cultivator-sweep-1",
+            "cultivator-sweep-2",
+            "cultivator-sweep-3",
+            "cultivator-sweep-4",
+            "cultivator-sweep-5"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar",
+            "standard-0",
+            "standard-1",
+            "standard-2",
+            "standard-3",
+            "standard-4",
+            "standard-5"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "transport-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "transport-wheel--1",
+            "transport-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "row-crop-planter",
+      "kit": "farm-machinery",
+      "title": "Row-crop planter",
+      "description": "Trailed row planter with a central seed hopper and evenly spaced planting units. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/row-crop-planter.kcad.ts",
+      "sourceSha256": "0485b65f1a641f4a8ae805c2f14af409b410e2bc43439fde93988a13364d3e51",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 756,
+        "sizeM": [
+          2.2,
+          1.416,
+          1.234
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "planter-frame",
+            "press-wheel-0",
+            "seed-tube-0",
+            "press-wheel-1",
+            "seed-tube-1",
+            "press-wheel-2",
+            "seed-tube-2",
+            "press-wheel-3",
+            "seed-tube-3",
+            "press-wheel-4",
+            "seed-tube-4",
+            "press-wheel-5",
+            "seed-tube-5",
+            "press-wheel-6",
+            "seed-tube-6",
+            "press-wheel-7",
+            "seed-tube-7",
+            "transport-wheel--1-hub",
+            "transport-wheel-1-hub"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "seed-hopper",
+            "row-unit-0",
+            "row-unit-1",
+            "row-unit-2",
+            "row-unit-3",
+            "row-unit-4",
+            "row-unit-5",
+            "row-unit-6",
+            "row-unit-7",
+            "tongue"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "transport-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "transport-wheel--1",
+            "transport-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "row-crop-tractor",
+      "kit": "farm-machinery",
+      "title": "Row-crop tractor",
+      "description": "Cabbed field tractor with tall rear tires, front axle, engine hood and three-point hitch. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/row-crop-tractor.kcad.ts",
+      "sourceSha256": "23eff692c339f6afd4163c485940948f6dc6a052b2b1705338590c2c9ce1d884",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 552,
+        "sizeM": [
+          1.3716,
+          0.947,
+          1.4392
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "rear-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "rear-wheel--1",
+            "front-wheel--1",
+            "rear-wheel-1",
+            "front-wheel-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "rear-wheel--1-hub",
+            "front-wheel--1-hub",
+            "rear-wheel-1-hub",
+            "front-wheel-1-hub",
+            "engine-hood",
+            "rear-fender-left",
+            "rear-fender-right",
+            "cab-glazing-front",
+            "cab-glazing-rear",
+            "cab-roof",
+            "rear-hitch"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "main-chassis",
+            "front-grille",
+            "cab-floor",
+            "cab-pillar--1",
+            "cab-pillar-1",
+            "exhaust-stack",
+            "front-weight-block"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "seed-drill",
+      "kit": "farm-machinery",
+      "title": "Seed drill",
+      "description": "Compact seed drill with covered hoppers, metering row units and press wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/seed-drill.kcad.ts",
+      "sourceSha256": "5764b61a5d412bad72e2c7ae1b40a170a8f445c875302f08a4a2fa50f5172838",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 848,
+        "sizeM": [
+          1.9,
+          1.26,
+          1.066
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "planter-frame",
+            "side-hopper--1",
+            "side-hopper-1",
+            "press-wheel-0",
+            "seed-tube-0",
+            "press-wheel-1",
+            "seed-tube-1",
+            "press-wheel-2",
+            "seed-tube-2",
+            "press-wheel-3",
+            "seed-tube-3",
+            "press-wheel-4",
+            "seed-tube-4",
+            "press-wheel-5",
+            "seed-tube-5",
+            "press-wheel-6",
+            "seed-tube-6",
+            "press-wheel-7",
+            "seed-tube-7",
+            "press-wheel-8",
+            "seed-tube-8",
+            "transport-wheel--1-hub",
+            "transport-wheel-1-hub"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "seed-hopper",
+            "row-unit-0",
+            "row-unit-1",
+            "row-unit-2",
+            "row-unit-3",
+            "row-unit-4",
+            "row-unit-5",
+            "row-unit-6",
+            "row-unit-7",
+            "row-unit-8",
+            "tongue"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "transport-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "transport-wheel--1",
+            "transport-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "self-propelled-field-sprayer",
+      "kit": "farm-machinery",
+      "title": "Self-propelled field sprayer",
+      "description": "High-clearance crop sprayer with four tall tires, central cab, tank and long booms. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/self-propelled-field-sprayer.kcad.ts",
+      "sourceSha256": "13c4f28fa3433e2478f40b5d923c1419139fb238178dd0bac2b4d1f4c0a893a5",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 424,
+        "sizeM": [
+          5.712,
+          3.024,
+          2.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "sprayer-chassis",
+            "operator-cab"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "chemical-tank",
+            "high-wheel--576-0--840-0-hub",
+            "high-wheel--576-0-840-0-hub",
+            "high-wheel-576-0--840-0-hub",
+            "high-wheel-576-0-840-0-hub",
+            "cab-window",
+            "boom-wing--1",
+            "boom-wing-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "high-wheel--576-0--840-0",
+          "color": "#414848",
+          "parts": [
+            "high-wheel--576-0--840-0",
+            "high-wheel--576-0-840-0",
+            "high-wheel-576-0--840-0",
+            "high-wheel-576-0-840-0"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sicklebar-mower",
+      "kit": "farm-machinery",
+      "title": "Sicklebar mower",
+      "description": "Side-mounted sicklebar mower with long finger guard, reciprocating blade rail and support wheel. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/sicklebar-mower.kcad.ts",
+      "sourceSha256": "cea08ecf10a0decbf8121e1b0acd2f50cef098e72c605b11107a1488affcf889",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 368,
+        "sizeM": [
+          1.933,
+          0.644,
+          0.7292
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mower-deck",
+            "guard-finger-0",
+            "guard-finger-1",
+            "guard-finger-2",
+            "guard-finger-3",
+            "guard-finger-4",
+            "guard-finger-5",
+            "guard-finger-6",
+            "guard-finger-7",
+            "guard-finger-8",
+            "guard-finger-9",
+            "guard-finger-10",
+            "guard-finger-11"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "deck-lip",
+            "sickle-bar",
+            "deck-wheel--1-hub",
+            "deck-wheel-1-hub",
+            "three-point-tower"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "deck-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "deck-wheel--1",
+            "deck-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "square-baler",
+      "kit": "farm-machinery",
+      "title": "Square baler",
+      "description": "Small square baler with pickup teeth, rectangular chamber, flywheel guard and tandem tires. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/square-baler.kcad.ts",
+      "sourceSha256": "9f80446de9b7341361d7d6c728f75185bd7facf93108498fd42b084df3678373",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 568,
+        "sizeM": [
+          1.0392,
+          1.914,
+          3.496
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "baler-chassis",
+            "pickup-housing",
+            "side-access-panel--1",
+            "side-access-panel-1",
+            "square-bale-chute"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "baler-chamber",
+            "pickup-tooth-0",
+            "pickup-tooth-1",
+            "pickup-tooth-2",
+            "pickup-tooth-3",
+            "pickup-tooth-4",
+            "pickup-tooth-5",
+            "pickup-tooth-6",
+            "baler-wheel--1-hub",
+            "baler-wheel-1-hub",
+            "drawbar"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "baler-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "baler-wheel--1",
+            "baler-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stone-picker-implement",
+      "kit": "farm-machinery",
+      "title": "Stone picker implement",
+      "description": "Field stone picker with a raised hopper, pickup reel guard and tandem support wheels. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/stone-picker-implement.kcad.ts",
+      "sourceSha256": "ca0fdae18f14605affeae7d430b3e5eae2a3cc0349f9d7220cbe617c0237fc5b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 444,
+        "sizeM": [
+          1.5,
+          1.0584,
+          1.377
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "main-toolbar",
+            "transport-wheel--1-hub",
+            "transport-wheel-1-hub",
+            "pickup-guard"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar",
+            "hopper",
+            "pickup-roller-0",
+            "pickup-roller-1",
+            "pickup-roller-2",
+            "pickup-roller-3",
+            "pickup-roller-4"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "transport-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "transport-wheel--1",
+            "transport-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "subsoiler-implement",
+      "kit": "farm-machinery",
+      "title": "Subsoiler implement",
+      "description": "Deep-tillage subsoiler frame with reinforced standards, angled legs and replaceable points. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/subsoiler-implement.kcad.ts",
+      "sourceSha256": "c077810ea507da7e2291f3931ee7b713a5453c57c1558675b3f101ed9f3f74ae",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          1.5,
+          0.678,
+          0.96
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "main-toolbar",
+            "subsoiler-point-0",
+            "subsoiler-point-1",
+            "subsoiler-point-2",
+            "subsoiler-point-3",
+            "subsoiler-point-4"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar",
+            "standard-0",
+            "subsoiler-leg-0",
+            "standard-1",
+            "subsoiler-leg-1",
+            "standard-2",
+            "subsoiler-leg-2",
+            "standard-3",
+            "subsoiler-leg-3",
+            "standard-4",
+            "subsoiler-leg-4"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "sugar-beet-harvester",
+      "kit": "farm-machinery",
+      "title": "Sugar-beet harvester",
+      "description": "Root-crop harvester with front lifting row, cleaning web, storage body and high clearance. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/sugar-beet-harvester.kcad.ts",
+      "sourceSha256": "0204aa24c80430083ddbcd7dee932702e0210cf6f71f33376112f5a9c3a2b98e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 612,
+        "sizeM": [
+          1.404,
+          2.7965,
+          2.945
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "harvester-chassis",
+            "elevator-side--1",
+            "elevator-side-1",
+            "digging-share",
+            "transfer-conveyor"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "storage-bunker",
+            "field-wheel--1-hub",
+            "field-wheel-1-hub",
+            "separator-roller-0",
+            "separator-roller-1",
+            "separator-roller-2",
+            "separator-roller-3",
+            "separator-roller-4",
+            "separator-roller-5",
+            "separator-roller-6",
+            "separator-roller-7",
+            "cleaning-web"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "field-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "field-wheel--1",
+            "field-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "three-point-hitch-frame",
+      "kit": "farm-machinery",
+      "title": "Three-point hitch frame",
+      "description": "Rear tractor hitch assembly with twin lower links, top link and implement pins. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/three-point-hitch-frame.kcad.ts",
+      "sourceSha256": "605b5bad116371cace123c7aca7f145b73f0cba2084340309a6007e8fa6cb065",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.68,
+          0.87,
+          0.545
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mounting-frame",
+            "link-pin--1",
+            "link-pin-1",
+            "top-link"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "crossbar",
+            "lower-link--1",
+            "lower-link-1",
+            "hitch-tower"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "tracked-field-tractor",
+      "kit": "farm-machinery",
+      "title": "Tracked field tractor",
+      "description": "Heavy field tractor with paired rubber-track frames, broad engine housing and raised cab. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/tracked-field-tractor.kcad.ts",
+      "sourceSha256": "de57869ad01ae36c6482b175acc1624f3dd8b75a1de58efd04de51519b8acf7a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1104,
+        "sizeM": [
+          1.5332,
+          1.015,
+          1.674
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "rear-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "rear-wheel--1",
+            "front-wheel--1",
+            "rear-wheel-1",
+            "front-wheel-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "rear-wheel--1-hub",
+            "front-wheel--1-hub",
+            "track-roller--1-0",
+            "track-roller--1-1",
+            "track-roller--1-2",
+            "track-roller--1-3",
+            "track-roller--1-4",
+            "track-roller--1-5",
+            "rear-wheel-1-hub",
+            "front-wheel-1-hub",
+            "track-roller-1-0",
+            "track-roller-1-1",
+            "track-roller-1-2",
+            "track-roller-1-3",
+            "track-roller-1-4",
+            "track-roller-1-5",
+            "engine-hood",
+            "rear-fender-left",
+            "rear-fender-right",
+            "cab-glazing-front",
+            "cab-glazing-rear",
+            "cab-roof",
+            "rear-hitch"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "track-frame--1",
+            "track-frame-1",
+            "main-chassis",
+            "front-grille",
+            "cab-floor",
+            "cab-pillar--1",
+            "cab-pillar-1",
+            "exhaust-stack",
+            "front-weight-block"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "tractor-ballast-weight",
+      "kit": "farm-machinery",
+      "title": "Tractor ballast weight",
+      "description": "Rear-mounted counterweight block with mounting frame and raised lifting loop. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/tractor-ballast-weight.kcad.ts",
+      "sourceSha256": "2d03533217de7ee39047291bd065d331358e7cb78f7280e9a09a215959d35090",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.62,
+          0.5012,
+          0.4162
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mounting-frame",
+            "mounting-lugs",
+            "lift-loop"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "crossbar",
+            "weight-block"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "tractor-box-blade",
+      "kit": "farm-machinery",
+      "title": "Tractor box blade",
+      "description": "Rear grading box blade with twin side plates, replaceable cutting edge and scarifier shanks. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/tractor-box-blade.kcad.ts",
+      "sourceSha256": "40e8d845afa0b210a2651cf76ab1233a90137789dcc7cbdee6eccc7c27420ecf",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.3,
+          0.4608,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mounting-frame",
+            "side-plate--1",
+            "side-plate-1",
+            "cutting-edge"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "crossbar",
+            "moldboard",
+            "scarifier-0",
+            "scarifier-1",
+            "scarifier-2",
+            "scarifier-3",
+            "scarifier-4"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "tractor-drawbar-hitch",
+      "kit": "farm-machinery",
+      "title": "Tractor drawbar hitch",
+      "description": "Heavy drawbar with cross pin, stepped support plate and clevis coupling. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/tractor-drawbar-hitch.kcad.ts",
+      "sourceSha256": "8e88171e48054224c5e3944f5e4ae6e3e1cb94b7eac10da6168b81e860be4c49",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.73,
+          0.1936,
+          0.4885
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "mounting-frame",
+            "drawbar-shank",
+            "hitch-pin"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "crossbar",
+            "clevis"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "trailed-field-sprayer",
+      "kit": "farm-machinery",
+      "title": "Trailed field sprayer",
+      "description": "Tow-behind crop sprayer with tank, folding boom sections and wide support wheels. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/trailed-field-sprayer.kcad.ts",
+      "sourceSha256": "d3fc0bc59be7fa85447ce755b760b0a6b247143071eaf2c2e6cdf3b17aa87b10",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 864,
+        "sizeM": [
+          4.472,
+          2.014,
+          2.49
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "sprayer-chassis",
+            "boom-wing--1",
+            "boom-wing-1",
+            "drawbar"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "sprayer-tank",
+            "sprayer-wheel--1-hub",
+            "nozzle--1-0",
+            "nozzle--1-1",
+            "nozzle--1-2",
+            "nozzle--1-3",
+            "nozzle--1-4",
+            "nozzle--1-5",
+            "nozzle--1-6",
+            "sprayer-wheel-1-hub",
+            "nozzle-1-0",
+            "nozzle-1-1",
+            "nozzle-1-2",
+            "nozzle-1-3",
+            "nozzle-1-4",
+            "nozzle-1-5",
+            "nozzle-1-6",
+            "center-boom"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "sprayer-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "sprayer-wheel--1",
+            "sprayer-wheel-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "traveling-sprinkler-cart",
+      "kit": "farm-machinery",
+      "title": "Traveling sprinkler cart",
+      "description": "Portable irrigation cart with hose reel, large wheels, guide frame and elevated sprinkler head. Knobs: overall scale, body color and accent color.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/traveling-sprinkler-cart.kcad.ts",
+      "sourceSha256": "13aa902b9871229f8538b6a136dd41f63da29588a5c1a85f3ca2a9ebcf9ea75b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          0.95,
+          1.635,
+          1.41
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "cart-frame",
+            "sprinkler-mast"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "cart-wheel--1",
+          "color": "#414848",
+          "parts": [
+            "cart-wheel--1",
+            "cart-wheel-1"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "cart-wheel--1-hub",
+            "cart-wheel-1-hub",
+            "hose-reel",
+            "sprinkler-arm"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "wheel-hay-rake",
+      "kit": "farm-machinery",
+      "title": "Wheel hay rake",
+      "description": "Trailing wheel rake with five star wheels, support frame and adjustable tongue. Knobs: overall scale, body color and accent color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "farm machinery",
+        "agriculture",
+        "field equipment",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "farm",
+        "field",
+        "agriculture",
+        "rural-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/farm-machinery/wheel-hay-rake.kcad.ts",
+      "sourceSha256": "223fda4298837286daad58053c30e6a5ad01b9b924d7c1e93d77c60e79b5c7e5",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5d7f75",
+          "label": "Body color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c67b39",
+          "label": "Accent color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 764,
+        "sizeM": [
+          1.9476,
+          0.54,
+          1.13
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c67b39",
+          "parts": [
+            "hay-frame",
+            "star-rake-wheel-0-hub",
+            "rake-spoke-0-0",
+            "rake-spoke-0-1",
+            "rake-spoke-0-2",
+            "rake-spoke-0-3",
+            "rake-spoke-0-4",
+            "star-rake-wheel-1-hub",
+            "rake-spoke-1-0",
+            "rake-spoke-1-1",
+            "rake-spoke-1-2",
+            "rake-spoke-1-3",
+            "rake-spoke-1-4",
+            "star-rake-wheel-2-hub",
+            "rake-spoke-2-0",
+            "rake-spoke-2-1",
+            "rake-spoke-2-2",
+            "rake-spoke-2-3",
+            "rake-spoke-2-4",
+            "star-rake-wheel-3-hub",
+            "rake-spoke-3-0",
+            "rake-spoke-3-1",
+            "rake-spoke-3-2",
+            "rake-spoke-3-3",
+            "rake-spoke-3-4",
+            "star-rake-wheel-4-hub",
+            "rake-spoke-4-0",
+            "rake-spoke-4-1",
+            "rake-spoke-4-2",
+            "rake-spoke-4-3",
+            "rake-spoke-4-4"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5d7f75",
+          "parts": [
+            "drawbar"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "star-rake-wheel-0",
+          "color": "#505858",
+          "parts": [
+            "star-rake-wheel-0",
+            "star-rake-wheel-1",
+            "star-rake-wheel-2",
+            "star-rake-wheel-3",
+            "star-rake-wheel-4"
+          ]
         }
       ]
     },
