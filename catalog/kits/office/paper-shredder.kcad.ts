@@ -27,9 +27,6 @@ const office = assembly('paper-shredder');
 const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
   office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
 };
-const addCylinder = (name: string, h: number, r: number, x: number, y: number, z: number, colour: typeof body) => {
-  office.part(name, cylinder(h * k, r * k).translate(x * k, y * k, z * k).color(colour));
-};
 
 addBox('cabinet', 0, 0, 0, 300, 250, 420, body);
 addBox('top-cap', 0, 0, 420, 312, 260, 18, accent);

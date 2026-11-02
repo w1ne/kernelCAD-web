@@ -41510,7 +41510,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/archive-box.kcad.ts",
-      "sourceSha256": "b5aab6f7bf37c81b35c236422ea862358a5f31edd4b6cbef6ea10a1923d0358e",
+      "sourceSha256": "fd1a47b268966ef314c019f949e0cb6c26dc5850b433012cab9c571c132bacf3",
       "triangleBudget": 150,
       "params": [
         {
@@ -41614,7 +41614,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/business-card-holder.kcad.ts",
-      "sourceSha256": "b1ac5e0c9d4d7c7be285b25963522abe56a62539320f9a15cedf7fe44cd882da",
+      "sourceSha256": "64c8ad79e679c139d8b09cc63b7fc61f26220155483b78055a798737223ac447",
       "triangleBudget": 130,
       "params": [
         {
@@ -41718,7 +41718,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/calculator.kcad.ts",
-      "sourceSha256": "49b6f9617ed4ef00c41090b6bd5751f64f6205c32fdffe2182edd2a362608b3b",
+      "sourceSha256": "9eea664e9ed87fd35348a2f1aa6f4e02d49297bb5d212540efcf111e43e28085",
       "triangleBudget": 250,
       "params": [
         {
@@ -41934,7 +41934,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/desk-calendar.kcad.ts",
-      "sourceSha256": "3d795f7bd08ef9e329e9686209b4202686a76238ab69fe16d7e46ce0a05cf35d",
+      "sourceSha256": "cee3e6d735d34ff8251ae9e71e185ddadaa46fdfda1c1aa9f99cc10cef24199f",
       "triangleBudget": 260,
       "params": [
         {
@@ -42054,7 +42054,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/desk-organizer.kcad.ts",
-      "sourceSha256": "77133f9ced856048f2b7cf9f7de72b34567b36e3f92e8faf1b592921aeb5c74f",
+      "sourceSha256": "460029c1f6447bb3e3bd34442a5a7f46214115bb1547321217972700870c3d81",
       "triangleBudget": 180,
       "params": [
         {
@@ -42160,7 +42160,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/dry-erase-board.kcad.ts",
-      "sourceSha256": "26f6a96a038f041d123a2cf745d6425cf6349b2054335e78c57a2f07736a135c",
+      "sourceSha256": "d8ad2f615437ba917e4c7f3dd5a0152c3b802cd4df5ec599f55545894e8ec6e1",
       "triangleBudget": 200,
       "params": [
         {
@@ -42271,7 +42271,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/envelope-stack.kcad.ts",
-      "sourceSha256": "84cbb349b39a5092d669b84534af72bd690a6148769f934cce5b3a5d7cd4f498",
+      "sourceSha256": "5298cbaaa2853b0f715af971d06e87bd6364ef31477df214c18bbd9acc2f73bd",
       "triangleBudget": 120,
       "params": [
         {
@@ -42375,7 +42375,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/file-folder.kcad.ts",
-      "sourceSha256": "855e2bfd5de524962de7eaa73c0a0e53698f826b9c3bbe1987a33b48e4f20942",
+      "sourceSha256": "1ff436045008750ea99c7852ee96a2dec7365cc56d2078b4462e614cc5f24c3f",
       "triangleBudget": 140,
       "params": [
         {
@@ -42479,7 +42479,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/footrest.kcad.ts",
-      "sourceSha256": "dc8ea2bf4899821d7b7c77e3340da3be725144972c7d5f1c75c3eacc7c239172",
+      "sourceSha256": "6ce0e42c4d089bba1173da4352b3b9196926785ab034278a8df960364096a9f7",
       "triangleBudget": 130,
       "params": [
         {
@@ -42687,7 +42687,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/hanging-file-folder.kcad.ts",
-      "sourceSha256": "3871acc5a6cd05ab3d1a4a345fb9b0c9b2f96c381e61694304eb9edbbeaeeeeb",
+      "sourceSha256": "6ebcac8352046f3abfbde2eb69c75bad0a6df3a6409c4338f751ed1f3a16c11a",
       "triangleBudget": 180,
       "params": [
         {
@@ -42792,7 +42792,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/highlighter.kcad.ts",
-      "sourceSha256": "89ad45d4b2ae09a8fa8bdd04cb963aeca5a571b90114469a974bf886ccb9e6eb",
+      "sourceSha256": "5c381ae805f9c5c59d91bd3d22d5305eaee4953a6d54f3847dd9c3f9716f005d",
       "triangleBudget": 120,
       "params": [
         {
@@ -43001,7 +43001,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/ink-pad.kcad.ts",
-      "sourceSha256": "a0b4c11b4d62f7764c47c6b3bb86da6e24c5672460bcb8f4cec9c944fa70d3c8",
+      "sourceSha256": "c8ca249ff2576ad84b1a0fc19f0c803a00ed65d0ee6a02de15977e5ce67e6b58",
       "triangleBudget": 120,
       "params": [
         {
@@ -43220,7 +43220,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/laminator.kcad.ts",
-      "sourceSha256": "aa258f0f9666d203dce919d9b5036223f27b4c9831f1b9b8f0de451a1f633b06",
+      "sourceSha256": "c683827896a4287ac7f6553998b70340d153ea4b0c3b0ecff47ec86e58ec0cc0",
       "triangleBudget": 150,
       "params": [
         {
@@ -43327,7 +43327,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/laptop-stand.kcad.ts",
-      "sourceSha256": "9e95780d28a19183f5396b6402b13aab34a46abd071058b3c7b37a342884d150",
+      "sourceSha256": "27b10709551ef19763ab024222290610177924093cb1e52a9192fd01e2b6ad6f",
       "triangleBudget": 150,
       "params": [
         {
@@ -43433,7 +43433,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/letter-sorter.kcad.ts",
-      "sourceSha256": "5c98bba57e4b43b1c02713166cf6ea6a20973f8df61a741869d347b0297ad2dd",
+      "sourceSha256": "9829dfefa062659aac3e258b963964b9104f29c752c32ea8cd35fd614444bc90",
       "triangleBudget": 260,
       "params": [
         {
@@ -43550,7 +43550,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/letter-tray.kcad.ts",
-      "sourceSha256": "ef7240a9f9ee208db5269b194cf9c263a6eeb2a6b59a72b518d12cff703898b0",
+      "sourceSha256": "a9490d6bcbbc4cab88d79194c5c879d8067dbdded17e5222a8a77bc6fdc94384",
       "triangleBudget": 280,
       "params": [
         {
@@ -43773,7 +43773,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/mechanical-pencil.kcad.ts",
-      "sourceSha256": "abf5dfa6a500b7972594b98bda7a269fd8c134bef3b1418dc996bc7073c85ca7",
+      "sourceSha256": "13d2873fd3d4a3dd2f3b3fa8029ee60d42a89500e5eb1df12e1e13ce8c500e31",
       "triangleBudget": 120,
       "params": [
         {
@@ -43878,7 +43878,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/memo-pad.kcad.ts",
-      "sourceSha256": "242deb92c35c9b2adcd3af6ed34e459188f1b885451db72b2d53657dec3b8bff",
+      "sourceSha256": "79fc168171ac9601c0b7381f45ff5850468a73ef0f036e52d82afe454eb8798d",
       "triangleBudget": 100,
       "params": [
         {
@@ -43992,7 +43992,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/monitor-riser.kcad.ts",
-      "sourceSha256": "a073873be1d108990388580a529f18fa80c9d4883677d0b9dab889b7f651aeaa",
+      "sourceSha256": "39ff2efc5841ea6fb97e567742c85999aa8779fc1c80443e00d0ee6bc0af819f",
       "triangleBudget": 120,
       "params": [
         {
@@ -44096,7 +44096,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/mousepad.kcad.ts",
-      "sourceSha256": "38ff1b52627c72f1b93a9973fc41165a98b04ec87ca349842b427877d0149766",
+      "sourceSha256": "a0af80b19dd55b02f2d350705ab2450a5b31163cf34148dcfcb0ef8889de9dda",
       "triangleBudget": 150,
       "params": [
         {
@@ -44201,7 +44201,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/notebook.kcad.ts",
-      "sourceSha256": "0e81b085edd8a2f36cf1017cbff798e8acf1262fa53f44dc0fd85cbe2e3a96b1",
+      "sourceSha256": "b953b40090fc72ac116ff81b745a0078293c9b2db11d374353825124303d3cfc",
       "triangleBudget": 150,
       "params": [
         {
@@ -44306,7 +44306,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/office-pinboard.kcad.ts",
-      "sourceSha256": "c64642dcb6189db64dd25e297128665eff53319f027fd1efc9be61cd59692a8c",
+      "sourceSha256": "49e0080dd902140d2493ded63d3597e91523221345711a6ef14815f27fc68faf",
       "triangleBudget": 160,
       "params": [
         {
@@ -44415,7 +44415,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/paper-clip-dish.kcad.ts",
-      "sourceSha256": "a1b5012c6df518f03628cd22d1ed74839d819be73b1e6c02a71f1a0f86132c2c",
+      "sourceSha256": "2436f64a65f2ac5bbfe3fd517a9edae8287ac43d288d05ffe0271d851416a553",
       "triangleBudget": 180,
       "params": [
         {
@@ -44522,7 +44522,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/paper-cutter.kcad.ts",
-      "sourceSha256": "14f4ef32005eda6799e125f3b4731e961924aae044a5a3fc299a681c0e94ff64",
+      "sourceSha256": "1351674873a65e636a6f8262804cfdb9e2be22a23e49ad3372ad5e46ff50b7eb",
       "triangleBudget": 180,
       "params": [
         {
@@ -44628,7 +44628,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/paper-shredder.kcad.ts",
-      "sourceSha256": "82406280c97e0fb7957cfeeaa38b8d08e46cf01ed0091ebe96e91e059daff78d",
+      "sourceSha256": "33ce0830f1c12dfb6b347ba8f158716ec79d2b7bb756b583bdab610c987f216c",
       "triangleBudget": 180,
       "params": [
         {
@@ -44735,7 +44735,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/paperweight.kcad.ts",
-      "sourceSha256": "527db4cf971d6d122889378b0e05084021a06a687122f02e14178f92782307e7",
+      "sourceSha256": "7f1949f3a15cf2f7ae594e016ce60c73a1aefaddb664bf44476c618cecac9711",
       "triangleBudget": 120,
       "params": [
         {
@@ -44838,7 +44838,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/pencil-cup.kcad.ts",
-      "sourceSha256": "cae70b1d0bfd9c9d81942a5637da45f4b349f23bfce16d8c036d17a4a0721927",
+      "sourceSha256": "f9a5dba1659b1e60fd92bfa24889d79894f312380268fdd2d2185729d9f0a37a",
       "triangleBudget": 180,
       "params": [
         {
@@ -45171,7 +45171,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/ruler.kcad.ts",
-      "sourceSha256": "e5881571133c64baf6286e2dfd70f79ca20e71ea78729dd95f4fbc24341b175a",
+      "sourceSha256": "1f861048bc40592d1970b3116f7f7f6ac8e26982675fd5ef7adec1132fb18578",
       "triangleBudget": 220,
       "params": [
         {
@@ -45497,7 +45497,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/sticky-notes.kcad.ts",
-      "sourceSha256": "96ac2cb72000337957862a7a96289a2fdaa23e3bcccb875d8dc5057d4eeea419",
+      "sourceSha256": "f2006162a538aff5b90ec324075412d3aa0145bb9cdc26689f017554c89aeb1d",
       "triangleBudget": 110,
       "params": [
         {
@@ -45714,7 +45714,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/office/wrist-rest.kcad.ts",
-      "sourceSha256": "8694ea540c9f89fb3e947e61a94de2c98c7b94b3e14f3de9ba90e8bef01fc11e",
+      "sourceSha256": "dee51a05fd50e364ce616002c006856ebe69511a351d50c9dd79919ef2a338ac",
       "triangleBudget": 100,
       "params": [
         {

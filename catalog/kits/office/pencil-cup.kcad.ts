@@ -27,9 +27,6 @@ const office = assembly('pencil-cup');
 const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
   office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
 };
-const addCylinder = (name: string, h: number, r: number, x: number, y: number, z: number, colour: typeof body) => {
-  office.part(name, cylinder(h * k, r * k).translate(x * k, y * k, z * k).color(colour));
-};
 
 addBox('cup-floor', 0, 0, 0, 72, 72, 8, detail);
 addBox('front-wall', 0, -33, 8, 72, 6, 74, body);

@@ -27,9 +27,6 @@ const office = assembly('hanging-file-folder');
 const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
   office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
 };
-const addCylinder = (name: string, h: number, r: number, x: number, y: number, z: number, colour: typeof body) => {
-  office.part(name, cylinder(h * k, r * k).translate(x * k, y * k, z * k).color(colour));
-};
 
 addBox('folder-body', 0, 0, 0, 250, 330, 8, body);
 addBox('paper-stack', 0, 15, 8, 228, 275, 12, accent);

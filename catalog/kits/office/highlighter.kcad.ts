@@ -27,9 +27,6 @@ const office = assembly('highlighter');
 const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
   office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
 };
-const addCylinder = (name: string, h: number, r: number, x: number, y: number, z: number, colour: typeof body) => {
-  office.part(name, cylinder(h * k, r * k).translate(x * k, y * k, z * k).color(colour));
-};
 
 addBox('barrel', 0, 0, 0, 112, 24, 22, body);
 addBox('cap', -48, 0, 2, 28, 28, 26, accent);

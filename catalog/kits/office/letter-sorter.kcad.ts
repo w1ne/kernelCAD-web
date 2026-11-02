@@ -30,9 +30,6 @@ const office = assembly('letter-sorter');
 const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
   office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
 };
-const addCylinder = (name: string, h: number, r: number, x: number, y: number, z: number, colour: typeof body) => {
-  office.part(name, cylinder(h * k, r * k).translate(x * k, y * k, z * k).color(colour));
-};
 
 addBox('base', 0, 0, 0, 230, 120, 12, body);
 for (let i = 0; i < shelfCount; i++) {
