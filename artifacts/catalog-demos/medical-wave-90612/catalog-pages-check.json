@@ -1,0 +1,8 @@
+{
+  "result": "pass",
+  "pages": 40,
+  "previews": 40,
+  "hub": "Medical kit appears in generated catalog hub",
+  "output": "/tmp/kernelcad-medical-wave-90612",
+  "deployment": "not deployed; public route check on 2026-11-02 returned HTTP 404 before this PR"
+}

@@ -1,0 +1,810 @@
+{
+  "passed": 40,
+  "failed": 0,
+  "total": 40,
+  "assets": [
+    {
+      "id": "adhesive-bandage-box",
+      "triangles": 60,
+      "budget": 260,
+      "sizeM": [
+        0.15,
+        0.048,
+        0.1235
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#f4f0e6",
+        "accent=#c8403a"
+      ]
+    },
+    {
+      "id": "bandage-roll",
+      "triangles": 152,
+      "budget": 300,
+      "sizeM": [
+        0.056,
+        0.035,
+        0.056
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e8e1cf",
+        "accent=#bfa77b"
+      ]
+    },
+    {
+      "id": "bedside-cabinet",
+      "triangles": 84,
+      "budget": 500,
+      "sizeM": [
+        0.38,
+        0.44,
+        0.331
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e8ecee",
+        "accent=#5c7482"
+      ]
+    },
+    {
+      "id": "blood-collection-tube",
+      "triangles": 176,
+      "budget": 240,
+      "sizeM": [
+        0.026,
+        0.112,
+        0.026
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#d7e4e4",
+        "accent=#855b9a"
+      ]
+    },
+    {
+      "id": "blood-pressure-monitor",
+      "triangles": 268,
+      "budget": 400,
+      "sizeM": [
+        0.191094,
+        0.096,
+        0.217
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e9eef0",
+        "accent=#397c86"
+      ]
+    },
+    {
+      "id": "centrifuge",
+      "triangles": 280,
+      "budget": 400,
+      "sizeM": [
+        0.19,
+        0.133,
+        0.195
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#dfe5e6",
+        "accent=#347c84"
+      ]
+    },
+    {
+      "id": "defibrillator",
+      "triangles": 128,
+      "budget": 450,
+      "sizeM": [
+        0.23,
+        0.247,
+        0.214
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e9ecec",
+        "accent=#d84b42"
+      ]
+    },
+    {
+      "id": "diagnostic-monitor",
+      "triangles": 224,
+      "budget": 400,
+      "sizeM": [
+        0.21,
+        0.279,
+        0.12
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#4d5a62",
+        "accent=#39a3a5"
+      ]
+    },
+    {
+      "id": "digital-thermometer",
+      "triangles": 156,
+      "budget": 240,
+      "sizeM": [
+        0.022,
+        0.138,
+        0.024
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e4e9eb",
+        "accent=#4d9ca0"
+      ]
+    },
+    {
+      "id": "erlenmeyer-flask",
+      "triangles": 220,
+      "budget": 260,
+      "sizeM": [
+        0.084,
+        0.119,
+        0.084
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#b8d6d1",
+        "accent=#4b8790"
+      ]
+    },
+    {
+      "id": "exam-table",
+      "triangles": 128,
+      "budget": 600,
+      "sizeM": [
+        0.66,
+        0.705,
+        0.245
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#edf0f2",
+        "accent=#2d9b91"
+      ]
+    },
+    {
+      "id": "examination-light",
+      "triangles": 368,
+      "budget": 450,
+      "sizeM": [
+        0.472,
+        0.879,
+        0.242
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e5e9ea",
+        "accent=#6b8f98"
+      ]
+    },
+    {
+      "id": "first-aid-kit",
+      "triangles": 108,
+      "budget": 350,
+      "sizeM": [
+        0.194,
+        0.134,
+        0.13
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e8ecee",
+        "accent=#c8403a"
+      ]
+    },
+    {
+      "id": "forceps",
+      "triangles": 68,
+      "budget": 300,
+      "sizeM": [
+        0.062,
+        0.01,
+        0.195
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#a5afb2",
+        "accent=#56646a"
+      ]
+    },
+    {
+      "id": "forearm-crutches",
+      "triangles": 288,
+      "budget": 350,
+      "sizeM": [
+        0.24,
+        0.882,
+        0.088
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#b8c3c8",
+        "accent=#2d858d"
+      ]
+    },
+    {
+      "id": "gauze-pads",
+      "triangles": 72,
+      "budget": 240,
+      "sizeM": [
+        0.088,
+        0.035,
+        0.089
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#f1eee7",
+        "accent=#c8d0d1"
+      ]
+    },
+    {
+      "id": "hospital-bed",
+      "triangles": 320,
+      "budget": 600,
+      "sizeM": [
+        0.76,
+        0.685,
+        0.25
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color",
+        "rails:choice"
+      ],
+      "palette": [
+        "shell=#eef1f2",
+        "accent=#4c9c9b"
+      ]
+    },
+    {
+      "id": "instrument-trolley",
+      "triangles": 224,
+      "budget": 500,
+      "sizeM": [
+        0.4,
+        0.72,
+        0.28
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#eef1f2",
+        "accent=#71838b"
+      ]
+    },
+    {
+      "id": "iv-stand",
+      "triangles": 292,
+      "budget": 400,
+      "sizeM": [
+        0.196,
+        1.196,
+        0.196
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#b6c0c4",
+        "accent=#5da7ad"
+      ]
+    },
+    {
+      "id": "lab-incubator",
+      "triangles": 96,
+      "budget": 500,
+      "sizeM": [
+        0.24,
+        0.317,
+        0.209
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e6eaeb",
+        "accent=#4c8f93"
+      ]
+    },
+    {
+      "id": "medical-cart",
+      "triangles": 400,
+      "budget": 600,
+      "sizeM": [
+        0.42,
+        0.73,
+        0.3
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color",
+        "shelves:choice"
+      ],
+      "palette": [
+        "shell=#e9eef0",
+        "accent=#3c7f87"
+      ]
+    },
+    {
+      "id": "microscope",
+      "triangles": 292,
+      "budget": 500,
+      "sizeM": [
+        0.15,
+        0.405,
+        0.117
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#56636a",
+        "accent=#8bb5b4"
+      ]
+    },
+    {
+      "id": "nebulizer",
+      "triangles": 280,
+      "budget": 400,
+      "sizeM": [
+        0.196,
+        0.165,
+        0.167
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e6eaeb",
+        "accent=#56a0a5"
+      ]
+    },
+    {
+      "id": "otoscope",
+      "triangles": 220,
+      "budget": 280,
+      "sizeM": [
+        0.05,
+        0.19,
+        0.05
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#50636b",
+        "accent=#e9bc4b"
+      ]
+    },
+    {
+      "id": "oxygen-cylinder",
+      "triangles": 200,
+      "budget": 350,
+      "sizeM": [
+        0.156,
+        0.53,
+        0.156
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#7c9299",
+        "accent=#d35b54"
+      ]
+    },
+    {
+      "id": "petri-dish",
+      "triangles": 176,
+      "budget": 240,
+      "sizeM": [
+        0.092,
+        0.021,
+        0.092
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e1e8e7",
+        "accent=#9fc6c0"
+      ]
+    },
+    {
+      "id": "pill-blister-pack",
+      "triangles": 288,
+      "budget": 350,
+      "sizeM": [
+        0.136,
+        0.019,
+        0.084
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#bfc9cd",
+        "accent=#d6b95f"
+      ]
+    },
+    {
+      "id": "pill-bottle",
+      "triangles": 220,
+      "budget": 260,
+      "sizeM": [
+        0.056,
+        0.12,
+        0.056
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#f0f2ed",
+        "accent=#d8bd65"
+      ]
+    },
+    {
+      "id": "pulse-oximeter",
+      "triangles": 124,
+      "budget": 300,
+      "sizeM": [
+        0.092157,
+        0.069907,
+        0.05
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#eef2f2",
+        "accent=#399da1"
+      ]
+    },
+    {
+      "id": "reflex-hammer",
+      "triangles": 188,
+      "budget": 220,
+      "sizeM": [
+        0.112,
+        0.17,
+        0.028
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#a7b0b3",
+        "accent=#596a70"
+      ]
+    },
+    {
+      "id": "sharps-container",
+      "triangles": 60,
+      "budget": 300,
+      "sizeM": [
+        0.126,
+        0.171,
+        0.133
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#f1b944",
+        "accent=#c9433d"
+      ]
+    },
+    {
+      "id": "specimen-cup",
+      "triangles": 176,
+      "budget": 300,
+      "sizeM": [
+        0.064,
+        0.074,
+        0.064
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e8eceb",
+        "accent=#e6ba54"
+      ]
+    },
+    {
+      "id": "specimen-tube-rack",
+      "triangles": 376,
+      "budget": 500,
+      "sizeM": [
+        0.19,
+        0.092,
+        0.096
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color",
+        "tubeCount:choice"
+      ],
+      "palette": [
+        "shell=#d7dedf",
+        "accent=#508c98"
+      ]
+    },
+    {
+      "id": "stethoscope",
+      "triangles": 228,
+      "budget": 350,
+      "sizeM": [
+        0.156,
+        0.034,
+        0.212
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#384b56",
+        "accent=#bfc8cb"
+      ]
+    },
+    {
+      "id": "surgical-scissors",
+      "triangles": 268,
+      "budget": 350,
+      "sizeM": [
+        0.07,
+        0.014,
+        0.12
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#99a4a8",
+        "accent=#58656a"
+      ]
+    },
+    {
+      "id": "syringe",
+      "triangles": 248,
+      "budget": 300,
+      "sizeM": [
+        0.05,
+        0.201,
+        0.032
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e9edef",
+        "accent=#7eacb0"
+      ]
+    },
+    {
+      "id": "tongue-depressor-pack",
+      "triangles": 84,
+      "budget": 240,
+      "sizeM": [
+        0.14,
+        0.0365,
+        0.041
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "accent=#f1eee4",
+        "shell=#d9c29a"
+      ]
+    },
+    {
+      "id": "walker-frame",
+      "triangles": 196,
+      "budget": 400,
+      "sizeM": [
+        0.49,
+        1.022,
+        0.432
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#dce2e4",
+        "accent=#4a8991"
+      ]
+    },
+    {
+      "id": "walking-cane",
+      "triangles": 144,
+      "budget": 220,
+      "sizeM": [
+        0.061,
+        0.823,
+        0.034
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#8a6748",
+        "accent=#2a555d"
+      ]
+    },
+    {
+      "id": "wheelchair",
+      "triangles": 332,
+      "budget": 500,
+      "sizeM": [
+        0.427,
+        0.87,
+        0.722
+      ],
+      "minUpM": 0,
+      "materials": 1,
+      "knobs": [
+        "shell:color",
+        "accent:color"
+      ],
+      "palette": [
+        "shell=#e9edf0",
+        "accent=#367e8c"
+      ]
+    }
+  ]
+}
