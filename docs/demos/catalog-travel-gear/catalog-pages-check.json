@@ -1,0 +1,180 @@
+{
+  "checkedAt": "2026-11-02T20:10:22.793Z",
+  "method": "npx tsx docs/demos/catalog-travel-gear/check-pages.mts",
+  "localOnly": true,
+  "totalIndexedAssets": 659,
+  "generatedAssetPages": 659,
+  "travelGearPages": 12,
+  "checkedTravelGearPages": [
+    {
+      "id": "duffel-bag",
+      "knobs": [
+        "length",
+        "carry",
+        "fabric",
+        "trim"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "foldable-umbrella",
+      "knobs": [
+        "diameter",
+        "state",
+        "handle",
+        "canopy",
+        "fittings"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "garment-bag",
+      "knobs": [
+        "length",
+        "hanger",
+        "cover",
+        "trim"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "luggage-scale",
+      "knobs": [
+        "size",
+        "hook",
+        "body",
+        "strap"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "luggage-tag",
+      "knobs": [
+        "size",
+        "face",
+        "tag",
+        "strap"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "packing-cube",
+      "knobs": [
+        "size",
+        "layout",
+        "fabric",
+        "trim"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "passport-wallet",
+      "knobs": [
+        "size",
+        "layout",
+        "cover",
+        "lining"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rolling-suitcase",
+      "knobs": [
+        "size",
+        "handle",
+        "shell",
+        "trim"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "sleep-mask",
+      "knobs": [
+        "shape",
+        "strap",
+        "fabric",
+        "band"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "toiletry-bag",
+      "knobs": [
+        "layout",
+        "size",
+        "fabric",
+        "trim"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "travel-adapter",
+      "knobs": [
+        "plug",
+        "ports",
+        "body",
+        "pins"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "travel-neck-pillow",
+      "knobs": [
+        "size",
+        "shape",
+        "clasp",
+        "fabric"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    }
+  ],
+  "liveDeployment": "not verified by this local static build"
+}

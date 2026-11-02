@@ -1,5 +1,9 @@
 # Unreleased
 
+- Travel-gear catalog wave: 12 original parametric low-poly CC0 assets in the
+  new `catalog/kits/travel-gear` kit for luggage and small journey accessories.
+  The catalog grows from 647 to 659 audited assets. Kit README, generated
+  previews and the reproducible local demo bundle: `docs/demos/catalog-travel-gear/`.
 - Watercraft catalog wave: 12 original parametric low-poly CC0 assets in the
   new `catalog/kits/watercraft` kit for boats and deck gear. The catalog grows
   from 635 to 647 audited assets. Kit README, generated previews and the
