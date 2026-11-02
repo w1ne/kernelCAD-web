@@ -318,6 +318,53 @@
       ]
     },
     {
+      "id": "marine",
+      "title": "Marine",
+      "description": "Original low-poly nautical equipment, water safety, dockside props and small harbor craft with editable size and color controls.",
+      "assets": [
+        "anchor-chain",
+        "anchor-winch",
+        "anchor",
+        "bait-bucket",
+        "binnacle-compass",
+        "boat-cleat",
+        "boat-fender",
+        "boat-hook",
+        "boat-oar",
+        "boat-paddle",
+        "boat-trailer",
+        "cargo-ship",
+        "channel-marker-buoy",
+        "coiled-mooring-rope",
+        "crab-trap",
+        "dock-bollard",
+        "dock-ladder",
+        "dock-piling",
+        "fish-crate",
+        "fishing-boat",
+        "fishing-net",
+        "inflatable-life-raft",
+        "life-jacket",
+        "life-raft-canister",
+        "life-ring",
+        "lobster-pot",
+        "magnetic-compass",
+        "mooring-buoy",
+        "motorboat",
+        "outboard-motor",
+        "porthole",
+        "rescue-lifeboat",
+        "sailboat",
+        "sextant",
+        "ship-bell",
+        "ship-horn",
+        "ship-wheel",
+        "throw-rope-bag",
+        "tugboat",
+        "yacht"
+      ]
+    },
+    {
       "id": "medical",
       "title": "Medical",
       "description": "Original low-poly clinic, hospital, first-aid and laboratory props with editable colors, authored in millimetres and centred on the floor plane.",
@@ -37644,6 +37691,2837 @@
             "flame-core"
           ],
           "param": "core"
+        }
+      ]
+    },
+    {
+      "id": "anchor-chain",
+      "kit": "marine",
+      "title": "Anchor chain",
+      "description": "Short anchor chain with linked oval chain plates and a large terminal shackle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "anchor chain",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/anchor-chain.kcad.ts",
+      "sourceSha256": "ec92460c02f0ae5d122d2f67d4358e45c014984c5ac4bb5a1600a23e39e4c3ef",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#53595d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 524,
+        "sizeM": [
+          0.084,
+          0.418,
+          0.084
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#53595d",
+          "parts": [
+            "link-1",
+            "link-2",
+            "link-3",
+            "link-4",
+            "link-5",
+            "terminal-shackle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "anchor-winch",
+      "kit": "marine",
+      "title": "Anchor winch",
+      "description": "Deck anchor winch with horizontal chain drum, paired support cheeks, crank and base plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "anchor winch",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/anchor-winch.kcad.ts",
+      "sourceSha256": "c44f97a7deb93fb8e97140cb17878f8273144e616dc7af81fa3dc7f207a2aa9a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4e5458",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.54,
+          0.338,
+          0.4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4e5458",
+          "parts": [
+            "base",
+            "cheek-left",
+            "cheek-right",
+            "drum",
+            "drum-flange-left",
+            "drum-flange-right",
+            "crank-arm",
+            "crank-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "anchor",
+      "kit": "marine",
+      "title": "Marine anchor",
+      "description": "Stockless marine anchor with a long shank, transverse stock, broad flukes and crown. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "anchor",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/anchor.kcad.ts",
+      "sourceSha256": "373bd5eb7a27311684c17ac4978eeaab3e3f12729edf3360b7fadd26f1088941",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4a5054",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 170,
+        "sizeM": [
+          0.348892,
+          0.646714,
+          0.103027
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4a5054",
+          "parts": [
+            "shank",
+            "stock",
+            "crown",
+            "fluke-left",
+            "fluke-right",
+            "ring"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bait-bucket",
+      "kit": "marine",
+      "title": "Bait bucket",
+      "description": "Marine bait bucket with tapered-looking tub, bail handle, lid and side grip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "bait bucket",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/bait-bucket.kcad.ts",
+      "sourceSha256": "20d3c0e6c5dbf57f6a339b354e180d3e6f0eda40e5a411cb8c3b447f0525d9c2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#53606a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          0.346611,
+          0.502,
+          0.316
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#53606a",
+          "parts": [
+            "tub",
+            "base-band",
+            "rim",
+            "lid",
+            "handle-left",
+            "handle-right",
+            "handle-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "binnacle-compass",
+      "kit": "marine",
+      "title": "Binnacle compass",
+      "description": "Deck-mounted binnacle compass with a tapered pedestal, protective hood and broad mounting feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "binnacle compass",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/binnacle-compass.kcad.ts",
+      "sourceSha256": "99d3e35ca4f2556f0c4bc4f04eb755afac0505f434f504830790690478f635cb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b5940",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 238,
+        "sizeM": [
+          0.424,
+          0.58348,
+          0.28
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b5940",
+          "parts": [
+            "base",
+            "pedestal",
+            "shoulder",
+            "compass-bowl",
+            "hood",
+            "mount-left",
+            "mount-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "boat-cleat",
+      "kit": "marine",
+      "title": "Boat cleat",
+      "description": "Low deck cleat with a raised center bridge, flared horns and two mounting feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "boat cleat",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/boat-cleat.kcad.ts",
+      "sourceSha256": "1c05d9086799b64cdb18f2fcf6547921cf42f444b438cafc8756341203247524",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777d80",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.263,
+          0.13,
+          0.086
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777d80",
+          "parts": [
+            "base-plate",
+            "bridge",
+            "horn-left",
+            "horn-right",
+            "mount-left",
+            "mount-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "boat-fender",
+      "kit": "marine",
+      "title": "Boat fender",
+      "description": "Inflatable boat fender with rounded body, end eyes and a rope-through center opening. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "boat fender",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/boat-fender.kcad.ts",
+      "sourceSha256": "f728928a5569ff3d506b63f3655883fea03814ee0f5b68f7d6dbcc4b1675f782",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#53616a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 314,
+        "sizeM": [
+          0.11013,
+          0.328,
+          0.118126
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#53616a",
+          "parts": [
+            "body",
+            "top-eye",
+            "bottom-eye",
+            "cap-top",
+            "cap-bottom"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "boat-hook",
+      "kit": "marine",
+      "title": "Boat hook",
+      "description": "Long boat hook with a tapered pole, curved pickup tip and short crossbar. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "boat hook",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/boat-hook.kcad.ts",
+      "sourceSha256": "abe731af8b10882815687781caaf877f8103b45b6449ebb8982b921597853351",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b6250",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 190,
+        "sizeM": [
+          0.176,
+          1.595,
+          0.054
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b6250",
+          "parts": [
+            "shaft",
+            "collar",
+            "hook-spine",
+            "hook-tip",
+            "crossbar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "boat-oar",
+      "kit": "marine",
+      "title": "Boat oar",
+      "description": "Single wooden boat oar with a long tapered-looking shaft, broad blade and hand grip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "boat oar",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/boat-oar.kcad.ts",
+      "sourceSha256": "a700cd664e81d29942c51e372cfdee9be5932f73fff04e38f804ef980bb4cb33",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#805d3d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.187968,
+          1.658401,
+          0.068
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#805d3d",
+          "parts": [
+            "shaft",
+            "blade",
+            "grip",
+            "collar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "boat-paddle",
+      "kit": "marine",
+      "title": "Boat paddle",
+      "description": "Single-blade canoe paddle with a wide leaf-shaped blade, straight shaft and T-grip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "boat paddle",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/boat-paddle.kcad.ts",
+      "sourceSha256": "60b3e0f7ff854f99029e7ad25db7eef43cb531036a47aab9d544521ba3e77455",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#75583d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.19,
+          1.5516,
+          0.042
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#75583d",
+          "parts": [
+            "shaft",
+            "blade",
+            "blade-neck",
+            "t-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "boat-trailer",
+      "kit": "marine",
+      "title": "Boat trailer",
+      "description": "Single-axle boat trailer with a winch post, keel rollers, twin bunks and road wheels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "boat trailer",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/boat-trailer.kcad.ts",
+      "sourceSha256": "37240c865d6dec519437d85cc2720c57a59bca431bc3e23b98d76be747d225a7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#464b4f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 324,
+        "sizeM": [
+          1.38,
+          0.858,
+          0.912
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#464b4f",
+          "parts": [
+            "main-beam",
+            "axle",
+            "wheel-left",
+            "wheel-right",
+            "bunk-left",
+            "bunk-right",
+            "winch-post",
+            "winch-drum",
+            "coupler",
+            "jack-post",
+            "jack-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cargo-ship",
+      "kit": "marine",
+      "title": "Cargo ship",
+      "description": "Low-poly coastal cargo ship with a long hull, bridge, cargo deck and stacked container blocks. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cargo ship",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/cargo-ship.kcad.ts",
+      "sourceSha256": "85a545052ffbc3357aa6b410bcfcd6383832090d4e0c888cd78538dca35bdcf1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4c5b60",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          2.02,
+          0.877,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4c5b60",
+          "parts": [
+            "hull",
+            "deck",
+            "bridge",
+            "bridge-top",
+            "container-1",
+            "container-2",
+            "container-3",
+            "container-4",
+            "container-5",
+            "container-6"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "channel-marker-buoy",
+      "kit": "marine",
+      "title": "Channel marker buoy",
+      "description": "Tall channel marker buoy with a flared float, mast, top daymark and weighted foot. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "channel marker buoy",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/channel-marker-buoy.kcad.ts",
+      "sourceSha256": "ac82a7d8e08620f67902ff3588c0e600bcdd40b082ca2801542f759585d1c1e0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#df4f39",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 266,
+        "sizeM": [
+          0.316,
+          1.075,
+          0.316
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#df4f39",
+          "parts": [
+            "float",
+            "float-cap",
+            "mast",
+            "daymark",
+            "top-ball",
+            "keel-weight"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "coiled-mooring-rope",
+      "kit": "marine",
+      "title": "Coiled mooring rope",
+      "description": "Thick mooring rope arranged in three low coils with a short loose end and eye splice. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "coiled mooring rope",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/coiled-mooring-rope.kcad.ts",
+      "sourceSha256": "37b10eedcd9934a99b2bee71eb0b2c9a3f4c5542c57b33189a7508493d6115fb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9c8258",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 428,
+        "sizeM": [
+          0.94,
+          0.106,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9c8258",
+          "parts": [
+            "coil-outer",
+            "coil-middle",
+            "coil-inner",
+            "loose-end",
+            "eye-splice"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "crab-trap",
+      "kit": "marine",
+      "title": "Crab trap",
+      "description": "Low round crab trap with circular base, hoop frame, mesh ribs and central bait cage. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "crab trap",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/crab-trap.kcad.ts",
+      "sourceSha256": "e907722fd3e1888975df09c441410be0d325fe253a44dd031660772910cfd876",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7a6547",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          0.49,
+          0.415,
+          0.49
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7a6547",
+          "parts": [
+            "base-ring",
+            "top-ring",
+            "rib-1",
+            "rib-2",
+            "rib-3",
+            "rib-4",
+            "bait-cage",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dock-bollard",
+      "kit": "marine",
+      "title": "Dock bollard",
+      "description": "Short cast-iron dock bollard with a flared foot and wide twin-horn cap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "dock bollard",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/dock-bollard.kcad.ts",
+      "sourceSha256": "0cf895ff19340795ce6f44fb04b896f102057fab3388ff2cf92aa37fe9a9d232",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4d5357",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.339,
+          0.25,
+          0.22
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4d5357",
+          "parts": [
+            "foot",
+            "column",
+            "cap",
+            "horn-left",
+            "horn-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dock-ladder",
+      "kit": "marine",
+      "title": "Dock ladder",
+      "description": "Marine dock ladder with two long rails, five broad rungs and rounded lower ends. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "dock ladder",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/dock-ladder.kcad.ts",
+      "sourceSha256": "ace550bb89db2dc60af55046b657098bc0fad9006dfb3eb55f96f2ee0afafd9f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777c7e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          0.4,
+          1.1,
+          0.06
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777c7e",
+          "parts": [
+            "rail-left",
+            "rail-right",
+            "rung-1",
+            "rung-2",
+            "rung-3",
+            "rung-4",
+            "rung-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dock-piling",
+      "kit": "marine",
+      "title": "Dock piling",
+      "description": "Heavy timber dock piling with tapered cap, waterline collar and a broad base shoe. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "dock piling",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/dock-piling.kcad.ts",
+      "sourceSha256": "7e82ad417e446cd78d294f900bf5a4a481c5cbaaede3f03cce937c8544c2dbe7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70533a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.28,
+          1.325,
+          0.28
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70533a",
+          "parts": [
+            "pile",
+            "cap",
+            "collar",
+            "base-shoe"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fish-crate",
+      "kit": "marine",
+      "title": "Fish crate",
+      "description": "Ventilated fish crate with raised corner blocks, drainage slots and two hand openings. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fish crate",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/fish-crate.kcad.ts",
+      "sourceSha256": "e86310a83dd3cd4973fcd3c1f5cbb9f970ab5e856b674aeb8beabe8d7958c8e1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#637057",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.54,
+          0.2375,
+          0.358
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#637057",
+          "parts": [
+            "base",
+            "long-side-front",
+            "long-side-back",
+            "end-left",
+            "end-right",
+            "rim-front",
+            "rim-back",
+            "corner-left",
+            "corner-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fishing-boat",
+      "kit": "marine",
+      "title": "Fishing boat",
+      "description": "Small coastal fishing boat with a deep hull, wheelhouse, roof mast, deck rail and stern work area. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fishing boat",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/fishing-boat.kcad.ts",
+      "sourceSha256": "e79c609328505804715aa49f8b67ee15062a179903f3e65ec19c816f2ef7e09f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#465a62",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.48,
+          1.094,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#465a62",
+          "parts": [
+            "hull",
+            "deck",
+            "wheelhouse",
+            "front-window",
+            "roof",
+            "mast",
+            "stern-rail",
+            "bow-rail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fishing-net",
+      "kit": "marine",
+      "title": "Fishing net",
+      "description": "Folded marine fishing net with a top float line, weighted lower edge and repeated net strands. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fishing net",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/fishing-net.kcad.ts",
+      "sourceSha256": "bf497dbf0f1e7587cf8eaf7ba36509b41f8895f89ca52e5e63504017055c4d9a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#72654d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1.04891,
+          0.617,
+          0.048
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#72654d",
+          "parts": [
+            "top-rope",
+            "bottom-rope",
+            "side-left",
+            "side-right",
+            "net-1",
+            "net-2",
+            "net-3",
+            "net-4",
+            "net-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "inflatable-life-raft",
+      "kit": "marine",
+      "title": "Inflatable life raft",
+      "description": "Open inflatable life raft with four buoyant side tubes, floor panel and corner grab lines. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "inflatable life raft",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/inflatable-life-raft.kcad.ts",
+      "sourceSha256": "e91600f18604d78a7f492504df4412a8fc344a8985f0f7947c00930f425360f9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d4b24e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          0.884,
+          0.5405,
+          0.644
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d4b24e",
+          "parts": [
+            "floor",
+            "rail-front",
+            "rail-back",
+            "rail-left",
+            "rail-right",
+            "canopy-pole",
+            "canopy"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "life-jacket",
+      "kit": "marine",
+      "title": "Life jacket",
+      "description": "Marine life jacket with two shoulder floats, broad chest panels, waist straps and a collar. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "life jacket",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/life-jacket.kcad.ts",
+      "sourceSha256": "7ba4e3926bdf4d36c529fa338f011b1a144879a188064649f04b6208ab06e551",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e15a38",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.426403,
+          0.4405,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e15a38",
+          "parts": [
+            "torso",
+            "left-flotation",
+            "right-flotation",
+            "collar-left",
+            "collar-right",
+            "waist-strap",
+            "buckle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "life-raft-canister",
+      "kit": "marine",
+      "title": "Life raft canister",
+      "description": "Sealed marine life-raft canister with two shell halves, locking bands and deck cradles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "life raft canister",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/life-raft-canister.kcad.ts",
+      "sourceSha256": "4b67c66e613d213c2abb3de3a2537254ac3246564054fe12611babd612ef51eb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d6a849",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.74242,
+          0.27,
+          0.24
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d6a849",
+          "parts": [
+            "shell",
+            "end-left",
+            "end-right",
+            "strap-left",
+            "strap-right",
+            "cradle-left",
+            "cradle-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "life-ring",
+      "kit": "marine",
+      "title": "Life ring",
+      "description": "Traditional life ring with a thick circular body, four grip straps and a rope loop. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "life ring",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/life-ring.kcad.ts",
+      "sourceSha256": "ddae30d210d5377b0cb043020e45906a24784322d05fe682229383227f3f2662",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d5503e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.41,
+          0.41,
+          0.051
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d5503e",
+          "parts": [
+            "ring-body",
+            "strap-1",
+            "strap-2",
+            "strap-3",
+            "strap-4",
+            "rope-loop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lobster-pot",
+      "kit": "marine",
+      "title": "Lobster pot",
+      "description": "Rectangular lobster pot with a weighted base, frame rails, mesh panels and inward entry funnels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "lobster pot",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/lobster-pot.kcad.ts",
+      "sourceSha256": "875b56862b3428d4b2ebc136d61973bb37063dc48047366fdb3eefa70a3e1917",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b6340",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.6,
+          0.454,
+          0.592
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b6340",
+          "parts": [
+            "base",
+            "top",
+            "post-left-front",
+            "post-right-front",
+            "post-left-back",
+            "post-right-back",
+            "entry-funnel-left",
+            "entry-funnel-right",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "magnetic-compass",
+      "kit": "marine",
+      "title": "Marine magnetic compass",
+      "description": "Handheld marine magnetic compass with a circular housing, raised bezel and direction card. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "magnetic compass",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/magnetic-compass.kcad.ts",
+      "sourceSha256": "cc18b2ca8a4a8c7735b218dbd9c45aac80bc767cfad7c32638814842d495f73e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#ba9b51",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.334,
+          0.1105,
+          0.26
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#ba9b51",
+          "parts": [
+            "housing",
+            "bezel",
+            "card",
+            "lubber-line",
+            "mount-ear-left",
+            "mount-ear-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mooring-buoy",
+      "kit": "marine",
+      "title": "Mooring buoy",
+      "description": "Floating mooring buoy with broad body, top lifting eye and heavy chain attachment below. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "mooring buoy",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/mooring-buoy.kcad.ts",
+      "sourceSha256": "f55a7c93bf8c1f4b432386e873277adcc05e42a4f3f69858d07a1bd82a81fbe3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c7503d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 222,
+        "sizeM": [
+          0.358227,
+          0.432,
+          0.311769
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c7503d",
+          "parts": [
+            "float-body",
+            "top-cap",
+            "lifting-eye",
+            "chain-shackle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "motorboat",
+      "kit": "marine",
+      "title": "Motorboat",
+      "description": "Open motorboat with a pointed planing hull, wraparound bow rail, windshield and rear outboard mount. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "motorboat",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/motorboat.kcad.ts",
+      "sourceSha256": "7d1a8e83415fa051aaf68df93558ab5ac4778af46e96f8d564e7e847fb01b588",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4b6572",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 100,
+        "sizeM": [
+          1.36,
+          0.585814,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4b6572",
+          "parts": [
+            "hull",
+            "deck",
+            "console",
+            "windshield",
+            "seat-front",
+            "seat-rear",
+            "motor-mount"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "outboard-motor",
+      "kit": "marine",
+      "title": "Outboard motor",
+      "description": "Compact outboard boat motor with a powerhead, tiller handle, midsection and propeller skeg. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "outboard motor",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/outboard-motor.kcad.ts",
+      "sourceSha256": "14d770ada83a9d0d362de81513d36abcfb4b8bd8d56994c2f238f5375f6c7cb8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#50565a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 230,
+        "sizeM": [
+          0.575,
+          0.8755,
+          0.338234
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#50565a",
+          "parts": [
+            "powerhead",
+            "top-cover",
+            "midsection",
+            "gearcase",
+            "skeg",
+            "prop-shaft",
+            "prop-blade-1",
+            "prop-blade-2",
+            "tiller",
+            "clamp"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "porthole",
+      "kit": "marine",
+      "title": "Ship porthole",
+      "description": "Round ship porthole with a raised circular frame, inner opening and four fastening lugs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "porthole",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/porthole.kcad.ts",
+      "sourceSha256": "51d2b023f8250a551a4eaafd0caecea0162e2c3e62bbc934abc58b8c2f6aa361",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a744a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 316,
+        "sizeM": [
+          0.396,
+          0.396,
+          0.045
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a744a",
+          "parts": [
+            "frame",
+            "inner-glass",
+            "lug-top",
+            "lug-bottom",
+            "lug-left",
+            "lug-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rescue-lifeboat",
+      "kit": "marine",
+      "title": "Rescue lifeboat",
+      "description": "Compact enclosed rescue lifeboat with pointed hull, cabin, observation windows and roof beacon. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "rescue lifeboat",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/rescue-lifeboat.kcad.ts",
+      "sourceSha256": "08b3e84f797db26d4a38ccb83ad15ae023f232ca5adbdf9ea110ce80ad871476",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e45c3a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.4,
+          0.609,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e45c3a",
+          "parts": [
+            "hull",
+            "deck",
+            "cabin",
+            "front-window",
+            "side-window",
+            "roof",
+            "beacon"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sailboat",
+      "kit": "marine",
+      "title": "Sailboat",
+      "description": "Small daysailer with a pointed hull, centerboard, mast, triangular mainsail and cockpit bench. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "sailboat",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/sailboat.kcad.ts",
+      "sourceSha256": "9c913c088898f62f007c7559a5d51102c4ab9cac21fea2724fb6b5f2f5a9f690",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7a5840",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 164,
+        "sizeM": [
+          1.29,
+          1.172,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7a5840",
+          "parts": [
+            "hull",
+            "deck",
+            "mast",
+            "boom",
+            "main-sail",
+            "cockpit",
+            "seat"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sextant",
+      "kit": "marine",
+      "title": "Sextant",
+      "description": "Marine sextant with a framed arc, index arm, horizon mirror and small sighting telescope. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "sextant",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/sextant.kcad.ts",
+      "sourceSha256": "f29d764a8bae0f353c28b601b9c61b66feb0c82ce271180b4c3afad3e911fb54",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a18b5d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 232,
+        "sizeM": [
+          0.388,
+          0.366,
+          0.102
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a18b5d",
+          "parts": [
+            "arc",
+            "frame-left",
+            "frame-right",
+            "index-arm",
+            "telescope",
+            "eyepiece",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ship-bell",
+      "kit": "marine",
+      "title": "Ship bell",
+      "description": "Ship bell with a flared bell body, crown loop, clapper and compact overhead bracket. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "ship bell",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/ship-bell.kcad.ts",
+      "sourceSha256": "45588ec653347e02d98dec17d0de1e9bd7e06d543ec6d6f85d39f21c0f230f35",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#887447",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 310,
+        "sizeM": [
+          0.188064,
+          0.312,
+          0.188
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#887447",
+          "parts": [
+            "bell",
+            "skirt",
+            "stem",
+            "crown",
+            "loop",
+            "clapper"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ship-horn",
+      "kit": "marine",
+      "title": "Ship horn",
+      "description": "Compact marine air horn with a hollow flared trumpet mouth, mounting base and support brackets. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "ship horn",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/ship-horn.kcad.ts",
+      "sourceSha256": "0d94f35f39901d7d7ca82fb2f69657cd56fef29f1017c5fc107e06d5538d07e7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5d6468",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.445,
+          0.372,
+          0.224
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5d6468",
+          "parts": [
+            "trumpet-body",
+            "mouth",
+            "rear-cap",
+            "mount-base",
+            "support-left",
+            "support-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ship-wheel",
+      "kit": "marine",
+      "title": "Ship wheel",
+      "description": "Traditional ship wheel with an open rim, central hub and eight radial handles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "ship wheel",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/ship-wheel.kcad.ts",
+      "sourceSha256": "b0ff84bfd485c7230acdf865527e61ac7b8fcf02cc7bff666c0c8f06a0d508b0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#72553a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          0.531,
+          0.531,
+          0.088
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#72553a",
+          "parts": [
+            "rim",
+            "hub",
+            "spoke-1",
+            "spoke-2",
+            "spoke-3",
+            "handle-top",
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "throw-rope-bag",
+      "kit": "marine",
+      "title": "Throw rope bag",
+      "description": "Floating rescue throw bag with a tapered fabric body, reinforced top collar and rope eye. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "throw rope bag",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/throw-rope-bag.kcad.ts",
+      "sourceSha256": "2cab4dbcc635f6123f1e8129102fba915059925ee714bba7bed5b785c7e9fefe",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e6a744",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.221,
+          0.32,
+          0.212
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e6a744",
+          "parts": [
+            "bag",
+            "shoulder",
+            "top-loop",
+            "base-band",
+            "side-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tugboat",
+      "kit": "marine",
+      "title": "Harbor tugboat",
+      "description": "Compact harbor tug with a sturdy hull, tall bridge cabin, twin exhaust stacks and a bow fender. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tugboat",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/tugboat.kcad.ts",
+      "sourceSha256": "7ca1c325dd9bf539167c88a1846c602e647cdd0713f9d41803c6ad1e8422e70f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#3f5965",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 202,
+        "sizeM": [
+          1.243766,
+          0.925,
+          0.55
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#3f5965",
+          "parts": [
+            "hull",
+            "deck",
+            "cabin",
+            "bridge",
+            "front-glass",
+            "stack-one",
+            "stack-two",
+            "bow-fender"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "yacht",
+      "kit": "marine",
+      "title": "Motor yacht",
+      "description": "Small motor yacht with a swept bow, two-level cabin, dark window band and swim platform. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "yacht",
+        "marine",
+        "nautical",
+        "harbor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "marine",
+        "harbor",
+        "dock",
+        "boat",
+        "coastal-scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/marine/yacht.kcad.ts",
+      "sourceSha256": "f9fb577ac52dd6db8b1f44910e09af4d98a92f4a6dd0b0d6f45a7693dcb67609",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e2e0d4",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          1.575,
+          0.677,
+          0.58
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e2e0d4",
+          "parts": [
+            "hull",
+            "deck",
+            "lower-cabin",
+            "upper-cabin",
+            "window-band",
+            "roof",
+            "swim-platform",
+            "bow-rail"
+          ],
+          "param": "color"
         }
       ]
     },
