@@ -1,0 +1,10 @@
+{
+  "video": "airfield-kit.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "durationSeconds": 24.042,
+  "decodedFrames": 8,
+  "captionsReviewed": true,
+  "deploymentClaim": "local verification only; deployment pending merge"
+}

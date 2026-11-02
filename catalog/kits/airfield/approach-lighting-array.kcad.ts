@@ -1,0 +1,25 @@
+meta({
+  name: 'approach-lighting-array',
+  license: 'CC0-1.0',
+  title: 'Approach lighting array',
+  description: 'Approach-light runway fixture with a long crossbar, center mast and side braces.',
+  tags: ['airfield', 'aviation', 'airport', 'low poly', 'scene prop', 'CC0'],
+  kit: 'airfield',
+  category: 'prop',
+  origin: 'base',
+  compat: ['airfield', 'airport', 'aviation', 'transport', 'scene'],
+  triangleBudget: 1800
+});
+
+const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
+const color = param('color', '#a3925a', { label: 'Asset color' });
+const p = assembly("approach-lighting-array");
+p.part("center-mast", cylinder(190, 12, 8).scale(scale).color(color));
+p.part("crossbar", box(18, 330, 18, true).translate(0, 0, 188).scale(scale).color(color));
+p.part("center-light", sphere(22).scale([1, 1, 0.7]).translate(0, 0, 205).scale(scale).color(color));
+p.part("left-brace", box(18, 18, 144, true).translate(0, -122, 108).scale(scale).color(color));
+p.part("left-end-light", sphere(18).scale([0.9, 0.9, 0.7]).translate(0, -122, 202).scale(scale).color(color));
+p.part("right-brace", box(18, 18, 144, true).translate(0, 122, 108).scale(scale).color(color));
+p.part("right-end-light", sphere(18).scale([0.9, 0.9, 0.7]).translate(0, 122, 202).scale(scale).color(color));
+
+return p.model();

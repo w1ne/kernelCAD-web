@@ -1,0 +1,450 @@
+{
+  "kit": "airfield",
+  "assetCount": 40,
+  "catalogTotal": 795,
+  "hubKitCountPresent": true,
+  "localOutput": "/tmp/kernelcad-airfield-catalog-pages",
+  "liveDeploymentChecked": false,
+  "pages": [
+    {
+      "id": "aircraft-fuel-truck",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "0274593338d5413280211f54338578c681a55f53c7d995ee98294f39eda48b58",
+      "pageSha256": "646398f6197811a4d0734c4a4a28b77ad5ebc339f3f5691f633fef7a9368a9cd"
+    },
+    {
+      "id": "aircraft-hangar",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "2fadbf7d45a918b03e55d03404fc3e4615ba05cd48407eb693585c5965d792a5",
+      "pageSha256": "2db4e1563a479f17762803ba0618d7a6e56cdca21a768a06aed12a37e6190559"
+    },
+    {
+      "id": "aircraft-maintenance-lift",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "7475e2931bb6538c89c0c319ad2d5e14e3df0161b70dead92cf486ffa788cfda",
+      "pageSha256": "94755731ecb9bc4e457838449b0977bc0af1a45b8c71362075a0f3a24e75d27f"
+    },
+    {
+      "id": "aircraft-uld-container",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "6acd9be00dd4ebae55a449ea43f77385b28ee8d7e9b90675d7cee2201d3c4a47",
+      "pageSha256": "657b795e0e2cdba8d50b79337efdcf75c5afa0ecb3d3c6da75a4f63e2cb8ec8d"
+    },
+    {
+      "id": "aircraft-wheel-chocks",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "7413ddf004a627e489eaac289d1345336e6844e25adbaee88f87fd37057187ae",
+      "pageSha256": "f7bdf05bebcac9f5e09184501323efc6ffce9c56b1c2703a37eb19642b0a7beb"
+    },
+    {
+      "id": "airport-control-tower",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "d8230baa39c91faca3897661ab81012c899efe8055785c4daa7950de6cbe6630",
+      "pageSha256": "1a0fb473e6de7ba0bf3719f1d9df91a1a594dc837b8c8eb85d145e5b09c8a698"
+    },
+    {
+      "id": "airport-fire-engine",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "621858693265cd1bfc616e335065f0a29919d6e95ce5beb4678eff046e09943e",
+      "pageSha256": "f8333f5b9a623cfe9d4e840838b7d796ef19caaa6cd0e016b60eb7d8f60865ef"
+    },
+    {
+      "id": "amphibious-seaplane",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "4833d8d65a2189f71aa210fc67fac0a85ca737f970aa2c015eb309f9ede4af38",
+      "pageSha256": "d1a98558180a2213e5cae09aef5f57ad6ab4be20a5af697adf6834dfebfac4d9"
+    },
+    {
+      "id": "approach-lighting-array",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "866ccb13a9171a40bea08bf0bd543662c4af24133e7daeb15eb5f4156569a1d9",
+      "pageSha256": "3d465605ae2dc9dc48fa3223b66c7f76f3f325e03083b8be5517e0c55a0b5e6e"
+    },
+    {
+      "id": "apron-shuttle-bus",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "3f531764e4ee384962ff114dd43d396f3bce4cccc74a2fd5337affc6294b537e",
+      "pageSha256": "12eb851925d6e83ac5bc1bdb824312191d436fa6547c913dfc2e65720337e383"
+    },
+    {
+      "id": "baggage-cart-train",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "e86dee2f81411f0189803821af6efde4194069f7cea2c3d90b6d6450a72d5aa0",
+      "pageSha256": "f035efc440e1eeae630772862e66cc84ac7080e9296a9ae3fbb5aea7e6b69cdb"
+    },
+    {
+      "id": "baggage-tractor",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "9a3529e8f538a74ff054a256e9503a8cd07b2797051eca2af0bf5f336f4c0314",
+      "pageSha256": "a32a1d814c102df62e4f31917d42031b87e60f3ccb0f9da38fc84bf9ab9874ed"
+    },
+    {
+      "id": "belt-loader",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "c44e806dd7b947983fe23b8f91248fa1497ee89bd124f29af1f92f8e4308d25c",
+      "pageSha256": "f0bb015de5a76c33a14f5d4c8b22e9d2d97311fabc2fe3dfddb3addee336483c"
+    },
+    {
+      "id": "biplane",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "e52d85f72f1a86fd136844d53d2fac61e07d03075287abbd571b3bbc10c48ea1",
+      "pageSha256": "50fec5ff304082ad9f42e63072086fc750c9dd9390ea2954ebf9cc5f9d58f1ae"
+    },
+    {
+      "id": "cargo-aircraft",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "e3eb2d17b1f908e39fd1fe430c480c2b3859f5eb4a3829b204b8924be0a65769",
+      "pageSha256": "6fd300ef18bc3ffeffe29789681fce5787e90d2ac42102e8e1612ba4ba8c0276"
+    },
+    {
+      "id": "catering-truck",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "45008ea27fb12f4256c68582f49217449ac301ea01f13aa21baa9df0b7dd4df9",
+      "pageSha256": "4a6ddf5d22ac3e0c195a5a07a751ddd8a56fb9b515edeac3cbe30d5f3df4eca6"
+    },
+    {
+      "id": "deicing-truck",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "bea1c4c645c5405fc7b1d89389e6ac74f867a9a3098813c2a266fc452047a538",
+      "pageSha256": "1eeebc94c4920c71dfa16a65f091356d868aaf1164f847138fe59b058ac5cd2e"
+    },
+    {
+      "id": "firefighting-helicopter",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "80fa1ec50384580739560f7ee1f7475614f33d43554a0288dca9fc0c0dd596aa",
+      "pageSha256": "4bdc3d0ad33e1882cca95cb7d2a08d10fb1339dfdcab4b92d2cc4d7cc58bb2d0"
+    },
+    {
+      "id": "high-wing-bush-plane",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "dec3369c5c7f79b334308af7463ce6013c3a6645d6d0d19914dae0a175ab07e3",
+      "pageSha256": "a4c3b8d91e5f2c48dc21de038b4b370a6aca5138c2e5313669427dddd6dd5906"
+    },
+    {
+      "id": "lavatory-service-truck",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "12a51da68d566b0b4a7d9d83bac511e41ff1321b560fff3531c0a50a036b121c",
+      "pageSha256": "516a3672f2ecbd36c51a4423809359f47c26fd4a086d00ef0d7410c3c9cd1791"
+    },
+    {
+      "id": "narrowbody-airliner",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "4ebbaa9c8ee75f1a292220b371623cb883d95a0d52004cdc694f1214ce084812",
+      "pageSha256": "abc85b043e94483b80419a77c4b1f7652e97eef2b7ee5164d302c539c9a7235d"
+    },
+    {
+      "id": "passenger-boarding-stairs",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "390ec3b8d19132428e66087c2d6f36f7e6371d34ce2b8ba4496d651a31737937",
+      "pageSha256": "f318a0a1dd21776a35de72822101504d8a9a64be5333dad78853826247e62d94"
+    },
+    {
+      "id": "passenger-jet-bridge",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "7f4e0e5d232b25558bd99030926267f90dee61ebdf033724107f10549c110cb0",
+      "pageSha256": "01ae9e3400f98ae99b660cea15cae3db2ffeee8788d6ae589b7b53d155d99104"
+    },
+    {
+      "id": "precision-approach-indicator",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "0ff2a141827a5b64312795ab3922d20b6143ec6d9c8af87894c94dd979c81b70",
+      "pageSha256": "c09a4192d0e2ec7291922f88635223c525ea4c98c70e1d362c6169a8380246a9"
+    },
+    {
+      "id": "private-jet",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "c554aae65e1508d2cfa118ac1c013f9d601fa46692dd9ba11e0e8b62bb68907f",
+      "pageSha256": "0352695ecd1ad1efaf2ad424e7756da4901fe692cab47a9e1a1316fe93964b08"
+    },
+    {
+      "id": "pushback-tug",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "9947d9e309783f73ec52cc344687f8059e524d6f361eeb55c9c32e26fa812738",
+      "pageSha256": "d02be2f9e95735185d8bb5c364e634b594e3e333af4f863feb52716d9ec43e83"
+    },
+    {
+      "id": "regional-jet",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "686b5859300f1d0e2ab754d8961dbf4a159ecd95747e9a122404cafe2b28a549",
+      "pageSha256": "8622930e13bf83bc452eeb78a7d2043dde7d9d3014544ab83bc1c04cf0583abb"
+    },
+    {
+      "id": "rescue-helicopter",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "1d5c90ab9cdaacbb33b1a887e08cac9225514fc1f4657d6258833d534e557ed4",
+      "pageSha256": "b9ad152424a39272e83b31373e11e0b2099acf37e2ce53ecc600cfeda645ebe8"
+    },
+    {
+      "id": "runway-edge-light",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "ff26b72e9352125cbbcf74e5ab04b45ed42d8505869f249a377244bbcd1420e5",
+      "pageSha256": "33eb87a5ba4d82c48c56de96f048178616474b54dd1af32c5f2ad10e33b2b942"
+    },
+    {
+      "id": "runway-sweeper",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "6872d81ccbcd4a4fc7ec26f28e82bb04a1dfb871379f8159261305fedbb373ae",
+      "pageSha256": "6847cac992252709c0e7c775a65ea1a8942c58104d0a794560836758d19273a4"
+    },
+    {
+      "id": "runway-threshold-light-array",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "727a3938f9d82c072e7cf52eab44b0f3bc041f76c450076a481564797acd3a5c",
+      "pageSha256": "438945387653f2e716479938482fabf8b309ae29c654fa09de5449ea3700f3f8"
+    },
+    {
+      "id": "sailplane",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "24d96bb27d96462007c9ac19dae73736af18205760bee8d67f8f452d6749a7fe",
+      "pageSha256": "535dc5926f431b42f97b142db14d4345f8a13c24dee798020d94817a69051ead"
+    },
+    {
+      "id": "single-engine-trainer",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "fb162b053b05dae94c8e93ed0ebced414c2fa41e77f85aab6a42d86395ef00d6",
+      "pageSha256": "851a52d02c528b4672a4df8d782d50974e36bcd465efaf13e0a0db0d5eea1c6a"
+    },
+    {
+      "id": "taxiway-guidance-sign",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "c637f0dfac99e6d3feaeb1d836fe4dc9667f292edb1dccb67ca0d24fe1d68f63",
+      "pageSha256": "5a5344474f47cffb487f7602e973574fad7d6b683607a4491c8e7e4ce6dccd09"
+    },
+    {
+      "id": "terminal-gate-front",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "348431ff665ba779f396075645f8ec97904a77bf81f6ec2fa3d8d292542db8a7",
+      "pageSha256": "ece092a1036400717d438f70c952e259a0714939102e42f57e0885f589510eb8"
+    },
+    {
+      "id": "twin-engine-trainer",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "d45f374813b5a563c1d6b5fd770044c23e5039f627bf4c4e5f001848fcaf09d8",
+      "pageSha256": "ece3998bf1a75dbd36d0aefe3a262e4652167389bfccb3b12599e6358518216f"
+    },
+    {
+      "id": "ultralight-trike",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "5802c76e1b1668525bfdbdc39b44b5faa5398648a6612ec5cb53ffff7a2e2af8",
+      "pageSha256": "e8b2f0ff4fa9b5de753d88b5e8cccfa2a1cfca6faad81a332f093781c073c1c0"
+    },
+    {
+      "id": "utility-helicopter",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "79647fb4170d37e36f276a0e92da57777e2b259dfc243f6ca73cb3d868808a2f",
+      "pageSha256": "71047c29adb3dfc08546464119f64d51912e65f7faea9f08070568d7397cd61a"
+    },
+    {
+      "id": "widebody-airliner",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "92be02805f7c6e2dcdbd352ee7422b1cc5599b8c41a72df3daf60a5aab8070bf",
+      "pageSha256": "da0c06349a7db7480ec3d8018a6d56f05d9bcd5a932bd2f0fb461fc5b5e50658"
+    },
+    {
+      "id": "windsock-mast",
+      "titlePresent": true,
+      "studioLinkPresent": true,
+      "knobLabels": [
+        "Overall scale",
+        "Asset color"
+      ],
+      "previewSha256": "88f3983062fed64977dce8b3a0293408c0cf6c2d6ef5babc38205497ab3a8f11",
+      "pageSha256": "853d6539230ed0e3ff4cce6be9ff3629b1d5d17889bb1a32885f4ea8dd62dc8c"
+    }
+  ]
+}

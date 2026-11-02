@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-02",
+  "kit": "airfield",
+  "assetCount": 40,
+  "catalogTotal": 795,
+  "resolution": "1280x720",
+  "frames": 8,
+  "secondsPerFrame": 3,
+  "fps": 24,
+  "encoding": "H.264, yuv420p, CRF 25",
+  "authoringSource": "generate_airfield_assets.py",
+  "previewSource": "catalog/kits/airfield/previews/*.png",
+  "indexSource": "catalog/index.json",
+  "captureSource": "capture_airfield_demo.py",
+  "inspectionSource": "inspect_airfield_video.py",
+  "verificationSource": "asset-check-results.json",
+  "pageCheckSource": "catalog-pages-check.json",
+  "invocation": [
+    "python3 artifacts/catalog-demos/airfield-wave-20261102/generate_airfield_assets.py",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx eslint catalog/",
+    "npx vitest run tests/integration/catalog/",
+    "python3 artifacts/catalog-demos/airfield-wave-20261102/render_airfield_previews.py",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-airfield-catalog-pages",
+    "python3 artifacts/catalog-demos/airfield-wave-20261102/record_airfield_checks.py",
+    "python3 artifacts/catalog-demos/airfield-wave-20261102/verify_airfield_pages.py /tmp/kernelcad-airfield-catalog-pages",
+    "python3 artifacts/catalog-demos/airfield-wave-20261102/capture_airfield_demo.py",
+    "python3 artifacts/catalog-demos/airfield-wave-20261102/inspect_airfield_video.py"
+  ],
+  "render": "software-rendered GLB previews built from each .kcad.ts source; the MP4 uses these previews, source excerpts and recorded local gate results",
+  "video": "artifacts/catalog-demos/airfield-wave-20261102/airfield-kit.mp4",
+  "claims": {
+    "localCatalogBuild": "verified",
+    "staticPages": "generated and checked locally",
+    "deployment": "not checked; pending merge and the applicable website deploy",
+    "operationalAviationOrHardwareAcceptance": "not claimed"
+  }
+}

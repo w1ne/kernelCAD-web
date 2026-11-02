@@ -1,5 +1,10 @@
 # Unreleased
 
+- Airfield catalog wave: 40 original parametric low-poly CC0 aircraft, apron
+  service vehicles and airport fixtures in the new `catalog/kits/airfield` kit,
+  growing the generated catalog from 755 to 795 assets. The kit README and
+  reviewed local demo bundle are in `catalog/kits/airfield/README.md` and
+  `artifacts/catalog-demos/airfield-wave-20261102/`.
 - Asset catalog: 40 original parametric low-poly CC0 sports assets in the new
   `catalog/kits/sports` kit, bringing the catalog from 543 to 583 assets. The
   kit README and reviewed demo bundle are in `catalog/kits/sports/README.md`

@@ -2,6 +2,53 @@
   "schemaVersion": 1,
   "kits": [
     {
+      "id": "airfield",
+      "title": "Airfield",
+      "description": "Original low-poly aircraft, apron service vehicles and airport fixtures with editable size and color controls.",
+      "assets": [
+        "aircraft-fuel-truck",
+        "aircraft-hangar",
+        "aircraft-maintenance-lift",
+        "aircraft-uld-container",
+        "aircraft-wheel-chocks",
+        "airport-control-tower",
+        "airport-fire-engine",
+        "amphibious-seaplane",
+        "approach-lighting-array",
+        "apron-shuttle-bus",
+        "baggage-cart-train",
+        "baggage-tractor",
+        "belt-loader",
+        "biplane",
+        "cargo-aircraft",
+        "catering-truck",
+        "deicing-truck",
+        "firefighting-helicopter",
+        "high-wing-bush-plane",
+        "lavatory-service-truck",
+        "narrowbody-airliner",
+        "passenger-boarding-stairs",
+        "passenger-jet-bridge",
+        "precision-approach-indicator",
+        "private-jet",
+        "pushback-tug",
+        "regional-jet",
+        "rescue-helicopter",
+        "runway-edge-light",
+        "runway-sweeper",
+        "runway-threshold-light-array",
+        "sailplane",
+        "single-engine-trainer",
+        "taxiway-guidance-sign",
+        "terminal-gate-front",
+        "twin-engine-trainer",
+        "ultralight-trike",
+        "utility-helicopter",
+        "widebody-airliner",
+        "windsock-mast"
+      ]
+    },
+    {
       "id": "characters",
       "title": "Characters",
       "description": "Mechanical low-poly characters built from rigid parts and rigged through mates: every joint is a GLB pivot node, ready to pose or animate in three.js, Godot or Unity.",
@@ -905,6 +952,3040 @@
     }
   ],
   "assets": [
+    {
+      "id": "aircraft-fuel-truck",
+      "kit": "airfield",
+      "title": "Aircraft fuel truck",
+      "description": "Refueling tanker with a rounded tank, cab, rear hose reel and ground-service chassis.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/aircraft-fuel-truck.kcad.ts",
+      "sourceSha256": "be70410af1697a036a371238d936345d4696f882988c2f8f74abe4a4ee1387f3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9d8050",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 274,
+        "sizeM": [
+          0.5525,
+          0.275256,
+          0.2552
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9d8050",
+          "parts": [
+            "chassis",
+            "cab",
+            "tanker",
+            "hose-reel",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "aircraft-hangar",
+      "kit": "airfield",
+      "title": "Aircraft hangar",
+      "description": "Large apron hangar with a wide front opening, deep roof, side walls and upper roof ridge.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/aircraft-hangar.kcad.ts",
+      "sourceSha256": "d0ce1d7670871eddddad400588c69683f04eb119d24ed440a7ff8ad250276b2c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a0a29b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.7,
+          0.37,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a0a29b",
+          "parts": [
+            "left-wall",
+            "right-wall",
+            "rear-wall",
+            "roof",
+            "ridge",
+            "door-header"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "aircraft-maintenance-lift",
+      "kit": "airfield",
+      "title": "Aircraft maintenance lift",
+      "description": "Self-propelled scissor lift with a guarded service platform, crossed arms and compact chassis.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/aircraft-maintenance-lift.kcad.ts",
+      "sourceSha256": "bff9f2f462b420e81777c9c0047f7906a1eb739290bf5f00d77a1c17b26385ac",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b68b43",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 292,
+        "sizeM": [
+          0.3655,
+          0.5392,
+          0.2344
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b68b43",
+          "parts": [
+            "chassis",
+            "lower-platform",
+            "scissor-arm-left",
+            "scissor-arm-right",
+            "scissor-pivot",
+            "upper-platform",
+            "guardrail-front",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "aircraft-uld-container",
+      "kit": "airfield",
+      "title": "Aircraft ULD container",
+      "description": "Rounded-corner air cargo unit load device with a raised roof and pallet base.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/aircraft-uld-container.kcad.ts",
+      "sourceSha256": "cd02e20f2fb221749b308a0a8a17df1e682c4cb55a246e620f01644f6a7f73ab",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b9697",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.24,
+          0.244,
+          0.218
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b9697",
+          "parts": [
+            "pallet",
+            "cargo-body",
+            "roof",
+            "front-lip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "aircraft-wheel-chocks",
+      "kit": "airfield",
+      "title": "Aircraft wheel chocks",
+      "description": "Paired triangular wheel chocks with connecting safety rope and broad ground contact.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/aircraft-wheel-chocks.kcad.ts",
+      "sourceSha256": "c62e29498604ba1e6d257bd87048e8aa3ce71c7861c8001077680500b067b9ff",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#bf9d4e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.15,
+          0.048,
+          0.158
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#bf9d4e",
+          "parts": [
+            "left-chock",
+            "right-chock",
+            "safety-rope"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "airport-control-tower",
+      "kit": "airfield",
+      "title": "Airport control tower",
+      "description": "Air traffic control tower with a tapered shaft, glazed cab and broad roof cap.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/airport-control-tower.kcad.ts",
+      "sourceSha256": "7d9e19190201452732b0a008750ef2281df01a07de30890edeceef8bead0eb1d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#82949a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.33,
+          0.834,
+          0.31
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#82949a",
+          "parts": [
+            "base",
+            "shaft",
+            "control-cab",
+            "roof-cap",
+            "left-cab-window-band",
+            "right-cab-window-band"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "airport-fire-engine",
+      "kit": "airfield",
+      "title": "Airport fire engine",
+      "description": "Airport rescue truck with a tall cab, equipment body, roof monitor and heavy wheels.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/airport-fire-engine.kcad.ts",
+      "sourceSha256": "831f1e31a98cc3f6e399cbb2512eb7f4780bac3ae900afdf531290c66a219091",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b65343",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.5525,
+          0.3816,
+          0.2864
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b65343",
+          "parts": [
+            "chassis",
+            "cab",
+            "equipment-body",
+            "roof-monitor",
+            "monitor-nozzle",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "amphibious-seaplane",
+      "kit": "airfield",
+      "title": "Amphibious seaplane",
+      "description": "Twin-engine seaplane with a high wing, twin floats and water-ready hull profile.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/amphibious-seaplane.kcad.ts",
+      "sourceSha256": "b2877c54cfc61ede99ced8b5759effa1f0cd91ae7238886cbed425a6e523cae5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#688b82",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 682,
+        "sizeM": [
+          1.010016,
+          0.272784,
+          1.28
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#688b82",
+          "parts": [
+            "fuselage",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "left-wing-strut",
+            "right-wing-strut",
+            "engine-1",
+            "engine-1-prop-hub",
+            "engine-1-blade-1",
+            "engine-1-blade-2",
+            "engine-1-blade-3",
+            "engine-2",
+            "engine-2-prop-hub",
+            "engine-2-blade-1",
+            "engine-2-blade-2",
+            "engine-2-blade-3",
+            "left-float",
+            "left-float-strut",
+            "right-float",
+            "right-float-strut",
+            "nose-gear-strut",
+            "nose-wheel",
+            "left-main-gear-strut",
+            "left-main-wheel",
+            "right-main-gear-strut",
+            "right-main-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "approach-lighting-array",
+      "kit": "airfield",
+      "title": "Approach lighting array",
+      "description": "Approach-light runway fixture with a long crossbar, center mast and side braces.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/approach-lighting-array.kcad.ts",
+      "sourceSha256": "a9ce6b157d059ac1231c35a47739f5a5ce2dd1e8664da91fc8e0923de040f173",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a3925a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.038011,
+          0.2204,
+          0.33
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a3925a",
+          "parts": [
+            "center-mast",
+            "crossbar",
+            "center-light",
+            "left-brace",
+            "left-end-light",
+            "right-brace",
+            "right-end-light"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "apron-shuttle-bus",
+      "kit": "airfield",
+      "title": "Apron shuttle bus",
+      "description": "Long low-floor airport shuttle bus with a broad passenger cabin and three wheel pairs.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/apron-shuttle-bus.kcad.ts",
+      "sourceSha256": "839946d3f28368e0212cfba0c3dc0e6903495628bde56b5d835104ccd1c5b749",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#87939a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.6624,
+          0.2695,
+          0.25
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#87939a",
+          "parts": [
+            "chassis",
+            "passenger-cabin",
+            "front-windscreen",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right",
+            "wheel-3-left",
+            "wheel-3-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "baggage-cart-train",
+      "kit": "airfield",
+      "title": "Baggage cart train",
+      "description": "Apron tractor towing three low-sided baggage trailers with paired axles.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/baggage-cart-train.kcad.ts",
+      "sourceSha256": "1a4fb95da9217f971e1458c6ee35f2a99306e25bc3d5143b6649abbe87d14afc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a58b53",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          0.7371,
+          0.1522,
+          0.1785
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a58b53",
+          "parts": [
+            "chassis",
+            "tractor-cab",
+            "trailer-1-bed",
+            "trailer-1-load",
+            "trailer-1-left-wheel",
+            "trailer-1-right-wheel",
+            "trailer-2-bed",
+            "trailer-2-load",
+            "trailer-2-left-wheel",
+            "trailer-2-right-wheel",
+            "trailer-3-bed",
+            "trailer-3-load",
+            "trailer-3-left-wheel",
+            "trailer-3-right-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "baggage-tractor",
+      "kit": "airfield",
+      "title": "Baggage tractor",
+      "description": "Compact electric apron tractor with a forward cab, low chassis, tow coupling and four wheels.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/baggage-tractor.kcad.ts",
+      "sourceSha256": "59f108152e922e7eb0abde495f529ce49a2e4625f66b26f39c7b9ba97334af59",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c3a542",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.3405,
+          0.1742,
+          0.2032
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c3a542",
+          "parts": [
+            "chassis",
+            "operator-cab",
+            "rear-body",
+            "tow-bar",
+            "front-hood",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "belt-loader",
+      "kit": "airfield",
+      "title": "Belt loader",
+      "description": "Compact baggage loader with an inclined conveyor belt, support frame and low service chassis.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/belt-loader.kcad.ts",
+      "sourceSha256": "69cca90a1e1ebe4b441a966dc2d697120101692a6d4bb3e96afa70d993bb0a9f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718b65",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.3995,
+          0.326675,
+          0.2136
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718b65",
+          "parts": [
+            "chassis",
+            "operator-cab",
+            "conveyor-frame",
+            "conveyor-belt",
+            "loader-support",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "biplane",
+      "kit": "airfield",
+      "title": "Biplane",
+      "description": "Open-cockpit biplane with two stacked wings, interplane struts, propeller and fixed landing gear.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/biplane.kcad.ts",
+      "sourceSha256": "e76ebe9e0b936659c4ac4a2b7f75213dbfd72e9f497be7c3082bb9fbdda5b236",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b25e40",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 472,
+        "sizeM": [
+          0.76479,
+          0.349,
+          0.94
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b25e40",
+          "parts": [
+            "fuselage",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "upper-wing",
+            "left-interplane-strut",
+            "right-interplane-strut",
+            "engine-1",
+            "engine-1-prop-hub",
+            "engine-1-blade-1",
+            "engine-1-blade-2",
+            "engine-1-blade-3",
+            "nose-gear-strut",
+            "nose-wheel",
+            "left-main-gear-strut",
+            "left-main-wheel",
+            "right-main-gear-strut",
+            "right-main-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cargo-aircraft",
+      "kit": "airfield",
+      "title": "Cargo aircraft",
+      "description": "High-tail freighter with a broad fuselage, raised wing and four under-wing engines.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/cargo-aircraft.kcad.ts",
+      "sourceSha256": "eed6192a3a02bdfcce7ab0e7bf63c62663af11e3196ed1dd9605b54c061b27b7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8c8060",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 458,
+        "sizeM": [
+          1.479871,
+          0.33328,
+          1.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8c8060",
+          "parts": [
+            "fuselage",
+            "cargo-nose",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "left-wing-strut",
+            "right-wing-strut",
+            "engine-1",
+            "engine-2",
+            "engine-3",
+            "engine-4",
+            "nose-gear-strut",
+            "nose-wheel",
+            "left-main-gear-strut",
+            "left-main-wheel",
+            "right-main-gear-strut",
+            "right-main-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "catering-truck",
+      "kit": "airfield",
+      "title": "Catering truck",
+      "description": "High-sided catering vehicle with a box body, cab, rear stabilizers and raised service platform.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/catering-truck.kcad.ts",
+      "sourceSha256": "85cc3f9c4ec889b218e08decaaded9c75a9d26f9e6b0c933dd22b3510c8ab31f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8196a2",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.53665,
+          0.54,
+          0.2448
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8196a2",
+          "parts": [
+            "chassis",
+            "cab",
+            "service-box",
+            "lift-platform",
+            "lift-mast",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "deicing-truck",
+      "kit": "airfield",
+      "title": "De-icing truck",
+      "description": "De-icing service vehicle with a fluid tank, telescoping boom and raised operator basket.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/deicing-truck.kcad.ts",
+      "sourceSha256": "90ba79ecfdd54167cc90cfae016a483de3d161b338668212f9c75dd9fd8da6bb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c8990",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.5185,
+          0.586,
+          0.2552
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c8990",
+          "parts": [
+            "chassis",
+            "cab",
+            "fluid-tank",
+            "boom-base",
+            "boom-arm",
+            "operator-basket",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "firefighting-helicopter",
+      "kit": "airfield",
+      "title": "Firefighting helicopter",
+      "description": "Heavy-lift helicopter with a long rotor, reinforced skids and a suspended water bucket.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/firefighting-helicopter.kcad.ts",
+      "sourceSha256": "39273f0d4a0e6b30de6b2c2c8f50490cf60aefc71c84f75def7b2702b07427c9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b94e3f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 398,
+        "sizeM": [
+          1.359758,
+          0.2985,
+          0.996
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b94e3f",
+          "parts": [
+            "cabin",
+            "cockpit",
+            "tail-boom",
+            "tail-fin",
+            "tail-plane",
+            "rotor-mast",
+            "main-rotor-blade-a",
+            "main-rotor-blade-b",
+            "tail-rotor-hub",
+            "tail-rotor-blade-a",
+            "tail-rotor-blade-b",
+            "left-skid-support-front",
+            "left-skid-support-rear",
+            "left-skid",
+            "right-skid-support-front",
+            "right-skid-support-rear",
+            "right-skid",
+            "bucket-cable",
+            "water-bucket"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "high-wing-bush-plane",
+      "kit": "airfield",
+      "title": "High-wing bush plane",
+      "description": "Short-field utility aircraft with a high wing, large wheels and a single nose propeller.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/high-wing-bush-plane.kcad.ts",
+      "sourceSha256": "118b8553e57bf8e61649af34a49d476599fe4b20435288d207e6aa0900aeb345",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9a8054",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 476,
+        "sizeM": [
+          0.825378,
+          0.267,
+          1.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9a8054",
+          "parts": [
+            "fuselage",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "left-wing-strut",
+            "right-wing-strut",
+            "engine-1",
+            "engine-1-prop-hub",
+            "engine-1-blade-1",
+            "engine-1-blade-2",
+            "engine-1-blade-3",
+            "nose-gear-strut",
+            "nose-wheel",
+            "left-main-gear-strut",
+            "left-main-wheel",
+            "right-main-gear-strut",
+            "right-main-wheel",
+            "left-wing-support",
+            "right-wing-support"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lavatory-service-truck",
+      "kit": "airfield",
+      "title": "Lavatory service truck",
+      "description": "Compact sanitary service vehicle with a tank body, rear hose and low access step.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/lavatory-service-truck.kcad.ts",
+      "sourceSha256": "226d1306552ff4473f8a95d6b556e5dd1c8aaa3907413ed0cf54ba057205b8f6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#64858a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.4936,
+          0.2542,
+          0.2396
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#64858a",
+          "parts": [
+            "chassis",
+            "cab",
+            "service-tank",
+            "rear-hose",
+            "access-step",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "narrowbody-airliner",
+      "kit": "airfield",
+      "title": "Narrowbody airliner",
+      "description": "Single-aisle airliner with swept wings, under-wing engines, tail fin and landing gear.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/narrowbody-airliner.kcad.ts",
+      "sourceSha256": "b66eda93f419fb5cd07466b5a44281a9c020b350578669dbf70e7c04ca0dac54",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7f9eb0",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 340,
+        "sizeM": [
+          1.329991,
+          0.295072,
+          1.43
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7f9eb0",
+          "parts": [
+            "fuselage",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "engine-1",
+            "engine-2",
+            "nose-gear-strut",
+            "nose-wheel",
+            "left-main-gear-strut",
+            "left-main-wheel",
+            "right-main-gear-strut",
+            "right-main-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "passenger-boarding-stairs",
+      "kit": "airfield",
+      "title": "Passenger boarding stairs",
+      "description": "Towable mobile stairway with a stepped flight, upper landing, handrails and four wheels.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/passenger-boarding-stairs.kcad.ts",
+      "sourceSha256": "521381c8777c644c6a203a8f328857d8b540539c258ef2c421c35ac33fca4360",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a18a50",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 320,
+        "sizeM": [
+          0.3933,
+          0.468,
+          0.2448
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a18a50",
+          "parts": [
+            "chassis",
+            "base-platform",
+            "upper-landing",
+            "step-01",
+            "step-02",
+            "step-03",
+            "step-04",
+            "step-05",
+            "step-06",
+            "step-07",
+            "left-handrail",
+            "right-handrail",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "passenger-jet-bridge",
+      "kit": "airfield",
+      "title": "Passenger jet bridge",
+      "description": "Telescoping passenger bridge with a terminal connector, support column and aircraft docking head.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/passenger-jet-bridge.kcad.ts",
+      "sourceSha256": "0536d9311d25668d565757517d0ba64d44b0aa6a8bf4b7a7f2042b260db55d25",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8d9695",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.7675,
+          0.3155,
+          0.22
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8d9695",
+          "parts": [
+            "terminal-base",
+            "terminal-connector",
+            "telescoping-section",
+            "docking-head",
+            "support-column",
+            "support-wheel-base",
+            "support-wheel-left",
+            "support-wheel-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "precision-approach-indicator",
+      "kit": "airfield",
+      "title": "Precision approach indicator",
+      "description": "Four-unit visual approach indicator bar on a low ground stand.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/precision-approach-indicator.kcad.ts",
+      "sourceSha256": "3bc86527e90bdce5902363f64976e0176b54add333b3ada6886657165c6b41b7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a89051",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.29,
+          0.08,
+          0.045
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a89051",
+          "parts": [
+            "base-rail",
+            "lamp-1",
+            "lamp-bracket-1",
+            "lamp-2",
+            "lamp-bracket-2",
+            "lamp-3",
+            "lamp-bracket-3",
+            "lamp-4",
+            "lamp-bracket-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "private-jet",
+      "kit": "airfield",
+      "title": "Private jet",
+      "description": "Long-range business jet with a narrow cabin, swept wings and two rear-mounted engines.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/private-jet.kcad.ts",
+      "sourceSha256": "12451c47dc1d06a4b298ab5a614e30f15a7ef7fe5b0efc69dd2d5ef12f82812a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a7a9a2",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 340,
+        "sizeM": [
+          1.050016,
+          0.266416,
+          0.98
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a7a9a2",
+          "parts": [
+            "fuselage",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "engine-1",
+            "engine-2",
+            "nose-gear-strut",
+            "nose-wheel",
+            "left-main-gear-strut",
+            "left-main-wheel",
+            "right-main-gear-strut",
+            "right-main-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pushback-tug",
+      "kit": "airfield",
+      "title": "Pushback tug",
+      "description": "Low-profile aircraft pushback tug with a broad wheelbase, raised cab and nose-wheel cradle.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/pushback-tug.kcad.ts",
+      "sourceSha256": "726d6d48872da8e09917373e920cb59405556d20d52e45d7230de0fb54601264",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c27b44",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.5784,
+          0.1798,
+          0.3072
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c27b44",
+          "parts": [
+            "chassis",
+            "operator-cab",
+            "rear-body",
+            "tow-bar",
+            "nose-wheel-cradle",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "regional-jet",
+      "kit": "airfield",
+      "title": "Regional jet",
+      "description": "Small passenger jet with swept wings, two under-wing engines and a three-wheel landing gear.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/regional-jet.kcad.ts",
+      "sourceSha256": "a58ba28c238c4d8f4f848fb058fc654f2a173a3b4700882cf8a10778a3da207f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7195ad",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 340,
+        "sizeM": [
+          1.079967,
+          0.275968,
+          1.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7195ad",
+          "parts": [
+            "fuselage",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "engine-1",
+            "engine-2",
+            "nose-gear-strut",
+            "nose-wheel",
+            "left-main-gear-strut",
+            "left-main-wheel",
+            "right-main-gear-strut",
+            "right-main-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rescue-helicopter",
+      "kit": "airfield",
+      "title": "Rescue helicopter",
+      "description": "Rescue helicopter with a wide cabin, tail rotor, landing skids and side-mounted hoist arm.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/rescue-helicopter.kcad.ts",
+      "sourceSha256": "b825a7f191e9eb322aaf0114729d43cfbcb07380add0c26ed0648f8bf883de83",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c57945",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 404,
+        "sizeM": [
+          1.223838,
+          0.2985,
+          0.8964
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c57945",
+          "parts": [
+            "cabin",
+            "cockpit",
+            "tail-boom",
+            "tail-fin",
+            "tail-plane",
+            "rotor-mast",
+            "main-rotor-blade-a",
+            "main-rotor-blade-b",
+            "tail-rotor-hub",
+            "tail-rotor-blade-a",
+            "tail-rotor-blade-b",
+            "left-skid-support-front",
+            "left-skid-support-rear",
+            "left-skid",
+            "right-skid-support-front",
+            "right-skid-support-rear",
+            "right-skid",
+            "hoist-arm",
+            "hoist-cable",
+            "hoist-hook"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "runway-edge-light",
+      "kit": "airfield",
+      "title": "Runway edge light",
+      "description": "Low runway-edge fixture with a broad ground plate, short stem and raised light housing.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/runway-edge-light.kcad.ts",
+      "sourceSha256": "c7a59fde13a2f7d257a9191f50f5a0bc4b7f544d4610ccea373ceeff6d79d75a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b4a05e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 94,
+        "sizeM": [
+          0.092,
+          0.07928,
+          0.072
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b4a05e",
+          "parts": [
+            "ground-plate",
+            "light-stem",
+            "lamp-housing"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "runway-sweeper",
+      "kit": "airfield",
+      "title": "Runway sweeper",
+      "description": "Apron sweeper vehicle with a front rotary brush, operator cab and rear equipment housing.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/runway-sweeper.kcad.ts",
+      "sourceSha256": "968053386cf4d0b8428af97a420a526719dc3d98df5b04b57442ddbb6b49ace3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9d8750",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.4974,
+          0.238,
+          0.2448
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9d8750",
+          "parts": [
+            "chassis",
+            "cab",
+            "equipment-body",
+            "front-brush",
+            "brush-arm",
+            "wheel-1-left",
+            "wheel-1-right",
+            "wheel-2-left",
+            "wheel-2-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "runway-threshold-light-array",
+      "kit": "airfield",
+      "title": "Runway threshold light array",
+      "description": "Portable low-profile array of evenly spaced runway threshold lamp housings.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/runway-threshold-light-array.kcad.ts",
+      "sourceSha256": "e24fa499d2cb3a4d13585cb5bb0624edad619708e3fddebae424c1bd66c31c97",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a4935b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 804,
+        "sizeM": [
+          0.42,
+          0.044,
+          0.076
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a4935b",
+          "parts": [
+            "base-bar",
+            "left-light-01",
+            "right-light-01",
+            "left-light-02",
+            "right-light-02",
+            "left-light-03",
+            "right-light-03",
+            "left-light-04",
+            "right-light-04",
+            "left-light-05",
+            "right-light-05",
+            "left-light-06",
+            "right-light-06",
+            "left-light-07",
+            "right-light-07",
+            "left-light-08",
+            "right-light-08",
+            "left-light-09",
+            "right-light-09"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sailplane",
+      "kit": "airfield",
+      "title": "Sailplane",
+      "description": "Slender glider fuselage and long tapered wings with a compact tailplane and small wheel.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/sailplane.kcad.ts",
+      "sourceSha256": "f5f0c49cb4a33f8e0705270e3cc152b995fb658d75caae16c533a859aaa304f3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a0a6a1",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.899992,
+          0.239352,
+          1.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a0a6a1",
+          "parts": [
+            "fuselage",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "glider-wheel-strut",
+            "glider-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "single-engine-trainer",
+      "kit": "airfield",
+      "title": "Single-engine trainer",
+      "description": "Light training aircraft with a high wing, cockpit canopy, nose propeller and tricycle landing gear.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/single-engine-trainer.kcad.ts",
+      "sourceSha256": "091ad47e0b7ed9a2d18ab8c8dc7cc9489e319c59b706565e817540e1b9ea21fb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d5b64d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 450,
+        "sizeM": [
+          0.855139,
+          0.256864,
+          1.12
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d5b64d",
+          "parts": [
+            "fuselage",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "left-wing-strut",
+            "right-wing-strut",
+            "engine-1",
+            "engine-1-prop-hub",
+            "engine-1-blade-1",
+            "engine-1-blade-2",
+            "engine-1-blade-3",
+            "nose-gear-strut",
+            "nose-wheel",
+            "left-main-gear-strut",
+            "left-main-wheel",
+            "right-main-gear-strut",
+            "right-main-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "taxiway-guidance-sign",
+      "kit": "airfield",
+      "title": "Taxiway guidance sign",
+      "description": "Freestanding airfield guidance sign with a wide panel, two posts and weighted feet.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/taxiway-guidance-sign.kcad.ts",
+      "sourceSha256": "54c9f3f2a1d5993840cb1d550344fe3638afcbfd66e3261adb9ba3acec21ff97",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a88f4d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.27,
+          0.283,
+          0.054
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a88f4d",
+          "parts": [
+            "panel",
+            "left-post",
+            "right-post",
+            "left-foot",
+            "right-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "terminal-gate-front",
+      "kit": "airfield",
+      "title": "Terminal gate front",
+      "description": "Terminal concourse facade with a wide gate opening, upper canopy and side service blocks.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/terminal-gate-front.kcad.ts",
+      "sourceSha256": "05c352245b0d244268cb4d20e710d4ac89a2a714e07a40e1c4b451ce2d041ff1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9b9d99",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.85,
+          0.351,
+          0.55
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9b9d99",
+          "parts": [
+            "left-pier",
+            "right-pier",
+            "gate-canopy",
+            "concourse-roof",
+            "gate-apron"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "twin-engine-trainer",
+      "kit": "airfield",
+      "title": "Twin-engine trainer",
+      "description": "Compact twin-propeller trainer with tapered wings, twin nacelles and a low tailplane.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/twin-engine-trainer.kcad.ts",
+      "sourceSha256": "c65234e8c30016819a701836ba96f0db21d27616ca704fa0023bc53fbd123428",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#537b89",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 574,
+        "sizeM": [
+          0.919949,
+          0.264824,
+          1.22
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#537b89",
+          "parts": [
+            "fuselage",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "engine-1",
+            "engine-1-prop-hub",
+            "engine-1-blade-1",
+            "engine-1-blade-2",
+            "engine-1-blade-3",
+            "engine-2",
+            "engine-2-prop-hub",
+            "engine-2-blade-1",
+            "engine-2-blade-2",
+            "engine-2-blade-3",
+            "nose-gear-strut",
+            "nose-wheel",
+            "left-main-gear-strut",
+            "left-main-wheel",
+            "right-main-gear-strut",
+            "right-main-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ultralight-trike",
+      "kit": "airfield",
+      "title": "Ultralight trike",
+      "description": "Minimal weight-shift aircraft with a triangular wing, open frame, seat and three small wheels.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/ultralight-trike.kcad.ts",
+      "sourceSha256": "cd0cdf1a08ce5c71cde80f908af6e3c4073482bcbb471ffc1ca639bf8f3082f2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b68b43",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 476,
+        "sizeM": [
+          0.663991,
+          0.236168,
+          1.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b68b43",
+          "parts": [
+            "fuselage",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "left-wing-strut",
+            "right-wing-strut",
+            "engine-1",
+            "engine-1-prop-hub",
+            "engine-1-blade-1",
+            "engine-1-blade-2",
+            "engine-1-blade-3",
+            "open-frame",
+            "seat",
+            "nose-gear-strut",
+            "nose-wheel",
+            "left-main-gear-strut",
+            "left-main-wheel",
+            "right-main-gear-strut",
+            "right-main-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "utility-helicopter",
+      "kit": "airfield",
+      "title": "Utility helicopter",
+      "description": "Utility helicopter with a glazed cabin, tail boom, two-blade rotor and paired landing skids.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/utility-helicopter.kcad.ts",
+      "sourceSha256": "f6e17eaa181d044717bb33be14aebabb7c7e3227890e4d3c0af0285e70639881",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#778b75",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 310,
+        "sizeM": [
+          1.087818,
+          0.2985,
+          0.7968
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#778b75",
+          "parts": [
+            "cabin",
+            "cockpit",
+            "tail-boom",
+            "tail-fin",
+            "tail-plane",
+            "rotor-mast",
+            "main-rotor-blade-a",
+            "main-rotor-blade-b",
+            "tail-rotor-hub",
+            "tail-rotor-blade-a",
+            "tail-rotor-blade-b",
+            "left-skid-support-front",
+            "left-skid-support-rear",
+            "left-skid",
+            "right-skid-support-front",
+            "right-skid-support-rear",
+            "right-skid"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "widebody-airliner",
+      "kit": "airfield",
+      "title": "Widebody airliner",
+      "description": "Wide-body passenger aircraft with a broad fuselage, four engine nacelles and a wide main wing.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/widebody-airliner.kcad.ts",
+      "sourceSha256": "309d4ff7d541321d3911954c45464685e30f53746bc8d293bd53b9a0f58715b5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8399a7",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 402,
+        "sizeM": [
+          1.549927,
+          0.34124,
+          1.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8399a7",
+          "parts": [
+            "fuselage",
+            "cockpit-canopy",
+            "main-wing",
+            "tailplane",
+            "vertical-tail",
+            "engine-1",
+            "engine-2",
+            "engine-3",
+            "engine-4",
+            "nose-gear-strut",
+            "nose-wheel",
+            "left-main-gear-strut",
+            "left-main-wheel",
+            "right-main-gear-strut",
+            "right-main-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "windsock-mast",
+      "kit": "airfield",
+      "title": "Windsock mast",
+      "description": "Airfield windsock on a tall mast with a circular support frame and tapered fabric sleeve.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "airfield",
+        "aviation",
+        "airport",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "airfield",
+        "airport",
+        "aviation",
+        "transport",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/airfield/windsock-mast.kcad.ts",
+      "sourceSha256": "360e37fc7f0fad3ab1f9b2d426bfe1d233fc2df8e04aad19846f43e9c910ce04",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9c7c49",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          0.271964,
+          0.52,
+          0.136
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9c7c49",
+          "parts": [
+            "mast",
+            "support-ring",
+            "sock-tail",
+            "sock-mouth",
+            "left-ring-support",
+            "right-ring-support",
+            "front-ring-support",
+            "back-ring-support"
+          ],
+          "param": "color"
+        }
+      ]
+    },
     {
       "id": "bear",
       "kit": "characters",
