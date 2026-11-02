@@ -173,6 +173,53 @@
       ]
     },
     {
+      "id": "garden",
+      "title": "Garden",
+      "description": "Low-poly garden structures, planting fixtures, irrigation pieces and wildlife props for backyard, greenhouse and allotment scenes at real-world scale.",
+      "assets": [
+        "bat-box",
+        "bird-feeder-post",
+        "birdbath",
+        "birdhouse-post",
+        "coiled-garden-hose",
+        "cold-frame",
+        "compost-bin",
+        "compost-tumbler",
+        "drip-irrigation-row",
+        "garden-arbor",
+        "garden-cloche",
+        "garden-gnome",
+        "garden-hose-reel",
+        "garden-kneeling-pad",
+        "garden-lattice-trellis",
+        "garden-orb-sculpture",
+        "garden-pergola",
+        "garden-pinwheel",
+        "garden-sundial",
+        "garden-thermometer",
+        "garden-vertical-planter",
+        "greenhouse-staging-shelf",
+        "grow-bag-planter",
+        "insect-hotel",
+        "mini-greenhouse",
+        "oscillating-sprinkler",
+        "plant-label-set",
+        "plant-obelisk",
+        "potting-bench",
+        "potting-soil-sack",
+        "propagation-dome",
+        "rain-chain",
+        "rain-gauge",
+        "raised-bed-trellis",
+        "rotary-sprinkler",
+        "row-cover-tunnel",
+        "seedling-tray",
+        "tomato-cage",
+        "weather-vane",
+        "worm-composter"
+      ]
+    },
+    {
       "id": "interior",
       "title": "Interior",
       "description": "Low-poly furniture and room pieces for homes and offices at real-world scale, flat-shaded on one palette material.",
@@ -21933,6 +21980,4134 @@
             "wine"
           ],
           "param": "wine"
+        }
+      ]
+    },
+    {
+      "id": "bat-box",
+      "kit": "garden",
+      "title": "Garden bat box",
+      "description": "Narrow timber bat roost mounted on a tall post with a dark entrance slit and rain cap. Knobs: box and post and roof and entrance colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "bat box",
+        "bat house",
+        "wildlife habitat",
+        "garden conservation"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/bat-box.kcad.ts",
+      "sourceSha256": "8f4e37a4aff51ec7be76d91f1c3936c096729821799452212f6038f6e3b9d274",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "boxColor",
+          "type": "color",
+          "default": "#76563b",
+          "label": "Roost box"
+        },
+        {
+          "name": "post",
+          "type": "color",
+          "default": "#815b39",
+          "label": "Post"
+        },
+        {
+          "name": "cap",
+          "type": "color",
+          "default": "#4c514b",
+          "label": "Rain cap"
+        },
+        {
+          "name": "entrance",
+          "type": "color",
+          "default": "#252b26",
+          "label": "Entrance shadow"
+        }
+      ],
+      "presets": {
+        "cedar": {
+          "boxColor": "#a16e43"
+        },
+        "dark": {
+          "boxColor": "#4e4b40",
+          "cap": "#333833"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.52,
+          2.285,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "post",
+          "color": "#815b39",
+          "parts": [
+            "post"
+          ],
+          "param": "post"
+        },
+        {
+          "name": "boxColor",
+          "color": "#76563b",
+          "parts": [
+            "back",
+            "side",
+            "side-2",
+            "front"
+          ],
+          "param": "boxColor"
+        },
+        {
+          "name": "entrance",
+          "color": "#252b26",
+          "parts": [
+            "entrance-slit"
+          ],
+          "param": "entrance"
+        },
+        {
+          "name": "cap",
+          "color": "#4c514b",
+          "parts": [
+            "roof"
+          ],
+          "param": "cap"
+        }
+      ]
+    },
+    {
+      "id": "bird-feeder-post",
+      "kit": "garden",
+      "title": "Bird feeder on post",
+      "description": "Raised bird feeder with a seed tray, four supporting columns and a pitched rain roof. Knobs: feeder body and roof and post colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "bird feeder",
+        "seed tray",
+        "garden wildlife",
+        "backyard birds"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/bird-feeder-post.kcad.ts",
+      "sourceSha256": "946704dcac75125939e5d00ed07e4ae1b9870bb8a7fd952e114dc2cd71eec373",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#8c6744",
+          "label": "Feeder body"
+        },
+        {
+          "name": "roof",
+          "type": "color",
+          "default": "#576147",
+          "label": "Roof"
+        },
+        {
+          "name": "post",
+          "type": "color",
+          "default": "#76563b",
+          "label": "Post"
+        }
+      ],
+      "presets": {
+        "cedar": {
+          "body": "#b17a48"
+        },
+        "green": {
+          "body": "#557353",
+          "roof": "#3e593d"
+        }
+      },
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.64,
+          2.214091,
+          0.666023
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "post",
+          "color": "#76563b",
+          "parts": [
+            "post"
+          ],
+          "param": "post"
+        },
+        {
+          "name": "body",
+          "color": "#8c6744",
+          "parts": [
+            "tray",
+            "roof-column",
+            "roof-column-2",
+            "roof-column-3",
+            "roof-column-4",
+            "seed-hopper"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "roof",
+          "color": "#576147",
+          "parts": [
+            "roof-left",
+            "roof-right"
+          ],
+          "param": "roof"
+        }
+      ]
+    },
+    {
+      "id": "birdbath",
+      "kit": "garden",
+      "title": "Garden birdbath",
+      "description": "Classical garden birdbath with a faceted pedestal, broad shallow basin and water surface. Knobs: stone and bowl and water colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "birdbath",
+        "bird bath",
+        "garden ornament",
+        "wildlife water"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/birdbath.kcad.ts",
+      "sourceSha256": "a321f6caf36443de7f6595d7f642706297c319c01040ce530e013aa583812563",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "stone",
+          "type": "color",
+          "default": "#9b9585",
+          "label": "Stone"
+        },
+        {
+          "name": "bowl",
+          "type": "color",
+          "default": "#b6aa8e",
+          "label": "Basin"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#5a9aaa",
+          "label": "Water"
+        }
+      ],
+      "presets": {
+        "limestone": {
+          "stone": "#b7ad97",
+          "bowl": "#d0c3a3"
+        },
+        "slate": {
+          "stone": "#657078",
+          "bowl": "#87939a"
+        }
+      },
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          0.82,
+          0.817,
+          0.814064
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stone",
+          "color": "#9b9585",
+          "parts": [
+            "foot",
+            "pedestal",
+            "capital"
+          ],
+          "param": "stone"
+        },
+        {
+          "name": "bowl",
+          "color": "#b6aa8e",
+          "parts": [
+            "basin"
+          ],
+          "param": "bowl"
+        },
+        {
+          "name": "water",
+          "color": "#5a9aaa",
+          "parts": [
+            "water"
+          ],
+          "param": "water"
+        }
+      ]
+    },
+    {
+      "id": "birdhouse-post",
+      "kit": "garden",
+      "title": "Birdhouse on post",
+      "description": "Small pitched-roof birdhouse mounted on a garden post, with a round entrance and landing peg. Knobs: house and roof and post and entrance colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "birdhouse",
+        "nest box",
+        "bird habitat",
+        "garden wildlife"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/birdhouse-post.kcad.ts",
+      "sourceSha256": "cc05957771dc005fe6d23d7a1f1eb9ffe8e53e57afddee6ceed0b283eb18ed5e",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "house",
+          "type": "color",
+          "default": "#9a7149",
+          "label": "House body"
+        },
+        {
+          "name": "roof",
+          "type": "color",
+          "default": "#596149",
+          "label": "Roof"
+        },
+        {
+          "name": "post",
+          "type": "color",
+          "default": "#76563b",
+          "label": "Post"
+        },
+        {
+          "name": "entrance",
+          "type": "color",
+          "default": "#302a22",
+          "label": "Entrance shadow"
+        }
+      ],
+      "presets": {
+        "cedar": {
+          "house": "#b17a48"
+        },
+        "bluebird": {
+          "house": "#526f8c",
+          "roof": "#394b60"
+        }
+      },
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.52,
+          2.152809,
+          0.64678
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "post",
+          "color": "#76563b",
+          "parts": [
+            "post",
+            "landing-peg",
+            "post-cap"
+          ],
+          "param": "post"
+        },
+        {
+          "name": "house",
+          "color": "#9a7149",
+          "parts": [
+            "house-body"
+          ],
+          "param": "house"
+        },
+        {
+          "name": "roof",
+          "color": "#596149",
+          "parts": [
+            "roof-left",
+            "roof-right"
+          ],
+          "param": "roof"
+        },
+        {
+          "name": "entrance",
+          "color": "#302a22",
+          "parts": [
+            "entrance"
+          ],
+          "param": "entrance"
+        }
+      ]
+    },
+    {
+      "id": "coiled-garden-hose",
+      "kit": "garden",
+      "title": "Coiled garden hose",
+      "description": "Compact polygonal coil of garden hose with a loose end and connector. Knobs: coil diameter and hose and connector colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "garden hose",
+        "hose coil",
+        "irrigation",
+        "garden accessory"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/coiled-garden-hose.kcad.ts",
+      "sourceSha256": "b550371ba1cce02e2da7784bb087672e211001e0be4eba5010262ab5f77b1bf8",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "diameter",
+          "type": "choice",
+          "default": "700",
+          "label": "Coil diameter (mm)",
+          "choices": [
+            "550",
+            "700",
+            "850"
+          ]
+        },
+        {
+          "name": "hose",
+          "type": "color",
+          "default": "#4e7891",
+          "label": "Hose"
+        },
+        {
+          "name": "connector",
+          "type": "color",
+          "default": "#666d6d",
+          "label": "Connector"
+        }
+      ],
+      "presets": {
+        "green": {
+          "hose": "#4e8050"
+        },
+        "blue": {
+          "hose": "#387ca2"
+        }
+      },
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.800789,
+          0.095,
+          0.527577
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "hose",
+          "color": "#4e7891",
+          "parts": [
+            "coil-segment-0",
+            "coil-segment-1",
+            "coil-segment-2",
+            "coil-segment-3",
+            "coil-segment-4",
+            "coil-segment-5",
+            "coil-segment-6",
+            "coil-segment-7",
+            "coil-segment-8",
+            "coil-segment-9",
+            "coil-segment-10",
+            "coil-segment-11",
+            "loose-hose"
+          ],
+          "param": "hose"
+        },
+        {
+          "name": "connector",
+          "color": "#666d6d",
+          "parts": [
+            "hose-connector"
+          ],
+          "param": "connector"
+        }
+      ]
+    },
+    {
+      "id": "cold-frame",
+      "kit": "garden",
+      "title": "Cold frame",
+      "description": "Low timber cold frame with a raised planting box and sloped glazed lid. Knobs: width and timber and soil and lid colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cold frame",
+        "seedling",
+        "garden",
+        "propagation",
+        "planter"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/cold-frame.kcad.ts",
+      "sourceSha256": "2f5504b0fe85aefe1923d0f06ca4a85f47ec025050fb1450ea0b1ed8f7e0581e",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "width",
+          "type": "choice",
+          "default": "1000",
+          "label": "Width (mm)",
+          "choices": [
+            "800",
+            "1000",
+            "1200"
+          ]
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#815b39",
+          "label": "Timber frame"
+        },
+        {
+          "name": "lid",
+          "type": "color",
+          "default": "#a8cbbb",
+          "label": "Glazed lid"
+        },
+        {
+          "name": "soil",
+          "type": "color",
+          "default": "#574838",
+          "label": "Soil"
+        }
+      ],
+      "presets": {
+        "cedar": {
+          "timber": "#b07b49"
+        },
+        "green": {
+          "timber": "#58764c",
+          "lid": "#9cc6ad",
+          "soil": "#40352b"
+        }
+      },
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.056387,
+          0.587618,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "timber",
+          "color": "#815b39",
+          "parts": [
+            "base",
+            "long-wall",
+            "long-wall-2",
+            "end-wall",
+            "end-wall-2",
+            "lid-hinge",
+            "lid-hinge-2"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "soil",
+          "color": "#574838",
+          "parts": [
+            "soil-bed"
+          ],
+          "param": "soil"
+        },
+        {
+          "name": "lid",
+          "color": "#a8cbbb",
+          "parts": [
+            "glazed-lid"
+          ],
+          "param": "lid"
+        }
+      ]
+    },
+    {
+      "id": "compost-bin",
+      "kit": "garden",
+      "title": "Slatted compost bin",
+      "description": "Open-front slatted garden compost bin with corner posts and removable front boards. Knobs: width and timber and compost colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "compost bin",
+        "composter",
+        "garden waste",
+        "allotment"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/compost-bin.kcad.ts",
+      "sourceSha256": "4007ab962f08bf9f6356c84463c8cbc6228c4cbd80c274408e255f02f87f7481",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "width",
+          "type": "choice",
+          "default": "1000",
+          "label": "Bin width (mm)",
+          "choices": [
+            "800",
+            "1000",
+            "1200"
+          ]
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#76563c",
+          "label": "Timber"
+        },
+        {
+          "name": "compost",
+          "type": "color",
+          "default": "#49372a",
+          "label": "Compost"
+        }
+      ],
+      "presets": {
+        "recycled": {
+          "timber": "#887456",
+          "compost": "#3d3025"
+        },
+        "painted": {
+          "timber": "#536748"
+        }
+      },
+      "stats": {
+        "triangles": 348,
+        "sizeM": [
+          1.07,
+          1,
+          1.07
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "timber",
+          "color": "#76563c",
+          "parts": [
+            "corner-post",
+            "corner-post-2",
+            "corner-post-3",
+            "corner-post-4",
+            "side-slat",
+            "side-slat-2",
+            "back-slat",
+            "back-slat-2",
+            "side-slat-3",
+            "side-slat-4",
+            "back-slat-3",
+            "back-slat-4",
+            "side-slat-5",
+            "side-slat-6",
+            "back-slat-5",
+            "back-slat-6",
+            "side-slat-7",
+            "side-slat-8",
+            "back-slat-7",
+            "back-slat-8",
+            "side-slat-9",
+            "side-slat-10",
+            "back-slat-9",
+            "back-slat-10",
+            "side-slat-11",
+            "side-slat-12",
+            "back-slat-11",
+            "back-slat-12"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "compost",
+          "color": "#49372a",
+          "parts": [
+            "compost-fill"
+          ],
+          "param": "compost"
+        }
+      ]
+    },
+    {
+      "id": "compost-tumbler",
+      "kit": "garden",
+      "title": "Compost tumbler",
+      "description": "Rotating barrel composter on an A-frame stand with an axle and reinforcing bands. Knobs: drum length and frame and drum colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "compost tumbler",
+        "rotating composter",
+        "garden waste",
+        "recycling"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/compost-tumbler.kcad.ts",
+      "sourceSha256": "b9a6c1dab1a5b931125e8bd11b8d04e9e931adcc8278e56f45c4b82cf4cf0d40",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "800",
+          "label": "Drum length (mm)",
+          "choices": [
+            "650",
+            "800",
+            "950"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#596149",
+          "label": "Frame"
+        },
+        {
+          "name": "drum",
+          "type": "color",
+          "default": "#4f7250",
+          "label": "Drum"
+        },
+        {
+          "name": "axle",
+          "type": "color",
+          "default": "#545b5d",
+          "label": "Axle"
+        }
+      ],
+      "presets": {
+        "green": {
+          "frame": "#454d40",
+          "drum": "#477447"
+        },
+        "black": {
+          "drum": "#303638",
+          "axle": "#a2a8a7"
+        }
+      },
+      "stats": {
+        "triangles": 296,
+        "sizeM": [
+          1.488818,
+          1.405,
+          0.87
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#596149",
+          "parts": [
+            "stand-leg",
+            "stand-leg-2",
+            "stand-leg-3",
+            "stand-leg-4",
+            "foot",
+            "foot-2",
+            "foot-3",
+            "foot-4",
+            "lower-brace",
+            "drum-band",
+            "drum-band-2"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "axle",
+          "color": "#545b5d",
+          "parts": [
+            "axle",
+            "hand-crank"
+          ],
+          "param": "axle"
+        },
+        {
+          "name": "drum",
+          "color": "#4f7250",
+          "parts": [
+            "drum"
+          ],
+          "param": "drum"
+        }
+      ]
+    },
+    {
+      "id": "drip-irrigation-row",
+      "kit": "garden",
+      "title": "Drip irrigation row",
+      "description": "Garden drip irrigation line with a main hose, repeated emitters and two ground stakes. Knobs: row length and hose and emitter colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "drip irrigation",
+        "garden hose",
+        "irrigation line",
+        "vegetable row"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/drip-irrigation-row.kcad.ts",
+      "sourceSha256": "f3a83d21426d2659b4b891c6a635a5914932916505b3e2cec7363e2ede97fc63",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "1800",
+          "label": "Row length (mm)",
+          "choices": [
+            "1200",
+            "1800",
+            "2400"
+          ]
+        },
+        {
+          "name": "hose",
+          "type": "color",
+          "default": "#4e6c49",
+          "label": "Hose"
+        },
+        {
+          "name": "emitter",
+          "type": "color",
+          "default": "#252d2c",
+          "label": "Emitters"
+        }
+      ],
+      "presets": {
+        "green": {
+          "hose": "#52804c"
+        },
+        "black": {
+          "hose": "#313737",
+          "emitter": "#131817"
+        }
+      },
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          1.845,
+          0.26,
+          0.06
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "hose",
+          "color": "#4e6c49",
+          "parts": [
+            "main-line"
+          ],
+          "param": "hose"
+        },
+        {
+          "name": "emitter",
+          "color": "#252d2c",
+          "parts": [
+            "riser-0",
+            "dripper-0",
+            "riser-1",
+            "dripper-1",
+            "riser-2",
+            "dripper-2",
+            "riser-3",
+            "dripper-3",
+            "riser-4",
+            "dripper-4",
+            "riser-5",
+            "dripper-5",
+            "stake",
+            "stake-2",
+            "end-cap"
+          ],
+          "param": "emitter"
+        }
+      ]
+    },
+    {
+      "id": "garden-arbor",
+      "kit": "garden",
+      "title": "Garden arbor",
+      "description": "Freestanding timber garden arbor with cross rails and roof slats. Knobs: span and timber and hardware colours.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "arbor",
+        "garden arch",
+        "pergola",
+        "timber",
+        "backyard"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-arbor.kcad.ts",
+      "sourceSha256": "2515e3c9f25cbf8d79ae203b019cb44d2d57245542c522ec46ce307508b8f5b9",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "span",
+          "type": "choice",
+          "default": "1500",
+          "label": "Arch span (mm)",
+          "choices": [
+            "1200",
+            "1500",
+            "1800"
+          ]
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#815b39",
+          "label": "Timber"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#4d5455",
+          "label": "Hardware"
+        }
+      ],
+      "presets": {
+        "cedar": {
+          "timber": "#b27a47"
+        },
+        "painted": {
+          "timber": "#557b59",
+          "hardware": "#31383a"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.59,
+          2.1575,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "timber",
+          "color": "#815b39",
+          "parts": [
+            "post",
+            "post-2",
+            "header",
+            "rear-rail",
+            "roof-slat-0",
+            "roof-slat-1",
+            "roof-slat-2",
+            "roof-slat-3",
+            "roof-slat-4"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "hardware",
+          "color": "#4d5455",
+          "parts": [
+            "foot-plate",
+            "foot-plate-2"
+          ],
+          "param": "hardware"
+        }
+      ]
+    },
+    {
+      "id": "garden-cloche",
+      "kit": "garden",
+      "title": "Garden cloche",
+      "description": "Bell-shaped low garden cloche with a faceted clear cover and a low planting rim. Knobs: diameter and cover and rim colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "garden cloche",
+        "plant cover",
+        "seedling protection",
+        "greenhouse"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-cloche.kcad.ts",
+      "sourceSha256": "04ee62208f9dc82f451a044905451db84f2f4a66e27e0bda72b25063407ca2d8",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "diameter",
+          "type": "choice",
+          "default": "600",
+          "label": "Diameter (mm)",
+          "choices": [
+            "450",
+            "600",
+            "750"
+          ]
+        },
+        {
+          "name": "cover",
+          "type": "color",
+          "default": "#a9cbbb",
+          "label": "Cover"
+        },
+        {
+          "name": "rim",
+          "type": "color",
+          "default": "#596347",
+          "label": "Rim"
+        }
+      ],
+      "presets": {
+        "glass": {
+          "cover": "#bad8cc"
+        },
+        "smoke": {
+          "cover": "#899c9b",
+          "rim": "#454b40"
+        }
+      },
+      "stats": {
+        "triangles": 222,
+        "sizeM": [
+          0.6,
+          0.52,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "rim",
+          "color": "#596347",
+          "parts": [
+            "base-rim",
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "vent-4",
+            "vent-5",
+            "vent-6",
+            "vent-7",
+            "top-handle"
+          ],
+          "param": "rim"
+        },
+        {
+          "name": "cover",
+          "color": "#a9cbbb",
+          "parts": [
+            "dome"
+          ],
+          "param": "cover"
+        }
+      ]
+    },
+    {
+      "id": "garden-gnome",
+      "kit": "garden",
+      "title": "Garden gnome",
+      "description": "Small low-poly garden gnome with a rounded coat, pale face, light beard, tall cap and boots. Knobs: coat and hat and skin and beard colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "garden gnome",
+        "gnome statue",
+        "garden ornament",
+        "folklore"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-gnome.kcad.ts",
+      "sourceSha256": "b91f06c2fbac56d9383aae6bdb243cbb5f67de16cd3a5b709d00673296e2522a",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "coat",
+          "type": "color",
+          "default": "#4a6f53",
+          "label": "Coat"
+        },
+        {
+          "name": "hat",
+          "type": "color",
+          "default": "#b64d3b",
+          "label": "Hat"
+        },
+        {
+          "name": "skin",
+          "type": "color",
+          "default": "#dfc4a1",
+          "label": "Face"
+        },
+        {
+          "name": "beard",
+          "type": "color",
+          "default": "#e2dccb",
+          "label": "Beard"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "coat": "#3f744b",
+          "hat": "#c24d3c",
+          "beard": "#eee7d7"
+        },
+        "autumn": {
+          "coat": "#ad6b35",
+          "hat": "#4d627d",
+          "beard": "#d3c9b4"
+        }
+      },
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.211291,
+          0.435081,
+          0.157103
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "hat",
+          "color": "#b64d3b",
+          "parts": [
+            "boot",
+            "boot-2",
+            "hat"
+          ],
+          "param": "hat"
+        },
+        {
+          "name": "coat",
+          "color": "#4a6f53",
+          "parts": [
+            "coat",
+            "eye",
+            "eye-2"
+          ],
+          "param": "coat"
+        },
+        {
+          "name": "beard",
+          "color": "#e2dccb",
+          "parts": [
+            "beard"
+          ],
+          "param": "beard"
+        },
+        {
+          "name": "skin",
+          "color": "#dfc4a1",
+          "parts": [
+            "face",
+            "nose"
+          ],
+          "param": "skin"
+        }
+      ]
+    },
+    {
+      "id": "garden-hose-reel",
+      "kit": "garden",
+      "title": "Garden hose reel",
+      "description": "Freestanding garden hose reel with a wound drum, side cheeks, support post and turning crank. Knobs: drum size and frame and hose colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "hose reel",
+        "garden hose",
+        "irrigation",
+        "backyard"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-hose-reel.kcad.ts",
+      "sourceSha256": "e792f02de4534a4de009abf765b8443e5357505c3fc4e160af8045e15fd47e32",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "diameter",
+          "type": "choice",
+          "default": "560",
+          "label": "Reel diameter (mm)",
+          "choices": [
+            "440",
+            "560",
+            "680"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#596149",
+          "label": "Frame"
+        },
+        {
+          "name": "hose",
+          "type": "color",
+          "default": "#4f7891",
+          "label": "Hose"
+        },
+        {
+          "name": "axle",
+          "type": "color",
+          "default": "#555d5d",
+          "label": "Axle"
+        }
+      ],
+      "presets": {
+        "green": {
+          "frame": "#455a43",
+          "hose": "#4f8051"
+        },
+        "blue": {
+          "hose": "#397fa5"
+        }
+      },
+      "stats": {
+        "triangles": 328,
+        "sizeM": [
+          0.93,
+          0.77,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#596149",
+          "parts": [
+            "side-cheek",
+            "side-cheek-2",
+            "back-plate",
+            "ground-stand",
+            "crank-grip"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "hose",
+          "color": "#4f7891",
+          "parts": [
+            "drum-core",
+            "hose-coil",
+            "hose-coil-2",
+            "hose-coil-3",
+            "hose-coil-4",
+            "hose-coil-5",
+            "hose-coil-6"
+          ],
+          "param": "hose"
+        },
+        {
+          "name": "axle",
+          "color": "#555d5d",
+          "parts": [
+            "axle",
+            "crank-arm"
+          ],
+          "param": "axle"
+        }
+      ]
+    },
+    {
+      "id": "garden-kneeling-pad",
+      "kit": "garden",
+      "title": "Garden kneeling pad",
+      "description": "Thick rectangular garden kneeling pad with a carry handle and two side pockets. Knobs: pad and trim and handle colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "kneeling pad",
+        "garden kneeler",
+        "gardening accessory",
+        "backyard"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-kneeling-pad.kcad.ts",
+      "sourceSha256": "23ec19a59df644f0d332012125b039b3bffcec31ab68a3657c34dcda2485a2cc",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "pad",
+          "type": "color",
+          "default": "#536d4c",
+          "label": "Pad"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#b39a69",
+          "label": "Trim"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#4b514b",
+          "label": "Handle"
+        }
+      ],
+      "presets": {
+        "green": {
+          "pad": "#59784f"
+        },
+        "blue": {
+          "pad": "#52738a",
+          "trim": "#d0c6aa"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.62,
+          0.147,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "pad",
+          "color": "#536d4c",
+          "parts": [
+            "cushion"
+          ],
+          "param": "pad"
+        },
+        {
+          "name": "trim",
+          "color": "#b39a69",
+          "parts": [
+            "top-panel",
+            "side-pocket",
+            "side-pocket-2"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "handle",
+          "color": "#4b514b",
+          "parts": [
+            "handle",
+            "corner-pad",
+            "corner-pad-2"
+          ],
+          "param": "handle"
+        }
+      ]
+    },
+    {
+      "id": "garden-lattice-trellis",
+      "kit": "garden",
+      "title": "Garden lattice trellis",
+      "description": "Freestanding square-lattice trellis panel between two posts for climbing garden plants. Knobs: width and timber and hardware colours.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "lattice trellis",
+        "climbing plants",
+        "garden screen",
+        "panel"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-lattice-trellis.kcad.ts",
+      "sourceSha256": "211719a02597e32f0b4792a4439000e05a2109963cf21154228d6f143c78f2a0",
+      "triangleBudget": 440,
+      "params": [
+        {
+          "name": "width",
+          "type": "choice",
+          "default": "1200",
+          "label": "Panel width (mm)",
+          "choices": [
+            "900",
+            "1200",
+            "1500"
+          ]
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#815b39",
+          "label": "Timber"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#4c5454",
+          "label": "Hardware"
+        }
+      ],
+      "presets": {
+        "cedar": {
+          "timber": "#ad7947"
+        },
+        "painted": {
+          "timber": "#557b59",
+          "hardware": "#30383a"
+        }
+      },
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          1.27,
+          1.9,
+          0.07
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "timber",
+          "color": "#815b39",
+          "parts": [
+            "post",
+            "post-2",
+            "horizontal-0",
+            "horizontal-1",
+            "horizontal-2",
+            "horizontal-3",
+            "horizontal-4",
+            "horizontal-5",
+            "vertical-0",
+            "vertical-1",
+            "vertical-2",
+            "vertical-3",
+            "vertical-4"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "hardware",
+          "color": "#4c5454",
+          "parts": [
+            "ground-spike",
+            "ground-spike-2"
+          ],
+          "param": "hardware"
+        }
+      ]
+    },
+    {
+      "id": "garden-orb-sculpture",
+      "kit": "garden",
+      "title": "Garden orb sculpture",
+      "description": "Polished garden sphere on a short tiered stone pedestal for a border or patio. Knobs: orb and pedestal and plinth colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "garden orb",
+        "sphere sculpture",
+        "garden ornament",
+        "patio decor"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-orb-sculpture.kcad.ts",
+      "sourceSha256": "9ff9c0de6780b9f7287aa49f92721c3148c1122bf47f0ff3dfc22b438530ea7b",
+      "triangleBudget": 240,
+      "params": [
+        {
+          "name": "orb",
+          "type": "color",
+          "default": "#5c8892",
+          "label": "Orb"
+        },
+        {
+          "name": "pedestal",
+          "type": "color",
+          "default": "#9c9584",
+          "label": "Pedestal"
+        },
+        {
+          "name": "plinth",
+          "type": "color",
+          "default": "#6c726d",
+          "label": "Plinth"
+        }
+      ],
+      "presets": {
+        "blueStone": {
+          "orb": "#5f8797",
+          "pedestal": "#b3aa96"
+        },
+        "bronze": {
+          "orb": "#987449"
+        }
+      },
+      "stats": {
+        "triangles": 222,
+        "sizeM": [
+          0.52,
+          1.03,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "plinth",
+          "color": "#6c726d",
+          "parts": [
+            "plinth"
+          ],
+          "param": "plinth"
+        },
+        {
+          "name": "pedestal",
+          "color": "#9c9584",
+          "parts": [
+            "base",
+            "pedestal",
+            "capital"
+          ],
+          "param": "pedestal"
+        },
+        {
+          "name": "orb",
+          "color": "#5c8892",
+          "parts": [
+            "orb"
+          ],
+          "param": "orb"
+        }
+      ]
+    },
+    {
+      "id": "garden-pergola",
+      "kit": "garden",
+      "title": "Garden pergola",
+      "description": "Open timber pergola with four posts, paired beams and repeated overhead rafters. Knobs: span and timber and post-cap colours.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "pergola",
+        "garden shelter",
+        "timber",
+        "outdoor structure",
+        "backyard"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-pergola.kcad.ts",
+      "sourceSha256": "0c99215b89d4ab51fff1ea211e478f24a60fa5a673e932000b3f4011e175368b",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "span",
+          "type": "choice",
+          "default": "2200",
+          "label": "Span (mm)",
+          "choices": [
+            "1800",
+            "2200",
+            "2600"
+          ]
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#8a6745",
+          "label": "Timber"
+        },
+        {
+          "name": "cap",
+          "type": "color",
+          "default": "#4c5850",
+          "label": "Post caps"
+        }
+      ],
+      "presets": {
+        "oak": {
+          "timber": "#9a7047"
+        },
+        "painted": {
+          "timber": "#4e765e",
+          "cap": "#353b3b"
+        }
+      },
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          2.32,
+          2.425,
+          1.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "timber",
+          "color": "#8a6745",
+          "parts": [
+            "post",
+            "post-2",
+            "post-3",
+            "post-4",
+            "side-beam",
+            "side-beam-2",
+            "rafter-0",
+            "rafter-1",
+            "rafter-2",
+            "rafter-3",
+            "rafter-4",
+            "rafter-5",
+            "rafter-6"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "cap",
+          "color": "#4c5850",
+          "parts": [
+            "post-cap",
+            "post-cap-2",
+            "post-cap-3",
+            "post-cap-4"
+          ],
+          "param": "cap"
+        }
+      ]
+    },
+    {
+      "id": "garden-pinwheel",
+      "kit": "garden",
+      "title": "Garden pinwheel",
+      "description": "Bright garden pinwheel on a slender stake with four broad blades around a central hub. Knobs: blade and hub and pole colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "garden pinwheel",
+        "wind spinner",
+        "garden decoration",
+        "yard"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-pinwheel.kcad.ts",
+      "sourceSha256": "1872e73ff567be739e26705fa3b4ca0bc45ffc2e64af253c1d8c51ccb7fd8d32",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "blade",
+          "type": "color",
+          "default": "#d26842",
+          "label": "Blades"
+        },
+        {
+          "name": "hub",
+          "type": "color",
+          "default": "#e0b64c",
+          "label": "Hub"
+        },
+        {
+          "name": "pole",
+          "type": "color",
+          "default": "#76563b",
+          "label": "Stake"
+        }
+      ],
+      "presets": {
+        "primary": {
+          "blade": "#d45439",
+          "hub": "#e6bd45"
+        },
+        "cool": {
+          "blade": "#4c8aa0",
+          "hub": "#e5d5b1"
+        }
+      },
+      "stats": {
+        "triangles": 214,
+        "sizeM": [
+          0.300387,
+          1.072,
+          0.282843
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "pole",
+          "color": "#76563b",
+          "parts": [
+            "stake",
+            "rear-spindle"
+          ],
+          "param": "pole"
+        },
+        {
+          "name": "blade",
+          "color": "#d26842",
+          "parts": [
+            "blade-0",
+            "blade-1",
+            "blade-2",
+            "blade-3"
+          ],
+          "param": "blade"
+        },
+        {
+          "name": "hub",
+          "color": "#e0b64c",
+          "parts": [
+            "center-hub"
+          ],
+          "param": "hub"
+        }
+      ]
+    },
+    {
+      "id": "garden-sundial",
+      "kit": "garden",
+      "title": "Garden sundial",
+      "description": "Pedestal garden sundial with a broad engraved-looking dial plate and raised triangular gnomon. Knobs: stone and dial and gnomon colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "sundial",
+        "garden ornament",
+        "timepiece",
+        "patio"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-sundial.kcad.ts",
+      "sourceSha256": "6a59b54aaaf1751a416a590fc4e36333df1a67b57deeb27551e4ec1b5141371c",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "stone",
+          "type": "color",
+          "default": "#999482",
+          "label": "Stone base"
+        },
+        {
+          "name": "dial",
+          "type": "color",
+          "default": "#c1ae7f",
+          "label": "Dial plate"
+        },
+        {
+          "name": "gnomon",
+          "type": "color",
+          "default": "#545b59",
+          "label": "Gnomon"
+        }
+      ],
+      "presets": {
+        "limestone": {
+          "stone": "#b8ad94",
+          "dial": "#d4c497"
+        },
+        "bronze": {
+          "gnomon": "#947046"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.86,
+          0.977616,
+          0.86
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stone",
+          "color": "#999482",
+          "parts": [
+            "foot",
+            "column"
+          ],
+          "param": "stone"
+        },
+        {
+          "name": "dial",
+          "color": "#c1ae7f",
+          "parts": [
+            "dial"
+          ],
+          "param": "dial"
+        },
+        {
+          "name": "gnomon",
+          "color": "#545b59",
+          "parts": [
+            "gnomon",
+            "hour-mark-0",
+            "hour-mark-1",
+            "hour-mark-2",
+            "hour-mark-3",
+            "hour-mark-4",
+            "hour-mark-5",
+            "hour-mark-6",
+            "hour-mark-7",
+            "hour-mark-8",
+            "hour-mark-9",
+            "hour-mark-10",
+            "hour-mark-11"
+          ],
+          "param": "gnomon"
+        }
+      ]
+    },
+    {
+      "id": "garden-thermometer",
+      "kit": "garden",
+      "title": "Garden thermometer",
+      "description": "Outdoor garden thermometer with a tall scale board, red temperature column and ground stake. Knobs: height and board and scale and indicator colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "garden thermometer",
+        "outdoor thermometer",
+        "weather station",
+        "garden"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-thermometer.kcad.ts",
+      "sourceSha256": "7595fea24ad775fc606520269c315db739c245d13324ab1a12bcc2532aad8817",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "700",
+          "label": "Height (mm)",
+          "choices": [
+            "550",
+            "700",
+            "850"
+          ]
+        },
+        {
+          "name": "board",
+          "type": "color",
+          "default": "#815b39",
+          "label": "Board"
+        },
+        {
+          "name": "scale",
+          "type": "color",
+          "default": "#d8d0bb",
+          "label": "Scale face"
+        },
+        {
+          "name": "mercury",
+          "type": "color",
+          "default": "#b94e3b",
+          "label": "Indicator"
+        }
+      ],
+      "presets": {
+        "cedar": {
+          "board": "#a87545"
+        },
+        "painted": {
+          "board": "#557351",
+          "scale": "#f0e9d4"
+        }
+      },
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.27,
+          0.728,
+          0.176694
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "board",
+          "color": "#815b39",
+          "parts": [
+            "stake",
+            "tick",
+            "tick-2",
+            "tick-3",
+            "tick-4",
+            "tick-5",
+            "tick-6",
+            "tick-7",
+            "cap"
+          ],
+          "param": "board"
+        },
+        {
+          "name": "scale",
+          "color": "#d8d0bb",
+          "parts": [
+            "face"
+          ],
+          "param": "scale"
+        },
+        {
+          "name": "mercury",
+          "color": "#b94e3b",
+          "parts": [
+            "scale-column",
+            "bulb"
+          ],
+          "param": "mercury"
+        }
+      ]
+    },
+    {
+      "id": "garden-vertical-planter",
+      "kit": "garden",
+      "title": "Garden vertical planter",
+      "description": "Freestanding tiered planter with three planting troughs and compact foliage for small patios. Knobs: height and frame and trough and foliage colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "vertical planter",
+        "patio garden",
+        "planter tower",
+        "small space gardening"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/garden-vertical-planter.kcad.ts",
+      "sourceSha256": "a3aa9abe37c7d9bd486e0c58c0a6d2ba66b4dccf74228e21530e87444bd3af8a",
+      "triangleBudget": 440,
+      "params": [
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "1500",
+          "label": "Height (mm)",
+          "choices": [
+            "1100",
+            "1500",
+            "1900"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#815b39",
+          "label": "Frame"
+        },
+        {
+          "name": "planter",
+          "type": "color",
+          "default": "#9a593c",
+          "label": "Troughs"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#4a8745",
+          "label": "Foliage"
+        }
+      ],
+      "presets": {
+        "terracotta": {
+          "planter": "#b96443"
+        },
+        "painted": {
+          "frame": "#4d684c",
+          "planter": "#d2c7a6"
+        }
+      },
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          0.9,
+          1.666,
+          0.33
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#815b39",
+          "parts": [
+            "side-upright",
+            "side-upright-2",
+            "base-crossbar"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "planter",
+          "color": "#9a593c",
+          "parts": [
+            "trough-0",
+            "trough-1",
+            "trough-2"
+          ],
+          "param": "planter"
+        },
+        {
+          "name": "foliage",
+          "color": "#4a8745",
+          "parts": [
+            "plant-0-0",
+            "plant-0-1",
+            "plant-0-2",
+            "plant-1-0",
+            "plant-1-1",
+            "plant-1-2",
+            "plant-2-0",
+            "plant-2-1",
+            "plant-2-2"
+          ],
+          "param": "foliage"
+        }
+      ]
+    },
+    {
+      "id": "greenhouse-staging-shelf",
+      "kit": "garden",
+      "title": "Greenhouse staging shelf",
+      "description": "Tiered greenhouse shelf for seed trays and pots, with a braced timber frame. Knobs: width, shelf levels and timber and tray colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "greenhouse shelf",
+        "plant staging",
+        "seed tray rack",
+        "garden shelving"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/greenhouse-staging-shelf.kcad.ts",
+      "sourceSha256": "79cf3c93a47ac1695b31832c9514fe0062593dee29dbb6fd92098a2b14b3a929",
+      "triangleBudget": 480,
+      "params": [
+        {
+          "name": "width",
+          "type": "choice",
+          "default": "1200",
+          "label": "Shelf width (mm)",
+          "choices": [
+            "900",
+            "1200",
+            "1500"
+          ]
+        },
+        {
+          "name": "levels",
+          "type": "choice",
+          "default": "4",
+          "label": "Shelf levels",
+          "choices": [
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#76563c",
+          "label": "Timber"
+        },
+        {
+          "name": "tray",
+          "type": "color",
+          "default": "#506c4b",
+          "label": "Plant trays"
+        }
+      ],
+      "presets": {
+        "natural": {
+          "timber": "#9b754d"
+        },
+        "painted": {
+          "timber": "#445d4d",
+          "tray": "#9b5d42"
+        }
+      },
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          1.22,
+          1.5,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "timber",
+          "color": "#76563c",
+          "parts": [
+            "upright",
+            "upright-2",
+            "upright-3",
+            "upright-4",
+            "shelf-0",
+            "shelf-1",
+            "shelf-2",
+            "shelf-3",
+            "base-foot",
+            "base-foot-2"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "tray",
+          "color": "#506c4b",
+          "parts": [
+            "tray-0",
+            "tray-1",
+            "tray-2",
+            "tray-3"
+          ],
+          "param": "tray"
+        }
+      ]
+    },
+    {
+      "id": "grow-bag-planter",
+      "kit": "garden",
+      "title": "Grow bag planter",
+      "description": "Flexible cylindrical fabric grow bag with a rolled rim, reinforced handles and dark soil surface. Knobs: bag diameter and fabric and soil colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grow bag",
+        "fabric planter",
+        "container gardening",
+        "garden"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/grow-bag-planter.kcad.ts",
+      "sourceSha256": "2ffae3e1cab013419b01077c14d9dbaff73615b765bc970f3e6920d5cc6429c8",
+      "triangleBudget": 240,
+      "params": [
+        {
+          "name": "diameter",
+          "type": "choice",
+          "default": "460",
+          "label": "Diameter (mm)",
+          "choices": [
+            "360",
+            "460",
+            "560"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#68734d",
+          "label": "Fabric"
+        },
+        {
+          "name": "soil",
+          "type": "color",
+          "default": "#4c3b2d",
+          "label": "Soil"
+        },
+        {
+          "name": "handle",
+          "type": "color",
+          "default": "#8d7957",
+          "label": "Handles"
+        }
+      ],
+      "presets": {
+        "olive": {
+          "fabric": "#5d7049"
+        },
+        "charcoal": {
+          "fabric": "#424849",
+          "handle": "#6c7673"
+        }
+      },
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.508,
+          0.495,
+          0.508
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "fabric",
+          "color": "#68734d",
+          "parts": [
+            "bag-body"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "handle",
+          "color": "#8d7957",
+          "parts": [
+            "rolled-rim",
+            "handle-loop",
+            "handle-loop-2"
+          ],
+          "param": "handle"
+        },
+        {
+          "name": "soil",
+          "color": "#4c3b2d",
+          "parts": [
+            "soil"
+          ],
+          "param": "soil"
+        }
+      ]
+    },
+    {
+      "id": "insect-hotel",
+      "kit": "garden",
+      "title": "Insect hotel",
+      "description": "Timber insect hotel with small nest cavities, bundled reeds and a deep overhanging roof. Knobs: frame and nesting material and roof colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "insect hotel",
+        "bug hotel",
+        "pollinator habitat",
+        "garden wildlife"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/insect-hotel.kcad.ts",
+      "sourceSha256": "a7d18979c7b6e4b0284ef7b00bbbb28a34352ab2d2235c16dc4d3be1956b09ce",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#815b39",
+          "label": "Timber frame"
+        },
+        {
+          "name": "nesting",
+          "type": "color",
+          "default": "#c19b67",
+          "label": "Nesting material"
+        },
+        {
+          "name": "roof",
+          "type": "color",
+          "default": "#596149",
+          "label": "Roof"
+        }
+      ],
+      "presets": {
+        "cedar": {
+          "frame": "#b07b49"
+        },
+        "natural": {
+          "nesting": "#9c7750",
+          "roof": "#4c5742"
+        }
+      },
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          0.9,
+          1.2575,
+          0.47
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#815b39",
+          "parts": [
+            "back",
+            "side",
+            "side-2",
+            "shelf-0",
+            "shelf-1",
+            "shelf-2",
+            "roof-ridge"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "nesting",
+          "color": "#c19b67",
+          "parts": [
+            "reed-bundle-0-0",
+            "reed-bundle-0-1",
+            "reed-bundle-1-0",
+            "reed-bundle-1-1",
+            "reed-bundle-2-0",
+            "reed-bundle-2-1"
+          ],
+          "param": "nesting"
+        },
+        {
+          "name": "roof",
+          "color": "#596149",
+          "parts": [
+            "roof"
+          ],
+          "param": "roof"
+        }
+      ]
+    },
+    {
+      "id": "mini-greenhouse",
+      "kit": "garden",
+      "title": "Mini greenhouse",
+      "description": "Small walk-in garden greenhouse with a pitched roof, glazed wall panels and a framed door. Knobs: length and frame and glazing colours.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "greenhouse",
+        "glasshouse",
+        "garden shed",
+        "growing",
+        "horticulture"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/mini-greenhouse.kcad.ts",
+      "sourceSha256": "c39943f5a06af952b6cb8d29428d69d2cac612c954e77a6597620a5237dd2c82",
+      "triangleBudget": 560,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "1800",
+          "label": "Length (mm)",
+          "choices": [
+            "1400",
+            "1800",
+            "2200"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#62704c",
+          "label": "Frame"
+        },
+        {
+          "name": "glazing",
+          "type": "color",
+          "default": "#9bc7af",
+          "label": "Glazing"
+        }
+      ],
+      "presets": {
+        "forest": {
+          "frame": "#455a43"
+        },
+        "whiteFrame": {
+          "frame": "#ddd8c8",
+          "glazing": "#aed6c2"
+        }
+      },
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          1.855,
+          2.088451,
+          1.417002
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#62704c",
+          "parts": [
+            "corner-post",
+            "corner-post-2",
+            "corner-post-3",
+            "corner-post-4",
+            "eave-beam",
+            "eave-beam-2",
+            "roof-ridge",
+            "roof-rail",
+            "roof-rail-2",
+            "door-handle"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "glazing",
+          "color": "#9bc7af",
+          "parts": [
+            "end-wall-glazing",
+            "end-wall-glazing-2",
+            "side-glazing",
+            "side-glazing-2",
+            "roof-slope",
+            "roof-slope-2",
+            "door-panel"
+          ],
+          "param": "glazing"
+        }
+      ]
+    },
+    {
+      "id": "oscillating-sprinkler",
+      "kit": "garden",
+      "title": "Oscillating sprinkler",
+      "description": "Long oscillating garden sprinkler bar on a weighted base with a row of spray nozzles. Knobs: bar length and body and nozzle colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "oscillating sprinkler",
+        "lawn sprinkler",
+        "irrigation bar",
+        "garden watering"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/oscillating-sprinkler.kcad.ts",
+      "sourceSha256": "28809a595617689b7c4517cc28139b2aae08e599aba2c9f95a652633acdb94fb",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "900",
+          "label": "Spray bar length (mm)",
+          "choices": [
+            "650",
+            "900",
+            "1150"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#57624b",
+          "label": "Body"
+        },
+        {
+          "name": "nozzle",
+          "type": "color",
+          "default": "#b28f3e",
+          "label": "Nozzles"
+        },
+        {
+          "name": "bar",
+          "type": "color",
+          "default": "#a7b1a2",
+          "label": "Spray bar"
+        }
+      ],
+      "presets": {
+        "green": {
+          "body": "#4a6847",
+          "bar": "#bdc8bb"
+        },
+        "brass": {
+          "nozzle": "#c6a343"
+        }
+      },
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          1.02,
+          0.2425,
+          0.375
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#57624b",
+          "parts": [
+            "base",
+            "pivot-left",
+            "pivot-right"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "bar",
+          "color": "#a7b1a2",
+          "parts": [
+            "spray-bar"
+          ],
+          "param": "bar"
+        },
+        {
+          "name": "nozzle",
+          "color": "#b28f3e",
+          "parts": [
+            "nozzle-0",
+            "nozzle-1",
+            "nozzle-2",
+            "nozzle-3",
+            "nozzle-4",
+            "nozzle-5",
+            "nozzle-6",
+            "nozzle-7",
+            "nozzle-8",
+            "inlet"
+          ],
+          "param": "nozzle"
+        }
+      ]
+    },
+    {
+      "id": "plant-label-set",
+      "kit": "garden",
+      "title": "Garden plant label set",
+      "description": "Cluster of five blank plant labels on pointed stakes for a vegetable bed or seed tray. Knobs: stake and label and marker colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "plant labels",
+        "garden markers",
+        "plant tags",
+        "allotment"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/plant-label-set.kcad.ts",
+      "sourceSha256": "81556f0c23ab2136e7d03400171bfba9d5c4dd192ba7656fa2dc950e7341614a",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "stake",
+          "type": "color",
+          "default": "#76563b",
+          "label": "Stakes"
+        },
+        {
+          "name": "label",
+          "type": "color",
+          "default": "#eee4c9",
+          "label": "Labels"
+        },
+        {
+          "name": "marker",
+          "type": "color",
+          "default": "#394542",
+          "label": "Marker tips"
+        }
+      ],
+      "presets": {
+        "bamboo": {
+          "stake": "#a6814d",
+          "label": "#e5d8b8"
+        },
+        "slate": {
+          "stake": "#626b69",
+          "label": "#424a49"
+        }
+      },
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          1.004881,
+          0.397616,
+          0.0455
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stake",
+          "color": "#76563b",
+          "parts": [
+            "stake-0",
+            "stake-1",
+            "stake-2",
+            "stake-3",
+            "stake-4"
+          ],
+          "param": "stake"
+        },
+        {
+          "name": "label",
+          "color": "#eee4c9",
+          "parts": [
+            "label-0",
+            "label-1",
+            "label-2",
+            "label-3",
+            "label-4"
+          ],
+          "param": "label"
+        },
+        {
+          "name": "marker",
+          "color": "#394542",
+          "parts": [
+            "tip-0",
+            "tip-1",
+            "tip-2",
+            "tip-3",
+            "tip-4"
+          ],
+          "param": "marker"
+        }
+      ]
+    },
+    {
+      "id": "plant-obelisk",
+      "kit": "garden",
+      "title": "Plant obelisk",
+      "description": "Tapered timber climbing frame with reducing square rings and a small top cap. Knobs: height and timber and cap colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "plant obelisk",
+        "climbing support",
+        "garden tower",
+        "trellis"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/plant-obelisk.kcad.ts",
+      "sourceSha256": "531175decfe8e31d0c8bc23a742f79fa8e0f9bdaf19ee577719afd6537d15892",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "1800",
+          "label": "Height (mm)",
+          "choices": [
+            "1400",
+            "1800",
+            "2200"
+          ]
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#815b39",
+          "label": "Timber"
+        },
+        {
+          "name": "cap",
+          "type": "color",
+          "default": "#4d5554",
+          "label": "Top cap"
+        }
+      ],
+      "presets": {
+        "cedar": {
+          "timber": "#b07c4b"
+        },
+        "green": {
+          "timber": "#526d4c",
+          "cap": "#3a403e"
+        }
+      },
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          1.088039,
+          1.845,
+          1.082239
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "cap",
+          "color": "#4d5554",
+          "parts": [
+            "foot",
+            "foot-2",
+            "foot-3",
+            "foot-4",
+            "top-cap"
+          ],
+          "param": "cap"
+        },
+        {
+          "name": "timber",
+          "color": "#815b39",
+          "parts": [
+            "leg",
+            "leg-2",
+            "leg-3",
+            "leg-4",
+            "ring-0-0",
+            "ring-0-1",
+            "ring-0-2",
+            "ring-0-3",
+            "ring-1-0",
+            "ring-1-1",
+            "ring-1-2",
+            "ring-1-3",
+            "ring-2-0",
+            "ring-2-1",
+            "ring-2-2",
+            "ring-2-3",
+            "ring-3-0",
+            "ring-3-1",
+            "ring-3-2",
+            "ring-3-3"
+          ],
+          "param": "timber"
+        }
+      ]
+    },
+    {
+      "id": "potting-bench",
+      "kit": "garden",
+      "title": "Potting bench",
+      "description": "Outdoor potting bench with a deep worktop, lower storage shelf, back rail and hanging hooks. Knobs: worktop width and timber and hardware colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "potting bench",
+        "garden workbench",
+        "potting station",
+        "horticulture",
+        "shelf"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/potting-bench.kcad.ts",
+      "sourceSha256": "9d193299d2c92380ec995b388272ccee244c7d15bf75bf203da546dcfcad4ae2",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "width",
+          "type": "choice",
+          "default": "1400",
+          "label": "Worktop width (mm)",
+          "choices": [
+            "1100",
+            "1400",
+            "1700"
+          ]
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#8a6745",
+          "label": "Timber"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#505658",
+          "label": "Hardware"
+        }
+      ],
+      "presets": {
+        "oak": {
+          "timber": "#a67948"
+        },
+        "painted": {
+          "timber": "#597254",
+          "metal": "#383e40"
+        }
+      },
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.4,
+          1.2,
+          0.6425
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "timber",
+          "color": "#8a6745",
+          "parts": [
+            "leg",
+            "leg-2",
+            "leg-3",
+            "leg-4",
+            "worktop",
+            "lower-shelf",
+            "back-rail"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "metal",
+          "color": "#505658",
+          "parts": [
+            "hook-0",
+            "hook-1",
+            "hook-2",
+            "hook-3",
+            "soil-tray"
+          ],
+          "param": "metal"
+        }
+      ]
+    },
+    {
+      "id": "potting-soil-sack",
+      "kit": "garden",
+      "title": "Potting soil sack",
+      "description": "Tie-top garden soil sack with a soft faceted body, folded collar and carrying seam. Knobs: sack and soil and tie colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "potting soil",
+        "soil bag",
+        "garden supplies",
+        "sack"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/potting-soil-sack.kcad.ts",
+      "sourceSha256": "4cb6a31114a50e6af48fc85887098de6c132281801c4ef60e3f7eff56e2fac21",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "sack",
+          "type": "color",
+          "default": "#8b7958",
+          "label": "Sack"
+        },
+        {
+          "name": "soil",
+          "type": "color",
+          "default": "#4c3a2c",
+          "label": "Soil"
+        },
+        {
+          "name": "tie",
+          "type": "color",
+          "default": "#ba9d68",
+          "label": "Tie"
+        }
+      ],
+      "presets": {
+        "burlap": {
+          "sack": "#9d8659"
+        },
+        "dark": {
+          "sack": "#53644f",
+          "tie": "#c2b48f"
+        }
+      },
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.716455,
+          0.642,
+          0.678042
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "sack",
+          "color": "#8b7958",
+          "parts": [
+            "sack-body",
+            "top-fold"
+          ],
+          "param": "sack"
+        },
+        {
+          "name": "soil",
+          "color": "#4c3a2c",
+          "parts": [
+            "soil-opening"
+          ],
+          "param": "soil"
+        },
+        {
+          "name": "tie",
+          "color": "#ba9d68",
+          "parts": [
+            "tie-band",
+            "seam"
+          ],
+          "param": "tie"
+        }
+      ]
+    },
+    {
+      "id": "propagation-dome",
+      "kit": "garden",
+      "title": "Propagation dome",
+      "description": "Low propagation dome with a raised seed tray and ribbed transparent cover for young plants. Knobs: diameter and tray and soil and cover colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "propagation dome",
+        "seed propagator",
+        "greenhouse",
+        "garden"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/propagation-dome.kcad.ts",
+      "sourceSha256": "b8b80d274b747cd577a3ce37eff6a729c797bfb28129d71c4bb013955e894e6f",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "diameter",
+          "type": "choice",
+          "default": "520",
+          "label": "Dome diameter (mm)",
+          "choices": [
+            "420",
+            "520",
+            "620"
+          ]
+        },
+        {
+          "name": "tray",
+          "type": "color",
+          "default": "#536d4c",
+          "label": "Tray"
+        },
+        {
+          "name": "cover",
+          "type": "color",
+          "default": "#a9cbbb",
+          "label": "Cover"
+        },
+        {
+          "name": "soil",
+          "type": "color",
+          "default": "#514638",
+          "label": "Growing medium"
+        }
+      ],
+      "presets": {
+        "green": {
+          "tray": "#4b7147"
+        },
+        "clear": {
+          "cover": "#c5ddd2",
+          "soil": "#45392e"
+        }
+      },
+      "stats": {
+        "triangles": 266,
+        "sizeM": [
+          0.52,
+          0.4528,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "tray",
+          "color": "#536d4c",
+          "parts": [
+            "tray",
+            "vent-ridge",
+            "vent-ridge-2",
+            "vent-ridge-3",
+            "vent-ridge-4",
+            "vent-ridge-5",
+            "vent-ridge-6",
+            "vent-ridge-7",
+            "vent-ridge-8",
+            "handle"
+          ],
+          "param": "tray"
+        },
+        {
+          "name": "soil",
+          "color": "#514638",
+          "parts": [
+            "growing-bed"
+          ],
+          "param": "soil"
+        },
+        {
+          "name": "cover",
+          "color": "#a9cbbb",
+          "parts": [
+            "dome"
+          ],
+          "param": "cover"
+        }
+      ]
+    },
+    {
+      "id": "rain-chain",
+      "kit": "garden",
+      "title": "Rain chain",
+      "description": "Decorative rain chain suspended from a short gutter bracket with repeated cup links and a stone landing bowl. Knobs: cup count and chain and bowl and water colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "rain chain",
+        "downspout",
+        "rainwater",
+        "garden ornament"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/rain-chain.kcad.ts",
+      "sourceSha256": "e67494aba36a2fcf2f69c99f122ca719779e64d2d7778b589611a0f82d276df8",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "count",
+          "type": "choice",
+          "default": "8",
+          "label": "Cup links",
+          "choices": [
+            "6",
+            "8",
+            "10"
+          ]
+        },
+        {
+          "name": "chain",
+          "type": "color",
+          "default": "#9a774c",
+          "label": "Chain cups"
+        },
+        {
+          "name": "bowl",
+          "type": "color",
+          "default": "#77766b",
+          "label": "Landing bowl"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#628d98",
+          "label": "Water"
+        }
+      ],
+      "presets": {
+        "copper": {
+          "chain": "#a66b45"
+        },
+        "dark": {
+          "chain": "#535b5b",
+          "bowl": "#555953"
+        }
+      },
+      "stats": {
+        "triangles": 336,
+        "sizeM": [
+          0.62,
+          1.7325,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "bowl",
+          "color": "#77766b",
+          "parts": [
+            "gutter-bracket",
+            "landing-bowl"
+          ],
+          "param": "bowl"
+        },
+        {
+          "name": "chain",
+          "color": "#9a774c",
+          "parts": [
+            "hanger",
+            "cup-0",
+            "link-0",
+            "cup-1",
+            "link-1",
+            "cup-2",
+            "link-2",
+            "cup-3",
+            "link-3",
+            "cup-4",
+            "link-4",
+            "cup-5",
+            "link-5",
+            "cup-6",
+            "link-6",
+            "cup-7",
+            "link-7"
+          ],
+          "param": "chain"
+        },
+        {
+          "name": "water",
+          "color": "#628d98",
+          "parts": [
+            "water"
+          ],
+          "param": "water"
+        }
+      ]
+    },
+    {
+      "id": "rain-gauge",
+      "kit": "garden",
+      "title": "Garden rain gauge",
+      "description": "Marked rain gauge on a ground stake with a clear measuring tube and broad mounting bracket. Knobs: gauge height and frame and tube colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "rain gauge",
+        "weather station",
+        "garden measurement",
+        "rainfall"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/rain-gauge.kcad.ts",
+      "sourceSha256": "754549389b9e3751633bbdc155cce8931cb7da4780dce1fd6bb8bccee66855ff",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "650",
+          "label": "Gauge height (mm)",
+          "choices": [
+            "500",
+            "650",
+            "800"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#64704d",
+          "label": "Frame"
+        },
+        {
+          "name": "tube",
+          "type": "color",
+          "default": "#9fc6b2",
+          "label": "Measuring tube"
+        },
+        {
+          "name": "mark",
+          "type": "color",
+          "default": "#343b37",
+          "label": "Scale marks"
+        }
+      ],
+      "presets": {
+        "green": {
+          "frame": "#506b48"
+        },
+        "clear": {
+          "tube": "#bfd9cd"
+        }
+      },
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          0.165,
+          0.659,
+          0.2035
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#64704d",
+          "parts": [
+            "stake",
+            "mount",
+            "top-rim"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "tube",
+          "color": "#9fc6b2",
+          "parts": [
+            "tube"
+          ],
+          "param": "tube"
+        },
+        {
+          "name": "mark",
+          "color": "#343b37",
+          "parts": [
+            "scale-0",
+            "scale-1",
+            "scale-2",
+            "scale-3",
+            "scale-4",
+            "scale-5"
+          ],
+          "param": "mark"
+        }
+      ]
+    },
+    {
+      "id": "raised-bed-trellis",
+      "kit": "garden",
+      "title": "Raised bed with trellis",
+      "description": "Raised timber growing bed with a rear climbing trellis and visible soil surface. Knobs: length and timber and soil and trellis colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "raised bed",
+        "trellis",
+        "vegetable garden",
+        "climbing plants",
+        "allotment"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/raised-bed-trellis.kcad.ts",
+      "sourceSha256": "8d88297e9cb2c16595c51c24630d1cebc89d2659cc37712cfeeb0fb8f6a743d5",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "1400",
+          "label": "Bed length (mm)",
+          "choices": [
+            "1000",
+            "1400",
+            "1800"
+          ]
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#8a6745",
+          "label": "Timber"
+        },
+        {
+          "name": "soil",
+          "type": "color",
+          "default": "#594536",
+          "label": "Soil"
+        },
+        {
+          "name": "trellis",
+          "type": "color",
+          "default": "#62704c",
+          "label": "Trellis"
+        }
+      ],
+      "presets": {
+        "cedar": {
+          "timber": "#b07b49"
+        },
+        "darkSoil": {
+          "soil": "#3e3128",
+          "trellis": "#516b48"
+        }
+      },
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          1.4,
+          1.83,
+          0.815
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "timber",
+          "color": "#8a6745",
+          "parts": [
+            "bed-base",
+            "bed-wall",
+            "bed-wall-2",
+            "end-wall",
+            "end-wall-2"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "soil",
+          "color": "#594536",
+          "parts": [
+            "soil"
+          ],
+          "param": "soil"
+        },
+        {
+          "name": "trellis",
+          "color": "#62704c",
+          "parts": [
+            "trellis-post",
+            "trellis-post-2",
+            "trellis-rail-0",
+            "trellis-rail-1",
+            "trellis-rail-2",
+            "trellis-rail-3",
+            "trellis-rail-4",
+            "trellis-upright-0",
+            "trellis-upright-1",
+            "trellis-upright-2",
+            "trellis-upright-3"
+          ],
+          "param": "trellis"
+        }
+      ]
+    },
+    {
+      "id": "rotary-sprinkler",
+      "kit": "garden",
+      "title": "Rotary sprinkler",
+      "description": "Low tripod rotary sprinkler with four angled spray arms and a hose inlet. Knobs: body and arm and nozzle colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "rotary sprinkler",
+        "lawn sprinkler",
+        "irrigation",
+        "garden watering"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/rotary-sprinkler.kcad.ts",
+      "sourceSha256": "6cda03983c301dd255cf1e57d1cbbecaaa4058418e36435de16bd9cccd79c56d",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#58634b",
+          "label": "Body"
+        },
+        {
+          "name": "arm",
+          "type": "color",
+          "default": "#8c9b8d",
+          "label": "Spray arms"
+        },
+        {
+          "name": "nozzle",
+          "type": "color",
+          "default": "#b28f3e",
+          "label": "Nozzles"
+        }
+      ],
+      "presets": {
+        "green": {
+          "body": "#4b6846",
+          "arm": "#a4b1a2"
+        },
+        "brass": {
+          "nozzle": "#c69f3e"
+        }
+      },
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.41,
+          0.41,
+          0.39
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#58634b",
+          "parts": [
+            "base",
+            "hub"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "arm",
+          "color": "#8c9b8d",
+          "parts": [
+            "riser",
+            "spray-arm-0",
+            "spray-arm-1",
+            "spray-arm-2",
+            "spray-arm-3"
+          ],
+          "param": "arm"
+        },
+        {
+          "name": "nozzle",
+          "color": "#b28f3e",
+          "parts": [
+            "nozzle-0",
+            "nozzle-1",
+            "nozzle-2",
+            "nozzle-3",
+            "hose-coupler"
+          ],
+          "param": "nozzle"
+        }
+      ]
+    },
+    {
+      "id": "row-cover-tunnel",
+      "kit": "garden",
+      "title": "Row cover tunnel",
+      "description": "Low poly tunnel frame for protecting a vegetable row, with end hoops and a light cover. Knobs: length and frame and cover colours.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "row cover",
+        "crop tunnel",
+        "vegetable garden",
+        "plant protection"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/row-cover-tunnel.kcad.ts",
+      "sourceSha256": "909e17ac5481c417f0ecab50d25fbf95c2478c82e89f742286436c51dd6112fc",
+      "triangleBudget": 380,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "1800",
+          "label": "Length (mm)",
+          "choices": [
+            "1200",
+            "1800",
+            "2400"
+          ]
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#667064",
+          "label": "Frame"
+        },
+        {
+          "name": "cover",
+          "type": "color",
+          "default": "#c8d8c8",
+          "label": "Cover"
+        }
+      ],
+      "presets": {
+        "white": {
+          "cover": "#e2e7dc"
+        },
+        "frost": {
+          "cover": "#a7c8d6",
+          "frame": "#777f7c"
+        }
+      },
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          1.83,
+          0.8375,
+          1.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "frame",
+          "color": "#667064",
+          "parts": [
+            "ground-runner",
+            "ground-runner-2",
+            "hoop-leg",
+            "hoop-leg-2",
+            "ridge-crossbar",
+            "hoop-leg-3",
+            "hoop-leg-4",
+            "ridge-crossbar-2",
+            "hoop-leg-5",
+            "hoop-leg-6",
+            "ridge-crossbar-3",
+            "hoop-leg-7",
+            "hoop-leg-8",
+            "ridge-crossbar-4"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "cover",
+          "color": "#c8d8c8",
+          "parts": [
+            "roof-cover",
+            "end-cover",
+            "end-cover-2"
+          ],
+          "param": "cover"
+        }
+      ]
+    },
+    {
+      "id": "seedling-tray",
+      "kit": "garden",
+      "title": "Seedling tray",
+      "description": "Rectangular nursery tray with a regular grid of small planting cells and a carrying rim. Knobs: cell count and tray and cell colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "seedling tray",
+        "nursery tray",
+        "plant propagation",
+        "garden"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/seedling-tray.kcad.ts",
+      "sourceSha256": "ce9018932548f2cbc8bb1bdcc0d2d5cd4c2ed7e60ef12b58146c67eb1257f4e8",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "cells",
+          "type": "choice",
+          "default": "12",
+          "label": "Cell count",
+          "choices": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        {
+          "name": "tray",
+          "type": "color",
+          "default": "#536d4c",
+          "label": "Tray"
+        },
+        {
+          "name": "cell",
+          "type": "color",
+          "default": "#3f3328",
+          "label": "Growing medium"
+        }
+      ],
+      "presets": {
+        "green": {
+          "tray": "#4d7549"
+        },
+        "black": {
+          "tray": "#343a39",
+          "cell": "#302a24"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.76,
+          0.1775,
+          0.545
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "tray",
+          "color": "#536d4c",
+          "parts": [
+            "base",
+            "cell-wall",
+            "cell-wall-2",
+            "cell-wall-3",
+            "cell-wall-4",
+            "cell-wall-5",
+            "cell-wall-6",
+            "cell-wall-7",
+            "cell-wall-8",
+            "cell-wall-9",
+            "rim",
+            "rim-2"
+          ],
+          "param": "tray"
+        },
+        {
+          "name": "cell",
+          "color": "#3f3328",
+          "parts": [
+            "soil-cell-0-0",
+            "soil-cell-0-1",
+            "soil-cell-0-2",
+            "soil-cell-1-0",
+            "soil-cell-1-1",
+            "soil-cell-1-2",
+            "soil-cell-2-0",
+            "soil-cell-2-1",
+            "soil-cell-2-2",
+            "soil-cell-3-0",
+            "soil-cell-3-1",
+            "soil-cell-3-2"
+          ],
+          "param": "cell"
+        }
+      ]
+    },
+    {
+      "id": "tomato-cage",
+      "kit": "garden",
+      "title": "Tomato cage",
+      "description": "Reusable steel tomato cage with upright support rods and four square support rings. Knobs: height and steel and connector colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tomato cage",
+        "plant support",
+        "vegetable garden",
+        "steel frame"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/tomato-cage.kcad.ts",
+      "sourceSha256": "3579f979f344a3b7fbb7b352d9fbeedda33ccef0e34ca2c4b3f17ae239412f76",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "1500",
+          "label": "Height (mm)",
+          "choices": [
+            "1100",
+            "1500",
+            "1800"
+          ]
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#7f8984",
+          "label": "Steel rods"
+        },
+        {
+          "name": "joint",
+          "type": "color",
+          "default": "#4a5f4a",
+          "label": "Ring ties"
+        }
+      ],
+      "presets": {
+        "galvanized": {
+          "steel": "#a5abad"
+        },
+        "green": {
+          "steel": "#526d4c",
+          "joint": "#303a30"
+        }
+      },
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.668,
+          1.5,
+          0.668
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "steel",
+          "color": "#7f8984",
+          "parts": [
+            "upright",
+            "upright-2",
+            "upright-3",
+            "upright-4"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "joint",
+          "color": "#4a5f4a",
+          "parts": [
+            "ring-rail",
+            "ring-rail-2",
+            "ring-rail-3",
+            "ring-rail-4",
+            "ring-rail-5",
+            "ring-rail-6",
+            "ring-rail-7",
+            "ring-rail-8",
+            "ring-rail-9",
+            "ring-rail-10",
+            "ring-rail-11",
+            "ring-rail-12",
+            "ring-rail-13",
+            "ring-rail-14",
+            "ring-rail-15",
+            "ring-rail-16"
+          ],
+          "param": "joint"
+        }
+      ]
+    },
+    {
+      "id": "weather-vane",
+      "kit": "garden",
+      "title": "Garden weather vane",
+      "description": "Roof-mounted garden weather vane with compass arms, a directional arrow and a tail fin. Knobs: pole and vane and fin colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "weather vane",
+        "wind direction",
+        "garden ornament",
+        "weather station"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/weather-vane.kcad.ts",
+      "sourceSha256": "a8666014e1738a4468c2a49f16a4bbd5dd93a8283182136757422b0e6f656cab",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "pole",
+          "type": "color",
+          "default": "#565c59",
+          "label": "Pole"
+        },
+        {
+          "name": "vane",
+          "type": "color",
+          "default": "#a68b4b",
+          "label": "Vane"
+        },
+        {
+          "name": "fin",
+          "type": "color",
+          "default": "#7b5540",
+          "label": "Tail fin"
+        }
+      ],
+      "presets": {
+        "brass": {
+          "vane": "#c09b43",
+          "fin": "#9a6c44"
+        },
+        "dark": {
+          "pole": "#343a3a",
+          "vane": "#818b88"
+        }
+      },
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          1.15435,
+          1.46,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "pole",
+          "color": "#565c59",
+          "parts": [
+            "base-foot",
+            "roof-mount",
+            "mast"
+          ],
+          "param": "pole"
+        },
+        {
+          "name": "vane",
+          "color": "#a68b4b",
+          "parts": [
+            "compass-east-west",
+            "compass-north-south",
+            "arrow-shaft",
+            "arrow-head"
+          ],
+          "param": "vane"
+        },
+        {
+          "name": "fin",
+          "color": "#7b5540",
+          "parts": [
+            "tail-fin",
+            "fin-top"
+          ],
+          "param": "fin"
+        }
+      ]
+    },
+    {
+      "id": "worm-composter",
+      "kit": "garden",
+      "title": "Worm composter",
+      "description": "Stacked worm composting trays with tapered bases, an upper lid and a lower drain tap. Knobs: width and tray and stand and tap colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "worm composter",
+        "vermicompost",
+        "composting",
+        "garden waste"
+      ],
+      "compat": [
+        "outdoor",
+        "garden",
+        "backyard",
+        "farm"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/garden/worm-composter.kcad.ts",
+      "sourceSha256": "2346f366cf7ca179c0c2c6b2698acf6b4edb2abb24238d7c090c2246f0dcac91",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "width",
+          "type": "choice",
+          "default": "520",
+          "label": "Tray width (mm)",
+          "choices": [
+            "420",
+            "520",
+            "620"
+          ]
+        },
+        {
+          "name": "tray",
+          "type": "color",
+          "default": "#8a6745",
+          "label": "Trays"
+        },
+        {
+          "name": "stand",
+          "type": "color",
+          "default": "#555c54",
+          "label": "Stand"
+        },
+        {
+          "name": "tap",
+          "type": "color",
+          "default": "#b99140",
+          "label": "Drain tap"
+        }
+      ],
+      "presets": {
+        "cedar": {
+          "tray": "#a67749"
+        },
+        "green": {
+          "tray": "#536f4b",
+          "stand": "#343a35"
+        }
+      },
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          0.575,
+          1.155,
+          0.6575
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "stand",
+          "color": "#555c54",
+          "parts": [
+            "leg",
+            "leg-2",
+            "rim-0",
+            "rim-1",
+            "rim-2"
+          ],
+          "param": "stand"
+        },
+        {
+          "name": "tray",
+          "color": "#8a6745",
+          "parts": [
+            "tray-0",
+            "tray-1",
+            "tray-2",
+            "lid"
+          ],
+          "param": "tray"
+        },
+        {
+          "name": "tap",
+          "color": "#b99140",
+          "parts": [
+            "drain"
+          ],
+          "param": "tap"
         }
       ]
     },
