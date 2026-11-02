@@ -365,6 +365,53 @@
       ]
     },
     {
+      "id": "music",
+      "title": "Music instruments",
+      "description": "Original low-poly string, wind, percussion and stage props with editable size and color controls.",
+      "assets": [
+        "accordion",
+        "acoustic-guitar",
+        "alto-saxophone",
+        "banjo",
+        "bass-drum",
+        "bass-guitar",
+        "bassoon",
+        "bongos",
+        "cajon",
+        "cello",
+        "clarinet",
+        "concert-flute",
+        "concert-harp",
+        "conductor-podium",
+        "conga-drums",
+        "double-bass",
+        "drum-kit",
+        "electric-guitar",
+        "french-horn",
+        "harmonica",
+        "maracas",
+        "marimba",
+        "mechanical-metronome",
+        "microphone-stand",
+        "music-stand",
+        "oboe",
+        "orchestral-cymbals",
+        "orchestral-triangle",
+        "snare-drum",
+        "tambourine",
+        "tenor-saxophone",
+        "timpani",
+        "trombone",
+        "trumpet",
+        "tuba",
+        "ukulele",
+        "vibraphone",
+        "viola",
+        "violin",
+        "xylophone"
+      ]
+    },
+    {
       "id": "nature",
       "title": "Nature",
       "description": "Low-poly trees, rocks, plants and ground pieces at real-world scale, flat-shaded on one palette material.",
@@ -40929,6 +40976,2842 @@
             "footplate-1"
           ],
           "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "accordion",
+      "kit": "music",
+      "title": "Accordion",
+      "description": "Accordion with visible bellows ribs, button rows and a piano-key strip on its end.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "accordion",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/accordion.kcad.ts",
+      "sourceSha256": "f873e13d99286421ebe3e43026075414b0b48530f608e5ebf4368f129cef533e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#704c39",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          0.3145,
+          0.22,
+          0.086
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#704c39",
+          "parts": [
+            "left-end",
+            "bellows",
+            "fold-01",
+            "fold-02",
+            "fold-03",
+            "fold-04",
+            "fold-05",
+            "fold-06",
+            "fold-07",
+            "right-end",
+            "keyboard",
+            "key-one",
+            "key-two",
+            "key-three",
+            "key-four",
+            "key-five",
+            "button-row"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "acoustic-guitar",
+      "kit": "music",
+      "title": "Acoustic guitar",
+      "description": "Low-poly acoustic guitar with a waisted body, sound hole, long neck and tuning head.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "acoustic guitar",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/acoustic-guitar.kcad.ts",
+      "sourceSha256": "d803746641544fe740d952ee5926385394b04c9162869dbf2d464e06df115f04",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9a6842",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.247884,
+          0.595,
+          0.069104
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9a6842",
+          "parts": [
+            "body",
+            "upper-bout",
+            "neck",
+            "head",
+            "bridge",
+            "string-set"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "alto-saxophone",
+      "kit": "music",
+      "title": "Alto saxophone",
+      "description": "Saxophone with bent neck, broad bell and raised pearl-like key buttons.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alto saxophone",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/alto-saxophone.kcad.ts",
+      "sourceSha256": "3b5d371aea6811f9426abc1aef51c9a2d7e97ff00bb0548919689c7c9c9381a7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a18a4b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 222,
+        "sizeM": [
+          0.145997,
+          0.39436,
+          0.132229
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a18a4b",
+          "parts": [
+            "body",
+            "lower-body",
+            "bell",
+            "crook",
+            "neck",
+            "key-rail",
+            "keys",
+            "keys-upper",
+            "keys-top"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "banjo",
+      "kit": "music",
+      "title": "Banjo",
+      "description": "Banjo with a circular resonator, narrow neck, bridge and tuning head.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "banjo",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/banjo.kcad.ts",
+      "sourceSha256": "b2698188f49b405cc90da1a194929a2930daba5f0dfcf1620e81960a3e082255",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#806c55",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.164,
+          0.404,
+          0.164
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#806c55",
+          "parts": [
+            "resonator",
+            "rim",
+            "neck",
+            "head",
+            "bridge",
+            "strings"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bass-drum",
+      "kit": "music",
+      "title": "Bass drum",
+      "description": "Large concert bass drum on a floor cradle with a broad circular drumhead.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "bass drum",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/bass-drum.kcad.ts",
+      "sourceSha256": "20193aa6f313409c2fb63c332960f7a7ab9655044e3057c1f79e4290fe9c7504",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b6745",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.264,
+          0.272,
+          0.1515
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b6745",
+          "parts": [
+            "shell",
+            "front-head",
+            "rear-head",
+            "cradle-left",
+            "cradle-right",
+            "cradle-bar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bass-guitar",
+      "kit": "music",
+      "title": "Bass guitar",
+      "description": "Electric bass guitar prop with an elongated body, long fretted neck and four strings.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "bass guitar",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/bass-guitar.kcad.ts",
+      "sourceSha256": "8d5f1998443e5a3f23fd53791f2b11e8d463f9fa217777e31cdf285ad042f9a6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5b6d66",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.207772,
+          0.708,
+          0.057262
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5b6d66",
+          "parts": [
+            "body",
+            "neck",
+            "head",
+            "bridge",
+            "pickup-one",
+            "pickup-two",
+            "strings"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bassoon",
+      "kit": "music",
+      "title": "Bassoon",
+      "description": "Bassoon prop with paired long bores, curved bocal and grouped keywork.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "bassoon",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/bassoon.kcad.ts",
+      "sourceSha256": "2ab69e4ddea465f321729e6ebfad026059d914274c6b4e48cd8d51df04f187cd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d5a3c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.104,
+          0.508,
+          0.116105
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d5a3c",
+          "parts": [
+            "long-joint",
+            "wing-joint",
+            "boot-joint",
+            "bell-joint",
+            "bocal",
+            "key-rail",
+            "key-low",
+            "key-mid",
+            "key-high"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bongos",
+      "kit": "music",
+      "title": "Bongos",
+      "description": "Small paired bongo drums joined by a center bridge and supported on a low base.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "bongos",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/bongos.kcad.ts",
+      "sourceSha256": "44e933e6d62e6a3361e448dc9a1d8080eab1190ecf230341cf81a1e04e3b8ec7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9a704d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.21,
+          0.119,
+          0.106
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9a704d",
+          "parts": [
+            "left-shell",
+            "right-shell",
+            "left-head",
+            "right-head",
+            "bridge",
+            "base"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cajon",
+      "kit": "music",
+      "title": "Cajon",
+      "description": "Peruvian box drum with a broad front striking panel, low-profile feet and top seat edge.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cajon",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/cajon.kcad.ts",
+      "sourceSha256": "6cc9a363a8babf207ccb94e2747aea7eb0dfe80816b4d253bf9fec73922339bd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a67545",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.318,
+          0.474,
+          0.316
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a67545",
+          "parts": [
+            "body",
+            "front-panel",
+            "top-seat",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cello",
+      "kit": "music",
+      "title": "Cello",
+      "description": "Seated cello with a broad resonant body, long neck, bridge and extended endpin.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "cello",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/cello.kcad.ts",
+      "sourceSha256": "9b96886c639b8c7eccdd8e93179cbc1cecc6d17e1506e6ee5cd0e8e16ab2a4f6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#96653d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 222,
+        "sizeM": [
+          0.270064,
+          0.682,
+          0.06949
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#96653d",
+          "parts": [
+            "lower-bout",
+            "upper-bout",
+            "neck",
+            "scroll",
+            "bridge",
+            "endpin",
+            "strings"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "clarinet",
+      "kit": "music",
+      "title": "Clarinet",
+      "description": "Straight clarinet with a flared bell, mouthpiece and regularly spaced key pads.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "clarinet",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/clarinet.kcad.ts",
+      "sourceSha256": "09ee5ccf067b55b0ff1c08a4df6e451c69ea51f97b2f7a45181a89a3ba95d6f0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#343c44",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 482,
+        "sizeM": [
+          0.064539,
+          0.573,
+          0.065818
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#343c44",
+          "parts": [
+            "barrel",
+            "bell",
+            "mouthpiece",
+            "key-one",
+            "key-two",
+            "key-three",
+            "key-four",
+            "key-five"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "concert-flute",
+      "kit": "music",
+      "title": "Concert flute",
+      "description": "Concert flute with an inline head joint and visible round key cups.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "concert flute",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/concert-flute.kcad.ts",
+      "sourceSha256": "4abc4d500de7058f444237febcaf48a416c12dabf1f33b44784ae083e25a8f3c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a4a9a4",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          0.532,
+          0.037,
+          0.034
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a4a9a4",
+          "parts": [
+            "tube",
+            "head-joint",
+            "key-one",
+            "key-two",
+            "key-three",
+            "key-four"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "concert-harp",
+      "kit": "music",
+      "title": "Concert harp",
+      "description": "Concert harp with a triangular frame, soundboard, slanted pillar and a fan of strings.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "concert harp",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/concert-harp.kcad.ts",
+      "sourceSha256": "a8054306ed585b3f8f24e39c0fe2958e87a11d40d7c395b891b731eadfc6e5d8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b29354",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.322131,
+          0.898196,
+          0.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b29354",
+          "parts": [
+            "soundboard",
+            "pillar",
+            "neck",
+            "base",
+            "string-01",
+            "string-02",
+            "string-03",
+            "string-04",
+            "string-05",
+            "string-06",
+            "string-07",
+            "string-08"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "conductor-podium",
+      "kit": "music",
+      "title": "Conductor podium",
+      "description": "Small raised conductor podium with broad top, stepped riser and front access step.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "conductor podium",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/conductor-podium.kcad.ts",
+      "sourceSha256": "a92ab63582cb8bf56851d5123afb5a596ce56051cf8f47cbb2ee342b643417fd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#92734f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.42,
+          0.16,
+          0.408
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#92734f",
+          "parts": [
+            "platform",
+            "upper-deck",
+            "front-step",
+            "back-rail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "conga-drums",
+      "kit": "music",
+      "title": "Conga drums",
+      "description": "Pair of tall conga drums with tapered-looking shells, top heads and floor feet.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "conga drums",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/conga-drums.kcad.ts",
+      "sourceSha256": "4c10c2136f689238e1140c7ad8863ca3741f9fff85e83c3549409e3c4f8384b3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#956a43",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          0.252,
+          0.404,
+          0.116
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#956a43",
+          "parts": [
+            "left-shell",
+            "right-shell",
+            "left-head",
+            "right-head",
+            "left-foot",
+            "right-foot",
+            "cross-brace"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "double-bass",
+      "kit": "music",
+      "title": "Double bass",
+      "description": "Upright double bass with a large body, long neck, bridge and floor endpin.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "double bass",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/double-bass.kcad.ts",
+      "sourceSha256": "9c012d6f7334868d80f4e7ae671adc0857b3d2e5a2ae2796b86af6de211bcb48",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#755137",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 222,
+        "sizeM": [
+          0.323997,
+          0.99,
+          0.087157
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#755137",
+          "parts": [
+            "lower-bout",
+            "upper-bout",
+            "neck",
+            "scroll",
+            "bridge",
+            "endpin",
+            "strings"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "drum-kit",
+      "kit": "music",
+      "title": "Drum kit",
+      "description": "Compact drum kit with bass drum, supported snare and toms, cymbal stands and a stool.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "drum kit",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/drum-kit.kcad.ts",
+      "sourceSha256": "134f0122ee96e482807fbe97d84639f045cf4fbda24a346f66f19a0e315c4cb8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b6a46",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 560,
+        "sizeM": [
+          0.419998,
+          0.26484,
+          0.128
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b6a46",
+          "parts": [
+            "bass-drum",
+            "snare",
+            "snare-stand-post",
+            "snare-stand-foot",
+            "floor-tom",
+            "rack-tom-left",
+            "rack-tom-right",
+            "tom-support",
+            "cymbal-one",
+            "cymbal-two",
+            "cymbal-stand-left",
+            "cymbal-stand-right",
+            "cymbal-foot-left",
+            "cymbal-foot-right",
+            "stool-seat",
+            "stool-post"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "electric-guitar",
+      "kit": "music",
+      "title": "Electric guitar",
+      "description": "Solid-body electric guitar with a double-cutaway silhouette, pickup bars, bridge and headstock.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "electric guitar",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/electric-guitar.kcad.ts",
+      "sourceSha256": "bbbc5215aef072c30ccbe0210620744db1e334a1e2983ee4d3a968f7f16648ae",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#455c78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.179512,
+          0.584,
+          0.053971
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#455c78",
+          "parts": [
+            "lower-body",
+            "upper-body",
+            "neck",
+            "head",
+            "bridge",
+            "neck-pickup",
+            "bridge-pickup",
+            "strings"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "french-horn",
+      "kit": "music",
+      "title": "French horn",
+      "description": "Coiled French horn prop with a flared bell, circular tubing loop and rotary valve block.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "french horn",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/french-horn.kcad.ts",
+      "sourceSha256": "ec7dc9731565c106eff5d7ee73c6501e2515ef2f0698b9e34634f7c468a10645",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a28b4f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 416,
+        "sizeM": [
+          0.257997,
+          0.152,
+          0.212
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a28b4f",
+          "parts": [
+            "outer-loop",
+            "inner-loop",
+            "bell",
+            "valve-block",
+            "valve-one",
+            "valve-two",
+            "valve-three",
+            "mouthpiece"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "harmonica",
+      "kit": "music",
+      "title": "Harmonica",
+      "description": "Compact harmonica with a rectangular body and repeated raised reed covers.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "harmonica",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/harmonica.kcad.ts",
+      "sourceSha256": "ac2ca00f20b2804e6f48d010c1bdb4bb4a944c13e78954998c7dbc27f14aec64",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#888f91",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.202,
+          0.06,
+          0.068
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#888f91",
+          "parts": [
+            "body",
+            "top-cover",
+            "bottom-cover",
+            "reed-one",
+            "reed-two",
+            "reed-three",
+            "reed-four",
+            "reed-five",
+            "reed-six",
+            "reed-seven"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "maracas",
+      "kit": "music",
+      "title": "Maracas",
+      "description": "Pair of hand maracas with rounded shaker heads and straight handles.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "maracas",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/maracas.kcad.ts",
+      "sourceSha256": "9a92795b1f8106cb66dad91029ab79ebe3858a7b7f200381b3a4b9c5a991f890",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a47642",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          0.201846,
+          0.136,
+          0.082421
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a47642",
+          "parts": [
+            "left-head",
+            "right-head",
+            "left-handle",
+            "right-handle",
+            "left-neck",
+            "right-neck"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "marimba",
+      "kit": "music",
+      "title": "Marimba",
+      "description": "Marimba with long graduated bars, resonator tubes and a sturdy frame.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "marimba",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/marimba.kcad.ts",
+      "sourceSha256": "ad01750260476a5d03e25b0a50a9c3523682c087668566b5cf2554439d5e44fa",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#92653f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.34,
+          0.199,
+          0.21
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#92653f",
+          "parts": [
+            "bar-low",
+            "bar-mid-low",
+            "bar-mid",
+            "bar-mid-high",
+            "bar-high",
+            "resonator-low",
+            "resonator-mid",
+            "resonator-high",
+            "frame-left",
+            "frame-right",
+            "legs"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mechanical-metronome",
+      "kit": "music",
+      "title": "Mechanical metronome",
+      "description": "Stepped tapered mechanical metronome with a face scale, pendulum and sliding weight.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "mechanical metronome",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/mechanical-metronome.kcad.ts",
+      "sourceSha256": "d8a01894669e143b1758ade227c7490b928ea5eb7d4ac57f36c921de82508ea4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#876b4a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 162,
+        "sizeM": [
+          0.17,
+          0.296,
+          0.118
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#876b4a",
+          "parts": [
+            "lower-case",
+            "upper-step-one",
+            "upper-step-two",
+            "upper-step-three",
+            "top-cap",
+            "pendulum-rod",
+            "slider-weight",
+            "base"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "microphone-stand",
+      "kit": "music",
+      "title": "Microphone stand",
+      "description": "Stage microphone on a tripod stand with an angled boom arm and round grille head.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "microphone stand",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/microphone-stand.kcad.ts",
+      "sourceSha256": "0b7c9dc01c2ea134868204f81325b9df3eb888ef5797725ce5281111c4ba64ae",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#69757a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 266,
+        "sizeM": [
+          0.403803,
+          0.7251,
+          0.1795
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#69757a",
+          "parts": [
+            "base-post",
+            "base-foot-one",
+            "base-foot-two",
+            "base-foot-three",
+            "boom",
+            "boom-joint",
+            "microphone-body",
+            "microphone-grille",
+            "clip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "music-stand",
+      "kit": "music",
+      "title": "Music stand",
+      "description": "Portable music stand with a broad score tray, adjustable stem and three floor feet.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "music stand",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/music-stand.kcad.ts",
+      "sourceSha256": "ed86a2cfcc855ed9c8fa48a91fa3e66012a419857a620e513af453d84f39db28",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#66747b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.25,
+          0.5475,
+          0.155
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#66747b",
+          "parts": [
+            "tray",
+            "tray-lip",
+            "stem",
+            "collar",
+            "foot-one",
+            "foot-two",
+            "foot-three"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "oboe",
+      "kit": "music",
+      "title": "Oboe",
+      "description": "Double-reed oboe with a narrow tapered-looking body, bell, reed and small key pads.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "oboe",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/oboe.kcad.ts",
+      "sourceSha256": "4dc6626fcc6e394703f75b43cd0b92543f8ea45a10776a50874f2251bdec688a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8e5b34",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 526,
+        "sizeM": [
+          0.061983,
+          0.5675,
+          0.053694
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8e5b34",
+          "parts": [
+            "body",
+            "bell",
+            "reed",
+            "upper-joint",
+            "key-one",
+            "key-two",
+            "key-three",
+            "key-four",
+            "key-five"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "orchestral-cymbals",
+      "kit": "music",
+      "title": "Orchestral cymbals",
+      "description": "Pair of thin orchestral crash cymbals with central bosses and short grips.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "orchestral cymbals",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/orchestral-cymbals.kcad.ts",
+      "sourceSha256": "4894965a73307938d1ba8f04c83de9b47a0494edfb6e6b97936eb696664453b7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b29b56",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 316,
+        "sizeM": [
+          0.118498,
+          0.178,
+          0.136832
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b29b56",
+          "parts": [
+            "upper-cymbal",
+            "lower-cymbal",
+            "upper-boss",
+            "lower-boss",
+            "upper-grip",
+            "lower-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "orchestral-triangle",
+      "kit": "music",
+      "title": "Orchestral triangle",
+      "description": "Metal triangle percussion instrument with a three-sided frame and hanging striker.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "orchestral triangle",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/orchestral-triangle.kcad.ts",
+      "sourceSha256": "7651bb30a9418b029e120323ef70f7ed91e081ea9c2857458e6db8fbd3da7207",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a9a69a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 158,
+        "sizeM": [
+          0.163804,
+          0.16,
+          0.018732
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a9a69a",
+          "parts": [
+            "left-side",
+            "right-side",
+            "top-bar",
+            "striker",
+            "striker-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "snare-drum",
+      "kit": "music",
+      "title": "Snare drum",
+      "description": "Snare drum with a shallow shell, paired hoops and a simple carry-stand frame.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "snare drum",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/snare-drum.kcad.ts",
+      "sourceSha256": "bfb6c76cfe10a4c25ea45bda2d5f25b7bd4bd563a5c3f3ec57aec53e1258f277",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9b7b55",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          0.164,
+          0.16,
+          0.164
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9b7b55",
+          "parts": [
+            "shell",
+            "top-hoop",
+            "bottom-hoop",
+            "stand-post",
+            "stand-foot-one",
+            "stand-foot-two"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tambourine",
+      "kit": "music",
+      "title": "Tambourine",
+      "description": "Hand tambourine with a broad ring and evenly spaced pairs of jingles.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tambourine",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/tambourine.kcad.ts",
+      "sourceSha256": "cb43c03cbae873fb6f477791c744b12de0dab10cb88dcef96879715357a9a29b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9e8050",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 286,
+        "sizeM": [
+          0.186,
+          0.08725,
+          0.186
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9e8050",
+          "parts": [
+            "ring",
+            "jingle-one",
+            "jingle-two",
+            "jingle-three",
+            "jingle-four",
+            "jingle-five"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tenor-saxophone",
+      "kit": "music",
+      "title": "Tenor saxophone",
+      "description": "Larger tenor saxophone with a curved neck, broad bell and raised keywork.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tenor saxophone",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/tenor-saxophone.kcad.ts",
+      "sourceSha256": "37444f8b03ec467db38cdc761f3428e1539b9e6acf339d8f94e4b854fd1c3e78",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9a8345",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 222,
+        "sizeM": [
+          0.169997,
+          0.46572,
+          0.152158
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9a8345",
+          "parts": [
+            "body",
+            "lower-body",
+            "bell",
+            "crook",
+            "neck",
+            "key-rail",
+            "keys-low",
+            "keys-mid",
+            "keys-high"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "timpani",
+      "kit": "music",
+      "title": "Timpani",
+      "description": "Kettle drum with a broad bowl, top head, adjustment legs and pedal base.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "timpani",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/timpani.kcad.ts",
+      "sourceSha256": "6ead11c7560e869947bb70788c6518b7a54cb0985653dc3d89f117d55c2555ea",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a18a56",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 226,
+        "sizeM": [
+          0.222,
+          0.1689,
+          0.222
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a18a56",
+          "parts": [
+            "bowl",
+            "head-rim",
+            "head",
+            "leg-one",
+            "leg-two",
+            "leg-three",
+            "pedal"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "trombone",
+      "kit": "music",
+      "title": "Trombone",
+      "description": "Trombone with a wide bell, long slide tubes and a cross brace.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "trombone",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/trombone.kcad.ts",
+      "sourceSha256": "29a980d28acceeafdade915700c1c545ba63f10c4e756c3f22aff7e9fe9fd6f9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a28a4e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 314,
+        "sizeM": [
+          0.249984,
+          0.335,
+          0.150229
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a28a4e",
+          "parts": [
+            "bell",
+            "bell-pipe",
+            "inner-slide-left",
+            "inner-slide-right",
+            "outer-slide-left",
+            "outer-slide-right",
+            "slide-crossbar",
+            "mouthpiece"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "trumpet",
+      "kit": "music",
+      "title": "Trumpet",
+      "description": "Low-poly trumpet with a bell flare, three valve buttons and a straight lead pipe.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "trumpet",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/trumpet.kcad.ts",
+      "sourceSha256": "f05ace8a88a1ae437c1d95acb52ab828372f9a2dd38b69ddec8a185a12036352",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a89152",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.309998,
+          0.083,
+          0.291569
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a89152",
+          "parts": [
+            "main-pipe",
+            "bell",
+            "valve-one",
+            "valve-two",
+            "valve-three",
+            "valve-caps",
+            "mouthpiece"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tuba",
+      "kit": "music",
+      "title": "Tuba",
+      "description": "Compact tuba with a large bell, looping body tube and front-facing valve buttons.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tuba",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/tuba.kcad.ts",
+      "sourceSha256": "cdd78c61d0958cda57003ccaf87405e726ac39004224592e9cd327f592428009",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#988148",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 340,
+        "sizeM": [
+          0.208419,
+          0.295,
+          0.184
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#988148",
+          "parts": [
+            "main-bell",
+            "bell-neck",
+            "lower-loop",
+            "body",
+            "valve-one",
+            "valve-two",
+            "valve-three"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ukulele",
+      "kit": "music",
+      "title": "Ukulele",
+      "description": "Compact four-string ukulele with a rounded body, short neck, bridge and sound hole.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "ukulele",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/ukulele.kcad.ts",
+      "sourceSha256": "e7e3ab715de665da2a966fa5c7e075cc27c2e3d50c559d5c50e89227fc8f1f89",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b5834f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.169163,
+          0.3455,
+          0.044756
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b5834f",
+          "parts": [
+            "body",
+            "upper-bout",
+            "neck",
+            "head",
+            "bridge",
+            "sound-hole",
+            "strings"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "vibraphone",
+      "kit": "music",
+      "title": "Vibraphone",
+      "description": "Vibraphone with graduated bars, resonator tubes and a compact wheeled stand.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "vibraphone",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/vibraphone.kcad.ts",
+      "sourceSha256": "80449031171d5f520603e008465fc92deab24f939fc16f02b81afa0fbed84b29",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9f8751",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          0.33,
+          0.193,
+          0.172
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9f8751",
+          "parts": [
+            "bar-one",
+            "bar-two",
+            "bar-three",
+            "bar-four",
+            "bar-five",
+            "resonator-one",
+            "resonator-two",
+            "resonator-three",
+            "resonator-four",
+            "resonator-five",
+            "crossbar",
+            "legs"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "viola",
+      "kit": "music",
+      "title": "Viola",
+      "description": "Slightly larger viola prop with an hourglass body, neck, bridge and four strings.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "viola",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/viola.kcad.ts",
+      "sourceSha256": "2088b4f8f48f965b3dfe639e412710491b136b9ea3f4aa434c9278ef4a434c9e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#92633f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 178,
+        "sizeM": [
+          0.173342,
+          0.403,
+          0.037464
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#92633f",
+          "parts": [
+            "lower-bout",
+            "upper-bout",
+            "neck",
+            "scroll",
+            "bridge",
+            "strings"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "violin",
+      "kit": "music",
+      "title": "Violin",
+      "description": "Faceted violin with an hourglass body, raised neck, bridge and four strings.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "violin",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/violin.kcad.ts",
+      "sourceSha256": "c8252ae6b82d5b325d72c91511372d9624e5ad3432e5c09aeeaf2faacfe8f91d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a46e3f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 178,
+        "sizeM": [
+          0.150057,
+          0.368,
+          0.035591
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a46e3f",
+          "parts": [
+            "lower-bout",
+            "upper-bout",
+            "neck",
+            "scroll",
+            "bridge",
+            "strings"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "xylophone",
+      "kit": "music",
+      "title": "Xylophone",
+      "description": "Tabletop xylophone with graduated wooden bars and crossed support legs.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "xylophone",
+        "music",
+        "instrument",
+        "orchestra",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "music",
+        "orchestra",
+        "stage",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/music/xylophone.kcad.ts",
+      "sourceSha256": "b8dd819b9c843bec637a1c09ccfd44721bf8b027a02f298e64e5daf794f3883a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a16e43",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          0.249,
+          0.155,
+          0.195
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a16e43",
+          "parts": [
+            "bar-one",
+            "bar-two",
+            "bar-three",
+            "bar-four",
+            "bar-five",
+            "frame-left",
+            "frame-right",
+            "leg-left",
+            "leg-right",
+            "mallet"
+          ],
+          "param": "color"
         }
       ]
     },

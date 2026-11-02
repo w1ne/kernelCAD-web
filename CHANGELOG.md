@@ -10,6 +10,11 @@
   hammock and fishing rod. The catalog grows from 583 to 595 assets. Kit
   README, generated previews and the reproducible demo bundle:
   `docs/demos/catalog-wave-2/`.
+- Music catalog wave: 40 original parametric low-poly CC0 instruments and stage
+  props in the new `catalog/kits/music` kit, growing the catalog from 595 to
+  635 assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/music/README.md` and
+  `artifacts/catalog-demos/music-wave-20261102/`.
 
 - Asset catalog wave 1: 60 new original parametric low-poly assets (CC0) in
   five new kits, 12 each: `catalog/kits/tools-equipment` (hammers, wrench,

@@ -1,0 +1,22 @@
+{
+  "video": "artifacts/catalog-demos/music-wave-20261102/music-kit.mp4",
+  "bytes": 296528,
+  "sha256": "6de63233d03dd70fa4036817515f357eae84b2d0323fe793ccb8a43106eeb0ea",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 24.0,
+  "decodedFrameSamples": [
+    "artifacts/catalog-demos/music-wave-20261102/video-review/decoded-01.png",
+    "artifacts/catalog-demos/music-wave-20261102/video-review/decoded-02.png",
+    "artifacts/catalog-demos/music-wave-20261102/video-review/decoded-03.png",
+    "artifacts/catalog-demos/music-wave-20261102/video-review/decoded-04.png",
+    "artifacts/catalog-demos/music-wave-20261102/video-review/decoded-05.png",
+    "artifacts/catalog-demos/music-wave-20261102/video-review/decoded-06.png",
+    "artifacts/catalog-demos/music-wave-20261102/video-review/decoded-07.png",
+    "artifacts/catalog-demos/music-wave-20261102/video-review/decoded-08.png"
+  ],
+  "contactSheet": "artifacts/catalog-demos/music-wave-20261102/video-review/contact-sheet.png",
+  "manualVisualInspection": true
+}
