@@ -32,7 +32,6 @@ presets({
 const p = assembly('wheelchair');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('seat', b(0, 0, 430, 360, 380, 36).color(shell));
 p.part('backrest', b(0, 162, 655, 360, 36, 430).color(shell));

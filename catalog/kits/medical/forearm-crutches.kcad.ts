@@ -33,7 +33,6 @@ presets({
 const p = assembly('forearm-crutches');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 for (const side of [-1, 1]) {
   const x = side * 76;

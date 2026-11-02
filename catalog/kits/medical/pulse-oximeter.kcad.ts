@@ -32,7 +32,6 @@ presets({
 const p = assembly('pulse-oximeter');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('lower-jaw', b(0, 0, 14, 92, 42, 28).color(shell));
 p.part('upper-jaw', box(82, 42, 24, true).rotate([0, 1, 0], -7).translate(-4, 0, 53).color(shell));

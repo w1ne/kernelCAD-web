@@ -33,7 +33,6 @@ const tubeCount = param('tubeCount', '4', { choices: ['3', '4', '5'], label: 'Tu
 const p = assembly('specimen-tube-rack');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('base', b(0, 0, 8, 190, 96, 16).color(shell));
 p.part('top-rail', b(0, 0, 48, 190, 96, 12).color(accent));

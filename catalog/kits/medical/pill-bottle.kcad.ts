@@ -30,9 +30,7 @@ presets({
   emergency: { shell: '#ebe8df', accent: '#c9413b' },
 });
 const p = assembly('pill-bottle');
-const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('bottle', c(0, 0, 0, 82, 27, 10).color(shell));
 p.part('label', c(0, 0, 22, 38, 28, 10).color(accent));

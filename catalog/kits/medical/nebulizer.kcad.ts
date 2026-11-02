@@ -32,7 +32,6 @@ presets({
 const p = assembly('nebulizer');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('compressor', b(0, 0, 48, 190, 150, 96).color(shell));
 for (let i = 0; i < 4; i++) p.part('vent-' + i, b(-68 + i * 24, -77, 47, 10, 4, 46).color(accent));

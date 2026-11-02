@@ -32,7 +32,6 @@ presets({
 const p = assembly('instrument-trolley');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('lower-shelf', b(0, 0, 210, 360, 240, 20).color(shell));
 p.part('top-tray', b(0, 0, 610, 400, 280, 22).color(shell));

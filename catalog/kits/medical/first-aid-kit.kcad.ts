@@ -31,8 +31,6 @@ presets({
 });
 const p = assembly('first-aid-kit');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
-const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('case', b(0, 0, 41, 190, 120, 82).color(shell));
 p.part('lid', b(0, 0, 88, 194, 124, 14).color(accent));

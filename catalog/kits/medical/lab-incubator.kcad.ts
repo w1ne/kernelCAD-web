@@ -31,8 +31,6 @@ presets({
 });
 const p = assembly('lab-incubator');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
-const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('cabinet', b(0, 0, 145, 240, 190, 290).color(shell));
 p.part('door', b(0, -99, 150, 200, 8, 245).color(accent));

@@ -33,7 +33,6 @@ const shelfCount = param('shelves', '2', { choices: ['1', '2'], label: 'Shelf co
 const p = assembly('medical-cart');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 for (let i = 0; i < Number(shelfCount.value); i++) {
   const z = i === 0 ? 180 : 560;

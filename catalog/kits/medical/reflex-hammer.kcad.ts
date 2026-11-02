@@ -32,7 +32,6 @@ presets({
 const p = assembly('reflex-hammer');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('handle', c(0, 0, 0, 145, 9, 8).color(shell));
 p.part('head-bar', b(0, 0, 152, 86, 20, 20).color(accent));

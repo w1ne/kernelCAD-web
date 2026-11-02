@@ -32,7 +32,6 @@ presets({
 const p = assembly('exam-table');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('padded-top', b(0, 0, 655, 660, 230, 100).color(shell));
 p.part('underframe', b(0, 0, 592, 570, 170, 28).color(accent));

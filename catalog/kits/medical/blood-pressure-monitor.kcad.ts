@@ -32,7 +32,6 @@ presets({
 const p = assembly('blood-pressure-monitor');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('monitor', b(0, -38, 50, 138, 44, 92).color(shell));
 p.part('foot-left', c(-50, -38, 0, 10, 12, 8).color(accent));

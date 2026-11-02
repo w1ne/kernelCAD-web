@@ -33232,7 +33232,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/adhesive-bandage-box.kcad.ts",
-      "sourceSha256": "354e6d3cc7e4a44e511abb86e1421f13020069aa05de4a647f67546f7c6b86e3",
+      "sourceSha256": "d8b6e0c1df78017b9ba0e8e031637359addf79155d3d32d204cf8c9f639e38b3",
       "triangleBudget": 260,
       "params": [
         {
@@ -33313,7 +33313,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/bandage-roll.kcad.ts",
-      "sourceSha256": "eaffa38a64765ff11ef6308d34178bba30cce9fe4757b839549b272e33d48ead",
+      "sourceSha256": "2e7a096b41673d34b53880e201d86cd0f6a53497ba5731f284a8ac051150ee87",
       "triangleBudget": 300,
       "params": [
         {
@@ -33392,7 +33392,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/bedside-cabinet.kcad.ts",
-      "sourceSha256": "bd4c31a3ec1dc0f7c9510c37c2655b15daf0d2aef03148692d5020c8258cf16c",
+      "sourceSha256": "7bc7e01358eb90c147d15ec7bc3e867cc47193e7f3c17322a87ce257cb1f5306",
       "triangleBudget": 500,
       "params": [
         {
@@ -33475,7 +33475,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/blood-collection-tube.kcad.ts",
-      "sourceSha256": "bb2bfcf95f042d2bbed766e178afec2748f2d85389c9de2abf09563a8f4717b9",
+      "sourceSha256": "b4abb10f10391cfdb869539eef201458d8b9146ec3f53bb0b723020b2549978a",
       "triangleBudget": 240,
       "params": [
         {
@@ -33555,7 +33555,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/blood-pressure-monitor.kcad.ts",
-      "sourceSha256": "e6ef5856dfba7d5b866f9c68e065bc7726bd1cdf568f626f8693e691693b8623",
+      "sourceSha256": "491edf8da44a8b5b9027c40229d77c7862a20751fcc4384de99c26fba385f8ff",
       "triangleBudget": 400,
       "params": [
         {
@@ -33640,7 +33640,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/centrifuge.kcad.ts",
-      "sourceSha256": "c6e086f84a73b606d7e671bbd9103b55d1913667905dca660bc534a1b1c34fc3",
+      "sourceSha256": "f7a2a1cbd1a7c763c10405c3083733fa0696c87167462803c838fe6898501596",
       "triangleBudget": 400,
       "params": [
         {
@@ -33726,7 +33726,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/defibrillator.kcad.ts",
-      "sourceSha256": "59ab08de5405e37b3055a7b51ad576c185fed2c4625e937c379106de585205f4",
+      "sourceSha256": "638da0b4533825655ece1cf2d0ff646c60b081e2ace072365fc32bdc3c41fd0a",
       "triangleBudget": 450,
       "params": [
         {
@@ -33810,7 +33810,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/diagnostic-monitor.kcad.ts",
-      "sourceSha256": "d578361229140c028b367fd8cf658badfea9e4138f21e10fc63dff7b265c5301",
+      "sourceSha256": "916c417f8183a08c5174297a0fd49a7d8775e5500cfe44f69359092927a06e18",
       "triangleBudget": 400,
       "params": [
         {
@@ -33894,7 +33894,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/digital-thermometer.kcad.ts",
-      "sourceSha256": "3bcde71077c370dfd61c6f6965000fea0b3424fa41e5bc904aef4a9851d519dc",
+      "sourceSha256": "b4c21fd227993721215d5e59c6b4fe7295cd6956e124c4b0bb50c61fa26d6927",
       "triangleBudget": 240,
       "params": [
         {
@@ -33975,7 +33975,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/erlenmeyer-flask.kcad.ts",
-      "sourceSha256": "f820053e5e8f1a6343e1137a26613e6c808822510b333cacc0cdcddf7d039eb7",
+      "sourceSha256": "8d6dd164aba3caaca9e626df7e58bc9c6ddba91f561c55a1eab6049adb463f8a",
       "triangleBudget": 260,
       "params": [
         {
@@ -34056,7 +34056,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/exam-table.kcad.ts",
-      "sourceSha256": "0858c9f33bd4097ee5c117ca100050d8d826cb89b0c6c4002567aedea386efd9",
+      "sourceSha256": "88dd0adbbb26a6dce49337a12e8c761d94be800b86ac9157d6872f023cb62171",
       "triangleBudget": 600,
       "params": [
         {
@@ -34140,7 +34140,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/examination-light.kcad.ts",
-      "sourceSha256": "1002b450fbb6b038d405e38b23e877f57917c99e1df1c61258f05071b3f00dd7",
+      "sourceSha256": "7251b2a058f2175f289786141b716bca8c5fac6dd38808a05ca3fe2387303256",
       "triangleBudget": 450,
       "params": [
         {
@@ -34228,7 +34228,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/first-aid-kit.kcad.ts",
-      "sourceSha256": "b488f65840d1024880f2eb14f9201298ab6da14febac3b141b7a12f1e4d46446",
+      "sourceSha256": "bc34bc9d141569a0670cb742cdc4b475d0102cceb3fda8161bc3e39ed5ad5e52",
       "triangleBudget": 350,
       "params": [
         {
@@ -34313,7 +34313,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/forceps.kcad.ts",
-      "sourceSha256": "8f22fa9cd30820fac3a90cf30c694b29f8309308c985f154837f06ab160ff717",
+      "sourceSha256": "b15739c5750befd8eb45a3d64d41b506df7158ca63f66581623bb794b643d20e",
       "triangleBudget": 300,
       "params": [
         {
@@ -34395,7 +34395,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/forearm-crutches.kcad.ts",
-      "sourceSha256": "6cb277e0e8fa82c0ad1731d0b004588f38123eed48e43d2356a350f722e55b13",
+      "sourceSha256": "1cfb2654da329d70e5c3bd43b770f9f69469354262fbfd0a9e20588c36a0d086",
       "triangleBudget": 350,
       "params": [
         {
@@ -34479,7 +34479,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/gauze-pads.kcad.ts",
-      "sourceSha256": "d61185ad834a70b157991f56bb384f3d6d54ee5db5871394ef9c4925d4039e8b",
+      "sourceSha256": "633bc6ce5099e89d3b96d6fbdf83d1d704b0a9d3d18403125a6b8c089ee3424d",
       "triangleBudget": 240,
       "params": [
         {
@@ -34561,7 +34561,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/hospital-bed.kcad.ts",
-      "sourceSha256": "2e82cf1bff8fd2ce1a14ae7139fc25d522b526711d76ceb30584d462f6219212",
+      "sourceSha256": "96c25f78b69c4d944036c173e60a8bb0d8c1a27db32f4854e4d3752362bc1697",
       "triangleBudget": 600,
       "params": [
         {
@@ -34663,7 +34663,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/instrument-trolley.kcad.ts",
-      "sourceSha256": "e738f12a181a812653a7e57f52f32e6ae1f5ab32012bef7993f72a1e849914aa",
+      "sourceSha256": "8d0a277de0ee499860172989244cf65e96928fa8c1c2caa1d72023c27fc025cd",
       "triangleBudget": 500,
       "params": [
         {
@@ -34747,7 +34747,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/iv-stand.kcad.ts",
-      "sourceSha256": "3ef4c1f1a3643534ecc304c44c262e2fc488965265369c19fc1578b4191ce2f8",
+      "sourceSha256": "52a6f2e69fa59df7970bc5d6bd35a22c640b8970302ab7c39f65d376211263a5",
       "triangleBudget": 400,
       "params": [
         {
@@ -34834,7 +34834,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/lab-incubator.kcad.ts",
-      "sourceSha256": "83c30be445db647cf23987ec16077ea648e649357135bbc27017930ab8a948be",
+      "sourceSha256": "e93e0f2475f5908c3b0ad6e5ba1c7a61ce93b20a39998f05aa9e5527bbff8abe",
       "triangleBudget": 500,
       "params": [
         {
@@ -34918,7 +34918,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/medical-cart.kcad.ts",
-      "sourceSha256": "d3970e97e8a191e7f004786d2acf0c6513ab91dce1e102093c9c04bd6d01c45c",
+      "sourceSha256": "06da28a98b01f687a0296d8b362028b7e29ff92f367fa5ffb7221914fc7940a2",
       "triangleBudget": 600,
       "params": [
         {
@@ -35016,7 +35016,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/microscope.kcad.ts",
-      "sourceSha256": "7563ea43beccfa9e26679197bce8ba06c78af0871e3bb722d0ca26993e2aa91d",
+      "sourceSha256": "b68b447b3dae160087794d7cd031bbd711fbe9769e47cc485945cc8bcc7a8411",
       "triangleBudget": 500,
       "params": [
         {
@@ -35103,7 +35103,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/nebulizer.kcad.ts",
-      "sourceSha256": "3f7ea33a712c445af211c3c3da2a20c6d17c7cbb6c787fe164ab011f8bdcd068",
+      "sourceSha256": "ab8e1418f5e6606d3ef74185de643f36c671a94b99379c92fddb967a7a715aa7",
       "triangleBudget": 400,
       "params": [
         {
@@ -35189,7 +35189,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/otoscope.kcad.ts",
-      "sourceSha256": "01090523e12936991f2ef23601538f800a8c67d59e2326b41bb7905fb31fd0c6",
+      "sourceSha256": "17f9fa9b8222b8b01137447d2a6f4e03790782cbf6e2af490486fd508d7beaa0",
       "triangleBudget": 280,
       "params": [
         {
@@ -35270,7 +35270,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/oxygen-cylinder.kcad.ts",
-      "sourceSha256": "e5418b63ebff32fa9af9ea42a0b06b56c10394a78e845f9aaba1f5a7ee325c8d",
+      "sourceSha256": "068c307d52d58698fdf5002d3ecbe93ab3402b3dc3cfcd720a779bd21fb3ebc8",
       "triangleBudget": 350,
       "params": [
         {
@@ -35352,7 +35352,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/petri-dish.kcad.ts",
-      "sourceSha256": "c20de5b10ae194e8c0830c4a1430c1bc48606f7659bedffc87be2b447f397fb7",
+      "sourceSha256": "e3daae7cfdc05182d4313c3ca13e3ef94938a277015b34e0b0dbc3cb752874a6",
       "triangleBudget": 240,
       "params": [
         {
@@ -35432,7 +35432,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/pill-blister-pack.kcad.ts",
-      "sourceSha256": "8bc6f87d9d32ef175992018a9c22f149ebba45b0779af175493dcefff1615cae",
+      "sourceSha256": "6811a7efca7044af0b68b90d3d6729204b268be0ad59c20c1e78e4ee0cb35e37",
       "triangleBudget": 350,
       "params": [
         {
@@ -35516,7 +35516,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/pill-bottle.kcad.ts",
-      "sourceSha256": "06926726af5528e96a059784f9fdcf2fe571719e50cd50f5ba8a60e7c5a7cc72",
+      "sourceSha256": "5eb14042427b6cbef2da8b345f6427658b6f445471e0712f58113ac1f526e425",
       "triangleBudget": 260,
       "params": [
         {
@@ -35597,7 +35597,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/pulse-oximeter.kcad.ts",
-      "sourceSha256": "7153dd2898ada15a1b3b140ea93ad38cf64983983cdc668eb866b2bc36bdb599",
+      "sourceSha256": "1cd9b6d8dc168624c5c094a40ddabb0692b93c93f80b36b5d603d3e22959c554",
       "triangleBudget": 300,
       "params": [
         {
@@ -35678,7 +35678,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/reflex-hammer.kcad.ts",
-      "sourceSha256": "d42eb0610dfa568832cc0ac732e8bd1d31da1e1d83f978f55ffe5f67c5b58d03",
+      "sourceSha256": "0bcdfad000471c4c1eedf53bd604d8c86748119a4bdac3b57829d0497bfe7082",
       "triangleBudget": 220,
       "params": [
         {
@@ -35759,7 +35759,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/sharps-container.kcad.ts",
-      "sourceSha256": "1067411e8daa45a9c877d28c54618eea988abcb0f8f622e8b283d29a71fbc31d",
+      "sourceSha256": "a49f3a11593ddb8499e2ef770c54cffff62fca467f4d92b387806365dd4e0bb5",
       "triangleBudget": 300,
       "params": [
         {
@@ -35840,7 +35840,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/specimen-cup.kcad.ts",
-      "sourceSha256": "4c448eab3ea1c827a6b1f9edeefd93c442bf5a3ab939e9a57d2158219563e6a1",
+      "sourceSha256": "0d5769b8e6de573332314f2d5e9e215e1337382cee94782deacef88cdf633f8e",
       "triangleBudget": 300,
       "params": [
         {
@@ -35920,7 +35920,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/specimen-tube-rack.kcad.ts",
-      "sourceSha256": "d0f2dcee07a3d4dad7a0042670a333287b31aedb01e2a67ac4c5c4e8cba3e26d",
+      "sourceSha256": "75f2936c1daaf6b4aea858d773c8e3483d7cd16077d109b7ca30b40c0fb7dbcd",
       "triangleBudget": 500,
       "params": [
         {
@@ -36017,7 +36017,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/stethoscope.kcad.ts",
-      "sourceSha256": "7d664d8709448935f6e524af7ba2caa29799fa47cf64cf8d5662706faa0e3350",
+      "sourceSha256": "e8808c7a06b5c4f90f1d7ae2eb9b0ee87894e4da183153fcf9013512c2b5ca46",
       "triangleBudget": 350,
       "params": [
         {
@@ -36098,7 +36098,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/surgical-scissors.kcad.ts",
-      "sourceSha256": "b32b714b61ddb72ecd43c6eec1fdc3f0a63a7ead81a2b7448c545f7e11895313",
+      "sourceSha256": "e9b158c9533af35a1a051b075941e2dcdcca997f6aef7580611f57b5ec2eb970",
       "triangleBudget": 350,
       "params": [
         {
@@ -36179,7 +36179,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/syringe.kcad.ts",
-      "sourceSha256": "ecc4681afe71cef28d3f63d59d038c11d8e747267cc1f719c4becd836592267d",
+      "sourceSha256": "1ee46115bbb7fbffc97a2a7a573b2aade982409eaa83617a75d4adab61885504",
       "triangleBudget": 300,
       "params": [
         {
@@ -36266,7 +36266,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/tongue-depressor-pack.kcad.ts",
-      "sourceSha256": "42eebfefb9c3ae9e05a70de0e998011792a10af450dfa9907b7a051b425b5060",
+      "sourceSha256": "6bc58f90b8e3d2fa9edb4b699c55d036d6618771f5336f931bfb097863325736",
       "triangleBudget": 240,
       "params": [
         {
@@ -36350,7 +36350,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/walker-frame.kcad.ts",
-      "sourceSha256": "1234f269bcb92e83f412730deb722c87bf202210dd06eab429fcb12852e45c01",
+      "sourceSha256": "20b9fdaec285075aa2c2636f811d57ca1e6017e51f195095d037c6389b791a7d",
       "triangleBudget": 400,
       "params": [
         {
@@ -36437,7 +36437,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/walking-cane.kcad.ts",
-      "sourceSha256": "6efe9d4ffc73c073c45adf629a5165614c34d50e634ec1d650099fcc48619327",
+      "sourceSha256": "0d7bc61dada4c4739b68e532d33a48b9e1896244cf1ede2caa7a870e04a674d5",
       "triangleBudget": 220,
       "params": [
         {
@@ -36517,7 +36517,7 @@
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/wheelchair.kcad.ts",
-      "sourceSha256": "68c18c3aa3c2f334154cd7c9194a6be0699a07dbca313bf5eed565eee53e2bcf",
+      "sourceSha256": "3ae7b1aaa4d0215756eaadc5a71006a844f350edc777ae36520fe107c667d80a",
       "triangleBudget": 500,
       "params": [
         {

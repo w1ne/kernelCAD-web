@@ -32,7 +32,6 @@ presets({
 const p = assembly('bandage-roll');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('roll', c(0, 0, 0, 34, 28, 10).subtract(c(0, 0, -1, 36, 11, 10)).color(shell));
 p.part('wrap-end', b(15, 0, 18, 9, 34, 34).color(accent));

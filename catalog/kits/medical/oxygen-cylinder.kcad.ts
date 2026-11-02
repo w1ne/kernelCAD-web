@@ -32,7 +32,6 @@ presets({
 const p = assembly('oxygen-cylinder');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('tank', c(0, 0, 0, 420, 72, 12).color(shell));
 p.part('base-ring', c(0, 0, 0, 20, 78, 12).color(accent));

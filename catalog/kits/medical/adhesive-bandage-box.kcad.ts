@@ -32,8 +32,6 @@ presets({
 });
 const p = assembly('adhesive-bandage-box');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
-const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
-const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 p.part('carton', b(0, 0, 24, 150, 74, 48).color(shell));
 p.part('cross-vertical', b(0, -39, 25, 24, 3, 30).color(accent));
