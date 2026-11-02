@@ -396,6 +396,63 @@
       ]
     },
     {
+      "id": "standard-components",
+      "title": "Standard Components",
+      "description": "Original low-poly parametric brackets, fittings, couplings, motion hardware and mounting components for workshop, industrial and mechanical scenes.",
+      "assets": [
+        "angle-bracket",
+        "base-mounting-plate",
+        "beam-coupling",
+        "blind-flange",
+        "bulkhead-adapter",
+        "cable-clamp",
+        "cable-gland",
+        "caster-wheel",
+        "clevis-pin",
+        "din-rail-end-stop",
+        "din-rail-terminal-block",
+        "din-rail",
+        "door-hinge",
+        "drawer-slide-channel",
+        "flange-bearing-housing",
+        "flat-joining-plate",
+        "gusset-bracket",
+        "handle-pull",
+        "handwheel",
+        "hose-barb-adapter",
+        "jaw-coupling",
+        "knurled-knob",
+        "leveling-foot",
+        "linear-guide-carriage",
+        "linear-guide-rail",
+        "panel-clamp",
+        "piano-hinge",
+        "pillow-block-housing",
+        "pipe-coupling",
+        "pipe-elbow-45",
+        "pipe-elbow-90",
+        "pipe-flange",
+        "pipe-reducer",
+        "pipe-saddle-clamp",
+        "pipe-tee",
+        "pipe-union",
+        "retaining-ring",
+        "rubber-bumper",
+        "shaft-collar",
+        "shaft-coupling",
+        "shim-pack",
+        "split-shaft-collar",
+        "square-mounting-flange",
+        "t-slot-angle-bracket",
+        "t-slot-end-cap",
+        "timing-belt-pulley",
+        "tube-clamp",
+        "tubular-spacer",
+        "u-bracket",
+        "v-belt-pulley"
+      ]
+    },
+    {
       "id": "terrain",
       "title": "Terrain",
       "description": "Low-poly 2 m grid terrain pieces: floors, ramps, stairs, platforms, cliff corners, shorelines and bridges that line up with the nature tiles, flat-shaded on one palette material.",
@@ -47337,6 +47394,3684 @@
             "saw"
           ],
           "param": "metal"
+        }
+      ]
+    },
+    {
+      "id": "angle-bracket",
+      "kit": "standard-components",
+      "title": "Angle bracket",
+      "description": "Low-poly right-angle mounting bracket with two drilled legs and a reinforcing web. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "angle bracket",
+        "mounting bracket",
+        "corner",
+        "hardware"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/angle-bracket.kcad.ts",
+      "sourceSha256": "78ff822f01f1423d9365327181b57b530716a2918327697865f9811d13e16a2c",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 232,
+        "sizeM": [
+          0.048,
+          0.038,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "foot",
+            "upright",
+            "web"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "base-mounting-plate",
+      "kit": "standard-components",
+      "title": "Base mounting plate",
+      "description": "Square equipment mounting plate with four corner holes and a raised locating boss. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "mounting plate",
+        "base plate",
+        "machine foot",
+        "flange"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/base-mounting-plate.kcad.ts",
+      "sourceSha256": "8a6907a650eff2cf6fd17926af439acc2e4ee087e7398519950ce3c21fc9d884",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          0.06,
+          0.013,
+          0.06
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "plate",
+            "boss"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "beam-coupling",
+      "kit": "standard-components",
+      "title": "Beam coupling",
+      "description": "Slender beam-style flexible shaft coupling with two end hubs and a slotted center sleeve. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "beam coupling",
+        "flexible coupling",
+        "shaft coupling",
+        "rotary"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/beam-coupling.kcad.ts",
+      "sourceSha256": "4ae99cb726484ac0ee6724fc03dc436351a37b7d93935f0f3a0f3250ab7ee30c",
+      "triangleBudget": 480,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 428,
+        "sizeM": [
+          0.036,
+          0.03,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "sleeve",
+            "end-a",
+            "end-b"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "blind-flange",
+      "kit": "standard-components",
+      "title": "Blind flange",
+      "description": "Solid round blind pipe flange with four recessed mounting-hole bores. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "blind flange",
+        "pipe cap",
+        "flange",
+        "plumbing"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/blind-flange.kcad.ts",
+      "sourceSha256": "d08074d0eaa9a6637398b13c456dff08003cc15532eff33d0763fd5e05f23712",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 296,
+        "sizeM": [
+          0.056,
+          0.011,
+          0.056
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "plate",
+            "hub"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "bulkhead-adapter",
+      "kit": "standard-components",
+      "title": "Bulkhead adapter",
+      "description": "Hollow through-wall adapter with a tube barrel and a flange on each side. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "bulkhead adapter",
+        "panel fitting",
+        "pipe adapter",
+        "connector"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/bulkhead-adapter.kcad.ts",
+      "sourceSha256": "323e99608b8efdb9b2606bcb6bdbe4e7262e368e2c5da2737ac9309b3fbc26bc",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.042,
+          0.03,
+          0.042
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "barrel",
+            "lower-flange",
+            "upper-flange"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "cable-clamp",
+      "kit": "standard-components",
+      "title": "Cable clamp",
+      "description": "Low-profile cable saddle with two fixing ears and a rounded cable guide. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "cable clamp",
+        "wire clamp",
+        "strain relief",
+        "electrical"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/cable-clamp.kcad.ts",
+      "sourceSha256": "1b59ad2e8469d89303ce07d3dbf0d7c44ff6d56ed699df86207ad186ae297910",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.048,
+          0.012,
+          0.034
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "foot",
+            "saddle",
+            "ear-left",
+            "ear-right"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "cable-gland",
+      "kit": "standard-components",
+      "title": "Cable gland",
+      "description": "Panel cable gland with a hollow body, stepped compression nut and wide sealing flange. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "cable gland",
+        "cord grip",
+        "panel fitting",
+        "electrical"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/cable-gland.kcad.ts",
+      "sourceSha256": "2cb18af3e3c47f20548b8070b01adf7eefebd1591e77e1899b3140a23e5eef37",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 384,
+        "sizeM": [
+          0.04,
+          0.037,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "body",
+            "flange",
+            "cap",
+            "strain-relief"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "caster-wheel",
+      "kit": "standard-components",
+      "title": "Caster wheel",
+      "description": "Single low-poly swivel caster with a fork, mounting plate and centered wheel. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "caster wheel",
+        "swivel caster",
+        "wheel",
+        "mobile base"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/caster-wheel.kcad.ts",
+      "sourceSha256": "7d4c1847118bedec5d69c33f19ea9b2900db4b2f9a1901b328eff15422cf55f1",
+      "triangleBudget": 380,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.048,
+          0.047,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "mount",
+            "stem",
+            "fork-left-front",
+            "fork-right-front",
+            "fork-left-back",
+            "fork-right-back",
+            "wheel"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "clevis-pin",
+      "kit": "standard-components",
+      "title": "Clevis pin",
+      "description": "Round headed clevis pin with a straight shank and cross-hole collar. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "clevis pin",
+        "pivot pin",
+        "linkage hardware",
+        "fastener"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/clevis-pin.kcad.ts",
+      "sourceSha256": "794114b42c3f0c5e8cd9376ec63e9893c9e5fbbb7c0a74f0e31e88865cb17320",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.02,
+          0.039,
+          0.02
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "shank",
+            "head"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "din-rail-end-stop",
+      "kit": "standard-components",
+      "title": "DIN rail end stop",
+      "description": "Small rail-end stop with a raised clamp block and front-facing tightening boss. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "din rail end stop",
+        "rail stop",
+        "electrical cabinet",
+        "mount"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/din-rail-end-stop.kcad.ts",
+      "sourceSha256": "d991b015bf42dc97b002acc9e8ab2a5b8475244f509deccc74677ca3b34ed7ca",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          0.036,
+          0.023,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "foot",
+            "stop-face",
+            "clamp",
+            "boss"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "din-rail-terminal-block",
+      "kit": "standard-components",
+      "title": "DIN rail terminal block",
+      "description": "Single terminal block body with top access wells and a stepped rail foot. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "terminal block",
+        "din rail",
+        "electrical connector",
+        "cabinet"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/din-rail-terminal-block.kcad.ts",
+      "sourceSha256": "f427184a99f64b893abb6c5cbc55402882446865d1ec721bee1a6a68f9874a9d",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.028,
+          0.033,
+          0.024
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "body",
+            "rail-foot"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "din-rail",
+      "kit": "standard-components",
+      "title": "DIN rail",
+      "description": "Short symmetric top-hat rail profile with a flat web and raised edge lips. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "din rail",
+        "mounting rail",
+        "control cabinet",
+        "electrical"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/din-rail.kcad.ts",
+      "sourceSha256": "06afced749442640d9f68f4d46618d74fb7994f42f520bb9ce10fc8186ab0b50",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.11,
+          0.012,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "web",
+            "left-lip",
+            "right-lip",
+            "ridge"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "door-hinge",
+      "kit": "standard-components",
+      "title": "Door hinge",
+      "description": "Two-leaf butt hinge with a full-height hinge barrel and alternating knuckle bands. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "door hinge",
+        "butt hinge",
+        "cabinet hardware",
+        "pivot"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/door-hinge.kcad.ts",
+      "sourceSha256": "e9252b2179924e6ddbb4b5354e25d9da8a25da4da0a774c2502d324bff87dfd9",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          0.056,
+          0.04,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "leaf-left",
+            "leaf-right",
+            "knuckle-0",
+            "knuckle-10",
+            "knuckle-20",
+            "knuckle-30",
+            "pin"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "drawer-slide-channel",
+      "kit": "standard-components",
+      "title": "Drawer slide channel",
+      "description": "Nested low-poly slide rails with C-channel lips for a telescoping drawer track. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "drawer slide",
+        "slide rail",
+        "channel rail",
+        "hardware"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/drawer-slide-channel.kcad.ts",
+      "sourceSha256": "61d2fdff7a0784d905ba1e07082bfa0f4268e6a9ff3bd9d7edbf07fb09866ea4",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.12,
+          0.02,
+          0.03
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "outer-web",
+            "outer-left",
+            "outer-right",
+            "inner-web",
+            "inner-lip"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "flange-bearing-housing",
+      "kit": "standard-components",
+      "title": "Flange bearing housing",
+      "description": "Square two-hole bearing mount with a raised round boss and a centered shaft opening. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "bearing housing",
+        "flange bearing",
+        "shaft support",
+        "mount"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/flange-bearing-housing.kcad.ts",
+      "sourceSha256": "7bc84624cc4e355946a2531274fb612aea880a0a93bdf7eabf232a05570ab593",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          0.056,
+          0.02,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "plate",
+            "boss"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "flat-joining-plate",
+      "kit": "standard-components",
+      "title": "Flat joining plate",
+      "description": "Flat strap plate with a row of four mounting holes for joining two parts in line. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "joining plate",
+        "strap plate",
+        "mounting plate",
+        "connector"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/flat-joining-plate.kcad.ts",
+      "sourceSha256": "36382937894a8f325a3675fa351f516544508dcdebb9e191c4acda9cf90862f8",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.084,
+          0.005,
+          0.024
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "plate"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "gusset-bracket",
+      "kit": "standard-components",
+      "title": "Gusset bracket",
+      "description": "Triangular shelf-support bracket with a broad wall plate, horizontal toe and solid diagonal web. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "gusset bracket",
+        "shelf support",
+        "mounting bracket",
+        "plate"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/gusset-bracket.kcad.ts",
+      "sourceSha256": "c48b6d2e5173af5c67a99c56db47d11585a80127372d7faa722b8a8fdc5f0dfb",
+      "triangleBudget": 380,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 32,
+        "sizeM": [
+          0.056,
+          0.042,
+          0.031
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "wall",
+            "toe",
+            "gusset"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "handle-pull",
+      "kit": "standard-components",
+      "title": "Handle pull",
+      "description": "Raised U-shaped cabinet pull with two mounting feet and a straight grip bar. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "pull handle",
+        "cabinet handle",
+        "grab handle",
+        "hardware"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/handle-pull.kcad.ts",
+      "sourceSha256": "3cb2917ca814db02f8ddee8e77c235b3207920f82f46065d2f27c5dd503bbe9f",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.06,
+          0.035,
+          0.016
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "foot-left",
+            "foot-right",
+            "post-left",
+            "post-right",
+            "grip"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "handwheel",
+      "kit": "standard-components",
+      "title": "Handwheel",
+      "description": "Three-spoke handwheel with a raised center hub and a clear circular rim. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "handwheel",
+        "control wheel",
+        "valve wheel",
+        "machine control"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/handwheel.kcad.ts",
+      "sourceSha256": "eefe342b8236d8f22d24e6a0c335da414624f2a8ae99126455460eecae95e218",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.06,
+          0.06,
+          0.018
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "rim",
+            "hub",
+            "spoke-0",
+            "spoke-60",
+            "spoke-120"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "hose-barb-adapter",
+      "kit": "standard-components",
+      "title": "Hose barb adapter",
+      "description": "Stepped hose-barb adapter with a hollow center and three grip ribs. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "hose barb",
+        "hose adapter",
+        "barbed fitting",
+        "plumbing"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/hose-barb-adapter.kcad.ts",
+      "sourceSha256": "db1faad131e436a21e9e6d643d2b01fb5bd9e24963bfc45f8985681c91ad65c6",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 448,
+        "sizeM": [
+          0.028,
+          0.036,
+          0.028
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "stem",
+            "barb-6",
+            "barb-13",
+            "barb-20",
+            "hex-body"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "jaw-coupling",
+      "kit": "standard-components",
+      "title": "Jaw coupling",
+      "description": "Two jaw hubs with a visible flexible center spider between the shaft bores. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "jaw coupling",
+        "flexible coupling",
+        "shaft connector",
+        "rotary"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/jaw-coupling.kcad.ts",
+      "sourceSha256": "49c1dc32ea1682bc3cfd0c7cd00425f5330723b077747d8e89ca268758c4b599",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.036,
+          0.04,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "hub-a",
+            "spider",
+            "hub-b"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "knurled-knob",
+      "kit": "standard-components",
+      "title": "Knurled knob",
+      "description": "Compact control knob with a broad grip body, raised crown and center stem. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "knob",
+        "control knob",
+        "machine control",
+        "handwheel"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/knurled-knob.kcad.ts",
+      "sourceSha256": "baf53e20dfc8df97861cf3f28c82c8c837704edd04b3e54687ba84fb164c5402",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.036,
+          0.033,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "stem",
+            "grip",
+            "crown",
+            "grip-rib-0",
+            "grip-rib-45",
+            "grip-rib-90",
+            "grip-rib-135",
+            "grip-rib-180",
+            "grip-rib-225",
+            "grip-rib-270",
+            "grip-rib-315"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "leveling-foot",
+      "kit": "standard-components",
+      "title": "Leveling foot",
+      "description": "Adjustable leveling foot with a wide circular pad and centered support stem. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "leveling foot",
+        "machine foot",
+        "adjuster",
+        "mount"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/leveling-foot.kcad.ts",
+      "sourceSha256": "1ef9bd2ad851a606056dfb877578dc110ca5f285bbd667067abe198b51702511",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.044,
+          0.032,
+          0.044
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "pad",
+            "stem",
+            "seat"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "linear-guide-carriage",
+      "kit": "standard-components",
+      "title": "Linear guide carriage",
+      "description": "Block-shaped linear carriage with a recessed underside channel and raised top pad. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "linear guide carriage",
+        "rail carriage",
+        "motion block",
+        "machine"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/linear-guide-carriage.kcad.ts",
+      "sourceSha256": "71ddedb8c8c3166fb716ada17deadbd87f1eecd4632ecb55b6f62ac29db2891c",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 40,
+        "sizeM": [
+          0.044,
+          0.025,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "shoe",
+            "top-pad"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "linear-guide-rail",
+      "kit": "standard-components",
+      "title": "Linear guide rail",
+      "description": "Compact linear motion rail with a broad mounting foot and raised central raceway. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "linear guide",
+        "guide rail",
+        "motion rail",
+        "machine"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/linear-guide-rail.kcad.ts",
+      "sourceSha256": "44bfebce0002f7d4c323196ed7422ebf294ec3950c04a5667fa430deed319a36",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 232,
+        "sizeM": [
+          0.12,
+          0.015,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "base",
+            "raceway"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "panel-clamp",
+      "kit": "standard-components",
+      "title": "Panel clamp",
+      "description": "Small edge clamp with a broad base, upright jaw and adjustable pressure pad. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "panel clamp",
+        "edge clamp",
+        "mounting hardware",
+        "fixture"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/panel-clamp.kcad.ts",
+      "sourceSha256": "64cc61be82e7ea2d9dcb900e04c552fc15a63fc78217b493f3adc76e2b974362",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          0.048,
+          0.033,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "base",
+            "jaw",
+            "screw",
+            "pad"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "piano-hinge",
+      "kit": "standard-components",
+      "title": "Piano hinge",
+      "description": "Long continuous hinge with two flat leaves and alternating knuckles along the pin. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "piano hinge",
+        "continuous hinge",
+        "cabinet hardware",
+        "pivot"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/piano-hinge.kcad.ts",
+      "sourceSha256": "ebe2973c5f94544a1f8af9c45ca6134b2699afbd282f8a28462f0d7d76fdc71f",
+      "triangleBudget": 380,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.093,
+          0.008,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "leaf-left",
+            "leaf-right",
+            "knuckle--40",
+            "knuckle--24",
+            "knuckle--8",
+            "knuckle-8",
+            "knuckle-24",
+            "knuckle-40"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "pillow-block-housing",
+      "kit": "standard-components",
+      "title": "Pillow block housing",
+      "description": "Raised pillow-block support with a broad base, round bearing boss and two bolt feet. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "pillow block",
+        "bearing housing",
+        "shaft support",
+        "machine"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/pillow-block-housing.kcad.ts",
+      "sourceSha256": "b591799de3b9e73b141be7723401f81579351c8c2985211618487881a335422e",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.064,
+          0.029,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "base",
+            "left-foot",
+            "right-foot",
+            "bearing"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "pipe-coupling",
+      "kit": "standard-components",
+      "title": "Pipe coupling sleeve",
+      "description": "Short hollow straight coupling sleeve with raised end collars. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "pipe coupling",
+        "sleeve coupling",
+        "pipe fitting",
+        "plumbing"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/pipe-coupling.kcad.ts",
+      "sourceSha256": "c4b808c88fa9173fdcef76477b4eb0beba8ff9fd79326de6d52c08ec2a18513f",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.038,
+          0.028,
+          0.038
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "sleeve",
+            "collar-a",
+            "collar-b"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "pipe-elbow-45",
+      "kit": "standard-components",
+      "title": "45 degree pipe elbow",
+      "description": "Angled 45 degree pipe connector with open ends and a thicker low-poly center bend. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "pipe elbow",
+        "45 degree elbow",
+        "plumbing fitting",
+        "tube"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/pipe-elbow-45.kcad.ts",
+      "sourceSha256": "2e1cae51163a57b2a65611139ca2d5003ea03634342af5eae9bb7f6c3fab3a09",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.042991,
+          0.040991,
+          0.028
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "base",
+            "angled",
+            "bend"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "pipe-elbow-90",
+      "kit": "standard-components",
+      "title": "90 degree pipe elbow",
+      "description": "Low-poly 90 degree elbow fitting with two hollow perpendicular pipe ends. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "pipe elbow",
+        "90 degree elbow",
+        "plumbing fitting",
+        "tube"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/pipe-elbow-90.kcad.ts",
+      "sourceSha256": "5a523da65eddbfe5aa74e909260d84c77b21c803f84383eabdf1779af1da5f82",
+      "triangleBudget": 380,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.039,
+          0.041,
+          0.026
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "upright",
+            "branch",
+            "bend"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "pipe-flange",
+      "kit": "standard-components",
+      "title": "Pipe flange",
+      "description": "Round slip-on pipe flange with a center bore and four bolt-hole positions. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "pipe flange",
+        "flange",
+        "pipe fitting",
+        "plumbing"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/pipe-flange.kcad.ts",
+      "sourceSha256": "4e6131939918863b7d269ab49c189594e8521b9c5eff2b4ec0b4406602f5d071",
+      "triangleBudget": 450,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 400,
+        "sizeM": [
+          0.056,
+          0.024,
+          0.056
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "flange",
+            "neck"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "pipe-reducer",
+      "kit": "standard-components",
+      "title": "Pipe reducer",
+      "description": "Stepped hollow reducer joining a larger pipe end to a smaller pipe end. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "pipe reducer",
+        "reducer fitting",
+        "pipe adapter",
+        "plumbing"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/pipe-reducer.kcad.ts",
+      "sourceSha256": "0859de8d536948956c4ce46d1cb3b0946bbebd1c2c1ae342f226b472045df5d1",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.044,
+          0.046,
+          0.044
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "large-end",
+            "transition",
+            "small-end"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "pipe-saddle-clamp",
+      "kit": "standard-components",
+      "title": "Pipe saddle clamp",
+      "description": "Two-piece saddle clamp with a curved seat, twin side lugs and a mounting foot. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "pipe clamp",
+        "saddle clamp",
+        "tube support",
+        "plumbing"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/pipe-saddle-clamp.kcad.ts",
+      "sourceSha256": "e01cc5b71663b52a0e3538d5cdc69870edd70e2a0186ed75a0dc112c77be8342",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.056,
+          0.021,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "foot",
+            "seat",
+            "left-lug",
+            "right-lug"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "pipe-tee",
+      "kit": "standard-components",
+      "title": "Pipe tee fitting",
+      "description": "Three-way T pipe fitting with a vertical run and perpendicular side branch. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "pipe tee",
+        "tee fitting",
+        "plumbing",
+        "pipe connector"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/pipe-tee.kcad.ts",
+      "sourceSha256": "e639fe61908ebd92c85aee3cdea64c5598759dcac37a338345b2760d2581b40c",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.024,
+          0.044,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "run",
+            "branch"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "pipe-union",
+      "kit": "standard-components",
+      "title": "Pipe union",
+      "description": "Compact union fitting with two hollow sockets and a broad central hex-like nut body. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "pipe union",
+        "union fitting",
+        "pipe connector",
+        "plumbing"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/pipe-union.kcad.ts",
+      "sourceSha256": "0039791675357788a7f1f52651c33eb60871c7ca6f17bb3ce5fac57e02176bb9",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          0.036,
+          0.036,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "socket-a",
+            "nut",
+            "socket-b"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "retaining-ring",
+      "kit": "standard-components",
+      "title": "Retaining ring",
+      "description": "Open retaining ring profile with two small installation ears. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "retaining ring",
+        "circlip",
+        "shaft retainer",
+        "hardware"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/retaining-ring.kcad.ts",
+      "sourceSha256": "bdf957b305b37df2d1ab5b4f2a6266a0e80a60c790c312bcd7c5a72a9f398176",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.039899,
+          0.003,
+          0.043975
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "ring",
+            "ear-left",
+            "ear-right"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "rubber-bumper",
+      "kit": "standard-components",
+      "title": "Rubber bumper",
+      "description": "Low-profile cylindrical vibration bumper with a flat base and centered mounting stem. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "rubber bumper",
+        "vibration mount",
+        "foot",
+        "isolation"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/rubber-bumper.kcad.ts",
+      "sourceSha256": "8410055855f748888537975b992b0509187928cdca5cdb8a8cfd36d9f10ef334",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.036,
+          0.029,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "base",
+            "crown",
+            "stem"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "shaft-collar",
+      "kit": "standard-components",
+      "title": "Shaft collar",
+      "description": "One-piece round shaft collar with a centered bore and a small radial set-screw boss. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "shaft collar",
+        "set collar",
+        "shaft hardware",
+        "rotating shaft"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/shaft-collar.kcad.ts",
+      "sourceSha256": "776baa2a8dc3f43815668607f5e77038b0a38afc37f6b6305c195a921c878b25",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.038,
+          0.013,
+          0.038
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "ring",
+            "boss"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "shaft-coupling",
+      "kit": "standard-components",
+      "title": "Shaft coupling sleeve",
+      "description": "Straight shaft coupler with a thicker center band and two aligned shaft bores. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "shaft coupling",
+        "shaft sleeve",
+        "rotary coupling",
+        "machine"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/shaft-coupling.kcad.ts",
+      "sourceSha256": "48cb7d587cb66485f53dfb716bc8f6b18fb3065a52d3f90522c09b54ced809ea",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.038,
+          0.038,
+          0.038
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "left-hub",
+            "center-band",
+            "right-hub"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "shim-pack",
+      "kit": "standard-components",
+      "title": "Shim pack",
+      "description": "Stack of thin rectangular alignment shims with small offset pull tabs. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "shim",
+        "shim pack",
+        "alignment",
+        "machine setup"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/shim-pack.kcad.ts",
+      "sourceSha256": "da244564a92341cac04dc4928a48c91619ec87ea915e72540cffc1e60846a0d1",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.049,
+          0.008,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "shim-0",
+            "shim-1",
+            "shim-2",
+            "shim-3",
+            "tabs"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "split-shaft-collar",
+      "kit": "standard-components",
+      "title": "Split shaft collar",
+      "description": "Split clamp collar with a through bore and a raised clamp lug. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "shaft collar",
+        "split collar",
+        "clamp",
+        "rotating shaft"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/split-shaft-collar.kcad.ts",
+      "sourceSha256": "18c3bea674b6f145bcc5b6b7fbf3655043b8f3e6eca1a77ac9b25651e914b013",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          0.03995,
+          0.01,
+          0.036988
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "collar",
+            "lug"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "square-mounting-flange",
+      "kit": "standard-components",
+      "title": "Square mounting flange",
+      "description": "Square flange with a centered through bore, four corner holes and a short neck. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "square flange",
+        "mounting flange",
+        "bore mount",
+        "industrial"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/square-mounting-flange.kcad.ts",
+      "sourceSha256": "43790a73777868bf2ab9fd2d649076d52941d832b7dcf7892a5d5a8e8eaee39a",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 316,
+        "sizeM": [
+          0.056,
+          0.021,
+          0.056
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "plate",
+            "neck"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "t-slot-angle-bracket",
+      "kit": "standard-components",
+      "title": "T-slot angle bracket",
+      "description": "Compact external corner bracket for joining two perpendicular framing profiles. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "t-slot",
+        "angle bracket",
+        "frame connector",
+        "extrusion"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/t-slot-angle-bracket.kcad.ts",
+      "sourceSha256": "597b82d2630b39bc7ccdc29c09306773cf2a5a7093110efd2f0a808e4e45636e",
+      "triangleBudget": 380,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 40,
+        "sizeM": [
+          0.072,
+          0.039,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "base",
+            "upright",
+            "web-a",
+            "web-b"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "t-slot-end-cap",
+      "kit": "standard-components",
+      "title": "T-slot end cap",
+      "description": "Square profile end cap with a shallow face and four short locating ribs. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "t-slot end cap",
+        "profile cap",
+        "extrusion accessory",
+        "frame"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/t-slot-end-cap.kcad.ts",
+      "sourceSha256": "08d38b0720b6e1ea42bf85609d270aca71efa1938735d910620b8e952c2af60d",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.044,
+          0.014,
+          0.044
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "cap",
+            "rib--14--14",
+            "rib--14-14",
+            "rib-14--14",
+            "rib-14-14"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "timing-belt-pulley",
+      "kit": "standard-components",
+      "title": "Timing belt pulley",
+      "description": "Toothed low-poly belt pulley with two retaining flanges and a centered shaft bore. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "timing pulley",
+        "belt pulley",
+        "drive component",
+        "shaft"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/timing-belt-pulley.kcad.ts",
+      "sourceSha256": "b227e20533fc3d82c8f72c9ae6064e3f62da1ff1f90b26ec12ab967f570e7406",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.048,
+          0.026,
+          0.048
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "core",
+            "lower-flange",
+            "upper-flange"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "tube-clamp",
+      "kit": "standard-components",
+      "title": "Tube clamp",
+      "description": "Compact two-hole clamp block with a semicircular tube seat and a top retainer bridge. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "tube clamp",
+        "pipe clamp",
+        "retainer",
+        "mount"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/tube-clamp.kcad.ts",
+      "sourceSha256": "35810b5d67996652271f272847fbb78a86d0bfcf8185d9b5a6638bdbe46babdc",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.052,
+          0.024,
+          0.036
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "base",
+            "left-cheek",
+            "right-cheek",
+            "bridge"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "tubular-spacer",
+      "kit": "standard-components",
+      "title": "Tubular spacer",
+      "description": "Short hollow cylindrical spacer with flat faces and a centered clearance bore. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "spacer",
+        "tube spacer",
+        "standoff",
+        "hardware"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/tubular-spacer.kcad.ts",
+      "sourceSha256": "7b4ec72955addf10a199d4e03611927a78d93c183169bb842d43c90b1505a9b8",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.028,
+          0.016,
+          0.028
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "spacer"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "u-bracket",
+      "kit": "standard-components",
+      "title": "U bracket",
+      "description": "Open-top channel mounting bracket with a flat back and two parallel side ears. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "u bracket",
+        "channel bracket",
+        "mounting bracket",
+        "clevis"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/u-bracket.kcad.ts",
+      "sourceSha256": "e60bb6bb925e0be9ebd30869e6a01632523327021258ab81dffeffbc4cd1c46f",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          0.056,
+          0.033,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "back",
+            "left-ear",
+            "right-ear",
+            "cross-pin"
+          ],
+          "param": "finish"
+        }
+      ]
+    },
+    {
+      "id": "v-belt-pulley",
+      "kit": "standard-components",
+      "title": "V-belt pulley",
+      "description": "Stepped V-belt pulley with two shallow belt grooves and a through bore. Knobs: model size and finish colour.",
+      "category": "attachment",
+      "origin": "base",
+      "tags": [
+        "v-belt pulley",
+        "sheave",
+        "belt drive",
+        "shaft"
+      ],
+      "compat": [
+        "mechanical",
+        "industrial",
+        "workshop",
+        "assembly"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/standard-components/v-belt-pulley.kcad.ts",
+      "sourceSha256": "757af0444e6077c41fb2eef4528e6beed6b0f12b0f1b498bc580cf3a67d1be34",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Model size",
+          "choices": [
+            "compact",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "finish",
+          "type": "color",
+          "default": "#9aa2a8",
+          "label": "Finish"
+        }
+      ],
+      "presets": {
+        "dark": {
+          "finish": "#3b3e43"
+        },
+        "brass": {
+          "finish": "#b58a43"
+        }
+      },
+      "stats": {
+        "triangles": 384,
+        "sizeM": [
+          0.048,
+          0.026,
+          0.048
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "finish",
+          "color": "#9aa2a8",
+          "parts": [
+            "hub",
+            "rim-lower",
+            "rim-mid",
+            "rim-upper"
+          ],
+          "param": "finish"
         }
       ]
     },

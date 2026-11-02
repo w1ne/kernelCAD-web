@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-02",
+  "assetSource": "catalog/kits/standard-components/angle-bracket.kcad.ts",
+  "defaultParameters": {
+    "size": "standard",
+    "finish": "#9aa2a8"
+  },
+  "catalogPreview": "catalog/kits/standard-components/previews/angle-bracket.png",
+  "previewRenderer": "renderCatalogPreviews.ts; deterministic software-rendered three-quarter view at default parameters",
+  "assetValidation": "bash catalog/kits/standard-components/demo/validate-assets.sh",
+  "catalogBuild": "npm run catalog:build",
+  "previewBuild": "npm run catalog:previews",
+  "catalogPageBuild": "npm run catalog:pages",
+  "integrationGate": "npx vitest run tests/integration/catalog/catalogIndex.test.ts",
+  "caption": "Local source validation and catalog previews. Public deployment awaits PR merge; no hardware acceptance was performed."
+}
