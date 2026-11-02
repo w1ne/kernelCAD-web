@@ -391,6 +391,53 @@
       ]
     },
     {
+      "id": "office",
+      "title": "Office",
+      "description": "Original low-poly office supplies, desk accessories and small workstation equipment at real-world scale, with editable format and colour knobs.",
+      "assets": [
+        "archive-box",
+        "business-card-holder",
+        "calculator",
+        "clipboard",
+        "desk-calendar",
+        "desk-organizer",
+        "dry-erase-board",
+        "envelope-stack",
+        "file-folder",
+        "footrest",
+        "fountain-pen",
+        "hanging-file-folder",
+        "highlighter",
+        "hole-punch",
+        "ink-pad",
+        "label-maker",
+        "laminator",
+        "laptop-stand",
+        "letter-sorter",
+        "letter-tray",
+        "marker",
+        "mechanical-pencil",
+        "memo-pad",
+        "monitor-riser",
+        "mousepad",
+        "notebook",
+        "office-pinboard",
+        "paper-clip-dish",
+        "paper-cutter",
+        "paper-shredder",
+        "paperweight",
+        "pencil-cup",
+        "ring-binder",
+        "rubber-stamp",
+        "ruler",
+        "scissors",
+        "stapler",
+        "sticky-notes",
+        "tape-dispenser",
+        "wrist-rest"
+      ]
+    },
+    {
       "id": "props",
       "title": "Props",
       "description": "Low-poly crates, barrels, containers, tools, carts and market pieces for village, farm, warehouse and street scenes at real-world scale, flat-shaded on one palette material.",
@@ -45671,6 +45718,4314 @@
             "strand-14"
           ],
           "param": "leaves"
+        }
+      ]
+    },
+    {
+      "id": "archive-box",
+      "kit": "office",
+      "title": "Archive box",
+      "description": "Desktop document archive box with a lift-off lid, hand slots and front label. Knobs: compact or standard format, box, lid and label colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archive box",
+        "document box",
+        "storage",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/archive-box.kcad.ts",
+      "sourceSha256": "fd1a47b268966ef314c019f949e0cb6c26dc5850b433012cab9c571c132bacf3",
+      "triangleBudget": 150,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#bf9b63",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d7bc86",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#47494b",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.276,
+          0.228,
+          0.371
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#bf9b63",
+          "parts": [
+            "box-body",
+            "lid-grip"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d7bc86",
+          "parts": [
+            "front-label",
+            "lid"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#47494b",
+          "parts": [
+            "label-mark"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "business-card-holder",
+      "kit": "office",
+      "title": "Business card holder",
+      "description": "Angled desktop business-card holder with a visible card stack and front stop. Knobs: compact or standard format, holder, card and trim colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "business card holder",
+        "card holder",
+        "office",
+        "stationery",
+        "desk accessory"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/business-card-holder.kcad.ts",
+      "sourceSha256": "64c8ad79e679c139d8b09cc63b7fc61f26220155483b78055a798737223ac447",
+      "triangleBudget": 130,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#90989d",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#eeeae0",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#3e464b",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.125,
+          0.083,
+          0.085
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#90989d",
+          "parts": [
+            "base",
+            "back-rest",
+            "front-stop"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#eeeae0",
+          "parts": [
+            "card-stack"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#3e464b",
+          "parts": [
+            "front-mark"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "calculator",
+      "kit": "office",
+      "title": "Desktop calculator",
+      "description": "Desktop calculator with segmented display, solar strip and a four-by-three keypad. Knobs: compact or standard format, case, display and key colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "calculator",
+        "desktop calculator",
+        "office supplies",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/calculator.kcad.ts",
+      "sourceSha256": "9eea664e9ed87fd35348a2f1aa6f4e02d49297bb5d212540efcf111e43e28085",
+      "triangleBudget": 250,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#41494e",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#b6c5c4",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#d6d7d1",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.115,
+          0.02,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#41494e",
+          "parts": [
+            "case"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#b6c5c4",
+          "parts": [
+            "display",
+            "key-1-0",
+            "key-1-1",
+            "key-1-2",
+            "key-2-0",
+            "key-2-1",
+            "key-2-2"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#d6d7d1",
+          "parts": [
+            "solar-panel",
+            "key-0-0",
+            "key-0-1",
+            "key-0-2",
+            "zero-key"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "clipboard",
+      "kit": "office",
+      "title": "Clipboard",
+      "description": "Portable writing board with paper stack, broad top clip and a hanging hole marker. Knobs: compact or standard format, board, paper and clip colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "clipboard",
+        "writing board",
+        "paperwork",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/clipboard.kcad.ts",
+      "sourceSha256": "1887636fd899306260893c98390dcaa774e763e59e0434b754a6e92cb19eb643",
+      "triangleBudget": 160,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#9a744a",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#f0eee5",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#6a7074",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.225,
+          0.03,
+          0.315
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#9a744a",
+          "parts": [
+            "board"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#f0eee5",
+          "parts": [
+            "paper"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#6a7074",
+          "parts": [
+            "clip-plate",
+            "clip-lip",
+            "hanging-eyelet"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "desk-calendar",
+      "kit": "office",
+      "title": "Desk calendar",
+      "description": "Standing tear-off desk calendar with ring binding and adjustable page count. Knobs: 4, 6 or 12 pages, compact or standard format, pages, stand and binding colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "desk calendar",
+        "calendar",
+        "office supplies",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/desk-calendar.kcad.ts",
+      "sourceSha256": "cee3e6d735d34ff8251ae9e71e185ddadaa46fdfda1c1aa9f99cc10cef24199f",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f0ece1",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#52748c",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#41484c",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        },
+        {
+          "name": "pages",
+          "type": "choice",
+          "default": "6",
+          "label": "Visible pages",
+          "choices": [
+            "4",
+            "6",
+            "12"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.18,
+          0.167,
+          0.055
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#52748c",
+          "parts": [
+            "stand-foot",
+            "date-band",
+            "date-block",
+            "binding-loop-1",
+            "binding-loop-2",
+            "binding-loop-3",
+            "binding-loop-4",
+            "binding-loop-5"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#41484c",
+          "parts": [
+            "calendar-back"
+          ],
+          "param": "detail"
+        },
+        {
+          "name": "body",
+          "color": "#f0ece1",
+          "parts": [
+            "page-stack"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "desk-organizer",
+      "kit": "office",
+      "title": "Desk organizer",
+      "description": "Multi-compartment desktop organizer for papers and small stationery. Knobs: compact or standard format, body, dividers and label colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "desk organizer",
+        "desktop organizer",
+        "office supplies",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/desk-organizer.kcad.ts",
+      "sourceSha256": "460029c1f6447bb3e3bd34442a5a7f46214115bb1547321217972700870c3d81",
+      "triangleBudget": 180,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#816744",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#b9b1a1",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#4b555c",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.22,
+          0.116,
+          0.15
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#816744",
+          "parts": [
+            "base",
+            "back-wall",
+            "left-wall",
+            "right-wall"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#b9b1a1",
+          "parts": [
+            "divider-a",
+            "divider-b"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#4b555c",
+          "parts": [
+            "label"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "dry-erase-board",
+      "kit": "office",
+      "title": "Dry-erase board",
+      "description": "Standing dry-erase board with an aluminium frame, marker tray and three-point support. Knobs: compact or standard format, board, frame and accessory colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "dry erase board",
+        "whiteboard",
+        "office board",
+        "office",
+        "workstation"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/dry-erase-board.kcad.ts",
+      "sourceSha256": "d8ad2f615437ba917e4c7f3dd5a0152c3b802cd4df5ec599f55545894e8ec6e1",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f0f0e9",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#667780",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#bd7958",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.5,
+          0.889,
+          0.118
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#f0f0e9",
+          "parts": [
+            "writing-surface"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#667780",
+          "parts": [
+            "top-frame",
+            "bottom-frame",
+            "left-frame",
+            "right-frame",
+            "marker-tray",
+            "left-leg",
+            "right-leg",
+            "leg-crossbar",
+            "left-foot",
+            "right-foot"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#bd7958",
+          "parts": [
+            "marker"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "envelope-stack",
+      "kit": "office",
+      "title": "Envelope stack",
+      "description": "Small stack of office envelopes with visible flap panels and paper edges. Knobs: compact or standard format, envelope and flap colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "envelopes",
+        "mail",
+        "paper",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/envelope-stack.kcad.ts",
+      "sourceSha256": "5298cbaaa2853b0f715af971d06e87bd6364ef31477df214c18bbd9acc2f73bd",
+      "triangleBudget": 120,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#eae6d9",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d2cdbc",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#557b97",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.22,
+          0.025,
+          0.115
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#d2cdbc",
+          "parts": [
+            "bottom-envelope",
+            "top-envelope"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#eae6d9",
+          "parts": [
+            "middle-envelope",
+            "flap-panel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#557b97",
+          "parts": [
+            "address-block"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "file-folder",
+      "kit": "office",
+      "title": "File folder",
+      "description": "Folded desktop file folder with a raised tab and visible paper edge. Knobs: compact or standard format, folder, paper and tab colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "file folder",
+        "folder",
+        "document",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/file-folder.kcad.ts",
+      "sourceSha256": "1ff436045008750ea99c7852ee96a2dec7365cc56d2078b4462e614cc5f24c3f",
+      "triangleBudget": 140,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c9ad73",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#eee9dc",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#587b9e",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.235,
+          0.027,
+          0.3165
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c9ad73",
+          "parts": [
+            "folder-back",
+            "folder-front",
+            "raised-tab"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#eee9dc",
+          "parts": [
+            "paper-edge"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#587b9e",
+          "parts": [
+            "tab-label"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "footrest",
+      "kit": "office",
+      "title": "Office footrest",
+      "description": "Low desktop footrest with a gently stepped top, broad platform and stable side feet. Knobs: compact or standard format, platform, feet and grip colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "footrest",
+        "office foot rest",
+        "desk accessory",
+        "office",
+        "workstation"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/footrest.kcad.ts",
+      "sourceSha256": "6ce0e42c4d089bba1173da4352b3b9196926785ab034278a8df960364096a9f7",
+      "triangleBudget": 130,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#50595e",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#75838a",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#c9c6bb",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.31,
+          0.085,
+          0.235
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#50595e",
+          "parts": [
+            "base",
+            "grip-strip"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#75838a",
+          "parts": [
+            "left-foot",
+            "right-foot"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#c9c6bb",
+          "parts": [
+            "top-pad"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "fountain-pen",
+      "kit": "office",
+      "title": "Fountain pen",
+      "description": "Upright capped fountain pen with a faceted barrel, clip and contrasting nib. Knobs: compact or standard format, barrel, cap and hardware colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "fountain pen",
+        "pen",
+        "writing tool",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/fountain-pen.kcad.ts",
+      "sourceSha256": "20935a3f1c67cf7cfe0e0439bc0914b97f88089c4be6ceefcd21ea0a21bd6244",
+      "triangleBudget": 180,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#2f5874",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#b79b5c",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#d1d3d1",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.017,
+          0.148,
+          0.016
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#2f5874",
+          "parts": [
+            "barrel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#d1d3d1",
+          "parts": [
+            "cap"
+          ],
+          "param": "detail"
+        },
+        {
+          "name": "accent",
+          "color": "#b79b5c",
+          "parts": [
+            "cap-band",
+            "clip",
+            "nib"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "hanging-file-folder",
+      "kit": "office",
+      "title": "Hanging file folder",
+      "description": "Hanging document folder with a broad tab and two end rails for a filing drawer. Knobs: compact or standard format, folder, paper and rail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "hanging folder",
+        "hanging file",
+        "file folder",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/hanging-file-folder.kcad.ts",
+      "sourceSha256": "6ebcac8352046f3abfbde2eb69c75bad0a6df3a6409c4338f751ed1f3a16c11a",
+      "triangleBudget": 180,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c39e62",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e9e6dc",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#6a7580",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.25,
+          0.028,
+          0.35
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c39e62",
+          "parts": [
+            "folder-body",
+            "tab"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e9e6dc",
+          "parts": [
+            "paper-stack",
+            "tab-label"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#6a7580",
+          "parts": [
+            "left-hanger",
+            "right-hanger"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "highlighter",
+      "kit": "office",
+      "title": "Highlighter",
+      "description": "Broad chisel-tip highlighter with a removable cap and contrasting end plug. Knobs: compact or standard format, barrel, cap and tip colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "highlighter",
+        "marker pen",
+        "office",
+        "stationery",
+        "writing tool"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/highlighter.kcad.ts",
+      "sourceSha256": "5c381ae805f9c5c59d91bd3d22d5305eaee4953a6d54f3847dd9c3f9716f005d",
+      "triangleBudget": 120,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#e5d448",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#393f44",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#f4edbc",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.126,
+          0.028,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#e5d448",
+          "parts": [
+            "barrel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#393f44",
+          "parts": [
+            "cap",
+            "cap-clip"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#f4edbc",
+          "parts": [
+            "chisel-tip",
+            "end-plug"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "hole-punch",
+      "kit": "office",
+      "title": "Hole punch",
+      "description": "Two-hole desktop punch with a broad lever, paper entry and pair of punch buttons. Knobs: compact or standard format, body, lever and metal colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "hole punch",
+        "paper punch",
+        "office supplies",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/hole-punch.kcad.ts",
+      "sourceSha256": "1351a39a4b29e17cceb6c598534bed5842565a7d9ba1ea5300efba055241327a",
+      "triangleBudget": 170,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#4e6477",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#b9bec1",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#353c40",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.132,
+          0.054,
+          0.088
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#4e6477",
+          "parts": [
+            "base",
+            "lever-grip"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#b9bec1",
+          "parts": [
+            "lever"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#353c40",
+          "parts": [
+            "left-button",
+            "right-button",
+            "paper-slot"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "ink-pad",
+      "kit": "office",
+      "title": "Ink pad",
+      "description": "Lidded desktop ink pad with a soft insert and a small colour marker. Knobs: compact or standard format, case, ink and marker colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "ink pad",
+        "stamp pad",
+        "office supplies",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/ink-pad.kcad.ts",
+      "sourceSha256": "c8ca249ff2576ad84b1a0fc19f0c803a00ed65d0ee6a02de15977e5ce67e6b58",
+      "triangleBudget": 120,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#424b52",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#567c96",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#c8c5b9",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.108,
+          0.034,
+          0.076
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#424b52",
+          "parts": [
+            "case",
+            "brand-mark"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#567c96",
+          "parts": [
+            "ink-surface"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#c8c5b9",
+          "parts": [
+            "lid"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "label-maker",
+      "kit": "office",
+      "title": "Desktop label maker",
+      "description": "Small desktop label maker with display, keypad, feed opening and tape cartridge. Knobs: compact or standard format, case, display and key colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "label maker",
+        "label printer",
+        "office equipment",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/label-maker.kcad.ts",
+      "sourceSha256": "6dad2bd4bf6c2645dff3c6a25088040263c938d6c90189d5fcbd9420b7106073",
+      "triangleBudget": 240,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#3e535f",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d5d8d6",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#c66c50",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.165,
+          0.036,
+          0.1105
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#3e535f",
+          "parts": [
+            "case"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d5d8d6",
+          "parts": [
+            "display",
+            "key-0-0",
+            "key-0-1",
+            "key-0-2",
+            "key-0-3",
+            "key-1-0",
+            "key-1-1",
+            "key-1-2",
+            "key-1-3",
+            "key-2-0",
+            "key-2-1",
+            "key-2-2",
+            "key-2-3",
+            "feed-guide"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#c66c50",
+          "parts": [
+            "tape-exit",
+            "tape-roll"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "laminator",
+      "kit": "office",
+      "title": "Desktop laminator",
+      "description": "Desktop pouch laminator with feed slot, output lip and simple status controls. Knobs: compact or standard format, housing, feed guide and controls colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "laminator",
+        "office machine",
+        "document finishing",
+        "office",
+        "equipment"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/laminator.kcad.ts",
+      "sourceSha256": "c683827896a4287ac7f6553998b70340d153ea4b0c3b0ecff47ec86e58ec0cc0",
+      "triangleBudget": 150,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c7c9c5",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#485159",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#698c9c",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.32,
+          0.097,
+          0.16
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c7c9c5",
+          "parts": [
+            "housing",
+            "output-lip"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#485159",
+          "parts": [
+            "top-panel",
+            "feed-slot",
+            "left-foot",
+            "right-foot"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#698c9c",
+          "parts": [
+            "status-window",
+            "button"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "laptop-stand",
+      "kit": "office",
+      "title": "Laptop stand",
+      "description": "Desktop laptop riser with two support rails, raised front lips and a stable rear foot. Knobs: compact or standard format, frame, pads and trim colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "laptop stand",
+        "computer riser",
+        "desk accessory",
+        "office",
+        "workstation"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/laptop-stand.kcad.ts",
+      "sourceSha256": "27b10709551ef19763ab024222290610177924093cb1e52a9192fd01e2b6ad6f",
+      "triangleBudget": 150,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#8b9295",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#3f474c",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#bdc2c2",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.2,
+          0.105,
+          0.241
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#8b9295",
+          "parts": [
+            "left-rail",
+            "right-rail",
+            "crossbar"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#bdc2c2",
+          "parts": [
+            "front-lip-left",
+            "front-lip-right"
+          ],
+          "param": "detail"
+        },
+        {
+          "name": "accent",
+          "color": "#3f474c",
+          "parts": [
+            "rear-foot",
+            "front-foot"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "letter-sorter",
+      "kit": "office",
+      "title": "Letter sorter",
+      "description": "Upright desktop sorter with two or three stepped compartments for incoming papers. Knobs: shelf count, compact or standard format, body, accent and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "letter sorter",
+        "paper organizer",
+        "document organizer",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/letter-sorter.kcad.ts",
+      "sourceSha256": "9829dfefa062659aac3e258b963964b9104f29c752c32ea8cd35fd614444bc90",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#e4e0d4",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#416b8b",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#333c45",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        },
+        {
+          "name": "shelves",
+          "type": "choice",
+          "default": "3",
+          "label": "Compartments",
+          "choices": [
+            "2",
+            "3"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.23,
+          0.174,
+          0.137
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#e4e0d4",
+          "parts": [
+            "base",
+            "floor-1",
+            "floor-2",
+            "floor-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#416b8b",
+          "parts": [
+            "divider-1",
+            "divider-2",
+            "divider-3"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#333c45",
+          "parts": [
+            "back-panel"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "letter-tray",
+      "kit": "office",
+      "title": "Letter tray",
+      "description": "Stackable letter tray with one to three shallow document shelves. Knobs: shelf count, compact or standard format, body, accent and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "letter tray",
+        "document tray",
+        "paper tray",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/letter-tray.kcad.ts",
+      "sourceSha256": "a9490d6bcbbc4cab88d79194c5c879d8067dbdded17e5222a8a77bc6fdc94384",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#d9dde0",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#68829b",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#454b50",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        },
+        {
+          "name": "tiers",
+          "type": "choice",
+          "default": "2",
+          "label": "Shelf count",
+          "choices": [
+            "1",
+            "2",
+            "3"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.21,
+          0.056,
+          0.287
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#d9dde0",
+          "parts": [
+            "shelf-1",
+            "shelf-2"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#68829b",
+          "parts": [
+            "left-rail-1",
+            "right-rail-1",
+            "back-stop-1",
+            "left-rail-2",
+            "right-rail-2",
+            "back-stop-2"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#454b50",
+          "parts": [
+            "front-label"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "marker",
+      "kit": "office",
+      "title": "Office marker",
+      "description": "Round office marker with a broad cap, pocket clip and felt tip. Knobs: compact or standard format, barrel, cap and tip colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "marker",
+        "felt-tip pen",
+        "office supplies",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/marker.kcad.ts",
+      "sourceSha256": "e2b41611a30a3e3906aa179fc637a7ab7e247fff5454620286e412405f6f9bd1",
+      "triangleBudget": 180,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#53677d",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c74e42",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#e9e3d7",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.019,
+          0.143,
+          0.018
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#53677d",
+          "parts": [
+            "barrel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c74e42",
+          "parts": [
+            "cap",
+            "pocket-clip"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#e9e3d7",
+          "parts": [
+            "tip",
+            "cap-end"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "mechanical-pencil",
+      "kit": "office",
+      "title": "Mechanical pencil",
+      "description": "Slim mechanical pencil with a stepped grip, clip and exposed writing tip. Knobs: compact or standard format, barrel, grip and clip colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "mechanical pencil",
+        "pencil",
+        "writing tool",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/mechanical-pencil.kcad.ts",
+      "sourceSha256": "13d2873fd3d4a3dd2f3b3fa8029ee60d42a89500e5eb1df12e1e13ce8c500e31",
+      "triangleBudget": 120,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#4c718e",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#bbc2c5",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#42484d",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.168,
+          0.01,
+          0.0125
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#4c718e",
+          "parts": [
+            "barrel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#42484d",
+          "parts": [
+            "grip",
+            "lead"
+          ],
+          "param": "detail"
+        },
+        {
+          "name": "accent",
+          "color": "#bbc2c5",
+          "parts": [
+            "nose",
+            "button",
+            "clip"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "memo-pad",
+      "kit": "office",
+      "title": "Memo pad",
+      "description": "Tear-off memo pad with a coloured backing and a selectable sheet count. Knobs: 20, 40 or 60 sheets, compact or standard format, paper, backing and accent colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "memo pad",
+        "notepad",
+        "notes",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/memo-pad.kcad.ts",
+      "sourceSha256": "79fc168171ac9601c0b7381f45ff5850468a73ef0f036e52d82afe454eb8798d",
+      "triangleBudget": 100,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f0ede2",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#6885a5",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#454c52",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        },
+        {
+          "name": "sheets",
+          "type": "choice",
+          "default": "40",
+          "label": "Sheet count",
+          "choices": [
+            "20",
+            "40",
+            "60"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.115,
+          0.016,
+          0.145
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#6885a5",
+          "parts": [
+            "backing",
+            "page-corner"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#f0ede2",
+          "parts": [
+            "paper-stack"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#454c52",
+          "parts": [
+            "top-glue-strip"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "monitor-riser",
+      "kit": "office",
+      "title": "Monitor riser",
+      "description": "Desktop monitor riser with a broad top shelf, two supports and an open space below. Knobs: compact or standard format, shelf, supports and trim colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "monitor riser",
+        "monitor stand",
+        "desk accessory",
+        "office",
+        "workstation"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/monitor-riser.kcad.ts",
+      "sourceSha256": "39ff2efc5841ea6fb97e567742c85999aa8779fc1c80443e00d0ee6bc0af819f",
+      "triangleBudget": 120,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#b58a5d",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#41484c",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#d1c8b4",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.38,
+          0.142,
+          0.2315
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#b58a5d",
+          "parts": [
+            "top-shelf"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#41484c",
+          "parts": [
+            "left-support",
+            "right-support"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#d1c8b4",
+          "parts": [
+            "front-edge",
+            "rear-lip"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "mousepad",
+      "kit": "office",
+      "title": "Mouse pad",
+      "description": "Flat desktop mouse pad with stitched border, wrist-side edge and subtle center mark. Knobs: compact or standard format, pad, stitching and accent colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "mouse pad",
+        "mouse mat",
+        "desk accessory",
+        "office",
+        "workstation"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/mousepad.kcad.ts",
+      "sourceSha256": "a0af80b19dd55b02f2d350705ab2450a5b31163cf34148dcfcb0ef8889de9dda",
+      "triangleBudget": 150,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#34414a",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#657b89",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#d1c69e",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.23,
+          0.007,
+          0.195
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#34414a",
+          "parts": [
+            "pad"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#657b89",
+          "parts": [
+            "north-stitch",
+            "south-stitch",
+            "east-stitch",
+            "west-stitch"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#d1c69e",
+          "parts": [
+            "center-mark"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "notebook",
+      "kit": "office",
+      "title": "Notebook",
+      "description": "Pocket notebook with a solid cover, page block, spine and elastic closure. Knobs: compact or standard format, cover, pages and closure colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "notebook",
+        "journal",
+        "paper",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/notebook.kcad.ts",
+      "sourceSha256": "b953b40090fc72ac116ff81b745a0078293c9b2db11d374353825124303d3cfc",
+      "triangleBudget": 150,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#41677a",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#eeeade",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#bd704e",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.1505,
+          0.028,
+          0.2205
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#eeeade",
+          "parts": [
+            "page-block",
+            "title-panel"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#41677a",
+          "parts": [
+            "front-cover",
+            "back-cover"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#bd704e",
+          "parts": [
+            "spine",
+            "elastic-band"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "office-pinboard",
+      "kit": "office",
+      "title": "Office pinboard",
+      "description": "Freestanding cork pinboard with a timber border, two feet and coloured note pins. Knobs: compact or standard format, cork, frame and pin colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "pinboard",
+        "notice board",
+        "office board",
+        "office",
+        "workstation"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/office-pinboard.kcad.ts",
+      "sourceSha256": "49e0080dd902140d2493ded63d3597e91523221345711a6ef14815f27fc68faf",
+      "triangleBudget": 160,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#ad8656",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c5a77c",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#557a92",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.448,
+          0.895,
+          0.035
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#c5a77c",
+          "parts": [
+            "cork-panel"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#ad8656",
+          "parts": [
+            "top-frame",
+            "bottom-frame",
+            "left-frame",
+            "right-frame",
+            "left-leg",
+            "right-leg"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#557a92",
+          "parts": [
+            "pin-one",
+            "pin-two",
+            "pin-three"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "paper-clip-dish",
+      "kit": "office",
+      "title": "Paper clip dish",
+      "description": "Small desk dish with a recessed-looking tray floor and several visible paper clips. Knobs: compact or standard format, dish, clips and accent colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "paper clip holder",
+        "paper clip dish",
+        "office supplies",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/paper-clip-dish.kcad.ts",
+      "sourceSha256": "2436f64a65f2ac5bbfe3fd517a9edae8287ac43d288d05ffe0271d851416a553",
+      "triangleBudget": 180,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#4e6a7b",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#b8bec1",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#d8bd78",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.092,
+          0.02,
+          0.092
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#4e6a7b",
+          "parts": [
+            "tray-floor",
+            "north-wall",
+            "south-wall",
+            "east-wall",
+            "west-wall"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#b8bec1",
+          "parts": [
+            "clip-one",
+            "clip-two"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#d8bd78",
+          "parts": [
+            "clip-three"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "paper-cutter",
+      "kit": "office",
+      "title": "Paper cutter",
+      "description": "Desktop guillotine paper cutter with a measurement bed, alignment fence and hinged cutting arm. Knobs: compact or standard format, base, blade and fence colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "paper cutter",
+        "guillotine trimmer",
+        "office equipment",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/paper-cutter.kcad.ts",
+      "sourceSha256": "1351674873a65e636a6f8262804cfdb9e2be22a23e49ad3372ad5e46ff50b7eb",
+      "triangleBudget": 180,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#667b86",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#42494d",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#c5c7c4",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.31,
+          0.086,
+          0.23
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#667b86",
+          "parts": [
+            "base",
+            "handle"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#c5c7c4",
+          "parts": [
+            "measurement-bed",
+            "blade-edge"
+          ],
+          "param": "detail"
+        },
+        {
+          "name": "accent",
+          "color": "#42494d",
+          "parts": [
+            "rear-fence",
+            "pivot-post",
+            "cutting-arm"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "paper-shredder",
+      "kit": "office",
+      "title": "Paper shredder",
+      "description": "Compact office paper shredder with a feed slot, control panel and removable collection bin. Knobs: compact or standard format, housing, controls and panel colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "paper shredder",
+        "office machine",
+        "document disposal",
+        "office",
+        "equipment"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/paper-shredder.kcad.ts",
+      "sourceSha256": "33ce0830f1c12dfb6b347ba8f158716ec79d2b7bb756b583bdab610c987f216c",
+      "triangleBudget": 180,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c4c7c5",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#41494e",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#677d88",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.312,
+          0.441,
+          0.26
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c4c7c5",
+          "parts": [
+            "cabinet"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#41494e",
+          "parts": [
+            "top-cap",
+            "control-panel",
+            "left-foot",
+            "right-foot"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#677d88",
+          "parts": [
+            "feed-slot",
+            "power-button",
+            "bin-window"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "paperweight",
+      "kit": "office",
+      "title": "Paperweight",
+      "description": "Faceted low-poly desktop paperweight with a contrasting foot and inset top. Knobs: compact or standard format, body, foot and inset colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "paperweight",
+        "desk accessory",
+        "office supplies",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/paperweight.kcad.ts",
+      "sourceSha256": "7f1949f3a15cf2f7ae594e016ce60c73a1aefaddb664bf44476c618cecac9711",
+      "triangleBudget": 120,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#718d95",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#514f4a",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#c2a86e",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.078,
+          0.05,
+          0.07
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#514f4a",
+          "parts": [
+            "foot"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#718d95",
+          "parts": [
+            "lower-facet",
+            "crown"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#c2a86e",
+          "parts": [
+            "top-inset"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "pencil-cup",
+      "kit": "office",
+      "title": "Pencil cup",
+      "description": "Open desktop cup with a stable base and a small set of upright writing tools. Knobs: compact or standard format, cup, tools and trim colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "pencil cup",
+        "pen holder",
+        "desk organizer",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/pencil-cup.kcad.ts",
+      "sourceSha256": "f9a5dba1659b1e60fd92bfa24889d79894f312380268fdd2d2185729d9f0a37a",
+      "triangleBudget": 180,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#597a86",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d9bc70",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#554c43",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.072,
+          0.136,
+          0.072
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "detail",
+          "color": "#554c43",
+          "parts": [
+            "cup-floor",
+            "pencil-two",
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right"
+          ],
+          "param": "detail"
+        },
+        {
+          "name": "body",
+          "color": "#597a86",
+          "parts": [
+            "front-wall",
+            "back-wall",
+            "left-wall",
+            "right-wall"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#d9bc70",
+          "parts": [
+            "pencil-one",
+            "pencil-three"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "ring-binder",
+      "kit": "office",
+      "title": "Ring binder",
+      "description": "Standing ring binder with a spine label, cover boards and a choice of two to four visible rings. Knobs: ring count, compact or standard format, cover, paper and hardware colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "ring binder",
+        "binder",
+        "office folder",
+        "document storage",
+        "office"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/ring-binder.kcad.ts",
+      "sourceSha256": "79c639f87af65056ba2acc1a8f2f834f04e2f3c30e83de7ff942b5445eff0c26",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#315d7b",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e6e4dc",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#bbc2c7",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        },
+        {
+          "name": "rings",
+          "type": "choice",
+          "default": "3",
+          "label": "Ring count",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.2315,
+          0.041,
+          0.285
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#315d7b",
+          "parts": [
+            "back-cover",
+            "front-cover",
+            "spine"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e6e4dc",
+          "parts": [
+            "label-window",
+            "paper-block"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#bbc2c7",
+          "parts": [
+            "ring-1",
+            "ring-2",
+            "ring-3"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "rubber-stamp",
+      "kit": "office",
+      "title": "Rubber stamp",
+      "description": "Hand stamp with a broad rubber base, wooden handle and top cap. Knobs: compact or standard format, handle, rubber and cap colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "rubber stamp",
+        "office supplies",
+        "stamp",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/rubber-stamp.kcad.ts",
+      "sourceSha256": "db39c152ce99452693d73a02ad5853b661479ade49635b7941896bd4f1df430b",
+      "triangleBudget": 160,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#8b6844",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#3c4851",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#c2a26d",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.058,
+          0.073,
+          0.042
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#3c4851",
+          "parts": [
+            "rubber-base"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#8b6844",
+          "parts": [
+            "wooden-neck",
+            "handle"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#c2a26d",
+          "parts": [
+            "top-cap",
+            "marking-face"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "ruler",
+      "kit": "office",
+      "title": "Office ruler",
+      "description": "Flat office ruler with alternating length marks and a contrasting zero end. Knobs: compact or standard format, body, scale and end colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "ruler",
+        "measuring tool",
+        "office supplies",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/ruler.kcad.ts",
+      "sourceSha256": "1f861048bc40592d1970b3116f7f7f6ac8e26982675fd5ef7adec1132fb18578",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#d7c594",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#414950",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#b55b4d",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.25,
+          0.008,
+          0.035
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#d7c594",
+          "parts": [
+            "ruler-body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#b55b4d",
+          "parts": [
+            "zero-end"
+          ],
+          "param": "detail"
+        },
+        {
+          "name": "accent",
+          "color": "#414950",
+          "parts": [
+            "tick-1",
+            "tick-2",
+            "tick-3",
+            "tick-4",
+            "tick-5",
+            "tick-6",
+            "tick-7",
+            "tick-8",
+            "tick-9",
+            "tick-10",
+            "scale-line"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "scissors",
+      "kit": "office",
+      "title": "Office scissors",
+      "description": "Desktop office scissors with crossed blades, pivot and contrasting handles. Knobs: compact or standard format, blade, handle and pivot colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "scissors",
+        "shears",
+        "office supplies",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/scissors.kcad.ts",
+      "sourceSha256": "f3535f1340f54d757c63dd247669b7fdb6e41bcc63fdc6395f416b14dab53f7c",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#929da3",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c7544d",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#43494d",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 164,
+        "sizeM": [
+          0.189,
+          0.012,
+          0.035
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#929da3",
+          "parts": [
+            "blade-left",
+            "blade-right"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c7544d",
+          "parts": [
+            "handle-left-inner",
+            "handle-left-outer",
+            "handle-left-side-a",
+            "handle-left-side-b",
+            "handle-right-inner",
+            "handle-right-outer",
+            "handle-right-side-a",
+            "handle-right-side-b"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#43494d",
+          "parts": [
+            "pivot"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "stapler",
+      "kit": "office",
+      "title": "Stapler",
+      "description": "Desktop stapler with a long base, hinged upper arm and rear hinge pin. Knobs: compact or standard format, body, top and hinge colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "stapler",
+        "staple gun",
+        "office supplies",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/stapler.kcad.ts",
+      "sourceSha256": "87f530045fd74ab2e25cd17f99938fd82d0f019a3710c67db4bd7903b7715063",
+      "triangleBudget": 130,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#56636b",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c7c9c8",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#33393d",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.1475,
+          0.041,
+          0.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#56636b",
+          "parts": [
+            "base",
+            "grip-pad"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#c7c9c8",
+          "parts": [
+            "upper-arm"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "detail",
+          "color": "#33393d",
+          "parts": [
+            "nose",
+            "hinge"
+          ],
+          "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "sticky-notes",
+      "kit": "office",
+      "title": "Sticky notes",
+      "description": "Square adhesive-note pad with layered paper edges and a lifted corner marker. Knobs: sheet count, compact or standard format, paper, backing and note colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "sticky notes",
+        "sticky note pad",
+        "memo",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/sticky-notes.kcad.ts",
+      "sourceSha256": "f2006162a538aff5b90ec324075412d3aa0145bb9cdc26689f017554c89aeb1d",
+      "triangleBudget": 110,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f3df75",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#f5f1e5",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#6b87a2",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        },
+        {
+          "name": "sheets",
+          "type": "choice",
+          "default": "100",
+          "label": "Sheet count",
+          "choices": [
+            "50",
+            "100",
+            "200"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 36,
+        "sizeM": [
+          0.078,
+          0.014143,
+          0.078
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "detail",
+          "color": "#6b87a2",
+          "parts": [
+            "backing"
+          ],
+          "param": "detail"
+        },
+        {
+          "name": "body",
+          "color": "#f3df75",
+          "parts": [
+            "paper-stack"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#f5f1e5",
+          "parts": [
+            "lifted-corner"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "tape-dispenser",
+      "kit": "office",
+      "title": "Tape dispenser",
+      "description": "Weighted desktop tape dispenser with a visible roll, spindle and serrated cutting edge. Knobs: compact or standard format, body, tape and cutter colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "tape dispenser",
+        "office supplies",
+        "adhesive tape",
+        "office",
+        "stationery"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/tape-dispenser.kcad.ts",
+      "sourceSha256": "59ae039df13ba5f1065631cdd28e010ae24022a4ef7d277ae1365c9ffa1eef2b",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#444b50",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c3c7c8",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#6c8b9d",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.131,
+          0.044,
+          0.06
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#444b50",
+          "parts": [
+            "weighted-base",
+            "cutting-arm"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#6c8b9d",
+          "parts": [
+            "tape-roll"
+          ],
+          "param": "detail"
+        },
+        {
+          "name": "accent",
+          "color": "#c3c7c8",
+          "parts": [
+            "hub",
+            "serrated-edge"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "wrist-rest",
+      "kit": "office",
+      "title": "Keyboard wrist rest",
+      "description": "Low padded wrist rest with a non-slip base and stitched top band. Knobs: compact or standard format, cushion, base and seam colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "wrist rest",
+        "keyboard wrist rest",
+        "desk accessory",
+        "office",
+        "workstation"
+      ],
+      "compat": [
+        "office",
+        "interior",
+        "desktop"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/office/wrist-rest.kcad.ts",
+      "sourceSha256": "dee51a05fd50e364ce616002c006856ebe69511a351d50c9dd79919ef2a338ac",
+      "triangleBudget": 100,
+      "params": [
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#5a7585",
+          "label": "Body"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#3d454a",
+          "label": "Accent"
+        },
+        {
+          "name": "detail",
+          "type": "color",
+          "default": "#b3a88e",
+          "label": "Detail"
+        },
+        {
+          "name": "format",
+          "type": "choice",
+          "default": "standard",
+          "label": "Format",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        }
+      ],
+      "presets": {
+        "clean": {
+          "body": "#e8e7df",
+          "accent": "#66829a",
+          "detail": "#454b50"
+        },
+        "warm": {
+          "body": "#c8a875",
+          "accent": "#557581",
+          "detail": "#493c34"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.315,
+          0.034,
+          0.07
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#3d454a",
+          "parts": [
+            "non-slip-base"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#5a7585",
+          "parts": [
+            "cushion",
+            "end-cap-left",
+            "end-cap-right"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "detail",
+          "color": "#b3a88e",
+          "parts": [
+            "seam-front"
+          ],
+          "param": "detail"
         }
       ]
     },
