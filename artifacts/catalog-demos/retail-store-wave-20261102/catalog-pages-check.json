@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-retail-store-pages",
+  "kitPages": 48,
+  "assetsInIndex": 1183,
+  "pageAndPreviewPairs": 48,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

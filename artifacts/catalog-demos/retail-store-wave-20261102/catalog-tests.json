@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-11-02",
+  "command": "npx vitest run tests/integration/catalog/",
+  "status": "passed",
+  "filesPassed": 4,
+  "testsPassed": 15,
+  "durationSeconds": 130.01,
+  "scope": "All catalog assets build to a mesh inside triangle budget on one material, open in Studio with exactly indexed knobs, and the generated index is fresh."
+}
