@@ -1,0 +1,2 @@
+Local checks passed: 40 of 40 assets; catalog integration gate: 2 of 2 tests.
+This shows local authoring and preview output; deployment and hardware acceptance are not covered.

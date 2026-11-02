@@ -396,6 +396,53 @@
       ]
     },
     {
+      "id": "sports",
+      "title": "Sports Equipment",
+      "description": "Original low-poly balls, court and field equipment, and fitness props at real-world scale with editable size and colour controls.",
+      "assets": [
+        "american-football",
+        "badminton-racket",
+        "barbell",
+        "baseball-bat",
+        "baseball",
+        "basketball-hoop",
+        "basketball",
+        "bowling-ball",
+        "bowling-pin",
+        "cricket-ball",
+        "cricket-bat",
+        "dumbbell",
+        "fencing-foil",
+        "football-helmet",
+        "golf-ball",
+        "golf-club",
+        "handball",
+        "hockey-stick",
+        "hurdle",
+        "jump-rope",
+        "kettlebell",
+        "lacrosse-stick",
+        "medal",
+        "medicine-ball",
+        "rugby-ball",
+        "soccer-ball",
+        "soccer-goal",
+        "softball",
+        "sports-cone",
+        "stopwatch",
+        "table-tennis-ball",
+        "table-tennis-paddle",
+        "tennis-ball",
+        "tennis-net",
+        "tennis-racket",
+        "trophy-cup",
+        "volleyball-net",
+        "volleyball",
+        "weight-plate",
+        "yoga-mat"
+      ]
+    },
+    {
       "id": "terrain",
       "title": "Terrain",
       "description": "Low-poly 2 m grid terrain pieces: floors, ramps, stairs, platforms, cliff corners, shorelines and bridges that line up with the nature tiles, flat-shaded on one palette material.",
@@ -47337,6 +47384,3711 @@
             "saw"
           ],
           "param": "metal"
+        }
+      ]
+    },
+    {
+      "id": "american-football",
+      "kit": "sports",
+      "title": "American football",
+      "description": "Elliptical game ball with contrasting end bands and a raised lace strip. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "american football",
+        "gridiron",
+        "ball",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/american-football.kcad.ts",
+      "sourceSha256": "abce57c14012cbeda91be6d90d175bd85af567a2537910e593b797e129f3fd9a",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#7d4b2c",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#f2eee1",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#7d4b2c",
+          "trim": "#f2eee1"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 150,
+        "sizeM": [
+          0.387393,
+          0.20125,
+          0.173205
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#7d4b2c",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#f2eee1",
+          "parts": [
+            "lace-strip",
+            "lace-0",
+            "lace-1",
+            "lace-2",
+            "lace-3",
+            "lace-4",
+            "lace-5",
+            "lace-6",
+            "end-band--1",
+            "end-band-1"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "badminton-racket",
+      "kit": "sports",
+      "title": "Badminton racket",
+      "description": "Light oval racket with a string grid, long shaft and wrapped handle. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "badminton",
+        "racket",
+        "shuttlecock",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/badminton-racket.kcad.ts",
+      "sourceSha256": "653ff47e637033227e176bdc55e50bfb99ebef8fe66dc3638177ab7de859fd46",
+      "triangleBudget": 650,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#30343a",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#c74d3c",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#30343a",
+          "trim": "#c74d3c"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 336,
+        "sizeM": [
+          0.2,
+          0.022,
+          0.705
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#30343a",
+          "parts": [
+            "frame",
+            "shaft"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#c74d3c",
+          "parts": [
+            "string-v--4",
+            "string-v--3",
+            "string-v--2",
+            "string-v--1",
+            "string-v-0",
+            "string-v-1",
+            "string-v-2",
+            "string-v-3",
+            "string-v-4",
+            "string-h--4",
+            "string-h--3",
+            "string-h--2",
+            "string-h--1",
+            "string-h-0",
+            "string-h-1",
+            "string-h-2",
+            "string-h-3",
+            "string-h-4",
+            "grip"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "barbell",
+      "kit": "sports",
+      "title": "Barbell",
+      "description": "Straight lifting bar with paired thick block plates and collars. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "barbell",
+        "weight",
+        "gym",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/barbell.kcad.ts",
+      "sourceSha256": "9adf16f5e359bb8e716914291435e94e89c7d3fd05cac644b7baa3aa74609674",
+      "triangleBudget": 450,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#686f74",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#33383d",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#686f74",
+          "trim": "#33383d"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.45,
+          0.28,
+          0.28
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#686f74",
+          "parts": [
+            "bar",
+            "outer-plate--1",
+            "outer-plate-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#33383d",
+          "parts": [
+            "inner-plate--1",
+            "collar--1",
+            "inner-plate-1",
+            "collar-1"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "baseball-bat",
+      "kit": "sports",
+      "title": "Baseball bat",
+      "description": "Tapered bat with enlarged barrel, narrow wrapped grip and end knob. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "baseball",
+        "bat",
+        "equipment",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/baseball-bat.kcad.ts",
+      "sourceSha256": "80dd31d51e2d10d64858493621575a95a781b9ccb6b11a441dfd158df33fa901",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#9b6840",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#d7c5a1",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#9b6840",
+          "trim": "#d7c5a1"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.076,
+          0.076,
+          0.798
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#9b6840",
+          "parts": [
+            "barrel",
+            "taper",
+            "knob"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#d7c5a1",
+          "parts": [
+            "grip-wrap"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "baseball",
+      "kit": "sports",
+      "title": "Baseball",
+      "description": "White stitched ball with paired red seam marks around its curved front. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "baseball",
+        "ball",
+        "diamond",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/baseball.kcad.ts",
+      "sourceSha256": "88cbf7faa518d302c90e58e028ca02ae0c164876bcf2dcc58b7a3970e331f2c0",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f4f1e8",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#b93232",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#f4f1e8",
+          "trim": "#b93232"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 246,
+        "sizeM": [
+          0.179497,
+          0.184,
+          0.179809
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#f4f1e8",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#b93232",
+          "parts": [
+            "seam-left-0",
+            "seam-right-0",
+            "seam-left-1",
+            "seam-right-1",
+            "seam-left-2",
+            "seam-right-2",
+            "seam-left-3",
+            "seam-right-3",
+            "seam-left-4",
+            "seam-right-4",
+            "seam-left-5",
+            "seam-right-5",
+            "seam-left-6",
+            "seam-right-6"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "basketball-hoop",
+      "kit": "sports",
+      "title": "Basketball hoop",
+      "description": "Freestanding practice hoop with weighted base, backboard, rim and net. Knobs: size, body and detail colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "basketball",
+        "hoop",
+        "backboard",
+        "court",
+        "sports"
+      ],
+      "compat": [
+        "outdoor",
+        "court",
+        "sports"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/basketball-hoop.kcad.ts",
+      "sourceSha256": "5f64b02e371aea688ada0226765750e3ac3bb1676a4f0d94778c62546bebc497",
+      "triangleBudget": 850,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#70777c",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#e26f29",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#70777c",
+          "trim": "#e26f29"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          1.8,
+          2.89,
+          0.68
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#70777c",
+          "parts": [
+            "base",
+            "upright",
+            "board-mark",
+            "net-0",
+            "net-1",
+            "net-2",
+            "net-3",
+            "net-4",
+            "net-5",
+            "net-6",
+            "net-7"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#e26f29",
+          "parts": [
+            "backboard",
+            "rim"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "basketball",
+      "kit": "sports",
+      "title": "Basketball",
+      "description": "Orange faceted ball with three dark raised equator and meridian seams. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "basketball",
+        "ball",
+        "court",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/basketball.kcad.ts",
+      "sourceSha256": "397dcce1d7e66e8e564f485fe9f21519b816aa623100cd11bcf6a3ed56569953",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#d87528",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#292a2c",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#d87528",
+          "trim": "#292a2c"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 366,
+        "sizeM": [
+          0.246,
+          0.247,
+          0.246
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#d87528",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#292a2c",
+          "parts": [
+            "equator-seam",
+            "meridian-x",
+            "meridian-y"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "bowling-ball",
+      "kit": "sports",
+      "title": "Bowling ball",
+      "description": "Heavy smooth ball with three contrasting finger-hole markers. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "bowling",
+        "ball",
+        "lane",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/bowling-ball.kcad.ts",
+      "sourceSha256": "606a39d419a17566f292264d99b339c6952181f1cb9f1e60d1d518e86a3a4e8b",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#315d9b",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#16191c",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#315d9b",
+          "trim": "#16191c"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 312,
+        "sizeM": [
+          0.218518,
+          0.224,
+          0.2098
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#315d9b",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#16191c",
+          "parts": [
+            "finger-hole-0",
+            "finger-hole-1",
+            "finger-hole-2"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "bowling-pin",
+      "kit": "sports",
+      "title": "Bowling pin",
+      "description": "White pin with a narrow neck and two colored neck bands. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "bowling",
+        "pin",
+        "lane",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/bowling-pin.kcad.ts",
+      "sourceSha256": "f3344b40f63e670e0301ac5c1a05ad8dde72a3d027b65b7010a21ade1a2151ca",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f2f0e8",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#d23832",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#f2f0e8",
+          "trim": "#d23832"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 292,
+        "sizeM": [
+          0.097268,
+          0.234,
+          0.096
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#f2f0e8",
+          "parts": [
+            "base",
+            "belly",
+            "neck",
+            "head"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#d23832",
+          "parts": [
+            "band-lower",
+            "band-upper"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "cricket-ball",
+      "kit": "sports",
+      "title": "Cricket ball",
+      "description": "Red cricket ball with a raised pale seam around its crown. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "cricket",
+        "ball",
+        "wicket",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/cricket-ball.kcad.ts",
+      "sourceSha256": "5a100fc3f5c4e1b9bc49c444646d7b072d3d56da1d184f68fc56a72422ce0112",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#9f2928",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#e9dfc8",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#9f2928",
+          "trim": "#e9dfc8"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 174,
+        "sizeM": [
+          0.194,
+          0.188,
+          0.194
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#9f2928",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#e9dfc8",
+          "parts": [
+            "raised-seam"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "cricket-bat",
+      "kit": "sports",
+      "title": "Cricket bat",
+      "description": "Flat broad blade, raised shoulder and fabric-wrapped handle. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "cricket",
+        "bat",
+        "wicket",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/cricket-bat.kcad.ts",
+      "sourceSha256": "618fe4e11a394ec804073d92d3196d77f66f2e282f3228f06da2ccee6abb881b",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#b88750",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#513d31",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#b88750",
+          "trim": "#513d31"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 56,
+        "sizeM": [
+          0.21,
+          0.05,
+          0.864
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#b88750",
+          "parts": [
+            "blade",
+            "shoulder",
+            "grip-cap"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#513d31",
+          "parts": [
+            "handle"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "dumbbell",
+      "kit": "sports",
+      "title": "Dumbbell",
+      "description": "Compact hand weight with centre grip and paired block-shaped plates. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "dumbbell",
+        "weight",
+        "fitness",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/dumbbell.kcad.ts",
+      "sourceSha256": "a1b5ca9e46dcc164805487d5bdce1e9715ef76ac2609793579b0772219c165e4",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#555b60",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#a7adb0",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#555b60",
+          "trim": "#a7adb0"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.326,
+          0.19,
+          0.19
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#555b60",
+          "parts": [
+            "handle",
+            "outer-plate--1",
+            "outer-plate-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#a7adb0",
+          "parts": [
+            "inner-plate--1",
+            "inner-plate-1",
+            "grip-ring-a",
+            "grip-ring-b"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "fencing-foil",
+      "kit": "sports",
+      "title": "Fencing foil",
+      "description": "Slim foil with round guard, narrow blade, grip and padded pommel. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "fencing",
+        "foil",
+        "blade",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/fencing-foil.kcad.ts",
+      "sourceSha256": "8494a4bb8b251a695cff8f444016a60453b74018cd96cc3eb65dd4844d6b98df",
+      "triangleBudget": 450,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#848b91",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#4d6d4e",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#848b91",
+          "trim": "#4d6d4e"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 242,
+        "sizeM": [
+          0.176,
+          0.176,
+          1.151176
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#848b91",
+          "parts": [
+            "guard",
+            "blade",
+            "pommel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#4d6d4e",
+          "parts": [
+            "grip",
+            "tip"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "football-helmet",
+      "kit": "sports",
+      "title": "Football helmet",
+      "description": "Protective shell with ear guards and a front cage of low-poly bars. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "football",
+        "helmet",
+        "gridiron",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/football-helmet.kcad.ts",
+      "sourceSha256": "250498d8db048a48ab015d61792cfda89a1e691e48ede7c02aee844e1d22f481",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c43a34",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#e4d9be",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#c43a34",
+          "trim": "#e4d9be"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.335527,
+          0.21,
+          0.29111
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c43a34",
+          "parts": [
+            "shell",
+            "ear-guard--1",
+            "ear-guard-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#e4d9be",
+          "parts": [
+            "facebar-top",
+            "facebar-bottom",
+            "facebar-side--1",
+            "facebar-side-1"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "golf-ball",
+      "kit": "sports",
+      "title": "Golf ball",
+      "description": "Small white golf ball with low-poly surface dimples. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "golf",
+        "ball",
+        "course",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/golf-ball.kcad.ts",
+      "sourceSha256": "5d3cd14a82aa154deea97a702fc4f96b354a96ac1f9afa3d341f593ff9e85dee",
+      "triangleBudget": 600,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f3f1e8",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#c8cbd0",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#f3f1e8",
+          "trim": "#c8cbd0"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 342,
+        "sizeM": [
+          0.083895,
+          0.086,
+          0.080548
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#f3f1e8",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#c8cbd0",
+          "parts": [
+            "dimple-0",
+            "dimple-1",
+            "dimple-2",
+            "dimple-3",
+            "dimple-4",
+            "dimple-5"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "golf-club",
+      "kit": "sports",
+      "title": "Golf club",
+      "description": "Long-shafted club with rubber grip and a broad low-profile iron head. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "golf",
+        "club",
+        "iron",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/golf-club.kcad.ts",
+      "sourceSha256": "daf85b5709e1085e64cc6974bd6575ec52cc9e50088834c04c2fe24abd259fb6",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#777f83",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#315e48",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#777f83",
+          "trim": "#315e48"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.192,
+          0.052,
+          0.882
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#777f83",
+          "parts": [
+            "shaft",
+            "hosel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#315e48",
+          "parts": [
+            "grip",
+            "club-head"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "handball",
+      "kit": "sports",
+      "title": "Handball",
+      "description": "Compact court ball with two raised wraparound panel bands. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "handball",
+        "ball",
+        "indoor",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/handball.kcad.ts",
+      "sourceSha256": "f84e7c2af47faadd53aeb89e72ce2d30d38491780d616d647e3b11df5a206774",
+      "triangleBudget": 450,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#e7a92c",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#2e578b",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#e7a92c",
+          "trim": "#2e578b"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 270,
+        "sizeM": [
+          0.18,
+          0.181,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#e7a92c",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#2e578b",
+          "parts": [
+            "panel-band-a",
+            "panel-band-b"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "hockey-stick",
+      "kit": "sports",
+      "title": "Field hockey stick",
+      "description": "Straight shaft with a low-poly angled blade and contrasting grip wrap. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "field hockey",
+        "stick",
+        "hockey",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/hockey-stick.kcad.ts",
+      "sourceSha256": "4f6e70e298f864efd752b6a5c770658a2e2da65ea1c546bfdc3cf0c10a10dae0",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#936a43",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#d7d1c3",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#936a43",
+          "trim": "#d7d1c3"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.139293,
+          0.044,
+          1.041922
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#936a43",
+          "parts": [
+            "shaft",
+            "blade-neck"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#d7d1c3",
+          "parts": [
+            "grip",
+            "blade-toe"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "hurdle",
+      "kit": "sports",
+      "title": "Track hurdle",
+      "description": "Adjustable training hurdle with feet, uprights and a contrasting crossbar. Knobs: size, body and detail colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "hurdle",
+        "track",
+        "athletics",
+        "sports"
+      ],
+      "compat": [
+        "outdoor",
+        "track",
+        "sports"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/hurdle.kcad.ts",
+      "sourceSha256": "44da8413ca3efcfbfc69c540f71febb037113711814d8f61c560616f88fba8d4",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#77828a",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#e6ad32",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#77828a",
+          "trim": "#e6ad32"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          1.05,
+          0.761,
+          0.125
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#77828a",
+          "parts": [
+            "foot--1",
+            "upright--1",
+            "foot-1",
+            "upright-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#e6ad32",
+          "parts": [
+            "crossbar"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "jump-rope",
+      "kit": "sports",
+      "title": "Jump rope",
+      "description": "Flexible low-poly training loop with two oversized hand grips. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "jump rope",
+        "skipping",
+        "fitness",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/jump-rope.kcad.ts",
+      "sourceSha256": "92233e88e53471432a8c74ebaa5b4ed4e4b3beaf0813847acc18574caf181701",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c8443c",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#34383c",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#c8443c",
+          "trim": "#34383c"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          0.756639,
+          0.044,
+          0.388938
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c8443c",
+          "parts": [
+            "rope-0",
+            "rope-1",
+            "rope-2",
+            "rope-3",
+            "rope-4",
+            "rope-5",
+            "rope-6",
+            "rope-7",
+            "rope-8",
+            "rope-9",
+            "rope-10",
+            "rope-11",
+            "rope-12",
+            "rope-13",
+            "rope-14",
+            "rope-15"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#34383c",
+          "parts": [
+            "grip--1",
+            "grip-1"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "kettlebell",
+      "kit": "sports",
+      "title": "Kettlebell",
+      "description": "Rounded training weight with squared arch handle and side supports. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "kettlebell",
+        "weight",
+        "fitness",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/kettlebell.kcad.ts",
+      "sourceSha256": "7570cef7a8449e7ce3899220818c935eea7c168519fbcba1b15bd3be5fee6913",
+      "triangleBudget": 450,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#4b5055",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#c2c5c6",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#4b5055",
+          "trim": "#c2c5c6"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          0.199015,
+          0.267,
+          0.17021
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#4b5055",
+          "parts": [
+            "weight"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#c2c5c6",
+          "parts": [
+            "handle-left",
+            "handle-right",
+            "handle-top",
+            "badge"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "lacrosse-stick",
+      "kit": "sports",
+      "title": "Lacrosse stick",
+      "description": "Long shaft with broad open head and a simple crossing pocket grid. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "lacrosse",
+        "stick",
+        "field",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/lacrosse-stick.kcad.ts",
+      "sourceSha256": "c4d8a0534466f4c20851b365c48cca1bf6206b2af694cf8830c109fac3136f71",
+      "triangleBudget": 550,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#525a60",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#e4dfd1",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#525a60",
+          "trim": "#e4dfd1"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 252,
+        "sizeM": [
+          0.23,
+          0.028,
+          0.925
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#525a60",
+          "parts": [
+            "head-frame",
+            "shaft"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#e4dfd1",
+          "parts": [
+            "pocket-v--3",
+            "pocket-v--2",
+            "pocket-v--1",
+            "pocket-v-0",
+            "pocket-v-1",
+            "pocket-v-2",
+            "pocket-v-3",
+            "pocket-h--2",
+            "pocket-h--1",
+            "pocket-h-0",
+            "pocket-h-1",
+            "pocket-h-2"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "medal",
+      "kit": "sports",
+      "title": "Sports medal",
+      "description": "Round hanging medal with raised front disc and two-color neck ribbon. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "medal",
+        "award",
+        "podium",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/medal.kcad.ts",
+      "sourceSha256": "6b4122d8b53c1a37422dd110ad4ee0ebdcecd8791fc5c65c25fb676365ebca7c",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c99428",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#456c9c",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#c99428",
+          "trim": "#456c9c"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          0.132,
+          0.204,
+          0.032943
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c99428",
+          "parts": [
+            "medallion",
+            "ribbon-right"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#456c9c",
+          "parts": [
+            "centre",
+            "ribbon-left"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "medicine-ball",
+      "kit": "sports",
+      "title": "Medicine ball",
+      "description": "Weighted training ball with two raised grip bands and a centre badge. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "medicine ball",
+        "fitness",
+        "training",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/medicine-ball.kcad.ts",
+      "sourceSha256": "9e355d42d41301fc0dd95be00db9d6cae4505faa299031fdc13abab3bee34fac",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#3f6286",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#e59a36",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#3f6286",
+          "trim": "#e59a36"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 348,
+        "sizeM": [
+          0.24,
+          0.241,
+          0.253049
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#3f6286",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#e59a36",
+          "parts": [
+            "grip-band-a",
+            "grip-band-b",
+            "badge"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "rugby-ball",
+      "kit": "sports",
+      "title": "Rugby ball",
+      "description": "Long oval ball with contrasting end panels and a raised lace line. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "rugby",
+        "ball",
+        "oval",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/rugby-ball.kcad.ts",
+      "sourceSha256": "492e0c951d4ecf7832c532c91cc064067dafc720b68b3e3ae61588a2031f9f83",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#8b4f31",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#efe6d3",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#8b4f31",
+          "trim": "#efe6d3"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.333529,
+          0.1854,
+          0.159418
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#8b4f31",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#efe6d3",
+          "parts": [
+            "lace-strip",
+            "lace-0",
+            "lace-1",
+            "lace-2",
+            "lace-3",
+            "lace-4"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "soccer-ball",
+      "kit": "sports",
+      "title": "Soccer ball",
+      "description": "Round football with six raised dark polygon panels on its faceted shell. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "soccer",
+        "football",
+        "ball",
+        "pitch",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/soccer-ball.kcad.ts",
+      "sourceSha256": "8ef7cf307be845a2a48866c19a7852683e947883ed123984b7c6b636e6796cc9",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f1f0e8",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#26282b",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#f1f0e8",
+          "trim": "#26282b"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 198,
+        "sizeM": [
+          0.210714,
+          0.216,
+          0.213154
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#f1f0e8",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#26282b",
+          "parts": [
+            "panel-0",
+            "panel-1",
+            "panel-2",
+            "panel-3",
+            "panel-4",
+            "panel-5"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "soccer-goal",
+      "kit": "sports",
+      "title": "Soccer goal",
+      "description": "Portable goal frame with rear support rails and a low-density net grid. Knobs: size, body and detail colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "soccer",
+        "goal",
+        "football",
+        "pitch",
+        "sports"
+      ],
+      "compat": [
+        "outdoor",
+        "field",
+        "sports"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/soccer-goal.kcad.ts",
+      "sourceSha256": "35cb6c6231b14ae64f2697661fb17a378bb1903572d25219f79dee2dc0c926da",
+      "triangleBudget": 850,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f0f0e9",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#6d777d",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#f0f0e9",
+          "trim": "#6d777d"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 252,
+        "sizeM": [
+          3.07,
+          2.1,
+          1.31
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#f0f0e9",
+          "parts": [
+            "post--1",
+            "rear-leg--1",
+            "post-1",
+            "rear-leg-1",
+            "crossbar"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#6d777d",
+          "parts": [
+            "net-vertical-0",
+            "net-vertical-1",
+            "net-vertical-2",
+            "net-vertical-3",
+            "net-vertical-4",
+            "net-vertical-5",
+            "net-vertical-6",
+            "net-vertical-7",
+            "net-vertical-8",
+            "net-vertical-9",
+            "net-vertical-10",
+            "net-horizontal-1",
+            "net-horizontal-2",
+            "net-horizontal-3",
+            "net-horizontal-4",
+            "net-depth-top"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "softball",
+      "kit": "sports",
+      "title": "Softball",
+      "description": "Bright yellow ball with two curved rows of red raised stitch marks. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "softball",
+        "ball",
+        "diamond",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/softball.kcad.ts",
+      "sourceSha256": "f973964b669a3072b8053c8da8d436583316f17c716384162e6750f837f1b49a",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#e7d32d",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#b93232",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#e7d32d",
+          "trim": "#b93232"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 246,
+        "sizeM": [
+          0.199008,
+          0.204,
+          0.19926
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#e7d32d",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#b93232",
+          "parts": [
+            "stitch-0",
+            "stitch-mirror-0",
+            "stitch-1",
+            "stitch-mirror-1",
+            "stitch-2",
+            "stitch-mirror-2",
+            "stitch-3",
+            "stitch-mirror-3",
+            "stitch-4",
+            "stitch-mirror-4",
+            "stitch-5",
+            "stitch-mirror-5",
+            "stitch-6",
+            "stitch-mirror-6"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "sports-cone",
+      "kit": "sports",
+      "title": "Training cone",
+      "description": "Stackable tapered field cone with a wide foot and reflective bands. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "cone",
+        "training",
+        "field",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/sports-cone.kcad.ts",
+      "sourceSha256": "b47c4f6a9032d2aac09c7fd2f531a91c3df86fb1932d988c5fe1bcbda0f6a6ee",
+      "triangleBudget": 350,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#e86c2e",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#f2e3c4",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#e86c2e",
+          "trim": "#f2e3c4"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.31,
+          0.374,
+          0.31
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#e86c2e",
+          "parts": [
+            "foot",
+            "cone"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#f2e3c4",
+          "parts": [
+            "band-low",
+            "band-high"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "stopwatch",
+      "kit": "sports",
+      "title": "Stopwatch",
+      "description": "Handheld timer with squared case, two buttons and large dial. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "stopwatch",
+        "timer",
+        "track",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/stopwatch.kcad.ts",
+      "sourceSha256": "04d63a94d63dd9cc94e70440b3d7b6858f3afeb85de47e8f95d4a1c47a3a0f6c",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#555d64",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#e4a62f",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#555d64",
+          "trim": "#e4a62f"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.154,
+          0.239,
+          0.065
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#555d64",
+          "parts": [
+            "case",
+            "dial-centre",
+            "lanyard-loop"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#e4a62f",
+          "parts": [
+            "dial",
+            "button-left",
+            "button-right"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "table-tennis-ball",
+      "kit": "sports",
+      "title": "Table tennis ball",
+      "description": "Small lightweight ball with a contrasting service marker. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "table tennis",
+        "ping pong",
+        "ball",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/table-tennis-ball.kcad.ts",
+      "sourceSha256": "1c7fe3185ece18b314502e2881fa1bffec6b6c715a6c2bb379d0e7305ac076fd",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f2f0e8",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#e87530",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#f2f0e8",
+          "trim": "#e87530"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.039021,
+          0.04,
+          0.042542
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#f2f0e8",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#e87530",
+          "parts": [
+            "marker"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "table-tennis-paddle",
+      "kit": "sports",
+      "title": "Table tennis paddle",
+      "description": "Solid oval paddle face with a narrow neck and contrasting handle scales. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "table tennis",
+        "ping pong",
+        "paddle",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/table-tennis-paddle.kcad.ts",
+      "sourceSha256": "19e19d9a0ade3f897f5f14d16c904bec33dfbf69f0b394f895bbb0171bd05b58",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c54737",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#6a4634",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#c54737",
+          "trim": "#6a4634"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.21,
+          0.022,
+          0.636637
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c54737",
+          "parts": [
+            "rubber-face",
+            "handle-cap"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#6a4634",
+          "parts": [
+            "wood-handle"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "tennis-ball",
+      "kit": "sports",
+      "title": "Tennis ball",
+      "description": "Lime court ball with two raised curved white seam bands. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "tennis",
+        "ball",
+        "court",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/tennis-ball.kcad.ts",
+      "sourceSha256": "fb9c3764d4702a8a0cd0bbbf763fa04933c886ab0d07aaefb55d73bb70c4c17c",
+      "triangleBudget": 450,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#c9dc43",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#f4f0dc",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#c9dc43",
+          "trim": "#f4f0dc"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 270,
+        "sizeM": [
+          0.174,
+          0.175,
+          0.174
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#c9dc43",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#f4f0dc",
+          "parts": [
+            "seam-a",
+            "seam-b"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "tennis-net",
+      "kit": "sports",
+      "title": "Tennis net",
+      "description": "Freestanding court net with two posts, tension rails and sparse mesh. Knobs: size, body and detail colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tennis",
+        "net",
+        "court",
+        "sports"
+      ],
+      "compat": [
+        "outdoor",
+        "court",
+        "sports"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/tennis-net.kcad.ts",
+      "sourceSha256": "a738a2bbe0cd64a91d6d5dee65211529d15abaee9ebfbffa8e3608617ce99eca",
+      "triangleBudget": 850,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f0eee5",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#647078",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#f0eee5",
+          "trim": "#647078"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 376,
+        "sizeM": [
+          12.22,
+          1.12,
+          0.09
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "trim",
+          "color": "#647078",
+          "parts": [
+            "post--1",
+            "foot--1",
+            "post-1",
+            "foot-1",
+            "top-tape"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "body",
+          "color": "#f0eee5",
+          "parts": [
+            "mesh-v--8",
+            "mesh-v--7",
+            "mesh-v--6",
+            "mesh-v--5",
+            "mesh-v--4",
+            "mesh-v--3",
+            "mesh-v--2",
+            "mesh-v--1",
+            "mesh-v-0",
+            "mesh-v-1",
+            "mesh-v-2",
+            "mesh-v-3",
+            "mesh-v-4",
+            "mesh-v-5",
+            "mesh-v-6",
+            "mesh-v-7",
+            "mesh-v-8",
+            "mesh-h-1",
+            "mesh-h-2",
+            "mesh-h-3",
+            "mesh-h-4"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "tennis-racket",
+      "kit": "sports",
+      "title": "Tennis racket",
+      "description": "Oval string racket with reinforced rim, long shaft and cushioned grip. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "tennis",
+        "racket",
+        "court",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/tennis-racket.kcad.ts",
+      "sourceSha256": "89a095a548ea645a64cfb202a4cc21e013e7eca83fb3427b22f82f48f36f9a3a",
+      "triangleBudget": 650,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#4e6b50",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#d8d4c7",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#4e6b50",
+          "trim": "#d8d4c7"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 384,
+        "sizeM": [
+          0.256,
+          0.03,
+          0.768
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#4e6b50",
+          "parts": [
+            "rim",
+            "shaft"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#d8d4c7",
+          "parts": [
+            "string-v--5",
+            "string-v--4",
+            "string-v--3",
+            "string-v--2",
+            "string-v--1",
+            "string-v-0",
+            "string-v-1",
+            "string-v-2",
+            "string-v-3",
+            "string-v-4",
+            "string-v-5",
+            "string-h--5",
+            "string-h--4",
+            "string-h--3",
+            "string-h--2",
+            "string-h--1",
+            "string-h-0",
+            "string-h-1",
+            "string-h-2",
+            "string-h-3",
+            "string-h-4",
+            "string-h-5",
+            "grip"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "trophy-cup",
+      "kit": "sports",
+      "title": "Trophy cup",
+      "description": "Two-handled award cup on a narrow stem and broad stepped pedestal. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "trophy",
+        "cup",
+        "award",
+        "podium",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/trophy-cup.kcad.ts",
+      "sourceSha256": "23cb3b1af73c31979d56e7602e6534c688a1b06c7b27daed50bfb0ebb10e3ea4",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#d4a433",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#70512b",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#d4a433",
+          "trim": "#70512b"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.304,
+          0.309,
+          0.25
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#d4a433",
+          "parts": [
+            "base",
+            "stem",
+            "bowl"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#70512b",
+          "parts": [
+            "plinth",
+            "handle--1",
+            "handle-1"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "volleyball-net",
+      "kit": "sports",
+      "title": "Volleyball net",
+      "description": "Tall court net with tension poles, top tape and regular mesh. Knobs: size, body and detail colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "volleyball",
+        "net",
+        "court",
+        "sports"
+      ],
+      "compat": [
+        "outdoor",
+        "court",
+        "sports"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/volleyball-net.kcad.ts",
+      "sourceSha256": "6905d89e88b7368fd3706ff515af8d9cc95b5998457ca1008087a2ecfa0ad6f6",
+      "triangleBudget": 950,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f0eee6",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#687078",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#f0eee6",
+          "trim": "#687078"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 400,
+        "sizeM": [
+          9.3,
+          2.4,
+          0.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "trim",
+          "color": "#687078",
+          "parts": [
+            "pole--1",
+            "foot--1",
+            "pole-1",
+            "foot-1",
+            "top-tape",
+            "bottom-tape"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "body",
+          "color": "#f0eee6",
+          "parts": [
+            "mesh-v--7",
+            "mesh-v--6",
+            "mesh-v--5",
+            "mesh-v--4",
+            "mesh-v--3",
+            "mesh-v--2",
+            "mesh-v--1",
+            "mesh-v-0",
+            "mesh-v-1",
+            "mesh-v-2",
+            "mesh-v-3",
+            "mesh-v-4",
+            "mesh-v-5",
+            "mesh-v-6",
+            "mesh-v-7",
+            "mesh-h-1",
+            "mesh-h-2",
+            "mesh-h-3",
+            "mesh-h-4",
+            "mesh-h-5",
+            "mesh-h-6",
+            "mesh-h-7"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "volleyball",
+      "kit": "sports",
+      "title": "Volleyball",
+      "description": "Light court ball with three raised curved panel bands in blue. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "volleyball",
+        "ball",
+        "court",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/volleyball.kcad.ts",
+      "sourceSha256": "d8bd5025e94fca09772b4da129d3865e6ddc6d8c2e011f79526e47afa5599a2a",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#f1f0e7",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#3175b7",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#f1f0e7",
+          "trim": "#3175b7"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 366,
+        "sizeM": [
+          0.222,
+          0.223,
+          0.222
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#f1f0e7",
+          "parts": [
+            "shell"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#3175b7",
+          "parts": [
+            "panel-a",
+            "panel-b",
+            "panel-c"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "weight-plate",
+      "kit": "sports",
+      "title": "Weight plate",
+      "description": "Flat annular gym plate with a large centre bore and raised rim. Knobs: size, body and detail colours.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "weight plate",
+        "barbell",
+        "gym",
+        "sports"
+      ],
+      "compat": [
+        "sports",
+        "recreation",
+        "game"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/weight-plate.kcad.ts",
+      "sourceSha256": "92234f937179b946d5b689eb698f049550c7097e4286100eae971b2876e6008a",
+      "triangleBudget": 300,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#4b5055",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#a9afb2",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#4b5055",
+          "trim": "#a9afb2"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.264,
+          0.034,
+          0.264
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#4b5055",
+          "parts": [
+            "plate"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#a9afb2",
+          "parts": [
+            "rim"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "yoga-mat",
+      "kit": "sports",
+      "title": "Yoga mat",
+      "description": "Rolled-end exercise mat with flat body and two carry bands. Knobs: size, body and detail colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "yoga",
+        "mat",
+        "fitness",
+        "sports"
+      ],
+      "compat": [
+        "indoor",
+        "fitness",
+        "sports"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/sports/yoga-mat.kcad.ts",
+      "sourceSha256": "132910df54f5429c424ead5888f126c3bb8c9f119bde9f646e7d4838f5bfe3b1",
+      "triangleBudget": 400,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#47786a",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#dfd9c9",
+          "label": "Detail"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "body": "#47786a",
+          "trim": "#dfd9c9"
+        },
+        "club": {
+          "body": "#387a92",
+          "trim": "#e4c85a"
+        }
+      },
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          0.62,
+          0.084,
+          1.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#47786a",
+          "parts": [
+            "mat",
+            "rolled-end"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#dfd9c9",
+          "parts": [
+            "carry-band--1",
+            "carry-band-1"
+          ],
+          "param": "trim"
         }
       ]
     },

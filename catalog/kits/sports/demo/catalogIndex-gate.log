@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-wave-81347
+
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 56410ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  56129ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  01:06:36
+   Duration  60.14s (transform 2.87s, setup 68ms, import 3.57s, tests 56.41s, environment 0ms)
