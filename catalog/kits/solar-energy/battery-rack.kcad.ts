@@ -14,8 +14,8 @@ meta({
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const color = param('color', '#6d797a', { label: 'Asset color' });
 const p = assembly("battery-rack");
-p.part("rack-upright--369.6", box(36, 36, 1380, true).translate(-369.6, 0, 690).scale(scale).color(color));
-p.part("rack-upright-369.6", box(36, 36, 1380, true).translate(369.6, 0, 690).scale(scale).color(color));
+p.part("rack-upright--369-6", box(36, 36, 1380, true).translate(-369.6, 0, 690).scale(scale).color(color));
+p.part("rack-upright-369-6", box(36, 36, 1380, true).translate(369.6, 0, 690).scale(scale).color(color));
 p.part("rack-shelf-0", box(880, 520, 42, true).translate(0, 0, 110).scale(scale).color(color));
 p.part("battery-0-0", box(334.4, 374.4, 210, true).translate(-220, 0, 236).scale(scale).color(color));
 p.part("battery-0-1", box(334.4, 374.4, 210, true).translate(220, 0, 236).scale(scale).color(color));

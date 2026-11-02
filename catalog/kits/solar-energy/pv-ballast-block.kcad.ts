@@ -18,7 +18,7 @@ p.part("ballast-left", box(288.8, 447.2, 135, true).translate(-212.8, 0, 67.5).s
 p.part("ballast-right", box(288.8, 447.2, 135, true).translate(212.8, 0, 67.5).scale(scale).color(color));
 p.part("ballast-pv-frame", box(550, 340.4, 22, true).translate(0, 0, 249.2).scale(scale).color(color));
 p.part("ballast-pv-surface", box(532, 322.4, 22, true).translate(0, 0, 270.2).scale(scale).color(color));
-p.part("ballast-rail--166.4", box(623.2, 26, 26, true).translate(0, -166.4, 208.8).scale(scale).color(color));
-p.part("ballast-rail-166.4", box(623.2, 26, 26, true).translate(0, 166.4, 208.8).scale(scale).color(color));
+p.part("ballast-rail--166-4", box(623.2, 26, 26, true).translate(0, -166.4, 208.8).scale(scale).color(color));
+p.part("ballast-rail-166-4", box(623.2, 26, 26, true).translate(0, 166.4, 208.8).scale(scale).color(color));
 
 return p.model();

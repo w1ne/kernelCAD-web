@@ -1,0 +1,889 @@
+{
+  "checkedAt": "2026-11-02T21:57:19.868Z",
+  "totalAssets": 895,
+  "kit": "industrial-plant",
+  "addedAssets": 60,
+  "query": {
+    "tool": "search_assets",
+    "q": "bridge crane",
+    "coverage": "ok",
+    "rows": [
+      "bridge-crane",
+      "cable-tray-bridge",
+      "gantry-crane",
+      "jib-crane",
+      "passenger-jet-bridge",
+      "rope-bridge",
+      "stone-arch-bridge",
+      "wooden-bridge"
+    ]
+  },
+  "assets": [
+    {
+      "id": "air-compressor",
+      "triangles": 544,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "axial-flow-fan",
+      "triangles": 240,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "baghouse-dust-collector",
+      "triangles": 468,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "belt-conveyor",
+      "triangles": 292,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bridge-crane",
+      "triangles": 164,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bucket-elevator",
+      "triangles": 260,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bulk-loading-spout",
+      "triangles": 224,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "burner-management-skid",
+      "triangles": 520,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cable-tray-bridge",
+      "triangles": 168,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cartridge-filter-housing",
+      "triangles": 476,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "centrifugal-chiller",
+      "triangles": 252,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "centrifugal-pump",
+      "triangles": 378,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "chemical-metering-skid",
+      "triangles": 380,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "compressed-air-receiver",
+      "triangles": 556,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cyclone-separator",
+      "triangles": 388,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "diesel-generator-set",
+      "triangles": 208,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "distillation-column",
+      "triangles": 528,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "electric-chain-hoist",
+      "triangles": 192,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "electric-pallet-jack",
+      "triangles": 204,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "electrical-control-cabinet",
+      "triangles": 264,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "evaporative-cooling-tower",
+      "triangles": 284,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "flare-stack",
+      "triangles": 380,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "forklift-truck",
+      "triangles": 332,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "gantry-crane",
+      "triangles": 252,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "grating-walkway-module",
+      "triangles": 300,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "horizontal-pressure-vessel",
+      "triangles": 468,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "industrial-boiler",
+      "triangles": 300,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "industrial-stair-tower",
+      "triangles": 192,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "industrial-transformer",
+      "triangles": 484,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "inline-flow-meter",
+      "triangles": 212,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "jib-crane",
+      "triangles": 160,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "machine-guard-enclosure",
+      "triangles": 168,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "maintenance-platform",
+      "triangles": 192,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "mobile-tool-cart",
+      "triangles": 344,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "motor-control-center",
+      "triangles": 396,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "packed-scrubber-column",
+      "triangles": 548,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "pallet-rack-bay",
+      "triangles": 180,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "palletizer-robot-cell",
+      "triangles": 254,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "pipe-rack-bay",
+      "triangles": 360,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "plate-heat-exchanger",
+      "triangles": 344,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "plc-control-rack",
+      "triangles": 384,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "positive-displacement-pump",
+      "triangles": 312,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "pressure-relief-valve",
+      "triangles": 484,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "process-blower",
+      "triangles": 292,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "process-reactor-vessel",
+      "triangles": 612,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "process-water-silo",
+      "triangles": 588,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "roller-conveyor-line",
+      "triangles": 576,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rooftop-air-handler",
+      "triangles": 320,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "scissor-lift-table",
+      "triangles": 196,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "screw-conveyor",
+      "triangles": 160,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "shell-and-tube-exchanger",
+      "triangles": 400,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "steam-header-manifold",
+      "triangles": 980,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "steel-access-gate",
+      "triangles": 132,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "vacuum-pump-unit",
+      "triangles": 336,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "valve-manifold-station",
+      "triangles": 740,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "variable-frequency-drive-cabinet",
+      "triangles": 240,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "vertical-cage-ladder",
+      "triangles": 368,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "vertical-storage-tank",
+      "triangles": 544,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "vibratory-feeder",
+      "triangles": 268,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "weigh-hopper",
+      "triangles": 264,
+      "triangleBudget": 1400,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    }
+  ],
+  "variants": [
+    {
+      "id": "bridge-crane",
+      "want": "scale 1.25 blue body yellow accent",
+      "params": {
+        "scale": 1.25,
+        "body": "#2e6fd8",
+        "accent": "#f1c40f"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 1.25",
+          "param": "scale",
+          "value": 1.25
+        },
+        {
+          "term": "blue body",
+          "param": "body",
+          "value": "#2e6fd8"
+        },
+        {
+          "term": "yellow accent",
+          "param": "accent",
+          "value": "#f1c40f"
+        }
+      ],
+      "defaultTriangles": 164,
+      "resolvedTriangles": 164,
+      "triangleBudget": 1400,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "74b5f39af1f960889cd609e44d9b9ea66e6c6e9bc5da6923b34502d0b70cb7f8",
+      "resolvedGlbSha256": "3cb4ec8dd114ed3491f03d23a8cf60e578c0a88d81e28c70bbf8651814feb8d6"
+    },
+    {
+      "id": "centrifugal-pump",
+      "want": "scale 0.8 green body orange accent",
+      "params": {
+        "scale": 0.8,
+        "body": "#2e8b57",
+        "accent": "#e67e22"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 0.8",
+          "param": "scale",
+          "value": 0.8
+        },
+        {
+          "term": "green body",
+          "param": "body",
+          "value": "#2e8b57"
+        },
+        {
+          "term": "orange accent",
+          "param": "accent",
+          "value": "#e67e22"
+        }
+      ],
+      "defaultTriangles": 378,
+      "resolvedTriangles": 378,
+      "triangleBudget": 1400,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "0af3c42ca047086699fa6dc48e2165d6a9da62d6880b96431070e56a966589f7",
+      "resolvedGlbSha256": "e78847a4472c0b88caa0a4966032bf9ad7299323c515fdfaba0dc9dc5c881524"
+    },
+    {
+      "id": "industrial-transformer",
+      "want": "scale 1.15 red body yellow accent",
+      "params": {
+        "scale": 1.15,
+        "body": "#c0392b",
+        "accent": "#f1c40f"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 1.15",
+          "param": "scale",
+          "value": 1.15
+        },
+        {
+          "term": "red body",
+          "param": "body",
+          "value": "#c0392b"
+        },
+        {
+          "term": "yellow accent",
+          "param": "accent",
+          "value": "#f1c40f"
+        }
+      ],
+      "defaultTriangles": 484,
+      "resolvedTriangles": 484,
+      "triangleBudget": 1400,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "ce199b72f21ae2be59b295c74a7e909d4fe22fca2946d7968f4edc7402da6e28",
+      "resolvedGlbSha256": "2ae02af30aa892e134b41f7398de5b629803f44e58b8837b5499a2fe5c7ef473"
+    }
+  ],
+  "settings": {
+    "kit": "industrial-plant",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 2,
+    "videoFrameRate": 24,
+    "videoCodec": "libx264",
+    "pixelFormat": "yuv420p",
+    "crf": 23,
+    "render": "software-rendered GLB triangles from local catalog source and parameter resolution",
+    "assetsPerOverviewFrame": 20,
+    "variants": [
+      {
+        "id": "bridge-crane",
+        "want": "scale 1.25 blue body yellow accent"
+      },
+      {
+        "id": "centrifugal-pump",
+        "want": "scale 0.8 green body orange accent"
+      },
+      {
+        "id": "industrial-transformer",
+        "want": "scale 1.15 red body yellow accent"
+      }
+    ]
+  },
+  "claims": {
+    "originalGeometry": true,
+    "localCatalogSearchAndVariantWorkflow": true,
+    "glbExport": true,
+    "softwareRender": true,
+    "threeJsRendered": false,
+    "deployedBehavior": false,
+    "simulation": false,
+    "hardwareAcceptance": false
+  }
+}

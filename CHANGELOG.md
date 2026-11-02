@@ -1,5 +1,11 @@
 # Unreleased
 
+- Industrial plant catalog wave: 60 original parametric low-poly CC0 factory
+  assets covering process equipment, power and controls, material handling,
+  lifting, access and safety in the new `catalog/kits/industrial-plant` kit.
+  The generated catalog grows from 835 to 895 assets. The kit README and
+  reproducible local demo bundle are in `catalog/kits/industrial-plant/README.md`
+  and `artifacts/catalog-demos/industrial-plant-wave-20261102/`.
 - Solar energy catalog wave: 40 original parametric low-poly CC0 photovoltaic
   modules, mounting systems, storage and grid equipment, sensing and service
   props in the new `catalog/kits/solar-energy` kit, growing the catalog from

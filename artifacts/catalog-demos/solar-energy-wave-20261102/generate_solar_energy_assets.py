@@ -2,6 +2,7 @@
 """Generate 40 original, parametric solar-energy scene props for kernelCAD."""
 import json
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[3]
 KIT = ROOT / 'catalog' / 'kits' / 'solar-energy'
@@ -50,6 +51,20 @@ ASSETS = [
     ('solar-battery-container', 'Solar battery container', 'Large storage enclosure with paired access doors, end vents and corner lifting blocks.', 'battery-container', 1740, 920, 1360, '#737d78'),
 ]
 
+# Millimetre offsets measured from the catalog bounds audit. Applied before the
+# scale knob so every scaled variant keeps its declared base at z = 0.
+BASE_CORRECTIONS_MM = {
+    'bifacial-pv-module': -25.5,
+    'microinverter-unit': -6.3,
+    'pv-cable-tray': 18,
+    'pv-module-microinverter': -32,
+    'pv-module-transport-cart': 2,
+    'pv-panel-cleaning-robot': 10,
+    'rooftop-pv-array': -7.5,
+    'rooftop-pv-module': -32,
+    'solar-roof-section': -18,
+}
+
 
 def n(value):
     return f'{value:.3f}'.rstrip('0').rstrip('.') if isinstance(value, float) else str(value)
@@ -72,7 +87,8 @@ def cyl_y(length, r, x=0, y0=0, z=0):
 
 
 def add(parts, name, expr):
-    parts.append((name, expr))
+    safe_name = re.sub(r'[^A-Za-z0-9_-]+', '-', name).strip('-')
+    parts.append((safe_name, expr))
 
 
 def panel(parts, prefix, x, y, z, w, d, thickness=22, grid=True):
@@ -374,8 +390,10 @@ def source(asset):
         f"const color = param('color', '{color}', {{ label: 'Asset color' }});",
         f'const p = assembly("{asset_id}");',
     ]
+    correction = BASE_CORRECTIONS_MM.get(asset_id, 0)
     for name, expr in recipe(style, w, d, h):
-        lines.append(f'p.part("{name}", {expr}.scale(scale).color(color));')
+        adjust = f'.translate(0, 0, {n(correction)})' if correction else ''
+        lines.append(f'p.part("{name}", {expr}{adjust}.scale(scale).color(color));')
     lines.extend(['', 'return p.model();', ''])
     return '\n'.join(lines)
 
