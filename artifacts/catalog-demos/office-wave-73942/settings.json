@@ -1,0 +1,16 @@
+{
+  "title": "kernelCAD office asset wave",
+  "catalogAssets": 40,
+  "catalogIndexAssets": 413,
+  "catalogKits": 12,
+  "browser": "Chrome/156.0.8078.79",
+  "cdpEndpoint": "http://127.0.0.1:9222",
+  "attachedTab": "new temporary tab, closed by capture cleanup",
+  "launchedNewBrowser": false,
+  "width": 1280,
+  "height": 720,
+  "secondsPerSlide": 4,
+  "outputFps": 24,
+  "maxRuntimeMs": 120000,
+  "idleTimeoutMs": 30000
+}
