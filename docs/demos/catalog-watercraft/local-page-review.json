@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-02T19:51:55Z",
+  "checkedAt": "2026-11-02T19:57:29Z",
   "localOnly": true,
   "method": "Generated static pages, then inspected the kayak page in the existing Chrome session through DevTools.",
   "samplePage": {
@@ -9,14 +9,21 @@
     "studioLinkVisible": true,
     "triangleCount": 384,
     "triangleBudget": 520,
-    "controls": ["length", "cockpit", "hull", "deck", "accent"],
-    "presetsAndRelatedKitLinksVisible": true
+    "controls": [
+      "length",
+      "cockpit",
+      "hull",
+      "deck",
+      "accent"
+    ],
+    "presetsAndRelatedKitLinksVisible": true,
+    "catalogTotalAssets": 647
   },
-  "staticPageAudit": "catalog-pages-check.json",
+  "staticPageAudit": "catalog-pages-check.json (647 generated pages; 12 watercraft pages verified)",
   "liveDeployment": {
     "url": "https://kernelcad.com/catalog/",
     "httpStatus": 404,
-    "checkedAt": "2026-11-02",
+    "checkedAt": "2026-11-02T19:57:29Z",
     "result": "The public catalog route is unavailable; no deployment claim is made."
   }
 }

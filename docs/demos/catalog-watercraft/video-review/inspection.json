@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-02T19:48:55.731Z",
+  "checkedAt": "2026-11-02T19:57:29Z",
   "source": "generate.mts",
   "settings": "settings.json",
   "encodedVideo": {
@@ -10,12 +10,13 @@
     "frameRate": "24/1",
     "decodedFrames": 384,
     "durationSeconds": 16,
-    "bytes": 166124
+    "bytes": 166124,
+    "sha256": "620b8d402e82c70a6a6b3adeab9ef0a54dccbe126b43992648ca0ceccc64c7fe"
   },
   "decodedReview": {
     "sampledFrames": 8,
     "contactSheet": "decoded-contact-sheet.png",
-    "visualReview": "All 12 kit assets are visible in the overview. The kayak tandem, catboat rig and cuddy-cabin sections show default and resolved exports together at the same scale; the extra sloop sail is visible in the default/resolved comparison. Text and the local-rendering footer remain legible; no blank or corrupt sampled frames were observed."
+    "visualReview": "Re-decoded the current MP4 and inspected the contact sheet plus the sailboat variant frame. All 12 assets remain visible in the overview; the kayak tandem, catboat rig and cuddy-cabin requests resolve with no unmatched terms. The footer states that the render is local and deployment is unverified."
   },
   "claims": {
     "localCatalogAndExport": true,

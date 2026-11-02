@@ -1,9 +1,9 @@
 {
-  "checkedAt": "2026-11-02T19:47:51.599Z",
+  "checkedAt": "2026-11-02T19:56:33.034Z",
   "method": "npx tsx docs/demos/catalog-watercraft/check-pages.mts",
   "localOnly": true,
-  "totalIndexedAssets": 607,
-  "generatedAssetPages": 607,
+  "totalIndexedAssets": 647,
+  "generatedAssetPages": 647,
   "watercraftPages": 12,
   "checkedWatercraftPages": [
     {

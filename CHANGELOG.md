@@ -2,7 +2,7 @@
 
 - Watercraft catalog wave: 12 original parametric low-poly CC0 assets in the
   new `catalog/kits/watercraft` kit for boats and deck gear. The catalog grows
-  from 595 to 607 audited assets. Kit README, generated previews and the
+  from 635 to 647 audited assets. Kit README, generated previews and the
   reproducible local demo bundle: `docs/demos/catalog-watercraft/`.
 - Asset catalog: 40 original parametric low-poly CC0 sports assets in the new
   `catalog/kits/sports` kit, bringing the catalog from 543 to 583 assets. The
