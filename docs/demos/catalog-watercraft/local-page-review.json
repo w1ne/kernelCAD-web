@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-11-02T19:57:29Z",
+  "localOnly": true,
+  "method": "Generated static pages, then inspected the kayak page in the existing Chrome session through DevTools.",
+  "samplePage": {
+    "route": "http://127.0.0.1:4328/catalog/watercraft/kayak/",
+    "title": "Touring kayak - free low-poly vehicle model (CC0) | kernelCAD",
+    "previewVisible": true,
+    "studioLinkVisible": true,
+    "triangleCount": 384,
+    "triangleBudget": 520,
+    "controls": [
+      "length",
+      "cockpit",
+      "hull",
+      "deck",
+      "accent"
+    ],
+    "presetsAndRelatedKitLinksVisible": true,
+    "catalogTotalAssets": 647
+  },
+  "staticPageAudit": "catalog-pages-check.json (647 generated pages; 12 watercraft pages verified)",
+  "liveDeployment": {
+    "url": "https://kernelcad.com/catalog/",
+    "httpStatus": 404,
+    "checkedAt": "2026-11-02T19:57:29Z",
+    "result": "The public catalog route is unavailable; no deployment claim is made."
+  }
+}

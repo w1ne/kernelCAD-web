@@ -1,0 +1,176 @@
+{
+  "checkedAt": "2026-11-02T19:56:33.034Z",
+  "method": "npx tsx docs/demos/catalog-watercraft/check-pages.mts",
+  "localOnly": true,
+  "totalIndexedAssets": 647,
+  "generatedAssetPages": 647,
+  "watercraftPages": 12,
+  "checkedWatercraftPages": [
+    {
+      "id": "anchor",
+      "knobs": [
+        "style",
+        "size",
+        "metal"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "boat-fender",
+      "knobs": [
+        "length",
+        "body",
+        "caps"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "dinghy",
+      "knobs": [
+        "length",
+        "engine",
+        "tube",
+        "floor",
+        "accent"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "dock-cleat",
+      "knobs": [
+        "size",
+        "body"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "harbor-buoy",
+      "knobs": [
+        "type",
+        "body",
+        "band",
+        "marker"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "kayak",
+      "knobs": [
+        "length",
+        "cockpit",
+        "hull",
+        "deck",
+        "accent"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "life-jacket",
+      "knobs": [
+        "size",
+        "shell",
+        "trim"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "lifebuoy",
+      "knobs": [
+        "size",
+        "ring",
+        "band"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "motorboat",
+      "knobs": [
+        "style",
+        "hull",
+        "deck",
+        "cabin",
+        "accent"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "paddleboard",
+      "knobs": [
+        "length",
+        "fin",
+        "board",
+        "pad",
+        "accent"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "sailboat",
+      "knobs": [
+        "rig",
+        "hull",
+        "sail",
+        "trim"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "ship-wheel",
+      "knobs": [
+        "spokes",
+        "rim",
+        "hub"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    }
+  ],
+  "liveDeployment": "not verified by this local static build"
+}

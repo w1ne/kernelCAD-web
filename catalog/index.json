@@ -761,6 +761,25 @@
         "screwdriver",
         "sledgehammer"
       ]
+    },
+    {
+      "id": "watercraft",
+      "title": "Watercraft",
+      "description": "Original low-poly boats and deck gear for harbor, lake and coastal scenes, authored in editable kernelCAD source with compact, one-material exports.",
+      "assets": [
+        "anchor",
+        "boat-fender",
+        "dinghy",
+        "dock-cleat",
+        "harbor-buoy",
+        "kayak",
+        "life-jacket",
+        "lifebuoy",
+        "motorboat",
+        "paddleboard",
+        "sailboat",
+        "ship-wheel"
+      ]
     }
   ],
   "assets": [
@@ -76198,6 +76217,1239 @@
             "grip"
           ],
           "param": "grip"
+        }
+      ]
+    },
+    {
+      "id": "anchor",
+      "kit": "watercraft",
+      "title": "Boat anchor",
+      "description": "Compact marine anchor with a shank, crown, flukes and lifting ring in stockless or broad-fluke form. Knobs: style, size and metal colour.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "anchor",
+        "boat",
+        "marine",
+        "mooring",
+        "watercraft",
+        "harbor"
+      ],
+      "compat": [
+        "water",
+        "harbor",
+        "coastal",
+        "boat"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/anchor.kcad.ts",
+      "sourceSha256": "e9cf8980e33e806741176232926b59414b49fc5846b224ab96d4eb7c64354015",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "fluke",
+          "label": "Anchor style",
+          "choices": [
+            "fluke",
+            "stockless"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "600",
+          "label": "Shank length (mm)",
+          "choices": [
+            "450",
+            "600",
+            "750"
+          ]
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#777e7c",
+          "label": "Galvanized steel"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "metal": "#c6cbc8"
+        },
+        "aged": {
+          "metal": "#696c64"
+        }
+      },
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.386922,
+          0.487,
+          0.384
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "metal",
+          "color": "#777e7c",
+          "parts": [
+            "shank",
+            "lifting-eye",
+            "crown",
+            "crossbar",
+            "left-fluke",
+            "right-fluke"
+          ],
+          "param": "metal"
+        }
+      ]
+    },
+    {
+      "id": "boat-fender",
+      "kit": "watercraft",
+      "title": "Boat fender",
+      "description": "Ribbed cylindrical boat fender with rounded ends and attachment loops at both ends. Knobs: length, body and cap colors.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "boat fender",
+        "dock bumper",
+        "mooring",
+        "marine",
+        "watercraft",
+        "harbor"
+      ],
+      "compat": [
+        "dock",
+        "harbor",
+        "coastal",
+        "boat"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/boat-fender.kcad.ts",
+      "sourceSha256": "412ba2060965b211934841f7413b57be4fd516a9cdb6b3c43980e69b9c036137",
+      "triangleBudget": 700,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "480",
+          "label": "Fender length (mm)",
+          "choices": [
+            "360",
+            "480",
+            "600"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#d8d6c8",
+          "label": "Fender body"
+        },
+        {
+          "name": "caps",
+          "type": "color",
+          "default": "#364c5b",
+          "label": "End caps and loops"
+        }
+      ],
+      "presets": {
+        "harbor": {
+          "body": "#d8d6c8",
+          "caps": "#364c5b"
+        },
+        "safety": {
+          "body": "#e9c446",
+          "caps": "#222d32"
+        }
+      },
+      "stats": {
+        "triangles": 620,
+        "sizeM": [
+          0.202,
+          0.492,
+          0.202
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#d8d6c8",
+          "parts": [
+            "main-body"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "caps",
+          "color": "#364c5b",
+          "parts": [
+            "rib-1",
+            "rib-2",
+            "rib-3",
+            "rib-4",
+            "upper-loop",
+            "lower-loop"
+          ],
+          "param": "caps"
+        }
+      ]
+    },
+    {
+      "id": "dinghy",
+      "kit": "watercraft",
+      "title": "Inflatable dinghy",
+      "description": "Inflatable tender with rounded side tubes, a transom, floor and thwart seat, with an optional compact outboard. Knobs: length, engine, tube, floor and accent colours.",
+      "category": "vehicle",
+      "origin": "base",
+      "tags": [
+        "dinghy",
+        "inflatable boat",
+        "tender",
+        "outboard",
+        "watercraft",
+        "harbor"
+      ],
+      "compat": [
+        "water",
+        "harbor",
+        "coastal",
+        "boat"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/dinghy.kcad.ts",
+      "sourceSha256": "fb6a887023edba0596297c060c5287c5d8e6948385ef0826114b3c9bab6b2944",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "2400",
+          "label": "Length (mm)",
+          "choices": [
+            "2000",
+            "2400",
+            "2800"
+          ]
+        },
+        {
+          "name": "engine",
+          "type": "choice",
+          "default": "yes",
+          "label": "Outboard motor",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "tube",
+          "type": "color",
+          "default": "#b4b3a2",
+          "label": "Inflatable tube"
+        },
+        {
+          "name": "floor",
+          "type": "color",
+          "default": "#4c5c58",
+          "label": "Floor and seat"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d65a3a",
+          "label": "Transom and motor"
+        }
+      ],
+      "presets": {
+        "rescue": {
+          "tube": "#e0d9c8",
+          "accent": "#df5b3f"
+        },
+        "tender": {
+          "tube": "#aab8ac",
+          "accent": "#334451"
+        }
+      },
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          0.98624,
+          0.3,
+          2.4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "floor",
+          "color": "#4c5c58",
+          "parts": [
+            "floor",
+            "seat",
+            "propeller"
+          ],
+          "param": "floor"
+        },
+        {
+          "name": "tube",
+          "color": "#b4b3a2",
+          "parts": [
+            "left-tube",
+            "right-tube",
+            "bow-tube"
+          ],
+          "param": "tube"
+        },
+        {
+          "name": "accent",
+          "color": "#d65a3a",
+          "parts": [
+            "stern-transom",
+            "outboard-bracket",
+            "outboard-leg"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "dock-cleat",
+      "kit": "watercraft",
+      "title": "Dock mooring cleat",
+      "description": "Compact twin-horn mooring cleat with a flat mounting plate and two raised horns. Knobs: size and body color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "dock cleat",
+        "mooring",
+        "cleat",
+        "harbor",
+        "watercraft",
+        "marine"
+      ],
+      "compat": [
+        "dock",
+        "harbor",
+        "coastal",
+        "boat"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/dock-cleat.kcad.ts",
+      "sourceSha256": "e73e418924331ae5427641f9be1e66e38f6187b6a61d51b6535c2d36533a4f23",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "180",
+          "label": "Cleat length (mm)",
+          "choices": [
+            "140",
+            "180",
+            "220"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#b7bdb8",
+          "label": "Cast metal"
+        }
+      ],
+      "presets": {
+        "stainless": {
+          "body": "#cbd0cc"
+        },
+        "bronze": {
+          "body": "#9a6d48"
+        }
+      },
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          0.18,
+          0.104,
+          0.088
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#b7bdb8",
+          "parts": [
+            "base-plate",
+            "horn-1",
+            "horn-tip-1",
+            "horn-2",
+            "horn-tip-2",
+            "bolt-left",
+            "bolt-right"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "harbor-buoy",
+      "kit": "watercraft",
+      "title": "Harbor channel buoy",
+      "description": "Weighted channel marker with a broad foot, faceted float, contrast band and selectable top marker. Knobs: type, body, band and marker colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "buoy",
+        "channel marker",
+        "navigation",
+        "harbor",
+        "watercraft",
+        "marine"
+      ],
+      "compat": [
+        "water",
+        "harbor",
+        "coastal",
+        "navigation"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/harbor-buoy.kcad.ts",
+      "sourceSha256": "def7dde6577d21fe2d031fc43d448d7c05cf831ec6aebca62562fe710fe0587c",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "type",
+          "type": "choice",
+          "default": "can",
+          "label": "Marker shape",
+          "choices": [
+            "can",
+            "spar"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#df563e",
+          "label": "Buoy body"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#efe5c7",
+          "label": "Contrast band"
+        },
+        {
+          "name": "marker",
+          "type": "color",
+          "default": "#35434a",
+          "label": "Top marker"
+        }
+      ],
+      "presets": {
+        "port": {
+          "body": "#df563e",
+          "band": "#efe5c7"
+        },
+        "starboard": {
+          "body": "#2e9b72",
+          "band": "#f2ead3"
+        }
+      },
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          0.27,
+          0.493,
+          0.27
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "marker",
+          "color": "#35434a",
+          "parts": [
+            "weighted-foot",
+            "top-cap",
+            "marker-post"
+          ],
+          "param": "marker"
+        },
+        {
+          "name": "body",
+          "color": "#df563e",
+          "parts": [
+            "float"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "band",
+          "color": "#efe5c7",
+          "parts": [
+            "band"
+          ],
+          "param": "band"
+        }
+      ]
+    },
+    {
+      "id": "kayak",
+      "kit": "watercraft",
+      "title": "Touring kayak",
+      "description": "Narrow touring kayak with a tapered bow, two deck hatches and single or tandem cockpit layout. Knobs: length, cockpit, hull, deck and accent colours.",
+      "category": "vehicle",
+      "origin": "base",
+      "tags": [
+        "kayak",
+        "touring",
+        "paddle",
+        "watercraft",
+        "lake",
+        "coastal"
+      ],
+      "compat": [
+        "water",
+        "lake",
+        "coastal",
+        "harbor",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/kayak.kcad.ts",
+      "sourceSha256": "305a76995f3a43f19cc9b667bcc5ac4034441de000c5c69efc80b477ea2ac643",
+      "triangleBudget": 520,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "3400",
+          "label": "Length (mm)",
+          "choices": [
+            "2800",
+            "3400",
+            "3900"
+          ]
+        },
+        {
+          "name": "cockpit",
+          "type": "choice",
+          "default": "single",
+          "label": "Cockpit layout",
+          "choices": [
+            "single",
+            "tandem"
+          ]
+        },
+        {
+          "name": "hull",
+          "type": "color",
+          "default": "#d0653e",
+          "label": "Hull"
+        },
+        {
+          "name": "deck",
+          "type": "color",
+          "default": "#e0b958",
+          "label": "Deck"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#253b45",
+          "label": "Hatches and cockpit"
+        }
+      ],
+      "presets": {
+        "coast": {
+          "hull": "#d0653e",
+          "deck": "#e0b958"
+        },
+        "arctic": {
+          "hull": "#347f9d",
+          "deck": "#dce6dc"
+        }
+      },
+      "stats": {
+        "triangles": 384,
+        "sizeM": [
+          0.646,
+          0.131,
+          3.4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "hull",
+          "color": "#d0653e",
+          "parts": [
+            "lower-hull"
+          ],
+          "param": "hull"
+        },
+        {
+          "name": "deck",
+          "color": "#e0b958",
+          "parts": [
+            "deck-shell"
+          ],
+          "param": "deck"
+        },
+        {
+          "name": "accent",
+          "color": "#253b45",
+          "parts": [
+            "keel-line",
+            "hatch-rim-1",
+            "hatch-rim-2",
+            "cockpit-rim-1",
+            "seat-1"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "life-jacket",
+      "kit": "watercraft",
+      "title": "Life jacket",
+      "description": "Personal flotation vest with shoulder panels, raised collar and two adjustable waist straps. Knobs: size, shell and trim colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "life jacket",
+        "PFD",
+        "personal flotation",
+        "safety",
+        "marine",
+        "watercraft"
+      ],
+      "compat": [
+        "water",
+        "harbor",
+        "coastal",
+        "safety",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/life-jacket.kcad.ts",
+      "sourceSha256": "99ad7e7033084d816cd4dbb166d01a5069affa6b8bf7d4bfcc98c6324637ce2d",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "adult",
+          "label": "Vest size",
+          "choices": [
+            "child",
+            "adult"
+          ]
+        },
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#e46735",
+          "label": "Flotation shell"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#f1d15f",
+          "label": "Reflective trim"
+        }
+      ],
+      "presets": {
+        "rescue": {
+          "shell": "#e46735",
+          "trim": "#f1d15f"
+        },
+        "navy": {
+          "shell": "#294c65",
+          "trim": "#e9ded0"
+        }
+      },
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.375,
+          0.463634,
+          0.187
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#e46735",
+          "parts": [
+            "front-panel",
+            "left-shoulder",
+            "right-shoulder",
+            "buckle-1",
+            "buckle-2"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "trim",
+          "color": "#f1d15f",
+          "parts": [
+            "collar",
+            "waist-strap-1",
+            "waist-strap-2",
+            "grab-loop"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "lifebuoy",
+      "kit": "watercraft",
+      "title": "Lifebuoy ring",
+      "description": "Ring-shaped flotation aid with a hollow center and four evenly spaced grab straps. Knobs: size, ring and band colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "lifebuoy",
+        "life ring",
+        "rescue",
+        "marine",
+        "watercraft",
+        "safety"
+      ],
+      "compat": [
+        "water",
+        "harbor",
+        "coastal",
+        "safety"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/lifebuoy.kcad.ts",
+      "sourceSha256": "5c95be8bf625c809bdf49417053acaad052ebfd0bccf9a555367c6afeeccefe9",
+      "triangleBudget": 240,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "650",
+          "label": "Outside diameter (mm)",
+          "choices": [
+            "550",
+            "650",
+            "750"
+          ]
+        },
+        {
+          "name": "ring",
+          "type": "color",
+          "default": "#e85a3b",
+          "label": "Flotation ring"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#f2eee2",
+          "label": "Reflective band"
+        }
+      ],
+      "presets": {
+        "rescue": {
+          "ring": "#e85a3b",
+          "band": "#f2eee2"
+        },
+        "marine": {
+          "ring": "#f0ece0",
+          "band": "#d84d34"
+        }
+      },
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.7345,
+          0.075,
+          0.7345
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "ring",
+          "color": "#e85a3b",
+          "parts": [
+            "float-ring"
+          ],
+          "param": "ring"
+        },
+        {
+          "name": "band",
+          "color": "#f2eee2",
+          "parts": [
+            "grab-band-0",
+            "grab-band-90",
+            "grab-band-180",
+            "grab-band-270"
+          ],
+          "param": "band"
+        }
+      ]
+    },
+    {
+      "id": "motorboat",
+      "kit": "watercraft",
+      "title": "Compact motorboat",
+      "description": "Small runabout with a pointed bow, raised deck and outboard engine, with open or cuddy-cabin layout. Knobs: style, hull, deck, cabin and accent colours.",
+      "category": "vehicle",
+      "origin": "base",
+      "tags": [
+        "motorboat",
+        "runabout",
+        "outboard",
+        "watercraft",
+        "lake",
+        "coastal"
+      ],
+      "compat": [
+        "water",
+        "lake",
+        "coastal",
+        "harbor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/motorboat.kcad.ts",
+      "sourceSha256": "c68945147928c24e907fbcf4995cbd12fdb1619d3f9b1572accdca17933a434f",
+      "triangleBudget": 540,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "open",
+          "label": "Deck layout",
+          "choices": [
+            "open",
+            "cuddy"
+          ]
+        },
+        {
+          "name": "hull",
+          "type": "color",
+          "default": "#31576c",
+          "label": "Hull"
+        },
+        {
+          "name": "deck",
+          "type": "color",
+          "default": "#e9e2cf",
+          "label": "Deck"
+        },
+        {
+          "name": "cabin",
+          "type": "color",
+          "default": "#c17b44",
+          "label": "Cabin"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#313d42",
+          "label": "Engine and trim"
+        }
+      ],
+      "presets": {
+        "harbor": {
+          "hull": "#31576c",
+          "deck": "#e9e2cf"
+        },
+        "sport": {
+          "hull": "#d44d37",
+          "deck": "#f0e7d2"
+        }
+      },
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.92,
+          0.52648,
+          2.924
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "hull",
+          "color": "#31576c",
+          "parts": [
+            "hull"
+          ],
+          "param": "hull"
+        },
+        {
+          "name": "deck",
+          "color": "#e9e2cf",
+          "parts": [
+            "deck",
+            "propeller"
+          ],
+          "param": "deck"
+        },
+        {
+          "name": "accent",
+          "color": "#313d42",
+          "parts": [
+            "bow-rail",
+            "windshield",
+            "console-screen",
+            "outboard-mount",
+            "outboard-leg"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "cabin",
+          "color": "#c17b44",
+          "parts": [
+            "console",
+            "stern-seat"
+          ],
+          "param": "cabin"
+        }
+      ]
+    },
+    {
+      "id": "paddleboard",
+      "kit": "watercraft",
+      "title": "Stand-up paddleboard",
+      "description": "Long touring paddleboard with a tapered nose, textured standing pad, carry loop and optional fin. Knobs: length, fin, board, pad and accent colours.",
+      "category": "vehicle",
+      "origin": "base",
+      "tags": [
+        "paddleboard",
+        "SUP",
+        "stand-up paddle",
+        "watercraft",
+        "lake",
+        "coastal"
+      ],
+      "compat": [
+        "water",
+        "lake",
+        "coastal",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/paddleboard.kcad.ts",
+      "sourceSha256": "9972edec5b788db3a464f2e24c566d100c43d701100eb087764ec3448464fcc3",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "3000",
+          "label": "Board length (mm)",
+          "choices": [
+            "2600",
+            "3000",
+            "3400"
+          ]
+        },
+        {
+          "name": "fin",
+          "type": "choice",
+          "default": "single",
+          "label": "Fin setup",
+          "choices": [
+            "single",
+            "twin"
+          ]
+        },
+        {
+          "name": "board",
+          "type": "color",
+          "default": "#e8e1c6",
+          "label": "Board"
+        },
+        {
+          "name": "pad",
+          "type": "color",
+          "default": "#328399",
+          "label": "Deck pad"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e06a38",
+          "label": "Nose and leash"
+        }
+      ],
+      "presets": {
+        "lagoon": {
+          "board": "#e8e1c6",
+          "pad": "#328399"
+        },
+        "sunset": {
+          "board": "#e6a94f",
+          "pad": "#313f55"
+        }
+      },
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.87,
+          0.072,
+          3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "board",
+          "color": "#e8e1c6",
+          "parts": [
+            "board-shell"
+          ],
+          "param": "board"
+        },
+        {
+          "name": "pad",
+          "color": "#328399",
+          "parts": [
+            "standing-pad",
+            "fin-1"
+          ],
+          "param": "pad"
+        },
+        {
+          "name": "accent",
+          "color": "#e06a38",
+          "parts": [
+            "nose-mark",
+            "carry-loop"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "sailboat",
+      "kit": "watercraft",
+      "title": "Small sailboat",
+      "description": "Compact sailboat with a pointed bow, weighted keel, mast and either a sloop or catboat rig. Knobs: rig, hull, sail and trim colours.",
+      "category": "vehicle",
+      "origin": "base",
+      "tags": [
+        "sailboat",
+        "sailing",
+        "dinghy",
+        "watercraft",
+        "lake",
+        "coastal"
+      ],
+      "compat": [
+        "water",
+        "lake",
+        "coastal",
+        "harbor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/sailboat.kcad.ts",
+      "sourceSha256": "b3948021cef751dedd81dc03310e165d01f604e796cd68f8ddef797e915198d6",
+      "triangleBudget": 440,
+      "params": [
+        {
+          "name": "rig",
+          "type": "choice",
+          "default": "sloop",
+          "label": "Sail rig",
+          "choices": [
+            "sloop",
+            "catboat"
+          ]
+        },
+        {
+          "name": "hull",
+          "type": "color",
+          "default": "#354e64",
+          "label": "Hull"
+        },
+        {
+          "name": "sail",
+          "type": "color",
+          "default": "#e8e2d2",
+          "label": "Sails"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#c57a3d",
+          "label": "Deck trim"
+        }
+      ],
+      "presets": {
+        "classic": {
+          "hull": "#354e64",
+          "sail": "#e8e2d2"
+        },
+        "regatta": {
+          "hull": "#e7e1d5",
+          "sail": "#d54c3c",
+          "trim": "#284e62"
+        }
+      },
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.715,
+          1.455,
+          1.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "hull",
+          "color": "#354e64",
+          "parts": [
+            "keel",
+            "hull"
+          ],
+          "param": "hull"
+        },
+        {
+          "name": "trim",
+          "color": "#c57a3d",
+          "parts": [
+            "deck",
+            "mast",
+            "boom",
+            "helm"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "sail",
+          "color": "#e8e2d2",
+          "parts": [
+            "mainsail",
+            "jib"
+          ],
+          "param": "sail"
+        }
+      ]
+    },
+    {
+      "id": "ship-wheel",
+      "kit": "watercraft",
+      "title": "Ship helm wheel",
+      "description": "Raised helm wheel with a polygonal rim, central hub, radial spokes and short support column. Knobs: spoke count, rim and hub colors.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "ship wheel",
+        "helm",
+        "steering",
+        "marine",
+        "watercraft",
+        "boat"
+      ],
+      "compat": [
+        "boat",
+        "ship",
+        "harbor",
+        "coastal"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/watercraft/ship-wheel.kcad.ts",
+      "sourceSha256": "42811e98b4e172674f8563fecde26b175504af6a56ada2706356614faeb33125",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "spokes",
+          "type": "choice",
+          "default": "8",
+          "label": "Spoke count",
+          "choices": [
+            "6",
+            "8"
+          ]
+        },
+        {
+          "name": "rim",
+          "type": "color",
+          "default": "#825632",
+          "label": "Wheel rim"
+        },
+        {
+          "name": "hub",
+          "type": "color",
+          "default": "#c09a5c",
+          "label": "Hub and spokes"
+        }
+      ],
+      "presets": {
+        "teak": {
+          "rim": "#825632",
+          "hub": "#c09a5c"
+        },
+        "modern": {
+          "rim": "#394a50",
+          "hub": "#b8c1bd"
+        }
+      },
+      "stats": {
+        "triangles": 292,
+        "sizeM": [
+          0.45,
+          0.45,
+          0.16
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "hub",
+          "color": "#c09a5c",
+          "parts": [
+            "support-column",
+            "center-hub",
+            "spoke-1",
+            "spoke-2",
+            "spoke-3",
+            "spoke-4",
+            "spoke-5",
+            "spoke-6",
+            "spoke-7",
+            "spoke-8"
+          ],
+          "param": "hub"
+        },
+        {
+          "name": "rim",
+          "color": "#825632",
+          "parts": [
+            "wheel-rim",
+            "pedestal-foot"
+          ],
+          "param": "rim"
         }
       ]
     }
