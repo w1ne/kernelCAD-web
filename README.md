@@ -13,6 +13,26 @@ Replicad/OpenCASCADE are the kernel layer. kernelCAD is the agent-first workflow
 layer above the kernel: deterministic CAD source, feature history, diagnostics,
 validation, variants, and human review.
 
+## Manufacturing design use cases
+
+Describe a part, refine its editable CAD source, and export the geometry or
+drawing needed for the next step. These examples are starting points for
+designing parts for different processes:
+
+| Process | Example | Reusable CAD reference |
+|---|---|---|
+| 3D printing | An enclosure with a lid and screw bosses | [Enclosure example](cookbook/snippets/enclosure-lid-with-screw-bosses.md) |
+| CNC milling | A mounting plate with holes for fasteners | [Threaded mounting holes](cookbook/snippets/threaded-hole-tap-drill.md) |
+| Sheet metal | A bent L-bracket with a flat pattern | [Sheet-metal bracket](cookbook/snippets/sheet-metal-l-bracket-bend.md) |
+| Laser or waterjet cutting | A flat plate with holes and slots | [Flat-part DXF export](cookbook/snippets/export-dxf-flat-parts.md) |
+| Turning | A cylindrical knob or spacer with a bore | [Parametric knob model](showcase/knurled-knob/) |
+| Assemblies | A gear mechanism with editable parts | [Planetary gear stage](showcase/planetary-gear-stage/) |
+| Injection molding | A cover with drafted faces | [Draft-angle example](cookbook/snippets/repair-draft-angle.md) |
+
+The output is CAD for review, not a manufacturing certification. Check
+dimensions, fit, material and process requirements, and prototype or obtain
+engineering review as appropriate for the part.
+
 ## Install
 
 ### Already in ChatGPT and Claude: no install
