@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-11-02T19:48:55.731Z",
+  "source": "generate.mts",
+  "settings": "settings.json",
+  "encodedVideo": {
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "pixelFormat": "yuv420p",
+    "frameRate": "24/1",
+    "decodedFrames": 384,
+    "durationSeconds": 16,
+    "bytes": 166124
+  },
+  "decodedReview": {
+    "sampledFrames": 8,
+    "contactSheet": "decoded-contact-sheet.png",
+    "visualReview": "All 12 kit assets are visible in the overview. The kayak tandem, catboat rig and cuddy-cabin sections show default and resolved exports together at the same scale; the extra sloop sail is visible in the default/resolved comparison. Text and the local-rendering footer remain legible; no blank or corrupt sampled frames were observed."
+  },
+  "claims": {
+    "localCatalogAndExport": true,
+    "softwareRenderedGeometry": true,
+    "deployedBehavior": false,
+    "engineImport": false,
+    "simulation": false,
+    "hardwareAcceptance": false
+  }
+}

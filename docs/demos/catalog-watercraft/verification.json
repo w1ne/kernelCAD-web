@@ -1,0 +1,580 @@
+{
+  "checkedAt": "2026-11-02T19:47:29.321Z",
+  "totalAssets": 607,
+  "kit": "watercraft",
+  "addedAssets": 12,
+  "assets": [
+    {
+      "id": "anchor",
+      "triangles": 188,
+      "knobs": [
+        "style",
+        "size",
+        "metal"
+      ]
+    },
+    {
+      "id": "boat-fender",
+      "triangles": 620,
+      "knobs": [
+        "length",
+        "body",
+        "caps"
+      ]
+    },
+    {
+      "id": "dinghy",
+      "triangles": 256,
+      "knobs": [
+        "length",
+        "engine",
+        "tube",
+        "floor",
+        "accent"
+      ]
+    },
+    {
+      "id": "dock-cleat",
+      "triangles": 212,
+      "knobs": [
+        "size",
+        "body"
+      ]
+    },
+    {
+      "id": "harbor-buoy",
+      "triangles": 272,
+      "knobs": [
+        "type",
+        "body",
+        "band",
+        "marker"
+      ]
+    },
+    {
+      "id": "kayak",
+      "triangles": 384,
+      "knobs": [
+        "length",
+        "cockpit",
+        "hull",
+        "deck",
+        "accent"
+      ]
+    },
+    {
+      "id": "life-jacket",
+      "triangles": 108,
+      "knobs": [
+        "size",
+        "shell",
+        "trim"
+      ]
+    },
+    {
+      "id": "lifebuoy",
+      "triangles": 144,
+      "knobs": [
+        "size",
+        "ring",
+        "band"
+      ]
+    },
+    {
+      "id": "motorboat",
+      "triangles": 192,
+      "knobs": [
+        "style",
+        "hull",
+        "deck",
+        "cabin",
+        "accent"
+      ]
+    },
+    {
+      "id": "paddleboard",
+      "triangles": 192,
+      "knobs": [
+        "length",
+        "fin",
+        "board",
+        "pad",
+        "accent"
+      ]
+    },
+    {
+      "id": "sailboat",
+      "triangles": 176,
+      "knobs": [
+        "rig",
+        "hull",
+        "sail",
+        "trim"
+      ]
+    },
+    {
+      "id": "ship-wheel",
+      "triangles": 292,
+      "knobs": [
+        "spokes",
+        "rim",
+        "hub"
+      ]
+    }
+  ],
+  "choiceAudit": [
+    {
+      "id": "anchor",
+      "param": "style",
+      "value": "fluke",
+      "triangles": 188,
+      "triangleBudget": 220,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "anchor",
+      "param": "style",
+      "value": "stockless",
+      "triangles": 188,
+      "triangleBudget": 220,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "anchor",
+      "param": "size",
+      "value": "450",
+      "triangles": 188,
+      "triangleBudget": 220,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "anchor",
+      "param": "size",
+      "value": "600",
+      "triangles": 188,
+      "triangleBudget": 220,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "anchor",
+      "param": "size",
+      "value": "750",
+      "triangles": 188,
+      "triangleBudget": 220,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "boat-fender",
+      "param": "length",
+      "value": "360",
+      "triangles": 620,
+      "triangleBudget": 700,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "boat-fender",
+      "param": "length",
+      "value": "480",
+      "triangles": 620,
+      "triangleBudget": 700,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "boat-fender",
+      "param": "length",
+      "value": "600",
+      "triangles": 620,
+      "triangleBudget": 700,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dinghy",
+      "param": "length",
+      "value": "2000",
+      "triangles": 256,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dinghy",
+      "param": "length",
+      "value": "2400",
+      "triangles": 256,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dinghy",
+      "param": "length",
+      "value": "2800",
+      "triangles": 256,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dinghy",
+      "param": "engine",
+      "value": "yes",
+      "triangles": 256,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dinghy",
+      "param": "engine",
+      "value": "no",
+      "triangles": 188,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dock-cleat",
+      "param": "size",
+      "value": "140",
+      "triangles": 212,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dock-cleat",
+      "param": "size",
+      "value": "180",
+      "triangles": 212,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "dock-cleat",
+      "param": "size",
+      "value": "220",
+      "triangles": 212,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "harbor-buoy",
+      "param": "type",
+      "value": "can",
+      "triangles": 272,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "harbor-buoy",
+      "param": "type",
+      "value": "spar",
+      "triangles": 272,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "kayak",
+      "param": "length",
+      "value": "2800",
+      "triangles": 384,
+      "triangleBudget": 520,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "kayak",
+      "param": "length",
+      "value": "3400",
+      "triangles": 384,
+      "triangleBudget": 520,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "kayak",
+      "param": "length",
+      "value": "3900",
+      "triangles": 384,
+      "triangleBudget": 520,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "kayak",
+      "param": "cockpit",
+      "value": "single",
+      "triangles": 384,
+      "triangleBudget": 520,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "kayak",
+      "param": "cockpit",
+      "value": "tandem",
+      "triangles": 492,
+      "triangleBudget": 520,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "life-jacket",
+      "param": "size",
+      "value": "child",
+      "triangles": 108,
+      "triangleBudget": 220,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "life-jacket",
+      "param": "size",
+      "value": "adult",
+      "triangles": 108,
+      "triangleBudget": 220,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "lifebuoy",
+      "param": "size",
+      "value": "550",
+      "triangles": 144,
+      "triangleBudget": 240,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "lifebuoy",
+      "param": "size",
+      "value": "650",
+      "triangles": 144,
+      "triangleBudget": 240,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "lifebuoy",
+      "param": "size",
+      "value": "750",
+      "triangles": 144,
+      "triangleBudget": 240,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "motorboat",
+      "param": "style",
+      "value": "open",
+      "triangles": 192,
+      "triangleBudget": 540,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "motorboat",
+      "param": "style",
+      "value": "cuddy",
+      "triangles": 204,
+      "triangleBudget": 540,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "paddleboard",
+      "param": "length",
+      "value": "2600",
+      "triangles": 192,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "paddleboard",
+      "param": "length",
+      "value": "3000",
+      "triangles": 192,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "paddleboard",
+      "param": "length",
+      "value": "3400",
+      "triangles": 192,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "paddleboard",
+      "param": "fin",
+      "value": "single",
+      "triangles": 192,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "paddleboard",
+      "param": "fin",
+      "value": "twin",
+      "triangles": 204,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sailboat",
+      "param": "rig",
+      "value": "sloop",
+      "triangles": 176,
+      "triangleBudget": 440,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sailboat",
+      "param": "rig",
+      "value": "catboat",
+      "triangles": 168,
+      "triangleBudget": 440,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ship-wheel",
+      "param": "spokes",
+      "value": "6",
+      "triangles": 268,
+      "triangleBudget": 360,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ship-wheel",
+      "param": "spokes",
+      "value": "8",
+      "triangles": 292,
+      "triangleBudget": 360,
+      "materials": 1,
+      "minUpM": 0
+    }
+  ],
+  "variants": [
+    {
+      "id": "kayak",
+      "want": "3900 tandem",
+      "params": {
+        "length": "3900",
+        "cockpit": "tandem"
+      },
+      "unmatched": [],
+      "defaultTriangles": 384,
+      "resolvedTriangles": 492,
+      "triangleBudget": 520,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "renderFrame": {
+        "frameHeightM": 2.4565669884582664,
+        "cameraOffsetYM": 0.6453698722365078
+      },
+      "defaultGlbSha256": "5d1912ed4f41b0bcbefa8420bc5baa49a3b2246673a00549656a9f9951007901",
+      "resolvedGlbSha256": "bf86019a39c09057cfab6841617b4583ba76f36590e73a7d80b795747e2d1320"
+    },
+    {
+      "id": "sailboat",
+      "want": "catboat",
+      "params": {
+        "rig": "catboat"
+      },
+      "unmatched": [],
+      "defaultTriangles": 176,
+      "resolvedTriangles": 168,
+      "triangleBudget": 440,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "renderFrame": {
+        "frameHeightM": 1.6726230633791834,
+        "cameraOffsetYM": 0.14943103823878873
+      },
+      "defaultGlbSha256": "09fdae9783c0c579e080a185435692123bf2c5998d9c0ede6eb4ac87da079e33",
+      "resolvedGlbSha256": "7eb52c9ab0ca0e5869ac800874ff6b26b4ed2b409111a8b6e42586c8a0720d6f"
+    },
+    {
+      "id": "motorboat",
+      "want": "cuddy",
+      "params": {
+        "style": "cuddy"
+      },
+      "unmatched": [],
+      "defaultTriangles": 192,
+      "resolvedTriangles": 204,
+      "triangleBudget": 540,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "renderFrame": {
+        "frameHeightM": 2.1316761235135515,
+        "cameraOffsetYM": 0.5609993907993027
+      },
+      "defaultGlbSha256": "1144dcff815d5a4b665cd112046d12e6410e1a1e20be7e834f6a311b8eda600c",
+      "resolvedGlbSha256": "f555183bd346e9c56ed1d95f542ad9ef68615dfcb33622feb20b5cbc3024a5c2"
+    }
+  ],
+  "settings": {
+    "kit": "watercraft",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 2,
+    "videoFrameRate": 24,
+    "videoCodec": "libx264",
+    "pixelFormat": "yuv420p",
+    "crf": 24,
+    "render": "software render of exported low-poly GLB triangles",
+    "auditAllChoices": true,
+    "variants": [
+      {
+        "id": "kayak",
+        "want": "3900 tandem"
+      },
+      {
+        "id": "sailboat",
+        "want": "catboat"
+      },
+      {
+        "id": "motorboat",
+        "want": "cuddy"
+      }
+    ]
+  },
+  "claims": {
+    "originalGeometry": true,
+    "localCatalogWorkflow": true,
+    "softwareRender": true,
+    "threeJsRendered": false,
+    "engineImportTested": false,
+    "deployedBehavior": false,
+    "simulation": false,
+    "hardwareAcceptance": false
+  }
+}

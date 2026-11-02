@@ -1,0 +1,26 @@
+{
+  "kit": "watercraft",
+  "width": 1280,
+  "height": 720,
+  "frameRate": 2,
+  "videoFrameRate": 24,
+  "videoCodec": "libx264",
+  "pixelFormat": "yuv420p",
+  "crf": 24,
+  "render": "software render of exported low-poly GLB triangles",
+  "auditAllChoices": true,
+  "variants": [
+    {
+      "id": "kayak",
+      "want": "3900 tandem"
+    },
+    {
+      "id": "sailboat",
+      "want": "catboat"
+    },
+    {
+      "id": "motorboat",
+      "want": "cuddy"
+    }
+  ]
+}
