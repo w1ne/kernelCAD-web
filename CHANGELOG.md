@@ -1,5 +1,11 @@
 # Unreleased
 
+- Laboratory infrastructure catalog wave: 60 original parametric low-poly
+  laboratory benches, storage, service systems, extraction enclosures and
+  cleanroom fixtures in the new `catalog/kits/lab-infrastructure` kit. The
+  generated catalog grows from 895 to 955 assets. The kit README and local demo
+  bundle are in `catalog/kits/lab-infrastructure/README.md` and
+  `artifacts/catalog-demos/lab-infrastructure-wave-20261102/`.
 - Industrial plant catalog wave: 60 original parametric low-poly CC0 factory
   assets covering process equipment, power and controls, material handling,
   lifting, access and safety in the new `catalog/kits/industrial-plant` kit.
