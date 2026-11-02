@@ -1,5 +1,11 @@
 # Unreleased
 
+- Solar energy catalog wave: 40 original parametric low-poly CC0 photovoltaic
+  modules, mounting systems, storage and grid equipment, sensing and service
+  props in the new `catalog/kits/solar-energy` kit, growing the catalog from
+  795 to 835 assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/solar-energy/README.md` and
+  `artifacts/catalog-demos/solar-energy-wave-20261102/`.
 - Airfield catalog wave: 40 original parametric low-poly CC0 aircraft, apron
   service vehicles and airport fixtures in the new `catalog/kits/airfield` kit,
   growing the generated catalog from 755 to 795 assets. The kit README and
