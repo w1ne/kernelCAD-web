@@ -697,6 +697,53 @@
       ]
     },
     {
+      "id": "railway",
+      "title": "Railway",
+      "description": "Original low-poly locomotives, rolling stock, track pieces, signals and station props with editable size and color controls.",
+      "assets": [
+        "baggage-cart",
+        "buffer-stop",
+        "caboose",
+        "commuter-car",
+        "crossing-gate",
+        "crossing-warning-light",
+        "curved-track",
+        "diesel-locomotive",
+        "dining-car",
+        "electric-locomotive",
+        "flatbed-wagon",
+        "freight-boxcar",
+        "handcar",
+        "hopper-wagon",
+        "inspection-trolley",
+        "level-crossing",
+        "luggage-stack",
+        "lumber-wagon",
+        "mail-car",
+        "maintenance-railcar",
+        "milepost",
+        "passenger-coach",
+        "platform-canopy",
+        "rail-sleeper",
+        "railway-lantern",
+        "railway-ticket-machine",
+        "semaphore-signal",
+        "signal-gantry",
+        "signal-light",
+        "station-bench",
+        "station-clock",
+        "station-platform",
+        "steam-locomotive",
+        "straight-track",
+        "subway-car",
+        "tank-wagon",
+        "ticket-barrier",
+        "timetable-board",
+        "track-switch-lever",
+        "turnout-track"
+      ]
+    },
+    {
       "id": "sports",
       "title": "Sports",
       "description": "Original low-poly court, field, racket, skating, fitness and award props with editable size and color controls.",
@@ -69291,6 +69338,2986 @@
             "saw"
           ],
           "param": "metal"
+        }
+      ]
+    },
+    {
+      "id": "baggage-cart",
+      "kit": "railway",
+      "title": "Station baggage cart",
+      "description": "Two-wheel station baggage trolley with a broad load plate, push handle and raised side rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "baggage cart",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/baggage-cart.kcad.ts",
+      "sourceSha256": "95c19aba30bf862c6ff5c9d43bb8e84d06dcd55b7ba48bb96e7d61426ae8b2cf",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#62594d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.7,
+          0.728,
+          0.404
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#62594d",
+          "parts": [
+            "base",
+            "upright-left",
+            "upright-right",
+            "top-rail",
+            "side-left",
+            "side-right",
+            "wheel-left",
+            "wheel-right",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "buffer-stop",
+      "kit": "railway",
+      "title": "Railway buffer stop",
+      "description": "Track-end buffer stop with twin impact pads, a heavy crossbeam, support posts and short rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "buffer stop",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/buffer-stop.kcad.ts",
+      "sourceSha256": "adcaf2f846dfa3f7b12cae1271208f83872138b3f6603de10a500edde0cbc322",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555b5f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          0.711,
+          0.318,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555b5f",
+          "parts": [
+            "rail-left",
+            "rail-right",
+            "sleeper-1",
+            "sleeper-2",
+            "sleeper-3",
+            "post-left",
+            "post-right",
+            "crossbeam",
+            "pad-left",
+            "pad-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "caboose",
+      "kit": "railway",
+      "title": "Caboose",
+      "description": "Short railway caboose with a raised cupola, end platforms, side windows and four wheels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "caboose",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/caboose.kcad.ts",
+      "sourceSha256": "ef2cda513bf560fc420d4beeabb935337c0737e7df4bb7ab486c954e24158ccd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a35c42",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 284,
+        "sizeM": [
+          1.16,
+          0.864,
+          0.382
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a35c42",
+          "parts": [
+            "underframe",
+            "body",
+            "roof",
+            "cupola",
+            "cupola-roof",
+            "window-left",
+            "window-right",
+            "platform-left",
+            "platform-right",
+            "wheel-left-a",
+            "wheel-left-b",
+            "wheel-right-a",
+            "wheel-right-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "commuter-car",
+      "kit": "railway",
+      "title": "Commuter rail car",
+      "description": "Short commuter rail car with wide double doors, large windows, roof air units and paired bogies. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "commuter car",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/commuter-car.kcad.ts",
+      "sourceSha256": "acf56a99dfeb0e0ed60c54375ecbb19fae48381b2d925c18e432c4c24b41d5bd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#52636b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          1.34,
+          0.7265,
+          0.37
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#52636b",
+          "parts": [
+            "underframe",
+            "body",
+            "roof",
+            "window-1",
+            "window-2",
+            "window-3",
+            "window-4",
+            "door-left",
+            "door-right",
+            "air-unit-1",
+            "air-unit-2",
+            "bogie-left",
+            "bogie-right",
+            "wheel-left-a",
+            "wheel-left-b",
+            "wheel-right-a",
+            "wheel-right-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "crossing-gate",
+      "kit": "railway",
+      "title": "Rail crossing gate",
+      "description": "Rail crossing barrier with a striped arm, pivot housing, counterweight and short signal mast. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "crossing gate",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/crossing-gate.kcad.ts",
+      "sourceSha256": "6592ce74c29c1d6fad52ab8c005e92aae4ec768655134701ec30ede97c323a91",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#ce4f3c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          1.310502,
+          0.76,
+          0.15
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#ce4f3c",
+          "parts": [
+            "base",
+            "pivot-post",
+            "housing",
+            "barrier-arm",
+            "counterweight",
+            "lamp-post",
+            "lamp-head"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "crossing-warning-light",
+      "kit": "railway",
+      "title": "Rail crossing warning light",
+      "description": "Rail crossing warning signal with paired circular lamps, protective hoods and a mounting bracket. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "crossing warning light",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/crossing-warning-light.kcad.ts",
+      "sourceSha256": "632ed37555af9e44b7db3ba39a7a16e04881a9164eb8cbb98d2b56e659f97b23",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d3513f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.254,
+          0.8,
+          0.184
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d3513f",
+          "parts": [
+            "post",
+            "backplate",
+            "lamp-left",
+            "lamp-right",
+            "hood-left",
+            "hood-right",
+            "mount",
+            "base"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "curved-track",
+      "kit": "railway",
+      "title": "Curved railway track loop",
+      "description": "Closed circular railway track loop with twin concentric rails, radial sleepers and a low ballast ring. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "curved track",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/curved-track.kcad.ts",
+      "sourceSha256": "5f1209c8dc3e35534b60d05cea62b6280e7cf41f25efdf8421f7ec81857dc810",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555b5f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 432,
+        "sizeM": [
+          1.48,
+          0.102,
+          1.48
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555b5f",
+          "parts": [
+            "ballast-ring",
+            "outer-rail",
+            "inner-rail",
+            "sleeper-1",
+            "sleeper-2",
+            "sleeper-3",
+            "sleeper-4",
+            "sleeper-5",
+            "sleeper-6",
+            "sleeper-7",
+            "sleeper-8",
+            "sleeper-9",
+            "sleeper-10",
+            "sleeper-11",
+            "sleeper-12"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "diesel-locomotive",
+      "kit": "railway",
+      "title": "Diesel locomotive",
+      "description": "Road-switcher diesel locomotive with a long hood, raised cab, radiator grille, front lights and six wheels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "diesel locomotive",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/diesel-locomotive.kcad.ts",
+      "sourceSha256": "9528eaa522d18da8cac033f9f52738e25e55e20f6552d31a202d27d36c21ca93",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4b555b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 436,
+        "sizeM": [
+          1.129847,
+          0.57,
+          0.4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4b555b",
+          "parts": [
+            "frame",
+            "long-hood",
+            "nose",
+            "cab",
+            "cab-roof",
+            "front-grille",
+            "headlamp-left",
+            "headlamp-right",
+            "wheel-left-1",
+            "wheel-left-2",
+            "wheel-left-3",
+            "wheel-right-1",
+            "wheel-right-2",
+            "wheel-right-3",
+            "pilot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dining-car",
+      "kit": "railway",
+      "title": "Dining car",
+      "description": "Passenger dining car with window rows, a central galley vent, end doors and wheel bogies. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "dining car",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/dining-car.kcad.ts",
+      "sourceSha256": "ea254325d7daec9aee621f392ec64381ca52a726d994d707b6052044159d9b56",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8c7650",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 296,
+        "sizeM": [
+          1.48,
+          0.736,
+          0.37
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8c7650",
+          "parts": [
+            "underframe",
+            "body",
+            "roof",
+            "window-1",
+            "window-2",
+            "window-3",
+            "window-4",
+            "window-5",
+            "window-6",
+            "galley-vent",
+            "wheel-left-a",
+            "wheel-left-b",
+            "wheel-right-a",
+            "wheel-right-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "electric-locomotive",
+      "kit": "railway",
+      "title": "Electric locomotive",
+      "description": "Electric locomotive with a broad cab, twin end windows, roof equipment and raised pantograph frame. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "electric locomotive",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/electric-locomotive.kcad.ts",
+      "sourceSha256": "c0ad6a06b59194e12745e93e0bc0ac493983de30e15d0b2f2b00ce6460ce832e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4c5b63",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 384,
+        "sizeM": [
+          1.036162,
+          0.856,
+          0.315
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4c5b63",
+          "parts": [
+            "frame",
+            "body",
+            "nose-left",
+            "cab",
+            "front-window",
+            "roof",
+            "pantograph-base",
+            "pantograph-left",
+            "pantograph-right",
+            "pantograph-top",
+            "wheel-left-a",
+            "wheel-left-b",
+            "wheel-left-c",
+            "wheel-right-a",
+            "wheel-right-b",
+            "wheel-right-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "flatbed-wagon",
+      "kit": "railway",
+      "title": "Flatbed wagon",
+      "description": "Rail flatbed wagon with a low deck, corner stakes, tie-down rings and two wheel bogies. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "flatbed wagon",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/flatbed-wagon.kcad.ts",
+      "sourceSha256": "75de96722d8bb68ddd1283212d06b54d7098ea22e8c8419660c62048900e0014",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5b6265",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          1.5,
+          0.509,
+          0.362
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5b6265",
+          "parts": [
+            "underframe",
+            "deck",
+            "stake-left-front",
+            "stake-left-back",
+            "stake-right-front",
+            "stake-right-back",
+            "bogie-left",
+            "bogie-right",
+            "wheel-left-a",
+            "wheel-left-b",
+            "wheel-right-a",
+            "wheel-right-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "freight-boxcar",
+      "kit": "railway",
+      "title": "Freight boxcar",
+      "description": "Enclosed freight boxcar with sliding side door, roof ribs, end ladders and two wheel bogies. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "freight boxcar",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/freight-boxcar.kcad.ts",
+      "sourceSha256": "d10d6f4656f15fbac0ae1d6e8835b7a454b2e6d4c9328f61a54fdadff1f2fec8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6c6152",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          1.68,
+          0.7325,
+          0.374
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6c6152",
+          "parts": [
+            "underframe",
+            "box-body",
+            "roof",
+            "sliding-door",
+            "door-rail",
+            "ladder-left",
+            "ladder-right",
+            "bogie-left",
+            "bogie-right",
+            "wheel-left-a",
+            "wheel-left-b",
+            "wheel-right-a",
+            "wheel-right-b",
+            "coupler-front",
+            "coupler-rear"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "handcar",
+      "kit": "railway",
+      "title": "Railway handcar",
+      "description": "Four-wheel railway handcar with wheels set against its frame, a plank platform, upright pump handle and two operator grips. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "handcar",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/handcar.kcad.ts",
+      "sourceSha256": "6f35c2f99d1300cc46f17756af5c2a904a6f29a39332fc59cc4b5614bc2cc6b9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70543c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 312,
+        "sizeM": [
+          0.58,
+          0.574,
+          0.348
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70543c",
+          "parts": [
+            "platform",
+            "frame",
+            "wheel-left-front",
+            "wheel-left-back",
+            "wheel-right-front",
+            "wheel-right-back",
+            "pump-post",
+            "pump-arm",
+            "grip-left",
+            "grip-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hopper-wagon",
+      "kit": "railway",
+      "title": "Hopper wagon",
+      "description": "Open-top hopper wagon with sloped discharge bays, top rails and four paired wheels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "hopper wagon",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/hopper-wagon.kcad.ts",
+      "sourceSha256": "3317103ce8d9228e7d9640b639c34f46ed58d80cf88efe70d6dade586b3e4c7e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4a5358",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          1.38,
+          0.584,
+          0.367
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4a5358",
+          "parts": [
+            "underframe",
+            "hopper-body",
+            "left-slope",
+            "right-slope",
+            "top-rail-front",
+            "top-rail-back",
+            "outlet-left",
+            "outlet-right",
+            "wheel-left-a",
+            "wheel-left-b",
+            "wheel-right-a",
+            "wheel-right-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "inspection-trolley",
+      "kit": "railway",
+      "title": "Track inspection trolley",
+      "description": "Compact two-axle track inspection trolley with a raised seat, handle bar and tool box. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "inspection trolley",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/inspection-trolley.kcad.ts",
+      "sourceSha256": "c48a5972ecdf726f2f0cfb571facfe4a86d40e6fe9ba89c1b45f29b02b320b10",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#68736e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.655,
+          0.487,
+          0.275
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#68736e",
+          "parts": [
+            "chassis",
+            "seat-post",
+            "seat",
+            "handle-post",
+            "handlebar",
+            "tool-box",
+            "wheel-left-front",
+            "wheel-left-back",
+            "wheel-right-front",
+            "wheel-right-back"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "level-crossing",
+      "kit": "railway",
+      "title": "Railway level crossing",
+      "description": "Road crossing over a short rail section with two road panels, flangeway grooves and warning posts. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "level crossing",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/level-crossing.kcad.ts",
+      "sourceSha256": "aaa42596cfb51ba594a1d2cac05a3227ab3c04ed227a0f49e9a5382c3042993b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5a6064",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.5,
+          0.575,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5a6064",
+          "parts": [
+            "road",
+            "rail-left",
+            "rail-right",
+            "road-panel-left",
+            "road-panel-right",
+            "warning-post-left",
+            "warning-post-right",
+            "crossbar-left",
+            "crossbar-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "luggage-stack",
+      "kit": "railway",
+      "title": "Station luggage stack",
+      "description": "Stack of three hard-sided passenger suitcases with handles, corner bumpers and rolling wheels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "luggage stack",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/luggage-stack.kcad.ts",
+      "sourceSha256": "5c741311e59d9d754839ee6fe7f8e0aa3421e418c2c48b52891f5cf76bb47a74",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73634d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.39,
+          0.636,
+          0.283
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73634d",
+          "parts": [
+            "case-bottom",
+            "case-middle",
+            "case-top",
+            "handle-bottom",
+            "handle-middle",
+            "handle-top",
+            "wheel-left",
+            "wheel-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lumber-wagon",
+      "kit": "railway",
+      "title": "Lumber wagon",
+      "description": "Rail lumber wagon with a flat deck, tall end stakes and a layered timber cargo stack. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "lumber wagon",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/lumber-wagon.kcad.ts",
+      "sourceSha256": "3d38f3339f03d1dff2b672544a8e43f911b246888998dd2c75f2467529af2ee9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#72583e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 356,
+        "sizeM": [
+          1.48,
+          0.629,
+          0.365
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#72583e",
+          "parts": [
+            "underframe",
+            "deck",
+            "end-stake-left",
+            "end-stake-right",
+            "log-1",
+            "log-2",
+            "log-3",
+            "log-4",
+            "log-5",
+            "wheel-a",
+            "wheel-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mail-car",
+      "kit": "railway",
+      "title": "Railway mail car",
+      "description": "Railway mail car with long sorting windows, sliding cargo doors, roof vents and paired bogies. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "mail car",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/mail-car.kcad.ts",
+      "sourceSha256": "06640003b1a90396d54a91b940ebc2336aa986f9ed0f62c37a708252337b6eea",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#566879",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 284,
+        "sizeM": [
+          1.45,
+          0.723,
+          0.365
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#566879",
+          "parts": [
+            "underframe",
+            "body",
+            "roof",
+            "door-left",
+            "door-right",
+            "window-a",
+            "window-b",
+            "vent-a",
+            "vent-b",
+            "wheel-a",
+            "wheel-b",
+            "wheel-c",
+            "wheel-d"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "maintenance-railcar",
+      "kit": "railway",
+      "title": "Rail maintenance car",
+      "description": "Compact maintenance railcar with an open service deck, tool cabinet, roof beacon and inspection wheels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "maintenance railcar",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/maintenance-railcar.kcad.ts",
+      "sourceSha256": "c92ea7e34f49dfd8ff02865c37ec0ac147afe67a4c83d510569e79b64a764b17",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#59645e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          0.95,
+          0.692,
+          0.35
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#59645e",
+          "parts": [
+            "frame",
+            "deck",
+            "cab",
+            "cab-roof",
+            "tool-box",
+            "beacon",
+            "wheel-left-a",
+            "wheel-left-b",
+            "wheel-right-a",
+            "wheel-right-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "milepost",
+      "kit": "railway",
+      "title": "Railway milepost",
+      "description": "Trackside railway milepost with a tapered-looking marker board, narrow post and broad ground foot. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "milepost",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/milepost.kcad.ts",
+      "sourceSha256": "6e63c0c809968ae8bdd10d06b4aaa0e7858191f70919110f46c82d86cb69e0a3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#efe6cf",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.27,
+          0.752,
+          0.14
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#efe6cf",
+          "parts": [
+            "post",
+            "board",
+            "cap",
+            "foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "passenger-coach",
+      "kit": "railway",
+      "title": "Passenger coach",
+      "description": "Passenger rail coach with long window rows, paired bogies, end doors and roof ventilation strips. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "passenger coach",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/passenger-coach.kcad.ts",
+      "sourceSha256": "3a57aa3c1bba0ae971a4cc16b2bd2414bbfaea5bcdd0db88779a86fd4b3f0235",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#657179",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          1.52,
+          0.66,
+          0.372
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#657179",
+          "parts": [
+            "underframe",
+            "body",
+            "roof",
+            "window-1",
+            "window-2",
+            "window-3",
+            "window-4",
+            "window-5",
+            "window-6",
+            "door-left",
+            "door-right",
+            "bogie-left",
+            "bogie-right",
+            "wheel-left-front",
+            "wheel-left-back",
+            "wheel-right-front",
+            "wheel-right-back"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "platform-canopy",
+      "kit": "railway",
+      "title": "Station platform canopy",
+      "description": "Railway platform canopy with two posts, a pitched roof, cross-braces and a sheltered bench bay. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "platform canopy",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/platform-canopy.kcad.ts",
+      "sourceSha256": "729fe960c0e25778b7c6cb4dd962840f92207addf4bffb0471a7f93316b863df",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596167",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.4,
+          0.733,
+          0.294
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596167",
+          "parts": [
+            "post-left",
+            "post-right",
+            "roof-left",
+            "roof-right",
+            "ridge",
+            "brace-left",
+            "brace-right",
+            "gutter"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rail-sleeper",
+      "kit": "railway",
+      "title": "Railway sleeper",
+      "description": "Concrete railway sleeper with two raised rail seats, fastening plates and four bolt heads. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "rail sleeper",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/rail-sleeper.kcad.ts",
+      "sourceSha256": "e559fbda76f7fb957f3cf238e7b2412b195c82b0b23164857c72032b1fad2959",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777c7e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.3,
+          0.1,
+          0.28
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777c7e",
+          "parts": [
+            "beam",
+            "seat-left",
+            "seat-right",
+            "plate-left",
+            "plate-right",
+            "bolt-1",
+            "bolt-2",
+            "bolt-3",
+            "bolt-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "railway-lantern",
+      "kit": "railway",
+      "title": "Railway lantern",
+      "description": "Vintage railway hand lantern with a faceted body, carry handle, broad base and top cap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "railway lantern",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/railway-lantern.kcad.ts",
+      "sourceSha256": "7c6b0cb503c4b42d081aece81c4488486225bb56af3f24ce9491b3888f0da003",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#554a3c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.180097,
+          0.497,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#554a3c",
+          "parts": [
+            "base",
+            "body",
+            "globe",
+            "top-cap",
+            "handle-left",
+            "handle-right",
+            "handle-top"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "railway-ticket-machine",
+      "kit": "railway",
+      "title": "Station ticket machine",
+      "description": "Compact railway ticket machine with a tilted display, keypad, slot and pedestal base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "railway ticket machine",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/railway-ticket-machine.kcad.ts",
+      "sourceSha256": "12d4185cb430fca89a9f100a1b969ec155f9d2e49a9ff5a31c0870996657f931",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#51636b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.37,
+          0.834,
+          0.254
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#51636b",
+          "parts": [
+            "pedestal",
+            "housing",
+            "display",
+            "keypad",
+            "ticket-slot",
+            "top-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "semaphore-signal",
+      "kit": "railway",
+      "title": "Railway semaphore signal",
+      "description": "Mechanical railway semaphore with a tall mast, pivot arm, counterweight and ladder rungs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "semaphore signal",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/semaphore-signal.kcad.ts",
+      "sourceSha256": "e349dbb9fbce2a60060615f62b363010e8b442517218a5ab056e2f2346fea706",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5a6063",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          0.515,
+          0.98,
+          0.146
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5a6063",
+          "parts": [
+            "mast",
+            "base",
+            "arm",
+            "arm-tip",
+            "counterweight",
+            "pivot",
+            "ladder-1",
+            "ladder-2",
+            "ladder-3",
+            "ladder-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "signal-gantry",
+      "kit": "railway",
+      "title": "Railway signal gantry",
+      "description": "Over-track signal gantry with two support towers, a crossbeam, signal heads and access walkway. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "signal gantry",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/signal-gantry.kcad.ts",
+      "sourceSha256": "effa24e143a3b561d7c79726ee62f389644dd0a087d5c4b796038a9b7dfbbfb8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#51585c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          1.48,
+          1,
+          0.205
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#51585c",
+          "parts": [
+            "tower-left",
+            "tower-right",
+            "crossbeam",
+            "walkway",
+            "signal-left",
+            "signal-right",
+            "lens-left",
+            "lens-right",
+            "ladder-left",
+            "ladder-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "signal-light",
+      "kit": "railway",
+      "title": "Railway signal light",
+      "description": "Three-aspect railway signal with stacked lenses, a tall mast, backboard and service ladder. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "signal light",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/signal-light.kcad.ts",
+      "sourceSha256": "63b8de02431bfec66e4020910ccf8e5c348d9bc3d0bc9f01cd7eabc630fb323d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#42484c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.18,
+          1.06,
+          0.192
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#42484c",
+          "parts": [
+            "mast",
+            "backboard",
+            "lens-top",
+            "lens-middle",
+            "lens-bottom",
+            "hood-top",
+            "hood-middle",
+            "hood-bottom",
+            "base"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-bench",
+      "kit": "railway",
+      "title": "Station bench",
+      "description": "Railway platform bench with a slatted seat, backrest, armrests and four simple legs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "station bench",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/station-bench.kcad.ts",
+      "sourceSha256": "c4888e9f7774d7a0367b406721f727d5183ecb5664a353000d956b3a6213ba3a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#725e49",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.52,
+          0.49,
+          0.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#725e49",
+          "parts": [
+            "seat",
+            "back",
+            "slat-seat-1",
+            "slat-seat-2",
+            "slat-seat-3",
+            "leg-left-front",
+            "leg-right-front",
+            "leg-left-back",
+            "leg-right-back",
+            "arm-left",
+            "arm-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-clock",
+      "kit": "railway",
+      "title": "Station clock",
+      "description": "Round station clock on a tall post with a broad face, bezel rim and four support feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "station clock",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/station-clock.kcad.ts",
+      "sourceSha256": "177c37a2e87c559c40e1331f3b594620cdb656c396de766002f9c5a3009cad16",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b6255",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          0.396,
+          0.898,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b6255",
+          "parts": [
+            "post",
+            "face",
+            "rim",
+            "top-cap",
+            "base"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-platform",
+      "kit": "railway",
+      "title": "Station platform",
+      "description": "Straight station platform segment with a raised edge, tactile strip and two access steps. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "station platform",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/station-platform.kcad.ts",
+      "sourceSha256": "c60d3ee9fefac09340ae5fe25cacb2bda4385a66d26b7dc80ad9a63fcfa3099e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777d7f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          1.5,
+          0.283,
+          0.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777d7f",
+          "parts": [
+            "platform",
+            "edge",
+            "tactile-strip",
+            "step-left",
+            "step-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "steam-locomotive",
+      "kit": "railway",
+      "title": "Steam locomotive",
+      "description": "Low-poly steam locomotive with a boiler, smokestack, cab, cowcatcher and three driving wheel pairs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "steam locomotive",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/steam-locomotive.kcad.ts",
+      "sourceSha256": "a086bf7fc2f839b2a144051cd8961f513cdb861f399692c07a3c39a53c1212f1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#34393d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 512,
+        "sizeM": [
+          1.113578,
+          0.657573,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#34393d",
+          "parts": [
+            "lower-frame",
+            "boiler",
+            "boiler-front",
+            "smokestack",
+            "stack-cap",
+            "cab",
+            "cab-roof",
+            "front-window",
+            "cowcatcher",
+            "wheel-a-left",
+            "wheel-a-right",
+            "wheel-b-left",
+            "wheel-b-right",
+            "wheel-c-left",
+            "wheel-c-right",
+            "drive-rod"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "straight-track",
+      "kit": "railway",
+      "title": "Straight railway track",
+      "description": "Short straight rail section with twin rails, six sleepers, tie plates and gravel ballast base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "straight track",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/straight-track.kcad.ts",
+      "sourceSha256": "a148ee428d709a546c8455ea94799fefbb0aef2a97873f58b6241a2a76d046db",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555b5f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.5,
+          0.09,
+          0.33
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555b5f",
+          "parts": [
+            "ballast",
+            "rail-left",
+            "rail-right",
+            "sleeper-1",
+            "sleeper-2",
+            "sleeper-3",
+            "sleeper-4",
+            "sleeper-5",
+            "sleeper-6"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "subway-car",
+      "kit": "railway",
+      "title": "Subway car",
+      "description": "Urban subway car with a rounded-looking front cab, broad side doors and repeated passenger windows. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "subway car",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/subway-car.kcad.ts",
+      "sourceSha256": "77d76337b18a956547c01de5caaa0ceeff195cd6628b8b95dc00e9fd73f7ca9c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#53636a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 320,
+        "sizeM": [
+          1.34,
+          0.679,
+          0.375
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#53636a",
+          "parts": [
+            "underframe",
+            "car-body",
+            "front-cab",
+            "front-window",
+            "roof",
+            "door-left",
+            "door-right",
+            "window-left",
+            "window-right",
+            "window-rear",
+            "bogie-left",
+            "bogie-right",
+            "wheel-left-a",
+            "wheel-left-b",
+            "wheel-right-a",
+            "wheel-right-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tank-wagon",
+      "kit": "railway",
+      "title": "Rail tank wagon",
+      "description": "Cylindrical tank wagon with domed end caps, a top walkway, ladder and twin bogies. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "tank wagon",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/tank-wagon.kcad.ts",
+      "sourceSha256": "32f97cd4161c14fafc046397d47ddc04f43c928364bf4f0c50bcec4dcd0f7396",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555d62",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 400,
+        "sizeM": [
+          1.5,
+          0.663,
+          0.375
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555d62",
+          "parts": [
+            "underframe",
+            "tank",
+            "tank-cap-left",
+            "tank-cap-right",
+            "top-hatch",
+            "walkway",
+            "ladder",
+            "bogie-left",
+            "bogie-right",
+            "wheel-left-a",
+            "wheel-left-b",
+            "wheel-right-a",
+            "wheel-right-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ticket-barrier",
+      "kit": "railway",
+      "title": "Railway ticket barrier",
+      "description": "Station ticket gate with a pedestal reader, swing flap, card sensor and side rail. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "ticket barrier",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/ticket-barrier.kcad.ts",
+      "sourceSha256": "9e9e711fe2091cf0805a0f8044c61e799f704b60701fa443b93eaae9bbca9501",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#50585d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.905,
+          0.804,
+          0.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#50585d",
+          "parts": [
+            "base",
+            "pedestal",
+            "reader",
+            "flap",
+            "sensor",
+            "side-post",
+            "side-rail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "timetable-board",
+      "kit": "railway",
+      "title": "Station timetable board",
+      "description": "Freestanding station timetable board with a framed display panel, roof cap and twin post supports. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "timetable board",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/timetable-board.kcad.ts",
+      "sourceSha256": "74bd86b67564320c5c1d22896d7bdcf83f47ebaea315722ee5632af9b3d4975c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#536069",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.7,
+          0.801,
+          0.15
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#536069",
+          "parts": [
+            "panel",
+            "display",
+            "top-cap",
+            "post-left",
+            "post-right",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "track-switch-lever",
+      "kit": "railway",
+      "title": "Track switch lever",
+      "description": "Manual track switch lever with a weighted base, upright handle, counterweight and connecting rod. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "track switch lever",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/track-switch-lever.kcad.ts",
+      "sourceSha256": "b26e9cfa3ba7370a3d1d9b148d87530cdac8e1a2f4a00c72c9d10fef19564341",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#67624f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.475064,
+          0.672,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#67624f",
+          "parts": [
+            "base",
+            "pivot-post",
+            "lever",
+            "grip",
+            "counterweight",
+            "rod"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turnout-track",
+      "kit": "railway",
+      "title": "Railway turnout track",
+      "description": "Rail switch turnout with a straight route, diverging branch, crossing frog and six sleepers. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "turnout track",
+        "railway",
+        "train",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "railway",
+        "train",
+        "station",
+        "rail-yard",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/railway/turnout-track.kcad.ts",
+      "sourceSha256": "786428876414063d59699f16e767b73936a8f79bbf4c57d04b9edb8cb555cccf",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555b5f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.5,
+          0.08,
+          0.613188
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555b5f",
+          "parts": [
+            "ballast",
+            "main-left",
+            "main-right",
+            "branch-rail",
+            "frog",
+            "tie-1",
+            "tie-2",
+            "tie-3",
+            "tie-4",
+            "tie-5",
+            "tie-6"
+          ],
+          "param": "color"
         }
       ]
     },

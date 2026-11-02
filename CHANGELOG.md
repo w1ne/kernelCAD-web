@@ -21,6 +21,12 @@
   audited assets. The kit README and reviewed local demo bundle are in
   `catalog/kits/photo-video-studio/README.md` and
   `artifacts/catalog-demos/photo-video-studio-wave-20261102/`.
+- Railway catalog wave: 40 original parametric low-poly CC0 locomotives,
+  rolling stock, track pieces, signals and station props in the new
+  `catalog/kits/railway` kit, growing the catalog from 715 to 755 audited
+  assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/railway/README.md` and
+  `artifacts/catalog-demos/railway-wave-20261102/`.
 - Marine catalog wave: 40 original parametric low-poly CC0 nautical safety,
   dockside, navigation, fishing and harbor props in the new `catalog/kits/marine`
   kit, growing the catalog from 675 to 715 audited assets. The kit README and
