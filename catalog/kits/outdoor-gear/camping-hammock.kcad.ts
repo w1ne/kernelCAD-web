@@ -47,7 +47,7 @@ for (const x of [-anchor, anchor]) {
   hammock.part(side + '-crossbar', box(55, 700, 55, true).translate(x, 0, 735).color(frame));
   hammock.part(side + '-front-leg', box(34, 34, 790, true).rotateX(-18).translate(x, -165, 395).color(frame));
   hammock.part(side + '-rear-leg', box(34, 34, 790, true).rotateX(18).translate(x, 165, 395).color(frame));
-  hammock.part(side + '-foot', box(80, 780, 42, true).translate(x, 0, 24).color(frame));
+  hammock.part(side + '-foot', box(80, 780, 42, true).translate(x, 0, 21).color(frame));
 }
 
 return hammock.model();

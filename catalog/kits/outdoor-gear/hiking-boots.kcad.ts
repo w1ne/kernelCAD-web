@@ -22,7 +22,7 @@ const laces = param('laces', '#d5c6a5', { label: 'Laces' });
 const scale = Number(size.value) / 42;
 const boots = assembly('hiking-boots');
 const makeBoot = (x: number, suffix: string) => {
-  boots.part(suffix + '-sole', box(138 * scale, 330 * scale, 34, true).translate(x, -25, 18).color(sole));
+  boots.part(suffix + '-sole', box(138 * scale, 330 * scale, 34, true).translate(x, -25, 17).color(sole));
   boots.part(suffix + '-upper', box(120 * scale, 260 * scale, 150 * scale, true).translate(x, -22, 105 * scale).color(leather));
   boots.part(suffix + '-toe', sphere(74 * scale).scale([1.0, 1.4, 0.78]).translate(x, -110 * scale, 96 * scale).color(leather));
   boots.part(suffix + '-collar', box(126 * scale, 128 * scale, 48 * scale, true).translate(x, 72 * scale, 190 * scale).color(leather));

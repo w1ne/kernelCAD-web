@@ -21,12 +21,12 @@ const fuel = param('fuel', '#c98336', { label: 'Fuel canister' });
 
 const stove = assembly('camp-stove');
 if (style.value === 'remote') {
-  stove.part('burner-body', box(280, 230, 76, true).translate(0, 0, 44).color(body));
+  stove.part('burner-body', box(280, 230, 76, true).translate(0, 0, 38).color(body));
   stove.part('burner-ring', cylinder(24, 72, 8).translate(0, 0, 82).color(burner));
   stove.part('left-pot-arm', box(220, 22, 18, true).translate(0, 0, 104).color(burner));
   stove.part('front-pot-arm', box(22, 220, 18, true).translate(0, 0, 104).color(burner));
   stove.part('control-knob', cylinder(30, 22, 8).rotateX(90).translate(0, -118, 50).color(fuel));
-  stove.part('remote-canister', cylinder(220, 88, 10).translate(350, 0, 10).color(fuel));
+  stove.part('remote-canister', cylinder(220, 88, 10).translate(350, 0, 0).color(fuel));
   stove.part('fuel-hose', box(300, 18, 18, true).rotateZ(-10).translate(176, 12, 42).color(body));
 } else {
   stove.part('integrated-canister', cylinder(210, 84, 10).translate(0, 0, 0).color(fuel));

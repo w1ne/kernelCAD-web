@@ -485,6 +485,25 @@
       ]
     },
     {
+      "id": "outdoor-gear",
+      "title": "Outdoor gear",
+      "description": "Low-poly camping and trail equipment for campsite, backpacking and fishing scenes at real-world scale, with editable style and color knobs.",
+      "assets": [
+        "binoculars",
+        "camp-chair",
+        "camp-stove",
+        "camping-backpack",
+        "camping-hammock",
+        "canteen",
+        "fishing-rod",
+        "hiking-boots",
+        "map-case",
+        "sleeping-bag",
+        "trail-compass",
+        "trekking-poles"
+      ]
+    },
+    {
       "id": "props",
       "title": "Props",
       "description": "Low-poly crates, barrels, containers, tools, carts and market pieces for village, farm, warehouse and street scenes at real-world scale, flat-shaded on one palette material.",
@@ -53499,6 +53518,1191 @@
             "seam-front"
           ],
           "param": "detail"
+        }
+      ]
+    },
+    {
+      "id": "binoculars",
+      "kit": "outdoor-gear",
+      "title": "Field binoculars",
+      "description": "Compact field binoculars with twin objective barrels, bridge, eye cups and blue objective lenses. Knobs: magnification, body, trim and glass colours.",
+      "category": "prop",
+      "origin": "center",
+      "tags": [
+        "binoculars",
+        "field glasses",
+        "optics",
+        "camping",
+        "hiking",
+        "outdoor"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail",
+        "wildlife"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/binoculars.kcad.ts",
+      "sourceSha256": "51e749f4e2576cc4a7dafea615b57e3d1944443fb2053110694b2f2487bea21b",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "magnification",
+          "type": "choice",
+          "default": "8x",
+          "label": "Magnification",
+          "choices": [
+            "8x",
+            "10x"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#3b4140",
+          "label": "Body"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#b6aa82",
+          "label": "Trim"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#43748a",
+          "label": "Lenses"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 408,
+        "sizeM": [
+          0.262,
+          0.126,
+          0.22
+        ],
+        "minUpM": 0.019,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#3b4140",
+          "parts": [
+            "left-barrel",
+            "right-barrel"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "trim",
+          "color": "#b6aa82",
+          "parts": [
+            "left-eye-cup",
+            "left-objective-rim",
+            "right-eye-cup",
+            "right-objective-rim",
+            "center-bridge",
+            "focus-wheel"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "glass",
+          "color": "#43748a",
+          "parts": [
+            "left-objective-lens",
+            "right-objective-lens"
+          ],
+          "param": "glass"
+        }
+      ]
+    },
+    {
+      "id": "camp-chair",
+      "kit": "outdoor-gear",
+      "title": "Camp chair",
+      "description": "Portable folding camp chair with a fabric seat, backrest, armrests and crossed legs. Knobs: chair size, fabric and frame colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "camp chair",
+        "folding chair",
+        "camping",
+        "outdoor",
+        "seat",
+        "furniture"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/camp-chair.kcad.ts",
+      "sourceSha256": "fa57edcfc7f66099d6d3db7ff45c8f17f97252e2e6974dc579ebf614ea999771",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "classic",
+          "label": "Size",
+          "choices": [
+            "compact",
+            "classic"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#b25636",
+          "label": "Fabric"
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#555b5c",
+          "label": "Frame"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.508,
+          0.924629,
+          0.454579
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "fabric",
+          "color": "#b25636",
+          "parts": [
+            "seat",
+            "backrest"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "frame",
+          "color": "#555b5c",
+          "parts": [
+            "left-front-leg",
+            "right-front-leg",
+            "left-rear-leg",
+            "right-rear-leg",
+            "left-armrest",
+            "right-armrest"
+          ],
+          "param": "frame"
+        }
+      ]
+    },
+    {
+      "id": "camp-stove",
+      "kit": "outdoor-gear",
+      "title": "Camp stove",
+      "description": "Compact backpacking burner with pot supports and an integrated or remote fuel canister. Knobs: stove style, body, burner and fuel colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "camp stove",
+        "camping stove",
+        "burner",
+        "backpacking",
+        "cooking",
+        "outdoor"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/camp-stove.kcad.ts",
+      "sourceSha256": "e2592f14ad96012b38dee016f638e197e486a532318cd1c44279a24714752e4c",
+      "triangleBudget": 280,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "integrated",
+          "label": "Fuel setup",
+          "choices": [
+            "integrated",
+            "remote"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#4c5154",
+          "label": "Stove body"
+        },
+        {
+          "name": "burner",
+          "type": "color",
+          "default": "#c7c9c6",
+          "label": "Burner and supports"
+        },
+        {
+          "name": "fuel",
+          "type": "color",
+          "default": "#c98336",
+          "label": "Fuel canister"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.23,
+          0.259,
+          0.23
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "fuel",
+          "color": "#c98336",
+          "parts": [
+            "integrated-canister"
+          ],
+          "param": "fuel"
+        },
+        {
+          "name": "body",
+          "color": "#4c5154",
+          "parts": [
+            "burner-mount",
+            "control-knob"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "burner",
+          "color": "#c7c9c6",
+          "parts": [
+            "burner-ring",
+            "left-pot-arm",
+            "front-pot-arm"
+          ],
+          "param": "burner"
+        }
+      ]
+    },
+    {
+      "id": "camping-backpack",
+      "kit": "outdoor-gear",
+      "title": "Camping backpack",
+      "description": "Trail backpack with a top flap, front pocket, side bottle pockets and padded shoulder straps. Knobs: capacity, pack and trim colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "backpack",
+        "rucksack",
+        "camping",
+        "hiking",
+        "trail",
+        "gear"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/camping-backpack.kcad.ts",
+      "sourceSha256": "d400287752499cc9ae6b54f220dd4b3bb8a0516670ce6fc6b84ca732bb1e569c",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "capacity",
+          "type": "choice",
+          "default": "40",
+          "label": "Capacity (L)",
+          "choices": [
+            "30",
+            "40",
+            "60"
+          ]
+        },
+        {
+          "name": "pack",
+          "type": "color",
+          "default": "#52694d",
+          "label": "Pack fabric"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#c4863a",
+          "label": "Trim and straps"
+        }
+      ],
+      "presets": {
+        "forest": {
+          "pack": "#52694d",
+          "trim": "#c4863a"
+        },
+        "alpine": {
+          "pack": "#315b78",
+          "trim": "#d6d4c8"
+        }
+      },
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.402,
+          0.526,
+          0.274
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "pack",
+          "color": "#52694d",
+          "parts": [
+            "main-bag",
+            "front-pocket"
+          ],
+          "param": "pack"
+        },
+        {
+          "name": "trim",
+          "color": "#c4863a",
+          "parts": [
+            "top-flap",
+            "carry-handle",
+            "left-side-pocket",
+            "right-side-pocket",
+            "left-shoulder-strap",
+            "right-shoulder-strap"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "camping-hammock",
+      "kit": "outdoor-gear",
+      "title": "Camping hammock",
+      "description": "Freestanding camping hammock with a low faceted sling, end straps and a folding support frame. Knobs: sling length, fabric, frame and strap colours.",
+      "category": "furniture",
+      "origin": "base",
+      "tags": [
+        "hammock",
+        "camping",
+        "sling",
+        "outdoor",
+        "hiking",
+        "camp bed"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/camping-hammock.kcad.ts",
+      "sourceSha256": "8f5d965aa5cac1ecce2cb205a3ff58b161a429bb4420d273aba66959d782fc12",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "2200",
+          "label": "Sling length (mm)",
+          "choices": [
+            "2200",
+            "2600"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#b34c39",
+          "label": "Sling fabric"
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#5a6260",
+          "label": "Support frame"
+        },
+        {
+          "name": "strap",
+          "type": "color",
+          "default": "#3b403e",
+          "label": "End straps"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          2.78,
+          0.783878,
+          0.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "fabric",
+          "color": "#b34c39",
+          "parts": [
+            "sling-panel-1",
+            "sling-panel-2",
+            "sling-panel-3",
+            "sling-panel-4"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "strap",
+          "color": "#3b403e",
+          "parts": [
+            "left-end-strap",
+            "right-end-strap"
+          ],
+          "param": "strap"
+        },
+        {
+          "name": "frame",
+          "color": "#5a6260",
+          "parts": [
+            "left-crossbar",
+            "left-front-leg",
+            "left-rear-leg",
+            "left-foot",
+            "right-crossbar",
+            "right-front-leg",
+            "right-rear-leg",
+            "right-foot"
+          ],
+          "param": "frame"
+        }
+      ]
+    },
+    {
+      "id": "canteen",
+      "kit": "outdoor-gear",
+      "title": "Field canteen",
+      "description": "Reusable field canteen with a flattened flask body, screw cap and side carry loop. Knobs: capacity, flask, cap and loop colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "canteen",
+        "water bottle",
+        "flask",
+        "camping",
+        "hiking",
+        "outdoor"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/canteen.kcad.ts",
+      "sourceSha256": "58b42ddf7cc36a577ad5fd6fed124facb87261832a126fdcc8469dfbbbf5b12c",
+      "triangleBudget": 200,
+      "params": [
+        {
+          "name": "capacity",
+          "type": "choice",
+          "default": "750",
+          "label": "Capacity (ml)",
+          "choices": [
+            "500",
+            "750",
+            "1000"
+          ]
+        },
+        {
+          "name": "flask",
+          "type": "color",
+          "default": "#536d51",
+          "label": "Flask"
+        },
+        {
+          "name": "cap",
+          "type": "color",
+          "default": "#343a36",
+          "label": "Cap"
+        },
+        {
+          "name": "loop",
+          "type": "color",
+          "default": "#9d7548",
+          "label": "Carry loop"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.234325,
+          0.336,
+          0.116288
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "flask",
+          "color": "#536d51",
+          "parts": [
+            "flask-body",
+            "neck"
+          ],
+          "param": "flask"
+        },
+        {
+          "name": "cap",
+          "color": "#343a36",
+          "parts": [
+            "cap"
+          ],
+          "param": "cap"
+        },
+        {
+          "name": "loop",
+          "color": "#9d7548",
+          "parts": [
+            "left-loop-rail",
+            "right-loop-rail",
+            "loop-bridge"
+          ],
+          "param": "loop"
+        }
+      ]
+    },
+    {
+      "id": "fishing-rod",
+      "kit": "outdoor-gear",
+      "title": "Trail fishing rod",
+      "description": "Travel fishing rod with a cork grip, spinning reel, tapered shaft and line guides. Knobs: rod length, shaft, grip, reel and guide colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fishing rod",
+        "fishing",
+        "camping",
+        "outdoor",
+        "trail",
+        "reel"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail",
+        "fishing"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/fishing-rod.kcad.ts",
+      "sourceSha256": "91730af36c9194eb8bb2018096c0c6f8b0b93f586a3000b21ac575593b89ae11",
+      "triangleBudget": 550,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "1800",
+          "label": "Rod length (mm)",
+          "choices": [
+            "1800",
+            "2100",
+            "2400"
+          ]
+        },
+        {
+          "name": "shaft",
+          "type": "color",
+          "default": "#4c6875",
+          "label": "Shaft"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#aa7b4c",
+          "label": "Grip"
+        },
+        {
+          "name": "reel",
+          "type": "color",
+          "default": "#3d4140",
+          "label": "Reel and guides"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 496,
+        "sizeM": [
+          0.18256,
+          1.978,
+          0.096
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "grip",
+          "color": "#aa7b4c",
+          "parts": [
+            "cork-handle",
+            "reel-hub"
+          ],
+          "param": "grip"
+        },
+        {
+          "name": "shaft",
+          "color": "#4c6875",
+          "parts": [
+            "lower-shaft",
+            "middle-shaft",
+            "tip-section"
+          ],
+          "param": "shaft"
+        },
+        {
+          "name": "reel",
+          "color": "#3d4140",
+          "parts": [
+            "reel-spool",
+            "reel-handle",
+            "line-guide-1",
+            "line-guide-2",
+            "line-guide-3",
+            "line-guide-4",
+            "line-guide-5"
+          ],
+          "param": "reel"
+        }
+      ]
+    },
+    {
+      "id": "hiking-boots",
+      "kit": "outdoor-gear",
+      "title": "Hiking boots",
+      "description": "Pair of ankle-high trail boots with lugged soles, padded collars and contrasting laces. Knobs: boot size, leather, sole and lace colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "hiking boots",
+        "trail shoes",
+        "footwear",
+        "camping",
+        "outdoor",
+        "hiking"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/hiking-boots.kcad.ts",
+      "sourceSha256": "3032a57e1e5d1406bd2154c3933cd6e6752b72479deeb8aff5921ee15034ab04",
+      "triangleBudget": 380,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "42",
+          "label": "EU size",
+          "choices": [
+            "39",
+            "42",
+            "45"
+          ]
+        },
+        {
+          "name": "leather",
+          "type": "color",
+          "default": "#93633d",
+          "label": "Upper"
+        },
+        {
+          "name": "sole",
+          "type": "color",
+          "default": "#302e2b",
+          "label": "Sole"
+        },
+        {
+          "name": "laces",
+          "type": "color",
+          "default": "#d5c6a5",
+          "label": "Laces"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          0.342271,
+          0.214,
+          0.33972
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "sole",
+          "color": "#302e2b",
+          "parts": [
+            "left-sole",
+            "right-sole"
+          ],
+          "param": "sole"
+        },
+        {
+          "name": "leather",
+          "color": "#93633d",
+          "parts": [
+            "left-upper",
+            "left-toe",
+            "left-collar",
+            "right-upper",
+            "right-toe",
+            "right-collar"
+          ],
+          "param": "leather"
+        },
+        {
+          "name": "laces",
+          "color": "#d5c6a5",
+          "parts": [
+            "left-lace-1",
+            "left-lace-2",
+            "left-lace-3",
+            "left-lace-4",
+            "right-lace-1",
+            "right-lace-2",
+            "right-lace-3",
+            "right-lace-4"
+          ],
+          "param": "laces"
+        }
+      ]
+    },
+    {
+      "id": "map-case",
+      "kit": "outdoor-gear",
+      "title": "Trail map case",
+      "description": "Water-resistant map pouch with a clear map panel, fold lines and securing straps. Knobs: open or folded state, pouch, map and strap colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "map case",
+        "map pouch",
+        "navigation",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/map-case.kcad.ts",
+      "sourceSha256": "3ec85c60e556b8aa523482ed960ebb200a1c9723ea6e7604537c904a0a8f90f4",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "state",
+          "type": "choice",
+          "default": "open",
+          "label": "Case state",
+          "choices": [
+            "open",
+            "folded"
+          ]
+        },
+        {
+          "name": "pouch",
+          "type": "color",
+          "default": "#69543e",
+          "label": "Pouch"
+        },
+        {
+          "name": "map",
+          "type": "color",
+          "default": "#e2d8b7",
+          "label": "Map panel"
+        },
+        {
+          "name": "strap",
+          "type": "color",
+          "default": "#3d4341",
+          "label": "Strap"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.52,
+          0.079,
+          0.412
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "pouch",
+          "color": "#69543e",
+          "parts": [
+            "pouch-base",
+            "case-flap",
+            "strap-adjuster",
+            "map-grid-1",
+            "map-grid-2",
+            "map-grid-3",
+            "map-grid-4",
+            "map-fold"
+          ],
+          "param": "pouch"
+        },
+        {
+          "name": "map",
+          "color": "#e2d8b7",
+          "parts": [
+            "map-panel"
+          ],
+          "param": "map"
+        },
+        {
+          "name": "strap",
+          "color": "#3d4341",
+          "parts": [
+            "left-case-strap",
+            "right-case-strap"
+          ],
+          "param": "strap"
+        }
+      ]
+    },
+    {
+      "id": "sleeping-bag",
+      "kit": "outdoor-gear",
+      "title": "Sleeping bag",
+      "description": "Ground sleeping bag with a pillow hood, visible zipper and mummy or rectangular cut. Knobs: cut, shell, lining and zipper colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "sleeping bag",
+        "sleep sack",
+        "camping",
+        "hiking",
+        "outdoor",
+        "bedroll"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/sleeping-bag.kcad.ts",
+      "sourceSha256": "70e0dc4915d935d8a21c82b466f50d36aefa4d3a7ee22331a86f3926ae83c17e",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "cut",
+          "type": "choice",
+          "default": "mummy",
+          "label": "Cut",
+          "choices": [
+            "mummy",
+            "rectangular"
+          ]
+        },
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#3f6980",
+          "label": "Shell"
+        },
+        {
+          "name": "lining",
+          "type": "color",
+          "default": "#c4b28c",
+          "label": "Lining and hood"
+        },
+        {
+          "name": "zipper",
+          "type": "color",
+          "default": "#d9d4c5",
+          "label": "Zipper"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.56,
+          0.171,
+          2.01
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#3f6980",
+          "parts": [
+            "shell"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "lining",
+          "color": "#c4b28c",
+          "parts": [
+            "inner-panel",
+            "hood-pillow"
+          ],
+          "param": "lining"
+        },
+        {
+          "name": "zipper",
+          "color": "#d9d4c5",
+          "parts": [
+            "zipper-track",
+            "zipper-pull"
+          ],
+          "param": "zipper"
+        }
+      ]
+    },
+    {
+      "id": "trail-compass",
+      "kit": "outdoor-gear",
+      "title": "Trail compass",
+      "description": "Handheld baseplate compass with a raised dial, direction needle, bezel and sighting mark. Knobs: plate style, case, dial and needle colours.",
+      "category": "prop",
+      "origin": "center",
+      "tags": [
+        "compass",
+        "navigation",
+        "baseplate",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/trail-compass.kcad.ts",
+      "sourceSha256": "e120c50ca945a2d278342a500e2a23fb47d611439a1932fac492cc8db20f7da3",
+      "triangleBudget": 220,
+      "params": [
+        {
+          "name": "style",
+          "type": "choice",
+          "default": "baseplate",
+          "label": "Plate style",
+          "choices": [
+            "baseplate",
+            "round"
+          ]
+        },
+        {
+          "name": "caseColor",
+          "type": "color",
+          "default": "#55755c",
+          "label": "Case"
+        },
+        {
+          "name": "dial",
+          "type": "color",
+          "default": "#e1ddc8",
+          "label": "Dial"
+        },
+        {
+          "name": "needle",
+          "type": "color",
+          "default": "#bd4935",
+          "label": "Needle"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.19,
+          0.07,
+          0.314
+        ],
+        "minUpM": -0.002,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "caseColor",
+          "color": "#55755c",
+          "parts": [
+            "baseplate",
+            "sighting-tab",
+            "bezel",
+            "needle-south"
+          ],
+          "param": "caseColor"
+        },
+        {
+          "name": "dial",
+          "color": "#e1ddc8",
+          "parts": [
+            "dial-face"
+          ],
+          "param": "dial"
+        },
+        {
+          "name": "needle",
+          "color": "#bd4935",
+          "parts": [
+            "needle-north",
+            "direction-line"
+          ],
+          "param": "needle"
+        }
+      ]
+    },
+    {
+      "id": "trekking-poles",
+      "kit": "outdoor-gear",
+      "title": "Trekking poles",
+      "description": "Pair of trail poles with rubber tips, baskets, adjustable shafts and ergonomic grips. Knobs: pole length, shaft, grip and tip colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "trekking poles",
+        "hiking poles",
+        "walking sticks",
+        "camping",
+        "trail",
+        "outdoor"
+      ],
+      "compat": [
+        "outdoor",
+        "camping",
+        "hiking",
+        "trail"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/outdoor-gear/trekking-poles.kcad.ts",
+      "sourceSha256": "2381f1e2c494d6d94bc92f157734f64f3b33c89c6a427ba395cf56ce7bc25530",
+      "triangleBudget": 500,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "1200",
+          "label": "Pole length (mm)",
+          "choices": [
+            "1000",
+            "1200",
+            "1400"
+          ]
+        },
+        {
+          "name": "shaft",
+          "type": "color",
+          "default": "#a64b35",
+          "label": "Shafts"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#343739",
+          "label": "Grips"
+        },
+        {
+          "name": "tip",
+          "type": "color",
+          "default": "#b7b8b5",
+          "label": "Tips and baskets"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 464,
+        "sizeM": [
+          0.294,
+          1.268,
+          0.089
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "tip",
+          "color": "#b7b8b5",
+          "parts": [
+            "left-tip",
+            "left-basket",
+            "right-tip",
+            "right-basket"
+          ],
+          "param": "tip"
+        },
+        {
+          "name": "shaft",
+          "color": "#a64b35",
+          "parts": [
+            "left-shaft",
+            "right-shaft"
+          ],
+          "param": "shaft"
+        },
+        {
+          "name": "grip",
+          "color": "#343739",
+          "parts": [
+            "left-grip",
+            "left-cap",
+            "left-strap",
+            "right-grip",
+            "right-cap",
+            "right-strap"
+          ],
+          "param": "grip"
         }
       ]
     },

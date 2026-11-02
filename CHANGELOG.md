@@ -1,11 +1,15 @@
 # Unreleased
 
-- Asset catalog wave 2: 12 original parametric low-poly CC0 assets in the new
-  catalog/kits/outdoor-gear kit: a backpack, sleeping bag, camp chair and
-  stove, hiking boots and poles, binoculars, compass, canteen, map case,
-  hammock and fishing rod. The catalog grows from 543 to 555 assets. Kit
+- Asset catalog: 40 original parametric low-poly CC0 sports assets in the new
+  `catalog/kits/sports` kit, bringing the catalog from 543 to 583 assets. The
+  kit README and reviewed demo bundle are in `catalog/kits/sports/README.md`
+  and `artifacts/catalog-demos/sports-wave-20261102/`.
+- Outdoor gear catalog wave: 12 original parametric low-poly CC0 assets in the
+  new `catalog/kits/outdoor-gear` kit: a backpack, sleeping bag, camp chair
+  and stove, hiking boots and poles, binoculars, compass, canteen, map case,
+  hammock and fishing rod. The catalog grows from 583 to 595 assets. Kit
   README, generated previews and the reproducible demo bundle:
-  docs/demos/catalog-wave-2/.
+  `docs/demos/catalog-wave-2/`.
 
 - Asset catalog wave 1: 60 new original parametric low-poly assets (CC0) in
   five new kits, 12 each: `catalog/kits/tools-equipment` (hammers, wrench,

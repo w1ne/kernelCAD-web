@@ -38,7 +38,7 @@ const H = settings.height;
 const frameDir = mkdtempSync(join(process.env.TMPDIR ?? tmpdir(), 'kcad-catalog-wave-2-'));
 let frame = 0;
 const catalog = JSON.parse(readFileSync(join(repoRoot, 'catalog/index.json'), 'utf8')) as {
-  assets: Array<{ id: string; source: string; triangleBudget: number }>;
+  assets: Array<{ id: string; source: string; origin: string; triangleBudget: number }>;
 };
 
 const esc = (s: unknown) => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -73,6 +73,48 @@ function materialCount(glb: Uint8Array): number {
   return json.materials?.length ?? 1;
 }
 
+function minUpM(glb: Uint8Array): number {
+  const view = new DataView(glb.buffer, glb.byteOffset, glb.byteLength);
+  const jsonLength = view.getUint32(12, true);
+  const json = JSON.parse(new TextDecoder().decode(glb.subarray(20, 20 + jsonLength))) as {
+    asset: { extras: { kernelcad: { stats: { minUpM: number } } } };
+  };
+  return json.asset.extras.kernelcad.stats.minUpM;
+}
+
+function sharedRenderFrame(triangles: Awaited<ReturnType<typeof glbTriangles>>): {
+  frameHeightM: number;
+  cameraOffsetYM: number;
+} {
+  const yaw = 35 * Math.PI / 180;
+  const pitch = 22 * Math.PI / 180;
+  const projected = triangles.flatMap((triangle) => triangle.v.map(([x, y, z]) => {
+    const horizontal = x * Math.cos(yaw) + z * Math.sin(yaw);
+    const depth = -x * Math.sin(yaw) + z * Math.cos(yaw);
+    return [horizontal, y * Math.cos(pitch) - depth * Math.sin(pitch)];
+  }));
+  const xs = projected.map((point) => point[0]!);
+  const ys = projected.map((point) => point[1]!);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  return {
+    frameHeightM: Math.max(maxX - minX, maxY - minY) * 1.08,
+    cameraOffsetYM: -minY / Math.cos(pitch),
+  };
+}
+
+function offsetForRender(
+  triangles: Awaited<ReturnType<typeof glbTriangles>>,
+  offsetYM: number,
+): Awaited<ReturnType<typeof glbTriangles>> {
+  return triangles.map((triangle) => ({
+    ...triangle,
+    v: triangle.v.map(([x, y, z]) => [x, y + offsetYM, z] as [number, number, number]),
+  }));
+}
+
 await initOcct();
 const kits = ((await callMcpTool('list_kits', {})) as Json).kits as Json[];
 const kit = kits.find((candidate) => candidate.id === settings.kit);
@@ -95,6 +137,7 @@ const evidence: Json = {
 };
 
 // Build every choice value independently so the recorded budget applies beyond defaults.
+const choiceFailures: string[] = [];
 if (settings.auditAllChoices) {
   const ids = new Set(rows.map((row) => row.id as string));
   for (const asset of catalog.assets.filter((candidate) => ids.has(candidate.id))) {
@@ -122,8 +165,12 @@ if (settings.auditAllChoices) {
         }
         const triangles = await glbTriangles(result.bytes);
         const materials = materialCount(result.bytes);
-        if (triangles.length === 0 || triangles.length > asset.triangleBudget || materials !== 1) {
-          throw new Error(asset.id + ' ' + name + '=' + value + ' failed its mesh budget or one-material check');
+        const minimum = minUpM(result.bytes);
+        const onBase = asset.origin !== 'base' || Math.abs(minimum) < 0.0000005;
+        const failed = triangles.length === 0 || triangles.length > asset.triangleBudget || materials !== 1 || !onBase;
+        if (failed) {
+          choiceFailures.push(asset.id + ' ' + name + '=' + value + ': ' +
+            triangles.length + '/' + asset.triangleBudget + ' triangles, ' + materials + ' materials, minUpM ' + minimum);
         }
         evidence.choiceAudit.push({
           id: asset.id,
@@ -132,11 +179,13 @@ if (settings.auditAllChoices) {
           triangles: triangles.length,
           triangleBudget: asset.triangleBudget,
           materials,
+          minUpM: minimum,
         });
       }
     }
   }
 }
+if (choiceFailures.length > 0) throw new Error('Choice configurations failed:\n' + choiceFailures.join('\n'));
 
 // One overview frame shows every new kit asset and its indexed knob count.
 const cols = 6;
@@ -174,6 +223,9 @@ for (const request of settings.variants) {
   const defaultAsset = (await callMcpTool('get_asset', { id: request.id })) as Json;
   const indexedAsset = catalog.assets.find((asset) => asset.id === request.id);
   if (indexedAsset === undefined) throw new Error('asset missing from generated index: ' + request.id);
+  if ((variant.unmatched as string[]).length > 0) {
+    throw new Error(request.id + ' variant request left unmatched terms: ' + (variant.unmatched as string[]).join(', '));
+  }
   const exportGlb = async (code: string) => (await runAndExport({
     code,
     fileName: request.id + '.kcad.ts',
@@ -190,22 +242,26 @@ for (const request of settings.variants) {
   ]);
   const defaultMaterials = materialCount(defaultGlb);
   const variantMaterials = materialCount(variantGlb);
+  const defaultMinUpM = minUpM(defaultGlb);
+  const resolvedMinUpM = minUpM(variantGlb);
+  const baseOriginOkay = indexedAsset.origin !== 'base' ||
+    (Math.abs(defaultMinUpM) < 0.0000005 && Math.abs(resolvedMinUpM) < 0.0000005);
   if (defaultTriangles.length > indexedAsset.triangleBudget || variantTriangles.length > indexedAsset.triangleBudget) {
     throw new Error(request.id + ' exceeded its ' + indexedAsset.triangleBudget + '-triangle budget');
   }
   if (defaultMaterials !== 1 || variantMaterials !== 1) {
     throw new Error(request.id + ' did not export as one material');
   }
-  const maxY = Math.max(...[...defaultTriangles, ...variantTriangles].flatMap((triangle) =>
-    triangle.v.map((point) => point[1]),
-  ));
-  const frameHeightM = maxY * 1.08;
-  const defaultPng = await renderTrianglesPng(defaultTriangles, {
+  if (!baseOriginOkay) throw new Error(request.id + ' did not stand on its declared base origin');
+  const renderFrame = sharedRenderFrame([...defaultTriangles, ...variantTriangles]);
+  const frameHeightM = renderFrame.frameHeightM;
+  const cameraOffsetYM = renderFrame.cameraOffsetYM;
+  const defaultPng = await renderTrianglesPng(offsetForRender(defaultTriangles, cameraOffsetYM), {
     size: 410,
     frameHeightM,
     label: 'default · ' + defaultTriangles.length + ' tris',
   });
-  const variantPng = await renderTrianglesPng(variantTriangles, {
+  const variantPng = await renderTrianglesPng(offsetForRender(variantTriangles, cameraOffsetYM), {
     size: 410,
     frameHeightM,
     label: 'resolved · ' + variantTriangles.length + ' tris',
@@ -221,6 +277,9 @@ for (const request of settings.variants) {
     triangleBudget: indexedAsset.triangleBudget,
     defaultMaterials,
     resolvedMaterials: variantMaterials,
+    defaultMinUpM,
+    resolvedMinUpM,
+    renderFrame: { ...renderFrame, cameraOffsetYM },
     defaultGlbSha256: createHash('sha256').update(defaultGlb).digest('hex'),
     resolvedGlbSha256: createHash('sha256').update(variantGlb).digest('hex'),
   });

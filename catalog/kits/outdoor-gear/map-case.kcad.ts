@@ -23,17 +23,17 @@ const open = state.value === 'open';
 const mapWidth = open ? 520 : 340;
 const mapDepth = open ? 370 : 250;
 const caseModel = assembly('map-case');
-caseModel.part('pouch-base', box(360, 285, 44, true).translate(0, 0, 32).color(pouch));
-caseModel.part('map-panel', box(mapWidth, mapDepth, 8, true).translate(0, 12, 60).color(map));
-caseModel.part('case-flap', box(360, 76, 18, true).translate(0, -177, 62).color(pouch));
-caseModel.part('left-case-strap', box(24, mapDepth - 14, 18, true).translate(-118, 12, 68).color(strap));
-caseModel.part('right-case-strap', box(24, mapDepth - 14, 18, true).translate(118, 12, 68).color(strap));
-caseModel.part('strap-adjuster', box(44, 42, 14, true).translate(118, -86, 82).color(pouch));
+caseModel.part('pouch-base', box(360, 285, 44, true).translate(0, 0, 22).color(pouch));
+caseModel.part('map-panel', box(mapWidth, mapDepth, 8, true).translate(0, 12, 50).color(map));
+caseModel.part('case-flap', box(360, 76, 18, true).translate(0, -177, 52).color(pouch));
+caseModel.part('left-case-strap', box(24, mapDepth - 14, 18, true).translate(-118, 12, 58).color(strap));
+caseModel.part('right-case-strap', box(24, mapDepth - 14, 18, true).translate(118, 12, 58).color(strap));
+caseModel.part('strap-adjuster', box(44, 42, 14, true).translate(118, -86, 72).color(pouch));
 for (let i = 0; i < 4; i++) {
   caseModel.part('map-grid-' + (i + 1), box(6, mapDepth - 42, 4, true)
-    .translate(-mapWidth / 2 + 64 + i * (mapWidth - 128) / 3, 12, 66)
+    .translate(-mapWidth / 2 + 64 + i * (mapWidth - 128) / 3, 12, 56)
     .color(pouch));
 }
-caseModel.part('map-fold', box(mapWidth - 40, 5, 4, true).translate(0, 12, 66).color(pouch));
+caseModel.part('map-fold', box(mapWidth - 40, 5, 4, true).translate(0, 12, 56).color(pouch));
 
 return caseModel.model();

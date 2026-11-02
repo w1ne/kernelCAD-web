@@ -1,0 +1,177 @@
+{
+  "checkedAt": "2026-11-02T19:35:54.391Z",
+  "method": "npx tsx docs/demos/catalog-wave-2/check-pages.mts",
+  "localOnly": true,
+  "totalIndexedAssets": 595,
+  "generatedAssetPages": 595,
+  "outdoorGearPages": 12,
+  "checkedOutdoorGearPages": [
+    {
+      "id": "binoculars",
+      "knobs": [
+        "magnification",
+        "body",
+        "trim",
+        "glass"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "camp-chair",
+      "knobs": [
+        "size",
+        "fabric",
+        "frame"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "camp-stove",
+      "knobs": [
+        "style",
+        "body",
+        "burner",
+        "fuel"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "camping-backpack",
+      "knobs": [
+        "capacity",
+        "pack",
+        "trim"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "camping-hammock",
+      "knobs": [
+        "length",
+        "fabric",
+        "frame",
+        "strap"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "canteen",
+      "knobs": [
+        "capacity",
+        "flask",
+        "cap",
+        "loop"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fishing-rod",
+      "knobs": [
+        "length",
+        "shaft",
+        "grip",
+        "reel"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "hiking-boots",
+      "knobs": [
+        "size",
+        "leather",
+        "sole",
+        "laces"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "map-case",
+      "knobs": [
+        "state",
+        "pouch",
+        "map",
+        "strap"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "sleeping-bag",
+      "knobs": [
+        "cut",
+        "shell",
+        "lining",
+        "zipper"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "trail-compass",
+      "knobs": [
+        "style",
+        "caseColor",
+        "dial",
+        "needle"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "trekking-poles",
+      "knobs": [
+        "length",
+        "shaft",
+        "grip",
+        "tip"
+      ],
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    }
+  ],
+  "liveDeployment": "not verified by this local static build"
+}
