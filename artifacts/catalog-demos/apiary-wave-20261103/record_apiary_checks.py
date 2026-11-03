@@ -13,6 +13,10 @@ if len(assets) != 50:
     raise SystemExit(f"expected 50 apiary rows, found {len(assets)}")
 
 preview_files = [ROOT / "catalog" / "kits" / "apiary" / "previews" / f"{asset['id']}.png" for asset in assets]
+all_preview_files = [ROOT / "catalog" / "kits" / asset["kit"] / "previews" / f"{asset['id']}.png" for asset in index["assets"]]
+missing_all_previews = [str(path.relative_to(ROOT)) for path in all_preview_files if not path.is_file()]
+if missing_all_previews:
+    raise SystemExit("catalog-wide preview files are missing: " + ", ".join(missing_all_previews[:20]))
 bad_rows = [
     asset["id"] for asset, preview in zip(assets, preview_files)
     if asset.get("preview") != f"/assets/apiary-{asset['id']}.png"
@@ -47,6 +51,8 @@ result = {
     "renderedPreviewFiles": sum(preview.is_file() for preview in preview_files),
     "runningTotal": len(index["assets"]),
     "runningTotalWithPreviews": sum(bool(asset.get("preview")) for asset in index["assets"]),
+    "runningTotalPreviewFiles": len(all_preview_files),
+    "missingRunningPreviewFiles": 0,
     "integration": {
         "filesPassed": int(files_match.group(1)),
         "testsPassed": int(tests_match.group(1)),

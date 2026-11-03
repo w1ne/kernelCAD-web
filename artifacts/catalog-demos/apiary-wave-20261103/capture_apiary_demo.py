@@ -105,7 +105,7 @@ def verification_frame():
     rows = [
         ("Apiary sources and meshes", f"{checks['passed']} / {checks['total']} audited"),
         ("Triangles and materials", f"{checks['triangleRange'][0]}–{checks['triangleRange'][1]} triangles · one material each"),
-        ("Indexed controls and previews", "scale + color · 50 generated PNGs"),
+        ("Indexed controls and previews", f"scale + color · 50 new PNGs · {checks['runningTotalPreviewFiles']} total PNGs"),
         ("Catalog integration suite", f"{checks['integration']['filesPassed']} files · {checks['integration']['testsPassed']} tests passed"),
         ("Local generated pages", f"{pages['kitPagesAndPreviews']} pages · {pages['assetsInIndex']} assets indexed"),
         ("npm package file list", f"{package['apiarySources']} sources + {package['apiaryPreviews']} previews · no product paths"),
