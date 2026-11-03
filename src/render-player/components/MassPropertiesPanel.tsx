@@ -16,7 +16,7 @@ export interface MassPropertiesPanelProps {
 
 const text: CSSProperties = {
   margin: 0,
-  color: '#e5e7eb',
+  color: 'var(--color-fg)',
   font: '12px/1.45 ui-sans-serif, system-ui, sans-serif',
 };
 
@@ -28,7 +28,7 @@ export function MassPropertiesPanel({ selectedIds, resolve }: MassPropertiesPane
   const readout = massReadoutForIds(selectedIds, resolve);
   if (readout.status !== 'ready') {
     return (
-      <p data-testid="mass-properties-empty" style={{ ...text, color: '#9ca3af' }}>
+      <p data-testid="mass-properties-empty" style={{ ...text, color: 'var(--color-fg-3)' }}>
         {readout.message}
       </p>
     );
@@ -47,10 +47,10 @@ export function MassPropertiesPanel({ selectedIds, resolve }: MassPropertiesPane
           style={{
             margin: '0 0 8px',
             padding: '6px 8px',
-            border: '1px solid #f59e0b',
+            border: '1px solid var(--color-warn)',
             borderRadius: 4,
-            background: 'rgba(245, 158, 11, 0.16)',
-            color: '#fde68a',
+            background: 'var(--color-warn-soft)',
+            color: 'var(--color-warn)',
           }}
         >
           {readout.warning}
@@ -62,9 +62,9 @@ export function MassPropertiesPanel({ selectedIds, resolve }: MassPropertiesPane
             key={line.id}
             data-testid={`mass-properties-${line.id}`}
             data-flag={line.flag}
-            style={{ display: 'contents', color: line.flag === 'water-default' ? '#fbbf24' : undefined }}
+            style={{ display: 'contents', color: line.flag === 'water-default' ? 'var(--color-warn)' : undefined }}
           >
-            <dt style={{ color: '#9ca3af' }}>{line.label}</dt>
+            <dt style={{ color: 'var(--color-fg-3)' }}>{line.label}</dt>
             <dd style={{ margin: 0, fontVariantNumeric: 'tabular-nums' }}>{line.value}</dd>
           </div>
         ))}
