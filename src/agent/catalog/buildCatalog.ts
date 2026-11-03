@@ -27,7 +27,16 @@ import type { AssetMetadata, AssetRig } from '../../shared/assets/assetSchema';
 const ASSET_SUFFIX = '.kcad.ts';
 
 interface GlbKernelcadExtras {
-  stats: { triangles: number; sizeM: [number, number, number]; minUpM: number };
+  stats: {
+    triangles: number;
+    sizeM: [number, number, number];
+    minUpM: number;
+    materials?: number;
+    drawCalls?: number;
+    parts?: number;
+    hasRig?: boolean;
+    hasIk?: boolean;
+  };
   palette?: Array<{ name: string; color: string; parts: string[] }>;
   rig?: AssetRig;
 }
@@ -99,7 +108,12 @@ export async function buildCatalogAssetWithGlb(
     params,
     presets: run.session.assetPresets ?? {},
     ...(glb.extras.rig === undefined ? {} : { rig: glb.extras.rig }),
-    stats: { ...glb.extras.stats, materials: glb.materials },
+    stats: {
+      triangles: glb.extras.stats.triangles,
+      sizeM: glb.extras.stats.sizeM,
+      minUpM: glb.extras.stats.minUpM,
+      materials: glb.materials,
+    },
     palette: (glb.extras.palette ?? []).map((zone) => paletteZone(zone, params)),
     ...(existsSync(join(repoRoot, 'catalog', 'kits', kit, 'previews', `${id}.png`))
       ? { preview: `/assets/${kit}-${id}.png` }
