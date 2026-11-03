@@ -1,0 +1,1270 @@
+{
+  "totalAssets": 2310,
+  "totalKits": 48,
+  "shipyardAssets": 70,
+  "previewBackedAssets": 2310,
+  "allRowsUnique": true,
+  "allNewAssetsPass": true,
+  "assets": [
+    {
+      "id": "abrasive-blast-pot",
+      "sourceSha256Matches": true,
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "airless-coating-pump-cart",
+      "sourceSha256Matches": true,
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "alignment-target-stand",
+      "sourceSha256Matches": true,
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "assembly-block-pivot-dolly",
+      "sourceSha256Matches": true,
+      "triangles": 304,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "blast-dust-collector",
+      "sourceSha256Matches": true,
+      "triangles": 228,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "bow-section-support-stand",
+      "sourceSha256Matches": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "caisson-ballast-manifold-stand",
+      "sourceSha256Matches": true,
+      "triangles": 308,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "coating-climate-monitor-stand",
+      "sourceSha256Matches": true,
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "coating-mix-cabinet",
+      "sourceSha256Matches": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "confined-space-rescue-tripod",
+      "sourceSha256Matches": true,
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "dock-gate-caisson",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "dock-gate-winch-base",
+      "sourceSha256Matches": true,
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "dockside-service-hose-reel",
+      "sourceSha256Matches": true,
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "dockside-work-platform",
+      "sourceSha256Matches": true,
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "drydock-access-stair-tower",
+      "sourceSha256Matches": true,
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "drydock-edge-guard-section",
+      "sourceSha256Matches": true,
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "drydock-level-reference-post",
+      "sourceSha256Matches": true,
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "electrical-test-cart",
+      "sourceSha256Matches": true,
+      "triangles": 436,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "electrode-storage-oven",
+      "sourceSha256Matches": true,
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "fire-watch-response-cart",
+      "sourceSha256Matches": true,
+      "triangles": 312,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "flexible-duct-hose-stand",
+      "sourceSha256Matches": true,
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "floating-drydock-pontoon-module",
+      "sourceSha256Matches": true,
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "grit-recovery-hopper",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "hull-block-fabrication-jig",
+      "sourceSha256Matches": true,
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "hull-block-paint-booth",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "hull-block-spreader-beam",
+      "sourceSha256Matches": true,
+      "triangles": 220,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "hull-panel-cutting-table",
+      "sourceSha256Matches": true,
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "hull-panel-turnover-cradle",
+      "sourceSha256Matches": true,
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "hull-profile-template-rack",
+      "sourceSha256Matches": true,
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "hull-survey-grid-frame",
+      "sourceSha256Matches": true,
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "keel-block-stack",
+      "sourceSha256Matches": true,
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "keel-section-fit-up-jig",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "low-profile-material-skid",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "masking-material-rack",
+      "sourceSha256Matches": true,
+      "triangles": 444,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "mobile-hull-access-platform",
+      "sourceSha256Matches": true,
+      "triangles": 368,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "modular-axle-carrier",
+      "sourceSha256Matches": true,
+      "triangles": 424,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "modular-scaffold-bay",
+      "sourceSha256Matches": true,
+      "triangles": 216,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "optical-measurement-station",
+      "sourceSha256Matches": true,
+      "triangles": 140,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "paint-booth-filter-wall",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "paint-curing-air-heater",
+      "sourceSha256Matches": true,
+      "triangles": 152,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "panel-line-strongback",
+      "sourceSha256Matches": true,
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "pipe-pressure-test-skid",
+      "sourceSha256Matches": true,
+      "triangles": 252,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "pipe-rack-fork-pocket",
+      "sourceSha256Matches": true,
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "pipe-spool-rotator",
+      "sourceSha256Matches": true,
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "pipe-spool-saddle-stand",
+      "sourceSha256Matches": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "plasma-cutting-gantry-head",
+      "sourceSha256Matches": true,
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "plate-pack-transfer-cart",
+      "sourceSha256Matches": true,
+      "triangles": 260,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "plate-roller-conveyor",
+      "sourceSha256Matches": true,
+      "triangles": 360,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "plate-rolling-machine",
+      "sourceSha256Matches": true,
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "portable-ventilation-fan",
+      "sourceSha256Matches": true,
+      "triangles": 164,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "portable-weld-fume-extractor",
+      "sourceSha256Matches": true,
+      "triangles": 260,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "refit-service-bench",
+      "sourceSha256Matches": true,
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ship-lift-cradle",
+      "sourceSha256Matches": true,
+      "triangles": 284,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ship-plate-staging-pallet",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "shipfitter-tool-cabinet",
+      "sourceSha256Matches": true,
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "shipyard-block-transporter",
+      "sourceSha256Matches": true,
+      "triangles": 448,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "slipway-rail-shoe",
+      "sourceSha256Matches": true,
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "stern-section-support-frame",
+      "sourceSha256Matches": true,
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "surface-prep-drying-rack",
+      "sourceSha256Matches": true,
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "temporary-work-light-mast",
+      "sourceSha256Matches": true,
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "ultrasonic-test-cart",
+      "sourceSha256Matches": true,
+      "triangles": 316,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "vessel-refit-job-board",
+      "sourceSha256Matches": true,
+      "triangles": 284,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "vessel-shore-power-pedestal",
+      "sourceSha256Matches": true,
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "weld-consumable-issue-cage",
+      "sourceSha256Matches": true,
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "weld-fit-up-table",
+      "sourceSha256Matches": true,
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "weld-inspection-light-stand",
+      "sourceSha256Matches": true,
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "welding-curtain-screen",
+      "sourceSha256Matches": true,
+      "triangles": 260,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "welding-gas-cylinder-trolley",
+      "sourceSha256Matches": true,
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "yard-cable-reel-cart",
+      "sourceSha256Matches": true,
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    },
+    {
+      "id": "yard-material-tug-cart",
+      "sourceSha256Matches": true,
+      "triangles": 260,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true
+    }
+  ]
+}

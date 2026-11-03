@@ -130,3 +130,15 @@ records the generated sources, rendered previews, local catalog checks, and
 inspected MP4. These are visualization props; checks do not establish ride
 structure, restraints, barrier design, accessibility compliance, equipment
 ratings, operating procedures, or attraction safety.
+
+## Shipyard assets
+
+The [shipyard kit](../catalog/kits/shipyard/README.md) adds 70 original
+low-poly props for yard and drydock operations, hull-block fabrication,
+outfitting, surface preparation, coating, and refit support. Each source
+exposes scale and color controls and has an indexed preview. The [wave demo and
+verification bundle](../artifacts/catalog-demos/shipyard-wave-20261103/README.md)
+records the native sources, rendered previews, local catalog checks, and
+inspected MP4. These are visualization props; checks do not establish vessel
+design approval, lift capacity, welding qualification, drydock certification,
+workplace safety, or operational acceptance.

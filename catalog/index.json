@@ -2012,6 +2012,83 @@
       ]
     },
     {
+      "id": "shipyard",
+      "title": "Shipyard",
+      "description": "Visualization assets for drydock work, hull-block fabrication, outfitting, coating, yard movement, and refit support.",
+      "assets": [
+        "abrasive-blast-pot",
+        "airless-coating-pump-cart",
+        "alignment-target-stand",
+        "assembly-block-pivot-dolly",
+        "blast-dust-collector",
+        "bow-section-support-stand",
+        "caisson-ballast-manifold-stand",
+        "coating-climate-monitor-stand",
+        "coating-mix-cabinet",
+        "confined-space-rescue-tripod",
+        "dock-gate-caisson",
+        "dock-gate-winch-base",
+        "dockside-service-hose-reel",
+        "dockside-work-platform",
+        "drydock-access-stair-tower",
+        "drydock-edge-guard-section",
+        "drydock-level-reference-post",
+        "electrical-test-cart",
+        "electrode-storage-oven",
+        "fire-watch-response-cart",
+        "flexible-duct-hose-stand",
+        "floating-drydock-pontoon-module",
+        "grit-recovery-hopper",
+        "hull-block-fabrication-jig",
+        "hull-block-paint-booth",
+        "hull-block-spreader-beam",
+        "hull-panel-cutting-table",
+        "hull-panel-turnover-cradle",
+        "hull-profile-template-rack",
+        "hull-survey-grid-frame",
+        "keel-block-stack",
+        "keel-section-fit-up-jig",
+        "low-profile-material-skid",
+        "masking-material-rack",
+        "mobile-hull-access-platform",
+        "modular-axle-carrier",
+        "modular-scaffold-bay",
+        "optical-measurement-station",
+        "paint-booth-filter-wall",
+        "paint-curing-air-heater",
+        "panel-line-strongback",
+        "pipe-pressure-test-skid",
+        "pipe-rack-fork-pocket",
+        "pipe-spool-rotator",
+        "pipe-spool-saddle-stand",
+        "plasma-cutting-gantry-head",
+        "plate-pack-transfer-cart",
+        "plate-roller-conveyor",
+        "plate-rolling-machine",
+        "portable-ventilation-fan",
+        "portable-weld-fume-extractor",
+        "refit-service-bench",
+        "ship-lift-cradle",
+        "ship-plate-staging-pallet",
+        "shipfitter-tool-cabinet",
+        "shipyard-block-transporter",
+        "slipway-rail-shoe",
+        "stern-section-support-frame",
+        "surface-prep-drying-rack",
+        "temporary-work-light-mast",
+        "ultrasonic-test-cart",
+        "vessel-refit-job-board",
+        "vessel-shore-power-pedestal",
+        "weld-consumable-issue-cage",
+        "weld-fit-up-table",
+        "weld-inspection-light-stand",
+        "welding-curtain-screen",
+        "welding-gas-cylinder-trolley",
+        "yard-cable-reel-cart",
+        "yard-material-tug-cart"
+      ]
+    },
+    {
       "id": "solar-energy",
       "title": "Solar Energy",
       "description": "Original low-poly photovoltaic arrays, mounting, storage, conversion, grid and service props with editable size and color controls.",
@@ -165814,6 +165891,5388 @@
             "block-440--335",
             "block-440-335",
             "nail-head"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "abrasive-blast-pot",
+      "kit": "shipyard",
+      "title": "Abrasive blast pot",
+      "description": "Portable pressure pot with a rounded vessel, top hopper, control manifold, twin wheels, and hose outlet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "surface preparation and coating"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/abrasive-blast-pot.kcad.ts",
+      "preview": "/assets/shipyard-abrasive-blast-pot.png",
+      "sourceSha256": "4dd962423ec3c12f2fdfcaa08ddaeac50337fd1da87b66f10b8d864ec1940654",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a46c4e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          1.24,
+          1.68,
+          0.805
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a46c4e",
+          "parts": [
+            "pressure-vessel",
+            "hopper",
+            "top-lid",
+            "manifold",
+            "wheel-0",
+            "wheel-1",
+            "hose-outlet",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "airless-coating-pump-cart",
+      "kit": "shipyard",
+      "title": "Airless coating pump cart",
+      "description": "Mobile coating pump with motor block, pressure manifold, hose reel, guarded wheels, and a pull handle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "surface preparation and coating"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/airless-coating-pump-cart.kcad.ts",
+      "preview": "/assets/shipyard-airless-coating-pump-cart.png",
+      "sourceSha256": "1bcbe9e05f0c144f8da7b5ae231c15b221bdb19b737ae717f06892c89f51fa82",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b57848",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          1.45,
+          1.39,
+          0.81
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b57848",
+          "parts": [
+            "cart-base",
+            "pump-body",
+            "motor",
+            "hose-reel",
+            "cart-wheel-0",
+            "cart-wheel-1",
+            "cart-wheel-2",
+            "cart-wheel-3",
+            "manifold",
+            "pull-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "alignment-target-stand",
+      "kit": "shipyard",
+      "title": "Alignment target stand",
+      "description": "Compact positioning stand with a tripod-like base, adjustable upright, target plate, and crosshair bezel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "inspection and refit support"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/alignment-target-stand.kcad.ts",
+      "preview": "/assets/shipyard-alignment-target-stand.png",
+      "sourceSha256": "135706ae5218f3f6e32087caaabc99767e6c5f1e94535994c6c850ca038824ca",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d1a84e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.46,
+          1.7,
+          0.92
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d1a84e",
+          "parts": [
+            "base-foot",
+            "upright",
+            "target-plate",
+            "target-center",
+            "crosshair-0",
+            "crosshair-1",
+            "tripod-foot-0",
+            "tripod-foot-1",
+            "tripod-foot-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "assembly-block-pivot-dolly",
+      "kit": "shipyard",
+      "title": "Assembly block pivot dolly",
+      "description": "Transfer dolly with a low pivot table, lock pins, paired bogies, and an adjustable central saddle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "block and material movement"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/assembly-block-pivot-dolly.kcad.ts",
+      "preview": "/assets/shipyard-assembly-block-pivot-dolly.png",
+      "sourceSha256": "55fa2e1251c8ec306a7f42df0554df9ea2ddda6e663decf1fb0067d317150997",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#75847d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          1.98,
+          1.19,
+          1.23
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#75847d",
+          "parts": [
+            "underframe",
+            "pivot-table",
+            "pivot-ring",
+            "saddle",
+            "bogie-wheel-0",
+            "bogie-wheel-1",
+            "bogie-wheel-2",
+            "bogie-wheel-3",
+            "lock-pin-0",
+            "lock-pin-1",
+            "lock-pin-2",
+            "lock-pin-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "blast-dust-collector",
+      "kit": "shipyard",
+      "title": "Blast dust collector",
+      "description": "Compact dust extraction skid with filter canisters, inlet duct, service door, and wheeled base. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "surface preparation and coating"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/blast-dust-collector.kcad.ts",
+      "preview": "/assets/shipyard-blast-dust-collector.png",
+      "sourceSha256": "538bb675472f77d9996475157a1ea8be2d148fec661b9e0652b9edbf588a446a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71837c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          2.05,
+          2.13,
+          0.995
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71837c",
+          "parts": [
+            "skid",
+            "filter-canister-0",
+            "filter-canister-1",
+            "filter-canister-2",
+            "inlet-duct",
+            "fan-housing",
+            "service-door",
+            "caster-0",
+            "caster-1",
+            "caster-2",
+            "caster-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bow-section-support-stand",
+      "kit": "shipyard",
+      "title": "Bow section support stand",
+      "description": "Reusable steel cradle with paired inclined-looking uprights, a high cross head, base shoes, and a broad saddle pad. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/bow-section-support-stand.kcad.ts",
+      "preview": "/assets/shipyard-bow-section-support-stand.png",
+      "sourceSha256": "ce91d3cc82764b0cc841052f614b16a8ea7cb84abc679f8386e8ad93a3319b1f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b8980",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.9,
+          1.65,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b8980",
+          "parts": [
+            "base-beam",
+            "left-foot",
+            "right-foot",
+            "left-post",
+            "right-post",
+            "head-beam",
+            "saddle",
+            "rear-brace"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "caisson-ballast-manifold-stand",
+      "kit": "shipyard",
+      "title": "Caisson ballast manifold stand",
+      "description": "Pipework display skid with a header, four branch valves, support feet, and a drain receiver. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/caisson-ballast-manifold-stand.kcad.ts",
+      "preview": "/assets/shipyard-caisson-ballast-manifold-stand.png",
+      "sourceSha256": "8d874cc483e0a0c364801b912b478e6f7b260f3bd603d705943f163b2a69c0ec",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#67847e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          1.93,
+          1.19,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#67847e",
+          "parts": [
+            "base-skid",
+            "header-pipe",
+            "branch-pipe-0",
+            "branch-pipe-1",
+            "branch-pipe-2",
+            "branch-pipe-3",
+            "handwheel-0",
+            "handwheel-1",
+            "handwheel-2",
+            "handwheel-3",
+            "support-foot-0",
+            "support-foot-1",
+            "support-foot-2",
+            "support-foot-3",
+            "drain-receiver"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "coating-climate-monitor-stand",
+      "kit": "shipyard",
+      "title": "Coating climate monitor stand",
+      "description": "Portable environmental monitor on a mast with a weather shield, sample ports, and a weighted base. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "surface preparation and coating"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/coating-climate-monitor-stand.kcad.ts",
+      "preview": "/assets/shipyard-coating-climate-monitor-stand.png",
+      "sourceSha256": "7e14f77e1944f1051a509ea74156143db5141ce38af013325f566d945150a9ae",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d3a64b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.71,
+          2.23,
+          0.99
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d3a64b",
+          "parts": [
+            "base",
+            "mast",
+            "monitor-case",
+            "weather-shield",
+            "sample-port-0",
+            "sample-port-1",
+            "probe-arm",
+            "cable-clip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "coating-mix-cabinet",
+      "kit": "shipyard",
+      "title": "Coating mix cabinet",
+      "description": "Ventilated material cabinet with a mixing worktop, paired lower doors, top extraction hood, and side shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "surface preparation and coating"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/coating-mix-cabinet.kcad.ts",
+      "preview": "/assets/shipyard-coating-mix-cabinet.png",
+      "sourceSha256": "cac4f6497c99b581eea4a72c2671fcb24a7c6c2cec4767b04501310c9ca15f20",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d7567",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          2.03,
+          2.36,
+          0.96
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d7567",
+          "parts": [
+            "cabinet-body",
+            "toe-kick",
+            "mixing-top",
+            "lower-door-0",
+            "lower-door-1",
+            "extraction-hood",
+            "side-shelf",
+            "vent-stack"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "confined-space-rescue-tripod",
+      "kit": "shipyard",
+      "title": "Confined-space rescue tripod",
+      "description": "Portable access tripod with three feet, a head bridge, a winch housing, and a suspended retrieval line. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "inspection and refit support"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/confined-space-rescue-tripod.kcad.ts",
+      "preview": "/assets/shipyard-confined-space-rescue-tripod.png",
+      "sourceSha256": "c83adb6fa822abb515186f6add34f73e0096e5b96a90080b95327c18e3d518f6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d19f45",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          1.66,
+          2.07,
+          1.43
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d19f45",
+          "parts": [
+            "tripod-leg-0",
+            "tripod-leg-1",
+            "tripod-leg-2",
+            "head-bridge",
+            "winch-housing",
+            "retrieval-drum",
+            "retrieval-line",
+            "foot-pad-0",
+            "foot-pad-1",
+            "foot-pad-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dock-gate-caisson",
+      "kit": "shipyard",
+      "title": "Dock gate caisson",
+      "description": "Floating drydock gate module with a broad caisson body, stiffening ribs, deck walkway, and paired ballast housings. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/dock-gate-caisson.kcad.ts",
+      "preview": "/assets/shipyard-dock-gate-caisson.png",
+      "sourceSha256": "0eda374a45a36df8b66da692d5aa77a3ba94500b789bccb4361acb93638412cf",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#748987",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          2.94,
+          2.17,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#748987",
+          "parts": [
+            "gate-body",
+            "deck-cap",
+            "vertical-stiffener-0",
+            "vertical-stiffener-1",
+            "vertical-stiffener-2",
+            "vertical-stiffener-3",
+            "vertical-stiffener-4",
+            "vertical-stiffener-5",
+            "lower-flotation-cell-0",
+            "lower-flotation-cell-1",
+            "deck-cleat-0",
+            "deck-cleat-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dock-gate-winch-base",
+      "kit": "shipyard",
+      "title": "Dock gate winch base",
+      "description": "Drive stand for a floating-gate hauling line with twin cable drums, a motor housing, a brake lever, and a reinforced skid. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/dock-gate-winch-base.kcad.ts",
+      "preview": "/assets/shipyard-dock-gate-winch-base.png",
+      "sourceSha256": "bd7075e9cdcb9d62388216158fcdb64ebd736a32376356509dc47699a11fc8bb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a56848",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          1.9,
+          0.84,
+          1.67
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a56848",
+          "parts": [
+            "skid",
+            "motor",
+            "haul-drum-0",
+            "haul-drum-1",
+            "drum-bearing-0",
+            "drum-bearing-1",
+            "brake-lever",
+            "guard-cover"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dockside-service-hose-reel",
+      "kit": "shipyard",
+      "title": "Dockside service hose reel",
+      "description": "Quay-side hose station with a large drum, guarded side plates, swivel base, and outlet standpipe. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/dockside-service-hose-reel.kcad.ts",
+      "preview": "/assets/shipyard-dockside-service-hose-reel.png",
+      "sourceSha256": "8fec277bb117829ed72db3e0d01042a89355b378f4c95b53771e3c776e273027",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#72827c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          1.28,
+          1.34,
+          1.11
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#72827c",
+          "parts": [
+            "base-plinth",
+            "reel-side-plate-0",
+            "reel-side-plate-1",
+            "reel-drum",
+            "outlet-pipe",
+            "handle",
+            "hose-guide"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dockside-work-platform",
+      "kit": "shipyard",
+      "title": "Dockside work platform",
+      "description": "Raised quay-side work deck with four legs, perimeter rails, a toe board, and a short access step. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/dockside-work-platform.kcad.ts",
+      "preview": "/assets/shipyard-dockside-work-platform.png",
+      "sourceSha256": "f02cbd9d059dd53b98c22355f613b8f7cf2805ddbf7772812ca579f6eeee72b2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667e79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          2.2,
+          1.835,
+          1.705
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667e79",
+          "parts": [
+            "deck",
+            "support-leg-0",
+            "support-leg-1",
+            "support-leg-2",
+            "support-leg-3",
+            "rail-post-0",
+            "rail-post-1",
+            "rail-post-2",
+            "rail-post-3",
+            "rail-post-4",
+            "rail-post-5",
+            "guardrail-0",
+            "guardrail-1",
+            "guardrail-2",
+            "guardrail-3",
+            "toe-board",
+            "access-step"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "drydock-access-stair-tower",
+      "kit": "shipyard",
+      "title": "Drydock access stair tower",
+      "description": "Compact access tower with a stepped flight, landing, twin handrails, and stabilizing base feet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/drydock-access-stair-tower.kcad.ts",
+      "preview": "/assets/shipyard-drydock-access-stair-tower.png",
+      "sourceSha256": "911b5684cd2d53dbfd8f9503a1af2163d0185dbea4de2a7eb30cde009bed4633",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#798881",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          1.75,
+          1.4,
+          0.895
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#798881",
+          "parts": [
+            "landing",
+            "stair-tread-0",
+            "stair-tread-1",
+            "stair-tread-2",
+            "stair-tread-3",
+            "stair-tread-4",
+            "stair-tread-5",
+            "stair-tread-6",
+            "stair-stringer-0",
+            "stair-stringer-1",
+            "landing-post-0",
+            "landing-post-1",
+            "landing-post-2",
+            "landing-post-3",
+            "handrail-0",
+            "handrail-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "drydock-edge-guard-section",
+      "kit": "shipyard",
+      "title": "Drydock edge guard section",
+      "description": "Removable edge protection with weighted feet, rail posts, twin guard rails, and a high-visibility end panel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "block and material movement"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/drydock-edge-guard-section.kcad.ts",
+      "preview": "/assets/shipyard-drydock-edge-guard-section.png",
+      "sourceSha256": "421bf4de66a7c5f32d58b97d1172614f4989b414f82beb90d4e77431d4240e5b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d3a347",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          2.44,
+          1.255,
+          0.44
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d3a347",
+          "parts": [
+            "base-foot-0",
+            "base-foot-1",
+            "base-foot-2",
+            "rail-post-0",
+            "rail-post-1",
+            "rail-post-2",
+            "guard-rail-0",
+            "guard-rail-1",
+            "end-warning-panel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "drydock-level-reference-post",
+      "kit": "shipyard",
+      "title": "Drydock level reference post",
+      "description": "Floor-mounted reference mast with a wide foot, graduated cross bars, a weather hood, and a float indicator. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/drydock-level-reference-post.kcad.ts",
+      "preview": "/assets/shipyard-drydock-level-reference-post.png",
+      "sourceSha256": "b2ec876a49b23b6a9f372873baa8314b4139a8fa04d274a22a62ceaea4fec167",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d2a64f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.7,
+          3.03,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d2a64f",
+          "parts": [
+            "base-plate",
+            "mast",
+            "graduation-0",
+            "graduation-1",
+            "graduation-2",
+            "graduation-3",
+            "graduation-4",
+            "graduation-5",
+            "graduation-6",
+            "graduation-7",
+            "graduation-8",
+            "graduation-9",
+            "graduation-10",
+            "graduation-11",
+            "graduation-12",
+            "graduation-13",
+            "top-hood",
+            "float-indicator"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "electrical-test-cart",
+      "kit": "shipyard",
+      "title": "Electrical test cart",
+      "description": "Mobile electrical checkout cart with a control panel, cable hooks, guarded wheels, and a lower instrument shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/electrical-test-cart.kcad.ts",
+      "preview": "/assets/shipyard-electrical-test-cart.png",
+      "sourceSha256": "fdfc50b670bc41d47902d3e8cb90e4fbabb2a099d9c53dd006245316e16df714",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667d7a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 436,
+        "sizeM": [
+          1.3,
+          1.38,
+          0.88
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667d7a",
+          "parts": [
+            "cart-deck",
+            "panel-cabinet",
+            "panel-door",
+            "indicator-0",
+            "indicator-1",
+            "indicator-2",
+            "indicator-3",
+            "instrument-shelf",
+            "push-handle",
+            "cart-wheel-0",
+            "cart-wheel-1",
+            "cart-wheel-2",
+            "cart-wheel-3",
+            "cable-hook-0",
+            "cable-hook-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "electrode-storage-oven",
+      "kit": "shipyard",
+      "title": "Electrode storage oven",
+      "description": "Shop-floor cabinet oven with insulated body, double doors, control panel, ventilation cap, and rack feet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/electrode-storage-oven.kcad.ts",
+      "preview": "/assets/shipyard-electrode-storage-oven.png",
+      "sourceSha256": "b174d227fbb4f8c58ffbbe917c0e3b4ae6d7d7313f38a394f5da15e9ce11009d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9b7454",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.32,
+          1.76,
+          0.89
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9b7454",
+          "parts": [
+            "cabinet",
+            "toe-kick",
+            "oven-door-0",
+            "oven-door-1",
+            "control-panel",
+            "vent-cap",
+            "rack-foot-0",
+            "rack-foot-1",
+            "rack-foot-2",
+            "rack-foot-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fire-watch-response-cart",
+      "kit": "shipyard",
+      "title": "Fire watch response cart",
+      "description": "Hot-work watch cart with a tool chest, hose reel, extinguisher cradle, and a tall signal mast. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/fire-watch-response-cart.kcad.ts",
+      "preview": "/assets/shipyard-fire-watch-response-cart.png",
+      "sourceSha256": "d86e72dbc94a2273b713ac131f8b1ded3077136d3b450929b4af37945ec68e00",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b45a42",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 312,
+        "sizeM": [
+          1.475,
+          2.51,
+          0.855
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b45a42",
+          "parts": [
+            "cart-frame",
+            "tool-chest",
+            "hose-reel",
+            "extinguisher-cradle",
+            "signal-mast",
+            "cart-wheel-0",
+            "cart-wheel-1",
+            "cart-wheel-2",
+            "cart-wheel-3",
+            "push-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "flexible-duct-hose-stand",
+      "kit": "shipyard",
+      "title": "Flexible duct hose stand",
+      "description": "Mobile stand carrying a coiled ventilation duct, with a central post, spool arms, base, and wheel set. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/flexible-duct-hose-stand.kcad.ts",
+      "preview": "/assets/shipyard-flexible-duct-hose-stand.png",
+      "sourceSha256": "8e38b15d4cf76a226a5c39dcc26b7e2fab3144ce95888f8889e7084819176bf2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a765d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          1.62,
+          1.2,
+          1.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a765d",
+          "parts": [
+            "base",
+            "duct-coil",
+            "spool-shaft",
+            "spool-arm-0",
+            "spool-arm-1",
+            "caster-0",
+            "caster-1",
+            "caster-2",
+            "caster-3",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "floating-drydock-pontoon-module",
+      "kit": "shipyard",
+      "title": "Floating drydock pontoon module",
+      "description": "Modular floating dock section with paired buoyancy tanks, a deck bridge, side fender blocks, and a boarding ladder. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/floating-drydock-pontoon-module.kcad.ts",
+      "preview": "/assets/shipyard-floating-drydock-pontoon-module.png",
+      "sourceSha256": "001a5ba6a290bcd1771167b4258975b0de13ce1abc01f44dd039dc967128f200",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#728985",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.98,
+          0.97,
+          1.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#728985",
+          "parts": [
+            "pontoon-0",
+            "pontoon-1",
+            "deck-bridge",
+            "fender-0",
+            "fender-1",
+            "fender-2",
+            "fender-3",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-side-left",
+            "ladder-side-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "grit-recovery-hopper",
+      "kit": "shipyard",
+      "title": "Grit recovery hopper",
+      "description": "Low collection hopper with a sloped bin body, discharge cone, fork pockets, and removable screen deck. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "surface preparation and coating"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/grit-recovery-hopper.kcad.ts",
+      "preview": "/assets/shipyard-grit-recovery-hopper.png",
+      "sourceSha256": "9432b6f412cbc5351a55c6e3341a4a574e57fb66c6d9055284ea69b79bd4c6d8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8c765c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.68,
+          1.37,
+          1.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8c765c",
+          "parts": [
+            "bin-body",
+            "screen-deck",
+            "discharge-neck",
+            "fork-pocket-left",
+            "fork-pocket-right",
+            "screen-rib-0",
+            "screen-rib-1",
+            "screen-rib-2",
+            "screen-rib-3",
+            "screen-rib-4",
+            "screen-rib-5",
+            "outlet-flange"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hull-block-fabrication-jig",
+      "kit": "shipyard",
+      "title": "Hull block fabrication jig",
+      "description": "Open box-section fixture with corner towers, transverse alignment beams, and replaceable block-contact pads. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/hull-block-fabrication-jig.kcad.ts",
+      "preview": "/assets/shipyard-hull-block-fabrication-jig.png",
+      "sourceSha256": "6529a706534f559befadd1871d022e1e56c2670e3765db085b5436e2545827e8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#657c78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          2.7,
+          1.77,
+          2.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#657c78",
+          "parts": [
+            "base-rail-0",
+            "base-rail-1",
+            "cross-rail-0",
+            "cross-rail-1",
+            "cross-rail-2",
+            "corner-tower-0",
+            "corner-tower-1",
+            "corner-tower-2",
+            "corner-tower-3",
+            "alignment-beam-0",
+            "alignment-beam-1",
+            "contact-pad-0",
+            "contact-pad-1",
+            "contact-pad-2",
+            "contact-pad-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hull-block-paint-booth",
+      "kit": "shipyard",
+      "title": "Hull block paint booth",
+      "description": "Walk-in coating-bay frame with a wide entry, roof trusses, side curtains, and a raised extraction plenum. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "surface preparation and coating"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/hull-block-paint-booth.kcad.ts",
+      "preview": "/assets/shipyard-hull-block-paint-booth.png",
+      "sourceSha256": "adccfb0a3506d35533cf96945aeb56dc4e89d305d204b0c407e9d14d5b65f093",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#77867e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          3.13,
+          3.18,
+          2.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#77867e",
+          "parts": [
+            "corner-post-0",
+            "corner-post-1",
+            "corner-post-2",
+            "corner-post-3",
+            "roof-joist-0",
+            "roof-joist-1",
+            "roof-joist-2",
+            "side-curtain-0",
+            "side-curtain-1",
+            "extraction-plenum",
+            "entry-guide-0",
+            "entry-guide-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hull-block-spreader-beam",
+      "kit": "shipyard",
+      "title": "Hull block spreader beam",
+      "description": "Generic lifting spreader with a central beam, four adjustable drop links, and soft-contact end shoes. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "block and material movement"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/hull-block-spreader-beam.kcad.ts",
+      "preview": "/assets/shipyard-hull-block-spreader-beam.png",
+      "sourceSha256": "43531a203ba67c2942542002f82a7aac28b318c9586ed47c814bbed5bcdd6118",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78827a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          3.14,
+          1.71,
+          1.58
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78827a",
+          "parts": [
+            "main-beam",
+            "lifting-lug-0",
+            "lifting-lug-1",
+            "drop-link-0",
+            "drop-link-1",
+            "drop-link-2",
+            "drop-link-3",
+            "contact-shoe-0",
+            "contact-shoe-1",
+            "contact-shoe-2",
+            "contact-shoe-3",
+            "shackle-pin-0",
+            "shackle-pin-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hull-panel-cutting-table",
+      "kit": "shipyard",
+      "title": "Hull panel cutting table",
+      "description": "Slatted cutting bed on a rigid underframe with rail ends, replaceable slats, and a side cable tray. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/hull-panel-cutting-table.kcad.ts",
+      "preview": "/assets/shipyard-hull-panel-cutting-table.png",
+      "sourceSha256": "532fec3c74eb3221bf7ea168c6a5d74572a586d910c8f12eac2a5f04b60f9920",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e7f7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          2.66,
+          1.065,
+          1.95
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e7f7d",
+          "parts": [
+            "underframe",
+            "cutting-slat-0",
+            "cutting-slat-1",
+            "cutting-slat-2",
+            "cutting-slat-3",
+            "cutting-slat-4",
+            "cutting-slat-5",
+            "cutting-slat-6",
+            "cutting-slat-7",
+            "cutting-slat-8",
+            "cutting-slat-9",
+            "cutting-slat-10",
+            "end-rail-0",
+            "end-rail-1",
+            "cable-tray"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hull-panel-turnover-cradle",
+      "kit": "shipyard",
+      "title": "Hull panel turnover cradle",
+      "description": "Pair of curved-looking turnover frames joined by a central axle beam with four stabilizing feet and panel stops. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/hull-panel-turnover-cradle.kcad.ts",
+      "preview": "/assets/shipyard-hull-panel-turnover-cradle.png",
+      "sourceSha256": "ae36d81443dec0a1ad1abb57af07be825a2f07dc7ac07764df4e49a3b3eac810",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70837d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          2.18,
+          1.76,
+          1.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70837d",
+          "parts": [
+            "end-frame-0",
+            "end-frame-1",
+            "turnover-axle",
+            "saddle-arm-0",
+            "saddle-arm-1",
+            "saddle-arm-2",
+            "saddle-arm-3",
+            "panel-stop-0",
+            "panel-stop-1",
+            "panel-stop-2",
+            "panel-stop-3",
+            "stabilizer-foot-0",
+            "stabilizer-foot-1",
+            "stabilizer-foot-2",
+            "stabilizer-foot-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hull-profile-template-rack",
+      "kit": "shipyard",
+      "title": "Hull profile template rack",
+      "description": "A-frame storage rack for reusable hull-section templates with separated bays, base rails, and end stops. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "inspection and refit support"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/hull-profile-template-rack.kcad.ts",
+      "preview": "/assets/shipyard-hull-profile-template-rack.png",
+      "sourceSha256": "d3251f3ebc31d1141c99b8ed590afc0fd455cba3c3065130ce9be04f2ecdc346",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8f795e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.995,
+          2.15,
+          1.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8f795e",
+          "parts": [
+            "base-runner-0",
+            "base-runner-1",
+            "divider-0",
+            "divider-1",
+            "divider-2",
+            "divider-3",
+            "divider-4",
+            "template-0",
+            "template-1",
+            "template-2",
+            "template-3",
+            "top-restraint",
+            "end-stop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hull-survey-grid-frame",
+      "kit": "shipyard",
+      "title": "Hull survey grid frame",
+      "description": "Portable reference frame with an open rectangle, graduated crossbars, leveling feet, and target mounts. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "inspection and refit support"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/hull-survey-grid-frame.kcad.ts",
+      "preview": "/assets/shipyard-hull-survey-grid-frame.png",
+      "sourceSha256": "54a9876aef7f5062c322c7323fe2d0d2fd3c7ff69664dcf19cede4290fc1cdc9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e817a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          2.41,
+          1.86,
+          1.41
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e817a",
+          "parts": [
+            "frame-rail-0",
+            "frame-rail-1",
+            "frame-rail-2",
+            "frame-rail-3",
+            "upright-0",
+            "upright-1",
+            "upright-2",
+            "upright-3",
+            "cross-reference-0",
+            "cross-reference-1",
+            "cross-reference-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "keel-block-stack",
+      "kit": "shipyard",
+      "title": "Keel block stack",
+      "description": "Stepped timber keel support stack with a broad foot, alternating crib layers, and a replaceable top cap. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/keel-block-stack.kcad.ts",
+      "preview": "/assets/shipyard-keel-block-stack.png",
+      "sourceSha256": "2d3852250ebb3e76f0a064104a916314ce9a889c9c17b6b4af37be05665a470a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a17d58",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.15,
+          1.06,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a17d58",
+          "parts": [
+            "ground-sill",
+            "lower-block-left",
+            "lower-block-right",
+            "cross-layer",
+            "upper-block",
+            "keel-cap",
+            "side-wedge-0",
+            "side-wedge-1",
+            "side-wedge-2",
+            "side-wedge-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "keel-section-fit-up-jig",
+      "kit": "shipyard",
+      "title": "Keel section fit-up jig",
+      "description": "Low alignment bed with parallel keel rails, spacing blocks, datum stops, and removable reference towers. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/keel-section-fit-up-jig.kcad.ts",
+      "preview": "/assets/shipyard-keel-section-fit-up-jig.png",
+      "sourceSha256": "337dc130a378ee0aebb7049d1f80ded5334c3e04b057e730c226aefc7e6b501f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#708079",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          2.97,
+          1.18,
+          1.28
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#708079",
+          "parts": [
+            "keel-rail-0",
+            "keel-rail-1",
+            "spacing-block-0",
+            "spacing-block-1",
+            "spacing-block-2",
+            "spacing-block-3",
+            "end-stop-0",
+            "end-stop-1",
+            "reference-tower-0",
+            "reference-tower-1",
+            "reference-tower-2",
+            "reference-tower-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "low-profile-material-skid",
+      "kit": "shipyard",
+      "title": "Low-profile material skid",
+      "description": "Reinforced ground skid with deck beams, lifting eyes, corner bumpers, and a replaceable wear plate. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "block and material movement"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/low-profile-material-skid.kcad.ts",
+      "preview": "/assets/shipyard-low-profile-material-skid.png",
+      "sourceSha256": "49e73cf7ae382f494ac736868a6c793db9f354012701c5c21f4ee75ffcbdfc98",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#75847a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          2.3,
+          0.73,
+          1.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#75847a",
+          "parts": [
+            "wear-plate",
+            "deck-beam-0",
+            "deck-beam-1",
+            "deck-beam-2",
+            "lifting-eye-0",
+            "lifting-eye-1",
+            "lifting-eye-2",
+            "lifting-eye-3",
+            "corner-bumper-0",
+            "corner-bumper-1",
+            "corner-bumper-2",
+            "corner-bumper-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "masking-material-rack",
+      "kit": "shipyard",
+      "title": "Masking material rack",
+      "description": "Mobile rack for protective sheeting and tape rolls with a top crossbar, hanging dowels, and storage shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "surface preparation and coating"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/masking-material-rack.kcad.ts",
+      "preview": "/assets/shipyard-masking-material-rack.png",
+      "sourceSha256": "da0119f59261afe51d9deddc0a3440e02f9e66c23ae35de6527e207707111e30",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c867a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 444,
+        "sizeM": [
+          1.82,
+          2.015,
+          1.38
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c867a",
+          "parts": [
+            "side-post-0",
+            "side-post-1",
+            "top-crossbar",
+            "masking-roll-0",
+            "masking-roll-1",
+            "masking-roll-2",
+            "masking-roll-3",
+            "masking-roll-4",
+            "lower-shelf",
+            "caster-0",
+            "caster-1",
+            "caster-2",
+            "caster-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mobile-hull-access-platform",
+      "kit": "shipyard",
+      "title": "Mobile hull access platform",
+      "description": "Low rolling work deck with adjustable-height posts, guard rails, end stops, and a central access step. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "block and material movement"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/mobile-hull-access-platform.kcad.ts",
+      "preview": "/assets/shipyard-mobile-hull-access-platform.png",
+      "sourceSha256": "b02cc546021108296865753eab6e7fc8ef514d6ab6ca6ab1f385e08bfb73825c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71847e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 368,
+        "sizeM": [
+          1.8,
+          1.355,
+          1.385
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71847e",
+          "parts": [
+            "deck",
+            "lift-post-0",
+            "lift-post-1",
+            "lift-post-2",
+            "lift-post-3",
+            "guard-post-0",
+            "guard-post-1",
+            "guard-post-2",
+            "guard-post-3",
+            "guard-post-4",
+            "guard-post-5",
+            "guard-rail-0",
+            "guard-rail-1",
+            "guard-rail-2",
+            "guard-rail-3",
+            "wheel-0",
+            "wheel-1",
+            "wheel-2",
+            "wheel-3",
+            "access-step"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "modular-axle-carrier",
+      "kit": "shipyard",
+      "title": "Modular axle carrier",
+      "description": "Short modular transporter unit with a central load deck, paired axle beams, eight wheels, and side control boxes. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "block and material movement"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/modular-axle-carrier.kcad.ts",
+      "preview": "/assets/shipyard-modular-axle-carrier.png",
+      "sourceSha256": "f412eb53a8fafcb34d67a4a16812bb6455692555c0401ca050faf35ccc4da333",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71837d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 424,
+        "sizeM": [
+          2.1,
+          0.88,
+          1.84
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71837d",
+          "parts": [
+            "load-deck",
+            "axle-beam-0",
+            "axle-beam-1",
+            "wheel-0",
+            "wheel-1",
+            "wheel-2",
+            "wheel-3",
+            "wheel-4",
+            "wheel-5",
+            "wheel-6",
+            "wheel-7",
+            "control-box-0",
+            "control-box-1",
+            "coupling-pin"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "modular-scaffold-bay",
+      "kit": "shipyard",
+      "title": "Modular scaffold bay",
+      "description": "Short shipyard access scaffold with twin end frames, diagonal braces, a work deck, ladder rungs, and toe boards. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/modular-scaffold-bay.kcad.ts",
+      "preview": "/assets/shipyard-modular-scaffold-bay.png",
+      "sourceSha256": "fdac438f9403d5bc3b3c0aca7a65e86d7e05ff62c8d247e70ece1b10f83df0e1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#788781",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          2.205,
+          2.14,
+          1.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#788781",
+          "parts": [
+            "upright-0",
+            "upright-1",
+            "upright-2",
+            "upright-3",
+            "ledger-0",
+            "ledger-1",
+            "ledger-2",
+            "ledger-3",
+            "cross-brace-0",
+            "cross-brace-1",
+            "work-deck",
+            "toe-board",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "optical-measurement-station",
+      "kit": "shipyard",
+      "title": "Optical measurement station",
+      "description": "Portable optical measurement head on a tripod base with a hooded sensor, side handle, and target mast. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "inspection and refit support"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/optical-measurement-station.kcad.ts",
+      "preview": "/assets/shipyard-optical-measurement-station.png",
+      "sourceSha256": "229c8b501a7c930b4ac941b5426db471954f8efccb8432111c1f9156caae96ff",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718780",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.97,
+          1.85,
+          1.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718780",
+          "parts": [
+            "tripod-leg-0",
+            "tripod-leg-1",
+            "tripod-leg-2",
+            "instrument-base",
+            "instrument-head",
+            "optical-hood",
+            "lens-ring",
+            "side-handle",
+            "target-mast"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "paint-booth-filter-wall",
+      "kit": "shipyard",
+      "title": "Paint booth filter wall",
+      "description": "Replaceable filter bank with modular frames, intake panels, a lower return plenum, and service feet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "surface preparation and coating"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/paint-booth-filter-wall.kcad.ts",
+      "preview": "/assets/shipyard-paint-booth-filter-wall.png",
+      "sourceSha256": "fb00fe995561a6854d50d02aa0391253439e2ba2c7b4f5ad451d6865af800b16",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e8179",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          3.65,
+          1.99,
+          0.44
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e8179",
+          "parts": [
+            "filter-frame-0",
+            "filter-frame-1",
+            "filter-frame-2",
+            "filter-frame-3",
+            "filter-panel-0",
+            "filter-panel-1",
+            "filter-panel-2",
+            "filter-panel-3",
+            "return-plenum",
+            "service-foot-0",
+            "service-foot-1",
+            "top-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "paint-curing-air-heater",
+      "kit": "shipyard",
+      "title": "Paint curing air heater",
+      "description": "Ducted industrial air heater on a skid with a fan cabinet, outlet plenum, and hose connection. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "surface preparation and coating"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/paint-curing-air-heater.kcad.ts",
+      "preview": "/assets/shipyard-paint-curing-air-heater.png",
+      "sourceSha256": "a7a1454bf9849f8b07369e60d1f4c02a39c588a2a8908f5639750d7cff6750fd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a76845",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          1.74,
+          1.495,
+          0.94
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a76845",
+          "parts": [
+            "heater-skid",
+            "fan-cabinet",
+            "outlet-plenum",
+            "duct-collar",
+            "fan-grille-spoke-0",
+            "service-panel",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "panel-line-strongback",
+      "kit": "shipyard",
+      "title": "Panel line strongback",
+      "description": "Long modular strongback fixture with spaced cross rails, clamp blocks, end stops, and datum feet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/panel-line-strongback.kcad.ts",
+      "preview": "/assets/shipyard-panel-line-strongback.png",
+      "sourceSha256": "7ae70fffecab591d501c9f19ece27b592413b97594e539c12d130c915eeb8f97",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78867d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          3,
+          0.54,
+          1.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78867d",
+          "parts": [
+            "longitudinal-rail-0",
+            "longitudinal-rail-1",
+            "cross-rail-0",
+            "cross-rail-1",
+            "cross-rail-2",
+            "cross-rail-3",
+            "cross-rail-4",
+            "clamp-block-0",
+            "clamp-block-1",
+            "clamp-block-2",
+            "clamp-block-3",
+            "clamp-block-4",
+            "clamp-block-5",
+            "datum-foot-0",
+            "datum-foot-1",
+            "datum-foot-2",
+            "datum-foot-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pipe-pressure-test-skid",
+      "kit": "shipyard",
+      "title": "Pipe pressure test skid",
+      "description": "Service skid with a manifold header, short pipe sections, handwheel-shaped valves, and a drip tray. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/pipe-pressure-test-skid.kcad.ts",
+      "preview": "/assets/shipyard-pipe-pressure-test-skid.png",
+      "sourceSha256": "a95fe6421284a3a750804dad982fcd486c5f9de5e71fcc2dcdfe91129f403357",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71847d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 252,
+        "sizeM": [
+          1.935,
+          1,
+          0.84
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71847d",
+          "parts": [
+            "drip-tray",
+            "header",
+            "test-leg-0",
+            "test-leg-1",
+            "test-leg-2",
+            "valve-handwheel-0",
+            "valve-handwheel-1",
+            "valve-handwheel-2",
+            "support-0",
+            "support-1",
+            "support-2",
+            "support-3",
+            "gauge-panel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pipe-rack-fork-pocket",
+      "kit": "shipyard",
+      "title": "Pipe rack with fork pockets",
+      "description": "Stackable pipe storage rack with upright dividers, fork pockets, a retaining rail, and a removable end stop. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "block and material movement"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/pipe-rack-fork-pocket.kcad.ts",
+      "preview": "/assets/shipyard-pipe-rack-fork-pocket.png",
+      "sourceSha256": "d8611bc2f0d71c212956cf82766a7510c8ba42afa736bfab8dcbff9b043e56e2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70827b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          2.735,
+          1.005,
+          1.38
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70827b",
+          "parts": [
+            "base-skid-0",
+            "base-skid-1",
+            "divider-0",
+            "divider-1",
+            "divider-2",
+            "divider-3",
+            "divider-4",
+            "fork-pocket-0",
+            "fork-pocket-1",
+            "retaining-rail",
+            "removable-stop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pipe-spool-rotator",
+      "kit": "shipyard",
+      "title": "Pipe spool rotator",
+      "description": "Weld-fit rotator with two roller stands, guarded drive housing, foot controls, and a pipe centering stop. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/pipe-spool-rotator.kcad.ts",
+      "preview": "/assets/shipyard-pipe-spool-rotator.png",
+      "sourceSha256": "cd45c3a2eba5204dd5d507745ff56c5bd585828d72d8bce0020cbe8a2eb08b34",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#ad764a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          2.35,
+          1.05,
+          1.08
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#ad764a",
+          "parts": [
+            "roller-frame-0",
+            "roller-frame-1",
+            "drive-roller-0",
+            "drive-roller-1",
+            "drive-roller-2",
+            "drive-roller-3",
+            "drive-cabinet",
+            "foot-pedal",
+            "pipe-stop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pipe-spool-saddle-stand",
+      "kit": "shipyard",
+      "title": "Pipe spool saddle stand",
+      "description": "Adjustable pipe support with a broad base, twin uprights, saddle crossbar, locking collars, and storage tray. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/pipe-spool-saddle-stand.kcad.ts",
+      "preview": "/assets/shipyard-pipe-spool-saddle-stand.png",
+      "sourceSha256": "1d6decb8194bf724a667fabfbc5a5a0232cae83e6ac4849e2e653a806b9603dc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#778780",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.6,
+          1.45,
+          0.715
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#778780",
+          "parts": [
+            "base",
+            "upright-0",
+            "upright-1",
+            "saddle-crossbar",
+            "saddle-cap",
+            "locking-collar-0",
+            "locking-collar-1",
+            "tool-tray"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "plasma-cutting-gantry-head",
+      "kit": "shipyard",
+      "title": "Plasma cutting gantry head",
+      "description": "Compact cutting carriage with a bridge beam, end trucks, torch head, cable loop, and operator pendant. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/plasma-cutting-gantry-head.kcad.ts",
+      "preview": "/assets/shipyard-plasma-cutting-gantry-head.png",
+      "sourceSha256": "1967265aebfaa096f693de54441fca0915dc47c90369ee13181a0c0c87a4fe56",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d19443",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          2.6,
+          1.15,
+          0.645
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d19443",
+          "parts": [
+            "bridge",
+            "end-truck-0",
+            "end-truck-1",
+            "torch-carriage",
+            "torch-nozzle",
+            "cable-loop",
+            "pendant"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "plate-pack-transfer-cart",
+      "kit": "shipyard",
+      "title": "Plate pack transfer cart",
+      "description": "Shop cart for short plate packs with fork-shaped deck rails, end stops, push bar, and four large wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "block and material movement"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/plate-pack-transfer-cart.kcad.ts",
+      "preview": "/assets/shipyard-plate-pack-transfer-cart.png",
+      "sourceSha256": "9268dbdb3527bf0d5fb21e432a9d1c272cb7b60809e7f6dc165e864faf6f0c65",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a765d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.91,
+          1.54,
+          1.085
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a765d",
+          "parts": [
+            "cart-deck",
+            "deck-rail-0",
+            "deck-rail-1",
+            "end-stop-0",
+            "end-stop-1",
+            "wheel-0",
+            "wheel-1",
+            "wheel-2",
+            "wheel-3",
+            "push-bar",
+            "handle-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "plate-roller-conveyor",
+      "kit": "shipyard",
+      "title": "Plate roller conveyor",
+      "description": "Section of plate feed line with a heavy frame, transverse rollers, side guides, and adjustable feet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/plate-roller-conveyor.kcad.ts",
+      "preview": "/assets/shipyard-plate-roller-conveyor.png",
+      "sourceSha256": "7a6fa2cbb30437172f96b590b4efca70096dd969e08830dc6d34a9ca8356790f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78847e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          2.55,
+          0.575,
+          1.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78847e",
+          "parts": [
+            "side-frame-0",
+            "side-frame-1",
+            "feed-roller-0",
+            "feed-roller-1",
+            "feed-roller-2",
+            "feed-roller-3",
+            "feed-roller-4",
+            "feed-roller-5",
+            "guide-rail-0",
+            "guide-rail-1",
+            "leveling-foot-0",
+            "leveling-foot-1",
+            "leveling-foot-2",
+            "leveling-foot-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "plate-rolling-machine",
+      "kit": "shipyard",
+      "title": "Plate rolling machine",
+      "description": "Three-roll plate former with a rigid bed, two lower rollers, upper pressure roller, and side drive cabinet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/plate-rolling-machine.kcad.ts",
+      "preview": "/assets/shipyard-plate-rolling-machine.png",
+      "sourceSha256": "e5805de25186cd826d077845241d46be834820c7292829556eb72c82824912ea",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687e79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          2.33,
+          1.495,
+          1.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687e79",
+          "parts": [
+            "machine-bed",
+            "lower-roll-0",
+            "lower-roll-1",
+            "upper-pressure-roll",
+            "bearing-tower-0",
+            "bearing-tower-1",
+            "drive-cabinet",
+            "control-pendant"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "portable-ventilation-fan",
+      "kit": "shipyard",
+      "title": "Portable ventilation fan",
+      "description": "Axial ventilation fan in a square carry frame with a circular hub, four broad blades, and a floor stand. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/portable-ventilation-fan.kcad.ts",
+      "preview": "/assets/shipyard-portable-ventilation-fan.png",
+      "sourceSha256": "6cfdbfe08e8567cf7e996beb9d21fd91e91fcd13f090717416e4269960928751",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#708984",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 164,
+        "sizeM": [
+          1.18,
+          1.415,
+          0.83
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#708984",
+          "parts": [
+            "fan-frame",
+            "fan-hub",
+            "fan-blade-0",
+            "fan-blade-1",
+            "fan-blade-2",
+            "fan-blade-3",
+            "stand-leg-0",
+            "stand-leg-1",
+            "stand-leg-2",
+            "stand-leg-3",
+            "carry-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "portable-weld-fume-extractor",
+      "kit": "shipyard",
+      "title": "Portable weld fume extractor",
+      "description": "Mobile extraction unit with a filter cabinet, flexible-arm mast, capture hood, and guarded wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "inspection and refit support"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/portable-weld-fume-extractor.kcad.ts",
+      "preview": "/assets/shipyard-portable-weld-fume-extractor.png",
+      "sourceSha256": "50f2298036b5bcc2e30df064c54d12f340ba47ce1a34b2cc093ab8ef396c3163",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71857f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.105,
+          3.27,
+          0.895
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71857f",
+          "parts": [
+            "cabinet",
+            "filter-cover",
+            "arm-base",
+            "arm-segment-0",
+            "arm-segment-1",
+            "capture-hood",
+            "wheel-0",
+            "wheel-1",
+            "wheel-2",
+            "wheel-3",
+            "service-door"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "refit-service-bench",
+      "kit": "shipyard",
+      "title": "Refit service bench",
+      "description": "Repair bench with a heavy worktop, vise, drawer bank, tool backboard, and a lower storage shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "inspection and refit support"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/refit-service-bench.kcad.ts",
+      "preview": "/assets/shipyard-refit-service-bench.png",
+      "sourceSha256": "4216b0486334b2b382b95a7727c8a039f68024649cf3a24ad89bcac8a52d9f5b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8e775a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          1.95,
+          1.98,
+          0.97
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8e775a",
+          "parts": [
+            "worktop",
+            "bench-leg-0",
+            "bench-leg-1",
+            "bench-leg-2",
+            "bench-leg-3",
+            "lower-shelf",
+            "backboard",
+            "vise-base",
+            "vise-jaw-left",
+            "vise-jaw-right",
+            "drawer-0",
+            "drawer-1",
+            "drawer-2",
+            "drawer-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ship-lift-cradle",
+      "kit": "shipyard",
+      "title": "Ship lift cradle",
+      "description": "Transfer cradle with paired guide rails, cross ties, adjustable hull pads, and four guide rollers. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/ship-lift-cradle.kcad.ts",
+      "preview": "/assets/shipyard-ship-lift-cradle.png",
+      "sourceSha256": "f7e2f743fbc55336e2b5e125d27d802e53ae4802d2b0e38f27e93210e772d4cc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#76847b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 284,
+        "sizeM": [
+          3,
+          0.78,
+          1.83
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#76847b",
+          "parts": [
+            "side-rail-0",
+            "side-rail-1",
+            "cross-tie-0",
+            "cross-tie-1",
+            "cross-tie-2",
+            "hull-pad-0",
+            "hull-pad-1",
+            "hull-pad-2",
+            "hull-pad-3",
+            "guide-roller-0",
+            "guide-roller-1",
+            "guide-roller-2",
+            "guide-roller-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ship-plate-staging-pallet",
+      "kit": "shipyard",
+      "title": "Ship plate staging pallet",
+      "description": "Heavy plate pallet with fork pockets, layered sheet stock, end stops, and corner restraint blocks. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/ship-plate-staging-pallet.kcad.ts",
+      "preview": "/assets/shipyard-ship-plate-staging-pallet.png",
+      "sourceSha256": "567513c7cbf71eeb163ccf63a62e8830883d4cf400fb6216277e5bb94eab5bb2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73817e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          2.5,
+          0.672,
+          1.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73817e",
+          "parts": [
+            "pallet-base",
+            "fork-pocket-0",
+            "fork-pocket-1",
+            "plate-layer-0",
+            "plate-layer-1",
+            "plate-layer-2",
+            "plate-layer-3",
+            "plate-layer-4",
+            "plate-layer-5",
+            "plate-layer-6",
+            "end-stop-0",
+            "end-stop-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "shipfitter-tool-cabinet",
+      "kit": "shipyard",
+      "title": "Shipfitter tool cabinet",
+      "description": "Steel shop cabinet with paired doors, shallow drawer bank, top work surface, and a side-hung tool rail. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/shipfitter-tool-cabinet.kcad.ts",
+      "preview": "/assets/shipyard-shipfitter-tool-cabinet.png",
+      "sourceSha256": "16119db271d0384323b9a16de5d2817e3634ce0fffff52a02ccc80af744333db",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#947656",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.445,
+          1.55,
+          0.8
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#947656",
+          "parts": [
+            "cabinet-body",
+            "toe-kick",
+            "worktop",
+            "door-0",
+            "door-1",
+            "drawer-0",
+            "drawer-1",
+            "drawer-2",
+            "side-tool-rail",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "shipyard-block-transporter",
+      "kit": "shipyard",
+      "title": "Shipyard block transporter",
+      "description": "Low heavy-haul platform with a reinforced deck, wheel bogies, guide posts, and a tractor coupling beam. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "block and material movement"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/shipyard-block-transporter.kcad.ts",
+      "preview": "/assets/shipyard-shipyard-block-transporter.png",
+      "sourceSha256": "8be1bc9d3cbf51421852da5cbb3997b2066097db770bceb9153e78dceea9de14",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c07842",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 448,
+        "sizeM": [
+          3.81,
+          1.25,
+          1.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c07842",
+          "parts": [
+            "transport-deck",
+            "bogie-frame-0",
+            "bogie-frame-1",
+            "bogie-wheel-0",
+            "bogie-wheel-1",
+            "bogie-wheel-2",
+            "bogie-wheel-3",
+            "bogie-wheel-4",
+            "bogie-wheel-5",
+            "bogie-wheel-6",
+            "bogie-wheel-7",
+            "guide-post-0",
+            "guide-post-1",
+            "guide-post-2",
+            "guide-post-3",
+            "tractor-coupling"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "slipway-rail-shoe",
+      "kit": "shipyard",
+      "title": "Slipway rail shoe",
+      "description": "Short paired launch-way rails on timber sleepers with replaceable guide shoes and a stop block. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/slipway-rail-shoe.kcad.ts",
+      "preview": "/assets/shipyard-slipway-rail-shoe.png",
+      "sourceSha256": "f5b1012264d2951d70e23be4997ad5f83d7a8db9cd9eba8222eb0e618cb4f969",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#75827c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          2.32,
+          0.6,
+          1.12
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#75827c",
+          "parts": [
+            "rail-0",
+            "rail-1",
+            "sleeper-0",
+            "sleeper-1",
+            "sleeper-2",
+            "sleeper-3",
+            "wear-shoe-0",
+            "wear-shoe-1",
+            "wear-shoe-2",
+            "wear-shoe-3",
+            "end-stop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stern-section-support-frame",
+      "kit": "shipyard",
+      "title": "Stern section support frame",
+      "description": "Portal-style hull support with two adjustable towers, tie beam, lower braces, and paired padded contact plates. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "yard and dock operations"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/stern-section-support-frame.kcad.ts",
+      "preview": "/assets/shipyard-stern-section-support-frame.png",
+      "sourceSha256": "7d336b8100c7bd6d13509fd5eb2512084d4156def02212335622ea334802c0f7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667c78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          2.2,
+          1.985,
+          0.57
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667c78",
+          "parts": [
+            "left-base",
+            "right-base",
+            "tower-0",
+            "tower-1",
+            "crosshead",
+            "lower-tie",
+            "contact-pad-0",
+            "contact-pad-1",
+            "tower-foot-brace-0",
+            "tower-foot-brace-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "surface-prep-drying-rack",
+      "kit": "shipyard",
+      "title": "Surface preparation drying rack",
+      "description": "Open rack for small hull panels with four uprights, removable cross bars, tray feet, and spacing stops. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "surface preparation and coating"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/surface-prep-drying-rack.kcad.ts",
+      "preview": "/assets/shipyard-surface-prep-drying-rack.png",
+      "sourceSha256": "585bb571a2a1f832893ebe39709e773d899c6e48baf62ba2572a33728ecbaedc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78847c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          2.22,
+          2.03,
+          1.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78847c",
+          "parts": [
+            "upright-0",
+            "upright-1",
+            "upright-2",
+            "upright-3",
+            "crossbar-0",
+            "crossbar-1",
+            "crossbar-2",
+            "crossbar-3",
+            "panel-stop-0",
+            "panel-stop-1",
+            "panel-stop-2",
+            "panel-stop-3",
+            "tray-foot-0",
+            "tray-foot-1",
+            "tray-foot-2",
+            "tray-foot-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "temporary-work-light-mast",
+      "kit": "shipyard",
+      "title": "Temporary work light mast",
+      "description": "Portable telescoping light mast on a stabilizing base with a four-lamp head and cable hook. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/temporary-work-light-mast.kcad.ts",
+      "preview": "/assets/shipyard-temporary-work-light-mast.png",
+      "sourceSha256": "5e0a05b52ba27c08a1758846e3e1441c270198c5ece689649014971b05c8d473",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d5a951",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.74,
+          3.32,
+          1.16
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d5a951",
+          "parts": [
+            "base-foot",
+            "mast-lower",
+            "mast-upper",
+            "lamp-bar",
+            "lamp-0",
+            "lamp-1",
+            "lamp-2",
+            "lamp-3",
+            "stabilizer-0",
+            "stabilizer-1",
+            "stabilizer-2",
+            "stabilizer-3",
+            "cable-hook"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ultrasonic-test-cart",
+      "kit": "shipyard",
+      "title": "Ultrasonic test cart",
+      "description": "Inspection trolley with a protective instrument case, probe holders, cable spool, and four swivel-style wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "inspection and refit support"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/ultrasonic-test-cart.kcad.ts",
+      "preview": "/assets/shipyard-ultrasonic-test-cart.png",
+      "sourceSha256": "d285e1089fe9d5881c86ae525299679f2035187083df7a90f7ad74c9287d7bc8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71867d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 316,
+        "sizeM": [
+          1.415,
+          1.41,
+          0.805
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71867d",
+          "parts": [
+            "cart-platform",
+            "instrument-case",
+            "case-lid",
+            "cable-spool",
+            "probe-holder-0",
+            "probe-holder-1",
+            "probe-holder-2",
+            "probe-holder-3",
+            "cart-wheel-0",
+            "cart-wheel-1",
+            "cart-wheel-2",
+            "cart-wheel-3",
+            "push-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "vessel-refit-job-board",
+      "kit": "shipyard",
+      "title": "Vessel refit job board",
+      "description": "Freestanding job-status board with a wheeled base, framed planning panel, magnetic columns, and document tray. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "inspection and refit support"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/vessel-refit-job-board.kcad.ts",
+      "preview": "/assets/shipyard-vessel-refit-job-board.png",
+      "sourceSha256": "7675fe224242c74d452cdf50a3bb17416cdf0e2fa3746e864835768c7e4c61c5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73847d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          2.02,
+          2.36,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73847d",
+          "parts": [
+            "board-frame",
+            "planning-panel",
+            "column-divider-0",
+            "column-divider-1",
+            "column-divider-2",
+            "header-rail",
+            "document-tray",
+            "support-post-0",
+            "support-post-1",
+            "board-wheel-0",
+            "board-wheel-1",
+            "board-wheel-2",
+            "board-wheel-3",
+            "frame-foot-0",
+            "frame-foot-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "vessel-shore-power-pedestal",
+      "kit": "shipyard",
+      "title": "Vessel shore power pedestal",
+      "description": "Weatherproof service cabinet on a raised plinth with cable outlets, protective cover, and side cable hooks. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/vessel-shore-power-pedestal.kcad.ts",
+      "preview": "/assets/shipyard-vessel-shore-power-pedestal.png",
+      "sourceSha256": "d2a632b08a5364f02af2030fd71722228537fd6f2ca0d820c16d18d2aa14edcf",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6f8580",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.93,
+          1.74,
+          1.07
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6f8580",
+          "parts": [
+            "plinth",
+            "cabinet",
+            "door",
+            "outlet-0",
+            "outlet-1",
+            "outlet-2",
+            "outlet-3",
+            "cable-hook-0",
+            "cable-hook-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "weld-consumable-issue-cage",
+      "kit": "shipyard",
+      "title": "Weld consumable issue cage",
+      "description": "Lockable mesh-style store with framed walls, two shelves, a half-height counter, and a roof panel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "block and material movement"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/weld-consumable-issue-cage.kcad.ts",
+      "preview": "/assets/shipyard-weld-consumable-issue-cage.png",
+      "sourceSha256": "cdc2493fcec929ff0b57d84cb6b147265b2f0e4bdd3167217b8a4b9e77421823",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7a8580",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          2.05,
+          1.87,
+          1.175
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7a8580",
+          "parts": [
+            "corner-post-0",
+            "corner-post-1",
+            "corner-post-2",
+            "corner-post-3",
+            "roof",
+            "counter",
+            "storage-shelf-0",
+            "storage-shelf-1",
+            "wall-rail-0",
+            "wall-rail-1",
+            "wall-rail-2",
+            "wall-rail-3",
+            "lockable-door"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "weld-fit-up-table",
+      "kit": "shipyard",
+      "title": "Weld fit-up table",
+      "description": "Heavy fit-up surface with a grid of clamp slots represented by raised stops, fixture dogs, and a lower shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/weld-fit-up-table.kcad.ts",
+      "preview": "/assets/shipyard-weld-fit-up-table.png",
+      "sourceSha256": "aa7ad990a2820ecc34aae16b6820773f0f4a8ff6b0febba15eba9d8a11833a17",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687c78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          1.76,
+          1.44,
+          1.16
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687c78",
+          "parts": [
+            "table-top",
+            "fixture-stop-0",
+            "fixture-stop-1",
+            "fixture-stop-2",
+            "fixture-stop-3",
+            "fixture-stop-4",
+            "fixture-stop-5",
+            "fixture-stop-6",
+            "fixture-stop-7",
+            "table-leg-0",
+            "table-leg-1",
+            "table-leg-2",
+            "table-leg-3",
+            "lower-shelf"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "weld-inspection-light-stand",
+      "kit": "shipyard",
+      "title": "Weld inspection light stand",
+      "description": "Portable inspection light with a weighted base, height mast, twin lamp heads, and a cable hook. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "inspection and refit support"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/weld-inspection-light-stand.kcad.ts",
+      "preview": "/assets/shipyard-weld-inspection-light-stand.png",
+      "sourceSha256": "0f0123b29642cdc4058379c4e3987f25ce09b7e71548fdda6df5afb4239ad64b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d2a64c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.9,
+          1.91,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d2a64c",
+          "parts": [
+            "weighted-base",
+            "mast",
+            "crossbar",
+            "lamp-head-0",
+            "lamp-head-1",
+            "lamp-lens-0",
+            "lamp-lens-1",
+            "cable-hook",
+            "carry-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "welding-curtain-screen",
+      "kit": "shipyard",
+      "title": "Welding curtain screen",
+      "description": "Portable hot-work screen with a weighted base, framed panels, hinged center seam, and caster-like feet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "plate and block fabrication"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/welding-curtain-screen.kcad.ts",
+      "preview": "/assets/shipyard-welding-curtain-screen.png",
+      "sourceSha256": "43c5ad13ccecfcb1a834855a688d1c35ae8ed5d6851371659d8173e0fc9207d8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7e7060",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          2,
+          1.5,
+          0.55
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7e7060",
+          "parts": [
+            "panel-frame-0",
+            "panel-frame-1",
+            "panel-frame-2",
+            "curtain-panel-0",
+            "curtain-panel-1",
+            "base-foot-0",
+            "base-foot-1",
+            "caster-0",
+            "caster-1",
+            "caster-2",
+            "caster-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "welding-gas-cylinder-trolley",
+      "kit": "shipyard",
+      "title": "Welding gas cylinder trolley",
+      "description": "Two-cylinder shop trolley with retaining straps, wheel guard, pull handle, and a low toe plate. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/welding-gas-cylinder-trolley.kcad.ts",
+      "preview": "/assets/shipyard-welding-gas-cylinder-trolley.png",
+      "sourceSha256": "3b9b999ba9d47e4650fc5b2e826ce8d736988e0f3c7ea910138624797f17f2f8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#759084",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1.04,
+          2.11,
+          0.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#759084",
+          "parts": [
+            "toe-plate",
+            "gas-cylinder-0",
+            "gas-cylinder-1",
+            "retaining-band-0",
+            "retaining-band-1",
+            "trolley-wheel-0",
+            "trolley-wheel-1",
+            "pull-handle",
+            "top-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "yard-cable-reel-cart",
+      "kit": "shipyard",
+      "title": "Yard cable reel cart",
+      "description": "Portable cable handling cart with a guarded reel, through axle, push handle, and four shop-floor wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "outfitting and yard services"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/yard-cable-reel-cart.kcad.ts",
+      "preview": "/assets/shipyard-yard-cable-reel-cart.png",
+      "sourceSha256": "e197e6e97b646bd7d941c9203fac487f9410dd19bc0ebcf2c178244116554452",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b27046",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          1.44,
+          1.49,
+          1.02
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b27046",
+          "parts": [
+            "cart-deck",
+            "side-frame-0",
+            "side-frame-1",
+            "cable-drum",
+            "support-wheel-0",
+            "support-wheel-1",
+            "support-wheel-2",
+            "support-wheel-3",
+            "push-handle",
+            "drum-lock"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "yard-material-tug-cart",
+      "kit": "shipyard",
+      "title": "Yard material tug cart",
+      "description": "Low powered yard tug with an open operator bay, tow hook, bumper rails, and chunky traction wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "shipyard",
+        "shipbuilding",
+        "drydock",
+        "refit",
+        "low poly",
+        "CC0",
+        "block and material movement"
+      ],
+      "compat": [
+        "shipyard",
+        "marine",
+        "drydock",
+        "ship-repair"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/shipyard/yard-material-tug-cart.kcad.ts",
+      "preview": "/assets/shipyard-yard-material-tug-cart.png",
+      "sourceSha256": "cd83de3f0ee3e5dc8b93c79620bf9e885442abfe9338a0254d950d15e2bfd4f5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b87942",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.98,
+          1.705,
+          1.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b87942",
+          "parts": [
+            "chassis",
+            "operator-floor",
+            "front-cowl",
+            "seat",
+            "overhead-guard",
+            "traction-wheel-0",
+            "traction-wheel-1",
+            "traction-wheel-2",
+            "traction-wheel-3",
+            "tow-hook",
+            "bumper"
           ],
           "param": "color"
         }
