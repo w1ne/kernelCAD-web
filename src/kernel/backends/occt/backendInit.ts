@@ -16,7 +16,7 @@ let initInFlight: Promise<void> | null = null;
 /** Hooks run at the start of resetOcct (e.g. abandon STEP parse-cache masters). */
 const occtResetHooks: Array<() => void> = [];
 type ProcessEvent = 'uncaughtException' | 'unhandledRejection';
-type ProcessListener = (...args: never[]) => void;
+type ProcessListener = (...args: unknown[]) => void;
 type ProcessListenerSet = Record<ProcessEvent, ProcessListener[]>;
 const processEvents: readonly ProcessEvent[] = ['uncaughtException', 'unhandledRejection'];
 let activeOcctProcessListeners: ProcessListenerSet = {

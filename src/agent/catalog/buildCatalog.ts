@@ -7,7 +7,7 @@
 // low-poly GLB inside its triangle budget, and record what the file measures.
 
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
 import { runScript } from '../../composition/runScript';
 import { runAndExport } from '../script-runtime/export';
@@ -101,6 +101,9 @@ export async function buildCatalogAssetWithGlb(
     ...(glb.extras.rig === undefined ? {} : { rig: glb.extras.rig }),
     stats: { ...glb.extras.stats, materials: glb.materials },
     palette: (glb.extras.palette ?? []).map((zone) => paletteZone(zone, params)),
+    ...(existsSync(join(repoRoot, 'catalog', 'kits', kit, 'previews', `${id}.png`))
+      ? { preview: `/assets/${kit}-${id}.png` }
+      : {}),
   });
   return { asset, glb: glb.bytes };
 }

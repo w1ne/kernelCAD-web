@@ -60,6 +60,8 @@ export const CatalogAssetSchema = z.object({
   compat: z.array(slug),
   license: AssetLicenseSchema,
   source: z.string().min(1),
+  /** Public landing-page URL emitted when the catalog preview PNG exists. */
+  preview: z.string().startsWith('/').optional(),
   sourceSha256: z.string().regex(/^[0-9a-f]{64}$/),
   triangleBudget: z.number().int().positive(),
   params: z.array(CatalogParamSchema),

@@ -18,6 +18,7 @@ describe('asset catalog', () => {
       expect(asset.stats.triangles, asset.id).toBeLessThanOrEqual(asset.triangleBudget);
       expect(asset.stats.materials, asset.id).toBe(1);
       expect(asset.stats.minUpM, asset.id).toBeCloseTo(asset.origin === 'base' ? 0 : asset.stats.minUpM, 6);
+      expect(asset.preview, `${asset.id} needs a rendered homepage preview`).toBe(`/assets/${asset.kit}-${asset.id}.png`);
     }
     const committed = readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8');
     CatalogIndexSchema.parse(JSON.parse(committed));

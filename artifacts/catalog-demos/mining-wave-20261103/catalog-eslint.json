@@ -1,0 +1,6 @@
+{
+  "command": "npx eslint catalog/",
+  "passed": true,
+  "exitCode": 0,
+  "outputFile": "catalog-lint-output.txt"
+}
