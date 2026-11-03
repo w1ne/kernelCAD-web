@@ -59,3 +59,15 @@ indexed preview path. The [wave demo and verification bundle](../artifacts/catal
 records the source-to-preview workflow and local checks. These are generic
 scene assets; mesh and catalog checks do not establish husbandry suitability,
 food-contact suitability, equipment ratings, or physical acceptance.
+
+## Hydroponics assets
+
+The [hydroponics kit](../catalog/kits/hydroponics/README.md) adds 52 original
+low-poly props for greenhouse structures, growing systems, nutrient delivery,
+filtration, sensing, climate equipment, and crop support. Each source exposes
+scale and color controls and has an indexed preview. The [wave demo and
+verification bundle](../artifacts/catalog-demos/hydroponics-wave-20261103/README.md)
+records the source-to-preview workflow, full-catalog integration checks, local
+pages, package boundary audit, and inspected MP4. The kit is for visualization;
+catalog checks do not establish crop performance, equipment ratings, chemical
+compatibility, sensor calibration, or physical acceptance.

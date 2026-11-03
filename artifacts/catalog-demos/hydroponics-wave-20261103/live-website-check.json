@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-03T06:05:11.906944+00:00",
+  "homeUrl": "https://kernelcad.com/",
+  "assetsUrl": "https://kernelcad.com/assets.json",
+  "deployment": "This feature branch is not deployed; live state is a production baseline only.",
+  "homeStatus": 200,
+  "homeContainsAssetsRail": true,
+  "assetsStatus": 200,
+  "assetsTotal": 1291,
+  "previewedAssets": 1291,
+  "hydroponicsRows": 0,
+  "passed": true
+}
