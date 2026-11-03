@@ -386,30 +386,37 @@ const FINDER = `      <div class="finder">
       </div>
       <script>
         (function () {
-          var q = document.getElementById('catalog-q');
-          if (!q) return;
-          var items = [].slice.call(document.querySelectorAll('[data-kit] li[data-search]'));
-          var sections = [].slice.call(document.querySelectorAll('[data-kit]'));
-          var shown = document.getElementById('catalog-shown');
-          var empty = document.getElementById('catalog-empty');
-          var total = items.length;
-          function apply() {
-            var t = q.value.trim().toLowerCase();
-            var hits = 0;
-            items.forEach(function (li) {
-              var hit = !t || li.getAttribute('data-search').indexOf(t) !== -1;
-              li.hidden = !hit;
-              if (hit) hits++;
-            });
-            sections.forEach(function (s) {
-              var any = s.querySelector('li[data-search]:not([hidden])');
-              s.hidden = !any;
-            });
-            shown.textContent = t ? hits + ' of ' + total + ' models' : total + ' models';
-            if (empty) empty.hidden = hits !== 0;
+          function init() {
+            var q = document.getElementById('catalog-q');
+            if (!q) return;
+            var items = [].slice.call(document.querySelectorAll('[data-kit] li[data-search]'));
+            var sections = [].slice.call(document.querySelectorAll('[data-kit]'));
+            var shown = document.getElementById('catalog-shown');
+            var empty = document.getElementById('catalog-empty');
+            var total = items.length;
+            function apply() {
+              var t = q.value.trim().toLowerCase();
+              var hits = 0;
+              items.forEach(function (li) {
+                var hit = !t || li.getAttribute('data-search').indexOf(t) !== -1;
+                li.hidden = !hit;
+                if (hit) hits++;
+              });
+              sections.forEach(function (s) {
+                var any = s.querySelector('li[data-search]:not([hidden])');
+                s.hidden = !any;
+              });
+              shown.textContent = t ? hits + ' of ' + total + ' models' : total + ' models';
+              if (empty) empty.hidden = hits !== 0;
+            }
+            q.addEventListener('input', apply);
+            apply();
           }
-          q.addEventListener('input', apply);
-          apply();
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init, { once: true });
+          } else {
+            init();
+          }
         })();
       </script>`;
 

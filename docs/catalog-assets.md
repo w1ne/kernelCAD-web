@@ -142,3 +142,14 @@ records the native sources, rendered previews, local catalog checks, and
 inspected MP4. These are visualization props; checks do not establish vessel
 design approval, lift capacity, welding qualification, drydock certification,
 workplace safety, or operational acceptance.
+
+## Grid substation assets
+
+The [grid substation kit](../catalog/kits/grid-substation/README.md) adds 80
+original low-poly props for line structures, primary switching equipment,
+transformer auxiliaries, protection and control, cable routes, grounding, and
+yard maintenance. Each source exposes scale and color controls and has an
+indexed preview. The [wave demo and verification bundle](../artifacts/catalog-demos/grid-substation-wave-20261103/README.md)
+records the source-to-preview workflow, local catalog checks, and inspected
+MP4. These are visualization props; checks do not establish equipment ratings,
+electrical safety, grid compliance, operating procedures, or field acceptance.

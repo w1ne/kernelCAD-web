@@ -1,0 +1,1530 @@
+{
+  "totalAssets": 2390,
+  "totalKits": 49,
+  "gridSubstationAssets": 80,
+  "previewBackedGridSubstationAssets": 80,
+  "allCatalogIdsUnique": true,
+  "allNewAssetsPass": true,
+  "assets": [
+    {
+      "id": "substation-ac-station-service-board",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 18382
+    },
+    {
+      "id": "substation-battery-charger-cabinet",
+      "sourceSha256Matches": true,
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 17028
+    },
+    {
+      "id": "substation-bay-control-cabinet",
+      "sourceSha256Matches": true,
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 14859
+    },
+    {
+      "id": "substation-bay-identification-post",
+      "sourceSha256Matches": true,
+      "triangles": 48,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 11537
+    },
+    {
+      "id": "substation-breaker-timing-analyzer-cart",
+      "sourceSha256Matches": true,
+      "triangles": 260,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 24808
+    },
+    {
+      "id": "substation-bus-coupler-gantry",
+      "sourceSha256Matches": true,
+      "triangles": 272,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 19247
+    },
+    {
+      "id": "substation-bus-post-insulator",
+      "sourceSha256Matches": true,
+      "triangles": 332,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 27666
+    },
+    {
+      "id": "substation-busbar-expansion-joint",
+      "sourceSha256Matches": true,
+      "triangles": 148,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 19434
+    },
+    {
+      "id": "substation-bushing-turret",
+      "sourceSha256Matches": true,
+      "triangles": 852,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 39420
+    },
+    {
+      "id": "substation-cable-junction-pit",
+      "sourceSha256Matches": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 13280
+    },
+    {
+      "id": "substation-cable-ladder-section",
+      "sourceSha256Matches": true,
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 15320
+    },
+    {
+      "id": "substation-cable-riser-frame",
+      "sourceSha256Matches": true,
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 15934
+    },
+    {
+      "id": "substation-cable-trench-cover",
+      "sourceSha256Matches": true,
+      "triangles": 60,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 15976
+    },
+    {
+      "id": "substation-capacitive-voltage-transformer",
+      "sourceSha256Matches": true,
+      "triangles": 244,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 21759
+    },
+    {
+      "id": "substation-center-break-disconnector",
+      "sourceSha256Matches": true,
+      "triangles": 600,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 29562
+    },
+    {
+      "id": "substation-chain-gate-barrier",
+      "sourceSha256Matches": true,
+      "triangles": 148,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 18893
+    },
+    {
+      "id": "substation-control-room-console",
+      "sourceSha256Matches": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 19068
+    },
+    {
+      "id": "substation-coupling-capacitor",
+      "sourceSha256Matches": true,
+      "triangles": 244,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 20416
+    },
+    {
+      "id": "substation-current-transformer",
+      "sourceSha256Matches": true,
+      "triangles": 92,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 17892
+    },
+    {
+      "id": "substation-dc-distribution-panel",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 16753
+    },
+    {
+      "id": "substation-dead-end-crossarm",
+      "sourceSha256Matches": true,
+      "triangles": 212,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 17021
+    },
+    {
+      "id": "substation-dead-tank-breaker",
+      "sourceSha256Matches": true,
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 24665
+    },
+    {
+      "id": "substation-disturbance-recorder-cabinet",
+      "sourceSha256Matches": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 16380
+    },
+    {
+      "id": "substation-earthing-switch-stand",
+      "sourceSha256Matches": true,
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 22197
+    },
+    {
+      "id": "substation-fiber-communications-cabinet",
+      "sourceSha256Matches": true,
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 17209
+    },
+    {
+      "id": "substation-fire-monitor-post",
+      "sourceSha256Matches": true,
+      "triangles": 104,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 17154
+    },
+    {
+      "id": "substation-fire-suppression-cylinder-bank",
+      "sourceSha256Matches": true,
+      "triangles": 316,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 24880
+    },
+    {
+      "id": "substation-gas-insulated-breaker-module",
+      "sourceSha256Matches": true,
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 24010
+    },
+    {
+      "id": "substation-gis-busduct-terminal",
+      "sourceSha256Matches": true,
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 23268
+    },
+    {
+      "id": "substation-grading-ring-stand",
+      "sourceSha256Matches": true,
+      "triangles": 104,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 16830
+    },
+    {
+      "id": "substation-ground-bar-pedestal",
+      "sourceSha256Matches": true,
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 21715
+    },
+    {
+      "id": "substation-ground-conductor-clamp",
+      "sourceSha256Matches": true,
+      "triangles": 48,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 18890
+    },
+    {
+      "id": "substation-ground-grid-test-well",
+      "sourceSha256Matches": true,
+      "triangles": 68,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 15263
+    },
+    {
+      "id": "substation-high-voltage-warning-sign",
+      "sourceSha256Matches": true,
+      "triangles": 48,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 11955
+    },
+    {
+      "id": "substation-hv-cable-termination",
+      "sourceSha256Matches": true,
+      "triangles": 344,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 25071
+    },
+    {
+      "id": "substation-hydraulic-breaker-service-trolley",
+      "sourceSha256Matches": true,
+      "triangles": 292,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 22803
+    },
+    {
+      "id": "substation-inductive-voltage-transformer",
+      "sourceSha256Matches": true,
+      "triangles": 92,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 18621
+    },
+    {
+      "id": "substation-insulated-stick-cabinet",
+      "sourceSha256Matches": true,
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 17873
+    },
+    {
+      "id": "substation-lightning-mast",
+      "sourceSha256Matches": true,
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 13032
+    },
+    {
+      "id": "substation-line-trap",
+      "sourceSha256Matches": true,
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 23463
+    },
+    {
+      "id": "substation-live-tank-breaker",
+      "sourceSha256Matches": true,
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 19614
+    },
+    {
+      "id": "substation-main-power-transformer",
+      "sourceSha256Matches": true,
+      "triangles": 580,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 23255
+    },
+    {
+      "id": "substation-maintenance-access-platform",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 21281
+    },
+    {
+      "id": "substation-metering-marshalling-box",
+      "sourceSha256Matches": true,
+      "triangles": 72,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 16583
+    },
+    {
+      "id": "substation-mimic-board-cabinet",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 18485
+    },
+    {
+      "id": "substation-oil-containment-bund",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 16191
+    },
+    {
+      "id": "substation-oil-cooling-pump-skid",
+      "sourceSha256Matches": true,
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 22209
+    },
+    {
+      "id": "substation-oil-water-separator",
+      "sourceSha256Matches": true,
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 18088
+    },
+    {
+      "id": "substation-optical-current-transformer",
+      "sourceSha256Matches": true,
+      "triangles": 116,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 17930
+    },
+    {
+      "id": "substation-overhead-line-gantry",
+      "sourceSha256Matches": true,
+      "triangles": 272,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 18235
+    },
+    {
+      "id": "substation-phase-spacer-damper",
+      "sourceSha256Matches": true,
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 21781
+    },
+    {
+      "id": "substation-portable-hv-test-divider",
+      "sourceSha256Matches": true,
+      "triangles": 356,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 27833
+    },
+    {
+      "id": "substation-portable-work-canopy",
+      "sourceSha256Matches": true,
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 17612
+    },
+    {
+      "id": "substation-power-cable-reel",
+      "sourceSha256Matches": true,
+      "triangles": 268,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 24742
+    },
+    {
+      "id": "substation-precast-cable-trench",
+      "sourceSha256Matches": true,
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 13797
+    },
+    {
+      "id": "substation-pressure-relief-device",
+      "sourceSha256Matches": true,
+      "triangles": 92,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 18591
+    },
+    {
+      "id": "substation-protection-control-kiosk",
+      "sourceSha256Matches": true,
+      "triangles": 144,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 20646
+    },
+    {
+      "id": "substation-protection-relay-rack",
+      "sourceSha256Matches": true,
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 28343
+    },
+    {
+      "id": "substation-protection-relay-test-cart",
+      "sourceSha256Matches": true,
+      "triangles": 260,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 24627
+    },
+    {
+      "id": "substation-rtu-gateway-cabinet",
+      "sourceSha256Matches": true,
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 18798
+    },
+    {
+      "id": "substation-shield-wire-mast",
+      "sourceSha256Matches": true,
+      "triangles": 212,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 13072
+    },
+    {
+      "id": "substation-silica-gel-breather",
+      "sourceSha256Matches": true,
+      "triangles": 124,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 16891
+    },
+    {
+      "id": "substation-station-battery-rack",
+      "sourceSha256Matches": true,
+      "triangles": 216,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 29976
+    },
+    {
+      "id": "substation-station-post-insulator",
+      "sourceSha256Matches": true,
+      "triangles": 332,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 25543
+    },
+    {
+      "id": "substation-station-service-transformer",
+      "sourceSha256Matches": true,
+      "triangles": 580,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 24314
+    },
+    {
+      "id": "substation-strain-insulator-string",
+      "sourceSha256Matches": true,
+      "triangles": 396,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 22128
+    },
+    {
+      "id": "substation-surge-arrester",
+      "sourceSha256Matches": true,
+      "triangles": 288,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 20100
+    },
+    {
+      "id": "substation-synchronism-check-panel",
+      "sourceSha256Matches": true,
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 17083
+    },
+    {
+      "id": "substation-tap-changer-drive-cabinet",
+      "sourceSha256Matches": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 15925
+    },
+    {
+      "id": "substation-three-pole-disconnector",
+      "sourceSha256Matches": true,
+      "triangles": 600,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 27969
+    },
+    {
+      "id": "substation-transformer-conservator",
+      "sourceSha256Matches": true,
+      "triangles": 116,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 23125
+    },
+    {
+      "id": "substation-transformer-cooling-fan",
+      "sourceSha256Matches": true,
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 16360
+    },
+    {
+      "id": "substation-transformer-fire-wall",
+      "sourceSha256Matches": true,
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 20755
+    },
+    {
+      "id": "substation-transformer-oil-sampling-station",
+      "sourceSha256Matches": true,
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 22281
+    },
+    {
+      "id": "substation-transformer-radiator-bank",
+      "sourceSha256Matches": true,
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 21087
+    },
+    {
+      "id": "substation-transformer-rail-bogie",
+      "sourceSha256Matches": true,
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 16014
+    },
+    {
+      "id": "substation-tubular-busbar-bridge",
+      "sourceSha256Matches": true,
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 20152
+    },
+    {
+      "id": "substation-vertical-break-disconnector",
+      "sourceSha256Matches": true,
+      "triangles": 600,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 29255
+    },
+    {
+      "id": "substation-yard-barrier-section",
+      "sourceSha256Matches": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 22321
+    },
+    {
+      "id": "substation-yard-light-mast",
+      "sourceSha256Matches": true,
+      "triangles": 80,
+      "triangleBudget": 1800,
+      "withinBudget": true,
+      "materials": 1,
+      "oneMaterial": true,
+      "minUpM": 0,
+      "baseOriginAtFloor": true,
+      "knobs": [
+        "color",
+        "scale"
+      ],
+      "hasScaleAndColor": true,
+      "indexHasPreview": true,
+      "previewFileExists": true,
+      "previewBytes": 12051
+    }
+  ]
+}

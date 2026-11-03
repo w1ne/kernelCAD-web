@@ -964,6 +964,93 @@
       ]
     },
     {
+      "id": "grid-substation",
+      "title": "Grid Substation",
+      "description": "Visualization assets for utility substation line bays, switching apparatus, transformer auxiliaries, protection and control, cable routes, and yard maintenance.",
+      "assets": [
+        "substation-ac-station-service-board",
+        "substation-battery-charger-cabinet",
+        "substation-bay-control-cabinet",
+        "substation-bay-identification-post",
+        "substation-breaker-timing-analyzer-cart",
+        "substation-bus-coupler-gantry",
+        "substation-bus-post-insulator",
+        "substation-busbar-expansion-joint",
+        "substation-bushing-turret",
+        "substation-cable-junction-pit",
+        "substation-cable-ladder-section",
+        "substation-cable-riser-frame",
+        "substation-cable-trench-cover",
+        "substation-capacitive-voltage-transformer",
+        "substation-center-break-disconnector",
+        "substation-chain-gate-barrier",
+        "substation-control-room-console",
+        "substation-coupling-capacitor",
+        "substation-current-transformer",
+        "substation-dc-distribution-panel",
+        "substation-dead-end-crossarm",
+        "substation-dead-tank-breaker",
+        "substation-disturbance-recorder-cabinet",
+        "substation-earthing-switch-stand",
+        "substation-fiber-communications-cabinet",
+        "substation-fire-monitor-post",
+        "substation-fire-suppression-cylinder-bank",
+        "substation-gas-insulated-breaker-module",
+        "substation-gis-busduct-terminal",
+        "substation-grading-ring-stand",
+        "substation-ground-bar-pedestal",
+        "substation-ground-conductor-clamp",
+        "substation-ground-grid-test-well",
+        "substation-high-voltage-warning-sign",
+        "substation-hv-cable-termination",
+        "substation-hydraulic-breaker-service-trolley",
+        "substation-inductive-voltage-transformer",
+        "substation-insulated-stick-cabinet",
+        "substation-lightning-mast",
+        "substation-line-trap",
+        "substation-live-tank-breaker",
+        "substation-main-power-transformer",
+        "substation-maintenance-access-platform",
+        "substation-metering-marshalling-box",
+        "substation-mimic-board-cabinet",
+        "substation-oil-containment-bund",
+        "substation-oil-cooling-pump-skid",
+        "substation-oil-water-separator",
+        "substation-optical-current-transformer",
+        "substation-overhead-line-gantry",
+        "substation-phase-spacer-damper",
+        "substation-portable-hv-test-divider",
+        "substation-portable-work-canopy",
+        "substation-power-cable-reel",
+        "substation-precast-cable-trench",
+        "substation-pressure-relief-device",
+        "substation-protection-control-kiosk",
+        "substation-protection-relay-rack",
+        "substation-protection-relay-test-cart",
+        "substation-rtu-gateway-cabinet",
+        "substation-shield-wire-mast",
+        "substation-silica-gel-breather",
+        "substation-station-battery-rack",
+        "substation-station-post-insulator",
+        "substation-station-service-transformer",
+        "substation-strain-insulator-string",
+        "substation-surge-arrester",
+        "substation-synchronism-check-panel",
+        "substation-tap-changer-drive-cabinet",
+        "substation-three-pole-disconnector",
+        "substation-transformer-conservator",
+        "substation-transformer-cooling-fan",
+        "substation-transformer-fire-wall",
+        "substation-transformer-oil-sampling-station",
+        "substation-transformer-radiator-bank",
+        "substation-transformer-rail-bogie",
+        "substation-tubular-busbar-bridge",
+        "substation-vertical-break-disconnector",
+        "substation-yard-barrier-section",
+        "substation-yard-light-mast"
+      ]
+    },
+    {
       "id": "hydroponics",
       "title": "Hydroponics",
       "description": "Original low-poly greenhouse growing, nutrient handling, sensing, climate, and crop-support props with editable scale and color controls.",
@@ -82508,6 +82595,5828 @@
             "drain"
           ],
           "param": "tap"
+        }
+      ]
+    },
+    {
+      "id": "substation-ac-station-service-board",
+      "kit": "grid-substation",
+      "title": "AC station service board",
+      "description": "Multi-bay station board with separate incoming and outgoing panel sections. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-ac-station-service-board.kcad.ts",
+      "preview": "/assets/grid-substation-substation-ac-station-service-board.png",
+      "sourceSha256": "07d625707ed7fb15c496814f1a779489123e0510268d4cbb44291eacafc64df2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.976,
+          2.35,
+          0.8411
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "plinth",
+            "cabinet-body",
+            "rain-hood",
+            "front-panel-1",
+            "handle-1",
+            "front-panel-2",
+            "handle-2",
+            "front-panel-3",
+            "handle-3",
+            "front-panel-4",
+            "handle-4",
+            "cable-entry-plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-battery-charger-cabinet",
+      "kit": "grid-substation",
+      "title": "Battery charger cabinet",
+      "description": "Floor standing charger enclosure with front service panels and lower air slots. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-battery-charger-cabinet.kcad.ts",
+      "preview": "/assets/grid-substation-substation-battery-charger-cabinet.png",
+      "sourceSha256": "27a5cc4f3c20a586791312d65b7f7b2481152d33a413d4fb41c02e91222d897a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.092,
+          2.05,
+          0.8705
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "plinth",
+            "cabinet-body",
+            "rain-hood",
+            "front-panel-1",
+            "handle-1",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "vent-4",
+            "vent-5",
+            "cable-entry-plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-bay-control-cabinet",
+      "kit": "grid-substation",
+      "title": "Bay control cabinet",
+      "description": "Outdoor bay control cabinet with paired doors and a raised sun hood. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-bay-control-cabinet.kcad.ts",
+      "preview": "/assets/grid-substation-substation-bay-control-cabinet.png",
+      "sourceSha256": "934910ffe45bf21881fc6f71762b5b05a82141baa6baa763150b45cb0a0b5b0d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.352,
+          2.3,
+          0.969
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "plinth",
+            "cabinet-body",
+            "rain-hood",
+            "front-panel-1",
+            "handle-1",
+            "cable-entry-plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-bay-identification-post",
+      "kit": "grid-substation",
+      "title": "Bay identification post",
+      "description": "Yard post carrying a blank bay identifier panel for scene layout. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-bay-identification-post.kcad.ts",
+      "preview": "/assets/grid-substation-substation-bay-identification-post.png",
+      "sourceSha256": "9e3a1790f20daa6f76983e4b96f457eca3a60ff056fa445f1fa46e59f2d39982",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.52,
+          2.1454,
+          0.12
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "post-left",
+            "post-right",
+            "sign-plate",
+            "lower-brace"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-breaker-timing-analyzer-cart",
+      "kit": "grid-substation",
+      "title": "Breaker timing analyzer cart",
+      "description": "Compact analyzer trolley with an upright recorder panel and coiled lead brackets. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-breaker-timing-analyzer-cart.kcad.ts",
+      "preview": "/assets/grid-substation-substation-breaker-timing-analyzer-cart.png",
+      "sourceSha256": "e1f7e1e8dac52a583c4ec2e98ba0d8f2dc7feff67e90fc89c66ccf7e7ca6da37",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.25,
+          1.38,
+          0.7566
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "cart-chassis",
+            "caster",
+            "caster-2",
+            "caster-3",
+            "caster-4",
+            "instrument-case",
+            "analyzer-face",
+            "handle",
+            "push-handle-left",
+            "push-handle-right",
+            "handle-crossbar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-bus-coupler-gantry",
+      "kit": "grid-substation",
+      "title": "Bus coupler gantry",
+      "description": "Compact portal support for bus coupler conductors between adjacent yard bays. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-bus-coupler-gantry.kcad.ts",
+      "preview": "/assets/grid-substation-substation-bus-coupler-gantry.png",
+      "sourceSha256": "328f77e8714b9b6f00241244012a9fdf7505cd519d80e67aac35e5b49765ba52",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          4.4,
+          5.34,
+          1.414
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "foot-left",
+            "foot-right",
+            "column-left",
+            "column-right",
+            "top-crossbeam",
+            "cantilever-left",
+            "cantilever-right",
+            "insulator-1",
+            "insulator-2",
+            "insulator-3",
+            "insulator-4",
+            "earthing-platform"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-bus-post-insulator",
+      "kit": "grid-substation",
+      "title": "Bus post insulator stack",
+      "description": "Reinforced ribbed post stack with a broad top cap for a yard bus support. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-bus-post-insulator.kcad.ts",
+      "preview": "/assets/grid-substation-substation-bus-post-insulator.png",
+      "sourceSha256": "2717d9db94b2774a1e4dc55051f20216a638c3b6e72d25e7f2a7f4d9333916cf",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          0.52,
+          1.55,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "mounting-foot",
+            "core",
+            "shed-1",
+            "shed-2",
+            "shed-3",
+            "shed-4",
+            "shed-5",
+            "shed-6",
+            "top-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-busbar-expansion-joint",
+      "kit": "grid-substation",
+      "title": "Busbar expansion joint",
+      "description": "Two aligned conductor ends joined by a flexible expansion section. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-busbar-expansion-joint.kcad.ts",
+      "preview": "/assets/grid-substation-substation-busbar-expansion-joint.png",
+      "sourceSha256": "c96ef2bfa170f1cc629655e782033ffa61d716126c2b99ffbf3091ac66cd72d5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          1.756,
+          0.4875,
+          0.68
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "support-left",
+            "support-right",
+            "conductor-left",
+            "conductor-right",
+            "flexible-link",
+            "insulator-1",
+            "insulator-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-bushing-turret",
+      "kit": "grid-substation",
+      "title": "Transformer bushing turret",
+      "description": "Tank-top turret frame with three tall bushing stacks and terminal pads. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-bushing-turret.kcad.ts",
+      "preview": "/assets/grid-substation-substation-bushing-turret.png",
+      "sourceSha256": "41bae5ba59c070777dc8790a0a4f75abf2ed57697eb2b83a4529ce82e4b54114",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 852,
+        "sizeM": [
+          1.7,
+          2.2,
+          1.45
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "turret-frame",
+            "mounting-cap",
+            "bushing-core-1",
+            "bushing-shed-1-1",
+            "bushing-shed-1-2",
+            "bushing-shed-1-3",
+            "bushing-shed-1-4",
+            "bushing-shed-1-5",
+            "terminal-1",
+            "bushing-core-2",
+            "bushing-shed-2-1",
+            "bushing-shed-2-2",
+            "bushing-shed-2-3",
+            "bushing-shed-2-4",
+            "bushing-shed-2-5",
+            "terminal-2",
+            "bushing-core-3",
+            "bushing-shed-3-1",
+            "bushing-shed-3-2",
+            "bushing-shed-3-3",
+            "bushing-shed-3-4",
+            "bushing-shed-3-5",
+            "terminal-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-cable-junction-pit",
+      "kit": "grid-substation",
+      "title": "Cable junction pit",
+      "description": "Square pull pit with a raised rim, removable cover, and four side conduit stubs. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "cable and grounding"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-cable-junction-pit.kcad.ts",
+      "preview": "/assets/grid-substation-substation-cable-junction-pit.png",
+      "sourceSha256": "14b0a25466939c45ea394135cf4a81ec5781d9b942a5b7f82ee4d45a149b11d1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.8,
+          1,
+          1.45
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "pit-floor",
+            "wall-front",
+            "wall-back",
+            "wall-left",
+            "wall-right",
+            "cover",
+            "conduit-stub",
+            "conduit-stub-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-cable-ladder-section",
+      "kit": "grid-substation",
+      "title": "Cable ladder section",
+      "description": "Open cable ladder with twin stringers, evenly spaced rungs, and support feet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "cable and grounding"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-cable-ladder-section.kcad.ts",
+      "preview": "/assets/grid-substation-substation-cable-ladder-section.png",
+      "sourceSha256": "53938cbf02f2fea60344c2eccc165b80e702cf3e514a4d14a1566053acfcfc98",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          5.5975,
+          0.5,
+          0.6925
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "stringer-left",
+            "stringer-right",
+            "rung-1",
+            "rung-2",
+            "rung-3",
+            "rung-4",
+            "rung-5",
+            "rung-6",
+            "rung-7",
+            "rung-8",
+            "rung-9",
+            "rung-10",
+            "rung-11",
+            "rung-12",
+            "rung-13",
+            "support-foot",
+            "support-foot-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-cable-riser-frame",
+      "kit": "grid-substation",
+      "title": "Cable riser frame",
+      "description": "Open steel frame supporting several vertical cable risers at a bay edge. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-cable-riser-frame.kcad.ts",
+      "preview": "/assets/grid-substation-substation-cable-riser-frame.png",
+      "sourceSha256": "82c47edccc99bc52d94a1edbb62742c752b93b0b87fa3f6e95e3ac237754fff2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.5,
+          3.5,
+          0.936
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "foot-left",
+            "upright-left",
+            "foot-right",
+            "upright-right",
+            "top-support",
+            "riser-1",
+            "riser-2",
+            "riser-3",
+            "riser-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-cable-trench-cover",
+      "kit": "grid-substation",
+      "title": "Cable trench cover module",
+      "description": "Liftable trench cover slab with two recessed lifting slots and beveled edges. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "cable and grounding"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-cable-trench-cover.kcad.ts",
+      "preview": "/assets/grid-substation-substation-cable-trench-cover.png",
+      "sourceSha256": "aadeb43178d5c2bbf16de2afcbc1efe6a932389e344b96ac1900af785d5d2c36",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          1.2,
+          0.21,
+          0.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "cover-slab",
+            "edge-rib-front",
+            "edge-rib-back",
+            "lifting-slot-lip",
+            "lifting-slot-lip-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-capacitive-voltage-transformer",
+      "kit": "grid-substation",
+      "title": "Capacitive voltage transformer",
+      "description": "Capacitive voltage transformer with stacked divider sections and an upper terminal. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-capacitive-voltage-transformer.kcad.ts",
+      "preview": "/assets/grid-substation-substation-capacitive-voltage-transformer.png",
+      "sourceSha256": "a7d314b32838ffeadaa6e715e5256250a904d8b98ba599f4892b9c55006876e9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          1.25,
+          2.755,
+          0.95
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-plate",
+            "pedestal",
+            "divider-section-1",
+            "divider-section-2",
+            "divider-section-3",
+            "divider-section-4",
+            "secondary-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-center-break-disconnector",
+      "kit": "grid-substation",
+      "title": "Center break disconnector",
+      "description": "Center break switch geometry with paired contact supports and a raised center blade. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-center-break-disconnector.kcad.ts",
+      "preview": "/assets/grid-substation-substation-center-break-disconnector.png",
+      "sourceSha256": "e6bb08fd917e3d10387156367985f6997285bb0bbfbd50431aa232dc0bde0aab",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 600,
+        "sizeM": [
+          4.1,
+          2.351,
+          1.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-frame",
+            "phase-1-support--1",
+            "phase-1-insulator--1",
+            "phase-1-support-1",
+            "phase-1-insulator-1",
+            "phase-1-blade",
+            "phase-2-support--1",
+            "phase-2-insulator--1",
+            "phase-2-support-1",
+            "phase-2-insulator-1",
+            "phase-2-blade",
+            "phase-3-support--1",
+            "phase-3-insulator--1",
+            "phase-3-support-1",
+            "phase-3-insulator-1",
+            "phase-3-blade",
+            "drive-cabinet",
+            "operating-link"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-chain-gate-barrier",
+      "kit": "grid-substation",
+      "title": "Chain gate barrier",
+      "description": "Two freestanding bollards joined by a raised chain line across an access lane. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-chain-gate-barrier.kcad.ts",
+      "preview": "/assets/grid-substation-substation-chain-gate-barrier.png",
+      "sourceSha256": "64ef09c843042302afb9b461f5c78244c067a44183bfdc904bd66df437fb05a4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          3.044,
+          1.25,
+          0.45
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "bollard-base",
+            "bollard",
+            "chain-lug",
+            "bollard-base-2",
+            "bollard-2",
+            "chain-lug-2",
+            "chain-link"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-control-room-console",
+      "kit": "grid-substation",
+      "title": "Control room console",
+      "description": "Operator desk with three raised instrument panels and a continuous work surface. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-control-room-console.kcad.ts",
+      "preview": "/assets/grid-substation-substation-control-room-console.png",
+      "sourceSha256": "fdc498d1f2a0a38dbcbdb2a155ec3f0a727336231aad198911ac791d6761f6a2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          2.6,
+          1.45,
+          1.25
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "console-base",
+            "worktop",
+            "instrument-pedestal-1",
+            "display-panel-1",
+            "instrument-pedestal-2",
+            "display-panel-2",
+            "instrument-pedestal-3",
+            "display-panel-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-coupling-capacitor",
+      "kit": "grid-substation",
+      "title": "Coupling capacitor",
+      "description": "Stacked capacitor column on a frame with a small secondary terminal box. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-coupling-capacitor.kcad.ts",
+      "preview": "/assets/grid-substation-substation-coupling-capacitor.png",
+      "sourceSha256": "139745eeaea5f4fafe994e795eee780c378b006b145ea61b5530854f32c07954",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          1.12,
+          2.47,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-plate",
+            "pedestal",
+            "divider-section-1",
+            "divider-section-2",
+            "divider-section-3",
+            "divider-section-4",
+            "secondary-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-current-transformer",
+      "kit": "grid-substation",
+      "title": "Current transformer",
+      "description": "Pedestal current transformer with a broad upper ring body and terminal pads. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-current-transformer.kcad.ts",
+      "preview": "/assets/grid-substation-substation-current-transformer.png",
+      "sourceSha256": "a9c95289846a6b3a36d17e8b8285520d72e9ff4671aeda73f62ace1467b35b44",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.85,
+          1.828,
+          0.8
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-plate",
+            "pedestal",
+            "core-body",
+            "upper-ring",
+            "secondary-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-dc-distribution-panel",
+      "kit": "grid-substation",
+      "title": "DC distribution panel",
+      "description": "Wide panel with grouped feeder doors and a raised cable-entry base. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-dc-distribution-panel.kcad.ts",
+      "preview": "/assets/grid-substation-substation-dc-distribution-panel.png",
+      "sourceSha256": "956e503373a84f4a043b0d89bfda2163f99a5ccf071c130ee934fc27678f8443",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.664,
+          2.2,
+          0.8019
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "plinth",
+            "cabinet-body",
+            "rain-hood",
+            "front-panel-1",
+            "handle-1",
+            "front-panel-2",
+            "handle-2",
+            "front-panel-3",
+            "handle-3",
+            "front-panel-4",
+            "handle-4",
+            "cable-entry-plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-dead-end-crossarm",
+      "kit": "grid-substation",
+      "title": "Dead end crossarm support",
+      "description": "Tall steel support with a broad termination crossarm and suspended insulator points. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-dead-end-crossarm.kcad.ts",
+      "preview": "/assets/grid-substation-substation-dead-end-crossarm.png",
+      "sourceSha256": "c6f2ce22b56ef37383536e0930c5b0e80feea3adefb11abfae96709a03ec079e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          2.9,
+          6.2,
+          0.77
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-plate",
+            "support-pole",
+            "termination-crossarm",
+            "lower-brace",
+            "hanging-insulator-1",
+            "hanging-insulator-2",
+            "hanging-insulator-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-dead-tank-breaker",
+      "kit": "grid-substation",
+      "title": "Dead tank circuit breaker",
+      "description": "Schematic dead tank breaker with three terminal bushings and a side operating cabinet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-dead-tank-breaker.kcad.ts",
+      "preview": "/assets/grid-substation-substation-dead-tank-breaker.png",
+      "sourceSha256": "08fa86ca4aa71c7eda3057d77eccee162fd8b2434eb6df09a08bd1f0da056e83",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          3,
+          2.86,
+          1.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "breaker-base",
+            "tank-pole-1",
+            "bushing-1",
+            "tank-pole-2",
+            "bushing-2",
+            "tank-pole-3",
+            "bushing-3",
+            "mechanism-cabinet",
+            "terminal-link"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-disturbance-recorder-cabinet",
+      "kit": "grid-substation",
+      "title": "Disturbance recorder cabinet",
+      "description": "Recorder cabinet with a recessed instrument bay and lower cable entry. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-disturbance-recorder-cabinet.kcad.ts",
+      "preview": "/assets/grid-substation-substation-disturbance-recorder-cabinet.png",
+      "sourceSha256": "96414990cff8fae788be9d9d036366f750fb7c5abb376a15ca2b8c746639e9d8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.196,
+          2.2,
+          0.9195
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "plinth",
+            "cabinet-body",
+            "rain-hood",
+            "front-panel-1",
+            "handle-1",
+            "front-panel-2",
+            "handle-2",
+            "cable-entry-plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-earthing-switch-stand",
+      "kit": "grid-substation",
+      "title": "Earthing switch stand",
+      "description": "Grounding switch stand with a short operating blade and grounded support base. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-earthing-switch-stand.kcad.ts",
+      "preview": "/assets/grid-substation-substation-earthing-switch-stand.png",
+      "sourceSha256": "092ac9dc4f7cf4d093ac15bf36266cbc8b5ad99cebcd753431c8346bf9815d2c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          1.7,
+          1.46,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-frame",
+            "phase-1-support--1",
+            "phase-1-insulator--1",
+            "phase-1-support-1",
+            "phase-1-insulator-1",
+            "phase-1-blade",
+            "drive-cabinet",
+            "operating-link"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-fiber-communications-cabinet",
+      "kit": "grid-substation",
+      "title": "Fiber communications cabinet",
+      "description": "Communications enclosure with split equipment bays and overhead cable tray. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-fiber-communications-cabinet.kcad.ts",
+      "preview": "/assets/grid-substation-substation-fiber-communications-cabinet.png",
+      "sourceSha256": "f6b8268b058ff9f787f761294e370bf446c474775e71a71eddf16f670a90a964",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.092,
+          2.15,
+          0.8411
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "plinth",
+            "cabinet-body",
+            "rain-hood",
+            "front-panel-1",
+            "handle-1",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "vent-4",
+            "vent-5",
+            "cable-entry-plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-fire-monitor-post",
+      "kit": "grid-substation",
+      "title": "Fire monitor post",
+      "description": "Fixed monitor post with a raised nozzle head and two-sided control handles. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-fire-monitor-post.kcad.ts",
+      "preview": "/assets/grid-substation-substation-fire-monitor-post.png",
+      "sourceSha256": "2adf2e99e83d9cf745d10726f6567700683276cd78b2237247fb5df1ac038835",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          1.25,
+          2.122,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "pedestal-foot",
+            "standpipe",
+            "monitor-body",
+            "nozzle",
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-fire-suppression-cylinder-bank",
+      "kit": "grid-substation",
+      "title": "Fire suppression cylinder bank",
+      "description": "Grouped suppression cylinders held in a rack with a shared manifold header. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-fire-suppression-cylinder-bank.kcad.ts",
+      "preview": "/assets/grid-substation-substation-fire-suppression-cylinder-bank.png",
+      "sourceSha256": "e0e958a6c6e00211e0079cc8a328452c82c6927864669ae2b4d71feadc6e1009",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 316,
+        "sizeM": [
+          3.902,
+          1.862,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "rack-base",
+            "top-retainer",
+            "cylinder-1",
+            "valve-1",
+            "cylinder-2",
+            "valve-2",
+            "cylinder-3",
+            "valve-3",
+            "cylinder-4",
+            "valve-4",
+            "cylinder-5",
+            "valve-5",
+            "manifold-header"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-gas-insulated-breaker-module",
+      "kit": "grid-substation",
+      "title": "Gas insulated breaker module",
+      "description": "Compact enclosed switching module with three short bushings and an operator cabinet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-gas-insulated-breaker-module.kcad.ts",
+      "preview": "/assets/grid-substation-substation-gas-insulated-breaker-module.png",
+      "sourceSha256": "8d699c5d69399211f4eb04c738357917808440959a6f51b68f4fe32704f34943",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          3.3,
+          2.53,
+          1.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "enclosure-base",
+            "sealed-enclosure",
+            "bushing-1",
+            "terminal-1",
+            "bushing-2",
+            "terminal-2",
+            "bushing-3",
+            "terminal-3",
+            "service-cabinet"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-gis-busduct-terminal",
+      "kit": "grid-substation",
+      "title": "GIS bus duct terminal",
+      "description": "Enclosed bus duct end module with a terminal stack and a rectangular service panel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-gis-busduct-terminal.kcad.ts",
+      "preview": "/assets/grid-substation-substation-gis-busduct-terminal.png",
+      "sourceSha256": "df1ffa5a00afccd63960c4f8b7b924eec4af29ef366df1c1d236aaab3f1e4e0b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          2,
+          2.145,
+          1.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "enclosure-base",
+            "sealed-enclosure",
+            "bushing-1",
+            "terminal-1",
+            "bushing-2",
+            "terminal-2",
+            "bushing-3",
+            "terminal-3",
+            "service-cabinet"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-grading-ring-stand",
+      "kit": "grid-substation",
+      "title": "Grading ring stand",
+      "description": "Tall grading ring and terminal support with a wide base and insulator stem. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-grading-ring-stand.kcad.ts",
+      "preview": "/assets/grid-substation-substation-grading-ring-stand.png",
+      "sourceSha256": "3c3eaeaff57382b2ef0dde1129d1b838d827a5b9c4d1bcc5aab86df0e35eea88",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          1.885,
+          2.1,
+          0.68
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base",
+            "support",
+            "ring-side-left",
+            "ring-side-right",
+            "ring-top",
+            "terminal"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-ground-bar-pedestal",
+      "kit": "grid-substation",
+      "title": "Ground bar pedestal",
+      "description": "Insulated support stand carrying a long horizontal equipotential ground bar. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "cable and grounding"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-ground-bar-pedestal.kcad.ts",
+      "preview": "/assets/grid-substation-substation-ground-bar-pedestal.png",
+      "sourceSha256": "782472413a0cdd62ecfae605e04306a7f2c235f8204a30d950e7194edbc9e9d4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          2.603,
+          1.099,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base",
+            "insulating-support-left",
+            "insulating-support-right",
+            "ground-bar",
+            "connection-pad-1",
+            "connection-pad-2",
+            "connection-pad-3",
+            "connection-pad-4",
+            "connection-pad-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-ground-conductor-clamp",
+      "kit": "grid-substation",
+      "title": "Ground conductor clamp",
+      "description": "Bolt-on conductor clamp with a base plate, paired jaws, and crossbolt. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "cable and grounding"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-ground-conductor-clamp.kcad.ts",
+      "preview": "/assets/grid-substation-substation-ground-conductor-clamp.png",
+      "sourceSha256": "6f255c1732c627ed6d1cdc7db5cd78debad0285680d46093b318a9afa816ba8e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.56,
+          0.3812,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-plate",
+            "jaw-left",
+            "jaw-right",
+            "crossbolt"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-ground-grid-test-well",
+      "kit": "grid-substation",
+      "title": "Ground grid test well",
+      "description": "Small inspection well with a removable cap and a visible ground riser. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "cable and grounding"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-ground-grid-test-well.kcad.ts",
+      "preview": "/assets/grid-substation-substation-ground-grid-test-well.png",
+      "sourceSha256": "3a33f8f8169414bd8d3c1027e51f518693877ce3d25a76b46930e3102ee4e802",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 68,
+        "sizeM": [
+          0.728,
+          0.6955,
+          0.728
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "inspection-box",
+            "cover-lid",
+            "ground-riser"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-high-voltage-warning-sign",
+      "kit": "grid-substation",
+      "title": "High voltage warning sign",
+      "description": "Blank warning sign plate on twin legs for a fenced high voltage yard. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-high-voltage-warning-sign.kcad.ts",
+      "preview": "/assets/grid-substation-substation-high-voltage-warning-sign.png",
+      "sourceSha256": "11570291db364a9fc2e5e8b6993bde322a66cb5b52feb1e4eb3f3ec665060859",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.76,
+          2.0532,
+          0.12
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "post-left",
+            "post-right",
+            "sign-plate",
+            "lower-brace"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-hv-cable-termination",
+      "kit": "grid-substation",
+      "title": "High voltage cable termination",
+      "description": "Cable termination pedestal with a stepped insulator body and flared top fitting. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-hv-cable-termination.kcad.ts",
+      "preview": "/assets/grid-substation-substation-hv-cable-termination.png",
+      "sourceSha256": "a4bfc13d31ee442950306ac47e348489ceac389c13bd765e55867cbdc07d895e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 344,
+        "sizeM": [
+          0.92,
+          2.45,
+          0.92
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base",
+            "cable-riser",
+            "stress-cone-shed-1",
+            "stress-cone-shed-2",
+            "stress-cone-shed-3",
+            "stress-cone-shed-4",
+            "stress-cone-shed-5",
+            "stress-cone-shed-6",
+            "terminal-pad",
+            "cable-clamp"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-hydraulic-breaker-service-trolley",
+      "kit": "grid-substation",
+      "title": "Breaker service trolley",
+      "description": "Low service trolley with hydraulic power pack, hose reel, and lifting handle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-hydraulic-breaker-service-trolley.kcad.ts",
+      "preview": "/assets/grid-substation-substation-hydraulic-breaker-service-trolley.png",
+      "sourceSha256": "9362a065375b4aacb081dd803d6cb55335b93ffd03f8873a30575e75f1044a2f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 292,
+        "sizeM": [
+          1.9,
+          0.859,
+          0.9215
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "cart-chassis",
+            "caster",
+            "caster-2",
+            "caster-3",
+            "caster-4",
+            "hydraulic-unit",
+            "oil-reservoir",
+            "hose-reel",
+            "push-handle-left",
+            "push-handle-right",
+            "handle-crossbar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-inductive-voltage-transformer",
+      "kit": "grid-substation",
+      "title": "Inductive voltage transformer",
+      "description": "Compact voltage transformer with a stepped body, mounting pedestal, and top terminal. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-inductive-voltage-transformer.kcad.ts",
+      "preview": "/assets/grid-substation-substation-inductive-voltage-transformer.png",
+      "sourceSha256": "673718d489924a707ea86415788a18a940d4ffb47c1c0d437621ab99224cf8cc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          1,
+          2.35,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-plate",
+            "pedestal",
+            "transformer-body",
+            "top-terminal",
+            "secondary-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-insulated-stick-cabinet",
+      "kit": "grid-substation",
+      "title": "Insulated operating stick cabinet",
+      "description": "Long wall mounted cabinet with separate bays for insulated operating sticks. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-insulated-stick-cabinet.kcad.ts",
+      "preview": "/assets/grid-substation-substation-insulated-stick-cabinet.png",
+      "sourceSha256": "590e14791ece126fb3b1861156ef96450ad4498c14c3489b3dbf05dff73d9b81",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          2.85,
+          0.65,
+          0.45
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "wall-back",
+            "lower-shelf",
+            "upper-shelf",
+            "stick-bay-1",
+            "stick-bay-2",
+            "stick-bay-3",
+            "stick-bay-4",
+            "stick-bay-5",
+            "stick-bay-6",
+            "stick-bay-7"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-lightning-mast",
+      "kit": "grid-substation",
+      "title": "Lightning protection mast",
+      "description": "Freestanding pointed mast with a compact upper crossarm and wide footing. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-lightning-mast.kcad.ts",
+      "preview": "/assets/grid-substation-substation-lightning-mast.png",
+      "sourceSha256": "9514629c68ba37a4f20b187894a887ec8ac0a61dce92d82b6c92cff3d02d98e9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          1.722,
+          10.8,
+          0.6232
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "foundation",
+            "mast-shaft",
+            "main-crossarm",
+            "upper-crossarm",
+            "crossarm-insulator-1",
+            "crossarm-insulator-2",
+            "crossarm-insulator-3",
+            "pointed-tip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-line-trap",
+      "kit": "grid-substation",
+      "title": "Line trap",
+      "description": "Hollow coil assembly suspended from a compact support frame above the bus. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-line-trap.kcad.ts",
+      "preview": "/assets/grid-substation-substation-line-trap.png",
+      "sourceSha256": "babaec7738bd2847143f6844be26c9aec4b924348dfb0c1f7a52678513cccbb8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          1.817,
+          1.45,
+          1.332
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "support-frame",
+            "end-support-left",
+            "end-support-right",
+            "coil-turn-1",
+            "coil-turn-2",
+            "coil-turn-3",
+            "coil-turn-4",
+            "coil-turn-5",
+            "terminal-pad-left",
+            "terminal-pad-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-live-tank-breaker",
+      "kit": "grid-substation",
+      "title": "Live tank circuit breaker",
+      "description": "Three upright interrupter poles on a common frame with overhead terminal arms. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-live-tank-breaker.kcad.ts",
+      "preview": "/assets/grid-substation-substation-live-tank-breaker.png",
+      "sourceSha256": "c415bd4b8c146673d6f09b9b7476fa05e166cf185c775f53f98a0738997c1261",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          2.6,
+          3.86,
+          1.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "breaker-base",
+            "interrupter-pole-1",
+            "terminal-arm-1",
+            "interrupter-pole-2",
+            "terminal-arm-2",
+            "interrupter-pole-3",
+            "terminal-arm-3",
+            "mechanism-cabinet",
+            "terminal-link"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-main-power-transformer",
+      "kit": "grid-substation",
+      "title": "Main power transformer",
+      "description": "Large transformer tank with cooler banks, bushings, conservator, and transport base. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-main-power-transformer.kcad.ts",
+      "preview": "/assets/grid-substation-substation-main-power-transformer.png",
+      "sourceSha256": "daf87962a721cbed4483c25160a0750a3e331b138383f832b5e75c875dc1ad3f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 580,
+        "sizeM": [
+          6.4,
+          4.816,
+          3.276
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "transport-base",
+            "main-tank",
+            "tank-cover",
+            "cooler-fin-left-1",
+            "cooler-fin-right-1",
+            "cooler-fin-left-2",
+            "cooler-fin-right-2",
+            "cooler-fin-left-3",
+            "cooler-fin-right-3",
+            "cooler-fin-left-4",
+            "cooler-fin-right-4",
+            "cooler-fin-left-5",
+            "cooler-fin-right-5",
+            "cooler-fin-left-6",
+            "cooler-fin-right-6",
+            "cooler-fin-left-7",
+            "cooler-fin-right-7",
+            "conservator",
+            "conservator-pipe",
+            "bushing-1",
+            "bushing-2",
+            "bushing-3",
+            "bushing-4",
+            "transport-wheel",
+            "transport-wheel-2",
+            "transport-wheel-3",
+            "transport-wheel-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-maintenance-access-platform",
+      "kit": "grid-substation",
+      "title": "Maintenance access platform",
+      "description": "Raised service platform with guardrails, toe boards, and a short access stair. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-maintenance-access-platform.kcad.ts",
+      "preview": "/assets/grid-substation-substation-maintenance-access-platform.png",
+      "sourceSha256": "781aa6f568c43395f46fcdd4686e0da7d4554ab143b8f6ca8621b616ee73e042",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          2.4,
+          2.708,
+          1.8
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "deck",
+            "toe-board-front",
+            "toe-board-back",
+            "support-leg",
+            "support-leg-2",
+            "support-leg-3",
+            "support-leg-4",
+            "guardrail-post",
+            "guardrail-post-2",
+            "top-rail",
+            "mid-rail",
+            "access-step"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-metering-marshalling-box",
+      "kit": "grid-substation",
+      "title": "Metering marshalling box",
+      "description": "Compact instrument junction enclosure with a rain hood and cable gland plate. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-metering-marshalling-box.kcad.ts",
+      "preview": "/assets/grid-substation-substation-metering-marshalling-box.png",
+      "sourceSha256": "58c357a93ec5c43a1490b2eaeb448693b6d3f047030837eaa294e2c7b19fbf78",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.0192,
+          1.5,
+          0.7823
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "plinth",
+            "cabinet-body",
+            "rain-hood",
+            "front-panel-1",
+            "handle-1",
+            "cable-entry-plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-mimic-board-cabinet",
+      "kit": "grid-substation",
+      "title": "Mimic board cabinet",
+      "description": "Wide cabinet front with a framed blank mimic panel and service doors below. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-mimic-board-cabinet.kcad.ts",
+      "preview": "/assets/grid-substation-substation-mimic-board-cabinet.png",
+      "sourceSha256": "d059674c770224f43e8204a3dc31b8c3714d65b1f15efc937f9f8e1c7b0cfb09",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          2.288,
+          2.3,
+          0.8215
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "plinth",
+            "cabinet-body",
+            "rain-hood",
+            "front-panel-1",
+            "handle-1",
+            "front-panel-2",
+            "handle-2",
+            "front-panel-3",
+            "handle-3",
+            "front-panel-4",
+            "handle-4",
+            "cable-entry-plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-oil-containment-bund",
+      "kit": "grid-substation",
+      "title": "Oil containment bund",
+      "description": "Low perimeter containment curb with internal drain sump and grated center panels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-oil-containment-bund.kcad.ts",
+      "preview": "/assets/grid-substation-substation-oil-containment-bund.png",
+      "sourceSha256": "fe6ba0cd795c63d17bde22f2936cd1478874548c585ef34d7385f478a0c2f9ce",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          11.304,
+          0.65,
+          5.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-slab",
+            "curb-front",
+            "curb-back",
+            "curb-left",
+            "curb-right",
+            "drain-sump",
+            "grate-panel-1",
+            "grate-panel-2",
+            "grate-panel-3",
+            "grate-panel-4",
+            "grate-panel-5",
+            "grate-panel-6"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-oil-cooling-pump-skid",
+      "kit": "grid-substation",
+      "title": "Oil cooling pump skid",
+      "description": "Skid-mounted pump and motor pair with visible suction and discharge piping. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-oil-cooling-pump-skid.kcad.ts",
+      "preview": "/assets/grid-substation-substation-oil-cooling-pump-skid.png",
+      "sourceSha256": "fd8edccc0dcae369ba9e0fc9fe49915e9ffcbb0b22049fda7b8def4744bcdfdc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          2.5,
+          1.4475,
+          1.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "skid-base",
+            "pump-housing",
+            "motor",
+            "coupling-guard",
+            "suction-pipe",
+            "discharge-pipe",
+            "pipe-support",
+            "pipe-support-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-oil-water-separator",
+      "kit": "grid-substation",
+      "title": "Oil water separator",
+      "description": "Compact separator vessel with access covers, inlet manifold, and a sampling box. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-oil-water-separator.kcad.ts",
+      "preview": "/assets/grid-substation-substation-oil-water-separator.png",
+      "sourceSha256": "e0ca09b79d7b66d16a4b5557c8c2233c34a1333cdcb6ae1c7bfabe575a731875",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          2.7,
+          1.48,
+          1.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "bund-base",
+            "vessel",
+            "access-cover-left",
+            "access-cover-right",
+            "inlet-pipe",
+            "outlet-pipe",
+            "sampling-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-optical-current-transformer",
+      "kit": "grid-substation",
+      "title": "Optical current transformer",
+      "description": "Tall optical current sensor with a distinctive open sensing loop above its support. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-optical-current-transformer.kcad.ts",
+      "preview": "/assets/grid-substation-substation-optical-current-transformer.png",
+      "sourceSha256": "dab60c4f12c76cb90b28942f01c6a0d3b452382cbf663354b77e30ca24350309",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.9,
+          2.499,
+          0.82
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-plate",
+            "pedestal",
+            "sensor-body",
+            "sensor-loop-left",
+            "sensor-loop-right",
+            "sensor-bridge",
+            "secondary-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-overhead-line-gantry",
+      "kit": "grid-substation",
+      "title": "Overhead line gantry",
+      "description": "Portal frame carrying the incoming line conductors above a utility substation bay. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-overhead-line-gantry.kcad.ts",
+      "preview": "/assets/grid-substation-substation-overhead-line-gantry.png",
+      "sourceSha256": "976f77178c9362bf8e0685c6c1724f1e862461d24f540df41aa7fb303d39a80a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          5.6,
+          7.14,
+          1.587
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "foot-left",
+            "foot-right",
+            "column-left",
+            "column-right",
+            "top-crossbeam",
+            "cantilever-left",
+            "cantilever-right",
+            "insulator-1",
+            "insulator-2",
+            "insulator-3",
+            "insulator-4",
+            "earthing-platform"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-phase-spacer-damper",
+      "kit": "grid-substation",
+      "title": "Phase spacer damper",
+      "description": "Cross-shaped spacer assembly for a bundled conductor scene. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-phase-spacer-damper.kcad.ts",
+      "preview": "/assets/grid-substation-substation-phase-spacer-damper.png",
+      "sourceSha256": "24e58f39d2d023f6058e1e2b94f71441a305d255f816b8d5710737f468346705",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          1.501,
+          0.595,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "lower-conductor-support",
+            "cross-core",
+            "arm-left",
+            "arm-right",
+            "conductor-sleeve-1",
+            "conductor-sleeve-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-portable-hv-test-divider",
+      "kit": "grid-substation",
+      "title": "Portable HV test divider",
+      "description": "Portable measurement divider on a tripod base with a stepped insulated column. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-portable-hv-test-divider.kcad.ts",
+      "preview": "/assets/grid-substation-substation-portable-hv-test-divider.png",
+      "sourceSha256": "5d717e7ea3ee21ed91451edd37294ed2f1d83ad28897d805067c1a412e38318a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 356,
+        "sizeM": [
+          1.358,
+          2.55,
+          1.023
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "tripod-leg-1",
+            "tripod-leg-2",
+            "tripod-hub",
+            "divider-column",
+            "divider-shed-1",
+            "divider-shed-2",
+            "divider-shed-3",
+            "divider-shed-4",
+            "divider-shed-5",
+            "divider-shed-6",
+            "top-terminal"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-portable-work-canopy",
+      "kit": "grid-substation",
+      "title": "Portable work canopy",
+      "description": "Freestanding maintenance canopy with four posts, roof beams, and braced corners. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-portable-work-canopy.kcad.ts",
+      "preview": "/assets/grid-substation-substation-portable-work-canopy.png",
+      "sourceSha256": "4b7e37df8b42dedec27e0654ca1bd31a2a19dff265812e1df21fda2374424645",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          4.536,
+          3.1,
+          3.24
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "canopy-post",
+            "canopy-post-2",
+            "canopy-post-3",
+            "canopy-post-4",
+            "roof-frame-front",
+            "roof-frame-back",
+            "roof-frame-left",
+            "roof-frame-right",
+            "roof-cover",
+            "corner-brace",
+            "corner-brace-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-power-cable-reel",
+      "kit": "grid-substation",
+      "title": "Power cable reel",
+      "description": "Portable cable reel with flanged drums, axle supports, and a low transport frame. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "cable and grounding"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-power-cable-reel.kcad.ts",
+      "preview": "/assets/grid-substation-substation-power-cable-reel.png",
+      "sourceSha256": "df18085a9e03d2c6ef5c0e45bd9ae7b2285cd7f0c9858579aafaf3beb7d77c40",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          1.75,
+          1.485,
+          0.95
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "transport-chassis",
+            "reel-cheek",
+            "reel-cheek-2",
+            "transport-wheel",
+            "transport-wheel-2",
+            "transport-wheel-3",
+            "transport-wheel-4",
+            "cable-drum",
+            "axle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-precast-cable-trench",
+      "kit": "grid-substation",
+      "title": "Precast cable trench section",
+      "description": "Open-topped precast cable trench segment with reinforced sidewalls and end lips. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "cable and grounding"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-precast-cable-trench.kcad.ts",
+      "preview": "/assets/grid-substation-substation-precast-cable-trench.png",
+      "sourceSha256": "248b997aeafe708e28878f6dd385591bac525b0decb3eaa1617db0ea8537b1e0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          4.2,
+          0.9,
+          1.136
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "trench-floor",
+            "wall-left",
+            "wall-right",
+            "end-left",
+            "end-right",
+            "cable-run-1",
+            "cable-run-2",
+            "cable-run-3",
+            "cable-run-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-pressure-relief-device",
+      "kit": "grid-substation",
+      "title": "Pressure relief device",
+      "description": "Compact relief valve housing with a raised indicator cap and flange foot. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-pressure-relief-device.kcad.ts",
+      "preview": "/assets/grid-substation-substation-pressure-relief-device.png",
+      "sourceSha256": "fcef508f0829d9567a904adae2c0e26768c4f7e3bd7875a5385b477f19fd44c3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.68,
+          1.05,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "flange",
+            "valve-body",
+            "bonnet",
+            "indicator-cap",
+            "side-port"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-protection-control-kiosk",
+      "kit": "grid-substation",
+      "title": "Protection and control kiosk",
+      "description": "Walk-in protection kiosk with entry step, double doors, roof overhang, and service vents. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-protection-control-kiosk.kcad.ts",
+      "preview": "/assets/grid-substation-substation-protection-control-kiosk.png",
+      "sourceSha256": "328f3d8afeaaba66bd37c238bbf08f56129f05ffc3237228daefd9a6476d4be1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          3.672,
+          2.78,
+          1.89
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "plinth",
+            "walk-in-shell",
+            "roof-overhang",
+            "entry-step",
+            "left-door",
+            "right-door",
+            "vent-slat-1",
+            "vent-slat-2",
+            "vent-slat-3",
+            "vent-slat-4",
+            "vent-slat-5",
+            "vent-slat-6"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-protection-relay-rack",
+      "kit": "grid-substation",
+      "title": "Protection relay rack",
+      "description": "Open relay rack with four shelves and a row of modular relay units. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-protection-relay-rack.kcad.ts",
+      "preview": "/assets/grid-substation-substation-protection-relay-rack.png",
+      "sourceSha256": "3af48d5081a9a620ce88ac84ea1f68a92023579b097c061cbbaf3c3a4e2064e8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.2,
+          2.25,
+          0.8
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "rack-base",
+            "left-rail",
+            "right-rail",
+            "shelf-1",
+            "relay-module-1",
+            "shelf-2",
+            "relay-module-2",
+            "shelf-3",
+            "relay-module-3",
+            "shelf-4",
+            "relay-module-4",
+            "shelf-5",
+            "relay-module-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-protection-relay-test-cart",
+      "kit": "grid-substation",
+      "title": "Protection relay test cart",
+      "description": "Wheeled relay test cart with a control face, instrument shelf, and pull handle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-protection-relay-test-cart.kcad.ts",
+      "preview": "/assets/grid-substation-substation-protection-relay-test-cart.png",
+      "sourceSha256": "8b7dabb529fcb1e171cc7f5ffd6b46409a282265af03c15d42a4c6a5eb2c36c8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.45,
+          1.215,
+          0.8245
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "cart-chassis",
+            "caster",
+            "caster-2",
+            "caster-3",
+            "caster-4",
+            "test-instrument",
+            "instrument-face",
+            "lead-bracket",
+            "push-handle-left",
+            "push-handle-right",
+            "handle-crossbar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-rtu-gateway-cabinet",
+      "kit": "grid-substation",
+      "title": "RTU and gateway cabinet",
+      "description": "Tall automation cabinet with a communications bay, plinth, and cooling louvers. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-rtu-gateway-cabinet.kcad.ts",
+      "preview": "/assets/grid-substation-substation-rtu-gateway-cabinet.png",
+      "sourceSha256": "e1536fa89b9d911e6338c39cf957e63efc2dbf3a382aed56c6e66c9fcbc208e6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.3,
+          2.2,
+          0.9195
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "plinth",
+            "cabinet-body",
+            "rain-hood",
+            "front-panel-1",
+            "handle-1",
+            "front-panel-2",
+            "handle-2",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "vent-4",
+            "vent-5",
+            "cable-entry-plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-shield-wire-mast",
+      "kit": "grid-substation",
+      "title": "Shield wire mast",
+      "description": "Slender yard mast with a high crossarm for an overhead shield wire. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-shield-wire-mast.kcad.ts",
+      "preview": "/assets/grid-substation-substation-shield-wire-mast.png",
+      "sourceSha256": "faa203f4da79b1d3fd4112f447c733ca6ae209c97e7eeca0b2f2f04f8459c0b9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          2.1,
+          9.3,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "foundation",
+            "mast-shaft",
+            "main-crossarm",
+            "upper-crossarm",
+            "crossarm-insulator-1",
+            "crossarm-insulator-2",
+            "crossarm-insulator-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-silica-gel-breather",
+      "kit": "grid-substation",
+      "title": "Silica gel breather",
+      "description": "Transparent-style breather vessel silhouette with neck, brackets, and base support. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-silica-gel-breather.kcad.ts",
+      "preview": "/assets/grid-substation-substation-silica-gel-breather.png",
+      "sourceSha256": "7468033ea776361cfcd49470d54b370338acf4cde61dc1ef638c093ba52a2a1a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.62,
+          1.35,
+          0.58
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "mount-foot",
+            "glass-vessel",
+            "neck",
+            "top-cap",
+            "mount-bracket"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-station-battery-rack",
+      "kit": "grid-substation",
+      "title": "Station battery rack",
+      "description": "Two-tier battery rack carrying a row of distinct battery cases. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-station-battery-rack.kcad.ts",
+      "preview": "/assets/grid-substation-substation-station-battery-rack.png",
+      "sourceSha256": "1774e7cc2789acaab1ea2cc1150e85c99d61ffeb6ade29ee732628eb06413c64",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          2.4,
+          1.85,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "rack-foot-left",
+            "rack-foot-right",
+            "rack-post-left",
+            "rack-post-right",
+            "shelf-1",
+            "battery-1-1",
+            "battery-1-2",
+            "battery-1-3",
+            "battery-1-4",
+            "battery-1-5",
+            "battery-1-6",
+            "shelf-2",
+            "battery-2-1",
+            "battery-2-2",
+            "battery-2-3",
+            "battery-2-4",
+            "battery-2-5",
+            "battery-2-6"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-station-post-insulator",
+      "kit": "grid-substation",
+      "title": "Station post insulator",
+      "description": "Schematic ribbed post insulator on a broad mounting foot for yard equipment. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-station-post-insulator.kcad.ts",
+      "preview": "/assets/grid-substation-substation-station-post-insulator.png",
+      "sourceSha256": "73e8ce626f39223b1c4f075b279346cf7ebd7606c55fd12bdf08cf2c833be4fa",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          0.44,
+          1.35,
+          0.44
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "mounting-foot",
+            "core",
+            "shed-1",
+            "shed-2",
+            "shed-3",
+            "shed-4",
+            "shed-5",
+            "shed-6",
+            "top-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-station-service-transformer",
+      "kit": "grid-substation",
+      "title": "Station service transformer",
+      "description": "Compact auxiliary transformer with a simplified tank, bushings, and cooling fins. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-station-service-transformer.kcad.ts",
+      "preview": "/assets/grid-substation-substation-station-service-transformer.png",
+      "sourceSha256": "7dd29ece30a37035f258a3dbd3857364d648e94067cd4fa362ee340b49d8a6cd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 580,
+        "sizeM": [
+          2.6,
+          2.968,
+          1.764
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "transport-base",
+            "main-tank",
+            "tank-cover",
+            "cooler-fin-left-1",
+            "cooler-fin-right-1",
+            "cooler-fin-left-2",
+            "cooler-fin-right-2",
+            "cooler-fin-left-3",
+            "cooler-fin-right-3",
+            "cooler-fin-left-4",
+            "cooler-fin-right-4",
+            "cooler-fin-left-5",
+            "cooler-fin-right-5",
+            "cooler-fin-left-6",
+            "cooler-fin-right-6",
+            "cooler-fin-left-7",
+            "cooler-fin-right-7",
+            "conservator",
+            "conservator-pipe",
+            "bushing-1",
+            "bushing-2",
+            "bushing-3",
+            "bushing-4",
+            "transport-wheel",
+            "transport-wheel-2",
+            "transport-wheel-3",
+            "transport-wheel-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-strain-insulator-string",
+      "kit": "grid-substation",
+      "title": "Strain insulator string",
+      "description": "Suspended stack of insulator sheds with end fittings for a line termination scene. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-strain-insulator-string.kcad.ts",
+      "preview": "/assets/grid-substation-substation-strain-insulator-string.png",
+      "sourceSha256": "77ef1bd57f1b237cfe41908c36c96193a4cf85a145660eb56685ad71ad3cd17c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 396,
+        "sizeM": [
+          0.3456,
+          1.7,
+          0.3456
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "upper-clevis",
+            "shed-1",
+            "shed-2",
+            "shed-3",
+            "shed-4",
+            "shed-5",
+            "shed-6",
+            "shed-7",
+            "lower-clevis"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-surge-arrester",
+      "kit": "grid-substation",
+      "title": "Surge arrester",
+      "description": "Ribbed surge arrester column with a top terminal and a bolted pedestal. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-surge-arrester.kcad.ts",
+      "preview": "/assets/grid-substation-substation-surge-arrester.png",
+      "sourceSha256": "efdafa8b4b1288a283575e0440e0e1122f8c6b948021f2cbc83634882951ba3b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.6,
+          2.4,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "mounting-base",
+            "arrester-section-1",
+            "arrester-section-2",
+            "arrester-section-3",
+            "arrester-section-4",
+            "arrester-section-5",
+            "arrester-section-6",
+            "top-terminal"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-synchronism-check-panel",
+      "kit": "grid-substation",
+      "title": "Synchronism check panel",
+      "description": "Narrow panel cabinet with a large meter window and grouped control buttons. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "protection and control"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-synchronism-check-panel.kcad.ts",
+      "preview": "/assets/grid-substation-substation-synchronism-check-panel.png",
+      "sourceSha256": "dd221d46f5f3588f21984050ceb1ec29e9a7d34d978d9f46f42f296eb4fb4bbb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.632,
+          2.1,
+          0.7456
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "panel-plinth",
+            "panel-body",
+            "panel-cap",
+            "meter-window",
+            "button-rail",
+            "button-1",
+            "button-2",
+            "button-3",
+            "button-4",
+            "button-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-tap-changer-drive-cabinet",
+      "kit": "grid-substation",
+      "title": "Tap changer drive cabinet",
+      "description": "Weatherproof drive cabinet with a roof hood, double doors, and a low cable plinth. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-tap-changer-drive-cabinet.kcad.ts",
+      "preview": "/assets/grid-substation-substation-tap-changer-drive-cabinet.png",
+      "sourceSha256": "3774dce2a831d8e891425042251d44b67d4cd506b11fcfb54f415ebe58f4be9f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.144,
+          2.2,
+          0.9195
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "plinth",
+            "cabinet-body",
+            "rain-hood",
+            "front-panel-1",
+            "handle-1",
+            "front-panel-2",
+            "handle-2",
+            "cable-entry-plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-three-pole-disconnector",
+      "kit": "grid-substation",
+      "title": "Three pole disconnector",
+      "description": "Three phase outdoor disconnector with a shared base and visible blade arms. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-three-pole-disconnector.kcad.ts",
+      "preview": "/assets/grid-substation-substation-three-pole-disconnector.png",
+      "sourceSha256": "69b34f127fd181b6a43a16e28b3d1975440da1111f31e729da8396e16fbf1379",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 600,
+        "sizeM": [
+          3.9,
+          1.91,
+          1.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-frame",
+            "phase-1-support--1",
+            "phase-1-insulator--1",
+            "phase-1-support-1",
+            "phase-1-insulator-1",
+            "phase-1-blade",
+            "phase-2-support--1",
+            "phase-2-insulator--1",
+            "phase-2-support-1",
+            "phase-2-insulator-1",
+            "phase-2-blade",
+            "phase-3-support--1",
+            "phase-3-insulator--1",
+            "phase-3-support-1",
+            "phase-3-insulator-1",
+            "phase-3-blade",
+            "drive-cabinet",
+            "operating-link"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-transformer-conservator",
+      "kit": "grid-substation",
+      "title": "Transformer oil conservator",
+      "description": "Raised conservator vessel with saddles, end caps, and a level indicator box. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-transformer-conservator.kcad.ts",
+      "preview": "/assets/grid-substation-substation-transformer-conservator.png",
+      "sourceSha256": "b7748f0288ca4481ef6d53be256f4fe60487aa1921df1eaba990b57f1881d6bb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          1.918,
+          1.65,
+          0.792
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "saddle-left",
+            "saddle-right",
+            "vessel-shell",
+            "end-cap-left",
+            "end-cap-right",
+            "level-gauge",
+            "top-nozzle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-transformer-cooling-fan",
+      "kit": "grid-substation",
+      "title": "Transformer cooling fan unit",
+      "description": "Fan and motor unit mounted in a protective frame for an oil cooler bank. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-transformer-cooling-fan.kcad.ts",
+      "preview": "/assets/grid-substation-substation-transformer-cooling-fan.png",
+      "sourceSha256": "45b10eaa6393d870399f932c78af48d91360d71c5948454a25963c4ccfefe83a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          1.3,
+          1.552,
+          0.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "fan-skid",
+            "fan-guard",
+            "fan-housing-1",
+            "fan-motor-1",
+            "fan-housing-2",
+            "fan-motor-2",
+            "fan-housing-3",
+            "fan-motor-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-transformer-fire-wall",
+      "kit": "grid-substation",
+      "title": "Transformer fire wall",
+      "description": "Segmented fire separation wall on steel feet beside a transformer bay. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-transformer-fire-wall.kcad.ts",
+      "preview": "/assets/grid-substation-substation-transformer-fire-wall.png",
+      "sourceSha256": "daa8f35409cec42d22c7b0cf559cda86688d7a8af27491380040764bf8172275",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          10.86,
+          4.7,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "panel-1",
+            "panel-foot-1",
+            "panel-2",
+            "panel-foot-2",
+            "panel-3",
+            "panel-foot-3",
+            "panel-4",
+            "panel-foot-4",
+            "top-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-transformer-oil-sampling-station",
+      "kit": "grid-substation",
+      "title": "Transformer oil sampling station",
+      "description": "Small sampling cabinet with bottle shelf, drain tray, and pipe connection points. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-transformer-oil-sampling-station.kcad.ts",
+      "preview": "/assets/grid-substation-substation-transformer-oil-sampling-station.png",
+      "sourceSha256": "aa88b87b268e611fedee8e9f9568b02bf927761be312d225619867c80b296519",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          1.408,
+          1.411,
+          0.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "cabinet-base",
+            "sample-cabinet",
+            "work-shelf",
+            "drip-tray",
+            "sample-bottle-1",
+            "sample-bottle-2",
+            "sample-bottle-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-transformer-radiator-bank",
+      "kit": "grid-substation",
+      "title": "Transformer radiator bank",
+      "description": "Fin bank with header rails and end manifolds for a transformer cooling scene. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-transformer-radiator-bank.kcad.ts",
+      "preview": "/assets/grid-substation-substation-transformer-radiator-bank.png",
+      "sourceSha256": "10e4b8429c5fb0d03674423171d5d605efc7c164a924f2b71c65455c57a37852",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          3.9931,
+          2.27,
+          2.801
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "lower-header",
+            "upper-header",
+            "radiator-fin-1",
+            "radiator-fin-2",
+            "radiator-fin-3",
+            "radiator-fin-4",
+            "radiator-fin-5",
+            "radiator-fin-6",
+            "radiator-fin-7",
+            "radiator-fin-8",
+            "radiator-fin-9",
+            "radiator-fin-10",
+            "inlet-manifold",
+            "outlet-manifold"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-transformer-rail-bogie",
+      "kit": "grid-substation",
+      "title": "Transformer rail bogie",
+      "description": "Low transport bogie with twin rail shoes, crossmembers, and wheel housings. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "transformer bay and auxiliaries"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-transformer-rail-bogie.kcad.ts",
+      "preview": "/assets/grid-substation-substation-transformer-rail-bogie.png",
+      "sourceSha256": "602c585ce8244610eadd4b731e0c473a69fa661570b246b7d25159a72beef26b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          3.5,
+          0.703,
+          2.646
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "frame",
+            "crossmember-front",
+            "crossmember-back",
+            "rail-wheel",
+            "rail-wheel-2",
+            "rail-wheel-3",
+            "rail-wheel-4",
+            "rail-shoe",
+            "rail-shoe-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-tubular-busbar-bridge",
+      "kit": "grid-substation",
+      "title": "Tubular busbar bridge",
+      "description": "Raised busbar span with paired support columns and insulator stacks. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "incoming lines and structures"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-tubular-busbar-bridge.kcad.ts",
+      "preview": "/assets/grid-substation-substation-tubular-busbar-bridge.png",
+      "sourceSha256": "e1f5cc89db4e5b696129160968fdd84d9178406d394316bc56b18db1d956c282",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          4.6,
+          2.26,
+          0.72
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-left",
+            "support-left",
+            "insulator-left",
+            "base-right",
+            "support-right",
+            "insulator-right",
+            "bus-span",
+            "terminal-left",
+            "terminal-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-vertical-break-disconnector",
+      "kit": "grid-substation",
+      "title": "Vertical break disconnector",
+      "description": "Vertical break switch with elevated blade pivots and three visible phase positions. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "primary switching equipment"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-vertical-break-disconnector.kcad.ts",
+      "preview": "/assets/grid-substation-substation-vertical-break-disconnector.png",
+      "sourceSha256": "84b25a7ee051975faf4c2238c50d414eb315d4874a42f0efb7006cdb1a7c9938",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 600,
+        "sizeM": [
+          3.5,
+          2.6,
+          1.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-frame",
+            "phase-1-support--1",
+            "phase-1-insulator--1",
+            "phase-1-support-1",
+            "phase-1-insulator-1",
+            "phase-1-blade",
+            "phase-2-support--1",
+            "phase-2-insulator--1",
+            "phase-2-support-1",
+            "phase-2-insulator-1",
+            "phase-2-blade",
+            "phase-3-support--1",
+            "phase-3-insulator--1",
+            "phase-3-support-1",
+            "phase-3-insulator-1",
+            "phase-3-blade",
+            "drive-cabinet",
+            "operating-link"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-yard-barrier-section",
+      "kit": "grid-substation",
+      "title": "Yard barrier section",
+      "description": "Removable tubular barrier panel with two end feet and a high visibility rail silhouette. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-yard-barrier-section.kcad.ts",
+      "preview": "/assets/grid-substation-substation-yard-barrier-section.png",
+      "sourceSha256": "685058edf29e0c85804934651beb7aefaa5578a5beb6764409305a3b45988134",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          2.6,
+          0.943,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "lower-rail",
+            "upper-rail",
+            "upright-1",
+            "upright-2",
+            "upright-3",
+            "upright-4",
+            "foot",
+            "foot-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-yard-light-mast",
+      "kit": "grid-substation",
+      "title": "Yard light mast",
+      "description": "Tall lighting mast with a projecting luminaire bracket and compact lamp housing. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "grid substation",
+        "electrical infrastructure",
+        "utility yard",
+        "low poly",
+        "CC0",
+        "maintenance and safety"
+      ],
+      "compat": [
+        "grid-substation",
+        "utility-substation",
+        "electrical-infrastructure"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/grid-substation/substation-yard-light-mast.kcad.ts",
+      "preview": "/assets/grid-substation-substation-yard-light-mast.png",
+      "sourceSha256": "d01ccf797ab102dd3a04bf79917c244804d048c5dab18eb6e574ba1cbefd01eb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73828b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          1.528,
+          6.8,
+          0.8
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73828b",
+          "parts": [
+            "base-plate",
+            "mast-pole",
+            "outreach-arm",
+            "luminaire"
+          ],
+          "param": "color"
         }
       ]
     },

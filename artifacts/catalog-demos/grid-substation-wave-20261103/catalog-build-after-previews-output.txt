@@ -1,0 +1,11 @@
+Command: npx tsx scripts/buildAssetCatalog.ts
+Exit code: 0
+Output: wrote /home/andrii/worktrees/kernelCAD-web/catalog-2000/catalog/index.json
+
+Post-build source-and-preview audit:
+- total assets: 2390
+- total kits: 49
+- grid-substation assets: 80
+- grid-substation preview-backed assets: 80
+- unique catalog IDs: true
+- all new assets pass source hash, mesh, material, knob, base-origin, triangle-budget, and preview checks: true
