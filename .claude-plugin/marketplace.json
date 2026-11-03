@@ -5,14 +5,14 @@
     "url": "https://kernelcad.com"
   },
   "metadata": {
-    "description": "CAD parts, STEP and drawings",
+    "description": "Parametric CAD and drawings",
     "version": "0.17.4"
   },
   "plugins": [
     {
       "name": "kernelcad",
       "source": "./plugins/kernelcad",
-      "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
+      "description": "Create and edit dimensioned parametric CAD parts and assemblies from natural-language instructions. Design enclosures, brackets, gears and motor mounts; change dimensions, inspect an interactive 3D model, and run supported geometry and manufacturability checks. Export CAD and manufacturing files in STEP, STL or 3MF, and drawings in DXF or PDF. Check results describe the supported checks performed; manufacturing requirements still depend on the chosen process and material.",
       "version": "0.17.4",
       "author": {
         "name": "kernelCAD",
@@ -23,11 +23,24 @@
       "license": "MIT",
       "keywords": [
         "cad",
-        "mcp",
+        "parametric",
+        "mechanical-design",
+        "parts",
+        "assemblies",
+        "enclosures",
+        "brackets",
+        "gears",
+        "motor-mounts",
+        "3d-printing",
+        "cnc",
+        "manufacturing",
+        "drawings",
         "step",
         "stl",
         "3mf",
-        "opencascade",
+        "dxf",
+        "pdf",
+        "mcp",
         "skills"
       ],
       "category": "productivity"
