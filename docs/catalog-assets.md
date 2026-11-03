@@ -49,3 +49,13 @@ and color controls and has a generated preview path in the catalog index. The
 records the source-to-preview workflow and local audit results. The kit is a set
 of generic scene props; it does not assert archaeological method approval,
 instrument calibration, historical fidelity, or field acceptance.
+
+## Apiary assets
+
+The [apiary kit](../catalog/kits/apiary/README.md) adds 50 original low-poly
+scene props for hive structures, beekeeping tools, feeding, yard fixtures, and
+honey handling. Every source exposes scale and color controls and has an
+indexed preview path. The [wave demo and verification bundle](../artifacts/catalog-demos/apiary-wave-20261103/README.md)
+records the source-to-preview workflow and local checks. These are generic
+scene assets; mesh and catalog checks do not establish husbandry suitability,
+food-contact suitability, equipment ratings, or physical acceptance.

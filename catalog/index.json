@@ -106,6 +106,63 @@
       ]
     },
     {
+      "id": "apiary",
+      "title": "Apiary",
+      "description": "Original low-poly beekeeping, hive-yard and honey-handling scene props with editable scale and color controls.",
+      "assets": [
+        "apiary-gate",
+        "apiary-shade-canopy",
+        "apiary-sign",
+        "apiary-waterer",
+        "bee-brush",
+        "bee-escape-board",
+        "bee-smoker",
+        "beekeeper-gloves",
+        "beekeeper-jacket",
+        "beekeeper-veil-hood",
+        "beeswax-block",
+        "bottling-stand",
+        "comb-section-box",
+        "entrance-feeder",
+        "entrance-reducer",
+        "foundation-frame",
+        "frame-carrier",
+        "frame-grip",
+        "frame-rest",
+        "hive-frame",
+        "hive-inspection-mirror",
+        "hive-scale",
+        "hive-stand",
+        "hive-tool",
+        "honey-bucket",
+        "honey-extractor",
+        "honey-jar",
+        "honey-settling-tank",
+        "honey-squeeze-bottle",
+        "honey-strainer",
+        "inner-hive-cover",
+        "langstroth-hive",
+        "migratory-hive-cover",
+        "mouse-guard",
+        "nuc-carrier",
+        "nuc-hive-box",
+        "observation-hive",
+        "pollen-trap",
+        "queen-cage",
+        "queen-catching-clip",
+        "queen-excluder",
+        "queen-marking-tube",
+        "screened-bottom-board",
+        "solar-wax-melter",
+        "swarm-trap",
+        "top-bar-hive",
+        "top-feeder",
+        "uncapping-fork",
+        "uncapping-knife",
+        "uncapping-tank"
+      ]
+    },
+    {
       "id": "archaeology-fieldwork",
       "title": "Archaeology fieldwork",
       "description": "Original low-poly excavation, survey, screening, documentation, and finds-handling props with editable size and color controls.",
@@ -8617,6 +8674,3620 @@
             "front-hook-1",
             "closure-tab-0",
             "closure-tab-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "apiary-gate",
+      "kit": "apiary",
+      "title": "Apiary gate",
+      "description": "Simple yard gate with two posts, cross rails and a hinged-looking framed panel. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/apiary-gate.kcad.ts",
+      "preview": "/assets/apiary-apiary-gate.png",
+      "sourceSha256": "dfa583da87ecc8e969b0cf6884c52f273a01f57ad17c5cc140f2c53b0cc2c218",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7e765f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.11,
+          1.155,
+          0.11
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7e765f",
+          "parts": [
+            "post-left",
+            "post-right",
+            "gate-top",
+            "gate-bottom",
+            "gate-rail-a",
+            "gate-rail-b",
+            "gate-brace",
+            "post-cap-left",
+            "post-cap-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "apiary-shade-canopy",
+      "kit": "apiary",
+      "title": "Apiary shade canopy",
+      "description": "Open four-post shade shelter with top frame, roof slats and cross braces. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/apiary-shade-canopy.kcad.ts",
+      "preview": "/assets/apiary-apiary-shade-canopy.png",
+      "sourceSha256": "31f2a01734d418df76db937039dbe275f3884dc35d02c343c1f9bfff731e9239",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8e856b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.86,
+          1.135,
+          0.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8e856b",
+          "parts": [
+            "post--400--300",
+            "post--400-300",
+            "post-400--300",
+            "post-400-300",
+            "beam-front",
+            "beam-back",
+            "beam-left",
+            "beam-right",
+            "roof-slat-0",
+            "roof-slat-1",
+            "roof-slat-2",
+            "roof-slat-3",
+            "roof-slat-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "apiary-sign",
+      "kit": "apiary",
+      "title": "Apiary sign",
+      "description": "Outdoor apiary marker with framed sign panel, two posts and weighted feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/apiary-sign.kcad.ts",
+      "preview": "/assets/apiary-apiary-sign.png",
+      "sourceSha256": "1a328ba77cd929d37778b546b426d9552baa91ca156bc0ed83261c2277ae1ad6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#987a4f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.7,
+          1.045,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#987a4f",
+          "parts": [
+            "panel",
+            "top-frame",
+            "post-left",
+            "post-right",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "apiary-waterer",
+      "kit": "apiary",
+      "title": "Apiary waterer",
+      "description": "Shallow water tray with raised reservoir, support ring and landing rim. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/apiary-waterer.kcad.ts",
+      "preview": "/assets/apiary-apiary-waterer.png",
+      "sourceSha256": "df957378934f523bb98ae7676f0d39a7767f588f8eb0f68ce334a22a614996e0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#899084",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.42,
+          0.425,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#899084",
+          "parts": [
+            "tray",
+            "reservoir",
+            "neck",
+            "cap",
+            "landing-front",
+            "landing-back"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bee-brush",
+      "kit": "apiary",
+      "title": "Bee brush",
+      "description": "Long-handled frame brush with a broad ferrule and a compact bristle block. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/bee-brush.kcad.ts",
+      "preview": "/assets/apiary-bee-brush.png",
+      "sourceSha256": "f1d3ea60ea8ee5a8da113a30f324934d94bc8399b80e409f18950df37a9dd305",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9b815c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.145,
+          0.42,
+          0.095
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9b815c",
+          "parts": [
+            "handle",
+            "ferrule",
+            "bristles",
+            "bristle-0",
+            "bristle-1",
+            "bristle-2",
+            "bristle-3",
+            "bristle-4",
+            "bristle-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bee-escape-board",
+      "kit": "apiary",
+      "title": "Bee escape board",
+      "description": "Flat escape-board frame with a center panel and four raised tunnel blocks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/bee-escape-board.kcad.ts",
+      "preview": "/assets/apiary-bee-escape-board.png",
+      "sourceSha256": "122216ddc1b9f765be43564bee19dce9086be46aa389c76f62c6efef843d67ac",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#918064",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.65,
+          0.15,
+          0.515
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#918064",
+          "parts": [
+            "board",
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right",
+            "escape-tunnel-0",
+            "escape-tunnel-1",
+            "escape-tunnel-2",
+            "escape-tunnel-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bee-smoker",
+      "kit": "apiary",
+      "title": "Bee smoker",
+      "description": "Low-poly smoker with fire pot, perforated-look cap, spout and bellows body. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/bee-smoker.kcad.ts",
+      "preview": "/assets/apiary-bee-smoker.png",
+      "sourceSha256": "b527f0f3ee007d3babb32fe8039746c879fce866f00d0ee4186030423b25cc45",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777a79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.4025,
+          0.52,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777a79",
+          "parts": [
+            "fire-pot",
+            "base-ring",
+            "cap",
+            "spout",
+            "spout-tip",
+            "bellows-back",
+            "bellows-front",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "beekeeper-gloves",
+      "kit": "apiary",
+      "title": "Beekeeper gloves",
+      "description": "Pair of gauntlet gloves with broad cuffs and separated low-poly fingers. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/beekeeper-gloves.kcad.ts",
+      "preview": "/assets/apiary-beekeeper-gloves.png",
+      "sourceSha256": "aad287f7dba956375950ab4edc3176e2cd3936c8017a67ba3bcd71b46fa78f46",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d8d0b8",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.49,
+          0.345,
+          0.105
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d8d0b8",
+          "parts": [
+            "palm-left",
+            "palm-right",
+            "finger-left-0",
+            "finger-left-1",
+            "finger-left-2",
+            "finger-left-3",
+            "finger-right-0",
+            "finger-right-1",
+            "finger-right-2",
+            "finger-right-3",
+            "cuff-left",
+            "cuff-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "beekeeper-jacket",
+      "kit": "apiary",
+      "title": "Beekeeper jacket",
+      "description": "Protective jacket form with torso, sleeves, collar and integrated hood ring. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/beekeeper-jacket.kcad.ts",
+      "preview": "/assets/apiary-beekeeper-jacket.png",
+      "sourceSha256": "470a63dd72653dc45c6bd223146f9c08473cf7ea808437bdbf481428d811319e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d7d1be",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.755,
+          0.83,
+          0.29
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d7d1be",
+          "parts": [
+            "torso",
+            "sleeve-left",
+            "sleeve-right",
+            "cuff-left",
+            "cuff-right",
+            "collar",
+            "hood-rim"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "beekeeper-veil-hood",
+      "kit": "apiary",
+      "title": "Beekeeper veil hood",
+      "description": "Hat brim and crown framed by a squared mesh veil and lower neck band. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/beekeeper-veil-hood.kcad.ts",
+      "preview": "/assets/apiary-beekeeper-veil-hood.png",
+      "sourceSha256": "78a38b732154130b78599e4a6faa5b42ba6d623e59c7615a36a6b214aa9eaef3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d1cbb4",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.38,
+          0.525,
+          0.38
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d1cbb4",
+          "parts": [
+            "brim",
+            "crown",
+            "veil-front",
+            "veil-back",
+            "veil-left",
+            "veil-right",
+            "neck-band"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "beeswax-block",
+      "kit": "apiary",
+      "title": "Beeswax block",
+      "description": "Rectangular low-poly beeswax cake with shallow mold ribs and end tabs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/beeswax-block.kcad.ts",
+      "preview": "/assets/apiary-beeswax-block.png",
+      "sourceSha256": "0741a01ae8813f4be5adc0d2db55f80ecb3e3e233f076dde55c1d867601050b4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d2a64f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.42,
+          0.18,
+          0.35
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d2a64f",
+          "parts": [
+            "block",
+            "top",
+            "rib-left",
+            "rib-right",
+            "tab-front",
+            "tab-back"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bottling-stand",
+      "kit": "apiary",
+      "title": "Honey bottling stand",
+      "description": "Small bottling platform with raised support rails, bottle seat and valve clearance. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/bottling-stand.kcad.ts",
+      "preview": "/assets/apiary-bottling-stand.png",
+      "sourceSha256": "bdad4d497bfa75a564e578447f2db8ec8cd1821d2ed571a72a0160bdfa09e40f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#927c55",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.56,
+          0.485,
+          0.43
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#927c55",
+          "parts": [
+            "base",
+            "back-post",
+            "top-rail",
+            "left-guide",
+            "right-guide",
+            "bottle-stop",
+            "front-feet"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "comb-section-box",
+      "kit": "apiary",
+      "title": "Comb section box",
+      "description": "Small presentation box frame with top rim, lower tray and open-look center panel. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/comb-section-box.kcad.ts",
+      "preview": "/assets/apiary-comb-section-box.png",
+      "sourceSha256": "0ca7568dd9550d8913c346dd57001d8f8c676e4dfc82f349ad4d1f2a8a7111a8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b29054",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.27,
+          0.31,
+          0.23
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b29054",
+          "parts": [
+            "base",
+            "left",
+            "right",
+            "front",
+            "back",
+            "top-rim",
+            "comb-panel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "entrance-feeder",
+      "kit": "apiary",
+      "title": "Hive entrance feeder",
+      "description": "Small front-mounted feeder tray with clear-look reservoir and landing ledge. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/entrance-feeder.kcad.ts",
+      "preview": "/assets/apiary-entrance-feeder.png",
+      "sourceSha256": "58e5e664fecea8e2b60f335c18277b504848015a407aa087fecd1b57d81a7be3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a48a5f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.34,
+          0.34,
+          0.2625
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a48a5f",
+          "parts": [
+            "tray",
+            "front-lip",
+            "reservoir",
+            "reservoir-cap",
+            "mount-left",
+            "mount-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "entrance-reducer",
+      "kit": "apiary",
+      "title": "Hive entrance reducer",
+      "description": "Removable entrance strip with two opening blocks and a broad center bar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/entrance-reducer.kcad.ts",
+      "preview": "/assets/apiary-entrance-reducer.png",
+      "sourceSha256": "0d32157142359fe1248e212a47d31b41e708e187fdadc8e7b65ae8f09c808152",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#89765a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.63,
+          0.086,
+          0.095
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#89765a",
+          "parts": [
+            "strip",
+            "left-block",
+            "right-block",
+            "center-bar",
+            "lift-tab-left",
+            "lift-tab-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "foundation-frame",
+      "kit": "apiary",
+      "title": "Foundation frame",
+      "description": "Hive frame holding a thin foundation sheet between its rails. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/foundation-frame.kcad.ts",
+      "preview": "/assets/apiary-foundation-frame.png",
+      "sourceSha256": "24377123ab2a250d533d6a476a70a90fd750a727adbbc44029192fa3d4d6a4ef",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b0915b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.625,
+          0.737,
+          0.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b0915b",
+          "parts": [
+            "top-bar",
+            "ear-left",
+            "ear-right",
+            "side-left",
+            "side-right",
+            "foundation",
+            "bottom-bar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "frame-carrier",
+      "kit": "apiary",
+      "title": "Hive frame carrier",
+      "description": "Portable frame rack with paired side rails, end handles and protective crossbars. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/frame-carrier.kcad.ts",
+      "preview": "/assets/apiary-frame-carrier.png",
+      "sourceSha256": "904cd0443f7662ffaaa0c1b6b1a4454015ed1c30690b3f68f6d8cd94acbe6cb9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8f7952",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.8,
+          0.575,
+          0.455
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8f7952",
+          "parts": [
+            "bottom",
+            "side-left",
+            "side-right",
+            "handle-left",
+            "handle-right",
+            "cross-front",
+            "cross-back"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "frame-grip",
+      "kit": "apiary",
+      "title": "Frame grip",
+      "description": "Hand tool with paired clamping jaws, pivot block and long grip handles. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/frame-grip.kcad.ts",
+      "preview": "/assets/apiary-frame-grip.png",
+      "sourceSha256": "a6b85a9b052ec9a3c18e1f48f669366dd93c8bc5c12dee864064e4e5298f5a2b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7e7060",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.35,
+          0.51,
+          0.22
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7e7060",
+          "parts": [
+            "jaw-left",
+            "jaw-right",
+            "pivot",
+            "handle-left",
+            "handle-right",
+            "grip-left",
+            "grip-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "frame-rest",
+      "kit": "apiary",
+      "title": "Hive frame rest",
+      "description": "Crossbar accessory with two raised ledges that hold removed hive frames. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/frame-rest.kcad.ts",
+      "preview": "/assets/apiary-frame-rest.png",
+      "sourceSha256": "60592d25a0dca764bd8d582768e48579cc73865a5368985952ff1a298348989a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#98784c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.74,
+          0.175,
+          0.15
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#98784c",
+          "parts": [
+            "beam",
+            "left-ledge",
+            "right-ledge",
+            "center-stop",
+            "left-foot",
+            "right-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hive-frame",
+      "kit": "apiary",
+      "title": "Hive frame",
+      "description": "Wooden beehive frame with top bar, side rails, bottom bar and hanging ears. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/hive-frame.kcad.ts",
+      "preview": "/assets/apiary-hive-frame.png",
+      "sourceSha256": "2b0e801d9365ee7f9ea673a7a8345c5f8c8ca159daafd37b10ca6ff40ebd4d7e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b08c54",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.625,
+          0.737,
+          0.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b08c54",
+          "parts": [
+            "top-bar",
+            "ear-left",
+            "ear-right",
+            "side-left",
+            "side-right",
+            "bottom-bar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hive-inspection-mirror",
+      "kit": "apiary",
+      "title": "Hive inspection mirror",
+      "description": "Hand inspection mirror with grip, neck joint and framed rectangular viewing plate. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/hive-inspection-mirror.kcad.ts",
+      "preview": "/assets/apiary-hive-inspection-mirror.png",
+      "sourceSha256": "3ba63c68b59f1138b695b890d4bad7c99eb5a84cc7f12f963d80647f3ab9563c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d837f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.3,
+          0.68,
+          0.105
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d837f",
+          "parts": [
+            "handle",
+            "grip-cap",
+            "neck",
+            "back-plate",
+            "mirror-face",
+            "frame-top",
+            "frame-bottom"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hive-scale",
+      "kit": "apiary",
+      "title": "Apiary hive scale",
+      "description": "Low platform scale with four feet, support deck and compact readout pedestal. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/hive-scale.kcad.ts",
+      "preview": "/assets/apiary-hive-scale.png",
+      "sourceSha256": "802ceffb05c3906a7a29e7bb1b4bd4527772870c7a3348c6f4bb0a9663503ff1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6f7775",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.6,
+          0.425,
+          0.559
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6f7775",
+          "parts": [
+            "platform",
+            "foot--230--190",
+            "foot--230-190",
+            "foot-230--190",
+            "foot-230-190",
+            "readout-post",
+            "readout",
+            "screen"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hive-stand",
+      "kit": "apiary",
+      "title": "Hive stand",
+      "description": "Raised hive support with four feet, paired rails and a broad landing deck. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/hive-stand.kcad.ts",
+      "preview": "/assets/apiary-hive-stand.png",
+      "sourceSha256": "29e1bc5e8556fe10e3fc5da75ea5e3450a54a20a49bf77c1d2f732d4c057f686",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#77705f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.7,
+          0.375,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#77705f",
+          "parts": [
+            "leg--250--180",
+            "leg--250-180",
+            "leg-250--180",
+            "leg-250-180",
+            "rail-front",
+            "rail-back",
+            "cross-rail-left",
+            "cross-rail-right",
+            "deck"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hive-tool",
+      "kit": "apiary",
+      "title": "Hive tool",
+      "description": "Compact flat hive tool with a broad scraper end and raised pry hook. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/hive-tool.kcad.ts",
+      "preview": "/assets/apiary-hive-tool.png",
+      "sourceSha256": "9f5615a06cfca9a3be64cc2dde98a7a243238ab16aa58b7bbfc9b68f86022cae",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777b7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.21,
+          0.39,
+          0.063
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777b7d",
+          "parts": [
+            "shaft",
+            "scraper",
+            "hook-base",
+            "hook-tip",
+            "grip-rib-a",
+            "grip-rib-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "honey-bucket",
+      "kit": "apiary",
+      "title": "Honey pail",
+      "description": "Straight sided honey pail with lid, rim, bail handle and small bottom feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/honey-bucket.kcad.ts",
+      "preview": "/assets/apiary-honey-bucket.png",
+      "sourceSha256": "19970685d596cc82d54ee6f7ed7358b8fb0be7f540fbb13f2bdbadfa5a78a546",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a28d5e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.3,
+          0.408,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a28d5e",
+          "parts": [
+            "pail",
+            "bottom",
+            "lid",
+            "lid-knob",
+            "bail",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "honey-extractor",
+      "kit": "apiary",
+      "title": "Manual honey extractor",
+      "description": "Low-poly radial extractor drum with lid, center spindle, legs and hand crank. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/honey-extractor.kcad.ts",
+      "preview": "/assets/apiary-honey-extractor.png",
+      "sourceSha256": "f86878a8678afe57487776c0d52081b4e785579bccaf31caf8eb7e3c4890454c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#858b8a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          0.54,
+          1.035,
+          0.57
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#858b8a",
+          "parts": [
+            "drum",
+            "base-ring",
+            "lid",
+            "spindle",
+            "crank-arm",
+            "crank-grip",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "drain-spout"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "honey-jar",
+      "kit": "apiary",
+      "title": "Honey jar",
+      "description": "Simple straight sided jar with a shoulder rim, screw lid and small label panel. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/honey-jar.kcad.ts",
+      "preview": "/assets/apiary-honey-jar.png",
+      "sourceSha256": "dde3bab0f3b394e51a5e1721f5177221c886ee6c695ec684beaafb157574b4fe",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#ab945b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.15,
+          0.38,
+          0.153
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#ab945b",
+          "parts": [
+            "jar-body",
+            "shoulder",
+            "neck",
+            "lid",
+            "label"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "honey-settling-tank",
+      "kit": "apiary",
+      "title": "Honey settling tank",
+      "description": "Tall settling vessel with domed-look lid, support feet and a lower drain valve. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/honey-settling-tank.kcad.ts",
+      "preview": "/assets/apiary-honey-settling-tank.png",
+      "sourceSha256": "060e38dbe85e5ff7bb77c347950bfa55351ca99f3c0dcda7adfc290abff265f6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9d8e67",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          0.46,
+          0.71,
+          0.545
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9d8e67",
+          "parts": [
+            "vessel",
+            "base-ring",
+            "lid",
+            "lid-handle",
+            "valve-body",
+            "valve-handle",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "honey-squeeze-bottle",
+      "kit": "apiary",
+      "title": "Honey squeeze bottle",
+      "description": "Soft sided bottle form with tapered shoulder, narrow nozzle and cap. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/honey-squeeze-bottle.kcad.ts",
+      "preview": "/assets/apiary-honey-squeeze-bottle.png",
+      "sourceSha256": "4724afa66ccac1d487a5c94059bd12abf503919f96522262c1216a3f8297515e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b2934e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 232,
+        "sizeM": [
+          0.16,
+          0.49,
+          0.166
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b2934e",
+          "parts": [
+            "body",
+            "shoulder",
+            "neck",
+            "nozzle",
+            "cap",
+            "label"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "honey-strainer",
+      "kit": "apiary",
+      "title": "Honey strainer",
+      "description": "Stacking filter basket with broad rim, lower tapered-look body and support tabs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/honey-strainer.kcad.ts",
+      "preview": "/assets/apiary-honey-strainer.png",
+      "sourceSha256": "7f8307eabe0e7004b064caf80c550a276dd7253c7579f19e823d9c294483be3e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#858d8b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          0.505,
+          0.215,
+          0.39
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#858d8b",
+          "parts": [
+            "basket",
+            "rim",
+            "screen-bar-0",
+            "screen-bar-1",
+            "screen-bar-2",
+            "screen-bar-3",
+            "screen-bar-4",
+            "screen-bar-5",
+            "screen-bar-6",
+            "tab-left",
+            "tab-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "inner-hive-cover",
+      "kit": "apiary",
+      "title": "Inner hive cover",
+      "description": "Thin inner cover board with raised perimeter rim and central ventilation collar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/inner-hive-cover.kcad.ts",
+      "preview": "/assets/apiary-inner-hive-cover.png",
+      "sourceSha256": "2196f09650bc5161b0f26d4f0c3563135e6286fb0c18aaf0578988c47e142cb0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9b835d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.65,
+          0.135,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9b835d",
+          "parts": [
+            "board",
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right",
+            "vent-collar",
+            "grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "langstroth-hive",
+      "kit": "apiary",
+      "title": "Langstroth hive",
+      "description": "Stacked hive body, honey super, cover, entrance and raised stand. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/langstroth-hive.kcad.ts",
+      "preview": "/assets/apiary-langstroth-hive.png",
+      "sourceSha256": "9b4a1afe9aebb2009200063cc083f0f8735a90e55f91a0bf2c6b6da147052403",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b89358",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.66,
+          0.96,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b89358",
+          "parts": [
+            "stand-left",
+            "stand-right",
+            "bottom-board",
+            "brood-box",
+            "honey-super",
+            "telescoping-cover",
+            "entrance-strip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "migratory-hive-cover",
+      "kit": "apiary",
+      "title": "Migratory hive cover",
+      "description": "Flat transport cover with overhanging rim, center ribs and lift tabs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/migratory-hive-cover.kcad.ts",
+      "preview": "/assets/apiary-migratory-hive-cover.png",
+      "sourceSha256": "88e9b568d18b19c4c0b98637f54a21b1ff8620247295f12b324a384ea7057b63",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8c7b60",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.76,
+          0.145,
+          0.63
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8c7b60",
+          "parts": [
+            "cover-panel",
+            "front-rim",
+            "back-rim",
+            "left-rim",
+            "right-rim",
+            "rib-left",
+            "rib-right",
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mouse-guard",
+      "kit": "apiary",
+      "title": "Hive mouse guard",
+      "description": "Narrow hive entrance guard plate with a row of evenly spaced vertical bars. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/mouse-guard.kcad.ts",
+      "preview": "/assets/apiary-mouse-guard.png",
+      "sourceSha256": "37b45c0dd5fe71090eb1d62528c90ee021b568496349747e39bd0cc755dffc25",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d817e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.62,
+          0.11,
+          0.032
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d817e",
+          "parts": [
+            "plate",
+            "top-rail",
+            "bottom-rail",
+            "guard-bar-0",
+            "guard-bar-1",
+            "guard-bar-2",
+            "guard-bar-3",
+            "guard-bar-4",
+            "guard-bar-5",
+            "guard-bar-6",
+            "guard-bar-7",
+            "guard-bar-8",
+            "guard-bar-9"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "nuc-carrier",
+      "kit": "apiary",
+      "title": "Nucleus hive carrier",
+      "description": "Compact carrier frame with side handles, bottom slats and corner uprights. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/nuc-carrier.kcad.ts",
+      "preview": "/assets/apiary-nuc-carrier.png",
+      "sourceSha256": "749e70baea86f152edcda4d4b9422599294aede2181f34f27e28214d6fc576b4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#88765a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.71,
+          0.365,
+          0.445
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#88765a",
+          "parts": [
+            "base",
+            "rail-left",
+            "rail-right",
+            "handle-left",
+            "handle-right",
+            "cross-front",
+            "cross-back"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "nuc-hive-box",
+      "kit": "apiary",
+      "title": "Nucleus hive box",
+      "description": "Compact nucleus colony box with lid, handholds, entrance and bottom board. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/nuc-hive-box.kcad.ts",
+      "preview": "/assets/apiary-nuc-hive-box.png",
+      "sourceSha256": "7174e14e6375fd75a43551375f4ddef29ff62c0876de89070de747b4a13805a2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9f8156",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.485,
+          0.545,
+          0.4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9f8156",
+          "parts": [
+            "base",
+            "body",
+            "rim",
+            "lid",
+            "handle-left",
+            "handle-right",
+            "entrance"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "observation-hive",
+      "kit": "apiary",
+      "title": "Observation hive",
+      "description": "Framed vertical viewing hive with stacked inspection panels, base and carry handle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/observation-hive.kcad.ts",
+      "preview": "/assets/apiary-observation-hive.png",
+      "sourceSha256": "f8b4bf1e7d62465b8bd8329d0cc4e937aac32b780d67a86082e9e8b4845cdcf0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a7652",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.52,
+          1.15,
+          0.33
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a7652",
+          "parts": [
+            "base",
+            "left-rail",
+            "right-rail",
+            "back",
+            "lower-panel",
+            "middle-panel",
+            "upper-panel",
+            "top",
+            "carry-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pollen-trap",
+      "kit": "apiary",
+      "title": "Hive pollen trap",
+      "description": "Entrance trap box with a removable drawer, comb grid and front landing board. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/pollen-trap.kcad.ts",
+      "preview": "/assets/apiary-pollen-trap.png",
+      "sourceSha256": "c8571c9ef4ea8c2dff0913182e865262c974455425453bb0b7cb4138091fe86c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a795d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.56,
+          0.26,
+          0.44
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a795d",
+          "parts": [
+            "trap-body",
+            "base",
+            "grid",
+            "grid-bar-0",
+            "grid-bar-1",
+            "grid-bar-2",
+            "grid-bar-3",
+            "grid-bar-4",
+            "grid-bar-5",
+            "grid-bar-6",
+            "drawer",
+            "landing"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "queen-cage",
+      "kit": "apiary",
+      "title": "Queen introduction cage",
+      "description": "Small ventilated queen cage with end plugs, hanging loop and cross bars. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/queen-cage.kcad.ts",
+      "preview": "/assets/apiary-queen-cage.png",
+      "sourceSha256": "fc328fe80574e0fa15be403576b55b0f849d537516d7595aa559072d0a939a12",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b79b68",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.19,
+          0.32,
+          0.106
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b79b68",
+          "parts": [
+            "cage-body",
+            "end-low",
+            "end-high",
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "hanging-loop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "queen-catching-clip",
+      "kit": "apiary",
+      "title": "Queen catching clip",
+      "description": "Lightweight queen-catching clip with two long arms, hinge and rounded tips. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/queen-catching-clip.kcad.ts",
+      "preview": "/assets/apiary-queen-catching-clip.png",
+      "sourceSha256": "3d92cfc7ca8108300d10f71564ac3ba7226a5e51825b23f51ae173652e981b52",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9d916f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.205,
+          0.365,
+          0.09
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9d916f",
+          "parts": [
+            "arm-left",
+            "arm-right",
+            "hinge",
+            "handle-left",
+            "handle-right",
+            "tip-left",
+            "tip-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "queen-excluder",
+      "kit": "apiary",
+      "title": "Queen excluder",
+      "description": "Flat framed excluder grid with a dense array of narrow parallel bars. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/queen-excluder.kcad.ts",
+      "preview": "/assets/apiary-queen-excluder.png",
+      "sourceSha256": "2df976746005f5a71612a3c73270c3641b382a57ac50e7ddacc7ead334dc82a4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8f846d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.62,
+          0.034,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8f846d",
+          "parts": [
+            "frame-front",
+            "frame-back",
+            "frame-left",
+            "frame-right",
+            "grid-0",
+            "grid-1",
+            "grid-2",
+            "grid-3",
+            "grid-4",
+            "grid-5",
+            "grid-6",
+            "grid-7",
+            "grid-8",
+            "grid-9",
+            "grid-10"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "queen-marking-tube",
+      "kit": "apiary",
+      "title": "Queen marking tube",
+      "description": "Vertical queen-marking tube with padded base cup and sliding plunger handle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/queen-marking-tube.kcad.ts",
+      "preview": "/assets/apiary-queen-marking-tube.png",
+      "sourceSha256": "c67bb4617855c09d3e493f85edac5b75540d2700b11965e2920c4151ffb745c4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9b8865",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.17,
+          0.42,
+          0.17
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9b8865",
+          "parts": [
+            "tube",
+            "base-cup",
+            "plunger-rod",
+            "plunger-handle",
+            "top-rim"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "screened-bottom-board",
+      "kit": "apiary",
+      "title": "Screened bottom board",
+      "description": "Hive floor assembly with screen grid, side rails and front entrance ledge. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/screened-bottom-board.kcad.ts",
+      "preview": "/assets/apiary-screened-bottom-board.png",
+      "sourceSha256": "dcfafe940d4e10508b64fa6aece6d0c09c294651a3bf2bbe23fad04a9cdd02c5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#77786d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.76,
+          0.125,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#77786d",
+          "parts": [
+            "floor",
+            "rail-left",
+            "rail-right",
+            "screen-bar-a",
+            "screen-bar-b",
+            "screen-bar-c",
+            "screen-bar-d",
+            "screen-bar-e",
+            "entrance-ledge"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "solar-wax-melter",
+      "kit": "apiary",
+      "title": "Solar wax melter",
+      "description": "Angled-look insulated solar melter box with hinged lid frame, tray and support feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/solar-wax-melter.kcad.ts",
+      "preview": "/assets/apiary-solar-wax-melter.png",
+      "sourceSha256": "64b2c8885e6c7238cc4458d019ad1f0799bd79906080f4ce43c3bfabde9c62cb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8e7c57",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.65,
+          0.469,
+          0.4875
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8e7c57",
+          "parts": [
+            "body",
+            "lid-frame",
+            "lid-panel",
+            "tray",
+            "front-support-left",
+            "front-support-right",
+            "rear-support-left",
+            "rear-support-right",
+            "wax-drain"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "swarm-trap",
+      "kit": "apiary",
+      "title": "Swarm trap box",
+      "description": "Tall bait-hive box with rain cover, entrance landing and hanging brackets. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/swarm-trap.kcad.ts",
+      "preview": "/assets/apiary-swarm-trap.png",
+      "sourceSha256": "72aa47ed89f38f24b7d4cc37c795a586105ec2c7ace0babc2b69a0b6eec30ffd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9c8155",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.46,
+          0.865,
+          0.475
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9c8155",
+          "parts": [
+            "body",
+            "base",
+            "roof",
+            "entrance",
+            "landing",
+            "hanger-left",
+            "hanger-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "top-bar-hive",
+      "kit": "apiary",
+      "title": "Top-bar hive",
+      "description": "Long low hive body with parallel top bars, end supports and a removable roof. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/top-bar-hive.kcad.ts",
+      "preview": "/assets/apiary-top-bar-hive.png",
+      "sourceSha256": "5a0f3676fbbd61226575a866bf99fa2cbc638904925d869b9f40b7602d52ad2b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9a7949",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          1.14,
+          0.86,
+          0.555
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9a7949",
+          "parts": [
+            "leg-left",
+            "leg-right",
+            "body",
+            "landing",
+            "top-bar-0",
+            "top-bar-1",
+            "top-bar-2",
+            "top-bar-3",
+            "top-bar-4",
+            "top-bar-5",
+            "top-bar-6",
+            "top-bar-7",
+            "top-bar-8",
+            "top-bar-9",
+            "top-bar-10",
+            "top-bar-11",
+            "top-bar-12",
+            "roof"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "top-feeder",
+      "kit": "apiary",
+      "title": "Hive top feeder",
+      "description": "Shallow top feeder with outer rim, central access well and removable cover. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/top-feeder.kcad.ts",
+      "preview": "/assets/apiary-top-feeder.png",
+      "sourceSha256": "6afdf99dee806b4c9a994ee51d71837978741427f37d4c79cba101c63edd8ce2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b7855",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.65,
+          0.23,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b7855",
+          "parts": [
+            "pan",
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right",
+            "access-well",
+            "cover"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "uncapping-fork",
+      "kit": "apiary",
+      "title": "Uncapping fork",
+      "description": "Hand uncapping fork with a grip, narrow neck and row of short tines. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/uncapping-fork.kcad.ts",
+      "preview": "/assets/apiary-uncapping-fork.png",
+      "sourceSha256": "84a5a1395c1aecd801b318fc92e891eccf2ca9258142218cda605bb591f2339b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9b8b70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.23,
+          0.477,
+          0.065
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9b8b70",
+          "parts": [
+            "handle",
+            "neck",
+            "head",
+            "tine-0",
+            "tine-1",
+            "tine-2",
+            "tine-3",
+            "tine-4",
+            "tine-5",
+            "tine-6",
+            "tine-7",
+            "tine-8"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "uncapping-knife",
+      "kit": "apiary",
+      "title": "Uncapping knife",
+      "description": "Long straight uncapping blade with broad handle and a small guard collar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/uncapping-knife.kcad.ts",
+      "preview": "/assets/apiary-uncapping-knife.png",
+      "sourceSha256": "84f7925efc746e1da9c5deea9ec26be792001af53662749c25c00b2712b2d4a1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#85898a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.1,
+          0.565,
+          0.075
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#85898a",
+          "parts": [
+            "blade",
+            "blade-tip",
+            "guard",
+            "handle",
+            "pommel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "uncapping-tank",
+      "kit": "apiary",
+      "title": "Uncapping tank",
+      "description": "Open rectangular uncapping tank with rim, ledge and elevated collection legs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "apiary",
+        "beekeeping",
+        "honey",
+        "agriculture",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "apiary",
+        "beekeeping",
+        "agriculture",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/apiary/uncapping-tank.kcad.ts",
+      "preview": "/assets/apiary-uncapping-tank.png",
+      "sourceSha256": "8dc35bc8f0144428d8286b294ab13dfc216397b357386e3f53123d73847ebe52",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8e8e84",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.96,
+          0.485,
+          0.475
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8e8e84",
+          "parts": [
+            "tank",
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right",
+            "frame-ledge-left",
+            "frame-ledge-right",
+            "leg--240",
+            "leg-240"
           ],
           "param": "color"
         }
