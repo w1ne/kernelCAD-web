@@ -45,7 +45,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'dxf (2D cut file for laser / waterjet / CNC: a flat part — plate, panel, extruded profile, in any orientation — exports its outline and holes in its own plane with exact arcs and circles; '
         + 'a sheet-metal part or a returned Region exports its flat pattern; a flat or sheet-metal part also returns sheet { thickness_mm, bend_count }, which a shop needs and the DXF does not carry; options.section { axis: "x"|"y"|"z", at } exports the cross-section of any part in world coordinates (plans, profiles); '
         + "a multi-part model (cut list) writes all parts side by side on output_path, one layer per part, plus parts/<part>.dxf per part (reported in part_files; options.layout 'sheet' writes the combined sheet only); "
-        + 'any other part fails with export.dxf.non-planar), ' +
+        + 'a 3D part that is not a flat plate or panel fails with export.dxf.non-planar), ' +
         "3mf (slicer-friendly mesh: one named object per part, colours as core-spec basematerials named by the part's engineering material; " +
         "options.arrange 'plate' packs parts on the bed at Z=0 without overlap (options.orient puts each part's largest flat face down), 'assembled' keeps them together as one multi-part object for multi-colour prints; " +
         "options.slicer 'bambu' | 'orca' | 'prusa' adds that slicer's per-object name + filament-slot sidecar — slot N is the Nth distinct colour/material), " +
