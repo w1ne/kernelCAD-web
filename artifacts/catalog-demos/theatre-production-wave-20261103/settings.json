@@ -17,18 +17,21 @@
     "assetsPerPreviewFrame": 8
   },
   "commands": [
-    "python3 artifacts/catalog-demos/theatre-production-wave-20261103/generate_theatre_assets.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/theatre-production-wave-20261103/generate_theatre_assets.py",
     "npx eslint catalog/ --fix",
-    "npx eslint catalog/",
-    "npx tsx scripts/buildAssetCatalog.ts",
-    "npx tsx scripts/renderCatalogPreviews.ts",
-    "npx tsx scripts/buildAssetCatalog.ts",
-    "npx vitest run tests/integration/catalog/",
-    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-theatre-production-pages-wave-20261103",
-    "npm run build",
-    "npm pack --dry-run --ignore-scripts --json",
-    "python3 artifacts/catalog-demos/theatre-production-wave-20261103/capture_theatre_demo.py",
-    "python3 artifacts/catalog-demos/theatre-production-wave-20261103/inspect_theatre_video.py"
+    "npx --silent eslint catalog/",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs --import tsx scripts/buildAssetCatalog.ts",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs --import tsx scripts/renderCatalogPreviews.ts",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs --import tsx scripts/buildAssetCatalog.ts",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH NODE_OPTIONS=--import=./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs npx vitest run tests/integration/catalog/",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/theatre-production-wave-20261103/verify_previews.py",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs --import tsx scripts/buildCatalogPages.ts /tmp/kernelcad-recycling-facility-pages-wave-20261103",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/theatre-production-wave-20261103/verify_theatre_pages.py /tmp/kernelcad-recycling-facility-pages-wave-20261103",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npm run build",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npm pack --dry-run --ignore-scripts --json > artifacts/catalog-demos/theatre-production-wave-20261103/npm-pack-dry-run.json",
+    "node artifacts/catalog-demos/theatre-production-wave-20261103/audit_npm_pack.mjs",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/theatre-production-wave-20261103/capture_theatre_demo.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/theatre-production-wave-20261103/inspect_theatre_video.py"
   ],
   "verificationScope": {
     "covered": [

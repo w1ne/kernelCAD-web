@@ -1,31 +1,8 @@
 
- RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
-
- ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 745ms
- ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 211ms
- ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 87574ms
-     ✓ every committed catalog asset opens with exactly the knobs its index row lists  86616ms
- ❯ tests/integration/catalog/catalogIndex.test.ts (2 tests | 1 failed) 159356ms
-     × every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh 158859ms
-     ✓ every characters-kit asset ships a GLB rig with a pivot per joint 53ms
-
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
-
- FAIL  tests/integration/catalog/catalogIndex.test.ts > asset catalog > every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh
-AssertionError: ellipsoidal-reflector-spotlight: expected 0.27 to be close to +0, received difference is 0.27, but expected 5e-7
- ❯ tests/integration/catalog/catalogIndex.test.ts:20:44
-     18|       expect(asset.stats.triangles, asset.id).toBeLessThanOrEqual(asse…
-     19|       expect(asset.stats.materials, asset.id).toBe(1);
-     20|       expect(asset.stats.minUpM, asset.id).toBeCloseTo(asset.origin ==…
-       |                                            ^
-     21|       expect(asset.preview, `${asset.id} needs a rendered homepage pre…
-     22|     }
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+ RUN  v4.1.12 /home/andrii/worktrees/kernelCAD-web/catalog-2000
 
 
- Test Files  1 failed | 3 passed (4)
-      Tests  1 failed | 14 passed (15)
-   Start at  06:24:40
-   Duration  163.38s (transform 12.96s, setup 326ms, import 17.77s, tests 247.89s, environment 1ms)
-
+ Test Files  4 passed (4)
+      Tests  15 passed (15)
+   Start at  10:17:14
+   Duration  207.14s (transform 15.99s, setup 424ms, import 20.91s, tests 323.15s, environment 1ms)

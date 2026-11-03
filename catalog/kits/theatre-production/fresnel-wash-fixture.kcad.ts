@@ -9,7 +9,7 @@ meta({
   tags: ['theatre production', 'stagecraft', 'performing arts', 'low poly', 'scene prop'],
   kit: 'theatre-production',
   category: 'prop',
-  origin: 'base',
+  origin: "base",
   compat: ['theatre', 'theater', 'stagecraft', 'performing-arts', 'scene'],
   triangleBudget: 1800,
 });
@@ -26,7 +26,7 @@ p.part("side-plate-right", b(170,0,320,50,350,260).color(color));
 p.part("yoke-arm-left", b(-220,0,145,45,55,360).color(color));
 p.part("yoke-arm-right", b(220,0,145,45,55,360).color(color));
 p.part("yoke-crossbar", b(0,0,500,470,55,55).color(color));
-p.part("spigot", b(0,0,45,90,90,150).color(color));
+p.part("spigot", b(0,0,0,90,90,150).color(color));
 p.part("barrel", c(0,0,430,250,125,10).color(color));
 p.part("lens-rim", c(0,0,680,145,150,10).color(color));
 p.part("focus-handle", c(0,-190,450,160,28,10).color(color));

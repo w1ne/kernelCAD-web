@@ -106,7 +106,7 @@ def verification_frame():
     values = [
         ("Theatre production sources and indexed meshes", "52 / 52 passed full catalog suite"),
         ("Mesh range and material", f"{tests['triangleRange'][0]}–{tests['triangleRange'][1]} triangles · one material each"),
-        ("Indexed controls and floor base", "scale + color · all meshes start at z = 0"),
+        ("Indexed controls and origins", "scale + color · origin declared per asset"),
         ("Catalog suite", f"{tests['integration']['filesPassed']} files · {tests['integration']['testsPassed']} tests passed"),
         ("Preview audit and local pages", f"{preview['rowsWithPreview']} previews · {pages['pageAndPreviewPairs']} page/preview pairs"),
         ("Catalog lint", f"{lint['errorCount']} errors · {lint['warningCount']} warnings"),

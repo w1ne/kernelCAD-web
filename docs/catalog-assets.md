@@ -83,3 +83,15 @@ records the source-to-preview workflow, full-catalog integration checks, local
 pages, package boundary audit, and inspected MP4. These are visualization props;
 catalog checks do not establish load capacity, rigging safety, electrical
 ratings, code compliance, or physical acceptance.
+
+## Recycling facility assets
+
+The [recycling facility kit](../catalog/kits/recycling-facility/README.md) adds
+153 original low-poly props for inbound reception, material sorting, baling,
+glass and plastics recovery, organics processing, and residual management.
+Each source exposes scale and color controls and has an indexed preview. The
+[wave demo and verification bundle](../artifacts/catalog-demos/recycling-facility-wave-20261103/README.md)
+records the source-to-preview workflow, full-catalog integration checks, local
+pages, and inspected MP4. These are visualization props; catalog checks do not
+establish equipment specifications, process performance, operator safety,
+environmental compliance, or physical acceptance.

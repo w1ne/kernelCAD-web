@@ -9,7 +9,7 @@ meta({
   tags: ['theatre production', 'stagecraft', 'performing arts', 'low poly', 'scene prop'],
   kit: 'theatre-production',
   category: 'prop',
-  origin: 'base',
+  origin: "base",
   compat: ['theatre', 'theater', 'stagecraft', 'performing-arts', 'scene'],
   triangleBudget: 1800,
 });
@@ -20,14 +20,14 @@ const b = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,t
 const c = (x:number,y:number,z:number,h:number,r:number,s:number) => cylinder(h,r,s).translate(x,y,z).scale(scale);
 
 const p = assembly("wireless-intercom-beltpack");
-p.part("pack-body", b(0,0,70,220,115,350).color(color));
-p.part("belt-clip", b(0,65,80,100,30,250).color(color));
-p.part("top-cap", b(0,0,420,230,125,50).color(color));
-p.part("side-button", b(120,0,270,35,70,70).color(color));
-p.part("front-label", b(0,-60,200,150,22,100).color(color));
-p.part("antenna-base", b(70,0,465,40,40,65).color(color));
-p.part("antenna", c(70,0,530,220,12,10).color(color));
-p.part("talk-button", c(-50,-75,380,70,30,10).color(color));
-p.part("headset-socket", c(-110,-20,100,75,32,10).color(color));
+p.part("pack-body", b(0,0,0,220,115,350).color(color));
+p.part("belt-clip", b(0,65,10,100,30,250).color(color));
+p.part("top-cap", b(0,0,350,230,125,50).color(color));
+p.part("side-button", b(120,0,200,35,70,70).color(color));
+p.part("front-label", b(0,-60,130,150,22,100).color(color));
+p.part("antenna-base", b(70,0,395,40,40,65).color(color));
+p.part("antenna", c(70,0,460,220,12,10).color(color));
+p.part("talk-button", c(-50,-75,310,70,30,10).color(color));
+p.part("headset-socket", c(-110,-20,30,75,32,10).color(color));
 
 return p.model();

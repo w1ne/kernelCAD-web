@@ -1,0 +1,10 @@
+{
+  "command": "npx tsx scripts/renderCatalogPreviews.ts",
+  "assetsInIndex": 2000,
+  "rowsWithPreview": 2000,
+  "previewPngs": 2000,
+  "kitAssets": 52,
+  "kitPreviewFields": 52,
+  "missing": [],
+  "passed": true
+}

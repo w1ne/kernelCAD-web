@@ -40,7 +40,7 @@ tests = {
 (BUNDLE / "catalog-tests.json").write_text(json.dumps(tests, indent=2) + "\n")
 
 lint = {
-    "command": "npx eslint catalog/",
+    "command": "npx --silent eslint catalog/",
     "assetSources": len(index["assets"]),
     "errorCount": 0 if not lint_output.strip() else None,
     "warningCount": 0 if not lint_output.strip() else None,

@@ -35,7 +35,7 @@ if not hub_lists_kit:
     missing.append("catalog hub does not list theatre-production")
 
 result = {
-    "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-theatre-production-pages-wave-20261103",
+    "command": f"npx tsx scripts/buildCatalogPages.ts {output}",
     "kitPages": page_count,
     "assetsInIndex": len(index["assets"]),
     "pageAndPreviewPairs": len(rows) - sum(1 for item in missing if item.endswith("index.html") or item.endswith("preview.png")),

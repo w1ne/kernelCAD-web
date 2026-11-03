@@ -172260,7 +172260,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/adjustable-stage-leg.kcad.ts",
       "preview": "/assets/theatre-production-adjustable-stage-leg.png",
-      "sourceSha256": "d7362fb26224f44ddf1e9c2c6cff104436b8c1095abbdee6406e9dcc9201f33d",
+      "sourceSha256": "17a6c370a4ddc6c5c364e1ad36c2f84d938d078fd59cc16a5ee86d4361f114c8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172332,7 +172332,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/audio-mixing-console.kcad.ts",
       "preview": "/assets/theatre-production-audio-mixing-console.png",
-      "sourceSha256": "5d5aab39ca8aa6a94e8190685daccc8b0b16c61b108313eaaa50d64984ad68b6",
+      "sourceSha256": "9a6035e035af27565ab0da5c539fb8f508490c1abb27bbf6c90589d7008f98fa",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172407,7 +172407,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/audio-monitor-wedge.kcad.ts",
       "preview": "/assets/theatre-production-audio-monitor-wedge.png",
-      "sourceSha256": "652aea018ed2ca62111bc83dc4cf1b4e40671201d118e9d88e344ffdb85332c2",
+      "sourceSha256": "4b8c8733574c940f3c3d95409179edd33970a668614c8f8f136f7bf4206652b9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172480,7 +172480,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/backstage-call-board.kcad.ts",
       "preview": "/assets/theatre-production-backstage-call-board.png",
-      "sourceSha256": "5e651383691dde1e6dec39d7c17bd92543ac87370c3e4e9a7eb56dc504fd2311",
+      "sourceSha256": "70b2629a5285a71175b6463d3473339249ade09299143c510f792efc534e549f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172556,7 +172556,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/cable-ramp-crossing.kcad.ts",
       "preview": "/assets/theatre-production-cable-ramp-crossing.png",
-      "sourceSha256": "472fadab5572df2fc1122636fe17ba7277dd524a96b76b1cb09019a121d9082d",
+      "sourceSha256": "53147d4c955ae2843b4a8e8dfaf499553737e3bf13990c33f29d811fd9b1703a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172630,7 +172630,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/counterweight-arbor.kcad.ts",
       "preview": "/assets/theatre-production-counterweight-arbor.png",
-      "sourceSha256": "7627979744c35b6ccd58d6130db10f8de852dca5472aad0d69f589586eb476f7",
+      "sourceSha256": "ba941513769461e77edd955ca7699dd6dc5f0ec4a7f2a249e1dcf7b4e485e1d1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172706,7 +172706,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/curtain-track-carrier.kcad.ts",
       "preview": "/assets/theatre-production-curtain-track-carrier.png",
-      "sourceSha256": "fd9928390397de805f828fa135916b9c3286a320f937098fcef72a7e7878f8b2",
+      "sourceSha256": "5565ba5f66258d6054e03794dfcfc03c3dcd3437ad8f4429461b16ddb4fbcee9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172779,7 +172779,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/cyclorama-drop.kcad.ts",
       "preview": "/assets/theatre-production-cyclorama-drop.png",
-      "sourceSha256": "79dac8264bec2e3f3c3f886e4794a098c4f72e86605b92e559df2fe2d97da0e6",
+      "sourceSha256": "e3516bd9c366a2cf611deae5e5774fb67b9d5ba8834c5d2c78751f6323432c6e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172853,7 +172853,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/dance-floor-panel.kcad.ts",
       "preview": "/assets/theatre-production-dance-floor-panel.png",
-      "sourceSha256": "39ced0129e5b284b0d1a482e0dc1141ba759d0293aabd66f31b8cc5821abc820",
+      "sourceSha256": "f86699423d8175276f87849ddb57ca775e11b83152592df67ac1bb38193dc7be",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172930,7 +172930,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/dimmer-rack.kcad.ts",
       "preview": "/assets/theatre-production-dimmer-rack.png",
-      "sourceSha256": "30ba2224d26aadba5c59b46db54d20e3b3f18080bdd8fcaa2b5c6332069ac115",
+      "sourceSha256": "8222c7349cb01ce5897607ba875080a4155f25f340b167b94fe90416909b19d1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173006,7 +173006,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/ellipsoidal-reflector-spotlight.kcad.ts",
       "preview": "/assets/theatre-production-ellipsoidal-reflector-spotlight.png",
-      "sourceSha256": "9e00da2408450e3dea6b1cfcff239c2f16a50a94c29e15b9176f7fab6bb67006",
+      "sourceSha256": "dd465d054d0d00fca070850c26b221fc40526b84603f624b38714687e5d48f25",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173082,7 +173082,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/floor-cable-trough.kcad.ts",
       "preview": "/assets/theatre-production-floor-cable-trough.png",
-      "sourceSha256": "2d5a1c58016b500df08363845d6e05678359e48765ad983dcd11e9b0bb00fd20",
+      "sourceSha256": "bce71a019caf1fee11ea9f06fe64290ffe1bf03922bc78c1802abceed304bf80",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173156,7 +173156,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/folding-flat-brace.kcad.ts",
       "preview": "/assets/theatre-production-folding-flat-brace.png",
-      "sourceSha256": "e800bbf52fe591457d00eb5f19fb74578fa2acf8c0377b0067f3b70a74d31761",
+      "sourceSha256": "215cebdabb48611e1eaf75719f46e5b822d69fc6d4bd52f1523cbb63cd6bcdb5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173229,7 +173229,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/folding-stage-ramp.kcad.ts",
       "preview": "/assets/theatre-production-folding-stage-ramp.png",
-      "sourceSha256": "386a2113fdacc47d1b312ddc99411458f633347522f82ef31808140bfedff24a",
+      "sourceSha256": "538e2053855d5664d4902aa3211020f91cfb22b306af017956caf3b43ab188a1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173303,7 +173303,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/fresnel-wash-fixture.kcad.ts",
       "preview": "/assets/theatre-production-fresnel-wash-fixture.png",
-      "sourceSha256": "f54cbc872762b12645f7976b4bfcc6791361816e5f9d5f7829c8273a5423cfa6",
+      "sourceSha256": "474d8b84efd7e6fb1b2b1000aa0599876db150d30c33a47a4f81bb2a7b13ad7f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173327,10 +173327,10 @@
         "triangles": 216,
         "sizeM": [
           0.485,
-          0.78,
+          0.825,
           0.393
         ],
-        "minUpM": 0.045,
+        "minUpM": 0,
         "materials": 1
       },
       "palette": [
@@ -173377,7 +173377,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/grand-drape-valance.kcad.ts",
       "preview": "/assets/theatre-production-grand-drape-valance.png",
-      "sourceSha256": "75530a84b09147b8534a7c34e991a0c227882fd1da148503b9bb9796b08c3b0f",
+      "sourceSha256": "ce9d73a3219c5a5dc7627f5b81fb7d2e3265a734110e15705307540c1ed00df6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173452,7 +173452,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/hoist-controller.kcad.ts",
       "preview": "/assets/theatre-production-hoist-controller.png",
-      "sourceSha256": "0155edc5208bbce0c3df7bb7ed9035a01ea52d8c8682da02948ba52c5b8215aa",
+      "sourceSha256": "e94e9bdba2db6a152ad47a26bc8a01d54f7834040aaf37659d48f17b124663b2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173526,7 +173526,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/led-cyc-wash-light.kcad.ts",
       "preview": "/assets/theatre-production-led-cyc-wash-light.png",
-      "sourceSha256": "8f4a41476c817aec4a935e8d630d8e64a586322c3735acd43c172605d96a78e1",
+      "sourceSha256": "c70ffdafe60c261d733bd73ed777a639618cf2b17b98438c8755ceb4f33ec06c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173601,7 +173601,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/lighting-control-console.kcad.ts",
       "preview": "/assets/theatre-production-lighting-control-console.png",
-      "sourceSha256": "a47902aec9111d17c5a9792622f063002d55486cd9cfc66d5a257bb3706e4f49",
+      "sourceSha256": "05513564599cc5ec4f2cc8cfddbcb751b330c86e32e6fa091b0450a0afa1f257",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173677,7 +173677,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/lighting-yoke-bracket.kcad.ts",
       "preview": "/assets/theatre-production-lighting-yoke-bracket.png",
-      "sourceSha256": "10db58ae02b52842b683e9ca0506be42c191d62a1428a113d8627deccc1706de",
+      "sourceSha256": "badb31dd538299b7a4320e193dd10e5999095ec98b16a4d472b5287dd37ac5eb",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173750,7 +173750,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/marley-floor-roll.kcad.ts",
       "preview": "/assets/theatre-production-marley-floor-roll.png",
-      "sourceSha256": "5710440cd8b645c3ad031d60c6faf984ea4f0525068fa78a68ac160ca3d32a21",
+      "sourceSha256": "30b917014c1a8434d55cad10ee48260fd172ca72abb6ce89c7bfb23f836793fe",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173824,7 +173824,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/masking-leg.kcad.ts",
       "preview": "/assets/theatre-production-masking-leg.png",
-      "sourceSha256": "d14989f0e44133ec96669c3218d9f8c86e1cb88e604f1fb821be2b8102c9e15d",
+      "sourceSha256": "07e2feb2f292d882eb5fb9f1c9360a6897599c953afec34aff41cf51ccfa30ae",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173897,7 +173897,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/modular-stage-deck.kcad.ts",
       "preview": "/assets/theatre-production-modular-stage-deck.png",
-      "sourceSha256": "797bdcc2a7bc26a0a18c10b45f26c8ded6edc5b24d3bfce7d90ae313dc5cdfcc",
+      "sourceSha256": "ff1b8a7dfcc37b03b2ad24245d0682b550db3d672e3b8b5282aafeebe4f4cf14",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173974,7 +173974,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/motorized-chain-hoist.kcad.ts",
       "preview": "/assets/theatre-production-motorized-chain-hoist.png",
-      "sourceSha256": "0a6fb8fccfd5483dbf067ea13838de15eea5631276db961b167cbd62cf80bc5d",
+      "sourceSha256": "ad2dc271dc29ba2c0d6f5e8e76278d531e53b5b9ca478e36da282fc63f5b36f6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174048,7 +174048,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/orchestra-pit-filler.kcad.ts",
       "preview": "/assets/theatre-production-orchestra-pit-filler.png",
-      "sourceSha256": "5031d310e40308ab82e37f4c7fcfc76055ae9ff4a298c3cbb622f9676a7aa221",
+      "sourceSha256": "3706318377aa149bbe30380da4f0afbbaf8421353b89d8409340cd5df0391553",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174123,7 +174123,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/orchestra-shell-panel.kcad.ts",
       "preview": "/assets/theatre-production-orchestra-shell-panel.png",
-      "sourceSha256": "bcad3b6d9594e8fbb68fd90c187ab9ec4d66a06bb69a941d1a9457286c16836f",
+      "sourceSha256": "20ef24eb33f502480aeb0376a6f6ba6e1dc868a21e7661daa1a749c09e2fc111",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174197,7 +174197,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/par-can-fixture.kcad.ts",
       "preview": "/assets/theatre-production-par-can-fixture.png",
-      "sourceSha256": "46a5e68ba6ec6832df71005b880d40895a27211f37397d0415a13a03b486683e",
+      "sourceSha256": "b7b64baeb0af5fc7814d76db0732267fa9dbe2d296c4ef2f3ece2411ad308d4b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174272,7 +174272,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/prop-storage-rack.kcad.ts",
       "preview": "/assets/theatre-production-prop-storage-rack.png",
-      "sourceSha256": "77ab6d9ec13f8045a6b0b68dcbe4b030d5ce88b41379456f01e153ab6c0104c9",
+      "sourceSha256": "e5abef468be501513c772ffdfbc06c72b5b4f2289146a48e73c8a0fecf32e593",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174350,7 +174350,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/prop-table.kcad.ts",
       "preview": "/assets/theatre-production-prop-table.png",
-      "sourceSha256": "ba67cf7f1cfc9b5fc66b743601ce88de106d2f616676726919fb42ac09cc3788",
+      "sourceSha256": "0eca88ccbadc4c5f73a7c65031bac97e66635622f3e7c9958576c49a30f4c0ac",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174425,7 +174425,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/pulley-block.kcad.ts",
       "preview": "/assets/theatre-production-pulley-block.png",
-      "sourceSha256": "87a7700d5f68f9895656a7b54a363abca4b17c6d2d338a0c4ffe817b5d4083fc",
+      "sourceSha256": "e29da44412e7a803bb34d414a3b6b6a0db463b9c435208f5d6f0241aa3a5e85f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174498,7 +174498,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/rigging-handline-cleat.kcad.ts",
       "preview": "/assets/theatre-production-rigging-handline-cleat.png",
-      "sourceSha256": "ab1a4062e07029b3a3ed34220f3ba3ada7bbf3d9ef5cd5c14d5eefac56d099ed",
+      "sourceSha256": "dd98c7e4e82717853756d4f0d531b1dba4495ef2026941f7bc6a47c8cc23db7e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174571,7 +174571,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/riser-cart.kcad.ts",
       "preview": "/assets/theatre-production-riser-cart.png",
-      "sourceSha256": "8cf5dbec355f5151fc1936b0328b8292949553dad777e935d80f80b2b0e088db",
+      "sourceSha256": "b21d5da5ac0161eeefe5ef724d7f719a7587e0d43d1bf0bcb2d4f29b4e8f9c78",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174649,7 +174649,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/rolling-stage-platform.kcad.ts",
       "preview": "/assets/theatre-production-rolling-stage-platform.png",
-      "sourceSha256": "e93e1a5786a217dd8f706a4642360d9b93c53a9546bb8a202b72426e10b00165",
+      "sourceSha256": "c2c089c4c33bfaf27019c1959e26fffd4ad6552b090566cf56237cbc5235db2b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174724,7 +174724,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/rope-lock.kcad.ts",
       "preview": "/assets/theatre-production-rope-lock.png",
-      "sourceSha256": "dda81a767537e729dcce1b5657801b1c632dccc7485b74d5d7a4b55d514d63db",
+      "sourceSha256": "b5d9bcbd17f8e0ed247162a68ad90735d753f6b3a2480b4b0fd769413d42b32b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174797,7 +174797,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/sandbag-counterweight.kcad.ts",
       "preview": "/assets/theatre-production-sandbag-counterweight.png",
-      "sourceSha256": "5ead1c184fb77649bc10fb950868b665aa2e2f3314df676f61950a04bed55920",
+      "sourceSha256": "7c6f43f5326e7211dac27b8336c12e08286dd06fc7174fe1a2837264acf86476",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174869,7 +174869,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/scenic-flat-panel.kcad.ts",
       "preview": "/assets/theatre-production-scenic-flat-panel.png",
-      "sourceSha256": "37d68cd92f6fac70e410f7f645e00828bbfae9cafb3bc5513d5ba984aad56427",
+      "sourceSha256": "c65f6bdc38cff00a448e6456649863db84bbcd5d73f1b931fa0b648aa0c9082d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174944,7 +174944,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/scenic-wagon.kcad.ts",
       "preview": "/assets/theatre-production-scenic-wagon.png",
-      "sourceSha256": "1f5981d880ede065d51d7e2588a658c7e05a1d81e5ff448477fb0693638758b8",
+      "sourceSha256": "c3bd2d6df41003ca0f35965db81b1b0b082056097826f717a30a5856444f749a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175022,7 +175022,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/scrim-frame.kcad.ts",
       "preview": "/assets/theatre-production-scrim-frame.png",
-      "sourceSha256": "29bc9df8e1c213346148ef3034a591acf2e9e6033fa90d856366f4ac964243e5",
+      "sourceSha256": "9156088d5e080f80e3e4c714e1db775235d505bda8d31fcf4c3a726c91e316eb",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175096,7 +175096,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/spotlight-followspot-stand.kcad.ts",
       "preview": "/assets/theatre-production-spotlight-followspot-stand.png",
-      "sourceSha256": "f89b1f1919e04a188e7a9ace98da8d0d800baa0e195a274a0e01f5d071f8779e",
+      "sourceSha256": "48a5ac9c8f3335ff717aac602a33fbde126abc1568dd2810f00e7536b5de20ad",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175169,7 +175169,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-batten-section.kcad.ts",
       "preview": "/assets/theatre-production-stage-batten-section.png",
-      "sourceSha256": "0527f263c5cdd64f7490319fd2803c10af5632958935cbd09f0e97d5942c4fc2",
+      "sourceSha256": "307fe3b9c7702526fb1f6874b1cd81f96e4beffa5f43df68da56e68bf7935165",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175241,7 +175241,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-edge-trim.kcad.ts",
       "preview": "/assets/theatre-production-stage-edge-trim.png",
-      "sourceSha256": "c27dcd23af2927a74114a064a55d1fec34619e1a61f0f2e907955d76b98b29a9",
+      "sourceSha256": "53ac2abadd8d3be6a5d827b095784f66271c397ec930cb27a55e9adbf0c0780f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175316,7 +175316,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-extension-wing.kcad.ts",
       "preview": "/assets/theatre-production-stage-extension-wing.png",
-      "sourceSha256": "24f24386939b603ef9a3520cbd00bfd9b72645d76c26bf848be49d653459fe80",
+      "sourceSha256": "d4b3166a27d1e4dd1ef628638928e1d5193338cb50e42f5d59ccf0c73718953f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175392,7 +175392,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-manager-console.kcad.ts",
       "preview": "/assets/theatre-production-stage-manager-console.png",
-      "sourceSha256": "e822b0f7e76c5113170792284760b127535734329d7e41045a24fbda179a23c8",
+      "sourceSha256": "7fa7c902189fff9730ca6bfaf3e7227ea1ad5c95877089d646dec35b6f029256",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175467,7 +175467,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-pocket-hatch.kcad.ts",
       "preview": "/assets/theatre-production-stage-pocket-hatch.png",
-      "sourceSha256": "19d995005edab8bd20bcae759cd5a7c92330bb376b693caec372b26e769996a4",
+      "sourceSha256": "c64ffac2acb22274d112abf1d75e380368756647db4645eda05347f81f073611",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175541,7 +175541,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-power-distro.kcad.ts",
       "preview": "/assets/theatre-production-stage-power-distro.png",
-      "sourceSha256": "c127cc84da22b71989c59dff3b284541d0f1be39807553f311c653055034daf4",
+      "sourceSha256": "39bf4cd1b4a7c666b5fc67ec335de0f7d9ac79ffd874d10927177400c7efccb0",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175617,7 +175617,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-riser-platform.kcad.ts",
       "preview": "/assets/theatre-production-stage-riser-platform.png",
-      "sourceSha256": "fded9c723a72de68b5b8442f59b4cb2fc999660cd54818f1fb2fac32e98e5e2e",
+      "sourceSha256": "73a1fc52c0d9706814eb08f4088fc16510fe1a9ebcc644913f6b65085d73c8b2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175693,7 +175693,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-stair-unit.kcad.ts",
       "preview": "/assets/theatre-production-stage-stair-unit.png",
-      "sourceSha256": "c816a4951ed5d307dd9987b5b30b8653bab1239d02e1dcab30d93147300a4533",
+      "sourceSha256": "c4fad610ec29674e42f0e28f74a43401fc4fcda98e031f47e0875c2c9fa63f4a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175766,7 +175766,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/strip-light-battens.kcad.ts",
       "preview": "/assets/theatre-production-strip-light-battens.png",
-      "sourceSha256": "4fccaf682945c9591c051c7d0b2f773b0efa64babda6544cb42d45b6a7575fab",
+      "sourceSha256": "e2b48b6528fefda1507124b7326efea810a71bf0efe3def0d5aee92fcd127716",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175842,7 +175842,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/teaser-border.kcad.ts",
       "preview": "/assets/theatre-production-teaser-border.png",
-      "sourceSha256": "e077e195ff4beebe41bd45515b82a31fe9728ca07ed165a8c398a25360261ddb",
+      "sourceSha256": "b517334814bacb93255c8874b3c447896b43c2f1ab4670793217787ccaca91b3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175916,7 +175916,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/touring-road-case.kcad.ts",
       "preview": "/assets/theatre-production-touring-road-case.png",
-      "sourceSha256": "602e9171d0712c752668b63b87ccc20567d20e6ae6ad62f459bc07ec2ff13f66",
+      "sourceSha256": "9fa54e8cb9d11ad9abbcf6e7b7ca8bd236de896aa9dc2ac0f42e3826fa146941",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175992,7 +175992,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/traveler-curtain-track.kcad.ts",
       "preview": "/assets/theatre-production-traveler-curtain-track.png",
-      "sourceSha256": "3e105449f2de609f81c36b5c59697578650b554499350a560aac1c0bc8219339",
+      "sourceSha256": "2af1b3d004e52b5a5d2adaba459dfd30df32c903eb68dbc5d9a1c1dbfd821742",
       "triangleBudget": 1800,
       "params": [
         {
@@ -176067,7 +176067,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/wireless-intercom-beltpack.kcad.ts",
       "preview": "/assets/theatre-production-wireless-intercom-beltpack.png",
-      "sourceSha256": "964bbaad2752eaaccfb10b88e463a9b42521a755d24170f813fa36d0b8d9e37a",
+      "sourceSha256": "864b690e3f931239b95e0b08d6ef74c71a8448fbcedad83144ea17e4c6af1709",
       "triangleBudget": 1800,
       "params": [
         {
@@ -176094,7 +176094,7 @@
           0.68,
           0.185
         ],
-        "minUpM": 0.07,
+        "minUpM": 0,
         "materials": 1
       },
       "palette": [
