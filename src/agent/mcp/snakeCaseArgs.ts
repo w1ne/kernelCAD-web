@@ -50,6 +50,76 @@ const COMBINATOR_NODE = ['if', 'then', 'else', 'not'] as const;
 const NESTED_SCHEMA = ['items', 'additionalProperties', 'contains', 'unevaluatedProperties'] as const;
 const SCHEMA_MAP = ['$defs', 'definitions', 'dependentSchemas', 'patternProperties'] as const;
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/** `items` on a nested schema adds a `[]` segment; other keywords keep the prefix. */
+function nestedPropertyPrefix(key: string, prefix: string): string {
+  if (key === 'items' && prefix !== '') return `${prefix}[]`;
+  return prefix;
+}
+
+function appendDeclaredPropertyPaths(props: unknown, prefix: string, out: string[]): void {
+  if (!isPlainObject(props)) return;
+  for (const [key, sub] of Object.entries(props)) {
+    const path = prefix === '' ? key : `${prefix}.${key}`;
+    out.push(path);
+    walkInputSchema(sub, path, out);
+  }
+}
+
+function walkSchemaLists(
+  node: Record<string, unknown>,
+  keys: readonly string[],
+  prefix: string,
+  out: string[],
+): void {
+  for (const key of keys) {
+    const list = node[key];
+    if (!Array.isArray(list)) continue;
+    for (const sub of list) walkInputSchema(sub, prefix, out);
+  }
+}
+
+function walkSchemaNodes(
+  node: Record<string, unknown>,
+  keys: readonly string[],
+  prefix: string,
+  out: string[],
+): void {
+  for (const key of keys) walkInputSchema(node[key], prefix, out);
+}
+
+function walkNestedSchemaNodes(node: Record<string, unknown>, prefix: string, out: string[]): void {
+  for (const key of NESTED_SCHEMA) {
+    const sub = node[key];
+    if (sub !== null && typeof sub === 'object') walkInputSchema(sub, nestedPropertyPrefix(key, prefix), out);
+  }
+}
+
+function walkSchemaMaps(node: Record<string, unknown>, prefix: string, out: string[]): void {
+  for (const key of SCHEMA_MAP) {
+    const map = node[key];
+    if (!isPlainObject(map)) continue;
+    for (const sub of Object.values(map)) walkInputSchema(sub, prefix, out);
+  }
+}
+
+function walkInputSchema(node: unknown, prefix: string, out: string[]): void {
+  if (node === null || typeof node !== 'object') return;
+  if (Array.isArray(node)) {
+    for (const item of node) walkInputSchema(item, prefix, out);
+    return;
+  }
+  const rec = node as Record<string, unknown>;
+  appendDeclaredPropertyPaths(rec.properties, prefix, out);
+  walkSchemaLists(rec, COMBINATOR_ARRAY, prefix, out);
+  walkSchemaNodes(rec, COMBINATOR_NODE, prefix, out);
+  walkNestedSchemaNodes(rec, prefix, out);
+  walkSchemaMaps(rec, prefix, out);
+}
+
 /**
  * Dotted property paths declared anywhere in an inputSchema.
  * Array items contribute a `[]` segment (`attempts[].visual_review`).
@@ -57,38 +127,7 @@ const SCHEMA_MAP = ['$defs', 'definitions', 'dependentSchemas', 'patternProperti
  */
 export function inputSchemaPropertyPaths(schema: unknown): string[] {
   const out: string[] = [];
-  const walk = (node: unknown, prefix: string): void => {
-    if (node === null || typeof node !== 'object') return;
-    if (Array.isArray(node)) {
-      for (const item of node) walk(item, prefix);
-      return;
-    }
-    const rec = node as Record<string, unknown>;
-    const props = rec.properties;
-    if (props !== null && typeof props === 'object' && !Array.isArray(props)) {
-      for (const [key, sub] of Object.entries(props as Record<string, unknown>)) {
-        const path = prefix === '' ? key : `${prefix}.${key}`;
-        out.push(path);
-        walk(sub, path);
-      }
-    }
-    for (const key of COMBINATOR_ARRAY) {
-      const list = rec[key];
-      if (Array.isArray(list)) for (const sub of list) walk(sub, prefix);
-    }
-    for (const key of COMBINATOR_NODE) walk(rec[key], prefix);
-    for (const key of NESTED_SCHEMA) {
-      const sub = rec[key];
-      if (sub !== null && typeof sub === 'object') walk(sub, key === 'items' && prefix !== '' ? `${prefix}[]` : prefix);
-    }
-    for (const key of SCHEMA_MAP) {
-      const map = rec[key];
-      if (map !== null && typeof map === 'object' && !Array.isArray(map)) {
-        for (const sub of Object.values(map as Record<string, unknown>)) walk(sub, prefix);
-      }
-    }
-  };
-  walk(schema, '');
+  walkInputSchema(schema, '', out);
   return out;
 }
 
@@ -100,10 +139,6 @@ export function snakeCasePropertyOffenders(toolName: string, schema: unknown): s
     if (!SNAKE_CASE_ARG.test(key)) offenders.push(`${toolName}.${path}`);
   }
   return offenders;
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 /** Properties declared on this object schema, including combinator branches.
