@@ -38,3 +38,14 @@ the catalog index carries the generated preview path. The [wave demo and
 verification bundle](../artifacts/catalog-demos/alpine-expedition-wave-20261103/README.md)
 shows the source-to-preview workflow and its local evidence; it does not claim
 that this branch has been deployed.
+
+## Archaeology fieldwork assets
+
+The [archaeology fieldwork kit](../catalog/kits/archaeology-fieldwork/README.md)
+adds 50 original low-poly scene props for survey layout, excavation, screening,
+sample handling, field records, and site photography. Each asset exposes scale
+and color controls and has a generated preview path in the catalog index. The
+[wave demo and verification bundle](../artifacts/catalog-demos/archaeology-fieldwork-wave-20261103/README.md)
+records the source-to-preview workflow and local audit results. The kit is a set
+of generic scene props; it does not assert archaeological method approval,
+instrument calibration, historical fidelity, or field acceptance.

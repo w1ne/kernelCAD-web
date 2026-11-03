@@ -1,0 +1,342 @@
+{
+  "kit": "archaeology-fieldwork",
+  "generatedOn": "2026-11-03",
+  "assetCount": 50,
+  "sourceCommand": "python3 artifacts/catalog-demos/archaeology-fieldwork-wave-20261103/generate_archaeology_assets.py",
+  "catalogCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts",
+  "knobs": {
+    "scale": {
+      "default": 1,
+      "min": 0.75,
+      "max": 1.25,
+      "step": 0.05
+    },
+    "color": "asset-specific hex color; one material per asset"
+  },
+  "triangleBudget": 2400,
+  "materialCount": 1,
+  "grounding": "An analytic minimum-Z offset is applied to all geometry before scale so each source rests at z = 0.",
+  "verificationScope": {
+    "covered": [
+      "source and metadata",
+      "generated index and source hashes",
+      "mesh triangle and material audit",
+      "catalog integration suite",
+      "preview images and indexed paths",
+      "local generated catalog pages",
+      "current public homepage snapshot",
+      "npm tarball contents and export boundary",
+      "MP4 playback and frame inspection"
+    ],
+    "notCovered": [
+      "deployed behavior for this unmerged branch",
+      "archaeological method approval",
+      "instrument calibration",
+      "historical interpretation",
+      "physical acceptance"
+    ]
+  },
+  "assets": [
+    {
+      "id": "excavation-grid",
+      "title": "Excavation grid ropes",
+      "partCount": 8,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "survey-stake",
+      "title": "Survey stake",
+      "partCount": 3,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "boundary-flag",
+      "title": "Survey boundary flag",
+      "partCount": 3,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "tape-measure",
+      "title": "Field tape measure",
+      "partCount": 5,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "folding-rule",
+      "title": "Folding measuring rule",
+      "partCount": 5,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "plumb-bob",
+      "title": "Plumb bob",
+      "partCount": 4,
+      "groundOffsetMm": -1
+    },
+    {
+      "id": "line-level",
+      "title": "String line level",
+      "partCount": 4,
+      "groundOffsetMm": -28
+    },
+    {
+      "id": "survey-compass",
+      "title": "Survey compass",
+      "partCount": 5,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "north-arrow-marker",
+      "title": "North arrow marker",
+      "partCount": 6,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "total-station",
+      "title": "Survey total station",
+      "partCount": 8,
+      "groundOffsetMm": 4.787052166126614
+    },
+    {
+      "id": "grade-rod",
+      "title": "Survey grade rod",
+      "partCount": 13,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "archaeologist-trowel",
+      "title": "Archaeologist trowel",
+      "partCount": 5,
+      "groundOffsetMm": -10
+    },
+    {
+      "id": "margin-trowel",
+      "title": "Margin trowel",
+      "partCount": 4,
+      "groundOffsetMm": -3
+    },
+    {
+      "id": "pointing-trowel",
+      "title": "Pointing trowel",
+      "partCount": 5,
+      "groundOffsetMm": -6
+    },
+    {
+      "id": "round-point-shovel",
+      "title": "Round point shovel",
+      "partCount": 6,
+      "groundOffsetMm": -10.985938379741697
+    },
+    {
+      "id": "square-point-shovel",
+      "title": "Square point shovel",
+      "partCount": 4,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "trenching-spade",
+      "title": "Trenching spade",
+      "partCount": 4,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "excavation-pick",
+      "title": "Excavation pick",
+      "partCount": 4,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "mattock",
+      "title": "Excavation mattock",
+      "partCount": 4,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "soil-knife",
+      "title": "Soil profile knife",
+      "partCount": 4,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "masonry-chisel",
+      "title": "Masonry chisel",
+      "partCount": 4,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "soft-finds-brush",
+      "title": "Soft finds brush",
+      "partCount": 10,
+      "groundOffsetMm": 2
+    },
+    {
+      "id": "detail-paintbrush",
+      "title": "Detailing brush",
+      "partCount": 5,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "wire-cleaning-brush",
+      "title": "Wire cleaning brush",
+      "partCount": 9,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "hand-broom",
+      "title": "Hand broom",
+      "partCount": 7,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "dustpan-and-brush",
+      "title": "Dustpan and brush",
+      "partCount": 7,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "detail-scoop",
+      "title": "Soil detail scoop",
+      "partCount": 5,
+      "groundOffsetMm": -6
+    },
+    {
+      "id": "shaker-screen",
+      "title": "Archaeology shaker screen",
+      "partCount": 23,
+      "groundOffsetMm": -1.1090380476092037
+    },
+    {
+      "id": "fine-mesh-sieve",
+      "title": "Fine-mesh sample sieve",
+      "partCount": 20,
+      "groundOffsetMm": -21.0
+    },
+    {
+      "id": "water-screen-frame",
+      "title": "Water screening frame",
+      "partCount": 16,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "nested-sieves",
+      "title": "Nested field sieves",
+      "partCount": 4,
+      "groundOffsetMm": -19.0
+    },
+    {
+      "id": "sediment-bucket",
+      "title": "Sediment bucket",
+      "partCount": 6,
+      "groundOffsetMm": -15.0
+    },
+    {
+      "id": "sample-scoop",
+      "title": "Soil sample scoop",
+      "partCount": 6,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "hand-auger",
+      "title": "Hand soil auger",
+      "partCount": 7,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "soil-core-sampler",
+      "title": "Soil core sampler",
+      "partCount": 5,
+      "groundOffsetMm": -230.0
+    },
+    {
+      "id": "flotation-tank",
+      "title": "Soil flotation tank",
+      "partCount": 11,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "sample-wash-tray",
+      "title": "Finds wash tray",
+      "partCount": 6,
+      "groundOffsetMm": -13.0
+    },
+    {
+      "id": "sorting-pan",
+      "title": "Finds sorting pan",
+      "partCount": 6,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "field-notebook",
+      "title": "Field notebook",
+      "partCount": 5,
+      "groundOffsetMm": -5.0
+    },
+    {
+      "id": "context-clipboard",
+      "title": "Excavation context clipboard",
+      "partCount": 5,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "photo-scale-bar",
+      "title": "Photo scale bar",
+      "partCount": 10,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "photo-north-arrow",
+      "title": "Photo north arrow",
+      "partCount": 4,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "photo-board",
+      "title": "Excavation photo board",
+      "partCount": 4,
+      "groundOffsetMm": -36
+    },
+    {
+      "id": "site-camera",
+      "title": "Field documentation camera",
+      "partCount": 7,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "excavation-camera-tripod",
+      "title": "Camera field tripod",
+      "partCount": 7,
+      "groundOffsetMm": 8.425588633500183
+    },
+    {
+      "id": "field-loupe",
+      "title": "Field magnifier",
+      "partCount": 3,
+      "groundOffsetMm": 10.0
+    },
+    {
+      "id": "artifact-bag",
+      "title": "Finds collection bag",
+      "partCount": 5,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "sample-tag-set",
+      "title": "Field sample tags",
+      "partCount": 9,
+      "groundOffsetMm": -2.0
+    },
+    {
+      "id": "specimen-jar-rack",
+      "title": "Specimen jar rack",
+      "partCount": 11,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "finds-tray",
+      "title": "Finds sorting tray",
+      "partCount": 7,
+      "groundOffsetMm": 0.0
+    }
+  ]
+}

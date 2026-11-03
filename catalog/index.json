@@ -106,6 +106,63 @@
       ]
     },
     {
+      "id": "archaeology-fieldwork",
+      "title": "Archaeology fieldwork",
+      "description": "Original low-poly excavation, survey, screening, documentation, and finds-handling props with editable size and color controls.",
+      "assets": [
+        "archaeologist-trowel",
+        "artifact-bag",
+        "boundary-flag",
+        "context-clipboard",
+        "detail-paintbrush",
+        "detail-scoop",
+        "dustpan-and-brush",
+        "excavation-camera-tripod",
+        "excavation-grid",
+        "excavation-pick",
+        "field-loupe",
+        "field-notebook",
+        "finds-tray",
+        "fine-mesh-sieve",
+        "flotation-tank",
+        "folding-rule",
+        "grade-rod",
+        "hand-auger",
+        "hand-broom",
+        "line-level",
+        "margin-trowel",
+        "masonry-chisel",
+        "mattock",
+        "nested-sieves",
+        "north-arrow-marker",
+        "photo-board",
+        "photo-north-arrow",
+        "photo-scale-bar",
+        "plumb-bob",
+        "pointing-trowel",
+        "round-point-shovel",
+        "sample-scoop",
+        "sample-tag-set",
+        "sample-wash-tray",
+        "sediment-bucket",
+        "shaker-screen",
+        "site-camera",
+        "soft-finds-brush",
+        "soil-core-sampler",
+        "soil-knife",
+        "sorting-pan",
+        "specimen-jar-rack",
+        "square-point-shovel",
+        "survey-compass",
+        "survey-stake",
+        "tape-measure",
+        "total-station",
+        "trenching-spade",
+        "water-screen-frame",
+        "wire-cleaning-brush"
+      ]
+    },
+    {
       "id": "characters",
       "title": "Characters",
       "description": "Mechanical low-poly characters built from rigid parts and rigged through mates: every joint is a GLB pivot node, ready to pose or animate in three.js, Godot or Unity.",
@@ -8560,6 +8617,3694 @@
             "front-hook-1",
             "closure-tab-0",
             "closure-tab-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "archaeologist-trowel",
+      "kit": "archaeology-fieldwork",
+      "title": "Archaeologist trowel",
+      "description": "Short-handled pointed excavation trowel with a broad blade and raised ferrule. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "archaeologist trowel",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/archaeologist-trowel.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-archaeologist-trowel.png",
+      "sourceSha256": "f39514e54816ae3d892a7cf59d3a43068d584b99f65c057ea346091a67bbb7db",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#83928a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.5155,
+          0.076,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#83928a",
+          "parts": [
+            "handle",
+            "handle-cap",
+            "ferrule",
+            "blade",
+            "blade-tip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "artifact-bag",
+      "kit": "archaeology-fieldwork",
+      "title": "Finds collection bag",
+      "description": "Small field bag with a folded opening, side gussets and a blank label patch. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "finds collection bag",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/artifact-bag.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-artifact-bag.png",
+      "sourceSha256": "0faafce955dfdd1e5bfca252def778c101f4a45e811917104c895fe210ea2855",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a78b68",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.205,
+          0.249,
+          0.08
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a78b68",
+          "parts": [
+            "bag-body",
+            "folded-mouth",
+            "label-patch",
+            "left-gusset",
+            "right-gusset"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "boundary-flag",
+      "kit": "archaeology-fieldwork",
+      "title": "Survey boundary flag",
+      "description": "Bright survey marker flag mounted on a narrow ground stake. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "survey boundary flag",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/boundary-flag.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-boundary-flag.png",
+      "sourceSha256": "4c33eb80ac9783bcdbb4a4599708bc9a2ccb3cd6737f1918a204d1bd4613e41f",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d65b38",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 100,
+        "sizeM": [
+          0.160385,
+          0.65,
+          0.048
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d65b38",
+          "parts": [
+            "flag-stake",
+            "flag-cloth",
+            "ground-ferrule"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "context-clipboard",
+      "kit": "archaeology-fieldwork",
+      "title": "Excavation context clipboard",
+      "description": "Field form board with a top clip and pencil loop for recording a soil context. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "excavation context clipboard",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/context-clipboard.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-context-clipboard.png",
+      "sourceSha256": "e5d868294b58162672d3c8d8d26afa477393b80c1f3d66f9a622b39339ea47f4",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8c7355",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.358,
+          0.061,
+          0.39
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8c7355",
+          "parts": [
+            "board",
+            "paper",
+            "clip",
+            "clip-pivot",
+            "pencil"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "detail-paintbrush",
+      "kit": "archaeology-fieldwork",
+      "title": "Detailing brush",
+      "description": "Fine pointed cleaning brush with a tapered grip, ferrule and slim bristle bundle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "detailing brush",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/detail-paintbrush.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-detail-paintbrush.png",
+      "sourceSha256": "bb1efdd20a4cf7324c1ea9605e372da46a7eebd9c6157bd64448f77d182ca3ac",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d1a14e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.466,
+          0.044,
+          0.044
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d1a14e",
+          "parts": [
+            "handle",
+            "ferrule",
+            "bristles",
+            "bristle-tip",
+            "handle-end"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "detail-scoop",
+      "kit": "archaeology-fieldwork",
+      "title": "Soil detail scoop",
+      "description": "Small flat soil scoop with raised side cheeks and a short grip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "soil detail scoop",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/detail-scoop.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-detail-scoop.png",
+      "sourceSha256": "fef935173d1d47d8e9e809fcb45e71771d9779648bddfea13e18aaa72f0f9b86",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#969b91",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.422,
+          0.063,
+          0.17
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#969b91",
+          "parts": [
+            "handle",
+            "neck",
+            "scoop-pan",
+            "left-cheek",
+            "right-cheek"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dustpan-and-brush",
+      "kit": "archaeology-fieldwork",
+      "title": "Dustpan and brush",
+      "description": "Field dustpan with a raised lip and a compact cleaning brush resting beside it. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "dustpan and brush",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/dustpan-and-brush.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-dustpan-and-brush.png",
+      "sourceSha256": "18faa037c3c31126fb728231ba759f56d26e5fc007e2314d0776304459a3080b",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78887d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.3825,
+          0.149,
+          0.505
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78887d",
+          "parts": [
+            "pan-base",
+            "pan-back",
+            "pan-left-wall",
+            "pan-right-wall",
+            "pan-handle",
+            "brush-handle",
+            "brush-head"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "excavation-camera-tripod",
+      "kit": "archaeology-fieldwork",
+      "title": "Camera field tripod",
+      "description": "Three-leg camera tripod with a compact pan head, center column and leveling plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "camera field tripod",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/excavation-camera-tripod.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-excavation-camera-tripod.png",
+      "sourceSha256": "29157a23790a92e1ac1a7bb2ace3d9773cc2a0ca6bc894c621f676694267626a",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#838d88",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.563644,
+          0.782574,
+          0.520113
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#838d88",
+          "parts": [
+            "tripod-leg-0",
+            "tripod-leg-1",
+            "tripod-leg-2",
+            "center-column",
+            "leveling-plate",
+            "pan-head",
+            "camera-plate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "excavation-grid",
+      "kit": "archaeology-fieldwork",
+      "title": "Excavation grid ropes",
+      "description": "Four taut survey lines and corner pins mark a square excavation unit. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "excavation grid ropes",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/excavation-grid.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-excavation-grid.png",
+      "sourceSha256": "de765d7d3890c34e9ec87503abc5ae06788671ad868e61f6fd137e4e60370e72",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c69b54",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 352,
+        "sizeM": [
+          1.236,
+          0.09,
+          1.236
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c69b54",
+          "parts": [
+            "north-grid-line",
+            "south-grid-line",
+            "west-grid-line",
+            "east-grid-line",
+            "corner-pin-0",
+            "corner-pin-1",
+            "corner-pin-2",
+            "corner-pin-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "excavation-pick",
+      "kit": "archaeology-fieldwork",
+      "title": "Excavation pick",
+      "description": "Compact pick with a crosswise head, pointed end and short straight handle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "excavation pick",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/excavation-pick.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-excavation-pick.png",
+      "sourceSha256": "f24d8e49b6796526812dc13156e2ede74c56fdf1c50709c5645dc8179bf7d776",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d8680",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          0.48098,
+          0.558,
+          0.061625
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d8680",
+          "parts": [
+            "handle",
+            "head",
+            "point",
+            "adze-end"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "field-loupe",
+      "kit": "archaeology-fieldwork",
+      "title": "Field magnifier",
+      "description": "Hand lens with a circular frame, short stem and oval grip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "field magnifier",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/field-loupe.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-field-loupe.png",
+      "sourceSha256": "bef98922cbde2d00d80cc818d050d1b3c975a3f03d6df65b40cb5561ae18b59d",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9c9f94",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.3765,
+          0.039,
+          0.176
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9c9f94",
+          "parts": [
+            "lens-frame",
+            "stem",
+            "grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "field-notebook",
+      "kit": "archaeology-fieldwork",
+      "title": "Field notebook",
+      "description": "Hard-cover field notebook with a visible spine, elastic band and page block. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "field notebook",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/field-notebook.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-field-notebook.png",
+      "sourceSha256": "7afdb9e6679bc3883b09201645fce47894bc8958f426f1746f7adec2d275eaa9",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d846c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.266,
+          0.072,
+          0.356
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d846c",
+          "parts": [
+            "page-block",
+            "front-cover",
+            "back-cover",
+            "spine",
+            "elastic-band"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "finds-tray",
+      "kit": "archaeology-fieldwork",
+      "title": "Finds sorting tray",
+      "description": "Shallow compartmented tray with a raised rim and four open cells. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "finds sorting tray",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/finds-tray.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-finds-tray.png",
+      "sourceSha256": "5b38f330ed88d2b7ab45a48b0381a0a754e399b3f14095c7b6d1de5c94598404",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9d906c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.42,
+          0.074,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9d906c",
+          "parts": [
+            "tray-floor",
+            "rim-0",
+            "rim-1",
+            "rim-2",
+            "rim-3",
+            "center-long",
+            "center-cross"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fine-mesh-sieve",
+      "kit": "archaeology-fieldwork",
+      "title": "Fine-mesh sample sieve",
+      "description": "Round hand sieve with a deep side band, dense crossbars and a short grip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "fine-mesh sample sieve",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/fine-mesh-sieve.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-fine-mesh-sieve.png",
+      "sourceSha256": "47d87eef24752eb2d0331ff2ebb50268412a95b14b2d8b973e5840082577ac77",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8f968d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 932,
+        "sizeM": [
+          0.46,
+          0.059,
+          0.508
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8f968d",
+          "parts": [
+            "sieve-rim",
+            "mesh-x-0",
+            "mesh-x-1",
+            "mesh-x-2",
+            "mesh-x-3",
+            "mesh-x-4",
+            "mesh-x-5",
+            "mesh-x-6",
+            "mesh-x-7",
+            "mesh-x-8",
+            "mesh-y-0",
+            "mesh-y-1",
+            "mesh-y-2",
+            "mesh-y-3",
+            "mesh-y-4",
+            "mesh-y-5",
+            "mesh-y-6",
+            "mesh-y-7",
+            "mesh-y-8",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "flotation-tank",
+      "kit": "archaeology-fieldwork",
+      "title": "Soil flotation tank",
+      "description": "Open rectangular sample tank on a braced stand with a hose outlet and top rim. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "soil flotation tank",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/flotation-tank.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-flotation-tank.png",
+      "sourceSha256": "d3944411999883a12791c8d37191d36df707fb558b246d7ed9934e9ef6d3ca96",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#72918e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          0.684,
+          0.617,
+          0.448
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#72918e",
+          "parts": [
+            "tank-body",
+            "tank-rim-0",
+            "tank-rim-1",
+            "tank-rim-2",
+            "tank-rim-3",
+            "stand-leg-0",
+            "stand-leg-1",
+            "stand-leg-2",
+            "stand-leg-3",
+            "outlet",
+            "outlet-valve"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "folding-rule",
+      "kit": "archaeology-fieldwork",
+      "title": "Folding measuring rule",
+      "description": "Three linked flat rule sections with hinge blocks at their joints. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "folding measuring rule",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/folding-rule.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-folding-rule.png",
+      "sourceSha256": "059e4a099d230f9421b5d0c69c80e16997f32dc5342fa01591a7d29a2c6ca8a5",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e2c85c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          1.07837,
+          0.052,
+          0.108096
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e2c85c",
+          "parts": [
+            "rule-left",
+            "rule-center",
+            "rule-right",
+            "hinge-0",
+            "hinge-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "grade-rod",
+      "kit": "archaeology-fieldwork",
+      "title": "Survey grade rod",
+      "description": "Tall marked staff with a reinforced shoe and cross-grip at the top. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "survey grade rod",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/grade-rod.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-grade-rod.png",
+      "sourceSha256": "06a1054ce8fca8edff665272b30c820c384a1f696f46a372c72190b8f8ed0447",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d7a44a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.18,
+          1.45,
+          0.068
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d7a44a",
+          "parts": [
+            "rod",
+            "graduation-band-0",
+            "graduation-band-1",
+            "graduation-band-2",
+            "graduation-band-3",
+            "graduation-band-4",
+            "graduation-band-5",
+            "graduation-band-6",
+            "graduation-band-7",
+            "graduation-band-8",
+            "graduation-band-9",
+            "shoe",
+            "top-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hand-auger",
+      "kit": "archaeology-fieldwork",
+      "title": "Hand soil auger",
+      "description": "Manual soil auger with a T-handle, straight shaft and open helical-look cutting blades. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "hand soil auger",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/hand-auger.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-hand-auger.png",
+      "sourceSha256": "201577a1215b5229a82356e3212f67c67889e311e113597825edbcd86776bf05",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#858d88",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.23,
+          0.744,
+          0.163489
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#858d88",
+          "parts": [
+            "shaft",
+            "t-handle",
+            "cutting-flight-0",
+            "cutting-flight-1",
+            "cutting-flight-2",
+            "cutting-flight-3",
+            "cutting-tip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hand-broom",
+      "kit": "archaeology-fieldwork",
+      "title": "Hand broom",
+      "description": "Short whisk broom with a tapered handle, bound neck and fan of coarse bristles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "hand broom",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/hand-broom.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-hand-broom.png",
+      "sourceSha256": "4060936d1eb2445aff2d56fd1227f6fe3477fd2d94ba3396afc41c7fdd404211",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a9804d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.144666,
+          0.327,
+          0.062
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a9804d",
+          "parts": [
+            "handle",
+            "bound-neck",
+            "bristle-0",
+            "bristle-1",
+            "bristle-2",
+            "bristle-3",
+            "bristle-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "line-level",
+      "kit": "archaeology-fieldwork",
+      "title": "String line level",
+      "description": "Small tubular level with a raised center vial and hanging end hooks. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "string line level",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/line-level.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-line-level.png",
+      "sourceSha256": "865a9e2a42a1c209b84ceef38edf63ab97b703e77cbf68fb5ea384568b6fea84",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7a9691",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.22,
+          0.068,
+          0.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7a9691",
+          "parts": [
+            "level-body",
+            "vial-window",
+            "end-hook-0",
+            "end-hook-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "margin-trowel",
+      "kit": "archaeology-fieldwork",
+      "title": "Margin trowel",
+      "description": "Narrow rectangular masonry-style blade on a short grip for fine excavation work. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "margin trowel",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/margin-trowel.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-margin-trowel.png",
+      "sourceSha256": "84d89cc28dae9d71db4ecbe024ef17be249e532a89753d6b21fb0c0f0fe52040",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#89918c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          0.44,
+          0.054,
+          0.126
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#89918c",
+          "parts": [
+            "handle",
+            "neck",
+            "narrow-blade",
+            "shoulder"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "masonry-chisel",
+      "kit": "archaeology-fieldwork",
+      "title": "Masonry chisel",
+      "description": "Short steel chisel with a protective hand guard and widened striking cap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "masonry chisel",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/masonry-chisel.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-masonry-chisel.png",
+      "sourceSha256": "b309440f94c3002726ab0538f08cf21c59ef265a72d5ba269e6d7ca8aae495af",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#92958d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.115,
+          0.401,
+          0.072
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#92958d",
+          "parts": [
+            "blade",
+            "bevel",
+            "hand-guard",
+            "striking-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mattock",
+      "kit": "archaeology-fieldwork",
+      "title": "Excavation mattock",
+      "description": "Broad adze mattock head on a long field handle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "excavation mattock",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/mattock.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-mattock.png",
+      "sourceSha256": "2ba2c16b6c0563b1e6bc3dbc34545b72d5c180c310b50170a6178f0d44bf5141",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#85867d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          0.516684,
+          0.787,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#85867d",
+          "parts": [
+            "handle",
+            "head",
+            "adze-blade",
+            "pick-tip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "nested-sieves",
+      "kit": "archaeology-fieldwork",
+      "title": "Nested field sieves",
+      "description": "Stack of three shallow round sieves with visible rims and different diameters. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "nested field sieves",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/nested-sieves.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-nested-sieves.png",
+      "sourceSha256": "e1024e8d63bc2bb015f19aac76eabac82a8baf6bed92c7d36f11120d042afc48",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#929990",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          0.46,
+          0.149,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#929990",
+          "parts": [
+            "sieve-0",
+            "sieve-1",
+            "sieve-2",
+            "center-post"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "north-arrow-marker",
+      "kit": "archaeology-fieldwork",
+      "title": "North arrow marker",
+      "description": "Portable four-point orientation marker on a low circular base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "north arrow marker",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/north-arrow-marker.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-north-arrow-marker.png",
+      "sourceSha256": "b2ddff581e46873e9adf86a4461466fdefaad3bf98c3475fcad56561b519d17e",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c4a64c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.256,
+          0.098,
+          0.256
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c4a64c",
+          "parts": [
+            "base",
+            "pivot",
+            "north-point",
+            "south-point",
+            "east-point",
+            "west-point"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "photo-board",
+      "kit": "archaeology-fieldwork",
+      "title": "Excavation photo board",
+      "description": "Portable board with a raised clamp, short grip and blank recording face. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "excavation photo board",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/photo-board.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-photo-board.png",
+      "sourceSha256": "fdce66bb2007289fb80ab66fbb4ec464448fd37350490fc626a4faf60060684c",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71856e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          0.33,
+          0.104,
+          0.27
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71856e",
+          "parts": [
+            "board-face",
+            "top-rail",
+            "clip",
+            "carry-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "photo-north-arrow",
+      "kit": "archaeology-fieldwork",
+      "title": "Photo north arrow",
+      "description": "Compact direction arrow and base used to orient an excavation photograph. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "photo north arrow",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/photo-north-arrow.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-photo-north-arrow.png",
+      "sourceSha256": "282d832b5577f245a2ef419aecd698021edf67b49fc600ed87424852d96a983f",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d29a42",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.17,
+          0.046,
+          0.1415
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d29a42",
+          "parts": [
+            "base",
+            "arrow-shaft",
+            "arrowhead",
+            "tail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "photo-scale-bar",
+      "kit": "archaeology-fieldwork",
+      "title": "Photo scale bar",
+      "description": "Segmented rectangular scale bar with raised end stops for site photography. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "photo scale bar",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/photo-scale-bar.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-photo-scale-bar.png",
+      "sourceSha256": "f7c69fa09344db2999966279905ac7a26ffe00a6bb3eb2868567cdaab0fb1457",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c4b07a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.438,
+          0.036,
+          0.074
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c4b07a",
+          "parts": [
+            "bar-body",
+            "marker-0",
+            "marker-1",
+            "marker-2",
+            "marker-3",
+            "marker-4",
+            "marker-5",
+            "marker-6",
+            "end-stop-0",
+            "end-stop-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "plumb-bob",
+      "kit": "archaeology-fieldwork",
+      "title": "Plumb bob",
+      "description": "Weighted survey bob hanging from a short line and top eye. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "plumb bob",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/plumb-bob.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-plumb-bob.png",
+      "sourceSha256": "fc5c49d45b6f4872f231cd5a9d8b6dd3dcc754bdba737d91dc2dd659fdba76bd",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b9390",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.096,
+          0.405,
+          0.096
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b9390",
+          "parts": [
+            "bob-body",
+            "lower-weight",
+            "line",
+            "top-eye"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pointing-trowel",
+      "kit": "archaeology-fieldwork",
+      "title": "Pointing trowel",
+      "description": "Triangular pointed hand trowel with a rounded grip and narrow tang. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "pointing trowel",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/pointing-trowel.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-pointing-trowel.png",
+      "sourceSha256": "2003e2ca1f1fa645782bb2b03392cdc21cc4f56c9ab18e672d00854caa088ef8",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9b9d94",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.466,
+          0.06,
+          0.125
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9b9d94",
+          "parts": [
+            "handle",
+            "grip-cap",
+            "tang",
+            "blade",
+            "point"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "round-point-shovel",
+      "kit": "archaeology-fieldwork",
+      "title": "Round point shovel",
+      "description": "Full-size digging shovel with a rounded blade, socket, long shaft and D grip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "round point shovel",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/round-point-shovel.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-round-point-shovel.png",
+      "sourceSha256": "0e04955cb104fc40b0473635c43bc12056f94cf9fcd873515e3dfd1bfefb4646",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a9a49a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.32,
+          1.184986,
+          0.13
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a9a49a",
+          "parts": [
+            "blade",
+            "shoulder",
+            "shaft",
+            "d-grip-top",
+            "d-grip-side-left",
+            "d-grip-side-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sample-scoop",
+      "kit": "archaeology-fieldwork",
+      "title": "Soil sample scoop",
+      "description": "Long-handled sampling scoop with a shallow bowl and raised rim. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "soil sample scoop",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/sample-scoop.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-sample-scoop.png",
+      "sourceSha256": "2a7da321be4c04ae36eea4af845c900b2b43d9899afc59d7a99f542aa6b36b1b",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a4a297",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.136,
+          0.43,
+          0.175
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a4a297",
+          "parts": [
+            "shaft",
+            "cross-grip",
+            "bowl",
+            "left-rim",
+            "right-rim",
+            "neck"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sample-tag-set",
+      "kit": "archaeology-fieldwork",
+      "title": "Field sample tags",
+      "description": "Three punched sample tags with short ties and blank faces. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "field sample tags",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/sample-tag-set.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-sample-tag-set.png",
+      "sourceSha256": "f07c37296b9ea81384603f1a0bff01b54c71d9393af8b4b0158f8a5a4c1f20dc",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d2bb73",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 456,
+        "sizeM": [
+          0.373344,
+          0.104,
+          0.17603
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d2bb73",
+          "parts": [
+            "tag-0",
+            "tag-1",
+            "tag-2",
+            "tie-eye-0",
+            "tie-eye-1",
+            "tie-eye-2",
+            "tie-0",
+            "tie-1",
+            "tie-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sample-wash-tray",
+      "kit": "archaeology-fieldwork",
+      "title": "Finds wash tray",
+      "description": "Shallow rectangular washing tray with a raised perimeter and one drain opening. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "finds wash tray",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/sample-wash-tray.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-sample-wash-tray.png",
+      "sourceSha256": "edcf8fa129214ac9787a2eefa36cf801858f2ecf83548ff4a7a23e6428817f93",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7f9992",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.42,
+          0.103,
+          0.308
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7f9992",
+          "parts": [
+            "tray-floor",
+            "tray-wall-0",
+            "tray-wall-1",
+            "tray-wall-2",
+            "tray-wall-3",
+            "drain"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sediment-bucket",
+      "kit": "archaeology-fieldwork",
+      "title": "Sediment bucket",
+      "description": "Open field bucket with a reinforced rim, flat base and swing handle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "sediment bucket",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/sediment-bucket.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-sediment-bucket.png",
+      "sourceSha256": "194382bebc4030f94d6c51b5af5f372b9bcca50504a7b26ed0d5fa52d61af510",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#799187",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 472,
+        "sizeM": [
+          0.426,
+          0.518,
+          0.41
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#799187",
+          "parts": [
+            "bucket-body",
+            "bucket-rim",
+            "base-band",
+            "handle-left",
+            "handle-right",
+            "handle-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "shaker-screen",
+      "kit": "archaeology-fieldwork",
+      "title": "Archaeology shaker screen",
+      "description": "Large raised wooden frame with crossbars and four short support legs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "archaeology shaker screen",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/shaker-screen.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-shaker-screen.png",
+      "sourceSha256": "81473a72d0b606f1b99c8ccca7d98e7bf968f848dd9b8c4683894ffe8fd3aa7f",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a37a4c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 756,
+        "sizeM": [
+          0.76,
+          0.436109,
+          0.688
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a37a4c",
+          "parts": [
+            "frame-rail-0",
+            "frame-rail-1",
+            "frame-rail-2",
+            "frame-rail-3",
+            "mesh-bar-x-0",
+            "mesh-bar-x-1",
+            "mesh-bar-x-2",
+            "mesh-bar-x-3",
+            "mesh-bar-x-4",
+            "mesh-bar-x-5",
+            "mesh-bar-x-6",
+            "mesh-bar-y-0",
+            "mesh-bar-y-1",
+            "mesh-bar-y-2",
+            "mesh-bar-y-3",
+            "mesh-bar-y-4",
+            "mesh-bar-y-5",
+            "mesh-bar-y-6",
+            "mesh-bar-y-7",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "site-camera",
+      "kit": "archaeology-fieldwork",
+      "title": "Field documentation camera",
+      "description": "Compact field camera with a short lens barrel, raised viewfinder and grip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "field documentation camera",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/site-camera.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-site-camera.png",
+      "sourceSha256": "34714153b4abac37f01f7b8c56f7f10dda7059e69d009b59749eed22bcf16340",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667671",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 232,
+        "sizeM": [
+          0.24,
+          0.186,
+          0.2585
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667671",
+          "parts": [
+            "camera-body",
+            "lens-mount",
+            "lens",
+            "lens-rim",
+            "viewfinder",
+            "shutter-button",
+            "grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "soft-finds-brush",
+      "kit": "archaeology-fieldwork",
+      "title": "Soft finds brush",
+      "description": "Wide soft-bristle brush with a short wooden handle and flared brush head. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "soft finds brush",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/soft-finds-brush.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-soft-finds-brush.png",
+      "sourceSha256": "5fb148a5aaef2128fb3e41e672a19c8ce133e0033be75026ec15ee22ca06d979",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b58048",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 408,
+        "sizeM": [
+          0.437,
+          0.056,
+          0.174
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b58048",
+          "parts": [
+            "handle",
+            "neck",
+            "brush-block",
+            "bristle-bundle-0",
+            "bristle-bundle-1",
+            "bristle-bundle-2",
+            "bristle-bundle-3",
+            "bristle-bundle-4",
+            "bristle-bundle-5",
+            "bristle-bundle-6"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "soil-core-sampler",
+      "kit": "archaeology-fieldwork",
+      "title": "Soil core sampler",
+      "description": "Hollow field corer with a reinforced mouth, top grip and removable cap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "soil core sampler",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/soil-core-sampler.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-soil-core-sampler.png",
+      "sourceSha256": "ccef335fa5ad0327baafd9ad07fadf683a62892a8bc1b1a7201f6d2ce3c519ab",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#89928d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          0.19,
+          0.728,
+          0.116
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#89928d",
+          "parts": [
+            "sample-tube",
+            "mouth-rim",
+            "handle-crossbar",
+            "top-cap",
+            "depth-window"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "soil-knife",
+      "kit": "archaeology-fieldwork",
+      "title": "Soil profile knife",
+      "description": "Narrow profile knife with a guarded handle, straight blade and lanyard eye. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "soil profile knife",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/soil-knife.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-soil-knife.png",
+      "sourceSha256": "02608c62b1f93cbe8240a283d7cf40872d26535e42d485ae9e4df5265136b9c3",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c68f42",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.068,
+          0.518,
+          0.072
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c68f42",
+          "parts": [
+            "handle",
+            "lanyard-eye",
+            "blade",
+            "blade-point"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sorting-pan",
+      "kit": "archaeology-fieldwork",
+      "title": "Finds sorting pan",
+      "description": "Wide shallow sorting pan with rounded polygon-style rim and central divider. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "finds sorting pan",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/sorting-pan.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-sorting-pan.png",
+      "sourceSha256": "b7dfc28bcc889cf5f812c64178c8072ee78e842f6ceae769052525437e521e40",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a28c63",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.4,
+          0.087,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a28c63",
+          "parts": [
+            "pan-base",
+            "pan-wall-0",
+            "pan-wall-1",
+            "pan-wall-2",
+            "pan-wall-3",
+            "divider"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "specimen-jar-rack",
+      "kit": "archaeology-fieldwork",
+      "title": "Specimen jar rack",
+      "description": "Portable rack with four capped sample jars and a broad carrying base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "specimen jar rack",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/specimen-jar-rack.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-specimen-jar-rack.png",
+      "sourceSha256": "1902f3a7057dcd777aa3da9daa4696a5df29b6611c65fd755097de1f7d1bfd85",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78918a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 388,
+        "sizeM": [
+          0.39,
+          0.234,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78918a",
+          "parts": [
+            "rack-base",
+            "jar-0",
+            "jar-1",
+            "jar-2",
+            "jar-3",
+            "jar-cap-0",
+            "jar-cap-1",
+            "jar-cap-2",
+            "jar-cap-3",
+            "rack-rail-0",
+            "rack-rail-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "square-point-shovel",
+      "kit": "archaeology-fieldwork",
+      "title": "Square point shovel",
+      "description": "Flat-edged transfer shovel with a broad blade, straight shaft and cross-grip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "square point shovel",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/square-point-shovel.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-square-point-shovel.png",
+      "sourceSha256": "22c99aa8932d5477d2dd51d233f925d15ce563cf6fdc5a4e6a539ec8e2434dfd",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9d9a8f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          0.355,
+          1.125,
+          0.105
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9d9a8f",
+          "parts": [
+            "blade",
+            "blade-lip",
+            "shaft",
+            "cross-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "survey-compass",
+      "kit": "archaeology-fieldwork",
+      "title": "Survey compass",
+      "description": "Pocket survey compass with a polygon bezel, center pivot and visible direction needle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "survey compass",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/survey-compass.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-survey-compass.png",
+      "sourceSha256": "4808372dd4792ca4716ea7db2ae4565bb732011b00cb6db64c6612010331be97",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718c73",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.236,
+          0.055,
+          0.236
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718c73",
+          "parts": [
+            "compass-case",
+            "bezel",
+            "needle-long",
+            "needle-short",
+            "pivot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "survey-stake",
+      "kit": "archaeology-fieldwork",
+      "title": "Survey stake",
+      "description": "Short pointed field stake with a broad head for marking a measured position. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "survey stake",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/survey-stake.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-survey-stake.png",
+      "sourceSha256": "971bb9a6410188e9a8b762b0429f3688a4bbe60e1731d4a5f2a270a2c79c864f",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b56a37",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 100,
+        "sizeM": [
+          0.125,
+          0.395,
+          0.076
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b56a37",
+          "parts": [
+            "stake-shaft",
+            "stake-head",
+            "head-tab"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tape-measure",
+      "kit": "archaeology-fieldwork",
+      "title": "Field tape measure",
+      "description": "Compact tape case with a winding hub, lock button and short measuring blade. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "field tape measure",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/tape-measure.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-tape-measure.png",
+      "sourceSha256": "ace6d2015acd3815cc71785b97ebe66fa8f9b869eaccc6ea2e52c16a3cd90c4a",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#df8d35",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.323,
+          0.19,
+          0.14
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#df8d35",
+          "parts": [
+            "case",
+            "side-hub",
+            "lock-button",
+            "tape-blade",
+            "hook"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "total-station",
+      "kit": "archaeology-fieldwork",
+      "title": "Survey total station",
+      "description": "Tripod-mounted survey instrument with a compact body, telescope barrel and adjustment knobs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "survey total station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/total-station.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-total-station.png",
+      "sourceSha256": "03dc4fc7b9efe2f3da49ca132ab4a9f35d8afd0f365c56b517f2c0948b455c98",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b77b3d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.644001,
+          0.865213,
+          0.570845
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b77b3d",
+          "parts": [
+            "tripod-leg-0",
+            "tripod-leg-1",
+            "tripod-leg-2",
+            "head-column",
+            "instrument-body",
+            "telescope",
+            "adjustment-knob-0",
+            "adjustment-knob-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "trenching-spade",
+      "kit": "archaeology-fieldwork",
+      "title": "Trenching spade",
+      "description": "Long narrow trenching blade with a straight socket and extended handle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "trenching spade",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/trenching-spade.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-trenching-spade.png",
+      "sourceSha256": "e7382880d0166c4ad4c5569e63b20844d29a67b04e1319db998c83a73f191d6e",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8e9a90",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          0.16,
+          1.235,
+          0.0815
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8e9a90",
+          "parts": [
+            "narrow-blade",
+            "blade-rib",
+            "shaft",
+            "grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "water-screen-frame",
+      "kit": "archaeology-fieldwork",
+      "title": "Water screening frame",
+      "description": "Raised rectangular wash screen with corner legs, side rails and drainage basin. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "water screening frame",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/water-screen-frame.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-water-screen-frame.png",
+      "sourceSha256": "4b047e809ec3632e633ceabf81665e359a95d22a885e4d6090c6b7eb048b1848",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718d8c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 416,
+        "sizeM": [
+          0.701,
+          0.515,
+          0.605
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718d8c",
+          "parts": [
+            "frame-rail-0",
+            "frame-rail-1",
+            "frame-rail-2",
+            "frame-rail-3",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "drain-tray",
+            "mesh-bar-0",
+            "mesh-bar-1",
+            "mesh-bar-2",
+            "mesh-bar-3",
+            "mesh-bar-4",
+            "mesh-bar-5",
+            "mesh-bar-6"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wire-cleaning-brush",
+      "kit": "archaeology-fieldwork",
+      "title": "Wire cleaning brush",
+      "description": "Small stiff cleaning brush with a flat back, metal bristles and a hanging eye. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "wire cleaning brush",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "archaeology",
+        "excavation",
+        "fieldwork",
+        "outdoor",
+        "education",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/archaeology-fieldwork/wire-cleaning-brush.kcad.ts",
+      "preview": "/assets/archaeology-fieldwork-wire-cleaning-brush.png",
+      "sourceSha256": "53d86cfec2be26801724d43505a1cf4df248987b8a18be0eddb31cf2a1e20e7f",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#858983",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 384,
+        "sizeM": [
+          0.18,
+          0.141,
+          0.078
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#858983",
+          "parts": [
+            "handle",
+            "hanging-eye",
+            "brush-block",
+            "wire-row-0",
+            "wire-row-1",
+            "wire-row-2",
+            "wire-row-3",
+            "wire-row-4",
+            "wire-row-5"
           ],
           "param": "color"
         }
